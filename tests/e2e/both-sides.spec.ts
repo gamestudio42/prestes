@@ -23,21 +23,22 @@ async function currentFrame(page: Page): Promise<Frame> {
 }
 
 async function command(page: Page, value: Command, ticks = 1): Promise<Frame> {
-  const before = await currentFrame(page);
-  // One message per command keeps the run bounded by simulated ticks instead of
-  // a browser round trip per tick, which starved the timeout on a busy machine.
-  await page.evaluate(
-    ({ next, count }) => {
-      window.__prestes?.command(next);
-      window.__prestes?.step(count);
+  // One browser round trip per command: send it, step the paused simulation and
+  // wait in the page for the frame. The run is bounded by simulated ticks, not by
+  // per-tick round trips, which starved the timeout on a busy machine.
+  const frame = await page.evaluate(
+    async ({ next, count }) => {
+      const bridge = window.__prestes!;
+      const target = (bridge.frame()?.tick ?? 0) + count;
+      bridge.command(next);
+      bridge.step(count);
+      while ((bridge.frame()?.tick ?? 0) < target) {
+        await new Promise((resolve) => setTimeout(resolve, 10));
+      }
+      return bridge.frame()!;
     },
     { next: value, count: ticks },
   );
-  await page.waitForFunction(
-    (targetTick) => (window.__prestes?.frame()?.tick ?? 0) >= targetTick,
-    before.tick + ticks,
-  );
-  const frame = await currentFrame(page);
   const rejected = frame.events.find((event) => event.type === 'command_rejected');
   if (rejected) {
     throw new Error(`command rejected: ${JSON.stringify(rejected)}`);

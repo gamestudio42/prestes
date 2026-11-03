@@ -88,6 +88,31 @@ class MinHeap {
   }
 }
 
+function nearestOpenCell(target: Vec2, covers: readonly CoverPoint[]): [number, number] {
+  const x = cell(target.x);
+  const y = cell(target.y);
+  if (!blocked(world(x), world(y), covers)) {
+    return [x, y];
+  }
+  let best: [number, number] = [x, y];
+  let bestDistance = Number.POSITIVE_INFINITY;
+  for (let dy = -2; dy <= 2; dy += 1) {
+    for (let dx = -2; dx <= 2; dx += 1) {
+      const nx = x + dx;
+      const ny = y + dy;
+      if (nx < 0 || nx >= SIZE || ny < 0 || ny >= SIZE || blocked(world(nx), world(ny), covers)) {
+        continue;
+      }
+      const distance = (world(nx) - target.x) ** 2 + (world(ny) - target.y) ** 2;
+      if (distance < bestDistance) {
+        bestDistance = distance;
+        best = [nx, ny];
+      }
+    }
+  }
+  return best;
+}
+
 function heuristic(ax: number, ay: number, bx: number, by: number): number {
   const dx = Math.abs(ax - bx);
   const dy = Math.abs(ay - by);
@@ -109,8 +134,9 @@ export function findPath(
 
   const startX = cell(start.x);
   const startY = cell(start.y);
-  const targetX = cell(target.x);
-  const targetY = cell(target.y);
+  // An open target can round to a grid cell inside a cover's clearance; aim the
+  // search at the nearest open cell instead, and the exact target is appended.
+  const [targetX, targetY] = nearestOpenCell(target, covers);
   const startIndex = startY * SIZE + startX;
   const targetIndex = targetY * SIZE + targetX;
 

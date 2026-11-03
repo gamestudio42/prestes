@@ -147,6 +147,37 @@ describe('SimulationEngine', () => {
     ).toBe(true);
   });
 
+  it('moves a bounding soldier whose formation slot touches cover to an open point', () => {
+    const engine = new SimulationEngine({ seed: 1922, training: true, opposition: false, bounding: true });
+    const internal = engine as unknown as {
+      units: Array<{
+        id: number;
+        x: number;
+        y: number;
+        targetX: number;
+        targetY: number;
+        path: unknown[];
+        boundPhase: string | null;
+      }>;
+      assignBoundingDirect: (
+        units: readonly unknown[],
+        destination: { x: number; y: number },
+        targets: ReadonlyMap<number, { x: number; y: number }>,
+      ) => void;
+    };
+    const unit = internal.units.find((entry) => entry.id === 1)!;
+    unit.x = 45.85;
+    unit.y = -17.87;
+    // Within the 0.8 m movement clearance of the training sandbag at (8, 4).
+    const blockedSlot = { x: 6, y: 3.1 };
+
+    internal.assignBoundingDirect([unit], { x: 20, y: 4 }, new Map([[1, blockedSlot]]));
+
+    expect(unit.path.length).toBeGreaterThan(0);
+    expect(unit.boundPhase).toBe('advance');
+    expect(Math.hypot(unit.targetX - blockedSlot.x, unit.targetY - blockedSlot.y)).toBeLessThanOrEqual(3);
+  });
+
   it('moves every soldier to its slot when alternating movement finishes', () => {
     const engine = new SimulationEngine({ seed: 1922, training: true, opposition: false, bounding: true });
     const unitIds = Array.from({ length: 11 }, (_, index) => index + 1);

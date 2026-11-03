@@ -191,18 +191,22 @@ The repository is local-only: a local git repository with no remote. The GitHub
 Actions workflow in `.github/workflows/` is kept but dormant, so `pnpm verify` is
 the gate.
 
-First `pnpm verify` runs (2026-11-03): check, build, bundle budget (index JS
-952,852 / 1,000,000 B), determinism (golden `75d9a841`, seed 1922, 600 ticks)
-and OpenSpec passed both times. e2e failed both times on timing-dependent specs,
-a different set each run: run 1 `sandbox.spec.ts:42` (17/18 passed), run 2
-`both-sides.spec.ts:44` and `training-campaign.spec.ts:122` (16/18 passed). The
-sandbox spec passes 3/3 on its own. No game code changed between these runs and
-the earlier 18/18 run, so the e2e suite is flaky under load. Fix it before
-treating `pnpm verify` as green.
+Last `pnpm verify` run (2026-11-03): every step passed. check 184 unit tests,
+build, bundle budget (index JS 953,147 / 1,000,000 B; worker 73,869 / 90,000 B;
+CSS 70,670 / 85,000 B), determinism (golden `eee8ea8f`, seed 1922, 600 ticks),
+OpenSpec 15 specs and e2e 18/18 in 2.6 min.
+
+The first verify runs exposed flaky e2e specs that waited on wall-clock time.
+They now step the paused simulation until each condition holds, with a tick
+budget. The hold-failure spec also exposed a simulation bug: a bounding formation
+slot inside a cover's clearance left the soldier with no path, waiting forever,
+and A* could not reach an open target whose grid cell lay in that clearance.
+Both are fixed (`assignBoundingDirect` uses `nearestOpenPoint`; `findPath` aims at
+the nearest open cell), which changed the determinism golden from `75d9a841`.
 
 Last recorded manual run:
 
-- `pnpm check`: 182 tests in 24 files, 562 locale keys, content check passed.
+- `pnpm check`: 184 tests in 24 files, 562 locale keys, content check passed.
 - `pnpm build`: passed; 952.85 kB JS before gzip (chunk-size warning remains).
 - `pnpm e2e`: 18 passed with one worker (bootcamp exercise, both-sides demo, preview/HUD,
   smoke, sandbox, rescue drill and recovery, selection, tactical orders, formation.

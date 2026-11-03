@@ -15,7 +15,7 @@
 - [x] 3.1 Create `tools/verify.ts` running check, build, bundle budget, determinism, `openspec validate --specs` and e2e in order, with a per-step summary (passed, failed, skipped, not run) and durations, and add the `verify` and `verify:quick` scripts; verify `pnpm verify:quick` passes and reports e2e as not run
 - [x] 3.2 Verify first-failure behavior: with a temporary lowered bundle limit, `pnpm verify:quick` stops at the budget step, marks later steps skipped and exits non-zero; restore the limit
 - [x] 3.3 Verify a missing `openspec` CLI yields a message naming the CLI (simulated by pointing `VERIFY_OPENSPEC_BIN` at a missing command), not a raw spawn error
-- [ ] 3.4 Run the full `pnpm verify` and verify every step passes, including the 18 Playwright specs, and that `git status` shows no changes made by the gate
+- [x] 3.4 Run the full `pnpm verify` and verify every step passes, including the 18 Playwright specs, and that `git status` shows no changes made by the gate
 
 ## 4. Coverage threshold
 

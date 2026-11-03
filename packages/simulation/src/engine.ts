@@ -2928,7 +2928,9 @@ export class SimulationEngine {
       averageFacing(units),
     );
     units.forEach((unit, index) => {
-      const target = targets?.get(unit.id) ?? slots[index] ?? destination;
+      // A slot inside a cover's clearance has no path; without this the soldier
+      // would wait in cover forever while the rest of the team moves on.
+      const target = this.nearestOpenPoint(targets?.get(unit.id) ?? slots[index] ?? destination);
       unit.targetX = target.x;
       unit.targetY = target.y;
       unit.holdPosition = false;
