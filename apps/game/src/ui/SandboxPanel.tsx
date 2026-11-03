@@ -147,7 +147,7 @@ export function SandboxPanel({
             </div>
             <div>
               <dt>{t('sandbox.target')}</dt>
-              <dd>{target ? `${t('sandbox.target')} #${target.id} Â· ${distance} m` : t('sandbox.noTarget')}</dd>
+              <dd>{target ? `${t('sandbox.target')} #${target.id} · ${distance} m` : t('sandbox.noTarget')}</dd>
             </div>
           </dl>
         ) : (
@@ -260,7 +260,7 @@ export function SandboxPanel({
                 event.type === 'command_rejected',
             )
             .map((event) => t(`rejection.${event.reason}` as MessageKey))
-            .join(' Â· ')}
+            .join(' · ')}
         </p>
       ) : null}
 

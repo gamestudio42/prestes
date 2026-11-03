@@ -191,19 +191,15 @@ changing behavior (both determinism hashes and all tests unchanged):
 | `apps/game/src/ui/Hud.tsx` | 999 | 209 (+ 7 files in `ui/hud/`) |
 | `apps/game/src/styles.css` | 5,006 | removed: 2,143 dead lines, rest in 4 files under `styles/` (largest 861) |
 
-Known follow-ups found during the refactor, deliberately left unchanged:
+Known follow-ups found during the refactor. The placement-status and sandbox-inspector
+mojibake and the PT-BR assembly count (six instead of five) are fixed; a source
+encoding test now guards against mojibake. Still open:
 
-- The placement status text in `ui/FieldOverlays.tsx` contains mojibake
-  (`Â·` and `Â°` instead of `·` and `°`), so the rotation readout shows stray
-  characters.
 - `tactical.spec.ts` "issues an area order" still waits on real-time ticks with
   a 5 s timeout and failed once under heavy load; it should step the simulation
   like the other specs.
 - `useOrders` is 733 lines; the target-order and ground-order handlers can be
   split further once the campaign adds new order types.
-- The PT-BR bootcamp text asks for six soldiers in the assembly zone
-  (`training.exercise.assembly.objective` and `.instructor`), but the rule and
-  the English text use five (`minUnits: 5`).
 - In a manual Chrome run the section was down to 15/0 rounds early in phase 2;
   the training ammunition budget may be too tight for the suppress objective.
 

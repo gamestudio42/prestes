@@ -38,7 +38,7 @@ export function FieldOverlays({
         data-testid="placement-status"
       >
         {translate(locale, placementPreview.valid ? 'hud.placementValid' : 'hud.placementInvalid')}
-        {' Â· '}{Math.round((placementPreview.rotation * 180) / Math.PI) % 360}Â°
+        {' · '}{Math.round((placementPreview.rotation * 180) / Math.PI) % 360}°
       </div>
     ) : null}
     {hoverHint ? (
