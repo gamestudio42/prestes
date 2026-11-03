@@ -5,10 +5,10 @@ A historical tactical RTS about Luís Carlos Prestes and the Coluna Prestes
 Prestes is the narrative spine, but each mission is commanded by the historical
 figure who was actually present.
 
-> **Status:** first playable bootcamp. The repository contains the deterministic
+> **Status:** complete bootcamp. The repository contains the deterministic
 > simulation, a Vazante-inspired orthographic camera and pixel post, original
-> low-poly 1920s character proxies, a three-phase training exercise with
-> non-lethal opposing fire, section selection, a bottom orders panel, rifle
+> low-poly 1920s character proxies, a seven-station training exercise that
+> requires every troop and officer mechanic, with non-lethal opposing fire, section selection, a bottom orders panel, rifle
 > combat with cover, ammunition and morale, pause/speed, PT-BR/EN localization
 > and the historical source policy. Campaign and save/load are not implemented yet.
 
@@ -50,7 +50,7 @@ pnpm models     # export character source models to GLB
   terrain heightfield, character rig, movement paths and shot tracers.
 - `packages/content`: figure registry, source keys, PT-BR/EN catalogs, validation.
 - `apps/game`: Vite + React shell, bottom orders panel, formation selector,
-  section cards, codex, the three-phase bootcamp objective panel, opt-in order
+  section cards, codex, the seven-station bootcamp panel, opt-in order
   previews, a hideable HUD, F1 sandbox lab (whole troop insertion, cover,
   placement previews with Z/X rotation, both-sides control, reinforcements and
   casualty drills), language switch, pause/speed/step controls, selection and

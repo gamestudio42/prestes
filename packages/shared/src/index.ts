@@ -31,8 +31,6 @@
 } from './protocol';
 export { ClientMirror, type InterpolatedFrame } from './mirror';
 
-
-
 export {
   BOOTCAMP_COVERS,
   COVER_POINTS,
@@ -53,10 +51,7 @@ export {
   isPointInCover,
 } from './world';
 
-
 export { findPath } from './pathfinding';
-
-
 
 export {
   DEFAULT_WEAPON_ID,
@@ -70,12 +65,6 @@ export {
   type WeaponKind,
   type WeaponProfile,
 } from './weapons';
-
-
-
-
-
-
 
 export {
   CRITICAL_MORALE,
@@ -100,11 +89,6 @@ export {
   type TerrainSurface,
 } from './terrain';
 
-
-
-
-
-
 export {
   DEFEND_REGION_RADIUS,
   PREVIEW_CONE_DEGREES,
@@ -122,12 +106,9 @@ export {
   type PreviewRequest,
 } from './preview';
 
-
 export { coverDestinationForSlot } from './preview';
 
-
 export { formationSlots } from './preview';
-
 
 export {
   VISION_CONE_DEGREES,
@@ -137,16 +118,6 @@ export {
   type VisionPoint,
 } from './vision';
 
-
-
-
-
-
-
-
-
-
-export { nearestTargetGroups, type TargetableUnit } from './targeting';
+export { nearestTargetGroups, spreadTargetGroups, type TargetableUnit } from './targeting';
 
 export { normaliseRotation, rotateOffset, troopFormationOffsets } from './placement';
-

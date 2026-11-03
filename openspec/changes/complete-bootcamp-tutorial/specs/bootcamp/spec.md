@@ -95,6 +95,46 @@ magazine and reserve restored to the weapon profile values.
 
 ## MODIFIED Requirements
 
+### Requirement: Troop selection and enemy troop targeting
+
+Clicking any friendly soldier SHALL select the whole friendly troop. Clicking any
+enemy soldier SHALL select the whole enemy troop, including a click on a fallen
+member while the troop still has living members. No select-all command, button
+or keyboard shortcut SHALL exist. Attack and suppress orders SHALL spread the
+attackers over the living members of the selected enemy troop: each attacker
+takes the nearest member that has fewer than ceil(attackers / members) shooters.
+Flank and pursue orders SHALL assign each attacker the nearest living member. All
+of them SHALL retarget within that troop when a member falls.
+
+#### Scenario: Friendly troop click
+
+- **WHEN** the player clicks any of the 11 friendly soldiers
+- **THEN** all 11 are selected and the HUD shows the troop
+
+#### Scenario: Enemy troop click
+
+- **WHEN** the player clicks any soldier of an enemy troop, alive or fallen
+- **THEN** the whole enemy troop is highlighted as the target while it has living
+  members
+
+#### Scenario: Select all absent
+
+- **WHEN** the player presses Ctrl/Cmd+A or searches the HUD
+- **THEN** no select-all action occurs and no select-all control exists
+
+#### Scenario: Fire spread across the troop
+
+- **WHEN** 11 soldiers attack or suppress an enemy troop of 6
+- **THEN** every living member of the troop is engaged and no member has more
+  than two attackers
+
+#### Scenario: Nearest target
+
+- **WHEN** a flank or pursue order targets an enemy troop
+- **THEN** each attacker engages its nearest living member and retargets inside
+  the same troop if that member dies
+
+
 ### Requirement: Bootcamp curriculum
 
 The bootcamp SHALL teach and exercise every current player-facing HUD action

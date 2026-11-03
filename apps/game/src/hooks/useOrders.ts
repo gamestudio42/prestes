@@ -9,6 +9,7 @@ import {
 import { ORDER_CATALOG, translate, type Locale, type TrainingAction } from '@prestes/content';
 import {
   nearestTargetGroups,
+  spreadTargetGroups,
   planOrderPreview,
   type FormationKind,
   type Frame,
@@ -369,7 +370,12 @@ export function useOrders({
     const attackers = selectedIds
       .map((unitId) => frame?.units.find((entry) => entry.id === unitId))
       .filter((unit): unit is NonNullable<typeof unit> => unit !== undefined);
-    const groups = nearestTargetGroups(attackers, members);
+    // Fire orders spread over the whole troop; flank and pursue chase the
+    // nearest member.
+    const groups =
+      kind === 'attack' || kind === 'suppress'
+        ? spreadTargetGroups(attackers, members)
+        : nearestTargetGroups(attackers, members);
     for (const [targetId, unitIds] of groups) {
       if (kind === 'pursue') {
         clientRef.current?.sendCommand({
@@ -398,11 +404,41 @@ export function useOrders({
       { x: 0, y: 0 },
     );
   };
+  // A click on a fallen enemy still means "that troop": use its nearest living
+  // member, so the order is not silently lost on a body.
+  const livingTroopMember = (unitId: number) => {
+    const clicked = frame?.units.find((entry) => entry.id === unitId);
+    if (!clicked) {
+      return undefined;
+    }
+    const selectedFaction = selectedUnits[0]?.faction ?? 'column';
+    if ((clicked.alive && !clicked.incapacitated) || clicked.faction === selectedFaction) {
+      return clicked.alive ? clicked : undefined;
+    }
+    return (frame?.units ?? [])
+      .filter(
+        (unit) =>
+          unit.faction === clicked.faction &&
+          unit.squadId === clicked.squadId &&
+          unit.alive &&
+          !unit.incapacitated &&
+          !unit.routed,
+      )
+      .sort(
+        (left, right) =>
+          (left.x - clicked.x) ** 2 + (left.y - clicked.y) ** 2 - ((right.x - clicked.x) ** 2 + (right.y - clicked.y) ** 2),
+      )[0];
+  };
+
   const handleAttackUnit = (unitId: number): void => {
-    const target = frame?.units.find((entry) => entry.id === unitId);
+    const target =
+      pendingTactical === 'rescue'
+        ? frame?.units.find((entry) => entry.id === unitId)
+        : livingTroopMember(unitId);
     if (!target || !target.alive) {
       return;
     }
+    unitId = target.id;
     if (!pendingOrder && !pendingTactical && !aimPending) {
       handleSelectUnit(unitId);
       return;
@@ -564,10 +600,11 @@ export function useOrders({
     setPendingOrder(null);
     setPendingTactical(null);
     setAimPending(false);
-    const target = frame?.units.find((entry) => entry.id === unitId);
+    const target = livingTroopMember(unitId);
     if (!target || !target.alive) {
       return;
     }
+    unitId = target.id;
     const selectedFaction = selectedUnits[0]?.faction ?? 'column';
     if (target.faction === selectedFaction) {
       handleSelectUnit(unitId);
@@ -677,6 +714,7 @@ export function useOrders({
 
   const handleHold = (): void => {
     if (selectedIds.length > 0) {
+      recordTrainingAction('hold');
       clientRef.current?.sendCommand({ type: 'hold', unitIds: selectedIds });
       triggerOrderCallout('hold', selectedIds);
       setPendingOrder(null);

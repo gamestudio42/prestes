@@ -36,5 +36,5 @@
 
 ## 6. Documentation and final check
 
-- [ ] 6.1 Update `README.md`, `docs/status.md` (bootcamp, mechanics review results, open items) and `docs/architecture.md` (objective evaluators, instructor follow), and record the player-controlled command troop (commander + 2) for campaign and skirmish as future scope
-- [ ] 6.2 Run `openspec validate complete-bootcamp-tutorial --type change --strict` and the full `pnpm verify`, and verify both pass
+- [x] 6.1 Update `README.md`, `docs/status.md` (bootcamp, mechanics review results, open items) and `docs/architecture.md` (objective evaluators, instructor follow), and record the player-controlled command troop (commander + 2) for campaign and skirmish as future scope
+- [x] 6.2 Run `openspec validate complete-bootcamp-tutorial --type change --strict` and the full `pnpm verify`, and verify both pass

@@ -97,6 +97,11 @@ export interface ExerciseObjective {
   ticks?: number;
   /** Order the soldiers must be carrying (order objectives). */
   order?: string;
+  /**
+   * HUD action that must also have been used, for orders the simulation can set
+   * by itself (a finished withdrawal leaves the soldiers holding).
+   */
+  action?: TrainingAction;
   formation?: string;
   stance?: 'standing' | 'crouched' | 'prone';
   posture?: string;
@@ -232,7 +237,7 @@ export const BOOTCAMP_EXERCISE: BootcampExercise = {
         // A line of 11 at 2.8 m spacing is ~28 m wide: 12 m catches its centre.
         objective('maneuver', 'bound', 'bounding-advance', { point: BOUND_LINE, radius: 12, minUnits: 4 }),
         objective('maneuver', 'withdraw', 'withdraw-out', { point: BOUND_LINE, radius: 8, minUnits: 8 }),
-        objective('maneuver', 'hold', 'order', { order: 'hold', minUnits: 8 }),
+        objective('maneuver', 'hold', 'order', { order: 'hold', minUnits: 8, action: 'hold' }),
       ],
       markers: [
         { id: 'maneuver-target', kind: 'approach', point: LINE_POINT, radius: 9 },

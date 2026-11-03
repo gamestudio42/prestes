@@ -179,7 +179,8 @@ async function playManeuver(page: Page): Promise<void> {
   await untilObjective(page, 'maneuver-bound', 2000);
   await command(page, { type: 'withdraw', unitIds: await section(page) });
   await untilObjective(page, 'maneuver-withdraw', 1000);
-  await command(page, { type: 'hold', unitIds: await section(page) });
+  // The Hold button itself: a finished withdrawal also leaves soldiers holding.
+  await page.getByTestId('order-tab-movement').locator('[data-testid="order-hold"]').click();
   await untilStation(page, 'defense', 300);
 }
 

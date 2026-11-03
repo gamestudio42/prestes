@@ -44,6 +44,20 @@ whole order of play. The stylesheet files are contiguous slices of the former
 `styles.css`; move a rule between them only together with the visual baselines in
 `tests/e2e/visual.spec.ts-snapshots/`.
 
+### Bootcamp stations
+
+Stations are data in `packages/content/src/bootcamp-exercise.ts`; each objective
+has a kind with one pure evaluator in `apps/game/src/training/objectives.ts`
+taking the frame, per-objective memory, the tick delta and the HUD input
+(recorded actions, selection size). The director in `training/exercise.ts` runs
+the objectives in order, sends objective start actions (training troop advance,
+release fire, withdraw, instructor out) as commands, applies line and cohesion
+failures only while their objective is active, and skips the frame that still
+shows the previous station. In the simulation, training stations can pin the
+instructor or let it follow the section (`updateInstructorFollow`), start
+casualty drills, and training enemies are only engaged on an explicit order
+(`mayEngage`).
+
 ## Determinism
 
 - Fixed tick: 100 ms (10 Hz).

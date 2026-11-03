@@ -111,19 +111,29 @@
 - F1 opens a sandbox lab with a unit inspector, one-tick/60-tick step, reset,
   dynamic sandbag/stone/trench cover, target dummies, both-sides control,
   per-side reinforcements and casualty drills.
-- The bootcamp is now one playable three-phase exercise. Phase 1 forms the
-  section at the assembly zone, phase 2 suppresses and takes the training
-  trench, and phase 3 holds it for 60 seconds while protecting the instructor.
+- The bootcamp is seven stations, each with ordered, mandatory objectives checked
+  from simulation state (never from a button press alone): 1 formation (select,
+  box-select, camera, wedge, prone/crouch/stand, reach the zone), 2 fire (attack,
+  aggressive posture, suppress, hold fire, face), 3 maneuver (flank, bounding
+  advance, withdraw, hold), 4 defense (defensive posture, defend in cover,
+  ambush, hold under fire), 5 recon (recon report, pursue, disperse, reserve,
+  advance, regroup), 6 wounded and officer (full rescue, protect the instructor,
+  keep cohesion after the instructor falls), 7 final (suppress, take and hold the
+  line). A content test fails if any order, stance, posture, rescue or the officer
+  aura and loss is not required by an objective. The instructor is a
+  non-controllable NPC who follows the section and speaks each order in a
+  callout; ammunition refills at every station.
 - Training enemies use non-lethal fire: they suppress, force cover and pressure
   morale, but cannot wound, incapacitate, rout or kill the player troop. Training
   suppression is scaled down so incoming drills do not pin the whole section before
   it can take the trench. The player can still kill the training enemy, and its
   larger training pool keeps it alive long enough to be suppressed and secured.
-- The exercise panel shows phase, objectives, live progress, instructor text,
-  failure, retry and debrief. The old 27-step checklist and ten-mission campaign
+- The exercise panel shows the station, the ordered objectives with the active
+  one highlighted, live progress, instructor text, failure, retry and debrief. The old 27-step checklist and ten-mission campaign
   content are removed from the player-facing path and from the build.
-- Exercise progress persists in `prestes.bootcamp.exercise.v1`; resume restarts
-  the saved phase, and legacy 27-step progress starts the new exercise at phase 1.
+- Exercise progress persists in `prestes.bootcamp.stations.v2`; the start screen
+  offers Continue (station N/7) and Restart. Three-phase progress migrates
+  (assembly to 1, assault to 2, hold to 7); legacy 27-step progress starts at 1.
 - Move and every ground order preview cover destinations even without a visible
   threat; cover points are reserved per soldier and the simulation separates
   living soldiers by at least 1.2 m, so previews and committed positions do not
@@ -169,6 +179,28 @@
 - Combat numbers are a first balance pass; campaigns and save/load are not
   implemented.
 - A single procedural gunshot is in place; the rest of the sound mix and final props are deferred.
+
+## Mechanics review (2026-11-03)
+
+A headless audit of every order and a play-through of the stations found and fixed:
+attack, suppress and ambush stalling behind sight-blocking cover; moves onto cover
+doing nothing; officer loss without a morale and cohesion effect; alternating
+movement turning defend and ambush into plain moves; withdraw doing nothing once
+no enemy was left; Face snapping back to the old fire target; training enemies
+being acquired automatically; clicks on a fallen enemy losing the order; attack
+and suppress all aiming at the nearest member (fire now spreads over the troop);
+four catalogue orders without a button. `packages/simulation/test/mechanics.test.ts`
+keeps one scenario per mechanic.
+
+Manual Chrome play-through (PT-BR, interface only): stations 1 to 3 completed,
+about 2.5, 1.5 and 1.5 minutes at 2x. Stations 4 to 7 are covered end to end by
+`tests/e2e/training-campaign.spec.ts` (each station, the full run with a reload
+and Continue, and the cohesion failure with retry) but were not yet played by
+hand, and the EN pass is still to do.
+
+Future scope recorded from the review: in campaign and skirmish the player
+commands a command troop (commander plus two); the bootcamp keeps the instructor
+as an NPC.
 
 ## Deferred
 

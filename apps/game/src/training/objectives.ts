@@ -145,7 +145,10 @@ const evaluators: Record<ExerciseObjective['kind'], Evaluator> = {
   reach(objective, { frame }) {
     return count(countInside(playerUnits(frame), objective.point, objective.radius ?? 0), objective.minUnits ?? 1);
   },
-  order(objective, { frame }) {
+  order(objective, { frame, input }) {
+    if (objective.action && !input.actions.has(objective.action)) {
+      return count(0, objective.minUnits ?? 1);
+    }
     return count(withOrder(playerUnits(frame), objective.order ?? '').length, objective.minUnits ?? 1);
   },
   'target-hit'(objective, { frame, memory }) {

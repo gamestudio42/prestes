@@ -58,6 +58,8 @@ describe('bootcamp exercise director', () => {
     expect(result.state.objectiveIndex).toBe(1);
     expect(result.objectives[0]?.done).toBe(true);
     expect(result.objectives[1]?.active).toBe(true);
+    const later = advanceExercise(result.state, frame(2, units));
+    expect(later.objectives[0]).toMatchObject({ done: true, current: 11, target: 11 });
   });
 
   it('sends the start command of an objective when it becomes active', () => {

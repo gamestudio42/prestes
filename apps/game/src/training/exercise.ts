@@ -102,16 +102,21 @@ export function phaseCommand(phase: ExercisePhase): Command {
 }
 
 export function objectivePlaceholders(phase: ExercisePhase, objectiveIndex = 0): RuntimeObjective[] {
-  return phase.objectives.map((objective, index) => ({
-    id: objective.id,
-    labelKey: objective.labelKey,
-    instructorKey: objective.instructorKey,
-    kind: objective.kind,
-    current: 0,
-    target: objectiveTarget(objective),
-    done: index < objectiveIndex,
-    active: index === objectiveIndex,
-  }));
+  return phase.objectives.map((objective, index) => {
+    const target = objectiveTarget(objective);
+    const done = index < objectiveIndex;
+    return {
+      id: objective.id,
+      labelKey: objective.labelKey,
+      instructorKey: objective.instructorKey,
+      kind: objective.kind,
+      // A completed objective shows its target as reached, not 0/target.
+      current: done ? target : 0,
+      target,
+      done,
+      active: index === objectiveIndex,
+    };
+  });
 }
 
 export function markersForPhase(phase: ExercisePhase): readonly ExerciseMarker[] {

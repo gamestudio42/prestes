@@ -69,6 +69,12 @@ describe('objective evaluators', () => {
     expect(evaluate(goal, [section({ order: 'disperse' }, 6)]).done).toBe(true);
   });
 
+  it('order with an action needs the HUD action, not only the order state', () => {
+    const goal = objective('order', { order: 'hold', minUnits: 4, action: 'hold' });
+    expect(evaluate(goal, [section({ order: 'hold' }, 4)]).done).toBe(false);
+    expect(evaluate(goal, [section({ order: 'hold' }, 4)], actions('hold')).done).toBe(true);
+  });
+
   it('target-hit needs the training troop to lose health after it appeared', () => {
     const goal = objective('target-hit');
     const healthy = trainingEnemies(3);
