@@ -1,0 +1,52 @@
+import { resolveLocale, type Locale } from '@prestes/content';
+
+const LOCALE_STORAGE_KEY = 'prestes.locale';
+const AUDIO_STORAGE_KEY = 'prestes.audio.v1';
+
+export function loadAudioSettings(): { muted: boolean; volume: number } {
+  try {
+    const raw = window.localStorage.getItem(AUDIO_STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw) as { muted?: unknown; volume?: unknown };
+      return {
+        muted: parsed.muted === true,
+        volume: typeof parsed.volume === 'number' ? Math.max(0, Math.min(1, parsed.volume)) : 0.35,
+      };
+    }
+  } catch {
+    // Storage can be unavailable; audio still works for this session.
+  }
+  return { muted: false, volume: 0.35 };
+}
+
+export function saveAudioSettings(settings: { muted: boolean; volume: number }): void {
+  try {
+    window.localStorage.setItem(AUDIO_STORAGE_KEY, JSON.stringify(settings));
+  } catch {
+    // Storage can be unavailable; the session keeps the current settings.
+  }
+}
+
+export function loadLocale(): Locale {
+  try {
+    return resolveLocale(navigator.language, window.localStorage.getItem(LOCALE_STORAGE_KEY));
+  } catch {
+    return resolveLocale(navigator.language, null);
+  }
+}
+
+export function trainingStorage(): Storage | null {
+  try {
+    return window.localStorage;
+  } catch {
+    return null;
+  }
+}
+
+export function saveLocale(locale: Locale): void {
+  try {
+    window.localStorage.setItem(LOCALE_STORAGE_KEY, locale);
+  } catch {
+    // Storage can be unavailable; the session still keeps the selected locale.
+  }
+}

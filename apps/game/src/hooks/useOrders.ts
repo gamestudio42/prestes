@@ -1,0 +1,732 @@
+import {
+  useEffect,
+  useRef,
+  useState,
+  type Dispatch,
+  type MutableRefObject,
+  type SetStateAction,
+} from 'react';
+import { ORDER_CATALOG, translate, type Locale, type TrainingAction } from '@prestes/content';
+import {
+  nearestTargetGroups,
+  planOrderPreview,
+  type FormationKind,
+  type Frame,
+  type Posture,
+  type PreviewPlan,
+  type Stance,
+  type TacticalOrder,
+  type Vec2,
+} from '@prestes/shared';
+import type { OrderCallout, PlacementPreview } from '@prestes/view3d';
+import type { GameClient } from '../client/GameClient';
+import type { SelectionMode } from '../ui/GameCanvas';
+import type { OrderMode } from '../ui/Hud';
+import type { SandboxTool } from '../ui/SandboxPanel';
+
+interface OrderOptions {
+  frame: Frame | null;
+  locale: Locale;
+  clientRef: MutableRefObject<GameClient | null>;
+  speed: 0 | 1 | 2 | 4;
+  hudHidden: boolean;
+  boundingEnabled: boolean;
+  setBoundingEnabled: Dispatch<SetStateAction<boolean>>;
+  controlBothSides: boolean;
+  setControlBothSides: Dispatch<SetStateAction<boolean>>;
+  sandboxTool: SandboxTool | null;
+  placementPreview: PlacementPreview | null;
+  placementRotation: number;
+  setPlacementPoint: Dispatch<SetStateAction<Vec2 | null>>;
+  recordTrainingAction: (action: TrainingAction) => void;
+}
+
+/** Selection, pending orders, previews, officer callouts and every order handler. */
+export function useOrders({
+  frame,
+  locale,
+  clientRef,
+  speed,
+  hudHidden,
+  boundingEnabled,
+  setBoundingEnabled,
+  controlBothSides,
+  setControlBothSides,
+  sandboxTool,
+  placementPreview,
+  placementRotation,
+  setPlacementPoint,
+  recordTrainingAction,
+}: OrderOptions) {
+  const [selectedSquadId, setSelectedSquadId] = useState(1);
+  const [selectedUnitIds, setSelectedUnitIds] = useState<number[]>([]);
+  const [pendingOrder, setPendingOrder] = useState<OrderMode | null>(null);
+  const [pendingTactical, setPendingTactical] = useState<TacticalOrder | null>(null);
+  const [aimPending, setAimPending] = useState(false);
+  const [lineDrag, setLineDrag] = useState<{ from: Vec2; to: Vec2 } | null>(null);
+  const lastBoundPhase = useRef<string | null>(null);
+  const [orderCallout, setOrderCallout] = useState<OrderCallout | null>(null);
+  const [previewEnabled, setPreviewEnabled] = useState(false);
+  const [hoverPoint, setHoverPoint] = useState<Vec2 | null>(null);
+  const [hoverUnitId, setHoverUnitId] = useState<number | null>(null);
+  const [targetUnitIds, setTargetUnitIds] = useState<number[]>([]);
+
+  const selectedUnits =
+    frame?.units.filter(
+      (unit) =>
+        selectedUnitIds.includes(unit.id) &&
+        unit.alive &&
+        !unit.routed &&
+        !unit.dummy,
+    ) ?? [];
+  const selectedIds = selectedUnits.map((unit) => unit.id);
+  const holdFire = selectedUnits.length > 0 && selectedUnits.every((unit) => unit.holdFire === true);
+  const posture = selectedUnits[0]?.posture ?? 'balanced';
+  const previewOrder = pendingTactical ?? pendingOrder ?? (aimPending ? 'aim' : null);
+  const needsTarget =
+    pendingOrder === 'attack' ||
+    pendingOrder === 'suppress' ||
+    pendingOrder === 'flank' ||
+    pendingTactical === 'pursue' ||
+    pendingTactical === 'rescue';
+  const previewPlan: PreviewPlan | null =
+    previewEnabled && !hudHidden && frame && previewOrder && (!needsTarget || hoverUnitId !== null)
+      ? planOrderPreview({
+          frame,
+          unitIds: selectedIds,
+          order: previewOrder,
+          formation: selectedUnits[0]?.formation,
+          to: lineDrag
+            ? {
+                x: (lineDrag.from.x + lineDrag.to.x) / 2,
+                y: (lineDrag.from.y + lineDrag.to.y) / 2,
+              }
+            : hoverPoint ?? undefined,
+          targetId: hoverUnitId ?? undefined,
+          line: pendingOrder === 'move' ? lineDrag ?? undefined : undefined,
+          fast: previewOrder === 'move',
+        })
+      : null;
+
+  useEffect(() => {
+    if (!frame) {
+      return;
+    }
+    const boundingUnit = frame.units.find(
+      (unit) => unit.faction === 'column' && unit.boundPhase !== null && unit.boundTeam !== null,
+    );
+    if (!boundingUnit) {
+      lastBoundPhase.current = null;
+      return;
+    }
+    const key = `${boundingUnit.boundTeam}:${boundingUnit.boundPhase}`;
+    if (lastBoundPhase.current === key) {
+      return;
+    }
+    lastBoundPhase.current = key;
+    const text = translate(
+      locale,
+      boundingUnit.boundPhase === 'advance' ? 'hud.boundAdvance' : 'hud.boundCover',
+    );
+    const officer = frame.units.find(
+      (unit) => unit.faction === 'column' && unit.kind === 'officer' && unit.alive,
+    );
+    setOrderCallout({
+      officerId: officer?.id ?? null,
+      troopIds: frame.units
+        .filter((unit) => unit.faction === 'column' && unit.boundTeam !== null)
+        .map((unit) => unit.id),
+      officerText: text,
+      troopText: text,
+    });
+  }, [frame, locale]);
+
+  const triggerOrderCallout = (orderId: string, unitIds: number[]): void => {
+    if (unitIds.length === 0) {
+      return;
+    }
+    const faction = selectedUnits[0]?.faction ?? 'column';
+    const officer = frame?.units.find(
+      (unit) => unit.kind === 'officer' && unit.faction === faction && unit.alive,
+    );
+    const labelKey = ORDER_CATALOG.find((entry) => entry.id === orderId)?.labelKey;
+    const orderName = labelKey
+      ? translate(locale, labelKey)
+      : translate(locale, 'hud.orderMove');
+    setOrderCallout({
+      officerId: officer?.id ?? null,
+      troopIds: unitIds,
+      officerText: translate(locale, 'hud.calloutOfficer', { order: orderName }),
+      troopText: translate(locale, 'hud.calloutTroop', { order: orderName }),
+    });
+  };
+  const triggerPostureCallout = (next: Posture): void => {
+    if (selectedIds.length === 0) {
+      return;
+    }
+    const faction = selectedUnits[0]?.faction ?? 'column';
+    const officer = frame?.units.find(
+      (unit) => unit.kind === 'officer' && unit.faction === faction && unit.alive,
+    );
+    const key =
+      next === 'aggressive'
+        ? 'hud.postureAggressive'
+        : next === 'defensive'
+          ? 'hud.postureDefensive'
+          : next === 'protect-officer'
+            ? 'hud.postureProtectOfficer'
+            : 'hud.postureBalanced';
+    const postureName = translate(locale, key);
+    setOrderCallout({
+      officerId: officer?.id ?? null,
+      troopIds: selectedIds,
+      officerText: translate(locale, 'hud.calloutPosture', { posture: postureName }),
+      troopText: translate(locale, 'hud.calloutTroop', {
+        order: `${translate(locale, 'hud.posture')}: ${postureName}`,
+      }),
+    });
+  };
+
+  const triggerHoldFireCallout = (holding: boolean): void => {
+    if (selectedIds.length === 0) {
+      return;
+    }
+    const faction = selectedUnits[0]?.faction ?? 'column';
+    const officer = frame?.units.find(
+      (unit) => unit.kind === 'officer' && unit.faction === faction && unit.alive,
+    );
+    const text = translate(locale, holding ? 'hud.calloutHoldFire' : 'hud.calloutFire');
+    setOrderCallout({
+      officerId: officer?.id ?? null,
+      troopIds: selectedIds,
+      officerText: text,
+      troopText: translate(locale, 'hud.calloutTroop', { order: text }),
+    });
+  };
+
+  const handleTogglePreview = (): void => {
+    setPreviewEnabled((value) => !value);
+  };
+
+  const handleClearOrder = (): void => {
+    const hadPending = pendingOrder !== null || pendingTactical !== null || aimPending;
+    setPendingOrder(null);
+    setPendingTactical(null);
+    setAimPending(false);
+    setLineDrag(null);
+    if (!hadPending && selectedIds.length > 0) {
+      clientRef.current?.sendCommand({ type: 'hold', unitIds: selectedIds });
+      triggerOrderCallout('hold', selectedIds);
+    }
+  };
+
+  const handleAim = (): void => {
+    setPendingOrder(null);
+    setPendingTactical(null);
+    setPreviewEnabled(true);
+    setAimPending((value) => !value);
+  };
+
+  const handlePreviewGround = (point: Vec2 | null): void => {
+    setHoverPoint(point);
+    setPlacementPoint(sandboxTool ? point : null);
+    if (point) {
+      setHoverUnitId(null);
+    }
+  };
+
+  const handlePreviewUnit = (unitId: number | null): void => {
+    const unit = unitId === null ? null : frame?.units.find((entry) => entry.id === unitId);
+    setHoverUnitId(unit && unit.faction !== 'column' ? unitId : null);
+    setTargetUnitIds(
+      unit && unit.faction !== 'column'
+        ? (frame?.units ?? [])
+            .filter(
+              (member) =>
+                member.faction === unit.faction &&
+                member.squadId === unit.squadId &&
+                member.alive &&
+                !member.routed,
+            )
+            .map((member) => member.id)
+        : [],
+    );
+    if (unit) {
+      setHoverPoint(null);
+    }
+  };
+
+  const canSelect = (unit: { faction: string; squadId: number }): boolean =>
+    (unit.faction === 'column' && unit.squadId !== 99) ||
+    (controlBothSides && unit.faction === 'legalist');
+
+  const selectSquad = (squadId: number): void => {
+    if (!frame) {
+      return;
+    }
+    recordTrainingAction('select');
+    setSelectedUnitIds(
+      frame.units
+        .filter(
+          (unit) =>
+            unit.squadId === squadId &&
+            canSelect(unit) &&
+            unit.alive &&
+            !unit.routed &&
+            !unit.dummy,
+        )
+        .map((unit) => unit.id),
+    );
+  };
+
+  const handleToggleControlBothSides = (): void => {
+    const next = !controlBothSides;
+    setControlBothSides(next);
+    if (!next && selectedSquadId !== 1) {
+      setSelectedSquadId(1);
+      selectSquad(1);
+    }
+  };
+
+  const handleOrder = (mode: OrderMode): void => {
+    setPreviewEnabled(true);
+    setPendingOrder(mode);
+    setPendingTactical(null);
+    setAimPending(false);
+  };
+
+  const handleTacticalOrder = (order: TacticalOrder): void => {
+    setPreviewEnabled(true);
+    if (order === 'regroup' || order === 'protect-officer') {
+      if (selectedIds.length > 0) {
+        clientRef.current?.sendCommand({ type: 'order', order, unitIds: selectedIds });
+        triggerOrderCallout(order, selectedIds);
+      }
+      setPendingTactical(null);
+      setPendingOrder(null);
+      setAimPending(false);
+      return;
+    }
+    setPendingTactical(order);
+    setPendingOrder(null);
+    setAimPending(false);
+  };
+
+  const handleSelectSquad = (squadId: number): void => {
+    recordTrainingAction('select');
+    setSelectedSquadId(squadId);
+    selectSquad(squadId);
+  };
+
+  const handleSelectUnits = (unitIds: number[], mode: SelectionMode): void => {
+    if (!frame) {
+      return;
+    }
+    const selected = frame.units.filter(
+      (unit) =>
+        unitIds.includes(unit.id) &&
+        canSelect(unit) &&
+        unit.alive &&
+        !unit.routed &&
+        !unit.dummy &&
+        (mode === 'all' || unit.kind !== 'officer'),
+    );
+    const squadId = selected[0]?.squadId;
+    if (squadId === undefined) {
+      return;
+    }
+    recordTrainingAction('box-select');
+    setSelectedSquadId(squadId);
+    setSelectedUnitIds(
+      selected.filter((unit) => unit.squadId === squadId).map((unit) => unit.id),
+    );
+  };
+
+  const handleSelectUnit = (unitId: number): void => {
+    const unit = frame?.units.find((entry) => entry.id === unitId);
+    if (unit?.alive && canSelect(unit)) {
+      recordTrainingAction('select');
+      setSelectedSquadId(unit.squadId);
+      selectSquad(unit.squadId);
+    }
+  };
+
+  const sendTroopTargetOrder = (
+    kind: 'attack' | 'suppress' | 'flank' | 'pursue',
+    target: { id: number; faction: string; squadId: number; x: number; y: number },
+  ): void => {
+    const members = (frame?.units ?? []).filter(
+      (unit) =>
+        unit.faction === target.faction &&
+        unit.squadId === target.squadId &&
+        unit.alive &&
+        !unit.routed &&
+        !unit.incapacitated,
+    );
+    if (members.length === 0 || selectedIds.length === 0) {
+      return;
+    }
+    const attackers = selectedIds
+      .map((unitId) => frame?.units.find((entry) => entry.id === unitId))
+      .filter((unit): unit is NonNullable<typeof unit> => unit !== undefined);
+    const groups = nearestTargetGroups(attackers, members);
+    for (const [targetId, unitIds] of groups) {
+      if (kind === 'pursue') {
+        clientRef.current?.sendCommand({
+          type: 'order',
+          order: 'pursue',
+          unitIds,
+          targetId,
+        });
+      } else {
+        clientRef.current?.sendCommand({ type: kind, unitIds, targetId });
+      }
+    }
+    recordTrainingAction(kind);
+    triggerOrderCallout(kind, selectedIds);
+  };
+
+  const targetTroopCenter = (target: { faction: string; squadId: number; x: number; y: number }): Vec2 => {
+    const members = (frame?.units ?? []).filter(
+      (unit) => unit.faction === target.faction && unit.squadId === target.squadId,
+    );
+    if (members.length === 0) {
+      return { x: target.x, y: target.y };
+    }
+    return members.reduce(
+      (sum, unit) => ({ x: sum.x + unit.x / members.length, y: sum.y + unit.y / members.length }),
+      { x: 0, y: 0 },
+    );
+  };
+  const handleAttackUnit = (unitId: number): void => {
+    const target = frame?.units.find((entry) => entry.id === unitId);
+    if (!target || !target.alive) {
+      return;
+    }
+    if (!pendingOrder && !pendingTactical && !aimPending) {
+      handleSelectUnit(unitId);
+      return;
+    }
+    if (
+      pendingTactical &&
+      ['advance', 'defend', 'ambush', 'disperse', 'recon', 'reserve'].includes(pendingTactical)
+    ) {
+      return;
+    }
+    if (aimPending) {
+      const center = targetTroopCenter(target);
+      if (selectedIds.length > 0) {
+        clientRef.current?.sendCommand({
+          type: 'face',
+          unitIds: selectedIds,
+          to: center,
+        });
+        recordTrainingAction('face');
+      }
+      triggerOrderCallout('aim', selectedIds);
+      setAimPending(false);
+      return;
+    }
+    if (pendingTactical === 'pursue') {
+      sendTroopTargetOrder('pursue', target);
+      setPendingTactical(null);
+      return;
+    }
+    if (pendingTactical === 'rescue') {
+      if (selectedIds.length > 0) {
+        clientRef.current?.sendCommand({
+          type: 'order',
+          order: 'rescue',
+          unitIds: selectedIds,
+          targetId: target.id,
+        });
+        recordTrainingAction('rescue');
+        triggerOrderCallout('rescue', selectedIds);
+        setPendingTactical(null);
+      }
+      return;
+    }
+    const selectedFaction = selectedUnits[0]?.faction ?? 'column';
+    if (target.faction === selectedFaction) {
+      setSelectedSquadId(target.squadId);
+      selectSquad(target.squadId);
+      return;
+    }
+    if (selectedIds.length === 0) {
+      return;
+    }
+    const type =
+      pendingOrder === 'suppress' ? 'suppress' : pendingOrder === 'flank' ? 'flank' : 'attack';
+    sendTroopTargetOrder(type, target);
+    setPendingOrder(null);
+  };
+
+  const handlePrimaryGround = (point: Vec2): void => {
+    if (aimPending) {
+      if (selectedIds.length > 0) {
+        clientRef.current?.sendCommand({ type: 'face', unitIds: selectedIds, to: point });
+      }
+      recordTrainingAction('face');
+      triggerOrderCallout('aim', selectedIds);
+      setAimPending(false);
+      return;
+    }
+    if (
+      pendingTactical &&
+      ['advance', 'defend', 'ambush', 'disperse', 'recon', 'reserve'].includes(pendingTactical)
+    ) {
+      if (selectedIds.length > 0) {
+        clientRef.current?.sendCommand({
+          type: 'order',
+          order: pendingTactical,
+          unitIds: selectedIds,
+          to: point,
+        });
+      }
+      recordTrainingAction(pendingTactical as TrainingAction);
+      triggerOrderCallout(pendingTactical, selectedIds);
+      setPendingTactical(null);
+      return;
+    }
+    if (sandboxTool) {
+      if (!placementPreview?.valid) {
+        return;
+      }
+      const command =
+        sandboxTool === 'enemy-troop'
+          ? { type: 'spawn_troop' as const, to: point, faction: 'legalist' as const, count: 11, rotation: placementRotation }
+          : sandboxTool === 'command-troop'
+            ? { type: 'spawn_troop' as const, to: point, faction: 'column' as const, count: 3, rotation: placementRotation }
+            : sandboxTool === 'dummy'
+              ? { type: 'spawn_dummy' as const, to: point, rotation: placementRotation }
+              : { type: 'spawn_cover' as const, kind: sandboxTool, to: point, rotation: placementRotation };
+      clientRef.current?.sendCommand(command);
+      if (speed === 0) {
+        clientRef.current?.step(1);
+      }
+      return;
+    }
+    if (pendingOrder === 'move' && selectedIds.length > 0) {
+      recordTrainingAction('move');
+      clientRef.current?.sendCommand({ type: 'move', unitIds: selectedIds, to: point });
+      triggerOrderCallout('move', selectedIds);
+      setPendingOrder(null);
+    }
+  };
+
+  const handleQuickGround = (point: Vec2): void => {
+    setPendingOrder(null);
+    setPendingTactical(null);
+    setAimPending(false);
+    setLineDrag(null);
+    if (selectedIds.length === 0) {
+      return;
+    }
+    recordTrainingAction('move');
+    clientRef.current?.sendCommand({ type: 'move', unitIds: selectedIds, to: point });
+    triggerOrderCallout('move', selectedIds);
+  };
+
+  const handlePreviewLine = (line: { from: Vec2; to: Vec2 } | null): void => {
+    setLineDrag(line);
+    if (line) {
+      setPreviewEnabled(true);
+      setHoverPoint(null);
+      setHoverUnitId(null);
+    }
+  };
+
+  const handlePrimaryLine = (from: Vec2, to: Vec2): void => {
+    if (selectedIds.length === 0) {
+      return;
+    }
+    setPreviewEnabled(true);
+    clientRef.current?.sendCommand({ type: 'move_line', unitIds: selectedIds, from, to });
+    triggerOrderCallout('move', selectedIds);
+    setPendingOrder(null);
+    setLineDrag(null);
+  };
+
+  const handleQuickLine = (from: Vec2, to: Vec2): void => {
+    setPendingOrder(null);
+    setPendingTactical(null);
+    setAimPending(false);
+    setLineDrag(null);
+    if (selectedIds.length === 0) {
+      return;
+    }
+    recordTrainingAction('move');
+    clientRef.current?.sendCommand({ type: 'move_line', unitIds: selectedIds, from, to });
+    triggerOrderCallout('move', selectedIds);
+  };
+
+  const handleQuickUnit = (unitId: number): void => {
+    setPendingOrder(null);
+    setPendingTactical(null);
+    setAimPending(false);
+    const target = frame?.units.find((entry) => entry.id === unitId);
+    if (!target || !target.alive) {
+      return;
+    }
+    const selectedFaction = selectedUnits[0]?.faction ?? 'column';
+    if (target.faction === selectedFaction) {
+      handleSelectUnit(unitId);
+      return;
+    }
+    sendTroopTargetOrder('attack', target);
+  };
+
+  const handleActivateOrder = (order: string, _activation: string): void => {
+    if (selectedIds.length === 0) {
+      return;
+    }
+    if (order === 'withdraw') {
+      handleWithdraw();
+      return;
+    }
+    if (order === 'hold') {
+      handleHold();
+      return;
+    }
+    if (order === 'aim') {
+      handleAim();
+      return;
+    }
+    if (order === 'regroup') {
+      handleTacticalOrder('regroup');
+      return;
+    }
+    if (
+      order === 'attack' ||
+      order === 'suppress' ||
+      order === 'flank' ||
+      order === 'move'
+    ) {
+      handleOrder(order);
+      return;
+    }
+    if (
+      order === 'pursue' ||
+      order === 'rescue' ||
+      order === 'advance' ||
+      order === 'defend' ||
+      order === 'ambush' ||
+      order === 'disperse' ||
+      order === 'recon' ||
+      order === 'reserve'
+    ) {
+      handleTacticalOrder(order);
+    }
+  };
+
+  const handlePosture = (next: Posture): void => {
+    if (next === 'protect-officer') {
+      recordTrainingAction('protect-officer');
+    }
+    if (selectedIds.length === 0) {
+      return;
+    }
+    clientRef.current?.sendCommand({ type: 'posture', unitIds: selectedIds, posture: next });
+    triggerPostureCallout(next);
+  };
+
+  const handleHoldFire = (): void => {
+    if (selectedIds.length === 0) {
+      return;
+    }
+    clientRef.current?.sendCommand({
+      type: 'hold_fire',
+      unitIds: selectedIds,
+      hold: !holdFire,
+    });
+    recordTrainingAction('hold-fire');
+    triggerHoldFireCallout(!holdFire);
+  };
+
+  const handleToggleBounding = (): void => {
+    recordTrainingAction('bounding');
+    const next = !boundingEnabled;
+    setBoundingEnabled(next);
+    clientRef.current?.setBounding(next);
+  };
+  const handleFormation = (formation: FormationKind): void => {
+    if (selectedIds.length > 0) {
+      clientRef.current?.sendCommand({ type: 'formation', unitIds: selectedIds, formation });
+    }
+  };
+
+  const handleStance = (stance: Stance): void => {
+    if (selectedIds.length > 0) {
+      recordTrainingAction(`stance-${stance}` as TrainingAction);
+      clientRef.current?.sendCommand({ type: 'stance', unitIds: selectedIds, stance });
+      setPendingOrder(null);
+      setPendingTactical(null);
+      setAimPending(false);
+    }
+  };
+
+  const handleWithdraw = (): void => {
+    if (selectedIds.length > 0) {
+      clientRef.current?.sendCommand({ type: 'withdraw', unitIds: selectedIds });
+      triggerOrderCallout('withdraw', selectedIds);
+      setPendingOrder(null);
+      setPendingTactical(null);
+      setAimPending(false);
+    }
+  };
+
+  const handleHold = (): void => {
+    if (selectedIds.length > 0) {
+      clientRef.current?.sendCommand({ type: 'hold', unitIds: selectedIds });
+      triggerOrderCallout('hold', selectedIds);
+      setPendingOrder(null);
+      setPendingTactical(null);
+      setAimPending(false);
+    }
+  };
+
+  return {
+    selectedSquadId,
+    setSelectedSquadId,
+    selectedUnitIds,
+    setSelectedUnitIds,
+    pendingOrder,
+    setPendingOrder,
+    pendingTactical,
+    setPendingTactical,
+    aimPending,
+    setAimPending,
+    orderCallout,
+    previewEnabled,
+    setPreviewEnabled,
+    hoverUnitId,
+    targetUnitIds,
+    selectedUnits,
+    selectedIds,
+    holdFire,
+    posture,
+    needsTarget,
+    previewPlan,
+    selectSquad,
+    handleTogglePreview,
+    handleClearOrder,
+    handlePreviewGround,
+    handlePreviewUnit,
+    handleToggleControlBothSides,
+    handleSelectSquad,
+    handleSelectUnits,
+    handleAttackUnit,
+    handlePrimaryGround,
+    handleQuickGround,
+    handlePreviewLine,
+    handlePrimaryLine,
+    handleQuickLine,
+    handleQuickUnit,
+    handleActivateOrder,
+    handlePosture,
+    handleHoldFire,
+    handleToggleBounding,
+    handleFormation,
+    handleStance,
+  };
+}

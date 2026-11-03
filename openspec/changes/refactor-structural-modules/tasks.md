@@ -25,10 +25,10 @@
 
 ## 4. App hooks
 
-- [ ] 4.1 Extract `useTestBridge` and `useKeyboardShortcuts` into `apps/game/src/hooks/`; verify `pnpm verify:quick` and the e2e smoke, selection and sandbox specs
-- [ ] 4.2 Extract `useGameClient` (client creation, frame, speed, start and reset); verify `pnpm verify:quick` and the e2e smoke and tactical specs
-- [ ] 4.3 Extract `useExerciseDirector` (exercise state, director effect, progress, retry and debrief); verify `pnpm verify:quick` and the training-campaign e2e spec
-- [ ] 4.4 Extract `useSandbox` and `useOrders`; verify `App.tsx` is about 500 lines or fewer and run the full `pnpm verify`
+- [x] 4.1 Extract `useTestBridge` and `useKeyboardShortcuts` into `apps/game/src/hooks/`; verify `pnpm verify:quick` and the e2e smoke, selection and sandbox specs
+- [x] 4.2 Extract `useGameClient` (client creation, frame, speed, start and reset); verify `pnpm verify:quick` and the e2e smoke and tactical specs
+- [x] 4.3 Extract `useExerciseDirector` (exercise state, director effect, progress, retry and debrief); verify `pnpm verify:quick` and the training-campaign e2e spec
+- [x] 4.4 Extract `useSandbox` and `useOrders`; verify `App.tsx` is about 500 lines or fewer and run the full `pnpm verify`
 
 ## 5. Styles
 
