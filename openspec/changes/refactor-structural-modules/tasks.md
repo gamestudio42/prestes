@@ -37,5 +37,5 @@
 
 ## 6. Documentation and final check
 
-- [ ] 6.1 Update `docs/architecture.md` with the simulation systems layout and the app hooks, HUD components and styles folders, and record line counts before and after in `docs/status.md`
-- [ ] 6.2 Run `openspec validate refactor-structural-modules --type change --strict` and the full `pnpm verify`, and verify both hashes are unchanged (`eee8ea8f`, `206ab124`)
+- [x] 6.1 Update `docs/architecture.md` with the simulation systems layout and the app hooks, HUD components and styles folders, and record line counts before and after in `docs/status.md`
+- [x] 6.2 Run `openspec validate refactor-structural-modules --type change --strict` and the full `pnpm verify`, and verify both hashes are unchanged (`eee8ea8f`, `206ab124`)

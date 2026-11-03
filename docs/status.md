@@ -179,6 +179,29 @@
 - Direct control, Electron, multiplayer, voice and additional languages.
 - Final low-poly art, audio and maps.
 
+## Structure
+
+The `refactor-structural-modules` change split the four largest files without
+changing behavior (both determinism hashes and all tests unchanged):
+
+| File | Before | After |
+| --- | ---: | ---: |
+| `packages/simulation/src/engine.ts` | 4,627 | 324 (+ 13 modules in `systems/`, largest 661) |
+| `apps/game/src/App.tsx` | 1,646 | 569 (+ 6 hooks, largest `useOrders` 733) |
+| `apps/game/src/ui/Hud.tsx` | 999 | 209 (+ 7 files in `ui/hud/`) |
+| `apps/game/src/styles.css` | 5,006 | removed: 2,143 dead lines, rest in 4 files under `styles/` (largest 861) |
+
+Known follow-ups found during the refactor, deliberately left unchanged:
+
+- The placement status text in `ui/FieldOverlays.tsx` contains mojibake
+  (`Â·` and `Â°` instead of `·` and `°`), so the rotation readout shows stray
+  characters.
+- `tactical.spec.ts` "issues an area order" still waits on real-time ticks with
+  a 5 s timeout and failed once under heavy load; it should step the simulation
+  like the other specs.
+- `useOrders` is 733 lines; the target-order and ground-order handlers can be
+  split further once the campaign adds new order types.
+
 ## Verification
 
 Run `pnpm verify` (or `pnpm verify:quick` without Playwright). It runs check,
@@ -190,6 +213,12 @@ coverage with a 90% line threshold (baseline 90.28%).
 The repository is local-only: a local git repository with no remote. The GitHub
 Actions workflow in `.github/workflows/` is kept but dormant, so `pnpm verify` is
 the gate.
+
+After `refactor-structural-modules` (2026-11-03): check, build, bundle budget
+(index JS 957,768 B; worker 71,060 B; CSS 45,578 B), determinism (`eee8ea8f`),
+`pnpm sim` (`206ab124`) and OpenSpec passed. The e2e step timed out once on the
+hold-failure spec while the machine was under heavy load (suite 8.1 min instead
+of about 3); the rerun passed 23/23 in 3.1 min, including the 5 visual specs.
 
 Last `pnpm verify` run (2026-11-03): every step passed. check 184 unit tests,
 build, bundle budget (index JS 953,147 / 1,000,000 B; worker 73,869 / 90,000 B;

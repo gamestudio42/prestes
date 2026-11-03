@@ -17,6 +17,33 @@ Dependency direction: `kernel -> shared -> simulation`; `shared -> view3d`;
 `apps/game` composes everything. `packages/simulation` must never import Three.js,
 React, the DOM or Node APIs.
 
+### Module layout
+
+```text
+packages/simulation/src
+  engine.ts            state, constructor, public API and the per-tick system order
+  systems/context.ts   SimContext: the mutable state the engine implements and passes as itself
+  systems/model.ts     unit records, templates and tuning constants
+  systems/*.ts         snapshot, geometry, formations, movement, bounding, cover, combat,
+                       morale, casualties, orders, commands, spawning
+apps/game/src
+  App.tsx              session lifecycle (start, continue, 3v3, reset) and layout
+  hooks/               useAudio, useKeyboardShortcuts, useTestBridge, useSandbox,
+                       useExerciseDirector, useOrders
+  storage.ts           localStorage for locale, audio and training progress
+  ui/Hud.tsx           composes ui/hud/: TopBar, SquadCards, OrderBoard, WeaponCard,
+                       CommandRow, IconButton and orderMeta (icons, labels, postures)
+  ui/FieldOverlays.tsx target reticle, placement status and cursor hint
+  styles/index.css     imports foundation, command-hud, command-deck and
+                       overlays-and-menu in cascade order
+```
+
+Systems are plain functions `(ctx: SimContext, ...)`. A system calls other systems
+directly and never keeps its own state, so the engine's `tick()` call order is the
+whole order of play. The stylesheet files are contiguous slices of the former
+`styles.css`; move a rule between them only together with the visual baselines in
+`tests/e2e/visual.spec.ts-snapshots/`.
+
 ## Determinism
 
 - Fixed tick: 100 ms (10 Hz).
