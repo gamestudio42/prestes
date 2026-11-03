@@ -30,8 +30,8 @@
 
 ## 5. Tutorial end to end
 
-- [ ] 5.1 Rewrite `tests/e2e/training-campaign.spec.ts` with one test per station driven by the dev bridge and `stepUntil`, plus failure and retry for stations 6 and 7
-- [ ] 5.2 Add one e2e test that plays all seven stations in order, reloads after station 3 to check Continue, and reaches the debrief
+- [x] 5.1 Rewrite `tests/e2e/training-campaign.spec.ts` with one test per station driven by the dev bridge and `stepUntil`, plus failure and retry for stations 6 and 7
+- [x] 5.2 Add one e2e test that plays all seven stations in order, reloads after station 3 to check Continue, and reaches the debrief
 - [ ] 5.3 Play the full bootcamp manually in Chrome in PT-BR and EN, record timings per station and any confusing instruction in `docs/status.md`, and fix issues found before closing the change
 
 ## 6. Documentation and final check

@@ -59,6 +59,22 @@ describe('mechanics: fire', () => {
   });
 });
 
+describe('mechanics: training target discipline', () => {
+  it('never fires at a training troop without an explicit order', () => {
+    const t = harness({ opposition: false });
+    t.send({
+      type: 'training_phase',
+      setup: { phase: 'maneuver', playerPoint: { x: 28, y: 4 }, officerPoint: { x: 28, y: 10 }, enemyPoint: { x: 52, y: -18 }, enemyCount: 6 },
+    }, 2);
+    const ids = t.frame().units.filter((unit) => unit.squadId === 1).map((unit) => unit.id);
+    t.run(300);
+    expect(t.shotsBy(ids)).toBe(0);
+    const target = t.frame().units.find((unit) => unit.role === 'training-enemy')!.id;
+    t.send({ type: 'attack', unitIds: ids, targetId: target }, 300);
+    expect(t.shotsBy(ids)).toBeGreaterThan(0);
+  });
+});
+
 describe('mechanics: movement', () => {
   it('move: the section reaches the ordered point', () => {
     const t = harness();
@@ -88,6 +104,15 @@ describe('mechanics: movement', () => {
     expect(t.unit(1).y).toBeGreaterThan(y + 3);
   });
 
+  it('withdraw with no enemy left still falls back', () => {
+    // Training without opposition: the training troop is gone, nobody is hostile.
+    const t = harness({ opposition: false });
+    const ids = t.frame().units.filter((unit) => unit.squadId === 1).map((unit) => unit.id);
+    const start = { ...t.unit(ids[0]!) };
+    t.send({ type: 'withdraw', unitIds: ids }, 200);
+    expect(distance(t.unit(ids[0]!), start)).toBeGreaterThan(5);
+  });
+
   it('hold: soldiers stay put', () => {
     const t = harness();
     const start = { ...t.unit(1) };
@@ -95,11 +120,34 @@ describe('mechanics: movement', () => {
     expect(distance(t.unit(1), start)).toBeLessThan(2);
   });
 
+  it('bounding keeps a tactical order instead of turning it into a move', () => {
+    const t = harness({ bounding: true });
+    t.send({ type: 'hold_fire', unitIds: ENEMY, hold: true });
+    t.send({ type: 'order', order: 'defend', unitIds: COLUMN, to: { x: 0, y: 20 } }, 400);
+    expect(COLUMN.every((id) => t.unit(id).order === 'defend')).toBe(true);
+  });
+
   it('face: the soldier turns to the ordered direction', () => {
     const t = harness();
     t.send({ type: 'hold_fire', unitIds: [...COLUMN, ...ENEMY], hold: true });
     t.send({ type: 'face', unitIds: [1], to: { x: 30, y: 7 } }, 40);
     expect(t.unit(1).facingX).toBeGreaterThan(0.8);
+  });
+
+  it('face after suppressing a training troop keeps the new direction', () => {
+    // Training targets are never acquired automatically, so only the old fire
+    // order could turn the soldiers back.
+    const t = harness({ opposition: false });
+    t.send({
+      type: 'training_phase',
+      setup: { phase: 'fire', playerPoint: { x: 28, y: 4 }, officerPoint: { x: 28, y: 10 }, enemyPoint: { x: 52, y: -18 }, enemyCount: 6 },
+    }, 2);
+    const ids = t.frame().units.filter((unit) => unit.squadId === 1).map((unit) => unit.id);
+    const target = t.frame().units.find((unit) => unit.role === 'training-enemy')!.id;
+    t.send({ type: 'suppress', unitIds: ids, targetId: target }, 60);
+    t.send({ type: 'hold_fire', unitIds: ids, hold: true });
+    t.send({ type: 'face', unitIds: ids, to: { x: 28, y: 60 } }, 80);
+    expect(ids.every((id) => t.unit(id).facingY > 0.5)).toBe(true);
   });
 
   it('bounding: a move splits the section into alternating teams', () => {

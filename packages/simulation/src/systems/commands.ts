@@ -195,6 +195,14 @@ export function applyCommand(
       unit.aimY = dy / length;
       unit.facingX = dx / length;
       unit.facingY = dy / length;
+      // The newest order wins: facing away releases the previous fire target,
+      // otherwise the soldier turns straight back to it.
+      unit.targetId = null;
+      unit.targetLocked = false;
+      unit.suppress = false;
+      if (unit.currentOrder === 'attack' || unit.currentOrder === 'suppress') {
+        unit.currentOrder = null;
+      }
     }
     return;
   }
@@ -268,9 +276,16 @@ export function applyCommand(
     );
     const enemy =
       actionable.length > 1 ? nearestEnemyAt(ctx, center, actionable[0]!.faction) : null;
-    if (enemy && actionable.length > 1) {
-      const dx = center.x - enemy.x;
-      const dy = center.y - enemy.y;
+    // With no enemy left, fall back against the way the section faces.
+    const facingNow = averageFacing(actionable);
+    const away = enemy
+      ? { x: center.x - enemy.x, y: center.y - enemy.y }
+      : facingNow
+        ? { x: -facingNow.x, y: -facingNow.y }
+        : null;
+    if (away && actionable.length > 1) {
+      const dx = away.x;
+      const dy = away.y;
       const length = Math.sqrt(dx * dx + dy * dy);
       if (length > 0.001) {
         const facing = { x: dx / length, y: dy / length };

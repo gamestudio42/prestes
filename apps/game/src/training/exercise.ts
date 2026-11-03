@@ -175,6 +175,18 @@ export function advanceExercise(
     };
   }
   const phase = currentPhase(state, exercise);
+  // The station setup command lands on the next tick; until then the frame
+  // still shows the previous station, so objectives must not read it.
+  if (frame.tick <= state.phaseStartedTick && state.phaseStartedTick > 0) {
+    return {
+      state,
+      objectives: objectivePlaceholders(phase, state.objectiveIndex),
+      commands: [],
+      phaseCompleted: null,
+      exerciseCompleted: false,
+      failure: null,
+    };
+  }
   const memory = { ...state.objectiveTicks };
   const failureTicks = { ...state.failureTicks };
   const peakSuppression = Math.max(

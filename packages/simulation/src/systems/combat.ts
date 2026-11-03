@@ -48,6 +48,7 @@ export function acquireTargets(ctx: SimContext): void {
     if (
       current &&
       current.alive &&
+      mayEngage(unit, current) &&
       visible(ctx, unit, current) &&
       (!unit.ambush ||
         (current.x - unit.x) ** 2 + (current.y - unit.y) ** 2 <= AMBUSH_RADIUS * AMBUSH_RADIUS)
@@ -75,7 +76,8 @@ export function acquireTargets(ctx: SimContext): void {
           candidate.routed ||
           candidate.incapacitated ||
           candidate.faction === unit.faction ||
-          (unit.faction !== 'column' && candidate.faction === 'target')
+          (unit.faction !== 'column' && candidate.faction === 'target') ||
+          !mayEngage(unit, candidate)
         ) {
           continue;
         }
@@ -135,7 +137,8 @@ export function acquireTargets(ctx: SimContext): void {
         candidate.routed ||
         candidate.incapacitated ||
         candidate.faction === unit.faction ||
-        (unit.faction !== 'column' && candidate.faction === 'target')
+        (unit.faction !== 'column' && candidate.faction === 'target') ||
+        !mayEngage(unit, candidate)
       ) {
         continue;
       }
@@ -437,4 +440,18 @@ export function updateOutcome(ctx: SimContext, tick: number, events: SimEvent[])
     ctx.outcome = next;
     events.push({ type: 'outcome', tick, outcome: next });
   }
+}
+
+/** Orders that let a soldier engage training enemies (training target discipline). */
+const TRAINING_ENGAGE_ORDERS = new Set(['attack', 'suppress', 'flank', 'pursue', 'ambush', 'defend']);
+
+/**
+ * Training enemies are never picked automatically: only an explicit fire,
+ * flank, pursue or ambush order, or a defended area, lets a soldier engage them.
+ */
+export function mayEngage(unit: MutableUnit, candidate: MutableUnit): boolean {
+  if (candidate.role !== 'training-enemy') {
+    return true;
+  }
+  return unit.ambush || (unit.currentOrder !== null && TRAINING_ENGAGE_ORDERS.has(unit.currentOrder));
 }

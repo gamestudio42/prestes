@@ -84,10 +84,11 @@ describe('objective evaluators', () => {
     expect(evaluate(goal, [pinned, pinned, pinned]).done).toBe(true);
   });
 
-  it('hold-fire needs held fire while targets exist', () => {
+  it('hold-fire needs enough soldiers holding fire for the ticks', () => {
     const goal = objective('hold-fire', { minUnits: 8, ticks: 2 });
-    const silent = [...section({ holdFire: true } as Partial<UnitSnapshot>), ...trainingEnemies(2)];
-    expect(evaluate(goal, [section({ holdFire: true } as Partial<UnitSnapshot>), section({ holdFire: true } as Partial<UnitSnapshot>)]).done).toBe(false);
+    const silent = section({ holdFire: true } as Partial<UnitSnapshot>);
+    const few = section({ holdFire: true } as Partial<UnitSnapshot>, 7);
+    expect(evaluate(goal, [few, few]).done).toBe(false);
     expect(evaluate(goal, [silent, silent]).done).toBe(true);
   });
 
@@ -101,14 +102,14 @@ describe('objective evaluators', () => {
     const goal = objective('flank-position', { minUnits: 2, threshold: 50 });
     const enemies = trainingEnemies(2, 0, -30);
     const start = [...section({ order: 'flank' }, 8, 0, 0), ...enemies];
-    const side = [
-      ...section({ order: 'flank' }, 6, 0, 0),
-      unit(30, 25, -30, { order: 'flank' }),
-      unit(31, 25, -28, { order: 'flank' }),
-      ...enemies,
-    ];
+    const sent = [...section({ order: 'flank' }, 6, 0, 0), unit(30, 0, 0, { order: 'flank' }), unit(31, 1, 0, { order: 'flank' }), ...enemies];
+    // The flank order has ended on arrival: they still count as flankers.
+    const side = [...section({}, 6, 0, 0), unit(30, 25, -30), unit(31, 25, -28), ...enemies];
+    const wanderers = [...section({}, 6, 0, 0), unit(30, 25, -30), unit(31, 25, -28), ...enemies];
     expect(evaluate(goal, [start, start]).done).toBe(false);
-    expect(evaluate(goal, [start, side]).done).toBe(true);
+    expect(evaluate(goal, [sent, side]).done).toBe(true);
+    // Soldiers who reach the side without a flank order do not count.
+    expect(evaluate(goal, [start.map((soldier) => ({ ...soldier, order: null })), wanderers]).done).toBe(false);
   });
 
   it('bounding-advance needs alternating teams on the way to the line', () => {
@@ -118,9 +119,12 @@ describe('objective evaluators', () => {
   });
 
   it('withdraw-out needs a withdraw order and an empty danger zone', () => {
-    const goal = objective('withdraw-out', { point: { x: 0, y: 0 }, radius: 8 });
+    const goal = objective('withdraw-out', { point: { x: 0, y: 0 }, radius: 8, minUnits: 4 });
     expect(evaluate(goal, [section({}, 5, 40, 40)]).done).toBe(false);
     expect(evaluate(goal, [section({ order: 'withdraw' }, 5, 0, 0), section({}, 5, 40, 40)]).done).toBe(true);
+    // Three out and two pinned inside is not yet enough for four.
+    const mixed = [...section({}, 3, 40, 40), ...section({}, 2, 0, 0).map((soldier, index) => ({ ...soldier, id: 50 + index }))];
+    expect(evaluate(goal, [section({ order: 'withdraw' }, 5, 0, 0), mixed]).done).toBe(false);
   });
 
   it('defend-in-cover counts defenders in cover inside the area', () => {
@@ -156,6 +160,10 @@ describe('objective evaluators', () => {
     const enemy = trainingEnemies(1, 0, -30);
     expect(evaluate(goal, [[unit(1, 0, 0, { order: 'pursue', targetId: 20 }), ...enemy]]).done).toBe(false);
     expect(evaluate(goal, [[unit(1, 0, -20, { order: 'pursue', targetId: 20 }), ...enemy]]).done).toBe(true);
+    // Bringing the pursued target down also completes the pursuit.
+    expect(evaluate(goal, [[unit(1, 0, 0, { order: 'pursue', targetId: 20 }), ...enemy], [unit(1, 0, 0, { order: 'hold' })]]).done).toBe(true);
+    // A target that was never pursued does not count.
+    expect(evaluate(goal, [[unit(1, 0, 0), ...enemy], [unit(1, 0, 0)]]).done).toBe(false);
   });
 
   it('regroup needs the order and a closed section', () => {

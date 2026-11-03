@@ -128,7 +128,7 @@ export function updateBounding(ctx: SimContext): void {
           unit.boundPhase = null;
           if ((unit.x - unit.targetX) ** 2 + (unit.y - unit.targetY) ** 2 > 1) {
             unit.holdPosition = false;
-            unit.currentOrder = 'move';
+            unit.currentOrder = boundOrder(unit);
             unit.lineMove = false;
           }
         }
@@ -199,7 +199,7 @@ export function assignBoundingDirect(
     unit.targetX = target.x;
     unit.targetY = target.y;
     unit.holdPosition = false;
-    unit.currentOrder = 'move';
+    unit.currentOrder = boundOrder(unit);
     unit.lineMove = false;
     const path = findPath({ x: unit.x, y: unit.y }, target, ctx.covers);
     if (path.length === 0) {
@@ -300,4 +300,12 @@ export function assignBoundingAdvance(
     unit.boundPhase = 'advance';
     queueUnitOrder(ctx, unit, path, 'move');
   }
+}
+
+/**
+ * Alternating movement changes how a soldier gets there, not why: a defend,
+ * ambush or other tactical order survives the bounds.
+ */
+function boundOrder(unit: MutableUnit): MutableUnit['currentOrder'] {
+  return unit.currentOrder !== null && unit.currentOrder !== 'move' ? unit.currentOrder : 'move';
 }

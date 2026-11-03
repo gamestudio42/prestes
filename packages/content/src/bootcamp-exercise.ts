@@ -154,6 +154,8 @@ const LINE_POINT = { x: 52, y: -18 } as const;
 const APPROACH_POINT = { x: 82, y: 10 } as const;
 const BOUND_LINE = { x: 40, y: -4 } as const;
 const FACE_POINT = { x: 28, y: 34 } as const;
+/** Overlooks the training line without the trench parapet in the way. */
+const RECON_POINT = { x: 42, y: -10 } as const;
 
 const key = (station: ExercisePhaseId, part: string) =>
   `training.station.${station}.${part}` as MessageKey;
@@ -227,20 +229,20 @@ export const BOOTCAMP_EXERCISE: BootcampExercise = {
     station('maneuver', {
       objectives: [
         objective('maneuver', 'flank', 'flank-position', { minUnits: 2, threshold: 50 }),
-        objective('maneuver', 'bound', 'bounding-advance', { point: BOUND_LINE, radius: 8, minUnits: 5 }),
-        objective('maneuver', 'withdraw', 'withdraw-out', { point: BOUND_LINE, radius: 8 }),
+        // A line of 11 at 2.8 m spacing is ~28 m wide: 12 m catches its centre.
+        objective('maneuver', 'bound', 'bounding-advance', { point: BOUND_LINE, radius: 12, minUnits: 4 }),
+        objective('maneuver', 'withdraw', 'withdraw-out', { point: BOUND_LINE, radius: 8, minUnits: 8 }),
         objective('maneuver', 'hold', 'order', { order: 'hold', minUnits: 8 }),
       ],
       markers: [
         { id: 'maneuver-target', kind: 'approach', point: LINE_POINT, radius: 9 },
-        { id: 'maneuver-line', kind: 'zone', point: BOUND_LINE, radius: 8 },
+        { id: 'maneuver-line', kind: 'zone', point: BOUND_LINE, radius: 12 },
       ],
       setup: {
         playerPoint: ASSEMBLY_POINT,
         officerPoint: { x: 28, y: 10 },
         trainingEnemyPoint: LINE_POINT,
         trainingEnemyCount: 6,
-        releaseTrainingFire: true,
       },
     }),
     station('defense', {
@@ -286,7 +288,7 @@ export const BOOTCAMP_EXERCISE: BootcampExercise = {
         objective('recon', 'advance', 'order', { order: 'advance', minUnits: 5 }),
         objective('recon', 'regroup', 'regroup', { radius: 8, minUnits: 9 }),
       ],
-      markers: [{ id: 'recon-area', kind: 'approach', point: LINE_POINT, radius: 12 }],
+      markers: [{ id: 'recon-area', kind: 'approach', point: RECON_POINT, radius: 6 }],
       setup: {
         playerPoint: ASSEMBLY_POINT,
         officerPoint: { x: 28, y: 10 },

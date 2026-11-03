@@ -167,8 +167,9 @@ const evaluators: Record<ExerciseObjective['kind'], Evaluator> = {
     return { current, target, done: result.done };
   },
   'hold-fire'(objective, context) {
+    // Holding fire is the skill; it does not depend on targets still standing.
     const holding = playerUnits(context.frame).filter((unit) => unit.holdFire).length;
-    const held = holding >= (objective.minUnits ?? 1) && trainingEnemies(context.frame).length > 0;
+    const held = holding >= (objective.minUnits ?? 1);
     return sustained(objective, context, held, holding);
   },
   facing(objective, { frame }) {
@@ -197,7 +198,14 @@ const evaluators: Record<ExerciseObjective['kind'], Evaluator> = {
     memory[startKey] ??= Math.atan2(section.y - enemies.y, section.x - enemies.x);
     const start = memory[startKey]!;
     const limit = ((objective.threshold ?? 50) * Math.PI) / 180;
-    const flankers = withOrder(playerUnits(frame), 'flank').filter((unit) => {
+    // The flank order ends when a soldier arrives, so remember who received it.
+    for (const unit of withOrder(playerUnits(frame), 'flank')) {
+      memory[`${objective.id}:flanker:${unit.id}`] = 1;
+    }
+    const flankers = playerUnits(frame).filter((unit) => {
+      if (memory[`${objective.id}:flanker:${unit.id}`] !== 1) {
+        return false;
+      }
       const bearing = Math.atan2(unit.y - enemies.y, unit.x - enemies.x);
       const delta = Math.abs(Math.atan2(Math.sin(bearing - start), Math.cos(bearing - start)));
       return delta >= limit;
@@ -212,9 +220,11 @@ const evaluators: Record<ExerciseObjective['kind'], Evaluator> = {
   },
   'withdraw-out'(objective, context) {
     const player = playerUnits(context.frame);
+    // Pinned soldiers cannot move under fire, so the objective counts soldiers
+    // out of the zone rather than requiring every last one.
     const withdrew = seen(objective, context, 'withdraw', withOrder(player, 'withdraw').length > 0);
-    const left = countInside(player, objective.point, objective.radius ?? 0) === 0;
-    return count(withdrew && left ? 1 : 0, 1);
+    const out = player.length - countInside(player, objective.point, objective.radius ?? 0);
+    return count(withdrew ? out : 0, objective.minUnits ?? player.length);
   },
   'defend-in-cover'(objective, { frame }) {
     const units = withOrder(playerUnits(frame), 'defend').filter(
@@ -249,14 +259,25 @@ const evaluators: Record<ExerciseObjective['kind'], Evaluator> = {
   'recon-report'(_objective, { frame }) {
     return count(playerUnits(frame).some((unit) => unit.reconContacts > 0) ? 1 : 0, 1);
   },
-  pursue(objective, { frame }) {
-    // A pursuer closes within `threshold` metres of its target.
-    const enemies = trainingEnemies(frame);
-    const closing = withOrder(playerUnits(frame), 'pursue').some((unit) => {
-      const target = enemies.find((enemy) => enemy.id === unit.targetId);
-      return target !== undefined && Math.hypot(target.x - unit.x, target.y - unit.y) <= (objective.threshold ?? 15);
-    });
-    return count(closing ? 1 : 0, 1);
+  pursue(objective, context) {
+    // A pursuit succeeds when a pursuer closes within `threshold` metres of its
+    // target or the pursued target is brought down.
+    const enemies = trainingEnemies(context.frame);
+    const pursuers = withOrder(playerUnits(context.frame), 'pursue');
+    const key = `${objective.id}:target`;
+    const chased = pursuers.find((unit) => unit.targetId !== null)?.targetId;
+    if (chased !== undefined && chased !== null) {
+      context.memory[key] = chased;
+    }
+    const remembered = context.memory[key];
+    if (remembered === undefined) {
+      return count(0, 1);
+    }
+    const target = enemies.find((enemy) => enemy.id === remembered);
+    const closed = pursuers.some(
+      (unit) => target !== undefined && Math.hypot(target.x - unit.x, target.y - unit.y) <= (objective.threshold ?? 15),
+    );
+    return count(closed || target === undefined ? 1 : 0, 1);
   },
   regroup(objective, context) {
     const player = playerUnits(context.frame);

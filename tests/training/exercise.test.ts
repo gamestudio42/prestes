@@ -119,6 +119,13 @@ describe('bootcamp exercise director', () => {
     );
   });
 
+  it('does not evaluate a new station on the frame that still shows the old one', () => {
+    const state = { ...at(startExercise(), 2), phaseStartedTick: 500 };
+    const stale = advanceExercise(state, frame(500, players(0, 0, 11)));
+    expect(stale.state.objectiveTicks).toEqual({});
+    expect(stale.objectives.every((objective) => !objective.done)).toBe(true);
+  });
+
   it('completes the exercise after the final station', () => {
     const final = BOOTCAMP_EXERCISE.phases.length - 1;
     const hold = BOOTCAMP_EXERCISE.phases[final]!.objectives.length - 1;

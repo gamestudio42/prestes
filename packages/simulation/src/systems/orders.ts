@@ -539,14 +539,11 @@ export function beginWithdraw(ctx: SimContext, unit: MutableUnit): void {
   unit.flankTargetId = null;
   unit.currentOrder = null;
   unit.lineMove = false;
-  const enemy = nearestEnemy(ctx, unit);
-  if (!enemy) {
-    unit.targetX = unit.x;
-    unit.targetY = unit.y;
-    unit.path = [];
-    unit.pathIndex = 0;
-    return;
-  }
+  // With no enemy left, withdraw against the soldier's facing.
+  const enemy = nearestEnemy(ctx, unit) ?? {
+    x: unit.x + unit.facingX * 12,
+    y: unit.y + unit.facingY * 12,
+  };
   let bestCover: Vec2 | null = null;
   let bestCoverScore = Number.NEGATIVE_INFINITY;
   for (const coverPoint of ctx.covers) {
