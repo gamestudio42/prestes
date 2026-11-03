@@ -1,0 +1,64 @@
+import { spawnSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
+
+// Local verification gate. Runs every step in order, stops at the first
+// failure and prints a summary. It never touches git or the network.
+
+type Result = 'passed' | 'failed' | 'skipped' | 'not run';
+
+interface Step {
+  name: string;
+  command: string;
+  requires?: string;
+  slow?: boolean;
+}
+
+const root = fileURLToPath(new URL('..', import.meta.url));
+const quick = process.argv.includes('--quick');
+const openspec = process.env.VERIFY_OPENSPEC_BIN ?? 'openspec';
+
+const steps: Step[] = [
+  { name: 'check', command: 'pnpm check' },
+  { name: 'build', command: 'pnpm build' },
+  { name: 'bundle budget', command: 'pnpm check:bundle' },
+  { name: 'determinism', command: 'pnpm check:determinism' },
+  { name: 'openspec validate', command: `${openspec} validate --specs`, requires: openspec },
+  { name: 'e2e', command: 'pnpm e2e', slow: true },
+];
+
+function run(command: string, quiet = false): number {
+  const result = spawnSync(command, { cwd: root, shell: true, stdio: quiet ? 'ignore' : 'inherit' });
+  return result.status ?? 1;
+}
+
+const results: Array<{ step: Step; result: Result; seconds?: number; note?: string }> = [];
+let failed = false;
+
+for (const step of steps) {
+  if (quick && step.slow) {
+    results.push({ step, result: 'not run', note: 'quick mode' });
+    continue;
+  }
+  if (failed) {
+    results.push({ step, result: 'skipped' });
+    continue;
+  }
+  console.log(`\n=== ${step.name}: ${step.command}`);
+  if (step.requires && run(`${step.requires} --version`, true) !== 0) {
+    results.push({ step, result: 'failed', note: `'${step.requires}' CLI not found on PATH` });
+    failed = true;
+    continue;
+  }
+  const started = performance.now();
+  const status = run(step.command);
+  const seconds = (performance.now() - started) / 1000;
+  results.push({ step, result: status === 0 ? 'passed' : 'failed', seconds, note: status === 0 ? undefined : `exit ${status}` });
+  failed ||= status !== 0;
+}
+
+console.log(`\n=== verify${quick ? ' (quick)' : ''} summary`);
+for (const { step, result, seconds, note } of results) {
+  const time = seconds === undefined ? '' : `${seconds.toFixed(1)} s`;
+  console.log(`${result.padEnd(8)} ${step.name.padEnd(18)} ${time.padStart(8)}${note ? `  ${note}` : ''}`);
+}
+process.exit(failed ? 1 : 0);

@@ -181,9 +181,26 @@
 
 ## Verification
 
-Run `pnpm check`, `pnpm build`, `pnpm e2e` and `openspec validate --specs`.
+Run `pnpm verify` (or `pnpm verify:quick` without Playwright). It runs check,
+build, the bundle budget (`tools/bundle-budget.json`), the determinism golden
+(`tools/determinism-golden.json`), `openspec validate --specs` and e2e, stops at
+the first failure and prints a per-step summary. `pnpm coverage` reports unit-test
+coverage with a 90% line threshold (baseline 90.28%).
 
-Last recorded run:
+The repository is local-only: a local git repository with no remote. The GitHub
+Actions workflow in `.github/workflows/` is kept but dormant, so `pnpm verify` is
+the gate.
+
+First `pnpm verify` runs (2026-11-03): check, build, bundle budget (index JS
+952,852 / 1,000,000 B), determinism (golden `75d9a841`, seed 1922, 600 ticks)
+and OpenSpec passed both times. e2e failed both times on timing-dependent specs,
+a different set each run: run 1 `sandbox.spec.ts:42` (17/18 passed), run 2
+`both-sides.spec.ts:44` and `training-campaign.spec.ts:122` (16/18 passed). The
+sandbox spec passes 3/3 on its own. No game code changed between these runs and
+the earlier 18/18 run, so the e2e suite is flaky under load. Fix it before
+treating `pnpm verify` as green.
+
+Last recorded manual run:
 
 - `pnpm check`: 182 tests in 24 files, 562 locale keys, content check passed.
 - `pnpm build`: passed; 952.85 kB JS before gzip (chunk-size warning remains).

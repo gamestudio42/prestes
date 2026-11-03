@@ -24,6 +24,12 @@ pnpm install
 pnpm dev        # Vite dev server
 pnpm build      # static build in apps/game/dist
 pnpm check      # typecheck + lint + tests + locale/content checks
+pnpm verify     # local gate: check, build, bundle budget, determinism, OpenSpec, e2e
+pnpm verify:quick             # the same gate without the Playwright suite
+pnpm check:determinism        # fixed seeded scenario must match tools/determinism-golden.json
+pnpm check:determinism --update  # record a new golden after an intended simulation change
+pnpm check:bundle             # built JS/CSS sizes against tools/bundle-budget.json
+pnpm coverage                 # unit-test coverage report in coverage/ (line threshold 90%)
 pnpm e2e        # Playwright browser suite
 pnpm sim        # headless deterministic run
 pnpm bench      # six- and twelve-unit tick benchmark
