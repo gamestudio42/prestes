@@ -24,11 +24,15 @@ async function currentFrame(page: Page): Promise<Frame> {
 
 async function command(page: Page, value: Command, ticks = 1): Promise<Frame> {
   const before = await currentFrame(page);
-  await page.evaluate((next) => window.__prestes?.command(next), value);
-  for (let index = 0; index < ticks; index += 1) {
-    await page.evaluate(() => window.__prestes?.step(1));
-    await page.waitForTimeout(35);
-  }
+  // One message per command keeps the run bounded by simulated ticks instead of
+  // a browser round trip per tick, which starved the timeout on a busy machine.
+  await page.evaluate(
+    ({ next, count }) => {
+      window.__prestes?.command(next);
+      window.__prestes?.step(count);
+    },
+    { next: value, count: ticks },
+  );
   await page.waitForFunction(
     (targetTick) => (window.__prestes?.frame()?.tick ?? 0) >= targetTick,
     before.tick + ticks,

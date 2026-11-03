@@ -53,23 +53,42 @@ test('drills a casualty, shows progress and completes recovery', async ({ page }
   await expect(page.getByTestId('rescue-status')).toContainText('Rescue');
   await expect(page.getByTestId('rescue-status')).toContainText('#1');
 
-  for (let index = 0; index < 8; index += 1) {
-    await page.getByTestId('sandbox-advance').click();
-  }
-  await expect(page.getByTestId('rescue-status')).toBeHidden({ timeout: 10000 });
-  await page.waitForFunction(() => {
-    const bridge = (
-      window as unknown as {
-        __prestes?: {
-          frame: () => {
-            units: Array<{ id: number; alive: boolean; soldierState: string }>;
-          } | null;
-        };
+  // Each advance pauses and steps 60 ticks. Advance until each stage is reached,
+  // so progress depends on simulated ticks rather than on wall-clock time.
+  const tick = (): Promise<number> =>
+    page.evaluate(
+      () =>
+        (window as unknown as { __prestes?: { frame: () => { tick: number } | null } }).__prestes?.frame()
+          ?.tick ?? 0,
+    );
+  const advanceUntil = async (done: () => Promise<boolean>, maxClicks: number): Promise<void> => {
+    for (let index = 0; index < maxClicks; index += 1) {
+      if (await done()) {
+        return;
       }
-    ).__prestes;
-    const recovered = bridge?.frame()?.units.find((unit) => unit.id === 1);
-    return recovered?.alive === true && recovered.soldierState !== 'recovering';
-  });
+      const before = await tick();
+      await page.getByTestId('sandbox-advance').click();
+      await expect.poll(tick).toBeGreaterThanOrEqual(before + 60);
+    }
+    expect(await done()).toBe(true);
+  };
+  const recovered = (): Promise<boolean> =>
+    page.evaluate(() => {
+      const bridge = (
+        window as unknown as {
+          __prestes?: {
+            frame: () => {
+              units: Array<{ id: number; alive: boolean; soldierState: string }>;
+            } | null;
+          };
+        }
+      ).__prestes;
+      const unit = bridge?.frame()?.units.find((candidate) => candidate.id === 1);
+      return unit?.alive === true && unit.soldierState !== 'recovering';
+    });
+
+  await advanceUntil(async () => !(await page.getByTestId('rescue-status').isVisible()), 20);
+  await advanceUntil(recovered, 20);
 });
 
 

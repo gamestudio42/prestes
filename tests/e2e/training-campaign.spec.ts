@@ -22,6 +22,47 @@ async function currentFrame(page: Page): Promise<Frame> {
   return frame;
 }
 
+// Advances the paused simulation in fixed chunks until the page condition holds.
+// Progress depends on simulated ticks, not on wall-clock time, so a slow or busy
+// machine cannot starve the exercise director of ticks. Each chunk waits until
+// the HUD has rendered the new tick and effects have flushed, so the director's
+// own commands always land before the next chunk and the run stays deterministic.
+async function stepUntil(
+  page: Page,
+  condition: () => boolean,
+  { maxTicks, chunk = 300 }: { maxTicks: number; chunk?: number },
+): Promise<void> {
+  for (let stepped = 0; stepped <= maxTicks; stepped += chunk) {
+    if (await page.evaluate(condition)) {
+      return;
+    }
+    await stepRendered(page, chunk);
+  }
+  throw new Error(`condition not met within ${maxTicks} ticks: ${condition.toString()}`);
+}
+
+async function stepRendered(page: Page, ticks: number): Promise<void> {
+  const target = (await currentFrame(page)).tick + ticks;
+  await page.evaluate((count) => window.__prestes!.step(count), ticks);
+  await page.waitForFunction(
+    (tick) =>
+      Number(document.querySelector('[data-testid="tick-value"]')?.textContent?.split(':').pop()) >= tick,
+    target,
+  );
+  await page.evaluate(
+    () => new Promise<void>((resolve) => requestAnimationFrame(() => setTimeout(resolve, 0))),
+  );
+}
+
+const assaultObjective = (): boolean =>
+  /suppress|suprimir/i.test(document.querySelector('[data-testid="training-objective"]')?.textContent ?? '');
+const holdObjective = (): boolean =>
+  /hold the trench|segurar a trincheira/i.test(
+    document.querySelector('[data-testid="training-objective"]')?.textContent ?? '',
+  );
+const sixTrainingEnemies = (): boolean =>
+  (window.__prestes?.frame()?.units.filter((unit) => unit.role === 'training-enemy').length ?? 0) === 6;
+
 test('opens the bootcamp with the player troop, instructor and first objective', async ({ page }) => {
   await page.goto('/');
   await expect(page.getByTestId('start-screen')).toBeVisible();
@@ -57,26 +98,10 @@ test('reaches the assembly zone and opens the assault phase', async ({ page }) =
       .filter((unit) => unit.faction === 'column' && unit.squadId === 1 && unit.alive)
       .map((unit) => unit.id);
     window.__prestes!.command({ type: 'move', unitIds, to: { x: 28, y: 4 } });
-    window.__prestes!.step(600);
   });
-  await page.waitForTimeout(300);
-  if ((await page.getByTestId('pause-button').getAttribute('aria-label')) === 'Resume') {
-    await page.getByTestId('pause-button').click();
-  }
-  await page.waitForFunction(
-    () => {
-      const text = document.querySelector('[data-testid="training-objective"]')?.textContent ?? '';
-      return /suppress|suprimir/i.test(text);
-    },
-    null,
-    { timeout: 15000 },
-  );
+  await stepUntil(page, assaultObjective, { maxTicks: 1500 });
   await expect(page.getByTestId('training-objective')).toContainText(/suppress|suprimir/i);
-  await expect
-    .poll(async () =>
-      (await currentFrame(page)).units.filter((unit) => unit.role === 'training-enemy').length,
-    )
-    .toBe(6);
+  await stepUntil(page, sixTrainingEnemies, { maxTicks: 60, chunk: 1 });
   const frame = await currentFrame(page);
   expect(
     frame.units
@@ -124,13 +149,6 @@ test('fails the hold phase and retries the phase in place', async ({ page }) => 
   await page.getByTestId('start-button').click();
   await page.waitForFunction(() => Boolean(window.__prestes?.frame()));
 
-  const stepAndResume = async (ticks: number): Promise<void> => {
-    await page.evaluate((count) => window.__prestes!.step(count), ticks);
-    await page.waitForTimeout(300);
-    if ((await page.getByTestId('pause-button').getAttribute('aria-label')) === 'Resume') {
-      await page.getByTestId('pause-button').click();
-    }
-  };
   const moveTo = async (x: number, y: number): Promise<void> => {
     await page.evaluate(
       ({ to }) => {
@@ -139,10 +157,10 @@ test('fails the hold phase and retries the phase in place', async ({ page }) => 
           .filter((unit) => unit.faction === 'column' && unit.squadId === 1 && unit.alive)
           .map((unit) => unit.id);
         window.__prestes!.command({ type: 'move', unitIds, to });
-        window.__prestes!.step(1);
       },
       { to: { x, y } },
     );
+    await stepRendered(page, 1);
     await page.waitForFunction(() =>
       window.__prestes!.frame()!.units.some(
         (unit) => unit.faction === 'column' && unit.squadId === 1 && unit.order === 'move',
@@ -151,48 +169,45 @@ test('fails the hold phase and retries the phase in place', async ({ page }) => 
   };
 
   await moveTo(28, 4);
-  await stepAndResume(600);
-  await page.waitForFunction(
-    () => /suppress|suprimir/i.test(document.querySelector('[data-testid="training-objective"]')?.textContent ?? ''),
-    null,
-    { timeout: 15000 },
-  );
-  await expect
-    .poll(async () =>
-      (await currentFrame(page)).units.filter((unit) => unit.role === 'training-enemy').length,
-    )
-    .toBe(6);
+  await stepUntil(page, assaultObjective, { maxTicks: 1500 });
+  await stepUntil(page, sixTrainingEnemies, { maxTicks: 60, chunk: 1 });
   await moveTo(52, -18);
-  await stepAndResume(500);
-  await page.waitForFunction(
-    () => /hold the trench|segurar a trincheira/i.test(document.querySelector('[data-testid="training-objective"]')?.textContent ?? ''),
-    null,
-    { timeout: 15000 },
-  );
+  await stepUntil(page, holdObjective, { maxTicks: 3000 });
   await expect(page.getByTestId('training-panel')).toHaveAttribute('data-phase', 'hold');
-  await expect
-    .poll(async () => {
-      const enemies = (await currentFrame(page)).units.filter(
-        (unit) => unit.role === 'training-enemy',
-      );
-      return (
-        enemies.length === 6 &&
-        enemies.every((unit) => unit.x > 70 && unit.y > 0)
-      );
-    })
-    .toBe(true);
-  await page.waitForTimeout(300);
+  await stepUntil(
+    page,
+    () => {
+      const enemies =
+        window.__prestes?.frame()?.units.filter((unit) => unit.role === 'training-enemy') ?? [];
+      return enemies.length === 6 && enemies.every((unit) => unit.x > 70 && unit.y > 0);
+    },
+    { maxTicks: 60, chunk: 1 },
+  );
+  // Pinned soldiers cannot move and the training fire keeps them pinned, then
+  // they stay prone and crawl. Lift the fire and stand the section up first, so
+  // abandoning the trench does not depend on timing.
+  await page.evaluate(() => window.__prestes!.command({ type: 'despawn_role', role: 'training-enemy' }));
+  await stepUntil(
+    page,
+    () =>
+      window.__prestes!.frame()!.units.every((unit) => unit.squadId !== 1 || unit.state !== 'pinned'),
+    { maxTicks: 400, chunk: 10 },
+  );
+  await page.evaluate(() => {
+    const unitIds = window.__prestes!.frame()!.units
+      .filter((unit) => unit.faction === 'column' && unit.squadId === 1 && unit.alive)
+      .map((unit) => unit.id);
+    window.__prestes!.command({ type: 'stance', unitIds, stance: 'standing' });
+  });
   await moveTo(20, 4);
-  await stepAndResume(900);
-  await expect(page.getByTestId('training-failure')).toBeVisible({ timeout: 15000 });
+  await stepUntil(page, () => document.querySelector('[data-testid="training-failure"]') !== null, {
+    maxTicks: 400,
+    chunk: 10,
+  });
   await page.getByTestId('training-retry').click();
   await expect(page.getByTestId('training-failure')).toHaveCount(0);
   await expect(page.getByTestId('training-objective')).toContainText(/hold the trench|segurar a trincheira/i);
-  await expect
-    .poll(async () =>
-      (await currentFrame(page)).units.filter((unit) => unit.role === 'training-enemy').length,
-    )
-    .toBe(6);
+  await stepUntil(page, sixTrainingEnemies, { maxTicks: 60, chunk: 1 });
 });
 
 
