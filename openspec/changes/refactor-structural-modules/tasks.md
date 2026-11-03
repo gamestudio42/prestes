@@ -20,8 +20,8 @@
 ## 3. HUD
 
 - [x] 3.1 Record visual baselines: add `tests/e2e/visual.spec.ts` with `toHaveScreenshot` for the start screen and the bootcamp HUD (canvas masked, animations disabled), generate baselines with `--update-snapshots`, and verify the spec passes twice in a row
-- [ ] 3.2 Move order icon, label and posture tables to `apps/game/src/ui/hud/orderMeta.ts` and `IconButton` to its own file; verify `pnpm verify:quick` and the visual spec
-- [ ] 3.3 Extract `OrderBoard`, `SquadCard`, `WeaponCard`, `CommandRow` and `StatRail` into `apps/game/src/ui/hud/`, keeping props and every `data-testid`; verify `Hud.tsx` is about 350 lines or fewer, `pnpm verify:quick` and the visual spec
+- [x] 3.2 Move order icon, label and posture tables to `apps/game/src/ui/hud/orderMeta.ts` and `IconButton` to its own file; verify `pnpm verify:quick` and the visual spec
+- [x] 3.3 Extract `OrderBoard`, `TopBar`, `SquadCards`, `WeaponCard` and `CommandRow` into `apps/game/src/ui/hud/`, keeping props and every `data-testid`; verify `Hud.tsx` is about 350 lines or fewer, `pnpm verify:quick` and the visual spec
 
 ## 4. App hooks
 

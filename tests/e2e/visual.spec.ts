@@ -3,12 +3,6 @@ import { expect, test, type Page } from '@playwright/test';
 // Local visual regression for the HUD and start screen. The 3D canvas is hidden
 // and the live numbers are masked; the rest of the chrome must match the baselines.
 
-declare global {
-  interface Window {
-    __prestes?: { step: (ticks: number) => void };
-  }
-}
-
 const SCREENSHOT = { animations: 'disabled', caret: 'hide', maxDiffPixelRatio: 0.002 } as const;
 
 async function stableFonts(page: Page): Promise<void> {
@@ -26,9 +20,11 @@ test('bootcamp HUD matches the baseline', async ({ page }) => {
   await page.goto('/');
   await page.getByTestId('start-button').click();
   await expect(page.getByTestId('hud')).toBeVisible();
-  await page.waitForFunction(() => Boolean(window.__prestes));
+  await page.waitForFunction(() => Boolean((window as unknown as { __prestes?: unknown }).__prestes));
   // Pause so the panels stop changing, then show the orders panel.
-  await page.evaluate(() => window.__prestes!.step(1));
+  await page.evaluate(() =>
+    (window as unknown as { __prestes: { step: (ticks: number) => void } }).__prestes.step(1),
+  );
   if ((await page.getByTestId('orders-toggle').getAttribute('aria-label'))?.match(/show|mostrar/i)) {
     await page.getByTestId('orders-toggle').click();
   }
