@@ -201,6 +201,11 @@ Known follow-ups found during the refactor, deliberately left unchanged:
   like the other specs.
 - `useOrders` is 733 lines; the target-order and ground-order handlers can be
   split further once the campaign adds new order types.
+- The PT-BR bootcamp text asks for six soldiers in the assembly zone
+  (`training.exercise.assembly.objective` and `.instructor`), but the rule and
+  the English text use five (`minUnits: 5`).
+- In a manual Chrome run the section was down to 15/0 rounds early in phase 2;
+  the training ammunition budget may be too tight for the suppress objective.
 
 ## Verification
 
@@ -249,6 +254,9 @@ Last recorded manual run:
   AudioContext behavior.
 - `pnpm sim`: hash `206ab124` on two consecutive runs.
 - `openspec validate --specs`: 15 durable specs passed.
+- OpenSpec change `refactor-structural-modules`: archived as
+  `2026-11-03-refactor-structural-modules` (no spec deltas); manual Chrome check of the
+  start screen, codex, bootcamp phases 1-2, orders, sandbox placement and HUD hide/show passed.
 - OpenSpec change `add-local-quality-gates`: archived as
   `2026-11-03-add-local-quality-gates`; 4 delivery requirements added; durable specs: 15 passed.
 - OpenSpec change `add-playable-bootcamp-exercise`: archived as
