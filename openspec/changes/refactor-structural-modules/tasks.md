@@ -32,7 +32,7 @@
 
 ## 5. Styles
 
-- [ ] 5.1 Remove dead CSS blocks (training campaign overview, the duplicated mission briefing sheet, and any other selector with no use in `apps/game/src`, including template-built class names), listing each removed selector group in the commit; verify the visual spec and `pnpm verify:quick`
+- [x] 5.1 Remove dead CSS blocks (training campaign overview, the duplicated mission briefing sheet, and any other selector with no use in `apps/game/src`, including template-built class names), listing each removed selector group in the commit; verify the visual spec and `pnpm verify:quick`
 - [ ] 5.2 Split `styles.css` into `apps/game/src/styles/` domain files imported in the original cascade order from `styles/index.css`, and import it from `main.tsx`; verify no file is over about 1,200 lines, the visual spec, the bundle budget and `pnpm verify:quick`
 
 ## 6. Documentation and final check
