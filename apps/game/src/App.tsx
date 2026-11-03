@@ -79,7 +79,8 @@ export function App() {
     exercisePhase,
     debrief,
     exerciseMarkers,
-  } = useExerciseDirector({ frame, selectedCountRef, sessionMode, clientRef, setSpeed });
+    instructorCallout,
+  } = useExerciseDirector({ frame, locale, selectedCountRef, sessionMode, clientRef, setSpeed });
   const {
     selectedSquadId,
     setSelectedSquadId,
@@ -151,6 +152,11 @@ export function App() {
     setAimPending,
   });
   useTestBridge(clientRef, setSpeed);
+
+  // The newest callout wins: the instructor's line or the player's last order.
+  const [callout, setCallout] = useState<typeof orderCallout>(null);
+  useEffect(() => setCallout(orderCallout), [orderCallout]);
+  useEffect(() => setCallout(instructorCallout), [instructorCallout]);
 
   useEffect(() => {
     return () => {
@@ -400,7 +406,17 @@ export function App() {
         <StartScreen
           locale={locale}
           onLocaleChange={handleLocaleChange}
+          resumeStation={
+            !exerciseProgress.completed &&
+            (exerciseProgress.phaseIndex > 0 || exerciseProgress.completedPhases.length > 0)
+              ? exerciseProgress.phaseIndex + 1
+              : null
+          }
+          totalStations={BOOTCAMP_EXERCISE.phases.length}
+          audioMuted={audioMuted}
           onStart={handleStart}
+          onRestart={() => handleStartBootcamp(true)}
+          onToggleAudio={handleToggleAudio}
           onToggleCodex={() => setShowCodex((open) => !open)}
         />
         {showCodex ? (
@@ -417,7 +433,7 @@ export function App() {
   }
 
   return (
-    <div className="app game" data-testid="app">
+    <div className="app game" data-testid="app" data-tick={frame?.tick ?? 0}>
       <GameCanvas
         client={client}
         postStrong={postStrong}
@@ -426,7 +442,7 @@ export function App() {
         aimPending={aimPending}
         pendingAction={pendingOrder !== null || pendingTactical !== null || aimPending || sandboxTool !== null}
         lineMoveArmed={pendingOrder === 'move'}
-        orderCallout={orderCallout}
+        orderCallout={callout}
         placementPreview={placementPreview}
         targetUnitIds={targetUnitIds}
         selectedUnitIds={selectedUnitIds}
@@ -464,7 +480,6 @@ export function App() {
         previewEnabled={previewEnabled}
         selectedCount={selectedIds.length}
         speed={speed}
-        outcome={frame?.outcome ?? 'playing'}
         pendingOrder={pendingOrder}
         pendingTactical={pendingTactical}
         aimPending={aimPending}

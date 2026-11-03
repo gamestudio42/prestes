@@ -1,21 +1,33 @@
-import { BookOpen, Languages, Play } from 'lucide-react';
+import { BookOpen, Languages, Play, RotateCcw, Volume2, VolumeX } from 'lucide-react';
 import { translate, type Locale, type MessageKey } from '@prestes/content';
 import heroImage from '../assets/menu/coluna-prestes.webp';
 
 export interface StartScreenProps {
   locale: Locale;
+  /** Station to resume (1-based) when unfinished bootcamp progress exists. */
+  resumeStation: number | null;
+  totalStations: number;
+  audioMuted: boolean;
   onLocaleChange: (locale: Locale) => void;
   onStart: () => void;
+  onRestart: () => void;
+  onToggleAudio: () => void;
   onToggleCodex: () => void;
 }
 
 export function StartScreen({
   locale,
+  resumeStation,
+  totalStations,
+  audioMuted,
   onLocaleChange,
   onStart,
+  onRestart,
+  onToggleAudio,
   onToggleCodex,
 }: StartScreenProps) {
-  const t = (key: MessageKey) => translate(locale, key);
+  const t = (key: MessageKey, values?: Readonly<Record<string, string | number>>) =>
+    translate(locale, key, values);
 
   return (
     <main className="start-screen" data-testid="start-screen">
@@ -29,10 +41,23 @@ export function StartScreen({
         <p className="eyebrow">{t('app.subtitle')}</p>
         <h1>{t('app.title')}</h1>
         <div className="start-actions">
-          <button type="button" className="primary" onClick={onStart} data-testid="start-button">
-            <Play aria-hidden="true" size={18} />
-            {t('start.bootcamp')}
-          </button>
+          {resumeStation === null ? (
+            <button type="button" className="primary" onClick={onStart} data-testid="start-button">
+              <Play aria-hidden="true" size={18} />
+              {t('start.bootcamp')}
+            </button>
+          ) : (
+            <>
+              <button type="button" className="primary" onClick={onStart} data-testid="start-continue">
+                <Play aria-hidden="true" size={18} />
+                {t('start.continue', { station: resumeStation, total: totalStations })}
+              </button>
+              <button type="button" className="secondary" onClick={onRestart} data-testid="start-restart">
+                <RotateCcw aria-hidden="true" size={16} />
+                {t('start.restart')}
+              </button>
+            </>
+          )}
 
           <label className="field">
             <span>
@@ -51,6 +76,20 @@ export function StartScreen({
           <button
             type="button"
             className="secondary"
+            onClick={onToggleAudio}
+            aria-pressed={!audioMuted}
+            data-testid="start-audio"
+          >
+            {audioMuted ? (
+              <VolumeX aria-hidden="true" size={16} />
+            ) : (
+              <Volume2 aria-hidden="true" size={16} />
+            )}
+            {audioMuted ? t('start.audioOff') : t('start.audioOn')}
+          </button>
+          <button
+            type="button"
+            className="secondary"
             onClick={onToggleCodex}
             data-testid="start-codex"
           >
@@ -60,7 +99,6 @@ export function StartScreen({
         </div>
         <p className="footer-note">{t('start.footer')}</p>
       </section>
-      <p className="start-hero-caption">{t('start.heroCaption')}</p>
     </main>
   );
 }

@@ -1,16 +1,34 @@
 import {
-  Box,
+  Ban,
+  Binoculars,
+  BookOpen,
+  ChevronDown,
+  ChevronsUp,
   Compass,
+  CornerUpRight,
   Crosshair,
-  Eye,
+  Eraser,
+  Expand,
+  FlaskConical,
+  Flame,
+  Footprints,
   Hand,
-  Heart,
+  HeartPulse,
+  Layers,
+  Minus,
   Move,
+  PersonStanding,
+  Route,
+  Scale,
   Shield,
+  ShieldHalf,
+  Shrink,
+  Split,
+  Swords,
+  TreePine,
   Undo2,
-  User,
-  Users,
-  Zap,
+  UserCheck,
+  type LucideIcon,
 } from 'lucide-react';
 import type { MessageKey, OrderActivation, OrderCategory } from '@prestes/content';
 import type { Posture, UnitOrder } from '@prestes/shared';
@@ -68,24 +86,47 @@ export function orderLetter(order: UnitOrder): string {
   }
 }
 
-export const ORDER_ICONS: Record<string, typeof Crosshair> = {
+/**
+ * One icon per control. Every control in this map can be on screen at the same
+ * time, so no two entries may share an icon (checked by a unit test).
+ */
+export const ICONS = {
   attack: Crosshair,
-  suppress: Shield,
+  suppress: Flame,
   move: Move,
   withdraw: Undo2,
   hold: Hand,
   aim: Compass,
-  flank: Users,
-  rescue: Heart,
-  recon: Eye,
-  regroup: Users,
-  disperse: Users,
-  reserve: Box,
-  ambush: Eye,
-  pursue: Crosshair,
-  advance: Move,
+  advance: ChevronsUp,
+  flank: CornerUpRight,
+  rescue: HeartPulse,
+  recon: Binoculars,
+  ambush: TreePine,
+  pursue: Footprints,
   defend: Shield,
-};
+  disperse: Expand,
+  reserve: Layers,
+  regroup: Shrink,
+  'posture-balanced': Scale,
+  'posture-aggressive': Swords,
+  'posture-defensive': ShieldHalf,
+  'posture-protect-officer': UserCheck,
+  'stance-standing': PersonStanding,
+  'stance-crouched': ChevronDown,
+  'stance-prone': Minus,
+  'hold-fire': Ban,
+  bounding: Split,
+  clear: Eraser,
+  preview: Route,
+  codex: BookOpen,
+  sandbox: FlaskConical,
+} as const satisfies Record<string, LucideIcon>;
+
+export type IconId = keyof typeof ICONS;
+
+export function orderIcon(orderId: string): LucideIcon | undefined {
+  return (ICONS as Record<string, LucideIcon>)[orderId];
+}
 
 export const ACTIVATION_LABEL: Record<OrderActivation, MessageKey> = {
   target: 'hud.activationTarget',
@@ -101,11 +142,11 @@ export const POSTURES: readonly Posture[] = [
   'protect-officer',
 ];
 
-export const POSTURE_ICONS: Record<Posture, typeof Shield> = {
-  balanced: Shield,
-  aggressive: Zap,
-  defensive: Eye,
-  'protect-officer': User,
+export const POSTURE_ICONS: Record<Posture, LucideIcon> = {
+  balanced: ICONS['posture-balanced'],
+  aggressive: ICONS['posture-aggressive'],
+  defensive: ICONS['posture-defensive'],
+  'protect-officer': ICONS['posture-protect-officer'],
 };
 
 export const POSTURE_LABELS: Record<Posture, MessageKey> = {

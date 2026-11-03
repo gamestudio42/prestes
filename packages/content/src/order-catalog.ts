@@ -55,6 +55,13 @@ export const ORDER_CATALOG: readonly OrderDefinition[] = [
     tipKey: 'hud.tip.face',
   },
   {
+    id: 'advance',
+    category: 'movement',
+    activation: 'area',
+    labelKey: 'hud.orderAdvance',
+    tipKey: 'hud.tip.advance',
+  },
+  {
     id: 'flank',
     category: 'troop',
     activation: 'target',
@@ -99,6 +106,27 @@ export const ORDER_CATALOG: readonly OrderDefinition[] = [
     activation: 'area',
     labelKey: 'hud.orderDefend',
     tipKey: 'hud.tip.defend',
+  },
+  {
+    id: 'disperse',
+    category: 'troop',
+    activation: 'area',
+    labelKey: 'hud.orderDisperse',
+    tipKey: 'hud.tip.disperse',
+  },
+  {
+    id: 'reserve',
+    category: 'troop',
+    activation: 'area',
+    labelKey: 'hud.orderReserve',
+    tipKey: 'hud.tip.reserve',
+  },
+  {
+    id: 'regroup',
+    category: 'troop',
+    activation: 'immediate',
+    labelKey: 'hud.orderRegroup',
+    tipKey: 'hud.tip.regroup',
   },
 ];
 

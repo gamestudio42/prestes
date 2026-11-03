@@ -3,7 +3,6 @@ import type { CameraBand } from '@prestes/view3d';
 import type {
   FormationKind,
   Frame,
-  Outcome,
   Posture,
   Stance,
   TacticalOrder,
@@ -25,7 +24,6 @@ export interface HudProps {
   controlBothSides: boolean;
   selectedCount: number;
   speed: 0 | 1 | 2 | 4;
-  outcome: Outcome;
   pendingOrder: OrderMode | null;
   pendingTactical: TacticalOrder | null;
   aimPending: boolean;
@@ -71,7 +69,6 @@ export function Hud({
   controlBothSides,
   selectedCount,
   speed,
-  outcome,
   pendingOrder,
   pendingTactical,
   aimPending,
@@ -124,10 +121,8 @@ export function Hud({
       <TopBar
         t={t}
         locale={locale}
-        frame={frame}
         band={band}
         postStrong={postStrong}
-        outcome={outcome}
         speed={speed}
         sandboxOpen={sandboxOpen}
         onLocaleChange={onLocaleChange}

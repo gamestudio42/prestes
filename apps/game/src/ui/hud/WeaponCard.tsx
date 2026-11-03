@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { EyeOff, Heart, Link2, MoreHorizontal, Settings2, Shield, Zap } from 'lucide-react';
+import { BrickWall, EyeOff, Heart, Link2, MoreHorizontal, Settings2, Zap } from 'lucide-react';
 import type { MessageKey } from '@prestes/content';
 import type { Frame, UnitSnapshot } from '@prestes/shared';
 import { RifleIcon } from '../HudIcons';
@@ -101,7 +101,7 @@ export function WeaponCard({
           </Tooltip>
           <Tooltip title={`${t('hud.cover')} ${Math.round(coverValue * 100)}%`} description={t('hud.tip.cover')}>
             <span className="status-chip">
-              <Shield aria-hidden="true" size={13} />
+              <BrickWall aria-hidden="true" size={13} />
               {Math.round(coverValue * 100)}%
             </span>
           </Tooltip>

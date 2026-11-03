@@ -1,8 +1,8 @@
-import { Eye, EyeOff, User } from 'lucide-react';
+import { User } from 'lucide-react';
 import type { MessageKey } from '@prestes/content';
 import type { Frame } from '@prestes/shared';
 import { IconButton } from './IconButton';
-import { bar, type Translate } from './orderMeta';
+import { ICONS, bar, type Translate } from './orderMeta';
 
 interface SquadCardsProps {
   t: Translate;
@@ -112,11 +112,7 @@ export function SquadCards({
           onClick={onTogglePreview}
           active={previewEnabled}
         >
-          {previewEnabled ? (
-            <Eye aria-hidden="true" size={17} />
-          ) : (
-            <EyeOff aria-hidden="true" size={17} />
-          )}
+          <ICONS.preview aria-hidden="true" size={17} />
         </IconButton>
       </div>
     </div>

@@ -1,4 +1,4 @@
-import { Box, Crosshair, RotateCcw, StepForward, Users, Wrench, X } from 'lucide-react';
+import { Box, Crosshair, RotateCcw, StepForward, Users, FlaskConical, X } from 'lucide-react';
 import { terrainHeightAt, terrainSpeedFactor, type Frame } from '@prestes/shared';
 import { translate, type Locale, type MessageKey } from '@prestes/content';
 
@@ -83,13 +83,43 @@ export function SandboxPanel({
     <aside className="sandbox-panel" data-testid="sandbox-panel">
       <header>
         <span>
-          <Wrench aria-hidden="true" size={15} />
+          <FlaskConical aria-hidden="true" size={15} />
           {t('sandbox.title')}
         </span>
         <button type="button" className="secondary icon-button" onClick={onClose} data-testid="sandbox-close">
           <X aria-hidden="true" size={15} />
         </button>
       </header>
+
+      <section className="sandbox-inspector sandbox-simulation">
+        <h3>{t('sandbox.simulation')}</h3>
+        <dl>
+          <div>
+            <dt>{t('hud.tick')}</dt>
+            <dd data-testid="tick-value">
+              {t('hud.tick')}: {frame?.tick ?? 0}
+            </dd>
+          </div>
+          <div>
+            <dt>{t('hud.paths')}</dt>
+            <dd data-testid="path-count">
+              {t('hud.paths')}: {frame?.orders.length ?? 0}
+            </dd>
+          </div>
+          <div>
+            <dt>{t('hud.outcome')}</dt>
+            <dd data-testid="outcome">
+              {t(
+                frame?.outcome === 'victory'
+                  ? 'hud.victory'
+                  : frame?.outcome === 'defeat'
+                    ? 'hud.defeat'
+                    : 'hud.playing',
+              )}
+            </dd>
+          </div>
+        </dl>
+      </section>
 
       <section className="sandbox-inspector">
         <h3>{t('sandbox.inspector')}</h3>

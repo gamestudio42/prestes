@@ -1,20 +1,13 @@
-import {
-  ChevronDown,
-  Crosshair,
-  Minus,
-  PersonStanding,
-  Shield,
-  Split,
-  Trash2,
-} from 'lucide-react';
+import { Crosshair } from 'lucide-react';
 import { ORDER_CATALOG, ORDER_CATEGORY_LABELS, type OrderActivation } from '@prestes/content';
 import type { FormationKind, Posture, Stance, TacticalOrder, UnitOrder } from '@prestes/shared';
 import { Tooltip } from '../Tooltip';
 import type { OrderMode } from '../Hud';
 import {
   ACTIVATION_LABEL,
-  ORDER_ICONS,
+  ICONS,
   ORDER_SECTORS,
+  orderIcon,
   POSTURES,
   POSTURE_ICONS,
   POSTURE_LABELS,
@@ -43,6 +36,13 @@ interface OrderBoardProps {
   t: Translate;
 }
 
+
+const StandIcon = ICONS['stance-standing'];
+const CrouchIcon = ICONS['stance-crouched'];
+const ProneIcon = ICONS['stance-prone'];
+const HoldFireIcon = ICONS['hold-fire'];
+const BoundingIcon = ICONS.bounding;
+const ClearIcon = ICONS.clear;
 
 export function OrderBoard({
   currentOrder,
@@ -77,7 +77,7 @@ export function OrderBoard({
             <h3 className="order-sector-title">{t(ORDER_CATEGORY_LABELS[category])}</h3>
             <div className="order-sector-grid">
               {ORDER_CATALOG.filter((entry) => entry.category === category).map((entry) => {
-                const Icon = ORDER_ICONS[entry.id] ?? Crosshair;
+                const Icon = orderIcon(entry.id) ?? Crosshair;
                 const active =
                   pendingOrder === entry.id ||
                   pendingTactical === entry.id ||
@@ -98,7 +98,7 @@ export function OrderBoard({
                       aria-pressed={active}
                       data-testid={`order-${entry.id === 'aim' ? 'face' : entry.id}`}
                     >
-                      <Icon aria-hidden="true" size={22} />
+                      <Icon aria-hidden="true" size={20} />
                     </button>
                   </Tooltip>
                 );
@@ -139,7 +139,7 @@ export function OrderBoard({
               aria-label={t('hud.stand')}
               data-testid="stance-stand"
             >
-              <PersonStanding aria-hidden="true" size={18} />
+              <StandIcon aria-hidden="true" size={18} />
             </button>
           </Tooltip>
           <Tooltip title={t('hud.crouch')} description={t('hud.tip.stance')}>
@@ -150,7 +150,7 @@ export function OrderBoard({
               aria-label={t('hud.crouch')}
               data-testid="stance-crouch"
             >
-              <ChevronDown aria-hidden="true" size={18} />
+              <CrouchIcon aria-hidden="true" size={18} />
             </button>
           </Tooltip>
           <Tooltip title={t('hud.lieDown')} description={t('hud.tip.stance')}>
@@ -161,7 +161,7 @@ export function OrderBoard({
               aria-label={t('hud.lieDown')}
               data-testid="stance-prone"
             >
-              <Minus aria-hidden="true" size={18} />
+              <ProneIcon aria-hidden="true" size={18} />
             </button>
           </Tooltip>
         </section>
@@ -174,7 +174,7 @@ export function OrderBoard({
             aria-pressed={holdFire}
             data-testid="hold-fire"
           >
-            <Shield aria-hidden="true" size={18} />
+            <HoldFireIcon aria-hidden="true" size={18} />
           </button>
         </Tooltip>
         <Tooltip
@@ -189,7 +189,7 @@ export function OrderBoard({
             aria-pressed={boundingEnabled}
             data-testid="bounding-toggle"
           >
-            <Split aria-hidden="true" size={18} />
+            <BoundingIcon aria-hidden="true" size={18} />
           </button>
         </Tooltip>
         <Tooltip
@@ -204,7 +204,7 @@ export function OrderBoard({
             aria-label={t('hud.clear')}
             data-testid="order-clear"
           >
-            <Trash2 aria-hidden="true" size={18} />
+            <ClearIcon aria-hidden="true" size={18} />
           </button>
         </Tooltip>
         <label className="formation-control">

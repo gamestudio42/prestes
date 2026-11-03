@@ -34,7 +34,6 @@ test('bootcamp HUD matches the baseline', async ({ page }) => {
   await expect(page).toHaveScreenshot('bootcamp-hud.png', {
     ...SCREENSHOT,
     mask: [
-      page.getByTestId('tick-value'),
       page.getByTestId('weapon-card').locator('.status-row'),
       page.getByTestId('weapon-card').locator('.status-details'),
       page.getByTestId('squad-status').locator('.mini-bar'),
@@ -55,7 +54,6 @@ async function openPausedHud(page: Page): Promise<void> {
 }
 
 const liveNumbers = (page: Page) => [
-  page.getByTestId('tick-value'),
   page.getByTestId('weapon-card').locator('.status-row'),
   page.getByTestId('weapon-card').locator('.status-details'),
   page.getByTestId('squad-status').locator('.mini-bar'),

@@ -46,7 +46,7 @@ async function stepRendered(page: Page, ticks: number): Promise<void> {
   await page.evaluate((count) => window.__prestes!.step(count), ticks);
   await page.waitForFunction(
     (tick) =>
-      Number(document.querySelector('[data-testid="tick-value"]')?.textContent?.split(':').pop()) >= tick,
+      Number(document.querySelector('[data-testid="app"]')?.getAttribute('data-tick')) >= tick,
     target,
   );
   await page.evaluate(

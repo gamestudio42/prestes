@@ -21,12 +21,12 @@
 
 ## 4. HUD, icons and start screen
 
-- [ ] 4.1 Add advance, disperse, reserve and regroup to the order catalogue and board sectors, with localized labels and tips; verify the tactical e2e spec and a unit test that the board lists every catalogue order
-- [ ] 4.2 Replace the icon tables with one `ICONS` map per the design table (codex BookOpen, sandbox FlaskConical, Hold Fire Ban, preview Route, clear Eraser), and add a unit test that every order and posture has an icon and that icons shown together are unique
-- [ ] 4.3 Move tick, path count and outcome from the top rail to a Simulation block in the sandbox inspector, make the command row text visible on one line, and update the e2e specs that read `tick-value`; verify the smoke, preview-hud and sandbox specs
-- [ ] 4.4 Show the active station number, title and ordered objectives in the training panel, with the instructor callout naming the current order; verify in the training e2e spec
-- [ ] 4.5 Rework the start screen: final tagline in EN and PT-BR, single period kicker, Continue and Restart when progress exists, audio toggle; verify with a new start-screen e2e test
-- [ ] 4.6 Review the new HUD, panel and start screen in Chrome at desktop and narrow widths, then re-record the visual baselines and verify the visual spec passes twice in a row
+- [x] 4.1 Add advance, disperse, reserve and regroup to the order catalogue and board sectors, with localized labels and tips; verify the tactical e2e spec and a unit test that the board lists every catalogue order
+- [x] 4.2 Replace the icon tables with one `ICONS` map per the design table (codex BookOpen, sandbox FlaskConical, Hold Fire Ban, preview Route, clear Eraser), and add a unit test that every order and posture has an icon and that icons shown together are unique
+- [x] 4.3 Move tick, path count and outcome from the top rail to a Simulation block in the sandbox inspector, make the command row text visible on one line, and update the e2e specs that read `tick-value`; verify the smoke, preview-hud and sandbox specs
+- [x] 4.4 Show the active station number, title and ordered objectives in the training panel, with the instructor callout naming the current order; verify in the training e2e spec
+- [x] 4.5 Rework the start screen: final tagline in EN and PT-BR, single period kicker, Continue and Restart when progress exists, audio toggle; verify with a new start-screen e2e test
+- [x] 4.6 Review the new HUD, panel and start screen in Chrome at desktop and narrow widths, then re-record the visual baselines and verify the visual spec passes twice in a row
 
 ## 5. Tutorial end to end
 

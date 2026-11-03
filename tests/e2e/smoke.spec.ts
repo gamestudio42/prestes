@@ -22,7 +22,8 @@ test('boots, selects a section, gives orders, fights and toggles the post', asyn
   await expect(page.getByTestId('weapon-card')).toContainText(/\d+\/\d+/);
   await expect(page.getByTestId('morale-state')).toContainText('Estado: Firme');
   await expect(page.getByTestId('morale-state')).toContainText(/Cobertura: \d+%/);
-  await expect(page.getByTestId('tick-value')).not.toHaveText('Tick: 0', { timeout: 5000 });
+  await expect(page.getByTestId('app')).not.toHaveAttribute('data-tick', '0', { timeout: 5000 });
+  await expect(page.getByTestId('hud')).not.toContainText('Tick');
   await expect(page.getByTestId('band-value')).toContainText('Estratégica');
   await expect(page.getByTestId('squad-1')).toHaveAttribute('aria-pressed', 'true');
 

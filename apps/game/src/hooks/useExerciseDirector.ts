@@ -7,11 +7,13 @@ import {
   type MutableRefObject,
   type SetStateAction,
 } from 'react';
-import { BOOTCAMP_EXERCISE, type TrainingAction } from '@prestes/content';
+import { BOOTCAMP_EXERCISE, translate, type Locale, type TrainingAction } from '@prestes/content';
 import type { Frame } from '@prestes/shared';
+import type { OrderCallout } from '@prestes/view3d';
 import type { GameClient } from '../client/GameClient';
 import { trainingStorage } from '../storage';
 import {
+  activeObjective,
   advanceExercise,
   currentPhase,
   markersForPhase,
@@ -28,6 +30,7 @@ import {
 
 interface ExerciseDirectorOptions {
   frame: Frame | null;
+  locale: Locale;
   /** Current HUD selection size, read when objectives are evaluated. */
   selectedCountRef: MutableRefObject<number>;
   sessionMode: 'battle' | 'training';
@@ -38,6 +41,7 @@ interface ExerciseDirectorOptions {
 /** Bootcamp exercise state, the per-frame director, progress, retry and debrief. */
 export function useExerciseDirector({
   frame,
+  locale,
   selectedCountRef,
   sessionMode,
   clientRef,
@@ -51,6 +55,8 @@ export function useExerciseDirector({
   const [exerciseFeedback, setExerciseFeedback] = useState<string | null>(null);
   const [trainingActions, setTrainingActions] = useState<Set<TrainingAction>>(new Set());
   const exerciseTickRef = useRef(-1);
+  const [instructorCallout, setInstructorCallout] = useState<OrderCallout | null>(null);
+  const calloutObjective = useRef<string | null>(null);
 
   const recordTrainingAction = (action: TrainingAction): void => {
     if (
@@ -145,6 +151,22 @@ export function useExerciseDirector({
     const handle = window.setTimeout(() => setExerciseFeedback(null), 2400);
     return () => window.clearTimeout(handle);
   }, [exerciseFeedback]);
+  // The instructor speaks the order for each new objective over his head.
+  useEffect(() => {
+    if (sessionMode !== 'training' || !exerciseState || exerciseState.completed || !frame) {
+      return;
+    }
+    const objective = activeObjective(exerciseState);
+    if (!objective || calloutObjective.current === objective.id) {
+      return;
+    }
+    calloutObjective.current = objective.id;
+    const instructor = frame.units.find(
+      (unit) => unit.faction === 'column' && unit.kind === 'officer' && unit.squadId === 99,
+    );
+    const text = translate(locale, objective.instructorKey).replace(/^[^:]{3,12}:\s*/, '');
+    setInstructorCallout({ officerId: instructor?.id ?? null, troopIds: [], officerText: text, troopText: '' });
+  }, [exerciseState, frame, locale, sessionMode]);
   const exercisePhase = exerciseState ? currentPhase(exerciseState) : null;
   const debrief =
     exerciseState?.completed && frame
@@ -191,5 +213,6 @@ export function useExerciseDirector({
     exercisePhase,
     debrief,
     exerciseMarkers,
+    instructorCallout,
   };
 }

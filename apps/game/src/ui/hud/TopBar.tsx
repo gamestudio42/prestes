@@ -1,17 +1,15 @@
-import { Box, Camera, Code2, Contrast, Languages, Pause, Play } from 'lucide-react';
+import { Camera, Contrast, Languages, Pause, Play } from 'lucide-react';
 import type { Locale } from '@prestes/content';
 import type { CameraBand } from '@prestes/view3d';
-import type { Frame, Outcome } from '@prestes/shared';
 import { IconButton } from './IconButton';
+import { ICONS } from './orderMeta';
 import type { Translate } from './orderMeta';
 
 interface TopBarProps {
   t: Translate;
   locale: Locale;
-  frame: Frame | null;
   band: CameraBand;
   postStrong: boolean;
-  outcome: Outcome;
   speed: 0 | 1 | 2 | 4;
   sandboxOpen: boolean;
   onLocaleChange: (locale: Locale) => void;
@@ -26,10 +24,8 @@ interface TopBarProps {
 export function TopBar({
   t,
   locale,
-  frame,
   band,
   postStrong,
-  outcome,
   speed,
   sandboxOpen,
   onLocaleChange,
@@ -43,8 +39,6 @@ export function TopBar({
   const bandKey =
     band === 'strategic' ? 'hud.strategic' : band === 'tactical' ? 'hud.tactical' : 'hud.transition';
   const postKey = postStrong ? 'hud.postStrong' : 'hud.postClean';
-  const outcomeKey =
-    outcome === 'victory' ? 'hud.victory' : outcome === 'defeat' ? 'hud.defeat' : 'hud.playing';
 
   return (
     <header className="hud-top" data-testid="hud">
@@ -53,18 +47,6 @@ export function TopBar({
           {t('app.title')}
           <span className="hud-eyebrow">{t('hud.commandBar')}</span>
         </div>
-      </div>
-
-      <div className="hud-rail stat-rail">
-        <span data-testid="tick-value">
-          {t('hud.tick')}: {frame?.tick ?? 0}
-        </span>
-        <span data-testid="path-count">
-          {t('hud.paths')}: {frame?.orders.length ?? 0}
-        </span>
-        <span data-testid="outcome">
-          {t('hud.outcome')}: {t(outcomeKey)}
-        </span>
       </div>
 
       <div className="hud-rail camera-rail">
@@ -115,7 +97,7 @@ export function TopBar({
           active={sandboxOpen}
           className="hud-icon"
         >
-          <Box aria-hidden="true" size={15} />
+          <ICONS.sandbox aria-hidden="true" size={15} />
         </IconButton>
         <IconButton
           testId="codex-toggle"
@@ -124,7 +106,7 @@ export function TopBar({
           onClick={onToggleCodex}
           className="hud-icon"
         >
-          <Code2 aria-hidden="true" size={15} />
+          <ICONS.codex aria-hidden="true" size={15} />
         </IconButton>
         <div className="speed-control">
           <IconButton
