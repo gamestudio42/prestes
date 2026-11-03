@@ -91,7 +91,7 @@ export type Outcome = 'playing' | 'victory' | 'defeat';
 export type UnitRole = 'training-enemy';
 
 export interface TrainingPhaseSetup {
-  phase: 'assembly' | 'assault' | 'hold';
+  phase: string;
   playerPoint: Vec2;
   officerPoint: Vec2;
   enemyPoint?: Vec2;

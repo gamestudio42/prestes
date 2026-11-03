@@ -1,11 +1,5 @@
 ﻿import { Check, ChevronRight, RotateCcw, Target } from 'lucide-react';
-import {
-  translate,
-  type ExercisePhase,
-  type Locale,
-  type MessageKey,
-  type TrainingAction,
-} from '@prestes/content';
+import { translate, type ExercisePhase, type Locale, type MessageKey } from '@prestes/content';
 import type { RuntimeObjective } from '../training/exercise';
 
 export interface TrainingMissionPanelProps {
@@ -18,39 +12,18 @@ export interface TrainingMissionPanelProps {
   failed: boolean;
   failureReason: string | null;
   feedbackKey: string | null;
-  completedDrills: ReadonlySet<TrainingAction>;
   debrief: {
     timeTicks: number;
     ammo: number;
     peakSuppression: number;
     alive: number;
     total: number;
+    stations: number;
   } | null;
   onContinue: () => void;
   onReplay: () => void;
   onRetry: () => void;
 }
-
-const DRILL_KEYS: Partial<Record<TrainingAction, MessageKey>> = {
-  'camera-pan': 'training.step.pan',
-  'camera-zoom': 'training.step.zoom',
-  'camera-rotate': 'training.step.rotate',
-  select: 'training.step.select',
-  move: 'training.step.move',
-  formation: 'training.bootcamp.stepFormation',
-  'hold-fire': 'training.bootcamp.stepHoldFire',
-  suppress: 'training.bootcamp.stepSuppress',
-  flank: 'training.bootcamp.stepFlank',
-  attack: 'training.bootcamp.stepAttack',
-  'stance-crouch': 'training.step.crouch',
-  'stance-prone': 'training.step.prone',
-  defend: 'training.bootcamp.stepDefend',
-  ambush: 'training.bootcamp.stepAmbush',
-  'protect-officer': 'training.bootcamp.stepProtectOfficer',
-  rescue: 'training.bootcamp.stepRescue',
-  withdraw: 'training.bootcamp.stepWithdraw',
-  bounding: 'training.bootcamp.stepBounding',
-};
 
 function formatTicks(ticks: number): string {
   const total = Math.max(0, Math.ceil(ticks / 10));
@@ -69,7 +42,6 @@ export function TrainingMissionPanel({
   failed,
   failureReason,
   feedbackKey,
-  completedDrills,
   debrief,
   onContinue,
   onReplay,
@@ -78,6 +50,7 @@ export function TrainingMissionPanel({
   const t = (key: MessageKey, values?: Readonly<Record<string, string | number>>) =>
     translate(locale, key, values);
   const done = objectives.filter((objective) => objective.done).length;
+  const active = objectives.find((objective) => objective.active && !objective.done);
   const progress = objectives.length === 0 ? 0 : (done / objectives.length) * 100;
 
   return (
@@ -111,6 +84,10 @@ export function TrainingMissionPanel({
               <dd>{debrief.ammo}</dd>
               <dt>{t('training.exercise.debrief.suppression')}</dt>
               <dd>{debrief.peakSuppression}%</dd>
+              <dt>{t('training.exercise.debrief.stations')}</dt>
+              <dd data-testid="debrief-stations">
+                {debrief.stations}/{totalPhases}
+              </dd>
               <dt>{t('training.exercise.debrief.status')}</dt>
               <dd>
                 {debrief.alive}/{debrief.total}
@@ -149,7 +126,7 @@ export function TrainingMissionPanel({
             {t(phase.objectiveKey)}
           </p>
           <p className="tutorial-dialogue" data-testid="training-dialogue">
-            {t(phase.instructorKey)}
+            {t(active ? active.instructorKey : phase.instructorKey)}
           </p>
           <p className="tutorial-hint">{t(phase.hintKey)}</p>
 
@@ -157,12 +134,18 @@ export function TrainingMissionPanel({
             {objectives.map((objective) => (
               <div
                 key={objective.id}
-                className={`training-objective-row ${objective.done ? 'done' : ''}`}
+                className={`training-objective-row ${objective.done ? 'done' : ''} ${
+                  objective.active && !objective.done ? 'active' : ''
+                }`}
+                data-testid={`training-objective-${objective.id}`}
+                data-done={objective.done}
               >
                 <span>{objective.done ? <Check aria-hidden="true" size={13} /> : null}</span>
                 <span>{t(objective.labelKey)}</span>
                 <strong>
-                  {objective.kind === 'hold'
+                  {objective.kind === 'hold' ||
+                  objective.kind === 'hold-fire' ||
+                  objective.kind === 'cohesion-hold'
                     ? `${formatTicks(objective.current)} / ${formatTicks(objective.target)}`
                     : `${objective.current}/${objective.target}`}
                 </strong>
@@ -181,17 +164,6 @@ export function TrainingMissionPanel({
             </p>
           ) : null}
 
-          <details className="training-drills">
-            <summary>{t('training.exercise.drills')}</summary>
-            <p>{t('training.exercise.drillsHint')}</p>
-            <ul>
-              {phase.drills.map((drill) => (
-                <li key={drill} className={completedDrills.has(drill) ? 'done' : ''}>
-                  {t(DRILL_KEYS[drill] ?? 'training.objective')}
-                </li>
-              ))}
-            </ul>
-          </details>
 
           <div className="tutorial-actions">
             <button type="button" className="secondary" onClick={onReplay} data-testid="training-replay">

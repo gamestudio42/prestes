@@ -5,28 +5,43 @@
   type ExerciseObjective,
   type ExercisePhase,
 } from '@prestes/content';
-import type { Command, Frame, UnitSnapshot } from '@prestes/shared';
+import type { Command, Frame } from '@prestes/shared';
+import {
+  countInside,
+  evaluateObjective,
+  instructorUnit,
+  objectiveTarget,
+  playerUnits,
+  trainingEnemies,
+  type ObjectiveInput,
+  type ObjectiveMemory,
+} from './objectives';
 
-const SECURE_TICKS = 20;
+export type { ObjectiveInput } from './objectives';
 
 export interface RuntimeObjective {
   id: string;
   labelKey: ExerciseObjective['labelKey'];
+  instructorKey: ExerciseObjective['instructorKey'];
   kind: ExerciseObjective['kind'];
   current: number;
   target: number;
   done: boolean;
+  active: boolean;
 }
 
 export interface ExerciseState {
+  /** Index of the current station. */
   phaseIndex: number;
   phaseStartedTick: number;
   completedPhases: string[];
+  /** Index of the active objective inside the current station. */
+  objectiveIndex: number;
   completed: boolean;
   failed: boolean;
   failureReason: string | null;
   peakSuppression: number;
-  objectiveTicks: Record<string, number>;
+  objectiveTicks: ObjectiveMemory;
   failureTicks: Record<string, number>;
 }
 
@@ -39,11 +54,14 @@ export interface ExerciseEvaluation {
   failure: string | null;
 }
 
+const NO_INPUT: ObjectiveInput = { actions: new Set(), selectedCount: 0 };
+
 export function startExercise(): ExerciseState {
   return {
     phaseIndex: 0,
     phaseStartedTick: 0,
     completedPhases: [],
+    objectiveIndex: 0,
     completed: false,
     failed: false,
     failureReason: null,
@@ -60,6 +78,13 @@ export function currentPhase(
   return exercise.phases[Math.min(state.phaseIndex, exercise.phases.length - 1)]!;
 }
 
+export function activeObjective(
+  state: ExerciseState,
+  exercise: BootcampExercise = BOOTCAMP_EXERCISE,
+): ExerciseObjective | null {
+  return currentPhase(state, exercise).objectives[state.objectiveIndex] ?? null;
+}
+
 export function phaseCommand(phase: ExercisePhase): Command {
   return {
     type: 'training_phase',
@@ -70,23 +95,22 @@ export function phaseCommand(phase: ExercisePhase): Command {
       enemyPoint: phase.setup.trainingEnemyPoint,
       enemyCount: phase.setup.trainingEnemyCount,
       releaseTrainingFire: phase.setup.releaseTrainingFire,
+      pinInstructor: phase.setup.pinInstructor,
+      casualtyCount: phase.setup.casualtyCount,
     },
   };
 }
 
-export function objectivePlaceholders(phase: ExercisePhase): RuntimeObjective[] {
-  return phase.objectives.map((objective) => ({
+export function objectivePlaceholders(phase: ExercisePhase, objectiveIndex = 0): RuntimeObjective[] {
+  return phase.objectives.map((objective, index) => ({
     id: objective.id,
     labelKey: objective.labelKey,
+    instructorKey: objective.instructorKey,
     kind: objective.kind,
     current: 0,
-    target:
-      objective.kind === 'hold'
-        ? (objective.ticks ?? 1)
-        : objective.kind === 'suppress'
-          ? (objective.count ?? 1)
-          : (objective.minUnits ?? 1),
-    done: false,
+    target: objectiveTarget(objective),
+    done: index < objectiveIndex,
+    active: index === objectiveIndex,
   }));
 }
 
@@ -101,17 +125,36 @@ export function retryPhase(
   const phase = currentPhase(state, exercise);
   const next: ExerciseState = {
     ...state,
-    phaseStartedTick: state.phaseStartedTick,
+    objectiveIndex: 0,
     failed: false,
     failureReason: null,
     objectiveTicks: {},
     failureTicks: {},
   };
-  return {
-    state: next,
-    command: phaseCommand(phase),
-    objectives: [],
-  };
+  return { state: next, command: phaseCommand(phase), objectives: objectivePlaceholders(phase) };
+}
+
+/** Commands that set up the station when an objective becomes active. */
+export function objectiveStartCommands(objective: ExerciseObjective, frame: Frame): Command[] {
+  const enemies = trainingEnemies(frame).map((unit) => unit.id);
+  switch (objective.onStart) {
+    case 'enemy-advance':
+      return enemies.length > 0 && objective.point
+        ? [{ type: 'move', unitIds: enemies, to: objective.point }]
+        : [];
+    case 'enemy-fire':
+      return enemies.length > 0 ? [{ type: 'hold_fire', unitIds: enemies, hold: false }] : [];
+    case 'enemy-withdraw':
+      return enemies.length > 0 ? [{ type: 'withdraw', unitIds: enemies }] : [];
+    case 'instructor-out': {
+      const instructor = instructorUnit(frame);
+      return instructor && !instructor.incapacitated
+        ? [{ type: 'incapacitate', targetId: instructor.id }]
+        : [];
+    }
+    default:
+      return [];
+  }
 }
 
 export function advanceExercise(
@@ -119,6 +162,7 @@ export function advanceExercise(
   frame: Frame,
   exercise: BootcampExercise = BOOTCAMP_EXERCISE,
   tickDelta = 1,
+  input: ObjectiveInput = NO_INPUT,
 ): ExerciseEvaluation {
   if (state.completed || state.failed) {
     return {
@@ -131,25 +175,40 @@ export function advanceExercise(
     };
   }
   const phase = currentPhase(state, exercise);
-  const objectiveTicks = { ...state.objectiveTicks };
+  const memory = { ...state.objectiveTicks };
   const failureTicks = { ...state.failureTicks };
   const peakSuppression = Math.max(
     state.peakSuppression,
     ...playerUnits(frame).map((unit) => unit.suppression),
   );
-  const objectives = evaluateObjectives(phase, frame, objectiveTicks, tickDelta);
 
-  const failure = evaluateFailure(phase, frame, failureTicks, tickDelta);
+  // Objectives run in order; only the active one is evaluated this frame.
+  let objectiveIndex = state.objectiveIndex;
+  const commands: Command[] = [];
+  const objectives = objectivePlaceholders(phase, objectiveIndex);
+  const active = phase.objectives[objectiveIndex];
+  if (active) {
+    const result = evaluateObjective(active, frame, memory, tickDelta, input);
+    objectives[objectiveIndex] = {
+      ...objectives[objectiveIndex]!,
+      current: result.current,
+      target: result.target,
+      done: result.done,
+    };
+    if (result.done) {
+      objectiveIndex += 1;
+      const next = phase.objectives[objectiveIndex];
+      if (next) {
+        objectives[objectiveIndex] = { ...objectives[objectiveIndex]!, active: true };
+        commands.push(...objectiveStartCommands(next, frame));
+      }
+    }
+  }
+
+  const failure = active ? evaluateFailure(phase, active, frame, failureTicks, tickDelta) : null;
   if (failure) {
     return {
-      state: {
-        ...state,
-        failed: true,
-        failureReason: failure,
-        peakSuppression,
-        objectiveTicks,
-        failureTicks,
-      },
+      state: { ...state, failed: true, failureReason: failure, peakSuppression, objectiveTicks: memory, failureTicks },
       objectives,
       commands: [],
       phaseCompleted: null,
@@ -158,11 +217,11 @@ export function advanceExercise(
     };
   }
 
-  if (!objectives.every((objective) => objective.done)) {
+  if (objectiveIndex < phase.objectives.length) {
     return {
-      state: { ...state, peakSuppression, objectiveTicks, failureTicks },
+      state: { ...state, objectiveIndex, peakSuppression, objectiveTicks: memory, failureTicks },
       objectives,
-      commands: [],
+      commands,
       phaseCompleted: null,
       exerciseCompleted: false,
       failure: null,
@@ -176,6 +235,7 @@ export function advanceExercise(
       state: {
         ...state,
         completedPhases,
+        objectiveIndex,
         completed: true,
         failed: false,
         failureReason: null,
@@ -198,6 +258,7 @@ export function advanceExercise(
       phaseIndex: nextIndex,
       phaseStartedTick: frame.tick,
       completedPhases,
+      objectiveIndex: 0,
       failed: false,
       failureReason: null,
       peakSuppression,
@@ -212,173 +273,51 @@ export function advanceExercise(
   };
 }
 
-function evaluateObjectives(
-  phase: ExercisePhase,
-  frame: Frame,
-  ticks: Record<string, number>,
-  tickDelta: number,
-): RuntimeObjective[] {
-  return phase.objectives.map((objective) => {
-    const result = evaluateObjective(objective, frame, ticks, tickDelta);
-    return {
-      id: objective.id,
-      labelKey: objective.labelKey,
-      kind: objective.kind,
-      current: result.current,
-      target: result.target,
-      done: result.done,
-    };
-  });
-}
-
-function evaluateObjective(
-  objective: ExerciseObjective,
-  frame: Frame,
-  ticks: Record<string, number>,
-  tickDelta: number,
-): { current: number; target: number; done: boolean } {
-  const player = playerUnits(frame);
-  const enemies = trainingEnemies(frame);
-  if (objective.kind === 'reach') {
-    const current = countInside(player, objective.point, objective.radius ?? 0);
-    const target = objective.minUnits ?? 1;
-    return { current, target, done: current >= target };
-  }
-  if (objective.kind === 'suppress') {
-    const target = objective.count ?? 1;
-    const current =
-      enemies.length === 0 ? target : enemies.filter((unit) => unit.suppressed).length;
-    const held = current >= target;
-    const next = held ? (ticks[objective.id] ?? 0) + tickDelta : 0;
-    ticks[objective.id] = next;
-    return { current, target, done: next >= (objective.ticks ?? 1) };
-  }
-  if (objective.kind === 'secure') {
-    const current = countInside(player, objective.point, objective.radius ?? 0);
-    const target = objective.minUnits ?? 1;
-    const enemiesInside = countInside(enemies, objective.point, objective.radius ?? 0);
-    const held = current >= target && enemiesInside === 0;
-    const next = held ? (ticks[objective.id] ?? 0) + tickDelta : 0;
-    ticks[objective.id] = next;
-    return { current, target, done: next >= SECURE_TICKS };
-  }
-  if (objective.kind === 'hold') {
-    const current = countInside(player, objective.point, objective.radius ?? 0);
-    const target = objective.minUnits ?? 1;
-    const next =
-      current >= target ? (ticks[objective.id] ?? 0) + tickDelta : (ticks[objective.id] ?? 0);
-    ticks[objective.id] = next;
-    return { current: next, target: objective.ticks ?? 1, done: next >= (objective.ticks ?? 1) };
-  }
-  const officer = officerUnit(frame);
-  const current =
-    officer &&
-    officer.alive &&
-    !officer.incapacitated &&
-    !officer.routed &&
-    officer.state !== 'pinned' &&
-    inside(officer, objective.point, objective.radius ?? 0)
-      ? 1
-      : 0;
-  return { current, target: 1, done: current === 1 };
-}
-
+/**
+ * Line, instructor and enemy-in-zone failures apply while a hold objective is
+ * active; the cohesion failure while a cohesion objective is active.
+ */
 function evaluateFailure(
   phase: ExercisePhase,
+  active: ExerciseObjective,
   frame: Frame,
   ticks: Record<string, number>,
   tickDelta: number,
 ): string | null {
-  if (!phase.failure) {
+  const failure = phase.failure;
+  if (!failure) {
     return null;
   }
+  const accumulate = (key: string, condition: boolean, limit: number | undefined): boolean => {
+    if (limit === undefined) {
+      return false;
+    }
+    ticks[key] = condition ? (ticks[key] ?? 0) + tickDelta : 0;
+    return ticks[key]! >= limit;
+  };
   const player = playerUnits(frame);
-  const enemies = trainingEnemies(frame);
-  const officer = officerUnit(frame);
-  const hold = phase.objectives.find((objective) => objective.kind === 'hold');
-  if (!hold) {
-    return null;
-  }
-  const point = hold.point;
-  const radius = hold.radius ?? 0;
-  const insideCount = countInside(player, point, radius);
-  const enemyInsideCount = countInside(enemies, point, radius);
-  if (phase.failure.zoneEmptyTicks !== undefined) {
-    ticks.zoneEmpty = insideCount === 0 ? (ticks.zoneEmpty ?? 0) + tickDelta : 0;
-    if (ticks.zoneEmpty >= phase.failure.zoneEmptyTicks) {
+  if (active.kind === 'hold') {
+    const radius = active.radius ?? 0;
+    if (accumulate('zoneEmpty', countInside(player, active.point, radius) === 0, failure.zoneEmptyTicks)) {
       return 'training.exercise.failure.line';
     }
-  }
-  if (phase.failure.officerPinnedTicks !== undefined) {
-    const pinned = !officer || !officer.alive || officer.incapacitated || officer.state === 'pinned';
-    ticks.officerPinned = pinned ? (ticks.officerPinned ?? 0) + tickDelta : 0;
-    if (ticks.officerPinned >= phase.failure.officerPinnedTicks) {
+    const instructor = instructorUnit(frame);
+    const instructorDown =
+      !instructor || instructor.incapacitated || instructor.state === 'pinned';
+    if (accumulate('officerPinned', instructorDown, failure.officerPinnedTicks)) {
       return 'training.exercise.failure.officer';
     }
-  }
-  if (phase.failure.enemyInZoneTicks !== undefined) {
-    ticks.enemyInZone =
-      enemyInsideCount > 0 ? (ticks.enemyInZone ?? 0) + tickDelta : 0;
-    if (ticks.enemyInZone >= phase.failure.enemyInZoneTicks) {
+    const enemiesInside = countInside(trainingEnemies(frame), active.point, radius);
+    if (accumulate('enemyInZone', enemiesInside > 0, failure.enemyInZoneTicks)) {
       return 'training.exercise.failure.enemy';
+    }
+  }
+  if (active.kind === 'cohesion-hold') {
+    const average =
+      player.length === 0 ? 0 : player.reduce((sum, unit) => sum + unit.cohesion, 0) / player.length;
+    if (accumulate('lowCohesion', average < 20, failure.lowCohesionTicks)) {
+      return 'training.exercise.failure.cohesion';
     }
   }
   return null;
 }
-
-function playerUnits(frame: Frame): UnitSnapshot[] {
-  return frame.units.filter(
-    (unit) =>
-      unit.faction === 'column' &&
-      unit.squadId !== 99 &&
-      unit.alive &&
-      !unit.routed &&
-      !unit.incapacitated &&
-      !unit.dummy,
-  );
-}
-
-function trainingEnemies(frame: Frame): UnitSnapshot[] {
-  return frame.units.filter(
-    (unit) =>
-      unit.role === 'training-enemy' &&
-      unit.alive &&
-      !unit.routed &&
-      !unit.incapacitated,
-  );
-}
-
-function officerUnit(frame: Frame): UnitSnapshot | null {
-  return (
-    frame.units.find(
-      (unit) =>
-        unit.faction === 'column' &&
-        unit.kind === 'officer' &&
-        unit.alive &&
-        !unit.dummy,
-    ) ?? null
-  );
-}
-
-function countInside(
-  units: readonly UnitSnapshot[],
-  point: { x: number; y: number } | undefined,
-  radius: number,
-): number {
-  if (!point) {
-    return 0;
-  }
-  return units.filter((unit) => inside(unit, point, radius)).length;
-}
-
-function inside(
-  unit: { x: number; y: number },
-  point: { x: number; y: number } | undefined,
-  radius: number,
-): boolean {
-  return point !== undefined && (unit.x - point.x) ** 2 + (unit.y - point.y) ** 2 <= radius * radius;
-}
-
-
-
-

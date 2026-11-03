@@ -28,6 +28,8 @@ import {
 
 interface ExerciseDirectorOptions {
   frame: Frame | null;
+  /** Current HUD selection size, read when objectives are evaluated. */
+  selectedCountRef: MutableRefObject<number>;
   sessionMode: 'battle' | 'training';
   clientRef: MutableRefObject<GameClient | null>;
   setSpeed: Dispatch<SetStateAction<0 | 1 | 2 | 4>>;
@@ -36,6 +38,7 @@ interface ExerciseDirectorOptions {
 /** Bootcamp exercise state, the per-frame director, progress, retry and debrief. */
 export function useExerciseDirector({
   frame,
+  selectedCountRef,
   sessionMode,
   clientRef,
   setSpeed,
@@ -91,9 +94,17 @@ export function useExerciseDirector({
     const tickDelta =
       exerciseTickRef.current < 0 ? 1 : Math.max(1, frame.tick - exerciseTickRef.current);
     exerciseTickRef.current = frame.tick;
-    const result = advanceExercise(exerciseState, frame, BOOTCAMP_EXERCISE, tickDelta);
+    const result = advanceExercise(exerciseState, frame, BOOTCAMP_EXERCISE, tickDelta, {
+      actions: trainingActions,
+      selectedCount: selectedCountRef.current,
+    });
     setExerciseState(result.state);
     setExerciseObjectives(result.objectives);
+    // Objective start actions (enemy advance, instructor out) and the next
+    // station setup both go through the command boundary.
+    for (const command of result.commands) {
+      clientRef.current?.sendCommand(command);
+    }
     if (result.failure) {
       setExerciseFeedback(null);
       setSpeed(0);
@@ -115,9 +126,7 @@ export function useExerciseDirector({
     }
     if (result.phaseCompleted) {
       setExerciseFeedback(result.phaseCompleted.titleKey);
-      for (const command of result.commands) {
-        clientRef.current?.sendCommand(command);
-      }
+      setTrainingActions(new Set());
       setExerciseObjectives(objectivePlaceholders(currentPhase(result.state)));
       const nextProgress: ExerciseProgress = {
         phaseIndex: result.state.phaseIndex,
@@ -128,7 +137,7 @@ export function useExerciseDirector({
       setExerciseProgress(nextProgress);
       saveExerciseProgress(trainingStorage(), nextProgress);
     }
-  }, [frame, exerciseState, sessionMode, exerciseProgress.bestTimeTicks]);
+  }, [frame, exerciseState, sessionMode, exerciseProgress.bestTimeTicks, trainingActions]);
   useEffect(() => {
     if (!exerciseFeedback) {
       return;
@@ -149,6 +158,7 @@ export function useExerciseDirector({
             (unit) => unit.faction === 'column' && unit.squadId !== 99 && unit.alive && !unit.incapacitated,
           ).length,
           total: 11,
+          stations: exerciseState.completedPhases.length,
         }
       : null;
   const exerciseMarkers = useMemo(

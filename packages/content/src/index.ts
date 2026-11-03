@@ -22,14 +22,17 @@ export { SOURCE_KEYS, isSourceKey, type SourceKey } from './sources';
 
 export {
   BOOTCAMP_EXERCISE,
+  CURRICULUM,
   type BootcampExercise,
   type ExerciseFailure,
   type ExerciseMarker,
   type ExerciseObjective,
+  type ExerciseObjectiveKind,
   type ExercisePhase,
   type ExercisePhaseId,
   type ExercisePoint,
   type ExerciseSetup,
+  type ObjectiveStartAction,
   type TrainingAction,
 } from './bootcamp-exercise';
 export {

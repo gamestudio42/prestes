@@ -12,12 +12,12 @@
 
 ## 3. Stations content and objectives
 
-- [ ] 3.1 Extend the objective union and the exercise types in `packages/content` with the new objective kinds and station setup fields (refill, pin, casualties); verify `pnpm typecheck`
-- [ ] 3.2 Define the seven stations in `bootcamp-exercise.ts` with markers, setups, objectives and failures per the design table; add a content test that every order in the catalogue, every stance and posture, formation, Hold Fire, bounding, rescue, officer aura and officer loss is required by at least one objective
-- [ ] 3.3 Add EN and PT-BR locale keys for every station title, briefing, instructor line, objective label, failure reason and debrief line; verify `pnpm check:locales` and the encoding test
-- [ ] 3.4 Implement one pure evaluator per objective kind in `apps/game/src/training/objectives.ts`, with ordered objectives inside a station, and unit-test each evaluator with synthetic frames and events
-- [ ] 3.5 Update the exercise director for stations (sequential objectives, station transitions, per-station failure, retry, debrief with stations completed) and its unit tests
-- [ ] 3.6 Migrate progress from `prestes.bootcamp.exercise.v1` to `prestes.bootcamp.stations.v2` (assembly → 1, assault → 2, hold → 7, completed stays completed; legacy 27-step starts at 1), and unit-test each migration path
+- [x] 3.1 Extend the objective union and the exercise types in `packages/content` with the new objective kinds and station setup fields (refill, pin, casualties); verify `pnpm typecheck`
+- [x] 3.2 Define the seven stations in `bootcamp-exercise.ts` with markers, setups, objectives and failures per the design table; add a content test that every order in the catalogue, every stance and posture, formation, Hold Fire, bounding, rescue, officer aura and officer loss is required by at least one objective
+- [x] 3.3 Add EN and PT-BR locale keys for every station title, briefing, instructor line, objective label, failure reason and debrief line; verify `pnpm check:locales` and the encoding test
+- [x] 3.4 Implement one pure evaluator per objective kind in `apps/game/src/training/objectives.ts`, with ordered objectives inside a station, and unit-test each evaluator with synthetic frames and events
+- [x] 3.5 Update the exercise director for stations (sequential objectives, station transitions, per-station failure, retry, debrief with stations completed) and its unit tests
+- [x] 3.6 Migrate progress from `prestes.bootcamp.exercise.v1` to `prestes.bootcamp.stations.v2` (assembly → 1, assault → 2, hold → 7, completed stays completed; legacy 27-step starts at 1), and unit-test each migration path
 
 ## 4. HUD, icons and start screen
 

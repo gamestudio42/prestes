@@ -50,6 +50,7 @@ export function App() {
   const clientRef = useRef<GameClient | null>(null);
   const cameraNonce = useRef(0);
   const selectionInitialized = useRef(false);
+  const selectedCountRef = useRef(0);
 
   const { audioRef, audioMuted, audioVolume, handleToggleAudio, handleAudioVolume } = useAudio();
   const {
@@ -72,14 +73,13 @@ export function App() {
     setExerciseObjectives,
     exerciseFeedback,
     setExerciseFeedback,
-    trainingActions,
     setTrainingActions,
     recordTrainingAction,
     handleRetryPhase,
     exercisePhase,
     debrief,
     exerciseMarkers,
-  } = useExerciseDirector({ frame, sessionMode, clientRef, setSpeed });
+  } = useExerciseDirector({ frame, selectedCountRef, sessionMode, clientRef, setSpeed });
   const {
     selectedSquadId,
     setSelectedSquadId,
@@ -138,6 +138,7 @@ export function App() {
     setPlacementPoint,
     recordTrainingAction,
   });
+  selectedCountRef.current = selectedIds.length;
   useKeyboardShortcuts({
     controlBothSides,
     selectedSquadId,
@@ -522,7 +523,6 @@ export function App() {
           failed={exerciseState.failed}
           failureReason={exerciseState.failureReason}
           feedbackKey={exerciseFeedback}
-          completedDrills={trainingActions}
           debrief={debrief}
           onContinue={handleMissionContinue}
           onReplay={handleMissionReplay}
