@@ -14,3 +14,13 @@ art-src/**/*.blend1
 fotos dos personages/
 sons referencia/
 .obsidian/
+# WSL symlinks to .gs42/standards/skills (unreadable by Git for Windows)
+.hermes/skills/feature-design/
+.hermes/skills/playtest-review/
+.hermes/skills/web-game-release/
+.opencode/skills/feature-design/
+.opencode/skills/playtest-review/
+.opencode/skills/web-game-release/
+.pi/skills/feature-design/
+.pi/skills/playtest-review/
+.pi/skills/web-game-release/
