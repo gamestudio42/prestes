@@ -1,0 +1,185 @@
+﻿import { expect, test } from '@playwright/test';
+
+test('issues an area order and an immediate group order', async ({ page }) => {
+  await page.goto('/');
+  await page.getByTestId('start-button').click();
+  await expect(page.getByTestId('hud')).toBeVisible();
+  await page.waitForFunction(() => Boolean(window.__prestes?.frame()));
+  await expect(page.getByTestId('squad-status')).toContainText('Selection: 11/11');
+
+  await page.getByTestId('order-tab-troop').click();
+  await page.getByTestId('order-defend').click();
+  await expect(page.getByTestId('order-hint')).toContainText('tactical order');
+  await page.getByTestId('game-canvas').click({
+    position: { x: 1000, y: 300 },
+  });
+  await expect(page.getByTestId('order-value')).toContainText('Defend', { timeout: 5000 });
+
+  await page.getByTestId('order-tab-movement').click();
+  await page.getByTestId('order-hold').click();
+  await expect(page.getByTestId('order-value')).toContainText('Hold', { timeout: 5000 });
+});
+
+test('changes formation without clearing the current order', async ({ page }) => {
+  await page.goto('/');
+  await page.getByTestId('start-button').click();
+  await expect(page.getByTestId('hud')).toBeVisible();
+  await page.waitForFunction(() => Boolean(window.__prestes?.frame()));
+  await expect(page.getByTestId('squad-status')).toContainText('Selection: 11/11');
+
+  await page.getByTestId('formation-select').selectOption('wedge');
+  await expect(page.getByTestId('formation-select')).toHaveValue('wedge');
+
+  await page.getByTestId('game-canvas').click({
+    button: 'right',
+    position: { x: 300, y: 150 },
+  });
+  await expect(page.getByTestId('order-value')).toContainText('Move', { timeout: 5000 });
+  await expect(page.getByTestId('formation-select')).toHaveValue('wedge');
+});
+test('toggles passive posture and hold fire', async ({ page }) => {
+  await page.goto('/');
+  await page.getByTestId('start-button').click();
+  await expect(page.getByTestId('hud')).toBeVisible();
+  await page.waitForFunction(() => Boolean((window as unknown as { __prestes?: unknown }).__prestes));
+
+  await page.getByTestId('posture-aggressive').click();
+  await expect(page.getByTestId('posture-aggressive')).toHaveAttribute('aria-pressed', 'true');
+  await expect
+    .poll(() =>
+      page.evaluate(() =>
+        (window as unknown as { __prestes?: { frame?: () => { units: Array<{ posture?: string; squadId: number }> } } })
+          .__prestes?.frame?.()
+          ?.units.filter((unit) => unit.squadId === 1)
+          .every((unit) => unit.posture === 'aggressive'),
+      ),
+    )
+    .toBe(true);
+
+  await page.getByTestId('hold-fire').click();
+  await expect(page.getByTestId('hold-fire')).toHaveAttribute('aria-pressed', 'true');
+  await expect
+    .poll(() =>
+      page.evaluate(() =>
+        (window as unknown as { __prestes?: { frame?: () => { units: Array<{ holdFire?: boolean; squadId: number }> } } })
+          .__prestes?.frame?.()
+          ?.units.filter((unit) => unit.squadId === 1)
+          .every((unit) => unit.holdFire === true),
+      ),
+    )
+    .toBe(true);
+
+  await expect(page.getByTestId('bounding-toggle')).toHaveAttribute('aria-pressed', 'true');
+  await page.getByTestId('bounding-toggle').click();
+  await expect(page.getByTestId('bounding-toggle')).toHaveAttribute('aria-pressed', 'false');
+  await page.getByTestId('bounding-toggle').click();
+  await expect(page.getByTestId('bounding-toggle')).toHaveAttribute('aria-pressed', 'true');
+});
+test('shows action names immediately and descriptions after five seconds', async ({ page }) => {
+  await page.goto('/');
+  await page.getByTestId('start-button').click();
+  await expect(page.getByTestId('hud')).toBeVisible();
+
+  await page.getByTestId('order-attack').hover();
+  await expect(page.getByRole('tooltip')).toContainText('Attack');
+  await expect(page.getByRole('tooltip')).not.toContainText('Pick an enemy');
+
+  await page.waitForTimeout(5200);
+  await expect(page.getByRole('tooltip')).toContainText('Pick an enemy');
+});
+test('draws a line formation when Move is pending', async ({ page }) => {
+  await page.goto('/');
+  await page.getByTestId('start-button').click();
+  await expect(page.getByTestId('hud')).toBeVisible();
+
+  await page.getByTestId('order-tab-movement').click();
+  await page.getByTestId('order-move').click();
+  await page.mouse.move(620, 420);
+  await page.mouse.down();
+  await page.mouse.move(920, 420, { steps: 8 });
+  await expect(page.locator('.selection-box')).toHaveCount(0);
+  await page.mouse.up();
+  await expect(page.getByTestId('order-value')).toContainText('Move', { timeout: 5000 });
+  await expect.poll(() =>
+    page.evaluate(
+      () =>
+        (window as unknown as { __prestes?: { frame?: () => { orders: unknown[] } } })
+          .__prestes?.frame?.().orders.length ?? 0,
+    ),
+  ).toBeGreaterThan(0);
+});
+
+
+
+
+test('turns alternating movement off for real orders', async ({ page }) => {
+  await page.goto('/');
+  await page.getByTestId('start-button').click();
+  await expect(page.getByTestId('hud')).toBeVisible();
+  await page.waitForFunction(() =>
+    Boolean((window as unknown as { __prestes?: { frame: () => unknown } }).__prestes?.frame()),
+  );
+
+  const ids = await page.evaluate(() =>
+    (window as unknown as { __prestes: { frame: () => { units: Array<{ id: number; faction: string; alive: boolean }> } } })
+      .__prestes.frame().units
+      .filter((unit) => unit.faction === 'column' && unit.alive)
+      .map((unit) => unit.id),
+  );
+  const sendMove = (x: number, y: number): Promise<void> =>
+    page.evaluate(
+      ({ unitIds, to }) =>
+        (window as unknown as {
+          __prestes: { command: (command: unknown) => void; step: (ticks: number) => void };
+        }).__prestes.command({ type: 'move', unitIds, to }),
+      { unitIds: ids, to: { x, y } },
+    );
+  const boundTeams = (): Promise<Array<string | null>> =>
+    page.evaluate(() =>
+      (window as unknown as { __prestes: { frame: () => { units: Array<{ faction: string; boundTeam: string | null }> } } })
+        .__prestes.frame().units
+        .filter((unit) => unit.faction === 'column')
+        .map((unit) => unit.boundTeam),
+    );
+
+  await expect(page.getByTestId('bounding-toggle')).toHaveAttribute('aria-pressed', 'true');
+  await page.getByTestId('bounding-toggle').click();
+  await expect(page.getByTestId('bounding-toggle')).toHaveAttribute('aria-pressed', 'false');
+  await sendMove(0, -4);
+  await page.evaluate(() =>
+    (window as unknown as { __prestes: { step: (ticks: number) => void } }).__prestes.step(3),
+  );
+  await expect.poll(async () => (await boundTeams()).every((team) => team === null)).toBe(true);
+
+  await page.getByTestId('bounding-toggle').click();
+  await expect(page.getByTestId('bounding-toggle')).toHaveAttribute('aria-pressed', 'true');
+  await sendMove(0, 4);
+  await page.evaluate(() =>
+    (window as unknown as { __prestes: { step: (ticks: number) => void } }).__prestes.step(3),
+  );
+  await expect.poll(async () => (await boundTeams()).some((team) => team !== null)).toBe(true);
+});
+test('splits a UI move with alternating movement and clears the order', async ({ page }) => {
+  await page.goto('/');
+  await page.getByTestId('start-button').click();
+  await page.waitForFunction(() => Boolean(window.__prestes?.frame()));
+  await expect(page.getByTestId('bounding-toggle')).toHaveAttribute('aria-pressed', 'true');
+  await page.getByTestId('order-tab-movement').click();
+  await page.getByTestId('order-move').click();
+  await page.getByTestId('game-canvas').click({ position: { x: 820, y: 430 } });
+  await expect
+    .poll(() =>
+      page.evaluate(() =>
+        new Set(
+          window.__prestes
+            ?.frame()
+            ?.units.filter((unit) => unit.faction === 'column' && unit.squadId === 1)
+            .map((unit) => unit.boundTeam)
+            .filter((team): team is 'a' | 'b' => team === 'a' || team === 'b') ?? [],
+        ).size,
+      ),
+    )
+    .toBe(2);
+  await page.getByTestId('order-clear').click();
+  await expect(page.getByTestId('order-value')).toContainText('Hold', { timeout: 5000 });
+});

@@ -1,0 +1,14 @@
+node_modules
+dist
+livros
+.gs42
+.agents
+.opencode
+.hermes
+.pi
+.cursor
+openspec
+pnpm-lock.yaml
+playwright-report
+test-results
+coverage

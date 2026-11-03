@@ -1,0 +1,163 @@
+﻿import { expect, test, type Page } from '@playwright/test';
+import type { Command, Frame } from '@prestes/shared';
+
+declare global {
+  interface Window {
+    __prestes?: {
+      command: (command: Command) => void;
+      step: (ticks: number) => void;
+      frame: () => Frame | null;
+    };
+  }
+}
+
+test.use({ video: { mode: 'on', size: { width: 1440, height: 900 } } });
+test.setTimeout(180_000);
+
+async function currentFrame(page: Page): Promise<Frame> {
+  const frame = await page.evaluate(() => window.__prestes?.frame() ?? null);
+  if (!frame) {
+    throw new Error('simulation frame is unavailable');
+  }
+  return frame;
+}
+
+async function command(page: Page, value: Command, ticks = 1): Promise<Frame> {
+  const before = await currentFrame(page);
+  await page.evaluate((next) => window.__prestes?.command(next), value);
+  for (let index = 0; index < ticks; index += 1) {
+    await page.evaluate(() => window.__prestes?.step(1));
+    await page.waitForTimeout(35);
+  }
+  await page.waitForFunction(
+    (targetTick) => (window.__prestes?.frame()?.tick ?? 0) >= targetTick,
+    before.tick + ticks,
+  );
+  const frame = await currentFrame(page);
+  const rejected = frame.events.find((event) => event.type === 'command_rejected');
+  if (rejected) {
+    throw new Error(`command rejected: ${JSON.stringify(rejected)}`);
+  }
+  return frame;
+}
+
+test('controls both sides with reinforcements and exercises combat commands', async ({ page }) => {
+  await page.goto('/');
+  await page.getByTestId('start-button').click();
+  await page.waitForFunction(() => Boolean(window.__prestes?.frame()));
+  await expect(page.getByTestId('squad-status')).toContainText('Selection: 11/11');
+
+  await page.keyboard.press('F1');
+  await page.getByTestId('sandbox-both-sides').click();
+  await page.waitForFunction(() => Boolean(window.__prestes?.frame()));
+  await page.evaluate(() => {
+    const frame = window.__prestes?.frame();
+    if (!frame) return;
+    const unitIds = frame.units.filter((unit) => unit.alive && !unit.dummy).map((unit) => unit.id);
+    window.__prestes?.command({ type: 'hold_fire', unitIds, hold: true });
+  });
+
+  for (let index = 0; index < 2; index += 1) {
+    await page.getByTestId('sandbox-reinforce-column').click();
+    await page.getByTestId('sandbox-reinforce-legalist').click();
+  }
+  await page.getByTestId('sandbox-close').click();
+  await page.getByTestId('squad-3').click();
+  await expect(page.getByTestId('squad-3')).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByTestId('squad-status')).toContainText('Selection: 2/2');
+
+  const initial = await currentFrame(page);
+  const column = initial.units
+    .filter((unit) => unit.faction === 'column' && unit.alive && !unit.dummy)
+    .map((unit) => unit.id);
+  const legalist = initial.units
+    .filter((unit) => unit.faction === 'legalist' && unit.alive && !unit.dummy)
+    .map((unit) => unit.id);
+  expect(column).toHaveLength(14);
+  expect(legalist).toHaveLength(2);
+  await command(page, { type: 'hold_fire', unitIds: column, hold: true });
+  await command(page, { type: 'hold_fire', unitIds: legalist, hold: true });
+
+  const withDummy = await command(page, { type: 'spawn_dummy', to: { x: 0, y: 0 } });
+  const dummy = withDummy.units.find((unit) => unit.kind === 'dummy');
+  if (!dummy) throw new Error('missing target dummy');
+  const dummyId = dummy.id;
+
+  await command(page, { type: 'formation', unitIds: column, formation: 'wedge' });
+  await command(page, { type: 'formation', unitIds: legalist, formation: 'column' });
+  await command(page, { type: 'stance', unitIds: column, stance: 'crouched' });
+  await command(page, { type: 'stance', unitIds: legalist, stance: 'standing' });
+
+  const wounded = await command(page, { type: 'wound', targetId: legalist[0]!, hp: 30 });
+  expect(wounded.units.find((unit) => unit.id === legalist[0])?.hp).toBeLessThanOrEqual(30);
+
+  await command(page, { type: 'move', unitIds: column, to: { x: 0, y: 7 } }, 24);
+  await command(page, { type: 'move', unitIds: legalist, to: { x: 0, y: -8 } }, 24);
+
+  await command(page, { type: 'order', order: 'advance', unitIds: column, to: { x: 0, y: 7 } });
+  await command(page, { type: 'order', order: 'defend', unitIds: column, to: { x: 0, y: 7 } });
+  await command(page, { type: 'order', order: 'ambush', unitIds: column, to: { x: 0, y: 7 } });
+  await command(page, { type: 'order', order: 'disperse', unitIds: column, to: { x: 0, y: 7 } });
+  await command(page, { type: 'order', order: 'recon', unitIds: column, to: { x: 0, y: 7 } });
+  await command(page, { type: 'order', order: 'reserve', unitIds: column, to: { x: 0, y: 7 } });
+  await command(page, { type: 'order', order: 'regroup', unitIds: column });
+  await command(page, { type: 'order', order: 'protect-officer', unitIds: column });
+  await command(page, {
+    type: 'order',
+    order: 'pursue',
+    unitIds: column,
+    targetId: dummyId,
+  });
+  await command(page, { type: 'order', order: 'defend', unitIds: legalist, to: { x: 0, y: -8 } });
+
+  await command(page, { type: 'flank', unitIds: column, targetId: dummyId }, 8);
+  await command(page, { type: 'suppress', unitIds: column, targetId: dummyId }, 8);
+  await command(page, { type: 'attack', unitIds: column, targetId: dummyId }, 8);
+  await command(page, { type: 'attack', unitIds: legalist, targetId: column[0]! }, 8);
+  await command(page, { type: 'suppress', unitIds: legalist, targetId: dummyId }, 8);
+  await command(page, { type: 'flank', unitIds: legalist, targetId: dummyId }, 8);
+
+  await command(page, { type: 'withdraw', unitIds: column }, 4);
+  await command(page, { type: 'hold', unitIds: column });
+  await command(page, { type: 'withdraw', unitIds: legalist }, 4);
+  await command(page, { type: 'hold', unitIds: legalist });
+
+  const beforeCasualty = await currentFrame(page);
+  const casualty = beforeCasualty.units.find(
+    (unit) => unit.id === legalist[1] && unit.alive && !unit.incapacitated,
+  );
+  if (casualty) {
+    await command(page, { type: 'incapacitate', targetId: casualty.id });
+    await command(page, {
+      type: 'order',
+      order: 'rescue',
+      unitIds: [column[6]!],
+      targetId: casualty.id,
+    });
+    const rescuing = await currentFrame(page);
+    expect(rescuing.units.find((unit) => unit.id === column[6])?.rescueTargetId).toBe(casualty.id);
+  }
+
+  await command(page, { type: 'attack', unitIds: column, targetId: legalist[1]! }, 6);
+  await command(page, { type: 'attack', unitIds: legalist, targetId: column[1]! }, 6);
+
+  const final = await currentFrame(page);
+  expect(final.tick).toBeGreaterThan(initial.tick);
+  expect(final.units.some((unit) => unit.faction === 'column')).toBe(true);
+  expect(final.units.some((unit) => unit.faction === 'legalist')).toBe(true);
+
+  const video = page.video();
+  await page.close();
+  await video?.saveAs('test-results/both-sides.webm');
+});
+
+
+
+
+
+
+
+
+
+
+

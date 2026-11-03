@@ -1,0 +1,29 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "baseUrl": ".",
+    "paths": {
+      "@prestes/kernel": ["packages/kernel/src/index.ts"],
+      "@prestes/shared": ["packages/shared/src/index.ts"],
+      "@prestes/simulation": ["packages/simulation/src/index.ts"],
+      "@prestes/view3d": ["packages/view3d/src/index.ts"],
+      "@prestes/content": ["packages/content/src/index.ts"]
+    },
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "noFallthroughCasesInSwitch": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+    "jsx": "react-jsx",
+    "noEmit": true,
+    "types": ["node"]
+  }
+}

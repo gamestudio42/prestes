@@ -1,0 +1,16 @@
+node_modules/
+dist/
+livros/
+.vite/
+coverage/
+playwright-report/
+test-results/
+*.tsbuildinfo
+.env
+.env.*
+!.env.example
+art-src/**/*.blend
+art-src/**/*.blend1
+fotos dos personages/
+sons referencia/
+.obsidian/

@@ -1,0 +1,400 @@
+import { useEffect, useRef, useState, type PointerEvent } from 'react';
+import {
+  SceneView,
+  type CameraBand,
+  type OrderCallout,
+  type PlacementPreview,
+  type TrainingMarker,
+} from '@prestes/view3d';
+import { coverAgainst, type PreviewPlan, type Vec2 } from '@prestes/shared';
+import type { GameClient } from '../client/GameClient';
+
+export type SelectionMode = 'all' | 'troops';
+
+export interface GameCanvasProps {
+  client: GameClient;
+  postStrong: boolean;
+  cameraRequest: { band: CameraBand; nonce: number } | null;
+  preview: PreviewPlan | null;
+  aimPending?: boolean;
+  pendingAction?: boolean;
+  lineMoveArmed?: boolean;
+  trainingField?: boolean;
+  strategicField?: boolean;
+  trainingMarkers?: readonly TrainingMarker[];
+  orderCallout?: OrderCallout | null;
+  placementPreview?: PlacementPreview | null;
+  targetUnitIds?: readonly number[];
+  selectedUnitIds?: readonly number[];
+  onCameraAction?: (kind: 'pan' | 'zoom' | 'rotate') => void;
+  onBandChange: (band: CameraBand) => void;
+  onSelectUnits: (unitIds: number[], mode: SelectionMode) => void;
+  onPrimaryUnit: (unitId: number) => void;
+  onPrimaryGround: (point: Vec2) => void;
+  onQuickUnit: (unitId: number) => void;
+  onQuickGround: (point: Vec2) => void;
+  onPrimaryLine: (from: Vec2, to: Vec2) => void;
+  onQuickLine: (from: Vec2, to: Vec2) => void;
+  onPreviewLine: (line: { from: Vec2; to: Vec2 } | null) => void;
+  onPreviewGround: (point: Vec2 | null) => void;
+  onPreviewUnit: (unitId: number | null) => void;
+  onHover: (hint: 'cover' | 'target' | null, x: number, y: number) => void;
+}
+
+interface DragState {
+  startX: number;
+  startY: number;
+  x: number;
+  y: number;
+  dragging: boolean;
+}
+
+export function GameCanvas({
+  client,
+  postStrong,
+  cameraRequest,
+  preview,
+  aimPending = false,
+  pendingAction = false,
+  lineMoveArmed = false,
+  trainingField = false,
+  strategicField = false,
+  trainingMarkers = [],
+  orderCallout = null,
+  placementPreview = null,
+  targetUnitIds = [],
+  selectedUnitIds = [],
+  onCameraAction,
+  onBandChange,
+  onSelectUnits,
+  onPrimaryUnit,
+  onPrimaryGround,
+  onQuickUnit,
+  onQuickGround,
+  onPrimaryLine,
+  onQuickLine,
+  onPreviewLine,
+  onPreviewGround,
+  onPreviewUnit,
+  onHover,
+}: GameCanvasProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const sceneRef = useRef<SceneView | null>(null);
+  const onBandChangeRef = useRef(onBandChange);
+  const [drag, setDrag] = useState<DragState | null>(null);
+  const [rightDrag, setRightDrag] = useState<DragState | null>(null);
+  const rightDragRef = useRef<DragState | null>(null);
+  onBandChangeRef.current = onBandChange;
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) {
+      return;
+    }
+
+    const scene = new SceneView({
+      container,
+      trainingField,
+      strategicField,
+      onCameraAction,
+      onBandChange: (band) => onBandChangeRef.current(band),
+    });
+    scene.setTrainingMarkers(trainingMarkers);
+    sceneRef.current = scene;
+    scene.setPostStrong(true);
+
+    let frameHandle = 0;
+    const loop = (): void => {
+      const frame = client.interpolated(0.5);
+      if (frame) {
+        scene.update(frame);
+      }
+      frameHandle = requestAnimationFrame(loop);
+    };
+    frameHandle = requestAnimationFrame(loop);
+
+    return () => {
+      cancelAnimationFrame(frameHandle);
+      scene.dispose();
+      sceneRef.current = null;
+    };
+  }, [client, trainingField, strategicField]);
+
+  useEffect(() => {
+    sceneRef.current?.setPlacementPreview(placementPreview);
+  }, [placementPreview]);
+
+  useEffect(() => {
+    sceneRef.current?.setTargetUnits(targetUnitIds);
+  }, [targetUnitIds]);
+
+  useEffect(() => {
+    sceneRef.current?.setSelectedUnits(selectedUnitIds);
+  }, [selectedUnitIds]);
+
+  useEffect(() => {
+    if (orderCallout) {
+      sceneRef.current?.showOrderCallout(orderCallout);
+    }
+  }, [orderCallout]);
+
+  useEffect(() => {
+    sceneRef.current?.setPostStrong(postStrong);
+  }, [postStrong]);
+
+  useEffect(() => {
+    sceneRef.current?.setPreview(preview);
+  }, [preview]);
+
+  useEffect(() => {
+    sceneRef.current?.setTrainingMarkers(trainingMarkers);
+  }, [trainingMarkers]);
+
+  useEffect(() => {
+    if (cameraRequest) {
+      sceneRef.current?.setBand(cameraRequest.band);
+    }
+  }, [cameraRequest]);
+
+  const localPoint = (event: PointerEvent<HTMLDivElement>): { x: number; y: number } => {
+    const rect = containerRef.current?.getBoundingClientRect();
+    return {
+      x: event.clientX - (rect?.left ?? 0),
+      y: event.clientY - (rect?.top ?? 0),
+    };
+  };
+
+  const handlePointerDown = (event: PointerEvent<HTMLDivElement>): void => {
+    const scene = sceneRef.current;
+    if (!scene) {
+      return;
+    }
+    if (event.button !== 0 && event.button !== 2) {
+      return;
+    }
+    if (event.button === 2) {
+      event.preventDefault();
+    }
+    const { x, y } = localPoint(event);
+    const unitId = scene.pickUnit(x, y);
+    if (event.button === 0) {
+      event.currentTarget.setPointerCapture?.(event.pointerId);
+      setDrag({ startX: x, startY: y, x, y, dragging: false });
+      return;
+    }
+    if (unitId !== null) {
+      onQuickUnit(unitId);
+      return;
+    }
+    event.currentTarget.setPointerCapture?.(event.pointerId);
+    const nextDrag = { startX: x, startY: y, x, y, dragging: false };
+    rightDragRef.current = nextDrag;
+    setRightDrag(nextDrag);
+    onPreviewUnit(null);
+  };
+
+  const handlePointerMove = (event: PointerEvent<HTMLDivElement>): void => {
+    const scene = sceneRef.current;
+    if (!scene) {
+      return;
+    }
+    const { x, y } = localPoint(event);
+    const activeRightDrag = rightDragRef.current ?? rightDrag;
+    if (activeRightDrag) {
+      if ((event.buttons & 2) === 0) {
+        rightDragRef.current = null;
+        setRightDrag(null);
+        onPreviewLine(null);
+        return;
+      }
+      const dragging =
+        activeRightDrag.dragging ||
+        Math.abs(x - activeRightDrag.startX) > 8 ||
+        Math.abs(y - activeRightDrag.startY) > 8;
+      const nextDrag = { ...activeRightDrag, x, y, dragging };
+      rightDragRef.current = nextDrag;
+      setRightDrag(nextDrag);
+      if (dragging) {
+        const from = scene.screenToGround(activeRightDrag.startX, activeRightDrag.startY);
+        const to = scene.screenToGround(x, y);
+        onPreviewLine(from && to ? { from, to } : null);
+      }
+      return;
+    }
+    if (drag) {
+      const dragging =
+        drag.dragging || Math.abs(x - drag.startX) > 5 || Math.abs(y - drag.startY) > 5;
+      setDrag({ ...drag, x, y, dragging });
+      if (lineMoveArmed && dragging) {
+        const from = scene.screenToGround(drag.startX, drag.startY);
+        const to = scene.screenToGround(x, y);
+        onPreviewLine(from && to ? { from, to } : null);
+      }
+      return;
+    }
+
+    const frame = client.currentFrame();
+    const unitId = scene.pickUnit(x, y);
+    if (unitId !== null && frame) {
+      const unit = frame.units.find((entry) => entry.id === unitId);
+      if (unit && unit.alive && unit.faction !== 'column') {
+        onPreviewUnit(unitId);
+        onHover('target', event.clientX, event.clientY);
+        return;
+      }
+      onPreviewUnit(null);
+      onHover(null, event.clientX, event.clientY);
+      return;
+    }
+    onPreviewUnit(null);
+    const point = scene.screenToGround(x, y);
+    onPreviewGround(point);
+    if (!point || !frame) {
+      onPreviewUnit(null);
+      onHover(null, event.clientX, event.clientY);
+      return;
+    }
+    const enemy = frame.units.find(
+      (unit) => unit.alive && !unit.routed && unit.faction === 'legalist',
+    );
+    if (
+      enemy &&
+      coverAgainst(point.x, point.y, enemy.x, enemy.y, 'prone', frame.covers) >= 0.2
+    ) {
+      onHover('cover', event.clientX, event.clientY);
+    } else {
+      onPreviewUnit(null);
+      onHover(null, event.clientX, event.clientY);
+    }
+  };
+
+  const handlePointerUp = (event: PointerEvent<HTMLDivElement>): void => {
+    const scene = sceneRef.current;
+    if (!scene) {
+      return;
+    }
+    const activeRightDrag = rightDragRef.current;
+    if (activeRightDrag) {
+      if (event.button !== 2) {
+        return;
+      }
+      const from = scene.screenToGround(activeRightDrag.startX, activeRightDrag.startY);
+      const to = scene.screenToGround(activeRightDrag.x, activeRightDrag.y);
+      if (activeRightDrag.dragging && from && to) {
+        onQuickLine(from, to);
+      } else if (to) {
+        onQuickGround(to);
+      }
+      onPreviewLine(null);
+      rightDragRef.current = null;
+      setRightDrag(null);
+      event.currentTarget.releasePointerCapture?.(event.pointerId);
+      return;
+    }
+    if (!drag) {
+      return;
+    }
+    const { startX, startY, x, y, dragging } = drag;
+    if (dragging && lineMoveArmed) {
+      const from = scene.screenToGround(startX, startY);
+      const to = scene.screenToGround(x, y);
+      if (from && to) {
+        onPrimaryLine(from, to);
+      }
+      onPreviewLine(null);
+    } else if (dragging) {
+      const ids = scene.unitsInScreenRect(
+        Math.min(startX, x),
+        Math.min(startY, y),
+        Math.max(startX, x),
+        Math.max(startY, y),
+      );
+      onSelectUnits(ids, x < startX ? 'all' : 'troops');
+    } else {
+      const unitId = scene.pickUnit(x, y);
+      if (unitId !== null) {
+        onPrimaryUnit(unitId);
+      } else if (pendingAction || aimPending) {
+        const point = scene.screenToGround(x, y);
+        if (point) {
+          onPrimaryGround(point);
+        }
+      }
+    }
+    event.currentTarget.releasePointerCapture?.(event.pointerId);
+    setDrag(null);
+  };
+  const selection = drag?.dragging && !lineMoveArmed
+    ? {
+        left: Math.min(drag.startX, drag.x),
+        top: Math.min(drag.startY, drag.y),
+        width: Math.abs(drag.x - drag.startX),
+        height: Math.abs(drag.y - drag.startY),
+        mode: drag.x < drag.startX ? 'all' : 'troops',
+      }
+    : null;
+
+  return (
+    <div
+      ref={containerRef}
+      className="game-canvas"
+      data-testid="game-canvas"
+      data-preview={preview?.paths.length ?? 0}
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={handlePointerUp}
+      onPointerCancel={() => {
+        rightDragRef.current = null;
+        setRightDrag(null);
+        setDrag(null);
+        onPreviewLine(null);
+      }}
+      onPointerLeave={() => {
+        if ((rightDragRef.current?.dragging ?? false) === false) {
+          onHover(null, 0, 0);
+          onPreviewLine(null);
+        }
+      }}
+      onContextMenu={(event) => event.preventDefault()}
+    >
+      {selection ? (
+        <div
+          className={`selection-box ${selection.mode}`}
+          style={{
+            left: selection.left,
+            top: selection.top,
+            width: selection.width,
+            height: selection.height,
+          }}
+        />
+      ) : null}
+    </div>
+  );
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

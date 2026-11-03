@@ -1,0 +1,87 @@
+﻿/** Theme palette for the Prestes low-poly art. All scene colours come from here. */
+export const PALETTE = {
+  sky: 0x343a2e,
+  fog: 0x4a4d3a,
+  sun: 0xffd9a0,
+  skyLight: 0xb8b89a,
+  groundLight: 0x2e2a1f,
+  terrain: 0x5d6040,
+  terrainAlt: 0x6a6a47,
+  terrainTrench: 0x3f3a2c,
+  trenchDeep: 0x2d281f,
+  terrainRoad: 0x8a7a5a,
+  terrainCrater: 0x4a4634,
+  grid: 0x494c33,
+  adobe: 0xb49a74,
+  sandbag: 0x9c8a62,
+  adobeDark: 0x8f7556,
+  whitewash: 0xc9c2a8,
+  roof: 0x70513f,
+  roofDark: 0x553d31,
+  tile: 0x7a4f3a,
+  plaster: 0xc8b997,
+  plasterShade: 0xa89674,
+  stone: 0x8b8574,
+  stoneDark: 0x6e6a5c,
+  barn: 0x6b4b34,
+  window: 0x25241d,
+  wire: 0x2a2720,
+  hay: 0xb79b58,
+  hayDark: 0x8f783f,
+  bell: 0xb58c4f,
+  rock: 0x77756a,
+  bark: 0x4e3b2a,
+  leaf: 0x536235,
+  leafDark: 0x3e4c2c,
+  grassLight: 0x76804a,
+  grassDeep: 0x4a552f,
+  wood: 0x5b4632,
+  metal: 0x4a4d48,
+  water: 0x3f5e63,
+  dust: 0xa99a7a,
+  grass: 0x5f6b3d,
+  factions: {
+    column: 0xc9b978,
+    legalist: 0x5b6f88,
+    cangaceiro: 0x7a573b,
+    civilian: 0x9c8a70,
+    target: 0xc9b978,
+  },
+  officer: 0xe0c060,
+  officerDark: 0xb59a45,
+  trousers: 0x7d724c,
+  leather: 0x5a4330,
+  steel: 0x8b8e84,
+  brass: 0xc9a15a,
+  hair: 0x3a2c20,
+  hat: 0xb8a06a,
+  bandolier: 0xd6c79a,
+  scarf: 0x9b3f34,
+  skin: 0xc8916b,
+  blood: 0x4a201b,
+  boots: 0x2e2a22,
+  gear: 0x4b4a38,
+  weapon: 0x24251f,
+  path: 0xead8b5,
+  preview: 0xd0a45c,
+  losClear: 0x9fcf6a,
+  losBlocked: 0x77776a,
+  pathWithdraw: 0xc56a4d,
+  selection: 0xf0c97a,
+  orderMarker: 0xd0a45c,
+  outline: 0x17140f,
+  muzzle: 0xfff0b8,
+  postClean: 0.0,
+} as const;
+
+
+
+
+
+
+
+
+
+
+
+

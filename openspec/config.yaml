@@ -1,0 +1,67 @@
+schema: spec-driven
+
+context: |
+  Game: "Prestes" — a historical tactical RTS about Luis Carlos Prestes and the
+  Coluna Prestes (1922–1927), inspired by Jorge Amado's "O Cavaleiro da Esperança".
+  The campaign is multi-perspective: Prestes is the narrative spine, but missions
+  are commanded by the historical figure who was actually present. Use the term
+  "historical figure" (not hero) and avoid hagiography.
+
+  Platform and stack: browser-first, 3D low-poly in the style of Game Studio 42's
+  Vazante. TypeScript strict, pnpm monorepo, Vite, React for HUD only, Three.js,
+  deterministic simulation in a Web Worker, Vitest, Playwright. Node 22, pnpm 10.
+  Deploy to GitHub Pages. Electron is post-MVP.
+
+  Architecture: one deterministic simulation; the simulation never imports
+  Three.js, React, DOM or Node APIs. Commands and events are the boundary between
+  simulation and presentation. Fixed tick (100 ms), seeded RNG, hashState() as
+  the determinism oracle.
+
+  Languages: code, commits, tests and OpenSpec artifacts in English. English is
+  also the source language for player-facing strings. PT-BR and EN locales ship
+  from day one. No hardcoded player strings.
+
+  License: AGPL-3.0-or-later for code; original art, text and documentation.
+  Maintain an asset register. Do not copy code, art, text or maps from Vazante or
+  other games.
+
+  Narrative and history: original script inspired by the book; never reproduce
+  book text. Historical claims cite docs/history/SOURCES.md. Label content as
+  historical, dramatized or fictional. Known corrections: Prestes was absent from
+  the Forte de Copacabana revolt (typhus); the 1924 Sao Paulo revolt was a separate
+  front and the column formed in Parana; Miguel Costa was the formal commander and
+  Prestes the chief of staff; use 1920s political borders (no Tocantins).
+
+  Source authority: Macaulay, "The Prestes Column" (1974), is Tier 0 for chronology,
+  route and military operations; Jorge Amado is Tier 1 for tone and arc; Jacob Blanc
+  (2024) is Tier 1 for social and interior history; regional studies are Tier 3; the
+  Portal Anticolonialismo / Memorial Virtual Coluna Prestes is a Tier 4 finding aid.
+  Conflicts are logged in docs/history/TIMELINE.md. Never bypass DRM. Book scans and
+  OCR text stay under livros/ and are never committed or redistributed.
+
+  Production: solo developer plus AI. Prefer small vertical slices, reusable
+  low-poly kits, named placeholders and playable increments over disconnected
+  frameworks.
+
+rules:
+  proposal:
+    - State the player fantasy, core loop, historical scope, MVP and non-goals.
+    - Include a legal/ethical note for the book adaptation and sensitive history.
+    - State the multi-perspective approach and which historical figures are playable.
+  specs:
+    - Every historical requirement cites a source or a historical note.
+    - State PT/EN localization requirements explicitly.
+    - Every mission requirement declares its commander and perspective.
+    - Make deterministic behavior and acceptance scenarios testable.
+  design:
+    - Describe the simulation/presentation boundary, deterministic kernel, low-poly pipeline and content schema.
+    - Describe the historical research method and the figure roster.
+  tasks:
+    - One vertical slice per task; include its verification step.
+    - Name placeholders explicitly; never claim a placeholder implements a system.
+
+operations:
+  apply:
+    guidance:
+      - Run pnpm check and openspec validate before marking tasks done.
+      - Do not copy config context or rules into artifacts or code comments.
