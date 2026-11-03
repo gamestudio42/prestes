@@ -1,0 +1,426 @@
+import { TICK_DT } from '@prestes/kernel';
+import {
+  MAP_BOUNDS,
+  FIRE_RANGE,
+  coverAgainst,
+  getWeapon,
+  terrainSpeedFactor,
+  findPath,
+  isPointBlockedByCovers,
+} from '@prestes/shared';
+import type { SimEvent, Vec2 } from '@prestes/shared';
+import { FATIGUE_MAX, clamp } from './model';
+import type { ActiveOrder, MutableUnit } from './model';
+import type { SimContext } from './context';
+import { nearestOpenPoint, occupied, nearestEnemy } from './geometry';
+import { woundSpeedFactor } from './casualties';
+
+export function groupSpeedFactor(ctx: SimContext, unit: MutableUnit): number {
+  if (unit.orderDestination === null || unit.currentOrder === null) {
+    return 1;
+  }
+  const peers = ctx.units.filter(
+    (other) =>
+      other !== unit &&
+      other.alive &&
+      !other.incapacitated &&
+      other.faction === unit.faction &&
+      other.squadId === unit.squadId &&
+      other.currentOrder === unit.currentOrder &&
+      other.orderDestination !== null &&
+      Math.abs(other.orderDestination.x - unit.orderDestination!.x) < 0.01 &&
+      Math.abs(other.orderDestination.y - unit.orderDestination!.y) < 0.01 &&
+      other.path.length > 0,
+  );
+  if (peers.length === 0) {
+    return 1;
+  }
+  const remaining = Math.sqrt((unit.targetX - unit.x) ** 2 + (unit.targetY - unit.y) ** 2);
+  const average =
+    peers.reduce(
+      (sum, other) =>
+        sum + Math.sqrt((other.targetX - other.x) ** 2 + (other.targetY - other.y) ** 2),
+      0,
+    ) / peers.length;
+  return remaining + 2 < average ? 0.55 : 1;
+}
+
+export function separateUnits(ctx: SimContext): void {
+  const living = ctx.units
+    .filter((unit) => unit.alive && !unit.routed && !unit.dummy && !unit.incapacitated)
+    .sort((left, right) => left.id - right.id);
+  const minDistance = 1.2;
+  for (let leftIndex = 0; leftIndex < living.length; leftIndex += 1) {
+    const left = living[leftIndex]!;
+    for (let rightIndex = leftIndex + 1; rightIndex < living.length; rightIndex += 1) {
+      const right = living[rightIndex]!;
+      let dx = right.x - left.x;
+      let dy = right.y - left.y;
+      let distance = Math.sqrt(dx * dx + dy * dy);
+      if (distance >= minDistance) {
+        continue;
+      }
+      const bothMoving =
+        left.currentOrder === 'move' &&
+        right.currentOrder === 'move' &&
+        left.path.length > 0 &&
+        right.path.length > 0 &&
+        (left.targetX !== right.targetX || left.targetY !== right.targetY);
+      if (bothMoving) {
+        continue;
+      }
+      if (distance < 0.001) {
+        dx = 0.001 * ((left.id + right.id) % 2 === 0 ? 1 : -1);
+        dy = 0.001;
+        distance = Math.sqrt(dx * dx + dy * dy);
+      }
+      const push = (minDistance - distance) / 2;
+      const nx = dx / distance;
+      const ny = dy / distance;
+      left.x = clamp(left.x - nx * push, MAP_BOUNDS.minX, MAP_BOUNDS.maxX);
+      left.y = clamp(left.y - ny * push, MAP_BOUNDS.minY, MAP_BOUNDS.maxY);
+      right.x = clamp(right.x + nx * push, MAP_BOUNDS.minX, MAP_BOUNDS.maxX);
+      right.y = clamp(right.y + ny * push, MAP_BOUNDS.minY, MAP_BOUNDS.maxY);
+    }
+  }
+}
+
+export function moveUnit(
+  ctx: SimContext,
+  unit: MutableUnit,
+  tick: number,
+  events: SimEvent[],
+): void {
+  if (
+    !unit.alive ||
+    unit.routed ||
+    unit.dummy ||
+    unit.incapacitated ||
+    unit.state === 'pinned' ||
+    unit.path.length === 0
+  ) {
+    return;
+  }
+
+  const point = unit.path[unit.pathIndex];
+  if (!point) {
+    unit.path = [];
+    unit.pathIndex = 0;
+    return;
+  }
+
+  const dx = point.x - unit.x;
+  const dy = point.y - unit.y;
+  const distance = Math.sqrt(dx * dx + dy * dy);
+  if (distance < 0.0001) {
+    unit.pathIndex += 1;
+    if (unit.pathIndex >= unit.path.length) {
+      unit.path = [];
+      unit.pathIndex = 0;
+      unit.targetX = point.x;
+      unit.targetY = point.y;
+      unit.coverSeekCooldown = 0;
+      events.push({ type: 'unit_arrived', tick, unitId: unit.id });
+    }
+    return;
+  }
+
+  const stanceFactor = unit.stance === 'prone' ? 0.45 : unit.stance === 'crouched' ? 0.7 : 1;
+  const postureFactor = unit.posture === 'defensive' ? 0.65 : 1;
+  const step =
+    unit.speed *
+    stanceFactor *
+    postureFactor *
+    TICK_DT *
+    terrainSpeedFactor(unit.x, unit.y) *
+    (0.75 + 0.25 * (unit.cohesion / 100)) *
+    (1 - (unit.fatigue / FATIGUE_MAX) * 0.25) *
+    woundSpeedFactor(ctx, unit) *
+    groupSpeedFactor(ctx, unit);
+  if (distance <= step) {
+    unit.x = point.x;
+    unit.y = point.y;
+    unit.pathIndex += 1;
+    if (unit.pathIndex >= unit.path.length) {
+      unit.path = [];
+      unit.pathIndex = 0;
+      unit.targetX = point.x;
+      unit.targetY = point.y;
+      unit.coverSeekCooldown = 0;
+      events.push({ type: 'unit_arrived', tick, unitId: unit.id });
+    }
+    return;
+  }
+
+  const nextX = unit.x + (dx / distance) * step;
+  const nextY = unit.y + (dy / distance) * step;
+  const hardBlocked = isPointBlockedByCovers(nextX, nextY, ctx.covers, 0);
+  if (hardBlocked) {
+    const detour = findPath(
+      { x: unit.x, y: unit.y },
+      { x: unit.targetX, y: unit.targetY },
+      ctx.covers,
+    );
+    if (detour.length > 0) {
+      unit.path = detour;
+      unit.pathIndex = 0;
+      return;
+    }
+    const order = unit.currentOrder ?? 'move';
+    unit.currentOrder = 'hold';
+    unit.orderIssued = false;
+    unit.holdPosition = true;
+    unit.path = [];
+    unit.pathIndex = 0;
+    events.push({ type: 'order_interrupted', tick, unitId: unit.id, order });
+    return;
+  }
+
+  const softBlocked = isPointBlockedByCovers(nextX, nextY, ctx.covers, 0.8);
+  if (softBlocked && !isPointBlockedByCovers(unit.x, unit.y, ctx.covers, 0.8)) {
+    const detour = findPath(
+      { x: unit.x, y: unit.y },
+      { x: unit.targetX, y: unit.targetY },
+      ctx.covers,
+    );
+    const nextPoint = detour[0];
+    const waypoint = unit.path[unit.pathIndex];
+    const sameWaypoint =
+      nextPoint !== undefined &&
+      waypoint !== undefined &&
+      (nextPoint.x - waypoint.x) ** 2 + (nextPoint.y - waypoint.y) ** 2 < 0.01;
+    const detourNear =
+      nextPoint !== undefined && (nextPoint.x - unit.x) ** 2 + (nextPoint.y - unit.y) ** 2 <= 1;
+    if (detour.length > 0 && !detourNear && !sameWaypoint) {
+      unit.path = detour;
+      unit.pathIndex = 0;
+      return;
+    }
+    if (detour.length === 0) {
+      const order = unit.currentOrder ?? 'move';
+      unit.currentOrder = 'hold';
+      unit.orderIssued = false;
+      unit.holdPosition = true;
+      unit.path = [];
+      unit.pathIndex = 0;
+      events.push({ type: 'order_interrupted', tick, unitId: unit.id, order });
+      return;
+    }
+  }
+  unit.x = nextX;
+  unit.y = nextY;
+  unit.fatigue = Math.min(FATIGUE_MAX, unit.fatigue + 0.8);
+}
+
+export function queueUnitOrder(
+  ctx: SimContext,
+  unit: MutableUnit,
+  path: Vec2[],
+  kind: ActiveOrder['kind'],
+): void {
+  ctx.orders = ctx.orders.filter((order) => !order.unitIds.includes(unit.id));
+  ctx.orders.push({
+    id: ctx.nextOrderId,
+    unitIds: [unit.id],
+    points: [{ x: unit.x, y: unit.y }, ...path],
+    kind,
+  });
+  ctx.nextOrderId += 1;
+}
+
+export function repairStalledMovement(ctx: SimContext): void {
+  for (const unit of ctx.units) {
+    const advancingBounding = unit.boundTeam !== null && unit.boundPhase === 'advance';
+    if (
+      !unit.alive ||
+      unit.routed ||
+      unit.dummy ||
+      unit.incapacitated ||
+      unit.state === 'pinned' ||
+      unit.path.length > 0 ||
+      (!advancingBounding && (unit.holdPosition || unit.currentOrder !== 'move'))
+    ) {
+      continue;
+    }
+    const distance = Math.sqrt((unit.targetX - unit.x) ** 2 + (unit.targetY - unit.y) ** 2);
+    if (distance <= 0.8) {
+      unit.targetX = unit.x;
+      unit.targetY = unit.y;
+      continue;
+    }
+    let destination = { x: unit.targetX, y: unit.targetY };
+    let path = findPath({ x: unit.x, y: unit.y }, destination, ctx.covers);
+    if (path.length === 0) {
+      destination = nearestOpenPoint(ctx, destination);
+      path = findPath({ x: unit.x, y: unit.y }, destination, ctx.covers);
+    }
+    if (path.length === 0) {
+      const escape = nearestOpenPoint(ctx, { x: unit.x, y: unit.y });
+      if (escape.x !== unit.x || escape.y !== unit.y) {
+        const rest = findPath(escape, destination, ctx.covers);
+        if (rest.length > 0) {
+          path = [escape, ...rest];
+        }
+      }
+    }
+    if (path.length === 0) {
+      continue;
+    }
+    ctx.orders = ctx.orders.filter(
+      (order) =>
+        !(order.unitIds.length === 1 && order.unitIds[0] === unit.id && order.kind === 'move'),
+    );
+    unit.targetX = destination.x;
+    unit.targetY = destination.y;
+    unit.path = path;
+    unit.pathIndex = 0;
+    unit.orderIssued = true;
+    unit.currentOrder = 'move';
+    unit.lineMove = false;
+    unit.holdPosition = false;
+    queueUnitOrder(ctx, unit, path, 'move');
+  }
+}
+
+export function updatePostureMovement(ctx: SimContext): void {
+  for (const unit of ctx.units) {
+    if (
+      !unit.alive ||
+      unit.routed ||
+      unit.dummy ||
+      unit.incapacitated ||
+      unit.state === 'panicked' ||
+      unit.state === 'pinned' ||
+      unit.boundTeam !== null ||
+      unit.path.length > 0 ||
+      unit.holdPosition
+    ) {
+      continue;
+    }
+    if (unit.currentOrder !== null && unit.currentOrder !== 'attack') {
+      continue;
+    }
+    if (unit.currentOrder === 'attack' || unit.posture === 'aggressive') {
+      const target =
+        (unit.targetId === null ? null : ctx.units.find((entry) => entry.id === unit.targetId)) ??
+        nearestEnemy(ctx, unit);
+      if (target && target.alive && !target.routed) {
+        advanceTowardTarget(ctx, unit, target);
+      }
+      continue;
+    }
+    if (unit.currentOrder === null && unit.posture === 'protect-officer') {
+      moveTowardOfficer(ctx, unit);
+    }
+  }
+}
+
+export function advanceTowardTarget(ctx: SimContext, unit: MutableUnit, target: MutableUnit): void {
+  if (unit.path.length > 0 || !unit.alive || unit.routed || unit.incapacitated) {
+    return;
+  }
+  const weapon = getWeapon(unit.weaponId);
+  const range = weapon?.range ?? FIRE_RANGE;
+  const currentDistance = Math.sqrt((target.x - unit.x) ** 2 + (target.y - unit.y) ** 2);
+  if (currentDistance <= range * 0.82) {
+    return;
+  }
+
+  let best: Vec2 | null = null;
+  let bestScore = Number.POSITIVE_INFINITY;
+  for (const cover of ctx.covers) {
+    if (isPointBlockedByCovers(cover.x, cover.y, ctx.covers, 0.8)) {
+      continue;
+    }
+    const coverDistance = Math.sqrt((cover.x - unit.x) ** 2 + (cover.y - unit.y) ** 2);
+    if (coverDistance > 18) {
+      continue;
+    }
+    const targetDistance = Math.sqrt((cover.x - target.x) ** 2 + (cover.y - target.y) ** 2);
+    if (targetDistance > currentDistance - 2) {
+      continue;
+    }
+    if (occupied(ctx, cover.x, cover.y, unit)) {
+      continue;
+    }
+    if (coverAgainst(cover.x, cover.y, target.x, target.y, 'crouched', ctx.covers) < 0.2) {
+      continue;
+    }
+    const path = findPath({ x: unit.x, y: unit.y }, cover, ctx.covers);
+    if (path.length === 0) {
+      continue;
+    }
+    const score = targetDistance + path.length * 0.1 - cover.quality * 4;
+    if (score < bestScore) {
+      bestScore = score;
+      best = { x: cover.x, y: cover.y };
+    }
+  }
+
+  if (!best) {
+    const dx = target.x - unit.x;
+    const dy = target.y - unit.y;
+    const length = Math.sqrt(dx * dx + dy * dy);
+    if (length > 0.001) {
+      best = {
+        x: target.x - (dx / length) * range * 0.78,
+        y: target.y - (dy / length) * range * 0.78,
+      };
+    }
+  }
+  if (!best || isPointBlockedByCovers(best.x, best.y, ctx.covers, 0.8)) {
+    return;
+  }
+  const path = findPath({ x: unit.x, y: unit.y }, best, ctx.covers);
+  if (path.length === 0) {
+    return;
+  }
+  unit.path = path;
+  unit.pathIndex = 0;
+  unit.targetX = best.x;
+  unit.targetY = best.y;
+  queueUnitOrder(ctx, unit, path, 'move');
+}
+
+export function moveTowardOfficer(ctx: SimContext, unit: MutableUnit): void {
+  const officer = ctx.units.find(
+    (entry) =>
+      entry.alive &&
+      !entry.incapacitated &&
+      !entry.routed &&
+      entry.kind === 'officer' &&
+      entry.faction === unit.faction,
+  );
+  if (!officer) {
+    return;
+  }
+  const distance = Math.sqrt((officer.x - unit.x) ** 2 + (officer.y - unit.y) ** 2);
+  if (distance <= 6) {
+    return;
+  }
+  const offsets = [
+    { x: 1.8, y: 0 },
+    { x: -1.8, y: 0 },
+    { x: 0, y: 1.8 },
+    { x: 0, y: -1.8 },
+  ];
+  for (const offset of offsets) {
+    const candidate = { x: officer.x + offset.x, y: officer.y + offset.y };
+    if (
+      isPointBlockedByCovers(candidate.x, candidate.y, ctx.covers, 0.8) ||
+      occupied(ctx, candidate.x, candidate.y, unit)
+    ) {
+      continue;
+    }
+    const path = findPath({ x: unit.x, y: unit.y }, candidate, ctx.covers);
+    if (path.length === 0) {
+      continue;
+    }
+    unit.path = path;
+    unit.pathIndex = 0;
+    unit.targetX = candidate.x;
+    unit.targetY = candidate.y;
+    queueUnitOrder(ctx, unit, path, 'move');
+    return;
+  }
+}

@@ -1,0 +1,516 @@
+import {
+  DEFAULT_WEAPON_ID,
+  MAP_BOUNDS,
+  WEAPONS,
+  MAX_HP,
+  MAX_MORALE,
+  troopFormationOffsets,
+  rotateOffset,
+  isPointBlockedByCovers,
+} from '@prestes/shared';
+import type {
+  Command,
+  SimEvent,
+  RosterRecord,
+  Vec2,
+  UnitRole,
+  TrainingPhaseSetup,
+} from '@prestes/shared';
+import { TRAINING_ENEMY_HP } from './model';
+import type { MutableUnit } from './model';
+import type { SimContext } from './context';
+import { reject } from './commands';
+
+export function applyRoster(ctx: SimContext, records: readonly RosterRecord[]): void {
+  for (const record of records) {
+    const unit = ctx.units.find((entry) => entry.id === record.id);
+    if (!unit) {
+      continue;
+    }
+    unit.hp = record.hp;
+    unit.morale = record.morale;
+    unit.alive = record.alive;
+    unit.incapacitated = record.incapacitated;
+    unit.soldierState = record.soldierState;
+    unit.wound = record.wound;
+    unit.recoveryTicks = record.recoveryTicks;
+    if (record.soldierState === 'recovering' && record.recoveryTicks > 0) {
+      unit.alive = false;
+      unit.routed = true;
+      unit.hp = 0;
+      unit.incapacitated = false;
+      unit.recoveryTicks = record.recoveryTicks;
+    } else if (!record.alive) {
+      unit.routed = record.soldierState === 'evacuating';
+    }
+  }
+}
+
+export function spawnDummy(
+  ctx: SimContext,
+  to: Vec2,
+  tick: number,
+  seq: number,
+  events: SimEvent[],
+  rotation = 0,
+): void {
+  if (!ctx.sandbox && !ctx.training) {
+    reject(ctx, tick, seq, 'sandbox_only', events);
+    return;
+  }
+  if (
+    isPointBlockedByCovers(to.x, to.y, ctx.covers, 1) ||
+    to.x < MAP_BOUNDS.minX ||
+    to.x > MAP_BOUNDS.maxX ||
+    to.y < MAP_BOUNDS.minY ||
+    to.y > MAP_BOUNDS.maxY
+  ) {
+    reject(ctx, tick, seq, 'invalid_position', events);
+    return;
+  }
+  ctx.units.push({
+    id: ctx.nextUnitId,
+    x: to.x,
+    y: to.y,
+    targetX: to.x,
+    targetY: to.y,
+    speed: 0,
+    kind: 'dummy',
+    faction: 'target',
+    stance: 'standing',
+    squadId: 0,
+    hp: MAX_HP * 10,
+    weaponId: DEFAULT_WEAPON_ID,
+    magazine: 0,
+    reserve: 0,
+    morale: MAX_MORALE,
+    alive: true,
+    suppressed: false,
+    suppression: 0,
+    cohesion: 100,
+    fatigue: 0,
+    formation: 'line',
+    orderDestination: null,
+    orderIssued: false,
+    orderRegionCenter: null,
+    orderRegionRadius: 0,
+    soldierState: 'idle',
+    incapacitated: false,
+    state: 'steady',
+    routed: false,
+    panicTicks: 0,
+    cover: 0,
+    targetId: null,
+    cooldown: 0,
+    reload: 0,
+    path: [],
+    pathIndex: 0,
+    facingX: rotateOffset({ x: 0, y: 1 }, rotation).x,
+    facingY: rotateOffset({ x: 0, y: 1 }, rotation).y,
+    aimX: null,
+    aimY: null,
+    stanceLocked: false,
+    coverSeekCooldown: 0,
+    flankTargetId: null,
+    flankCooldown: 0,
+    suppressionCooldown: 0,
+    suppress: false,
+    holdPosition: true,
+    holdFire: false,
+    posture: 'balanced',
+    boundTeam: null,
+    boundPhase: null,
+    targetLocked: false,
+    currentOrder: null,
+    lineMove: false,
+    dummy: true,
+    nonLethal: false,
+    ambush: false,
+    reserveMode: false,
+    recon: false,
+    reconReported: false,
+    reconContacts: 0,
+    rescueTargetId: null,
+    rescueQueue: [],
+    wound: 'none',
+    rescueTicks: 0,
+    treatTicks: 0,
+    carryingId: null,
+    beingCarriedBy: null,
+    recoveryTicks: 0,
+  });
+  ctx.nextUnitId += 1;
+}
+
+export function spawnTroop(
+  ctx: SimContext,
+  command: Extract<Command, { type: 'spawn_troop' }>,
+  tick: number,
+  seq: number,
+  events: SimEvent[],
+): void {
+  if (!ctx.sandbox && !ctx.training) {
+    reject(ctx, tick, seq, 'sandbox_only', events);
+    return;
+  }
+  const count = Math.max(1, Math.min(16, command.count ?? 11));
+  const squadId = ctx.nextSquadId;
+  const spacing = 2.4;
+  const rotation = command.rotation ?? 0;
+  const offsets = troopFormationOffsets(count, 6, spacing, rotation);
+  const formationFacing = rotateOffset({ x: 0, y: 1 }, rotation);
+  for (let index = 0; index < count; index += 1) {
+    const offset = offsets[index]!;
+    const to = {
+      x: command.to.x + offset.x,
+      y: command.to.y + offset.y,
+    };
+    if (
+      to.x < MAP_BOUNDS.minX ||
+      to.x > MAP_BOUNDS.maxX ||
+      to.y < MAP_BOUNDS.minY ||
+      to.y > MAP_BOUNDS.maxY ||
+      isPointBlockedByCovers(to.x, to.y, ctx.covers, 1)
+    ) {
+      continue;
+    }
+    ctx.units.push({
+      id: ctx.nextUnitId,
+      x: to.x,
+      y: to.y,
+      targetX: to.x,
+      targetY: to.y,
+      speed: 2,
+      kind: 'infantry',
+      faction: command.faction,
+      stance: 'standing',
+      squadId,
+      hp: MAX_HP,
+      weaponId: DEFAULT_WEAPON_ID,
+      magazine: command.dummy ? 0 : WEAPONS[DEFAULT_WEAPON_ID].magazine,
+      reserve: command.dummy ? 0 : WEAPONS[DEFAULT_WEAPON_ID].reserve,
+      morale: MAX_MORALE,
+      alive: true,
+      suppressed: false,
+      suppression: 0,
+      cohesion: 100,
+      fatigue: 0,
+      formation: 'line',
+      orderDestination: null,
+      orderIssued: false,
+      orderRegionCenter: null,
+      orderRegionRadius: 0,
+      soldierState: 'idle',
+      incapacitated: false,
+      state: 'steady',
+      routed: false,
+      panicTicks: 0,
+      cover: 0,
+      targetId: null,
+      cooldown: 0,
+      reload: 0,
+      path: [],
+      pathIndex: 0,
+      facingX: formationFacing.x,
+      facingY: formationFacing.y,
+      aimX: null,
+      aimY: null,
+      stanceLocked: false,
+      coverSeekCooldown: 0,
+      flankTargetId: null,
+      flankCooldown: 0,
+      suppressionCooldown: 0,
+      suppress: false,
+      holdPosition: true,
+      holdFire: command.holdFire ?? command.dummy === true,
+      posture: 'balanced',
+      boundTeam: null,
+      boundPhase: null,
+      targetLocked: false,
+      currentOrder: null,
+      lineMove: false,
+      dummy: command.dummy === true,
+      role: command.role,
+      nonLethal: command.nonLethal === true,
+      ambush: false,
+      reserveMode: false,
+      recon: false,
+      reconReported: false,
+      reconContacts: 0,
+      rescueTargetId: null,
+      rescueQueue: [],
+      wound: 'none',
+      rescueTicks: 0,
+      treatTicks: 0,
+      carryingId: null,
+      beingCarriedBy: null,
+      recoveryTicks: 0,
+    });
+    ctx.nextUnitId += 1;
+  }
+  ctx.nextSquadId += 1;
+}
+
+export function setTrainingPhase(
+  ctx: SimContext,
+  setup: TrainingPhaseSetup,
+  tick: number,
+  seq: number,
+  events: SimEvent[],
+): void {
+  if (!ctx.training && !ctx.sandbox) {
+    reject(ctx, tick, seq, 'sandbox_only', events);
+    return;
+  }
+  despawnRoleUnits(ctx, 'training-enemy');
+  ctx.bounding.clear();
+  ctx.orders = [];
+  const player = ctx.units.filter(
+    (unit) => unit.faction === 'column' && !unit.dummy && unit.squadId !== 99,
+  );
+  const offsets = troopFormationOffsets(player.length, 6, 2.4, 0);
+  player.forEach((unit, index) => {
+    const offset = offsets[index] ?? { x: 0, y: 0 };
+    resetTrainingUnit(
+      ctx,
+      unit,
+      setup.playerPoint.x + offset.x,
+      setup.playerPoint.y + offset.y,
+      false,
+    );
+  });
+  const officer = ctx.units.find(
+    (unit) => unit.faction === 'column' && unit.kind === 'officer' && !unit.dummy,
+  );
+  if (officer) {
+    resetTrainingUnit(ctx, officer, setup.officerPoint.x, setup.officerPoint.y, true);
+  }
+  if (setup.enemyPoint && (setup.enemyCount ?? 0) > 0) {
+    spawnTroop(
+      ctx,
+      {
+        type: 'spawn_troop',
+        to: setup.enemyPoint,
+        faction: 'target',
+        count: setup.enemyCount ?? 6,
+        role: 'training-enemy',
+        nonLethal: true,
+        holdFire: setup.releaseTrainingFire !== true,
+      },
+      tick,
+      seq,
+      events,
+    );
+    for (const unit of ctx.units) {
+      if (unit.role === 'training-enemy') {
+        unit.hp = TRAINING_ENEMY_HP;
+        unit.stance = 'crouched';
+        unit.stanceLocked = true;
+      }
+    }
+  }
+}
+
+export function despawnRole(
+  ctx: SimContext,
+  role: UnitRole,
+  tick: number,
+  seq: number,
+  events: SimEvent[],
+): void {
+  if (!ctx.training && !ctx.sandbox) {
+    reject(ctx, tick, seq, 'sandbox_only', events);
+    return;
+  }
+  despawnRoleUnits(ctx, role);
+}
+
+export function despawnRoleUnits(ctx: SimContext, role: UnitRole): void {
+  const removed = new Set(ctx.units.filter((unit) => unit.role === role).map((unit) => unit.id));
+  if (removed.size === 0) {
+    return;
+  }
+  const remaining = ctx.units.filter((unit) => !removed.has(unit.id));
+  ctx.units.splice(0, ctx.units.length, ...remaining);
+  ctx.orders = ctx.orders.filter((order) => !order.unitIds.some((id) => removed.has(id)));
+  for (const unit of ctx.units) {
+    if (unit.targetId !== null && removed.has(unit.targetId)) {
+      unit.targetId = null;
+      unit.targetLocked = false;
+    }
+  }
+}
+
+export function resetTrainingUnit(
+  ctx: SimContext,
+  unit: MutableUnit,
+  x: number,
+  y: number,
+  holdFire: boolean,
+): void {
+  unit.x = x;
+  unit.y = y;
+  unit.targetX = x;
+  unit.targetY = y;
+  unit.hp = MAX_HP;
+  unit.magazine = WEAPONS[DEFAULT_WEAPON_ID].magazine;
+  unit.reserve = WEAPONS[DEFAULT_WEAPON_ID].reserve;
+  unit.morale = MAX_MORALE;
+  unit.alive = true;
+  unit.suppressed = false;
+  unit.suppression = 0;
+  unit.cohesion = 100;
+  unit.fatigue = 0;
+  unit.formation = 'line';
+  unit.orderDestination = null;
+  unit.orderIssued = false;
+  unit.orderRegionCenter = null;
+  unit.orderRegionRadius = 0;
+  unit.incapacitated = false;
+  unit.state = 'steady';
+  unit.routed = false;
+  unit.panicTicks = 0;
+  unit.cover = 0;
+  unit.targetId = null;
+  unit.cooldown = 0;
+  unit.reload = 0;
+  unit.path = [];
+  unit.pathIndex = 0;
+  unit.facingX = 0;
+  unit.facingY = -1;
+  unit.aimX = null;
+  unit.aimY = null;
+  unit.stance = 'standing';
+  unit.stanceLocked = false;
+  unit.coverSeekCooldown = 0;
+  unit.flankTargetId = null;
+  unit.flankCooldown = 0;
+  unit.suppressionCooldown = 0;
+  unit.suppress = false;
+  unit.holdPosition = true;
+  unit.holdFire = holdFire;
+  unit.posture = 'balanced';
+  unit.boundTeam = null;
+  unit.boundPhase = null;
+  unit.targetLocked = false;
+  unit.currentOrder = null;
+  unit.lineMove = false;
+  unit.ambush = false;
+  unit.reserveMode = false;
+  unit.recon = false;
+  unit.reconReported = false;
+  unit.reconContacts = 0;
+  unit.rescueTargetId = null;
+  unit.rescueQueue = [];
+  unit.wound = 'none';
+  unit.soldierState = 'idle';
+  unit.rescueTicks = 0;
+  unit.treatTicks = 0;
+  unit.carryingId = null;
+  unit.beingCarriedBy = null;
+  unit.recoveryTicks = 0;
+}
+
+export function reinforce(
+  ctx: SimContext,
+  faction: 'column' | 'legalist',
+  tick: number,
+  seq: number,
+  events: SimEvent[],
+): void {
+  if (!ctx.sandbox && !ctx.training) {
+    reject(ctx, tick, seq, 'sandbox_only', events);
+    return;
+  }
+  const base = faction === 'column' ? 6 : 3;
+  const count = ctx.units.filter((unit) => unit.faction === faction && !unit.dummy).length;
+  const index = Math.max(0, count - base);
+  const column = index % 4;
+  const row = Math.floor(index / 4);
+  const to =
+    faction === 'column'
+      ? { x: -16 + column * 2.2, y: 16 + row * 2 }
+      : { x: -16 + column * 2.2, y: -26 - row * 2 };
+  if (
+    isPointBlockedByCovers(to.x, to.y, ctx.covers, 0.8) ||
+    to.x < MAP_BOUNDS.minX ||
+    to.x > MAP_BOUNDS.maxX ||
+    to.y < MAP_BOUNDS.minY ||
+    to.y > MAP_BOUNDS.maxY
+  ) {
+    reject(ctx, tick, seq, 'invalid_position', events);
+    return;
+  }
+  ctx.units.push({
+    id: ctx.nextUnitId,
+    x: to.x,
+    y: to.y,
+    targetX: to.x,
+    targetY: to.y,
+    speed: 2,
+    kind: 'infantry',
+    faction,
+    stance: 'standing',
+    squadId: faction === 'column' ? 1 : 3,
+    hp: MAX_HP,
+    weaponId: DEFAULT_WEAPON_ID,
+    magazine: 5,
+    reserve: 15,
+    morale: MAX_MORALE,
+    alive: true,
+    suppressed: false,
+    suppression: 0,
+    cohesion: 100,
+    fatigue: 0,
+    formation: 'line',
+    orderDestination: null,
+    orderIssued: false,
+    orderRegionCenter: null,
+    orderRegionRadius: 0,
+    soldierState: 'idle',
+    incapacitated: false,
+    state: 'steady',
+    routed: false,
+    panicTicks: 0,
+    cover: 0,
+    targetId: null,
+    cooldown: 0,
+    reload: 0,
+    path: [],
+    pathIndex: 0,
+    facingX: faction === 'column' ? 0 : 0,
+    facingY: faction === 'column' ? -1 : 1,
+    aimX: null,
+    aimY: null,
+    stanceLocked: false,
+    coverSeekCooldown: 0,
+    flankTargetId: null,
+    flankCooldown: 0,
+    suppressionCooldown: 0,
+    suppress: false,
+    holdPosition: true,
+    holdFire: false,
+    posture: 'balanced',
+    boundTeam: null,
+    boundPhase: null,
+    targetLocked: false,
+    currentOrder: null,
+    lineMove: false,
+    dummy: false,
+    nonLethal: false,
+    ambush: false,
+    reserveMode: false,
+    recon: false,
+    reconReported: false,
+    reconContacts: 0,
+    rescueTargetId: null,
+    rescueQueue: [],
+    wound: 'none',
+    rescueTicks: 0,
+    treatTicks: 0,
+    carryingId: null,
+    beingCarriedBy: null,
+    recoveryTicks: 0,
+  });
+  ctx.nextUnitId += 1;
+}

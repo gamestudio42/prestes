@@ -1,21 +1,21 @@
 ## 1. Engine context and shared helpers
 
-- [ ] 1.1 Create `packages/simulation/src/systems/context.ts` with the `SimContext` type and a `createContext(engine)` helper, and have the engine build its context once; verify `pnpm typecheck` and that `pnpm check:determinism` still matches `eee8ea8f`
-- [ ] 1.2 Move snapshot and hash code (`snapshotUnits`, `hashState` internals, `frame` assembly) to `systems/snapshot.ts`; verify `pnpm check:determinism`, `pnpm sim` (`206ab124`) and `pnpm verify:quick`
-- [ ] 1.3 Move shared geometry helpers (`nearestOpenPoint`, `occupied`, `nearestEnemy`, `nearestEnemyAt`, `facingToward`, `squadCentroid`, `clampToRegion`) to `systems/geometry.ts`; verify both hashes and `pnpm verify:quick`
+- [x] 1.1 Create `packages/simulation/src/systems/context.ts` with the `SimContext` type and a `createContext(engine)` helper, and have the engine build its context once; verify `pnpm typecheck` and that `pnpm check:determinism` still matches `eee8ea8f`
+- [x] 1.2 Move snapshot and hash code (`snapshotUnits`, `hashState` internals, `frame` assembly) to `systems/snapshot.ts`; verify `pnpm check:determinism`, `pnpm sim` (`206ab124`) and `pnpm verify:quick`
+- [x] 1.3 Move shared geometry helpers (`nearestOpenPoint`, `occupied`, `nearestEnemy`, `nearestEnemyAt`, `facingToward`, `squadCentroid`, `clampToRegion`) to `systems/geometry.ts`; verify both hashes and `pnpm verify:quick`
 
 ## 2. Engine systems
 
-- [ ] 2.1 Move formation code (`reflowFormation`, formation slot assignment) to `systems/formations.ts`; verify both hashes and `pnpm verify:quick`
-- [ ] 2.2 Move movement (`moveUnit`, `separateUnits`, `groupSpeedFactor`, `repairStalledMovement`, `queueUnitOrder`, `updatePostureMovement`, `advanceTowardTarget`, `moveTowardOfficer`) to `systems/movement.ts`; verify both hashes and `pnpm verify:quick`
-- [ ] 2.3 Move bounding (`updateBounding`, `assignBoundingDirect`, `setBoundingCover`, `assignBoundingAdvance`) to `systems/bounding.ts` and point the `assignBoundingDirect` unit test at the module; verify both hashes and `pnpm verify:quick`
-- [ ] 2.4 Move cover (`seekCover`, `nearCoverObject`, `rescueCover`, `spawnCover`) to `systems/cover.ts`; verify both hashes and `pnpm verify:quick`
-- [ ] 2.5 Move combat (`acquireTargets`, `visible`, `fire`, `updateFacing`) to `systems/combat.ts`; verify both hashes and `pnpm verify:quick`
-- [ ] 2.6 Move morale and cohesion (`updateMoraleStates`, `reactToSuppression`, `fleePanicked`, `nearestEdge`, `checkRouted`, `applyOfficerAura`, `updateCohesion`, `updateSoldierStates`, `updateOfficerLoss`) to `systems/morale.ts`; verify both hashes and `pnpm verify:quick`
-- [ ] 2.7 Move casualties and rescue (`incapacitate`, `wound`, `woundFor`, wound factors, `releaseCarry`, `startNextRescue`, `updateRescue`, `updateRecovery`) to `systems/casualties.ts`; verify both hashes and `pnpm verify:quick`
-- [ ] 2.8 Move tactical orders (`applyTacticalOrder`, `updatePursuit`, `updateRecon`, `seekFlank`, `chooseFlankSide`, `assignFlankPaths`, `assignFlankPath`, `beginWithdraw`, `cleanupOrders`, `clearArrivedOrders`) to `systems/orders.ts`; verify both hashes and `pnpm verify:quick`
-- [ ] 2.9 Move command handling and spawning (`applyCommand`, `applyLineMove`, `spawnDummy`, `spawnTroop`, `setTrainingPhase`, `despawnRole`, `resetTrainingUnit`, `reinforce`, `applyRoster`, `updateOutcome`) to `systems/commands.ts` and `systems/spawning.ts`; verify both hashes and `pnpm verify:quick`
-- [ ] 2.10 Confirm `engine.ts` holds only state, the public API and the tick order (about 800 lines or fewer), that no system imports DOM, React, Three.js or Node APIs, and run the full `pnpm verify`
+- [x] 2.1 Move formation code (`reflowFormation`, formation slot assignment) to `systems/formations.ts`; verify both hashes and `pnpm verify:quick`
+- [x] 2.2 Move movement (`moveUnit`, `separateUnits`, `groupSpeedFactor`, `repairStalledMovement`, `queueUnitOrder`, `updatePostureMovement`, `advanceTowardTarget`, `moveTowardOfficer`) to `systems/movement.ts`; verify both hashes and `pnpm verify:quick`
+- [x] 2.3 Move bounding (`updateBounding`, `assignBoundingDirect`, `setBoundingCover`, `assignBoundingAdvance`) to `systems/bounding.ts` and point the `assignBoundingDirect` unit test at the module; verify both hashes and `pnpm verify:quick`
+- [x] 2.4 Move cover (`seekCover`, `nearCoverObject`, `rescueCover`, `spawnCover`) to `systems/cover.ts`; verify both hashes and `pnpm verify:quick`
+- [x] 2.5 Move combat (`acquireTargets`, `visible`, `fire`, `updateFacing`) to `systems/combat.ts`; verify both hashes and `pnpm verify:quick`
+- [x] 2.6 Move morale and cohesion (`updateMoraleStates`, `reactToSuppression`, `fleePanicked`, `nearestEdge`, `checkRouted`, `applyOfficerAura`, `updateCohesion`, `updateSoldierStates`, `updateOfficerLoss`) to `systems/morale.ts`; verify both hashes and `pnpm verify:quick`
+- [x] 2.7 Move casualties and rescue (`incapacitate`, `wound`, `woundFor`, wound factors, `releaseCarry`, `startNextRescue`, `updateRescue`, `updateRecovery`) to `systems/casualties.ts`; verify both hashes and `pnpm verify:quick`
+- [x] 2.8 Move tactical orders (`applyTacticalOrder`, `updatePursuit`, `updateRecon`, `seekFlank`, `chooseFlankSide`, `assignFlankPaths`, `assignFlankPath`, `beginWithdraw`, `cleanupOrders`, `clearArrivedOrders`) to `systems/orders.ts`; verify both hashes and `pnpm verify:quick`
+- [x] 2.9 Move command handling and spawning (`applyCommand`, `applyLineMove`, `spawnDummy`, `spawnTroop`, `setTrainingPhase`, `despawnRole`, `resetTrainingUnit`, `reinforce`, `applyRoster`, `updateOutcome`) to `systems/commands.ts` and `systems/spawning.ts`; verify both hashes and `pnpm verify:quick`
+- [x] 2.10 Confirm `engine.ts` holds only state, the public API and the tick order (about 800 lines or fewer), that no system imports DOM, React, Three.js or Node APIs, and run the full `pnpm verify`
 
 ## 3. HUD
 

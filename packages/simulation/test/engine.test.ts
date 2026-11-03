@@ -1,6 +1,7 @@
 ﻿import { describe, expect, it } from 'vitest';
 import { SimulationEngine } from '../src/engine';
 import { createSimulationHost } from '../src/worker-host';
+import { assignBoundingDirect } from '../src/systems/bounding';
 import { COVER_POINTS, MAP_BOUNDS, type WorkerResponse } from '@prestes/shared';
 
 function approach(
@@ -149,29 +150,13 @@ describe('SimulationEngine', () => {
 
   it('moves a bounding soldier whose formation slot touches cover to an open point', () => {
     const engine = new SimulationEngine({ seed: 1922, training: true, opposition: false, bounding: true });
-    const internal = engine as unknown as {
-      units: Array<{
-        id: number;
-        x: number;
-        y: number;
-        targetX: number;
-        targetY: number;
-        path: unknown[];
-        boundPhase: string | null;
-      }>;
-      assignBoundingDirect: (
-        units: readonly unknown[],
-        destination: { x: number; y: number },
-        targets: ReadonlyMap<number, { x: number; y: number }>,
-      ) => void;
-    };
-    const unit = internal.units.find((entry) => entry.id === 1)!;
+    const unit = engine.units.find((entry) => entry.id === 1)!;
     unit.x = 45.85;
     unit.y = -17.87;
     // Within the 0.8 m movement clearance of the training sandbag at (8, 4).
     const blockedSlot = { x: 6, y: 3.1 };
 
-    internal.assignBoundingDirect([unit], { x: 20, y: 4 }, new Map([[1, blockedSlot]]));
+    assignBoundingDirect(engine, [unit], { x: 20, y: 4 }, new Map([[1, blockedSlot]]));
 
     expect(unit.path.length).toBeGreaterThan(0);
     expect(unit.boundPhase).toBe('advance');
