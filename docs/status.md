@@ -220,6 +220,8 @@ Last recorded manual run:
   AudioContext behavior.
 - `pnpm sim`: hash `206ab124` on two consecutive runs.
 - `openspec validate --specs`: 15 durable specs passed.
+- OpenSpec change `add-local-quality-gates`: archived as
+  `2026-11-03-add-local-quality-gates`; 4 delivery requirements added; durable specs: 15 passed.
 - OpenSpec change `add-playable-bootcamp-exercise`: archived as
   `2026-11-03-add-playable-bootcamp-exercise`; 10 requirements added, 4 modified
   and 2 removed.
