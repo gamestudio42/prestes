@@ -33,6 +33,8 @@ import {
   moveUnit,
   separateUnits,
   repairStalledMovement,
+  repositionForSight,
+  updateInstructorFollow,
   updatePostureMovement,
 } from './systems/movement';
 import { updateBounding } from './systems/bounding';
@@ -82,6 +84,7 @@ export class SimulationEngine implements SimContext {
   readonly scenario: 'bootcamp' | 'battle3v3';
   readonly combatRange: number;
   boundingEnabled: boolean;
+  instructorPinned = false;
   readonly queue: CommandEnvelope[] = [];
   orders: ActiveOrder[] = [];
   lastEvents: SimEvent[] = [];
@@ -171,6 +174,7 @@ export class SimulationEngine implements SimContext {
         dummy: false,
         nonLethal: false,
         ambush: false,
+        officerLossApplied: false,
         reserveMode: false,
         recon: false,
         reconReported: false,
@@ -257,8 +261,12 @@ export class SimulationEngine implements SimContext {
       updateBounding(this);
       if (nextTick % 8 === 0) {
         repairStalledMovement(this);
+        repositionForSight(this);
       }
       updatePostureMovement(this);
+      if (nextTick % 8 === 0) {
+        updateInstructorFollow(this);
+      }
       updateRecon(this, nextTick, events);
       updateRescue(this, nextTick, events);
       fire(this, nextTick, events);

@@ -98,6 +98,12 @@ export interface TrainingPhaseSetup {
   enemyCount?: number;
   enemyRotation?: number;
   releaseTrainingFire?: boolean;
+  /** Keep the instructor at its checkpoint instead of following the section. */
+  pinInstructor?: boolean;
+  /** Player soldiers to start the station incapacitated, for casualty drills. */
+  casualtyCount?: number;
+  /** Start the station with the instructor incapacitated. */
+  instructorOut?: boolean;
 }
 
 export interface UnitSnapshot {

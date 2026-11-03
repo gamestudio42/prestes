@@ -20,6 +20,7 @@ import { TRAINING_ENEMY_HP } from './model';
 import type { MutableUnit } from './model';
 import type { SimContext } from './context';
 import { reject } from './commands';
+import { incapacitate } from './casualties';
 
 export function applyRoster(ctx: SimContext, records: readonly RosterRecord[]): void {
   for (const record of records) {
@@ -126,6 +127,7 @@ export function spawnDummy(
     dummy: true,
     nonLethal: false,
     ambush: false,
+    officerLossApplied: false,
     reserveMode: false,
     recon: false,
     reconReported: false,
@@ -233,6 +235,7 @@ export function spawnTroop(
       role: command.role,
       nonLethal: command.nonLethal === true,
       ambush: false,
+      officerLossApplied: false,
       reserveMode: false,
       recon: false,
       reconReported: false,
@@ -284,6 +287,15 @@ export function setTrainingPhase(
   );
   if (officer) {
     resetTrainingUnit(ctx, officer, setup.officerPoint.x, setup.officerPoint.y, true);
+  }
+  ctx.instructorPinned = setup.pinInstructor === true;
+  // Casualty drills: the last soldiers of the section start incapacitated.
+  const casualties = Math.max(0, Math.min(player.length, setup.casualtyCount ?? 0));
+  for (const unit of player.slice(player.length - casualties)) {
+    incapacitate(ctx, unit.id, tick, seq, events);
+  }
+  if (officer && setup.instructorOut === true) {
+    incapacitate(ctx, officer.id, tick, seq, events);
   }
   if (setup.enemyPoint && (setup.enemyCount ?? 0) > 0) {
     spawnTroop(
@@ -499,6 +511,7 @@ export function reinforce(
     dummy: false,
     nonLethal: false,
     ambush: false,
+    officerLossApplied: false,
     reserveMode: false,
     recon: false,
     reconReported: false,

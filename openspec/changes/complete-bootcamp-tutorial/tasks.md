@@ -1,14 +1,14 @@
 ## 1. Mechanics regression suite
 
-- [ ] 1.1 Create `packages/simulation/test/mechanics.test.ts` from the review audit with one scenario per order (attack, suppress, hold fire, move, withdraw, hold, face, flank, recon, ambush, pursue, defend, advance, disperse, reserve, regroup, protect-officer), rescue chain, stance, posture, formation, bounding, officer aura and morale states; mark the attack, suppress and ambush LOS cases and the officer-loss case as expected failures, and verify the rest pass with `pnpm test`
+- [x] 1.1 Create `packages/simulation/test/mechanics.test.ts` from the review audit with one scenario per order (attack, suppress, hold fire, move, withdraw, hold, face, flank, recon, ambush, pursue, defend, advance, disperse, reserve, regroup, protect-officer), rescue chain, stance, posture, formation, bounding, officer aura and morale states; mark the attack, suppress and ambush LOS cases and the officer-loss case as expected failures, and verify the rest pass with `pnpm test`
 
 ## 2. Simulation fixes
 
-- [ ] 2.1 Make `advanceTowardTarget` stop at `combatRange` clamped to the weapon range, and reposition to a reachable point with line of sight when the target is in range but not visible; verify the attack and suppress LOS cases in the suite now pass
-- [ ] 2.2 Reject automatic cover that blocks the sightline to the unit's ordered target, and apply the LOS reposition to ambush and defend once a target is acquired; verify the ambush case passes and existing cover and flank tests still pass
-- [ ] 2.3 Implement the officer-loss consequence once per loss (−20 morale to living allies within 25 m, −15 squad cohesion floored at 0, aura stops, protect-officer interrupted, flag cleared on recovery); verify the officer-loss cases pass
-- [ ] 2.4 Extend the training phase setup with ammunition refill, `pinInstructor` and a casualty list (soldiers or instructor to incapacitate), and add the training-only instructor follow system (follow beyond 15 m, stop within 12 m, cover-first); verify with simulation unit tests for refill, pin, casualty drill and follow
-- [ ] 2.5 Run `pnpm check:determinism`, confirm the golden changes only because of 2.1 to 2.4, record it with `--update`, and verify `pnpm sim` stays deterministic across two runs
+- [x] 2.1 Make `advanceTowardTarget` stop at `combatRange` clamped to the weapon range, and reposition to a reachable point with line of sight when the target is in range but not visible; verify the attack and suppress LOS cases in the suite now pass
+- [x] 2.2 Reject automatic cover that blocks the sightline to the unit's ordered target, and apply the LOS reposition to ambush and defend once a target is acquired; verify the ambush case passes and existing cover and flank tests still pass
+- [x] 2.3 Implement the officer-loss consequence once per loss (−20 morale to living allies within 25 m, −15 squad cohesion floored at 0, aura stops, protect-officer interrupted, flag cleared on recovery); verify the officer-loss cases pass
+- [x] 2.4 Extend the training phase setup with ammunition refill, `pinInstructor` and a casualty list (soldiers or instructor to incapacitate), and add the training-only instructor follow system (follow beyond 15 m, stop within 12 m, cover-first); verify with simulation unit tests for refill, pin, casualty drill and follow
+- [x] 2.5 Run `pnpm check:determinism`, confirm the golden changes only because of 2.1 to 2.4, record it with `--update`, and verify `pnpm sim` stays deterministic across two runs
 
 ## 3. Stations content and objectives
 

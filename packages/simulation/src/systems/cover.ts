@@ -2,7 +2,7 @@ import { MAP_BOUNDS, findPath, isPointBlockedByCovers } from '@prestes/shared';
 import type { CoverKind, SimEvent, Vec2 } from '@prestes/shared';
 import type { MutableUnit } from './model';
 import type { SimContext } from './context';
-import { occupied, nearestEnemy, squadCentroid } from './geometry';
+import { hasLineOfSight, occupied, nearestEnemy, squadCentroid } from './geometry';
 import { reject } from './commands';
 
 export function spawnCover(
@@ -188,6 +188,10 @@ export function seekCover(ctx: SimContext): void {
         continue;
       }
       if (isPointBlockedByCovers(candidate.x, candidate.y, ctx.covers, 0.8)) {
+        continue;
+      }
+      // Cover must not blind the shooter against its ordered target.
+      if (unit.targetId !== null && !hasLineOfSight(ctx, candidate, 'crouched', target)) {
         continue;
       }
       const center = squadCentroid(ctx, unit);

@@ -9,10 +9,10 @@ import {
   isPointBlockedByCovers,
 } from '@prestes/shared';
 import type { SimEvent, Vec2 } from '@prestes/shared';
-import { FATIGUE_MAX, clamp } from './model';
+import { FATIGUE_MAX, OPEN_POINT_DIRECTIONS, clamp } from './model';
 import type { ActiveOrder, MutableUnit } from './model';
 import type { SimContext } from './context';
-import { nearestOpenPoint, occupied, nearestEnemy } from './geometry';
+import { hasLineOfSight, nearestOpenPoint, occupied, nearestEnemy } from './geometry';
 import { woundSpeedFactor } from './casualties';
 
 export function groupSpeedFactor(ctx: SimContext, unit: MutableUnit): number {
@@ -319,8 +319,7 @@ export function advanceTowardTarget(ctx: SimContext, unit: MutableUnit, target: 
   if (unit.path.length > 0 || !unit.alive || unit.routed || unit.incapacitated) {
     return;
   }
-  const weapon = getWeapon(unit.weaponId);
-  const range = weapon?.range ?? FIRE_RANGE;
+  const range = sightRange(ctx, unit);
   const currentDistance = Math.sqrt((target.x - unit.x) ** 2 + (target.y - unit.y) ** 2);
   if (currentDistance <= range * 0.82) {
     return;
@@ -423,4 +422,192 @@ export function moveTowardOfficer(ctx: SimContext, unit: MutableUnit): void {
     queueUnitOrder(ctx, unit, path, 'move');
     return;
   }
+}
+
+const SIGHT_ORDERS = new Set(['attack', 'suppress', 'pursue', 'ambush', 'defend']);
+
+/** Firing distance: the weapon range, never beyond the scenario combat range. */
+export function sightRange(ctx: SimContext, unit: MutableUnit): number {
+  const weapon = getWeapon(unit.weaponId);
+  return Math.min(weapon?.range ?? FIRE_RANGE, ctx.combatRange);
+}
+
+/**
+ * Units with a combat order whose target is in range but hidden move to a
+ * nearby point with a sightline, so cover never leaves them blind for good.
+ */
+export function repositionForSight(ctx: SimContext): void {
+  for (const unit of ctx.units) {
+    if (
+      !unit.alive ||
+      unit.routed ||
+      unit.dummy ||
+      unit.incapacitated ||
+      unit.holdFire ||
+      unit.state === 'pinned' ||
+      unit.state === 'panicked' ||
+      unit.boundTeam !== null ||
+      unit.path.length > 0 ||
+      unit.targetId === null ||
+      unit.currentOrder === null ||
+      !SIGHT_ORDERS.has(unit.currentOrder)
+    ) {
+      continue;
+    }
+    const target = ctx.units.find((entry) => entry.id === unit.targetId);
+    if (!target || !target.alive || target.routed) {
+      continue;
+    }
+    const range = sightRange(ctx, unit);
+    if ((target.x - unit.x) ** 2 + (target.y - unit.y) ** 2 > range * range) {
+      continue;
+    }
+    if (hasLineOfSight(ctx, unit, unit.stance, target)) {
+      continue;
+    }
+    const best = sightPoint(ctx, unit, target, range);
+    if (!best) {
+      continue;
+    }
+    const path = findPath({ x: unit.x, y: unit.y }, best, ctx.covers);
+    if (path.length === 0) {
+      continue;
+    }
+    unit.path = path;
+    unit.pathIndex = 0;
+    unit.targetX = best.x;
+    unit.targetY = best.y;
+    unit.holdPosition = false;
+    queueUnitOrder(ctx, unit, path, 'move');
+  }
+}
+
+function sightPoint(
+  ctx: SimContext,
+  unit: MutableUnit,
+  target: MutableUnit,
+  range: number,
+): Vec2 | null {
+  // Prefer a short step from the shooter; if a long obstacle hides the target
+  // from everywhere nearby, look for a firing point around the target instead.
+  return (
+    bestSightPoint(ctx, unit, target, range, unit, [2, 4, 6, 8, 10]) ??
+    bestSightPoint(ctx, unit, target, range, target, [10, 15, 20, 25])
+  );
+}
+
+function bestSightPoint(
+  ctx: SimContext,
+  unit: MutableUnit,
+  target: MutableUnit,
+  range: number,
+  origin: Vec2,
+  radii: readonly number[],
+): Vec2 | null {
+  let best: Vec2 | null = null;
+  let bestScore = Number.POSITIVE_INFINITY;
+  for (const radius of radii) {
+    for (const direction of OPEN_POINT_DIRECTIONS) {
+      const candidate = {
+        x: origin.x + direction.x * radius,
+        y: origin.y + direction.y * radius,
+      };
+      if (
+        candidate.x < MAP_BOUNDS.minX ||
+        candidate.x > MAP_BOUNDS.maxX ||
+        candidate.y < MAP_BOUNDS.minY ||
+        candidate.y > MAP_BOUNDS.maxY ||
+        isPointBlockedByCovers(candidate.x, candidate.y, ctx.covers, 0.8) ||
+        occupied(ctx, candidate.x, candidate.y, unit)
+      ) {
+        continue;
+      }
+      if (
+        unit.orderRegionCenter &&
+        (candidate.x - unit.orderRegionCenter.x) ** 2 +
+          (candidate.y - unit.orderRegionCenter.y) ** 2 >
+          unit.orderRegionRadius * unit.orderRegionRadius
+      ) {
+        continue;
+      }
+      if ((target.x - candidate.x) ** 2 + (target.y - candidate.y) ** 2 > range * range) {
+        continue;
+      }
+      if (!hasLineOfSight(ctx, candidate, 'crouched', target)) {
+        continue;
+      }
+      const cover = coverAgainst(candidate.x, candidate.y, target.x, target.y, 'crouched', ctx.covers);
+      const travel = Math.sqrt((candidate.x - unit.x) ** 2 + (candidate.y - unit.y) ** 2);
+      const score = travel - cover * 4;
+      if (score < bestScore) {
+        bestScore = score;
+        best = candidate;
+      }
+    }
+  }
+  return best;
+}
+
+const INSTRUCTOR_FOLLOW_START = 15;
+const INSTRUCTOR_FOLLOW_STOP = 12;
+
+/**
+ * Training: the instructor (the column officer outside the player section) walks
+ * after the section, stopping behind it within aura range.
+ */
+export function updateInstructorFollow(ctx: SimContext): void {
+  if (!ctx.training || ctx.instructorPinned) {
+    return;
+  }
+  const instructor = ctx.units.find(
+    (unit) => unit.faction === 'column' && unit.kind === 'officer' && unit.squadId === 99,
+  );
+  if (
+    !instructor ||
+    !instructor.alive ||
+    instructor.incapacitated ||
+    instructor.routed ||
+    instructor.state === 'pinned' ||
+    instructor.state === 'panicked' ||
+    instructor.path.length > 0
+  ) {
+    return;
+  }
+  const section = ctx.units.filter(
+    (unit) =>
+      unit.faction === 'column' &&
+      unit.squadId !== 99 &&
+      !unit.dummy &&
+      unit.alive &&
+      !unit.incapacitated &&
+      !unit.routed,
+  );
+  if (section.length === 0) {
+    return;
+  }
+  const centroid = {
+    x: section.reduce((sum, unit) => sum + unit.x, 0) / section.length,
+    y: section.reduce((sum, unit) => sum + unit.y, 0) / section.length,
+  };
+  const dx = instructor.x - centroid.x;
+  const dy = instructor.y - centroid.y;
+  const gap = Math.sqrt(dx * dx + dy * dy);
+  if (gap <= INSTRUCTOR_FOLLOW_START) {
+    return;
+  }
+  const stop = INSTRUCTOR_FOLLOW_STOP * 0.5;
+  const destination = nearestOpenPoint(ctx, {
+    x: centroid.x + (dx / gap) * stop,
+    y: centroid.y + (dy / gap) * stop,
+  });
+  const path = findPath({ x: instructor.x, y: instructor.y }, destination, ctx.covers);
+  if (path.length === 0) {
+    return;
+  }
+  instructor.path = path;
+  instructor.pathIndex = 0;
+  instructor.targetX = destination.x;
+  instructor.targetY = destination.y;
+  instructor.holdPosition = false;
+  queueUnitOrder(ctx, instructor, path, 'move');
 }

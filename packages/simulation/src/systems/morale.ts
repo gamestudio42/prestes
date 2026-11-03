@@ -7,6 +7,10 @@ import { occupied, nearestEnemy } from './geometry';
 import { queueUnitOrder } from './movement';
 import { woundFor, releaseCarry } from './casualties';
 
+const OFFICER_LOSS_RADIUS = 25;
+const OFFICER_LOSS_MORALE = 20;
+const OFFICER_LOSS_COHESION = 15;
+
 export function applyOfficerAura(ctx: SimContext): void {
   for (const officer of ctx.units) {
     if (
@@ -36,6 +40,33 @@ export function applyOfficerAura(ctx: SimContext): void {
 }
 
 export function updateOfficerLoss(ctx: SimContext, tick: number, events: SimEvent[]): void {
+  // A fallen officer (dead or incapacitated) shakes the soldiers around him once
+  // per absence; recovery re-arms the consequence.
+  for (const officer of ctx.units) {
+    if (officer.kind !== 'officer' || officer.dummy) {
+      continue;
+    }
+    const outOfAction = !officer.alive || officer.incapacitated;
+    if (!outOfAction) {
+      officer.officerLossApplied = false;
+      continue;
+    }
+    if (officer.officerLossApplied) {
+      continue;
+    }
+    officer.officerLossApplied = true;
+    for (const ally of ctx.units) {
+      if (ally === officer || !ally.alive || ally.dummy || ally.faction !== officer.faction) {
+        continue;
+      }
+      if ((ally.x - officer.x) ** 2 + (ally.y - officer.y) ** 2 <= OFFICER_LOSS_RADIUS ** 2) {
+        ally.morale = Math.max(0, ally.morale - OFFICER_LOSS_MORALE);
+      }
+      if (ally.squadId === officer.squadId) {
+        ally.cohesion = Math.max(0, ally.cohesion - OFFICER_LOSS_COHESION);
+      }
+    }
+  }
   const officers = ctx.units.filter(
     (unit) => unit.alive && !unit.incapacitated && !unit.routed && unit.kind === 'officer',
   );
@@ -132,6 +163,7 @@ export function updateCohesion(ctx: SimContext): void {
         other !== unit &&
         other.alive &&
         !other.routed &&
+        !other.incapacitated &&
         other.kind === 'officer' &&
         other.faction === unit.faction &&
         (other.x - unit.x) ** 2 + (other.y - unit.y) ** 2 <= 12 * 12,

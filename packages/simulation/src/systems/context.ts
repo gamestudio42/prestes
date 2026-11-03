@@ -26,6 +26,8 @@ export interface SimContext {
   readonly scenario: 'bootcamp' | 'battle3v3';
   readonly combatRange: number;
   boundingEnabled: boolean;
+  /** Training: the instructor stays at its station checkpoint. */
+  instructorPinned: boolean;
   readonly queue: CommandEnvelope[];
   orders: ActiveOrder[];
   lastEvents: SimEvent[];

@@ -1,5 +1,10 @@
-import { clampToRegion as clampPointToRegion, isPointBlockedByCovers } from '@prestes/shared';
-import type { Faction, Vec2 } from '@prestes/shared';
+import {
+  clampToRegion as clampPointToRegion,
+  eyeHeightForStance,
+  isLineBlocked,
+  isPointBlockedByCovers,
+} from '@prestes/shared';
+import type { Faction, Stance, Vec2 } from '@prestes/shared';
 import { OPEN_POINT_DIRECTIONS } from './model';
 import type { MutableUnit } from './model';
 import type { SimContext } from './context';
@@ -93,4 +98,23 @@ export function occupied(ctx: SimContext, x: number, y: number, unit: MutableUni
     const nearTarget = (other.targetX - x) ** 2 + (other.targetY - y) ** 2 < 1.2 * 1.2;
     return nearPosition || nearTarget;
   });
+}
+
+/** Same sightline test as firing, from an arbitrary point and stance. */
+export function hasLineOfSight(
+  ctx: SimContext,
+  from: Vec2,
+  stance: Stance,
+  target: MutableUnit,
+): boolean {
+  return !isLineBlocked(
+    from.x,
+    from.y,
+    target.x,
+    target.y,
+    ctx.covers,
+    ctx.sightObstacles,
+    eyeHeightForStance(stance),
+    eyeHeightForStance(target.stance),
+  );
 }

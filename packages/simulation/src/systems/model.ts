@@ -109,6 +109,8 @@ export interface MutableUnit {
   role?: UnitRole;
   nonLethal: boolean;
   ambush: boolean;
+  /** Officers only: the loss consequence was applied for the current absence. */
+  officerLossApplied: boolean;
   reserveMode: boolean;
   recon: boolean;
   reconReported: boolean;
@@ -206,6 +208,7 @@ export const DEFAULT_UNITS: ReadonlyArray<
     | 'carryingId'
     | 'beingCarriedBy'
     | 'recoveryTicks'
+    | 'officerLossApplied'
   >
 > = [
   {

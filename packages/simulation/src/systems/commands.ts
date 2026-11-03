@@ -361,12 +361,14 @@ export function applyCommand(
         unit.stance = 'crouched';
       }
     }
+    // A click on cover still moves the soldier: use the nearest open point.
+    const fallback = nearestOpenPoint(ctx, command.to);
     if (isPointBlockedByCovers(destination.x, destination.y, ctx.covers, 0.8)) {
-      destination = command.to;
+      destination = fallback;
     }
     let path = findPath({ x: unit.x, y: unit.y }, destination, ctx.covers);
-    if (path.length === 0 && (destination.x !== command.to.x || destination.y !== command.to.y)) {
-      destination = command.to;
+    if (path.length === 0 && (destination.x !== fallback.x || destination.y !== fallback.y)) {
+      destination = fallback;
       path = findPath({ x: unit.x, y: unit.y }, destination, ctx.covers);
     }
     if (path.length === 0) {
