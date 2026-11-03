@@ -1,0 +1,455 @@
+/* Sepia command HUD: orders panel, squad cards and order buttons. */
+/* Sepia command HUD */
+.hud-top {
+  background: linear-gradient(180deg, rgba(24, 17, 12, 0.98), rgba(32, 23, 16, 0.9) 68%, rgba(32, 23, 16, 0));
+  border-bottom: 1px solid #5e4931;
+}
+
+.hud-brand,
+.hud-brand .hud-eyebrow,
+.order-status-line strong,
+.tutorial-chapter strong,
+.tutorial-graduation strong {
+  color: #ead9bb;
+}
+
+.hud-eyebrow,
+.tutorial-hint,
+.order-status-line.muted,
+.sandbox-panel dt {
+  color: #a78e69;
+}
+
+.hud-actions {
+  color: #d8c3a0;
+}
+
+.secondary,
+.order-button,
+.tutorial-panel,
+.sandbox-panel,
+.order-status {
+  background: #21170f;
+  border-color: #5b4632;
+  color: #d8c3a0;
+}
+
+.secondary:hover,
+.order-button:hover {
+  background: #332318;
+  border-color: #b68b4d;
+}
+
+.secondary.active,
+.order-button.active {
+  background: #4a3420;
+  border-color: #d0a45c;
+  color: #fff0cf;
+}
+
+.orders-panel {
+  background: linear-gradient(180deg, rgba(25, 17, 11, 0.98), rgba(18, 12, 8, 0.99));
+  border-top-color: #6b5136;
+}
+
+.orders-panel::before {
+  background: linear-gradient(90deg, transparent, #b68b4d 15%, #b68b4d 85%, transparent);
+}
+
+.order-status {
+  background: rgba(22, 15, 10, 0.72);
+}
+
+.tutorial-panel,
+.sandbox-panel {
+  background: rgba(24, 16, 10, 0.97);
+  border-color: #6b5136;
+}
+
+.tutorial-objective,
+.tutorial-feedback,
+.sandbox-panel,
+.tutorial-actions .secondary {
+  color: #dfc9a6;
+}
+
+/* --- Minimal sepia command HUD ------------------------------------------ */
+.app.game {
+  --hud-ink: #150e08;
+  --hud-panel: #1d140d;
+  --hud-panel-raised: #271a10;
+  --hud-line: #4a3623;
+  --hud-line-bright: #8a6338;
+  --hud-paper: #ead9b8;
+  --hud-dim: #a98a5f;
+  --hud-faint: #7d6446;
+  --hud-gold: #c2914c;
+  --hud-rust: #a65d43;
+}
+
+.hud-top {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: nowrap;
+  padding: 7px 18px 10px;
+  background:
+    linear-gradient(180deg, rgba(20, 13, 8, 0.99), rgba(30, 20, 12, 0.92) 72%, rgba(30, 20, 12, 0)),
+    var(--hud-ink);
+  border-bottom: 1px solid var(--hud-line);
+}
+
+.hud-brand {
+  font-size: 1.2rem;
+  letter-spacing: 0.24em;
+  color: var(--hud-paper);
+  text-shadow: 0 1px 0 #000;
+}
+
+.hud-eyebrow {
+  margin-top: 1px;
+  font-size: 0.46rem;
+  letter-spacing: 0.26em;
+  color: var(--hud-dim);
+}
+
+.hud-actions {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 4px;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.hud-actions .secondary {
+  width: 31px;
+  height: 29px;
+  gap: 0;
+  justify-content: center;
+  padding: 0;
+  border-color: var(--hud-line);
+  background: transparent;
+  color: #c4a97f;
+  font-size: 0;
+}
+
+.hud-actions .secondary svg {
+  width: 15px;
+  height: 15px;
+}
+
+.hud-actions .secondary:hover {
+  border-color: var(--hud-line-bright);
+  background: #2a1b11;
+  color: var(--hud-paper);
+}
+
+.hud-actions .secondary.active {
+  border-color: var(--hud-gold);
+  background: #3a2717;
+  color: #fff0cf;
+}
+
+.hud-actions .speed-button {
+  width: 26px;
+  font-size: 0.56rem;
+  letter-spacing: 0;
+}
+
+.orders-panel {
+  grid-template-columns: minmax(190px, 220px) minmax(0, 1fr) minmax(230px, 270px);
+  gap: 10px;
+  padding: 18px 16px 10px;
+  background:
+    repeating-linear-gradient(0deg, rgba(234, 217, 184, 0.015) 0 1px, transparent 1px 4px),
+    linear-gradient(180deg, rgba(31, 21, 13, 0.99), rgba(17, 11, 7, 0.995));
+  border-top: 1px solid #5a422b;
+  box-shadow: 0 -18px 42px rgba(0, 0, 0, 0.5);
+  font-size: 0.7rem;
+}
+
+.orders-panel::before {
+  top: 0;
+  left: 16px;
+  right: 16px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #9a6d3c 12%, #d1a666 50%, #9a6d3c 88%, transparent);
+  opacity: 0.65;
+}
+
+.orders-toggle {
+  justify-content: flex-start;
+  min-height: 20px;
+  padding: 1px 2px;
+  border: 0;
+  background: transparent;
+  color: var(--hud-dim);
+  font-size: 0.52rem;
+  letter-spacing: 0.14em;
+}
+
+.orders-toggle:hover {
+  border: 0;
+  background: transparent;
+  color: var(--hud-paper);
+}
+
+.orders-toggle svg {
+  width: 12px;
+  height: 12px;
+}
+
+.section-portrait {
+  min-height: 28px;
+  color: #b98e54;
+  background: #140e08;
+  border-color: #4a3623;
+}
+
+.section-portrait > span {
+  display: none;
+}
+
+.section-copy {
+  gap: 2px;
+}
+
+.section-copy strong {
+  font-size: 0.67rem;
+  letter-spacing: 0.12em;
+  color: var(--hud-paper);
+}
+
+.section-copy > span:not(.mini-bar) {
+  font-size: 0.5rem;
+  letter-spacing: 0.1em;
+  color: var(--hud-dim);
+}
+
+.mini-bar {
+  height: 3px;
+  border: 0;
+  background: #0d0905;
+}
+
+.mini-bar > span {
+  background: #a65d43;
+}
+
+.mini-bar.ammo > span {
+  background: #b98e54;
+}
+
+.mini-bar.morale > span {
+  background: #87937c;
+}
+
+.order-button {
+  min-height: 38px;
+  gap: 2px;
+  padding: 4px 2px;
+  clip-path: polygon(4px 0, 100% 0, 100% calc(100% - 4px), calc(100% - 4px) 100%, 0 100%, 0 4px);
+  border-color: var(--hud-line);
+  background: linear-gradient(180deg, #291b11, #1a110a);
+  color: #dcc6a2;
+  font-size: 0.57rem;
+  letter-spacing: 0.1em;
+}
+
+.order-button svg {
+  width: 15px;
+  height: 15px;
+}
+
+.order-button:hover {
+  border-color: var(--hud-line-bright);
+  background: linear-gradient(180deg, #382416, #24170e);
+}
+
+.order-button.active {
+  border-color: #e0b46c;
+  background: #5a3b20;
+  color: #fff0cf;
+}
+
+.order-button.small {
+  min-height: 25px;
+  padding: 2px 1px;
+  border-color: #3d2c1c;
+  background: #1b120b;
+  color: #b99a6e;
+  font-size: 0.47rem;
+  letter-spacing: 0.02em;
+}
+
+.order-button.small:hover {
+  color: var(--hud-paper);
+}
+
+.stance-row {
+  gap: 4px;
+}
+
+.stance-row > span {
+  color: var(--hud-faint);
+  font-size: 0.5rem;
+  letter-spacing: 0.14em;
+}
+
+.stance-row .secondary {
+  min-height: 24px;
+  padding: 2px 6px;
+  border-color: #3d2c1c;
+  background: transparent;
+  color: #b99a6e;
+  font-size: 0.52rem;
+}
+
+.stance-row .secondary svg {
+  width: 12px;
+  height: 12px;
+}
+
+.order-status {
+  gap: 2px;
+  padding: 0 0 0 10px;
+  border: 0;
+  border-left: 1px solid #3d2c1c;
+  background: transparent;
+}
+
+.order-status-line {
+  gap: 6px;
+  color: var(--hud-dim);
+  font-size: 0.53rem;
+  letter-spacing: 0.08em;
+}
+
+.order-status-line strong {
+  color: var(--hud-paper);
+  font-size: 0.8rem;
+  letter-spacing: 0.12em;
+}
+
+.order-status-line.muted {
+  color: var(--hud-faint);
+  font-size: 0.52rem;
+  line-height: 1.3;
+}
+
+.order-hint {
+  color: #c4a97f;
+  font-size: 0.59rem;
+  line-height: 1.3;
+}
+
+.cancel {
+  min-height: 20px;
+  padding: 2px 6px;
+  border-color: #4a3623;
+  color: #b99a6e;
+  font-size: 0.52rem;
+}
+
+.orders-panel.collapsed {
+  height: 34px;
+  padding: 4px 16px;
+}
+
+.orders-panel.collapsed .orders-toggle {
+  width: auto;
+  min-height: 24px;
+}
+
+.hud-restore {
+  top: 8px;
+  left: 18px;
+  background: rgba(24, 16, 10, 0.96);
+  border-color: #5a422b;
+  color: var(--hud-paper);
+  font-size: 0.56rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.tutorial-panel,
+.sandbox-panel {
+  top: 64px;
+  background:
+    repeating-linear-gradient(0deg, rgba(234, 217, 184, 0.018) 0 1px, transparent 1px 4px),
+    rgba(24, 16, 10, 0.97);
+  border-color: #5a422b;
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.45);
+}
+
+.tutorial-panel {
+  width: min(300px, calc(100vw - 32px));
+  padding: 8px 10px;
+}
+
+.codex {
+  background: #1a110a;
+  border-color: #5a422b;
+}
+@media (max-width: 1180px) {
+  .hud-top {
+    grid-template-columns: auto 1fr;
+  }
+
+  .hud-actions {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  .orders-panel {
+    grid-template-columns: minmax(180px, 210px) minmax(0, 1fr);
+  }
+
+  .order-status {
+    grid-column: 1 / -1;
+    border-left: 0;
+    border-top: 1px solid #3d2c1c;
+    padding: 5px 0 0;
+  }
+}
+
+@media (max-width: 760px) {
+  .hud-top {
+    gap: 6px;
+    padding: 6px 10px 8px;
+  }
+
+  .hud-brand {
+    font-size: 1rem;
+  }
+
+  .hud-actions {
+    gap: 2px;
+  }
+
+  .hud-actions .secondary {
+    width: 28px;
+    height: 28px;
+  }
+
+  .hud-actions .speed-button {
+    width: 23px;
+  }
+
+  .orders-panel {
+    grid-template-columns: 1fr;
+    gap: 6px;
+    padding: 16px 8px 8px;
+  }
+
+  .order-status {
+    border-top: 0;
+    padding-top: 0;
+  }
+
+  .tutorial-panel,
+  .sandbox-panel {
+    top: 88px;
+  }
+}

@@ -5,7 +5,7 @@ import '@fontsource/barlow/600.css';
 import '@fontsource/barlow-condensed/600.css';
 import '@fontsource/cinzel/600.css';
 import { App } from './App';
-import './styles.css';
+import './styles/index.css';
 
 const root = document.getElementById('root');
 if (!root) {
