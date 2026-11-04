@@ -173,7 +173,8 @@ export function buildingCover(building: Building): CoverPoint {
     halfWidth: building.halfWidth,
     halfDepth: building.halfDepth,
     height: building.height,
-    radius: Math.max(building.halfWidth, building.halfDepth) + 1.5,
+    // Reaches the corner slots, so a soldier there counts the building as cover.
+    radius: Math.hypot(building.halfWidth + 1, building.halfDepth + 1) + 0.5,
     quality: 0.8,
     blocksMovement: true,
     blocksSight: true,

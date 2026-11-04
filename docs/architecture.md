@@ -44,6 +44,22 @@ whole order of play. The stylesheet files are contiguous slices of the former
 `styles.css`; move a rule between them only together with the visual baselines in
 `tests/e2e/visual.spec.ts-snapshots/`.
 
+### Cover slots
+
+`packages/shared/src/cover-slots.ts` derives each cover's slots from its footprint
+(`coverSlots`): both long faces of sandbags, stone and low walls about 1.2 m apart,
+the trench floor, one per barrel side, building corners and walls. Slot ids are
+`coverId * 64 + index`; slots off the path grid or inside a blocking footprint are
+dropped (`allCoverSlots`, cached per cover set). `planCoverSlots` assigns free
+slots on the side away from the threat, closest soldier-slot pairs first; the
+simulation (`systems/slots.ts`) and the preview both call it, so the preview shows
+the slots an order takes. Units hold `slotId` (hashed state); `maintainSlots`
+releases it on a new destination, a fall, rout or removed cover, and a settled
+slot holder does not give way in `separateUnits`. Buildings live in one
+`BUILDINGS` table in `shared/world.ts`: the training cover set adds them as
+`building` cover and the view places their meshes from it. Hovering cover draws
+its slot markers (free, taken, planned) and a free count (`coverSlotView`).
+
 ### Bootcamp stations
 
 Stations are data in `packages/content/src/bootcamp-exercise.ts`; each objective
@@ -113,9 +129,9 @@ casualty drills, and training enemies are only engaged on an explicit order
   checkpoint for resume and local retry without restoring arbitrary unit snapshots.
 - The training field reuses deterministic simulation covers and spawns; a view-only
   TrainingLayer adds tents, sheds, fences, roads, crates, vegetation and zone,
-  approach and fallback markers. Ground previews choose cover even without a threat,
-  reserve one cover position per soldier, and a deterministic separation pass keeps
-  living soldiers at least 1.2 m apart.
+  approach and fallback markers. Ground orders and their previews take reserved
+  cover slots (see Cover slots), and a deterministic separation pass keeps living
+  soldiers at least 1.2 m apart.
 - The training scenario flag remains separate from `sandbox`; target dummies stay
   in the sandbox. Both-sides and sandbox tools remain available for mechanics testing.
 ## Tactical core

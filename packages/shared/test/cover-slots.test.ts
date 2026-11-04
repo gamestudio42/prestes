@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { BOOTCAMP_COVERS, allCoverSlots, findPath, coverSlots, isPointBlockedByCovers, isPointInCover, pickSlots } from '../src';
+import { BOOTCAMP_COVERS, allCoverSlots, buildingCover, coverAgainst, findPath, coverSlots, isPointBlockedByCovers, isPointInCover, pickSlots } from '../src';
 import type { CoverPoint } from '../src';
 
 const wall: CoverPoint = { id: 1, kind: 'low-wall', x: 0, y: 0, halfWidth: 3, halfDepth: 0.5, height: 1.4, radius: 3.2, quality: 0.35, blocksMovement: true, blocksSight: true };
@@ -30,6 +30,11 @@ describe('cover slots', () => {
   it('gives buildings corner and wall slots', () => {
     const house: CoverPoint = { ...wall, id: 2, kind: 'building', halfWidth: 4, halfDepth: 3, height: 4 };
     expect(coverSlots(house).length).toBe(4 + 2 * 4 + 2 * 3);
+    const building = buildingCover({ id: 9, model: 'farmhouse', x: 20, y: 20, rotation: 0, halfWidth: 4, halfDepth: 3, height: 4 });
+    const [corner] = coverSlots(building);
+    // A threat beyond the building, opposite the corner.
+    const covered = coverAgainst(corner!.x, corner!.y, 20 - 15, 20 - 12, 'standing', [building]);
+    expect(covered).toBeGreaterThan(0.3);
   });
 
   it('keeps every bootcamp slot outside blocking footprints', () => {

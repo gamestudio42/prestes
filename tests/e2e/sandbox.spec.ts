@@ -7,7 +7,7 @@ test('opens the sandbox, steps, spawns and resets', async ({ page }) => {
 
   await page.keyboard.press('F1');
   await expect(page.getByTestId('sandbox-panel')).toBeVisible();
-  await expect(page.getByTestId('sandbox-counts')).toContainText('Covers: 19');
+  await expect(page.getByTestId('sandbox-counts')).toContainText('Covers: 23');
 
   const tickBefore = await page.getByTestId('tick-value').textContent();
   await page.getByTestId('sandbox-step').click();
@@ -21,9 +21,9 @@ test('opens the sandbox, steps, spawns and resets', async ({ page }) => {
     await canvas.click({ position: { x, y } });
     await page.getByTestId('sandbox-step').click();
     await page.waitForTimeout(200);
-    if ((await page.getByTestId('sandbox-counts').textContent())?.includes('Covers: 20')) break;
+    if ((await page.getByTestId('sandbox-counts').textContent())?.includes('Covers: 24')) break;
   }
-  await expect(page.getByTestId('sandbox-counts')).toContainText('Covers: 20');
+  await expect(page.getByTestId('sandbox-counts')).toContainText('Covers: 24');
 
   await page.getByTestId('sandbox-tool-dummy').click();
   for (const [x, y] of [[1100, 350], [1050, 400], [1000, 300]] as const) {
@@ -35,7 +35,7 @@ test('opens the sandbox, steps, spawns and resets', async ({ page }) => {
   await expect(page.getByTestId('sandbox-counts')).toContainText('Dummies: 1');
 
   await page.getByTestId('sandbox-reset').click();
-  await expect(page.getByTestId('sandbox-counts')).toContainText('Covers: 19');
+  await expect(page.getByTestId('sandbox-counts')).toContainText('Covers: 23');
   await expect(page.getByTestId('sandbox-counts')).toContainText('Dummies: 0');
 });
 

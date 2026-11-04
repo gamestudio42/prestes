@@ -11,13 +11,14 @@ Every cover object SHALL expose cover slots derived deterministically from its
 footprint and rotation. Each slot SHALL have a position, a facing, the side of
 the cover it protects against, a stance (standing, crouched or prone) and a cover
 value. Sandbags, stone walls and low walls SHALL have slots along both long sides
-spaced about 1.2 m apart and 0.8 m off the face; a trench SHALL have slots inside
+spaced about 1.2 m apart and 1 m off the face (just outside the 0.8 m movement
+clearance); a trench SHALL have slots inside
 along its length; a barrel SHALL have one slot per side; a building SHALL have
 slots at its corners and along its walls, outside the footprint.
 
 #### Scenario: Trench capacity
 
-- **WHEN** the training trench (about 9.6 m long) is laid out
+- **WHEN** the training trench (about 14 m long) is laid out
 - **THEN** it exposes at least 8 slots inside it, all outside every
   movement-blocking footprint
 
@@ -53,9 +54,13 @@ falls, routs or is despawned, and when its cover object is removed.
 Movement, defend, ambush and reserve orders and automatic cover seeking SHALL
 choose free, reachable slots on the side away from the nearest threat (or the
 order's facing when no threat is known), preferring the slot nearest to each
-soldier's formation position. A soldier in a slot SHALL take the slot's stance
-unless the player locked a stance, face the slot's facing, and keep line of sight
-over the cover toward its ordered target.
+soldier's formation position. An order SHALL only take slots within 4 m of a
+formation position, and never more than 2 m closer to the threat than that
+position, unless the order point is on the cover itself, which fills that
+cover's slots from up to 16 m. Automatic cover seeking SHALL look within 8 m.
+Dispersal, recon and the scripted training troop SHALL NOT take slots. A soldier
+in a slot SHALL take the slot's stance unless the player locked a stance, face the
+slot's facing, and keep line of sight over the cover toward its ordered target.
 
 #### Scenario: Threat side
 
@@ -67,6 +72,12 @@ over the cover toward its ordered target.
 - **WHEN** a soldier in a low-wall slot has an ordered target in range
 - **THEN** it can fire at that target over the wall
 
+#### Scenario: Cover does not pull toward the enemy
+
+- **WHEN** a move ends next to cover whose slots lie toward the enemy
+- **THEN** the soldiers stay at their formation positions instead of advancing
+  into those slots
+
 #### Scenario: Ordering onto a cover object
 
 - **WHEN** the player orders a move onto a trench
@@ -77,10 +88,12 @@ over the cover toward its ordered target.
 
 The simulation SHALL support a `building` cover kind that blocks movement and
 sight, offers corner and wall slots, and gives high cover at a corner slot
-against threats on the far side of the building.
+against threats on the far side of the building. Buildings SHALL come from one
+table shared by the simulation and the view.
 
 #### Scenario: Corner cover
 
 - **WHEN** a soldier holds a building corner slot with the enemy beyond the
   building
-- **THEN** it is covered and can lean out to fire along the wall line
+- **THEN** it reserves that slot outside the footprint and is covered against
+  the threat
