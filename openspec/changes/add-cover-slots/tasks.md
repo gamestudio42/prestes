@@ -1,7 +1,7 @@
 ## 1. Slot model
 
-- [ ] 1.1 Add `building` to `CoverKind` and `coverSlots(cover)` in `packages/shared/src/cover-slots.ts` for every kind per the design; unit-test slot counts, determinism, rotation and that slots sit outside movement-blocking footprints (trench slots inside the walkable floor)
-- [ ] 1.2 Add `pickSlots` (free, reachable, threat side, region limit, greedy by distance with id tie-breaks) and unit-test the threat side, the region limit and no double assignment
+- [x] 1.1 Add `building` to `CoverKind` and `coverSlots(cover)` in `packages/shared/src/cover-slots.ts` for every kind per the design; unit-test slot counts, determinism, rotation and that slots sit outside movement-blocking footprints (trench slots inside the walkable floor)
+- [x] 1.2 Add `pickSlots` (free, reachable, threat side, region limit, greedy by distance with id tie-breaks) and unit-test the threat side, the region limit and no double assignment
 
 ## 2. Simulation
 

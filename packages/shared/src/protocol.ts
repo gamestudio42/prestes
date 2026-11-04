@@ -9,7 +9,7 @@ export type UnitKind = 'infantry' | 'officer' | 'dummy';
 
 export type Faction = 'column' | 'legalist' | 'cangaceiro' | 'civilian' | 'target';
 
-export type CoverKind = 'sandbag' | 'stone' | 'trench' | 'barrel' | 'low-wall';
+export type CoverKind = 'sandbag' | 'stone' | 'trench' | 'barrel' | 'low-wall' | 'building';
 
 export interface CoverPoint {
   id: number;
