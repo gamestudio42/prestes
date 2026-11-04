@@ -16,6 +16,12 @@ from mathutils import Matrix, Vector
 from common import MeshBuilder, reset, save_and_export
 
 FPS = 24
+# Rifle yaw across the body and the left arm's reach toward it (degrees).
+AIM_YAW = -10
+READY_YAW = -14
+LEFT_REACH = -40
+# Walk leg swings are scaled up for a longer stride (fewer steps per metre).
+STRIDE = 1.25
 
 BONES = {
     # name: (head, tail, parent)
@@ -189,22 +195,23 @@ def clip(rig, poser: Poser, name: str, frames: list, loop: bool = True) -> None:
 
 # ----------------------------------------------------------------- poses
 def slung(p: Poser) -> None:
-    """Rifle on the right shoulder, sloped back."""
-    p.swing("rifle", -28)
-    p.swing("upper_arm.R", 8)
-    p.swing("forearm.R", 70)
+    """Rifle slung on the right shoulder, muzzle up, the right hand on the sling."""
+    p.swing("rifle", -10)
+    p.swing("upper_arm.R", -4)
+    p.swing("forearm.R", 95)
 
 
 def ready(p: Poser) -> None:
-    """Low ready: butt at the shoulder, muzzle forward and down, both hands
-    on the rifle, so the soldier can bring it up and fire at once."""
+    """Low ready: butt at the shoulder, muzzle forward and down across the
+    body, both hands on the rifle, so the soldier can raise it and fire."""
     p.swing("chest", 6)
-    p.swing("rifle", 102)
-    p.swing("upper_arm.R", 42)
-    p.swing("forearm.R", 38)
-    p.swing("upper_arm.L", 58)
-    p.swing("forearm.L", 34)
-    p.spread("upper_arm.L", -14)
+    p.swing("rifle", 112)
+    p.side("rifle", READY_YAW)
+    p.swing("upper_arm.R", 35)
+    p.swing("forearm.R", 45)
+    p.swing("upper_arm.L", 60)
+    p.swing("forearm.L", 30)
+    p.side("upper_arm.L", LEFT_REACH)
     p.swing("head", -4)
 
 
@@ -220,10 +227,10 @@ def stand_breathe(p: Poser) -> None:
 
 def walk_a(p: Poser, arms=None) -> None:
     (arms or slung)(p)
-    p.swing("thigh.L", 24)
-    p.swing("shin.L", -8)
-    p.swing("thigh.R", -20)
-    p.swing("shin.R", -22)
+    p.swing("thigh.L", 24 * STRIDE)
+    p.swing("shin.L", -8 * STRIDE)
+    p.swing("thigh.R", -20 * STRIDE)
+    p.swing("shin.R", -22 * STRIDE)
     if arms is None:
         p.swing("upper_arm.L", -20)
     p.root(z=0.0)
@@ -231,18 +238,18 @@ def walk_a(p: Poser, arms=None) -> None:
 
 def walk_pass(p: Poser, arms=None) -> None:
     (arms or slung)(p)
-    p.swing("thigh.L", 2)
-    p.swing("thigh.R", -2)
-    p.swing("shin.R", -30)
+    p.swing("thigh.L", 2 * STRIDE)
+    p.swing("thigh.R", -2 * STRIDE)
+    p.swing("shin.R", -30 * STRIDE)
     p.root(z=0.03)
 
 
 def walk_b(p: Poser, arms=None) -> None:
     (arms or slung)(p)
-    p.swing("thigh.R", 24)
-    p.swing("shin.R", -8)
-    p.swing("thigh.L", -20)
-    p.swing("shin.L", -22)
+    p.swing("thigh.R", 24 * STRIDE)
+    p.swing("shin.R", -8 * STRIDE)
+    p.swing("thigh.L", -20 * STRIDE)
+    p.swing("shin.L", -22 * STRIDE)
     if arms is None:
         p.swing("upper_arm.L", 20)
     p.root(z=0.0)
@@ -250,9 +257,9 @@ def walk_b(p: Poser, arms=None) -> None:
 
 def walk_pass_b(p: Poser, arms=None) -> None:
     (arms or slung)(p)
-    p.swing("thigh.R", 2)
-    p.swing("thigh.L", -2)
-    p.swing("shin.L", -30)
+    p.swing("thigh.R", 2 * STRIDE)
+    p.swing("thigh.L", -2 * STRIDE)
+    p.swing("shin.L", -30 * STRIDE)
     p.root(z=0.03)
 
 
@@ -270,14 +277,15 @@ def crouch(p: Poser, aim: bool = False) -> None:
 
 
 def aim_arms(p: Poser, recoil: float = 0.0) -> None:
-    """Rifle forward at the shoulder, both hands on it."""
+    """Rifle forward at the right shoulder, angled a little across the body;
+    the right hand at the grip, the left under the forend."""
     p.swing("rifle", 90 - recoil * 6)
-    p.swing("upper_arm.R", 70)
-    p.swing("forearm.R", 20)
-    p.side("upper_arm.R", -12)
-    p.swing("upper_arm.L", 80)
-    p.swing("forearm.L", 15)
-    p.side("upper_arm.L", 25)
+    p.side("rifle", AIM_YAW)
+    p.swing("upper_arm.R", 75)
+    p.swing("forearm.R", 35)
+    p.swing("upper_arm.L", 85)
+    p.swing("forearm.L", 10)
+    p.side("upper_arm.L", LEFT_REACH)
     p.swing("chest", -recoil * 3)
     p.swing("head", 6)
 
@@ -318,6 +326,23 @@ def crawl(p: Poser, side: float) -> None:
     p.swing(f"upper_arm.{drawn}", 115)
     p.swing(f"forearm.{drawn}", 75)
     p.spread(f"upper_arm.{drawn}", 18)
+
+
+def hit(p: Poser, amount: float) -> None:
+    """Struck: the body jerks back and folds, the arms fly loose, the rifle
+    drops out of line. `amount` 0..1 through the stagger."""
+    slung(p)
+    p.swing("rifle", -10 + amount * 50)
+    p.swing("chest", -14 * amount)
+    p.swing("head", -18 * amount)
+    p.swing("upper_arm.L", 35 * amount)
+    p.spread("upper_arm.L", 20 * amount)
+    p.swing("upper_arm.R", 25 * amount)
+    p.swing("forearm.R", 95 - 60 * amount)
+    p.swing("thigh.L", -14 * amount)
+    p.swing("shin.L", -20 * amount)
+    p.swing("thigh.R", 8 * amount)
+    p.root(pitch=-6 * amount, y=-0.18 * amount, z=-0.06 * amount)
 
 
 def wounded(p: Poser) -> None:
@@ -380,6 +405,7 @@ def build():
         (3, lambda p: (prone(p), p.swing("upper_arm.R", 150))),
         (10, lambda p: prone(p)),
     ], loop=False)
+    clip(rig, poser, "hit", [(1, lambda p: hit(p, 0)), (4, lambda p: hit(p, 1)), (8, lambda p: hit(p, 0.85))], loop=False)
     clip(rig, poser, "wounded", [(1, wounded), (24, wounded)], loop=False)
     clip(rig, poser, "corpse", [(1, corpse), (24, corpse)], loop=False)
 

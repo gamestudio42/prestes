@@ -322,7 +322,16 @@ Four phases, each its own OpenSpec change:
 4. Low-poly art pass: objects, movement and firing feedback.
    In progress as `low-poly-art-pass`: the Blender soldier (16 clips, with the
    low crawl and the rifle at the ready on contact orders) and the training
-   ground models load in game; effects and the close (sections 4 and 5) remain.
+   ground models load in game. Fire and movement feedback: one pooled point
+   cloud of pixel sprites (muzzle flash, smoke, impacts by surface with stone
+   chips, sand and blood, dust under marching feet), faded by dithering; misses
+   land at a repeatable point past the target. A struck soldier staggers (new
+   `hit` clip) and blends slowly to the ground when he falls. After the user's
+   hand check the arms were reworked (rifle slung nearly upright with the hand
+   on the sling; aim and ready angle the rifle across the body with the left
+   hand under the forend) and the stride lengthened: at 1x game time runs at
+   twice real time, so walk cadence is capped at 1.5x and the feet slide a
+   little. The close (section 5) remains.
    The glTF loaders are a separate chunk fetched on demand; the animation
    system raised the three chunk to 591 KB, so its budget went from 560 to
    610 KB (2026-11-04).

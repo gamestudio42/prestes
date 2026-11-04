@@ -34,6 +34,10 @@ interface CharacterView {
   soldier?: SoldierInstance;
   /** Until when (performance.now ms) the soldier shows its firing pose. */
   fireUntil: number;
+  /** Until when the soldier staggers from a hit (also just before falling). */
+  hitUntil: number;
+  /** He was down (dead or incapacitated) at the last update. */
+  down: boolean;
   phase: number;
   lastX: number;
   lastY: number;
@@ -405,6 +409,7 @@ export class CharacterLayer {
   private readonly proxyScale = new THREE.Vector3();
   private asset: SoldierAsset | null = null;
   private lastUpdate = performance.now();
+  private lastEventTick = -1;
   private readonly flatQuaternion = new THREE.Quaternion().setFromEuler(
     new THREE.Euler(-Math.PI / 2, 0, 0),
   );
@@ -457,9 +462,14 @@ export class CharacterLayer {
     const now = performance.now();
     const seconds = Math.min(0.1, Math.max(0, (now - this.lastUpdate) / 1000));
     this.lastUpdate = now;
+    // A tick's events act once, however often the frame is drawn.
+    const fresh = frame.tick !== this.lastEventTick;
+    this.lastEventTick = frame.tick;
     const shooters = new Set<number>();
-    for (const event of frame.events) {
+    const struck = new Set<number>();
+    for (const event of fresh ? frame.events : []) {
       if (event.type === 'shot') shooters.add(event.source);
+      if (event.type === 'unit_hit') struck.add(event.unitId);
     }
     const scale = unitScaleForSpan(span) * 1.25;
     const seen = new Set<number>();
@@ -484,6 +494,8 @@ export class CharacterLayer {
           idle: unit.id * 0.7,
           lean: 0,
           fireUntil: 0,
+          hitUntil: 0,
+          down: !unit.alive || unit.incapacitated,
         };
         this.views.set(unit.id, view);
       }
@@ -500,6 +512,12 @@ export class CharacterLayer {
       view.crouch += (targetCrouch - view.crouch) * 0.08;
       view.prone += (targetProne - view.prone) * 0.08;
       view.idle += 1 / 60;
+
+      const down = !unit.alive || unit.incapacitated;
+      if (struck.has(unit.id) || (down && !view.down)) {
+        view.hitUntil = now + (down ? 260 : 320);
+      }
+      view.down = down;
 
       if (shooters.has(unit.id)) {
         view.fireUntil = now + 450;
@@ -589,7 +607,11 @@ export class CharacterLayer {
       }
       if (view.soldier) {
         const metresPerSecond = seconds > 0 ? moved / seconds : 0;
-        const clip = soldierClip(unit, { moving: moved > 0.0005, firing: now < view.fireUntil });
+        const clip = soldierClip(unit, {
+          moving: moved > 0.0005,
+          firing: now < view.fireUntil,
+          hit: now < view.hitUntil,
+        });
         const authored = CLIP_SPEED[clip];
         view.soldier.play(clip, authored ? walkTimeScale(metresPerSecond, authored) : 1);
         view.soldier.update(seconds);

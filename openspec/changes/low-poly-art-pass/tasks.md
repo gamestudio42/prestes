@@ -18,8 +18,8 @@
 
 ## 4. Feedback
 
-- [ ] 4.1 Effects sheet (pixel sprites) and `effects-layer.ts`: muzzle flash, smoke, tracer, impact by surface, footstep dust, suppression spurts; pooled
-- [ ] 4.2 Hit fall: a soldier hit hard plays a short stagger or fall before the wounded or corpse clip
+- [x] 4.1 Effects sheet (pixel sprites) and `effects-layer.ts`: muzzle flash, smoke, tracer, impact by surface, footstep dust, suppression spurts; pooled
+- [x] 4.2 Hit fall: a soldier hit hard plays a short stagger or fall before the wounded or corpse clip
 
 ## 5. Close
 

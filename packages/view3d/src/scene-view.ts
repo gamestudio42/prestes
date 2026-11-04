@@ -17,6 +17,7 @@ import {
 import { CameraRig, type CameraBand } from './camera-rig';
 import { CharacterLayer } from './character-layer';
 import { CoverLayer } from './cover-layer';
+import { EffectsLayer } from './effects-layer';
 import { loadEnvironmentAsset } from './environment-models';
 import { toon } from './materials';
 import { PALETTE } from './palette';
@@ -80,6 +81,7 @@ export class SceneView {
   private readonly characters = new CharacterLayer();
   private readonly paths = new PathLayer();
   private readonly tracers = new TracerLayer();
+  private readonly effects = new EffectsLayer();
   private readonly preview = new PreviewLayer();
   private readonly training = new TrainingLayer();
   private readonly world: WorldLayer;
@@ -142,6 +144,7 @@ export class SceneView {
     this.world = new WorldLayer(options.trainingField ? 'training' : 'sandbox');
     this.characters.loadModels();
     this.loadEnvironment();
+    this.effects.load();
     this.addWorld();
     if (options.trainingField) {
       this.scene.add(this.training.group);
@@ -152,6 +155,7 @@ export class SceneView {
       this.characters.group,
       this.paths.group,
       this.tracers.group,
+      this.effects.group,
       this.preview.group,
       this.placementRoot,
       this.targetRoot,
@@ -438,6 +442,7 @@ export class SceneView {
         }
       }
     }
+    this.effects.onFrame(frame);
   }
 
   /** Nearest unit to a screen point (within 28 px) that `accept` allows. */
@@ -547,6 +552,7 @@ export class SceneView {
     this.characters.dispose();
     this.paths.dispose();
     this.tracers.dispose();
+    this.effects.dispose();
     this.preview.dispose();
     this.post.dispose();
     disposeObject(this.scene);
@@ -600,6 +606,9 @@ export class SceneView {
       this.paths.update(this.lastFrame.orders, this.rig.span);
     }
     this.tracers.update(delta);
+    const camera = this.rig.camera;
+    const metresHigh = (camera.top - camera.bottom) / camera.zoom;
+    this.effects.update(this.lastFrame, delta, this.post.target.height / Math.max(1, metresHigh));
     this.updateCallout(time);
     this.updateBalloon();
 

@@ -11,6 +11,11 @@ const base = {
 const still = { moving: false, firing: false };
 
 describe('soldierClip', () => {
+  it('a struck soldier staggers first, even as he falls', () => {
+    expect(soldierClip(base, { moving: true, firing: true, hit: true })).toBe('hit');
+    expect(soldierClip({ ...base, alive: false }, { moving: false, firing: false, hit: true })).toBe('hit');
+  });
+
   it('shows the dead and the wounded before anything else', () => {
     expect(soldierClip({ ...base, alive: false }, { moving: true, firing: true })).toBe('corpse');
     expect(soldierClip({ ...base, incapacitated: true }, { moving: true, firing: false })).toBe('wounded');
@@ -56,9 +61,9 @@ describe('soldierOutfit', () => {
 
 describe('walkTimeScale', () => {
   it('keeps the step in time with the ground speed, within limits', () => {
-    expect(walkTimeScale(1.4)).toBeCloseTo(1);
+    expect(walkTimeScale(1.75)).toBeCloseTo(1);
     expect(walkTimeScale(0)).toBe(0.4);
-    expect(walkTimeScale(10)).toBe(2.2);
+    expect(walkTimeScale(10)).toBe(1.5);
     expect(walkTimeScale(0.45, 0.45)).toBeCloseTo(1);
   });
 });

@@ -16,6 +16,7 @@ export type SoldierClip =
   | 'fire-crouch'
   | 'aim-prone'
   | 'fire-prone'
+  | 'hit'
   | 'wounded'
   | 'corpse';
 
@@ -23,6 +24,7 @@ export type SoldierOutfit = 'column' | 'legalist' | 'officer';
 
 /** Clips that hold their last pose instead of looping. */
 export const HELD_CLIPS: ReadonlySet<SoldierClip> = new Set([
+  'hit',
   'fire-stand',
   'fire-crouch',
   'fire-prone',
@@ -34,6 +36,8 @@ export interface ClipState {
   moving: boolean;
   /** The soldier fired in the last few tenths of a second. */
   firing: boolean;
+  /** The soldier was struck a moment ago (also just before he falls). */
+  hit?: boolean;
 }
 
 /**
@@ -68,6 +72,7 @@ export function atTheReady(unit: ClipUnit): boolean {
 
 /** The clip a soldier plays for its snapshot and what it is doing. */
 export function soldierClip(unit: ClipUnit, state: ClipState): SoldierClip {
+  if (state.hit) return 'hit';
   if (!unit.alive) return 'corpse';
   if (unit.incapacitated) return 'wounded';
   const aiming = unit.targetId !== null;
@@ -96,13 +101,18 @@ export function soldierOutfit(unit: Pick<UnitSnapshot, 'kind' | 'faction'>): Sol
 
 /** Ground speed each moving clip is authored at, in metres per second. */
 export const CLIP_SPEED: Partial<Record<SoldierClip, number>> = {
-  walk: 1.4,
-  'walk-ready': 1.4,
+  // Stride lengthened by 1.25 in target_soldier.py (STRIDE).
+  walk: 1.75,
+  'walk-ready': 1.75,
   'crouch-walk': 1.0,
   crawl: 0.45,
 };
 
-/** Play a moving clip in step with the ground speed. */
-export function walkTimeScale(metresPerSecond: number, authored = 1.4): number {
-  return Math.max(0.4, Math.min(2.2, metresPerSecond / authored));
+/**
+ * Play a moving clip in step with the ground speed, but never faster than
+ * 1.5 times: game time runs at twice real time at 1x, and full cadence there
+ * reads as frantic running. The feet slide a little instead.
+ */
+export function walkTimeScale(metresPerSecond: number, authored = 1.75): number {
+  return Math.max(0.4, Math.min(1.5, metresPerSecond / authored));
 }
