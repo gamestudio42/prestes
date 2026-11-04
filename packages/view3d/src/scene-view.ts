@@ -289,8 +289,8 @@ export class SceneView {
   }
 
   /** Live effect particles and whether the sheet is loaded (dev checks). */
-  effectsState(): { count: number; ready: boolean } {
-    return { count: this.effects.count, ready: this.effects.ready };
+  effectsState(): { count: number; ready: boolean; tracers: number } {
+    return { count: this.effects.count, ready: this.effects.ready, tracers: this.tracers.count };
   }
 
   /** Centres the camera on a ground point (a new training station). */

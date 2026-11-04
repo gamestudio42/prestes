@@ -336,7 +336,9 @@ Four phases, each its own OpenSpec change:
    lean (ready about 8 degrees down, crouched aim level); prone is a real
    firing position (chest up on the elbows, head up, legs apart); the effect
    sprites got a dark outline, longer lives and bigger sizes, and dust shows on
-   grass too. The close (section 5) remains.
+   grass too. Asked next: tracers are now a short streak, bright gold at the
+   head fading to red, flying from the muzzle to the target at a readable
+   90 m/s instead of a white line. The close (section 5) remains.
    The glTF loaders are a separate chunk fetched on demand; the animation
    system raised the three chunk to 591 KB, so its budget went from 560 to
    610 KB (2026-11-04).
