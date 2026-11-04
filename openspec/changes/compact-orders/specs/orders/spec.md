@@ -16,6 +16,12 @@ accept their commands, mapped to the new behaviour.
 - **THEN** it shows Move, Advance, Withdraw, Halt, Attack, Suppress, Flank,
   Defend and Recon, each with its availability
 
+#### Scenario: All catalogue orders are addressable
+- **WHEN** the player opens the order menu
+- **THEN** every catalogue order is listed under its row and shows
+  availability, and the folded orders are reachable through the drag, fire
+  control, posture or the wounded comrade
+
 #### Scenario: Ambush through fire control
 - **WHEN** the player orders Defend with fire control on contact and an enemy
   troop walks into 25 m of the section
