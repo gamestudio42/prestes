@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { BOOTCAMP_COVERS, coverSlots, isPointInCover } from '@prestes/shared';
+import { BOOTCAMP_COVERS, coverSlots, isPointInCover, planOrderPreview } from '@prestes/shared';
 import type { Command, Frame } from '@prestes/shared';
 import { SimulationEngine } from '../src/engine';
 
@@ -60,6 +60,18 @@ describe('cover slots in the simulation', () => {
     const slotIds = section.map((id) => t.slotOf(id)).filter((id) => id !== null);
     expect(new Set(slotIds).size).toBe(slotIds.length);
     expect(slotIds.length).toBeGreaterThanOrEqual(8);
+  });
+
+  it('previews the same slots the order then takes', () => {
+    const t = training();
+    const section = t.riflemen().slice(0, 5);
+    t.placeNear(section, { x: trench.x, y: trench.y + 9 });
+    const to = { x: trench.x, y: trench.y };
+    const plan = planOrderPreview({ frame: t.frame(), unitIds: section, order: 'move', to });
+    const previewed = new Map(plan!.paths.map((path) => [path.unitId, path.slotId]));
+    t.send({ type: 'move', unitIds: section, to }, 1);
+    expect(section.map((id) => t.slotOf(id))).toEqual(section.map((id) => previewed.get(id)));
+    expect(section.every((id) => t.slotOf(id) !== null)).toBe(true);
   });
 
   it('defends a wall from the side away from the threat', () => {

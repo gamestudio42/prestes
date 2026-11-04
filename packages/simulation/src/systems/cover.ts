@@ -1,6 +1,9 @@
 import { MAP_BOUNDS, cachedCoverSlots, findPath, isPointBlockedByCovers, slotGuards } from '@prestes/shared';
 import type { CoverKind, CoverSlot, SimEvent, Vec2 } from '@prestes/shared';
 import { slotHolders, takeSlot } from './slots';
+
+/** Automatic cover only looks for a free slot this close (metres). */
+const AUTO_COVER_RADIUS = 8;
 import type { MutableUnit } from './model';
 import type { SimContext } from './context';
 import { hasLineOfSight, occupied, nearestEnemy, squadCentroid } from './geometry';
@@ -135,6 +138,8 @@ export function seekCover(ctx: SimContext): void {
     if (
       (!unit.orderIssued && unit.posture !== 'defensive') ||
       unit.suppress ||
+      unit.recon ||
+      unit.role === 'training-enemy' ||
       unit.path.length > 0 ||
       order === 'hold' ||
       order === 'withdraw' ||
@@ -177,7 +182,7 @@ export function seekCover(ctx: SimContext): void {
         continue;
       }
       const score = (unit.x - slot.x) ** 2 + (unit.y - slot.y) ** 2;
-      if (score > 16 * 16 || score >= bestDistance) {
+      if (score > AUTO_COVER_RADIUS * AUTO_COVER_RADIUS || score >= bestDistance) {
         continue;
       }
       if (!slotGuards(slot, target, null)) {

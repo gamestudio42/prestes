@@ -144,6 +144,8 @@ export interface UnitSnapshot {
   cover: number;
   order: UnitOrder | null;
   targetId: number | null;
+  /** Reserved cover slot, if any. */
+  slotId?: number | null;
   holdFire?: boolean;
   posture?: Posture;
   boundTeam?: 'a' | 'b' | null;

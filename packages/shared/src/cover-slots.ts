@@ -23,6 +23,8 @@ const LINEAR_SPACING = 1.2;
 const BUILDING_SPACING = 2.0;
 const LOW_COVER_HEIGHT = 1.2;
 const MAX_SLOTS = 64;
+/** Metres a cover slot may lie closer to the threat than the soldier's formation spot. */
+const MAX_ADVANCE_TO_COVER = 2;
 
 function toWorld(cover: CoverPoint, localX: number, localY: number): Vec2 {
   const rotation = cover.rotation ?? 0;
@@ -178,6 +180,7 @@ export function pickSlots(
     }
     return slotGuards(slot, options.threat ?? null, options.facing ?? null);
   });
+  const threat = options.threat ?? null;
   const pairs: Array<{ unit: { id: number; x: number; y: number }; slot: CoverSlot; score: number }> = [];
   for (const unit of units) {
     const anchor = anchors.get(unit.id) ?? unit;
@@ -187,6 +190,15 @@ export function pickSlots(
         continue;
       }
       const preferred = options.preferCoverId != null && slot.coverId === options.preferCoverId;
+      // Cover-first never draws a soldier toward the enemy, unless that cover was clicked.
+      if (
+        threat &&
+        !preferred &&
+        Math.hypot(slot.x - threat.x, slot.y - threat.y) <
+          Math.hypot(anchor.x - threat.x, anchor.y - threat.y) - MAX_ADVANCE_TO_COVER
+      ) {
+        continue;
+      }
       pairs.push({ unit, slot, score: distance - (preferred ? 100 : 0) });
     }
   }
@@ -253,7 +265,58 @@ export function planCoverSlots(
     facing: plan.facing ?? null,
     region: plan.region ?? null,
     preferCoverId: clicked?.id ?? null,
-    maxDistance: clicked ? 16 : (plan.maxDistance ?? 6),
+    maxDistance: clicked ? 16 : (plan.maxDistance ?? 4),
     reachable: (unit, slot) => findPath({ x: unit.x, y: unit.y }, slot, covers).length > 0,
   });
+}
+
+export interface SlotMarker {
+  slotId: number;
+  x: number;
+  y: number;
+  state: 'free' | 'taken' | 'planned';
+}
+
+export interface CoverSlotView {
+  coverId: number | null;
+  free: number;
+  total: number;
+  markers: SlotMarker[];
+}
+
+/**
+ * Slot markers for the HUD: every slot of the hovered cover (free or taken) and
+ * the slots the pending order would take, with the hovered cover's free count.
+ */
+export function coverSlotView(
+  covers: readonly CoverPoint[],
+  units: readonly { id: number; slotId?: number | null; alive: boolean; incapacitated?: boolean }[],
+  hovered: Vec2 | null,
+  planned: ReadonlySet<number>,
+): CoverSlotView {
+  const held = new Set<number>();
+  for (const unit of units) {
+    if (unit.slotId != null && unit.alive && !unit.incapacitated) {
+      held.add(unit.slotId);
+    }
+  }
+  const cover = hovered ? coverAtPoint(hovered, covers) : null;
+  const markers: SlotMarker[] = [];
+  let free = 0;
+  let total = 0;
+  for (const slot of cachedCoverSlots(covers)) {
+    const onCover = cover !== null && slot.coverId === cover.id;
+    if (!onCover && !planned.has(slot.id)) {
+      continue;
+    }
+    const state = planned.has(slot.id) ? 'planned' : held.has(slot.id) ? 'taken' : 'free';
+    if (onCover) {
+      total += 1;
+      if (!held.has(slot.id)) {
+        free += 1;
+      }
+    }
+    markers.push({ slotId: slot.id, x: slot.x, y: slot.y, state });
+  }
+  return { coverId: cover?.id ?? null, free, total, markers };
 }

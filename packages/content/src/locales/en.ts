@@ -68,6 +68,7 @@ export const en = {
   'hud.body': 'Body',
   'hud.holdFire': 'Hold fire',
   'hud.alternatingMove': 'Alternating movement',
+  'hud.slotsFree': '{free}/{total} cover slots free',
   'hud.placementValid': 'Valid position - click to place',
   'hud.placementInvalid': 'Blocked position',
   'hud.boundAadvance': 'Half A advancing · Half B covering',

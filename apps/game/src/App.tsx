@@ -103,6 +103,7 @@ export function App() {
     posture,
     needsTarget,
     previewPlan,
+    slotView,
     handleTogglePreview,
     handleClearOrder,
     handlePreviewGround,
@@ -439,6 +440,7 @@ export function App() {
         postStrong={postStrong}
         cameraRequest={cameraRequest}
         preview={previewPlan}
+        slotMarkers={slotView?.markers}
         aimPending={aimPending}
         pendingAction={pendingOrder !== null || pendingTactical !== null || aimPending || sandboxTool !== null}
         lineMoveArmed={pendingOrder === 'move'}
@@ -551,6 +553,7 @@ export function App() {
         cursor={cursor}
         placementPreview={placementPreview}
         hoverHint={hoverHint}
+        slotView={slotView}
       />
       {!hudHidden && sandboxOpen ? (
         <SandboxPanel

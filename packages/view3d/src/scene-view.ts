@@ -7,6 +7,7 @@ import {
   type InterpolatedFrame,
   type Vec2,
   type PreviewPlan,
+  type SlotMarker,
   troopFormationOffsets,
 } from '@prestes/shared';
 import { CameraRig, type CameraBand } from './camera-rig';
@@ -261,6 +262,10 @@ export class SceneView {
     this.preview.setPlan(plan);
   }
 
+  setSlotMarkers(markers: readonly SlotMarker[]): void {
+    this.preview.setSlotMarkers(markers);
+  }
+
   setBand(band: CameraBand): void {
     this.rig.targetSpan = band === 'strategic' ? 240 : band === 'tactical' ? 80 : 180;
   }
@@ -392,6 +397,18 @@ export class SceneView {
     }
     return ids;
   }
+  /** CSS pixel position of a ground point inside the container, or null when behind the camera. */
+  groundToScreen(x: number, y: number): Vec2 | null {
+    const point = new THREE.Vector3(x, terrainHeightAt(x, y), y).project(this.rig.camera);
+    if (point.z > 1) {
+      return null;
+    }
+    return {
+      x: ((point.x + 1) / 2) * this.container.clientWidth,
+      y: ((1 - point.y) / 2) * this.container.clientHeight,
+    };
+  }
+
   screenToGround(cssX: number, cssY: number): Vec2 | null {
     const width = Math.max(1, this.container.clientWidth);
     const height = Math.max(1, this.container.clientHeight);

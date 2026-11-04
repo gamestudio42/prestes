@@ -1,9 +1,12 @@
 ﻿import * as THREE from 'three';
 import { terrainHeightAt, type PreviewPlan } from '@prestes/shared';
+import type { SlotMarker } from '@prestes/shared';
 import { PALETTE } from './palette';
 
 const MAX_LINE_VERTICES = 4096;
 const MAX_RINGS = 64;
+const MAX_SLOT_MARKERS = 128;
+const SLOT_COLORS = { free: PALETTE.losClear, taken: PALETTE.losBlocked, planned: PALETTE.preview } as const;
 
 export class PreviewLayer {
   readonly group = new THREE.Group();
@@ -23,6 +26,8 @@ export class PreviewLayer {
     3,
   );
   private readonly rings: THREE.InstancedMesh;
+  private readonly slotMarkers: THREE.InstancedMesh;
+  private readonly color = new THREE.Color();
   private readonly matrix = new THREE.Matrix4();
   private readonly position = new THREE.Vector3();
   private readonly quaternion = new THREE.Quaternion();
@@ -76,7 +81,17 @@ export class PreviewLayer {
     );
     this.rings.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
     this.rings.frustumCulled = false;
-    this.group.add(pathLines, losClear, losBlocked, this.rings);
+    const tickGeometry = new THREE.CircleGeometry(0.28, 8);
+    tickGeometry.rotateX(-Math.PI / 2);
+    this.slotMarkers = new THREE.InstancedMesh(
+      tickGeometry,
+      new THREE.MeshBasicMaterial({ transparent: true, opacity: 0.85, depthWrite: false }),
+      MAX_SLOT_MARKERS,
+    );
+    this.slotMarkers.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+    this.slotMarkers.frustumCulled = false;
+    this.slotMarkers.count = 0;
+    this.group.add(pathLines, losClear, losBlocked, this.rings, this.slotMarkers);
   }
 
   setPlan(plan: PreviewPlan | null): void {
@@ -184,8 +199,29 @@ export class PreviewLayer {
     this.rings.instanceMatrix.needsUpdate = true;
   }
 
+  /** Ground ticks for cover slots: free, taken, or planned by the pending order. */
+  setSlotMarkers(markers: readonly SlotMarker[]): void {
+    let count = 0;
+    for (const marker of markers) {
+      if (count >= MAX_SLOT_MARKERS) {
+        break;
+      }
+      this.position.set(marker.x, terrainHeightAt(marker.x, marker.y) + 0.24, marker.y);
+      this.matrix.compose(this.position, this.quaternion, this.scale);
+      this.slotMarkers.setMatrixAt(count, this.matrix);
+      this.slotMarkers.setColorAt(count, this.color.setHex(SLOT_COLORS[marker.state]));
+      count += 1;
+    }
+    this.slotMarkers.count = count;
+    this.slotMarkers.instanceMatrix.needsUpdate = true;
+    if (this.slotMarkers.instanceColor) {
+      this.slotMarkers.instanceColor.needsUpdate = true;
+    }
+  }
+
   dispose(): void {
     this.pathGeometry.dispose();
+    this.slotMarkers.geometry.dispose();
     this.losClearGeometry.dispose();
     this.losBlockedGeometry.dispose();
     this.rings.geometry.dispose();

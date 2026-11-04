@@ -663,6 +663,23 @@ select {
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
 }
 
+.slot-count {
+  position: fixed;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  pointer-events: none;
+  color: #f0e6c4;
+  font-size: 12px;
+  white-space: nowrap;
+  background: rgba(12, 15, 11, 0.88);
+  border: 1px solid #c9b978;
+  border-radius: 4px;
+  transform: translate(46px, 16px);
+}
+
 .cursor-hint.target {
   color: #e0b0a2;
   border-color: #d06a52;

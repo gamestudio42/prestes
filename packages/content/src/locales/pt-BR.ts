@@ -70,6 +70,7 @@ export const ptBR: Record<MessageKey, string> = {
   'hud.body': 'Corpo',
   'hud.holdFire': 'Segurar fogo',
   'hud.alternatingMove': 'Movimento alternado',
+  'hud.slotsFree': '{free}/{total} posições de cobertura livres',
   'hud.placementValid': 'Posição válida - clique para inserir',
   'hud.placementInvalid': 'Posição bloqueada',
   'hud.boundAadvance': 'Metade A avançando · Metade B cobrindo',

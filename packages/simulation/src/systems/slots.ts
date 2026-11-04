@@ -74,7 +74,9 @@ export function orderSlots(
   for (const unit of units) {
     unit.slotId = null;
   }
-  return planCoverSlots(units, anchorMap, ctx.covers, { ...plan, held: slotHolders(ctx) });
+  // The training troop is placed by the exercise director, not by cover.
+  const takers = units.filter((unit) => unit.role !== 'training-enemy');
+  return planCoverSlots(takers, anchorMap, ctx.covers, { ...plan, held: slotHolders(ctx) });
 }
 
 /** Reserves the slot and takes its stance. */

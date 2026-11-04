@@ -989,7 +989,8 @@ describe('SimulationEngine', () => {
     };
     const target = internal.units.find((unit) => unit.id === 4);
     if (!target) throw new Error('missing target');
-    target.x = -7;
+    // In clear sight of the observation point (not behind the sandbag at -8, 4).
+    target.x = -3;
     target.y = 0;
     engine.enqueue({
       type: 'order',

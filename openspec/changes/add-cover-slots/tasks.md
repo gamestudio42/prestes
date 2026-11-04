@@ -8,12 +8,12 @@
 - [x] 2.1 Add `slotHolders` to the context and `slotId` to units; release on new destination, death, incapacitation, rout, despawn and cover removal; unit-test each release path
 - [x] 2.2 Use slots in move, move-line, defend, ambush and reserve destinations and in automatic cover seeking, with slot stance, facing and cover value on arrival; mechanics tests: 11 into the trench (8+ in slots, all distinct), defend a wall with the threat to the north (all on the south side), fire over a low wall
 - [x] 2.3 Move building footprints to a shared `BUILDINGS` table, add them to the training cover set as `building` covers, place the view meshes from the same table, and drop the duplicate training-house sight obstacle; mechanics test for a corner slot
-- [ ] 2.4 Run the mechanics suite and the bootcamp e2e, then update the determinism golden with `--update` and record why
+- [x] 2.4 Run the mechanics suite and the bootcamp e2e, then update the determinism golden with `--update` and record why
 
 ## 3. Preview and HUD
 
-- [ ] 3.1 Make the preview planner use `pickSlots` without reserving and show each soldier's slot; verify with preview unit tests and the preview-hud e2e
-- [ ] 3.2 Draw slot markers (free and taken) for the hovered cover and the pending order, with a free count; e2e test hovering the trench shows its markers and a click onto the trench fills its slots
+- [x] 3.1 Make the preview planner use `pickSlots` without reserving and show each soldier's slot; verify with preview unit tests and the preview-hud e2e
+- [x] 3.2 Draw slot markers (free and taken) for the hovered cover and the pending order, with a free count; e2e test hovering the trench shows its markers and a click onto the trench fills its slots
 
 ## 4. Close
 

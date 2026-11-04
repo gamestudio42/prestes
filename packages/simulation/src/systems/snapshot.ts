@@ -44,6 +44,7 @@ export function snapshotUnits(ctx: SimContext): UnitSnapshot[] {
     cover: unit.cover,
     order: unit.currentOrder,
     targetId: unit.targetId,
+    slotId: unit.slotId,
     holdFire: unit.holdFire,
     posture: unit.posture,
     boundTeam: unit.boundTeam,

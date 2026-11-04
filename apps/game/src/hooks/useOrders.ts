@@ -1,5 +1,6 @@
 import {
   useEffect,
+  useMemo,
   useRef,
   useState,
   type Dispatch,
@@ -11,6 +12,10 @@ import {
   nearestTargetGroups,
   spreadTargetGroups,
   planOrderPreview,
+  coverAtPoint,
+  coverSlotView,
+  planCoverSlots,
+  type CoverSlotView,
   type FormationKind,
   type Frame,
   type Posture,
@@ -108,6 +113,41 @@ export function useOrders({
           fast: previewOrder === 'move',
         })
       : null;
+
+  // Cover slots under the cursor, and the ones the pending ground order would fill.
+  const hoveredCoverId =
+    frame && hoverPoint && !hudHidden ? (coverAtPoint(hoverPoint, frame.covers)?.id ?? null) : null;
+  const heldKey = frame
+    ? frame.units.map((unit) => (unit.slotId == null ? '' : `${unit.id}:${unit.slotId}`)).join(',')
+    : '';
+  const selectionKey = selectedIds.join(',');
+  const plannedKey = (previewPlan?.paths ?? []).map((path) => path.slotId ?? '').join(',');
+  const slotView: CoverSlotView | null = useMemo(() => {
+    if (!frame || hoveredCoverId === null || !hoverPoint) {
+      return null;
+    }
+    const planned = new Set<number>();
+    for (const path of previewPlan?.paths ?? []) {
+      if (path.slotId !== undefined) {
+        planned.add(path.slotId);
+      }
+    }
+    if (previewOrder === 'move' && planned.size === 0) {
+      const movers = frame.units.filter(
+        (unit) => selectedIds.includes(unit.id) && unit.alive && !unit.incapacitated && !unit.routed,
+      );
+      const anchors = new Map(movers.map((unit) => [unit.id, hoverPoint]));
+      const held = new Map<number, number>();
+      for (const unit of frame.units) {
+        if (unit.slotId != null && !selectedIds.includes(unit.id)) held.set(unit.slotId, unit.id);
+      }
+      for (const slot of planCoverSlots(movers, anchors, frame.covers, { held, click: hoverPoint }).values()) {
+        planned.add(slot.id);
+      }
+    }
+    return coverSlotView(frame.covers, frame.units, hoverPoint, planned);
+    // Recompute only when the hovered cover, the selection, the order or a holder changes.
+  }, [hoveredCoverId, selectionKey, previewOrder, heldKey, plannedKey]);
 
   useEffect(() => {
     if (!frame) {
@@ -724,6 +764,7 @@ export function useOrders({
   };
 
   return {
+    slotView,
     selectedSquadId,
     setSelectedSquadId,
     selectedUnitIds,

@@ -7,15 +7,15 @@ import type {
   UnitSnapshot,
   Vec2,
 } from './protocol';
-import { coverAgainst, eyeHeightForStance, firstSightBlocker, isPointBlockedByCovers } from './world';
+import { eyeHeightForStance, firstSightBlocker, isPointBlockedByCovers } from './world';
 import { getWeapon } from './weapons';
+import { planCoverSlots, type CoverSlot } from './cover-slots';
 
 import { VISION_CONE_DEGREES as PREVIEW_CONE_DEGREES } from './vision';
 export { PREVIEW_CONE_DEGREES };
 export const PREVIEW_CONE_RADIUS = 120;
 export const DEFEND_REGION_RADIUS = 8;
 const PREVIEW_FORMATION_SPACING = 2.8;
-const PREVIEW_COVER_OFFSET = 2;
 
 export function clampToRegion(point: Vec2, center: Vec2, radius: number): Vec2 {
   const dx = point.x - center.x;
@@ -35,6 +35,8 @@ export interface PreviewPath {
   points: Vec2[];
   destination: Vec2;
   cover: boolean;
+  /** The cover slot this soldier would take. */
+  slotId?: number;
 }
 
 export interface PreviewCone {
@@ -242,10 +244,6 @@ function nearestEnemyAt(
   return best;
 }
 
-function nearestEnemy(frame: Frame, unit: UnitSnapshot): UnitSnapshot | null {
-  return nearestEnemyAt(frame, unit, unit.faction);
-}
-
 function facingToward(from: Vec2, to: Vec2): Vec2 {
   const dx = to.x - from.x;
   const dy = to.y - from.y;
@@ -253,82 +251,6 @@ function facingToward(from: Vec2, to: Vec2): Vec2 {
   return length < 0.001 ? { x: 0, y: -1 } : { x: dx / length, y: dy / length };
 }
 
-export function coverDestinationForSlot(
-  unit: { x: number; y: number },
-  slot: Vec2,
-  threat: { x: number; y: number } | null,
-  covers: readonly CoverPoint[],
-  used: readonly Vec2[] = [],
-  sideAnchor?: Vec2,
-  facing?: Vec2,
-): { destination: Vec2; cover: boolean } {
-  const candidates: Array<{ destination: Vec2; score: number }> = [];
-  for (const point of covers) {
-    const slotDistance = Math.sqrt((point.x - slot.x) ** 2 + (point.y - slot.y) ** 2);
-    if (slotDistance > 6) continue;
-    const sideReference =
-      facing && !threat
-        ? { x: point.x - facing.x, y: point.y - facing.y }
-        : (sideAnchor ?? slot);
-    const sideTooClose =
-      (sideReference.x - point.x) ** 2 + (sideReference.y - point.y) ** 2 < 0.36;
-    const reference = threat ?? (sideTooClose ? unit : sideReference);
-    const sideCheck = threat ? (sideAnchor ?? slot) : reference;
-    const normalX = threat ? point.x - threat.x : reference.x - point.x;
-    const normalY = threat ? point.y - threat.y : reference.y - point.y;
-    const normalLength = Math.sqrt(normalX * normalX + normalY * normalY);
-    if (normalLength < 0.001) continue;
-    const nx = normalX / normalLength;
-    const ny = normalY / normalLength;
-    const tangentX = -ny;
-    const tangentY = nx;
-    const baseX = point.x + nx * PREVIEW_COVER_OFFSET;
-    const baseY = point.y + ny * PREVIEW_COVER_OFFSET;
-    const extent = Math.max(0, point.halfWidth - 0.7);
-    const lateralOffsets = [0];
-    for (let offset = 1.1; offset <= extent + 0.01; offset += 1.1) {
-      lateralOffsets.push(offset, -offset);
-    }
-    for (const lateral of lateralOffsets) {
-      const candidate = {
-        x: baseX + tangentX * lateral,
-        y: baseY + tangentY * lateral,
-      };
-      if (
-        (sideCheck.x - point.x) * (candidate.x - point.x) +
-          (sideCheck.y - point.y) * (candidate.y - point.y) <
-        0
-      ) {
-        continue;
-      }
-      if (
-        used.some(
-          (entry) => (entry.x - candidate.x) ** 2 + (entry.y - candidate.y) ** 2 < 1.2 * 1.2,
-        )
-      ) {
-        continue;
-      }
-      if (isPointBlockedByCovers(candidate.x, candidate.y, covers, 0.8)) {
-        continue;
-      }
-      if (
-        threat &&
-        coverAgainst(candidate.x, candidate.y, threat.x, threat.y, 'crouched', covers) < 0.1
-      ) {
-        continue;
-      }
-      const score = (candidate.x - slot.x) ** 2 + (candidate.y - slot.y) ** 2;
-      candidates.push({ destination: candidate, score });
-    }
-  }
-  candidates.sort((left, right) => left.score - right.score);
-  for (const candidate of candidates) {
-    if (findPath({ x: unit.x, y: unit.y }, candidate.destination, covers).length > 0) {
-      return { destination: candidate.destination, cover: true };
-    }
-  }
-  return { destination: slot, cover: false };
-}
 const GROUND_ORDERS = new Set<UnitOrder>([
   'move',
   'advance',
@@ -338,6 +260,53 @@ const GROUND_ORDERS = new Set<UnitOrder>([
   'recon',
   'reserve',
 ]);
+
+/**
+ * The cover slots a ground order would take: the simulation's planner, run on
+ * the frame without reserving. Slots held by other soldiers stay taken.
+ */
+function previewCoverSlots(
+  request: PreviewRequest,
+  units: readonly UnitSnapshot[],
+  anchors: readonly Vec2[],
+  target: UnitSnapshot | null,
+  facing: Vec2 | undefined,
+  fast: boolean,
+): Map<number, CoverSlot> {
+  if (
+    fast ||
+    !request.to ||
+    !GROUND_ORDERS.has(request.order) ||
+    request.order === 'disperse' ||
+    request.order === 'recon'
+  ) {
+    return new Map();
+  }
+  const selected = new Set(units.map((unit) => unit.id));
+  const held = new Map<number, number>();
+  for (const unit of request.frame.units) {
+    if (unit.slotId != null && !selected.has(unit.id) && unit.alive && !unit.incapacitated) {
+      held.set(unit.slotId, unit.id);
+    }
+  }
+  const anchorMap = new Map<number, Vec2>();
+  units.forEach((unit, index) => {
+    const anchor = anchors[index];
+    if (anchor) anchorMap.set(unit.id, anchor);
+  });
+  const line = request.order === 'move' && request.line;
+  const center = line
+    ? { x: (request.line!.from.x + request.line!.to.x) / 2, y: (request.line!.from.y + request.line!.to.y) / 2 }
+    : request.to;
+  const regionLimited = request.order === 'defend' || request.order === 'ambush';
+  return planCoverSlots(units, anchorMap, request.frame.covers, {
+    held,
+    threat: target ?? nearestEnemyAt(request.frame, center, units[0]!.faction),
+    facing: line ? lineFacing(request.line!.from, request.line!.to) : (facing ?? null),
+    click: line ? null : request.to,
+    region: regionLimited ? { center: request.to, radius: DEFEND_REGION_RADIUS } : null,
+  });
+}
 
 export function planOrderPreview(request: PreviewRequest): PreviewPlan | null {
   const unitIds = new Set(request.unitIds);
@@ -411,7 +380,7 @@ export function planOrderPreview(request: PreviewRequest): PreviewPlan | null {
   const paths: PreviewPath[] = [];
   const cones: PreviewCone[] = [];
   const los: PreviewLos[] = [];
-  const usedCover: Vec2[] = [];
+  const coverSlots = previewCoverSlots(request, units, slots, target, coverFacing, fast);
   units.forEach((unit, index) => {
     let destination = slots[index] ?? { x: unit.x, y: unit.y };
     let cover = false;
@@ -469,22 +438,12 @@ export function planOrderPreview(request: PreviewRequest): PreviewPlan | null {
       return;
     }
     if (!fast && hasDestination && GROUND_ORDERS.has(request.order)) {
-      const planned = coverDestinationForSlot(
-        unit,
-        destination,
-        target ?? nearestEnemy(request.frame, unit),
-        request.frame.covers,
-        usedCover,
-        request.to,
-        coverFacing,
-      );
-      destination = planned.destination;
-      cover = planned.cover;
-      if (request.order === 'defend') {
+      const coverSlot = coverSlots.get(unit.id);
+      if (coverSlot) {
+        destination = { x: coverSlot.x, y: coverSlot.y };
+        cover = true;
+      } else if (request.order === 'defend') {
         destination = clampToRegion(destination, request.to!, DEFEND_REGION_RADIUS);
-      }
-      if (cover) {
-        usedCover.push(destination);
       }
     }
     const path = hasDestination
@@ -493,7 +452,8 @@ export function planOrderPreview(request: PreviewRequest): PreviewPlan | null {
         : findPath({ x: unit.x, y: unit.y }, destination, request.frame.covers)
       : [];
     const points = path.length > 0 ? [{ x: unit.x, y: unit.y }, ...path] : [];
-    paths.push({ unitId: unit.id, points, destination, cover });
+    const slotId = coverSlots.get(unit.id)?.id;
+    paths.push({ unitId: unit.id, points, destination, cover, ...(slotId === undefined ? {} : { slotId }) });
 
     const facing = formationFacing;
     const dx = facing?.x ?? unit.facingX;

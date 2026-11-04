@@ -6,7 +6,7 @@ import {
   type PlacementPreview,
   type TrainingMarker,
 } from '@prestes/view3d';
-import { coverAgainst, type PreviewPlan, type Vec2 } from '@prestes/shared';
+import { coverAgainst, type PreviewPlan, type SlotMarker, type Vec2 } from '@prestes/shared';
 import type { GameClient } from '../client/GameClient';
 
 export type SelectionMode = 'all' | 'troops';
@@ -16,6 +16,7 @@ export interface GameCanvasProps {
   postStrong: boolean;
   cameraRequest: { band: CameraBand; nonce: number } | null;
   preview: PreviewPlan | null;
+  slotMarkers?: readonly SlotMarker[];
   aimPending?: boolean;
   pendingAction?: boolean;
   lineMoveArmed?: boolean;
@@ -54,6 +55,7 @@ export function GameCanvas({
   postStrong,
   cameraRequest,
   preview,
+  slotMarkers,
   aimPending = false,
   pendingAction = false,
   lineMoveArmed = false,
@@ -102,6 +104,12 @@ export function GameCanvas({
     scene.setTrainingMarkers(trainingMarkers);
     sceneRef.current = scene;
     scene.setPostStrong(true);
+    if (import.meta.env.DEV) {
+      // Playwright hovers world points through this dev-only hook.
+      (window as unknown as { __prestesScene?: unknown }).__prestesScene = {
+        groundToScreen: (x: number, y: number) => scene.groundToScreen(x, y),
+      };
+    }
 
     let frameHandle = 0;
     const loop = (): void => {
@@ -145,6 +153,10 @@ export function GameCanvas({
   useEffect(() => {
     sceneRef.current?.setPreview(preview);
   }, [preview]);
+
+  useEffect(() => {
+    sceneRef.current?.setSlotMarkers(slotMarkers ?? []);
+  }, [slotMarkers]);
 
   useEffect(() => {
     sceneRef.current?.setTrainingMarkers(trainingMarkers);

@@ -87,7 +87,8 @@ export function applyTacticalOrder(
       units[0]?.formation ?? 'line',
       formationFacing,
     );
-    const takesCover = command.order !== 'disperse';
+    // Dispersal spreads out and recon observes from the ordered point: no slots.
+    const takesCover = command.order !== 'disperse' && command.order !== 'recon';
     const regionLimited = command.order === 'defend' || command.order === 'ambush';
     const coverSlots = takesCover
       ? orderSlots(ctx, units, slots, {

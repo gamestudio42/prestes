@@ -110,7 +110,6 @@ export {
   type PreviewRequest,
 } from './preview';
 
-export { coverDestinationForSlot } from './preview';
 
 export { formationSlots } from './preview';
 
@@ -127,12 +126,15 @@ export {
   allCoverSlots,
   cachedCoverSlots,
   coverAtPoint,
+  coverSlotView,
   coverSlots,
   pickSlots,
   planCoverSlots,
   slotGuards,
   type CoverSlot,
   type CoverSlotPlan,
+  type CoverSlotView,
+  type SlotMarker,
   type SlotPickOptions,
 } from './cover-slots';
 
