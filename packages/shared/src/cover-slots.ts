@@ -1,5 +1,6 @@
 import type { CoverPoint, Stance, Vec2 } from './protocol';
-import { isPointBlockedByCovers } from './world';
+import { findPath } from './pathfinding';
+import { isPointBlockedByCovers, isPointInCover } from './world';
 
 /** A place where one soldier takes cover behind (or inside) a cover object. */
 export interface CoverSlot {
@@ -197,4 +198,56 @@ export function pickSlots(
     taken.add(pair.slot.id);
   }
   return assigned;
+}
+
+const slotCache = new WeakMap<readonly CoverPoint[], { key: string; slots: CoverSlot[] }>();
+
+/** `allCoverSlots`, cached per cover array until the cover set changes. */
+export function cachedCoverSlots(covers: readonly CoverPoint[]): CoverSlot[] {
+  const key = covers.map((cover) => `${cover.id}:${cover.x}:${cover.y}:${cover.rotation ?? 0}`).join('|');
+  const cached = slotCache.get(covers);
+  if (cached && cached.key === key) {
+    return cached.slots;
+  }
+  const slots = allCoverSlots(covers);
+  slotCache.set(covers, { key, slots });
+  return slots;
+}
+
+export interface CoverSlotPlan {
+  held?: ReadonlyMap<number, number>;
+  threat?: Vec2 | null;
+  facing?: Vec2 | null;
+  region?: { center: Vec2; radius: number } | null;
+  /** The clicked ground point: a click on a cover fills that cover first. */
+  click?: Vec2 | null;
+  /** Distance from each soldier's formation slot to an acceptable cover slot. */
+  maxDistance?: number;
+}
+
+/** The cover whose footprint (plus a small margin) contains the point. */
+export function coverAtPoint(point: Vec2, covers: readonly CoverPoint[]): CoverPoint | null {
+  return covers.find((cover) => isPointInCover(point.x, point.y, cover, 1)) ?? null;
+}
+
+/**
+ * Cover slots for an order: the same planner drives the simulation and the
+ * preview. `anchors` maps each soldier to its formation slot.
+ */
+export function planCoverSlots(
+  units: readonly { id: number; x: number; y: number }[],
+  anchors: ReadonlyMap<number, Vec2>,
+  covers: readonly CoverPoint[],
+  plan: CoverSlotPlan = {},
+): Map<number, CoverSlot> {
+  const clicked = plan.click ? coverAtPoint(plan.click, covers) : null;
+  return pickSlots(units, anchors, cachedCoverSlots(covers), {
+    held: plan.held,
+    threat: plan.threat ?? null,
+    facing: plan.facing ?? null,
+    region: plan.region ?? null,
+    preferCoverId: clicked?.id ?? null,
+    maxDistance: clicked ? 16 : (plan.maxDistance ?? 6),
+    reachable: (unit, slot) => findPath({ x: unit.x, y: unit.y }, slot, covers).length > 0,
+  });
 }

@@ -280,7 +280,7 @@ describe('SimulationEngine', () => {
 
   it('reloads the magazine from reserve', () => {
     const engine = new SimulationEngine({ seed: 1922 });
-    approach(engine, [1], 60, { x: -7, y: -8 });
+    approach(engine, [1], 60, { x: -7, y: -11 });
     const before = engine.frame().units.find((unit) => unit.id === 1);
     engine.runTicks(90);
     const after = engine.frame().units.find((unit) => unit.id === 1);

@@ -1,5 +1,6 @@
-import { MAP_BOUNDS, findPath, isPointBlockedByCovers } from '@prestes/shared';
-import type { CoverKind, SimEvent, Vec2 } from '@prestes/shared';
+import { MAP_BOUNDS, cachedCoverSlots, findPath, isPointBlockedByCovers, slotGuards } from '@prestes/shared';
+import type { CoverKind, CoverSlot, SimEvent, Vec2 } from '@prestes/shared';
+import { slotHolders, takeSlot } from './slots';
 import type { MutableUnit } from './model';
 import type { SimContext } from './context';
 import { hasLineOfSight, occupied, nearestEnemy, squadCentroid } from './geometry';
@@ -144,6 +145,10 @@ export function seekCover(ctx: SimContext): void {
     ) {
       continue;
     }
+    // A soldier holding a cover slot stays in it.
+    if (unit.slotId !== null) {
+      continue;
+    }
     if (nearCoverObject(ctx, unit)) {
       if (!unit.stanceLocked) {
         unit.stance = unit.stance === 'standing' ? 'crouched' : unit.stance;
@@ -162,68 +167,41 @@ export function seekCover(ctx: SimContext): void {
       continue;
     }
 
-    let best: Vec2 | null = null;
+    const holders = slotHolders(ctx);
+    const center = squadCentroid(ctx, unit);
+    let best: CoverSlot | null = null;
     let bestDistance = Number.POSITIVE_INFINITY;
-    for (const point of ctx.covers) {
-      const dx = unit.x - point.x;
-      const dy = unit.y - point.y;
-      if (dx * dx + dy * dy > 16 * 16) {
+    for (const slot of cachedCoverSlots(ctx.covers)) {
+      const holder = holders.get(slot.id);
+      if (holder !== undefined && holder !== unit.id) {
         continue;
       }
-      const tx = target.x - point.x;
-      const ty = target.y - point.y;
-      const length = Math.sqrt(tx * tx + ty * ty);
-      if (length < 0.001) {
+      const score = (unit.x - slot.x) ** 2 + (unit.y - slot.y) ** 2;
+      if (score > 16 * 16 || score >= bestDistance) {
         continue;
       }
-      const candidate = {
-        x: point.x - (tx / length) * 2.0,
-        y: point.y - (ty / length) * 2.0,
-      };
-      if (
-        (unit.x - point.x) * (candidate.x - point.x) +
-          (unit.y - point.y) * (candidate.y - point.y) <
-        0
-      ) {
+      if (!slotGuards(slot, target, null)) {
         continue;
       }
-      if (isPointBlockedByCovers(candidate.x, candidate.y, ctx.covers, 0.8)) {
-        continue;
-      }
-      // Cover must not blind the shooter against its ordered target.
-      if (unit.targetId !== null && !hasLineOfSight(ctx, candidate, 'crouched', target)) {
-        continue;
-      }
-      const center = squadCentroid(ctx, unit);
-      if (center && (candidate.x - center.x) ** 2 + (candidate.y - center.y) ** 2 > 9 * 9) {
+      if (center && (slot.x - center.x) ** 2 + (slot.y - center.y) ** 2 > 9 * 9) {
         continue;
       }
       if (
         unit.orderRegionCenter &&
-        (candidate.x - unit.orderRegionCenter.x) ** 2 +
-          (candidate.y - unit.orderRegionCenter.y) ** 2 >
+        (slot.x - unit.orderRegionCenter.x) ** 2 + (slot.y - unit.orderRegionCenter.y) ** 2 >
           unit.orderRegionRadius * unit.orderRegionRadius
       ) {
         continue;
       }
-      const occupied = ctx.units.some((other) => {
-        if (other === unit || !other.alive || other.routed || other.dummy || other.incapacitated) {
-          return false;
-        }
-        const nearPosition =
-          (other.x - candidate.x) ** 2 + (other.y - candidate.y) ** 2 < 1.2 * 1.2;
-        const nearTarget =
-          (other.targetX - candidate.x) ** 2 + (other.targetY - candidate.y) ** 2 < 1.2 * 1.2;
-        return nearPosition || nearTarget;
-      });
-      if (occupied) {
+      // Cover must not blind the shooter against its ordered target.
+      if (unit.targetId !== null && !hasLineOfSight(ctx, slot, slot.stance, target)) {
         continue;
       }
-      const score = (unit.x - candidate.x) ** 2 + (unit.y - candidate.y) ** 2;
-      if (score < bestDistance) {
-        bestDistance = score;
-        best = candidate;
+      if (occupied(ctx, slot.x, slot.y, unit)) {
+        continue;
       }
+      bestDistance = score;
+      best = slot;
     }
 
     if (!best) {
@@ -232,9 +210,9 @@ export function seekCover(ctx: SimContext): void {
     }
     const distance = Math.sqrt((unit.x - best.x) ** 2 + (unit.y - best.y) ** 2);
     if (distance < 0.6) {
-      if (!unit.stanceLocked) {
-        unit.stance = 'crouched';
-      }
+      takeSlot(unit, best);
+      unit.targetX = best.x;
+      unit.targetY = best.y;
       unit.coverSeekCooldown = 120;
       continue;
     }
@@ -243,6 +221,7 @@ export function seekCover(ctx: SimContext): void {
       unit.coverSeekCooldown = 60;
       continue;
     }
+    takeSlot(unit, best);
     unit.path = path;
     unit.pathIndex = 0;
     unit.targetX = best.x;

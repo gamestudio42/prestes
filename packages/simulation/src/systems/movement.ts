@@ -45,6 +45,14 @@ export function groupSpeedFactor(ctx: SimContext, unit: MutableUnit): number {
   return remaining + 2 < average ? 0.55 : 1;
 }
 
+function inSlot(unit: MutableUnit): boolean {
+  return (
+    unit.slotId !== null &&
+    unit.path.length === 0 &&
+    (unit.x - unit.targetX) ** 2 + (unit.y - unit.targetY) ** 2 < 0.25
+  );
+}
+
 export function separateUnits(ctx: SimContext): void {
   const living = ctx.units
     .filter((unit) => unit.alive && !unit.routed && !unit.dummy && !unit.incapacitated)
@@ -74,13 +82,21 @@ export function separateUnits(ctx: SimContext): void {
         dy = 0.001;
         distance = Math.sqrt(dx * dx + dy * dy);
       }
-      const push = (minDistance - distance) / 2;
+      // A soldier settled in a cover slot holds it; the other one gives way.
+      const leftAnchored = inSlot(left);
+      const rightAnchored = inSlot(right);
+      if (leftAnchored && rightAnchored) {
+        continue;
+      }
+      const overlap = minDistance - distance;
+      const leftPush = leftAnchored ? 0 : rightAnchored ? overlap : overlap / 2;
+      const rightPush = rightAnchored ? 0 : leftAnchored ? overlap : overlap / 2;
       const nx = dx / distance;
       const ny = dy / distance;
-      left.x = clamp(left.x - nx * push, MAP_BOUNDS.minX, MAP_BOUNDS.maxX);
-      left.y = clamp(left.y - ny * push, MAP_BOUNDS.minY, MAP_BOUNDS.maxY);
-      right.x = clamp(right.x + nx * push, MAP_BOUNDS.minX, MAP_BOUNDS.maxX);
-      right.y = clamp(right.y + ny * push, MAP_BOUNDS.minY, MAP_BOUNDS.maxY);
+      left.x = clamp(left.x - nx * leftPush, MAP_BOUNDS.minX, MAP_BOUNDS.maxX);
+      left.y = clamp(left.y - ny * leftPush, MAP_BOUNDS.minY, MAP_BOUNDS.maxY);
+      right.x = clamp(right.x + nx * rightPush, MAP_BOUNDS.minX, MAP_BOUNDS.maxX);
+      right.y = clamp(right.y + ny * rightPush, MAP_BOUNDS.minY, MAP_BOUNDS.maxY);
     }
   }
 }

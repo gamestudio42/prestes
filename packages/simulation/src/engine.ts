@@ -39,6 +39,7 @@ import {
 } from './systems/movement';
 import { updateBounding } from './systems/bounding';
 import { seekCover } from './systems/cover';
+import { maintainSlots } from './systems/slots';
 import { acquireTargets, fire, updateFacing, updateOutcome } from './systems/combat';
 import {
   updateMoraleStates,
@@ -175,6 +176,7 @@ export class SimulationEngine implements SimContext {
         nonLethal: false,
         ambush: false,
         officerLossApplied: false,
+        slotId: null,
         reserveMode: false,
         recon: false,
         reconReported: false,
@@ -222,6 +224,7 @@ export class SimulationEngine implements SimContext {
         applyCommand(this, envelope, nextTick, events);
       }
 
+      maintainSlots(this);
       for (const unit of this.units) {
         moveUnit(this, unit, nextTick, events);
         if (unit.alive) {

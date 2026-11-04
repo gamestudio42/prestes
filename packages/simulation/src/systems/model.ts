@@ -111,6 +111,8 @@ export interface MutableUnit {
   ambush: boolean;
   /** Officers only: the loss consequence was applied for the current absence. */
   officerLossApplied: boolean;
+  /** Reserved cover slot (see shared cover-slots), or null. */
+  slotId: number | null;
   reserveMode: boolean;
   recon: boolean;
   reconReported: boolean;
@@ -209,6 +211,7 @@ export const DEFAULT_UNITS: ReadonlyArray<
     | 'beingCarriedBy'
     | 'recoveryTicks'
     | 'officerLossApplied'
+    | 'slotId'
   >
 > = [
   {

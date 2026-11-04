@@ -4,7 +4,6 @@ import {
   averageAim,
   averageFacing,
   coverAgainst,
-  coverDestinationForSlot,
   getWeapon,
   findPath,
   isLineBlocked,
@@ -19,6 +18,7 @@ import type { SimContext } from './context';
 import { occupied, nearestEnemy, nearestEnemyAt, facingToward, clampToRegion } from './geometry';
 import { queueUnitOrder } from './movement';
 import { releaseCarry } from './casualties';
+import { orderSlots, takeSlot } from './slots';
 import { reject } from './commands';
 
 export function applyTacticalOrder(
@@ -87,31 +87,25 @@ export function applyTacticalOrder(
       units[0]?.formation ?? 'line',
       formationFacing,
     );
-    const usedCover: Vec2[] = [];
+    const takesCover = command.order !== 'disperse';
+    const regionLimited = command.order === 'defend' || command.order === 'ambush';
+    const coverSlots = takesCover
+      ? orderSlots(ctx, units, slots, {
+          threat: formationThreat ?? nearestEnemyAt(ctx, command.to, units[0]!.faction),
+          facing: coverFacing ?? null,
+          click: command.to,
+          region: regionLimited ? { center: command.to, radius: DEFEND_REGION_RADIUS } : null,
+        })
+      : new Map();
     units.forEach((unit, index) => {
       clear(unit);
       const regionRadius = DEFEND_REGION_RADIUS;
       let destination = slots[index] ?? command.to!;
-      const planned = coverDestinationForSlot(
-        unit,
-        destination,
-        nearestEnemy(ctx, unit),
-        ctx.covers,
-        usedCover,
-        command.to!,
-        coverFacing,
-      );
-      if (planned.cover) {
-        destination = planned.destination;
-        if (!unit.stanceLocked) {
-          unit.stance = 'crouched';
-        }
-      }
-      if (command.order === 'defend') {
+      const coverSlot = coverSlots.get(unit.id);
+      if (coverSlot) {
+        destination = takeSlot(unit, coverSlot);
+      } else if (command.order === 'defend') {
         destination = clampToRegion(ctx, destination, command.to!, regionRadius);
-      }
-      if (planned.cover) {
-        usedCover.push(destination);
       }
       let path = findPath({ x: unit.x, y: unit.y }, destination, ctx.covers);
       if (path.length === 0) {

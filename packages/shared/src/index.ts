@@ -119,6 +119,17 @@ export {
 } from './vision';
 
 export { nearestTargetGroups, spreadTargetGroups, type TargetableUnit } from './targeting';
-export { allCoverSlots, coverSlots, pickSlots, slotGuards, type CoverSlot, type SlotPickOptions } from './cover-slots';
+export {
+  allCoverSlots,
+  cachedCoverSlots,
+  coverAtPoint,
+  coverSlots,
+  pickSlots,
+  planCoverSlots,
+  slotGuards,
+  type CoverSlot,
+  type CoverSlotPlan,
+  type SlotPickOptions,
+} from './cover-slots';
 
 export { normaliseRotation, rotateOffset, troopFormationOffsets } from './placement';

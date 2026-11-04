@@ -2,7 +2,6 @@ import {
   MAP_BOUNDS,
   averageAim,
   averageFacing,
-  coverDestinationForSlot,
   findPath,
   isPointNearCover,
   isPointBlockedByCovers,
@@ -14,11 +13,12 @@ import { formationSlots } from '../tactical';
 import { clamp } from './model';
 import type { BoundingGroup, MutableUnit } from './model';
 import type { SimContext } from './context';
-import { nearestOpenPoint, nearestEnemy, nearestEnemyAt } from './geometry';
+import { nearestOpenPoint, nearestEnemyAt } from './geometry';
 import { reflowFormation } from './formations';
 import { repairStalledMovement, queueUnitOrder } from './movement';
 import { assignBoundingDirect, setBoundingCover } from './bounding';
 import { spawnCover } from './cover';
+import { orderSlots, takeSlot } from './slots';
 import { incapacitate, wound, releaseCarry } from './casualties';
 import { applyTacticalOrder, assignFlankPaths, beginWithdraw } from './orders';
 import { spawnDummy, spawnTroop, setTrainingPhase, despawnRole, reinforce } from './spawning';
@@ -341,7 +341,11 @@ export function applyCommand(
     moveFacing,
   );
 
-  const usedCover: Vec2[] = [];
+  const coverSlots = orderSlots(ctx, living, slots, {
+    threat: living[0] ? nearestEnemyAt(ctx, command.to, living[0].faction) : null,
+    facing: coverFacing ?? null,
+    click: command.to,
+  });
   living.forEach((unit, index) => {
     releaseCarry(ctx, unit);
     unit.orderDestination = null;
@@ -360,21 +364,9 @@ export function applyCommand(
     unit.currentOrder = null;
     unit.lineMove = false;
     let destination = slots[index] ?? command.to;
-    const planned = coverDestinationForSlot(
-      unit,
-      destination,
-      nearestEnemy(ctx, unit),
-      ctx.covers,
-      usedCover,
-      command.to,
-      coverFacing,
-    );
-    if (planned.cover) {
-      destination = planned.destination;
-      usedCover.push(destination);
-      if (!unit.stanceLocked) {
-        unit.stance = 'crouched';
-      }
+    const coverSlot = coverSlots.get(unit.id);
+    if (coverSlot) {
+      destination = takeSlot(unit, coverSlot);
     }
     // A click on cover still moves the soldier: use the nearest open point.
     const fallback = nearestOpenPoint(ctx, command.to);
@@ -478,7 +470,10 @@ export function applyLineMove(
     assignBoundingDirect(ctx, teamB, center, targets);
     return;
   }
-  const usedCover: Vec2[] = [];
+  const coverSlots = orderSlots(ctx, living, slots, {
+    threat: living[0] ? nearestEnemyAt(ctx, center, living[0].faction) : null,
+    facing: lineDirection,
+  });
   living.forEach((unit, index) => {
     releaseCarry(ctx, unit);
     unit.orderDestination = null;
@@ -496,21 +491,9 @@ export function applyLineMove(
     unit.rescueTargetId = null;
     unit.currentOrder = null;
     let destination = slots[index] ?? center;
-    const planned = coverDestinationForSlot(
-      unit,
-      destination,
-      nearestEnemy(ctx, unit),
-      ctx.covers,
-      usedCover,
-      center,
-      lineDirection,
-    );
-    if (planned.cover) {
-      destination = planned.destination;
-      usedCover.push(destination);
-      if (!unit.stanceLocked) {
-        unit.stance = 'crouched';
-      }
+    const coverSlot = coverSlots.get(unit.id);
+    if (coverSlot) {
+      destination = takeSlot(unit, coverSlot);
     }
     destination = nearestOpenPoint(ctx, destination);
     let path = findPath({ x: unit.x, y: unit.y }, destination, ctx.covers);
