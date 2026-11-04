@@ -60,6 +60,20 @@ describe('mechanics: fire', () => {
 });
 
 describe('mechanics: training target discipline', () => {
+  it('defenders only engage a training troop that enters the defended area', () => {
+    const t = harness({ opposition: false });
+    t.send({
+      type: 'training_phase',
+      setup: { phase: 'defense', playerPoint: { x: 28, y: 4 }, officerPoint: { x: 28, y: 10 }, enemyPoint: { x: 82, y: 10 }, enemyCount: 6 },
+    }, 2);
+    const ids = t.frame().units.filter((unit) => unit.squadId === 1).map((unit) => unit.id);
+    t.send({ type: 'order', order: 'defend', unitIds: ids, to: { x: 52, y: -18 } }, 600);
+    expect(t.shotsBy(ids)).toBe(0);
+    const enemies = t.frame().units.filter((unit) => unit.role === 'training-enemy').map((unit) => unit.id);
+    t.send({ type: 'move', unitIds: enemies, to: { x: 54, y: -8 } }, 400);
+    expect(t.shotsBy(ids)).toBeGreaterThan(0);
+  });
+
   it('never fires at a training troop without an explicit order', () => {
     const t = harness({ opposition: false });
     t.send({

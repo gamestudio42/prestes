@@ -251,6 +251,16 @@ export function spawnTroop(
     });
     ctx.nextUnitId += 1;
   }
+  // A training troop is tougher and starts crouched, however it was spawned.
+  if (command.role === 'training-enemy') {
+    for (const unit of ctx.units) {
+      if (unit.squadId === squadId && unit.role === 'training-enemy') {
+        unit.hp = TRAINING_ENEMY_HP;
+        unit.stance = 'crouched';
+        unit.stanceLocked = true;
+      }
+    }
+  }
   ctx.nextSquadId += 1;
 }
 

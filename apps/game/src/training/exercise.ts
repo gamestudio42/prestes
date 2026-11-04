@@ -143,10 +143,24 @@ export function retryPhase(
 export function objectiveStartCommands(objective: ExerciseObjective, frame: Frame): Command[] {
   const enemies = trainingEnemies(frame).map((unit) => unit.id);
   switch (objective.onStart) {
-    case 'enemy-advance':
-      return enemies.length > 0 && objective.point
-        ? [{ type: 'move', unitIds: enemies, to: objective.point }]
-        : [];
+    case 'enemy-advance': {
+      // The troop walks up to the edge of the position, inside ambush range but
+      // short of the line itself.
+      const troop = trainingEnemies(frame);
+      if (troop.length === 0 || !objective.point) {
+        return [];
+      }
+      const cx = troop.reduce((sum, unit) => sum + unit.x, 0) / troop.length;
+      const cy = troop.reduce((sum, unit) => sum + unit.y, 0) / troop.length;
+      const dx = cx - objective.point.x;
+      const dy = cy - objective.point.y;
+      const length = Math.hypot(dx, dy) || 1;
+      const stop = {
+        x: objective.point.x + (dx / length) * ENEMY_ADVANCE_STANDOFF,
+        y: objective.point.y + (dy / length) * ENEMY_ADVANCE_STANDOFF,
+      };
+      return [{ type: 'move', unitIds: enemies, to: stop }];
+    }
     case 'enemy-fire':
       return enemies.length > 0 ? [{ type: 'hold_fire', unitIds: enemies, hold: false }] : [];
     case 'enemy-withdraw':
@@ -160,6 +174,68 @@ export function objectiveStartCommands(objective: ExerciseObjective, frame: Fram
     default:
       return [];
   }
+}
+
+/** Metres short of the held line where an advancing training troop stops. */
+const ENEMY_ADVANCE_STANDOFF = 12;
+
+/**
+ * Objectives that cannot be met once the training troop is gone. Suppress,
+ * target-hit and pursue already count a troop brought down as success, so a
+ * fresh troop is never spawned for them (it would appear on the line).
+ */
+const NEEDS_TRAINING_TROOP = new Set<ExerciseObjective['kind']>(['flank-position', 'ambush-trigger']);
+
+/**
+ * Keeps the active objective playable: its start action is sent once it can
+ * run (enemy actions wait for a training troop), and if the player has already
+ * destroyed the troop an objective needs, a fresh one enters at the station's
+ * enemy point and the start action is replayed.
+ */
+function stationUpkeep(
+  phase: ExercisePhase,
+  objective: ExerciseObjective,
+  frame: Frame,
+  memory: ObjectiveMemory,
+): Command[] {
+  const commands: Command[] = [];
+  const enemies = trainingEnemies(frame);
+  const respawnKey = `${objective.id}:respawning`;
+  const startedKey = `${objective.id}:started`;
+  if (enemies.length > 0) {
+    memory[respawnKey] = 0;
+  } else if (
+    NEEDS_TRAINING_TROOP.has(objective.kind) &&
+    phase.setup.trainingEnemyPoint &&
+    memory[respawnKey] !== 1
+  ) {
+    memory[respawnKey] = 1;
+    memory[startedKey] = 0;
+    commands.push({
+      type: 'spawn_troop',
+      to: phase.setup.trainingEnemyPoint,
+      faction: 'target',
+      count: phase.setup.trainingEnemyCount ?? 6,
+      role: 'training-enemy',
+      nonLethal: true,
+      holdFire: phase.setup.releaseTrainingFire !== true,
+    });
+    return commands;
+  }
+  // The troop only walks into an ambush once it is set: otherwise defenders
+  // would shoot it down before the player gives the order.
+  const ambushSet =
+    objective.kind !== 'ambush-trigger' ||
+    playerUnits(frame).filter((unit) => unit.order === 'ambush').length >= (objective.minUnits ?? 1);
+  if (memory[startedKey] !== 1 && ambushSet) {
+    const start = objectiveStartCommands(objective, frame);
+    const waitsForTroop = objective.onStart?.startsWith('enemy-') === true && start.length === 0;
+    if (!waitsForTroop) {
+      memory[startedKey] = 1;
+      commands.push(...start);
+    }
+  }
+  return commands;
 }
 
 export function advanceExercise(
@@ -217,9 +293,12 @@ export function advanceExercise(
       const next = phase.objectives[objectiveIndex];
       if (next) {
         objectives[objectiveIndex] = { ...objectives[objectiveIndex]!, active: true };
-        commands.push(...objectiveStartCommands(next, frame));
       }
     }
+  }
+  const current = phase.objectives[objectiveIndex];
+  if (current) {
+    commands.push(...stationUpkeep(phase, current, frame, memory));
   }
 
   const failure = active ? evaluateFailure(phase, active, frame, failureTicks, tickDelta) : null;

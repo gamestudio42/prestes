@@ -233,9 +233,18 @@ async function playFinal(page: Page): Promise<void> {
   await stepRendered(page, 600);
   // Training targets are only engaged on order: clear whoever is left in the trench.
   for (let attempt = 0; attempt < 6 && !(await objectiveDone(page, 'final-secure')); attempt += 1) {
+    // Clear whoever is inside the line first, as a player would.
+    const inside = (await currentFrame(page)).units.find(
+      (unit) =>
+        unit.role === 'training-enemy' &&
+        unit.alive &&
+        !unit.incapacitated &&
+        Math.hypot(unit.x - 52, unit.y + 18) <= 9,
+    );
     const [remaining] = await trainingEnemies(page);
-    if (remaining !== undefined) {
-      await command(page, { type: 'attack', unitIds: await section(page), targetId: remaining });
+    const target = inside?.id ?? remaining;
+    if (target !== undefined) {
+      await command(page, { type: 'attack', unitIds: await section(page), targetId: target });
     }
     await stepRendered(page, 300);
   }

@@ -193,7 +193,13 @@ four catalogue orders without a button. `packages/simulation/test/mechanics.test
 keeps one scenario per mechanic.
 
 Manual Chrome play-through (PT-BR, interface only): stations 1 to 3 completed,
-about 2.5, 1.5 and 1.5 minutes at 2x. Stations 4 to 7 are covered end to end by
+about 2.5, 1.5 and 1.5 minutes at 2x. Station 4 by hand exposed three more
+problems, fixed: defenders shot the training troop from any distance (the spec
+says once it enters the defended area) and burned all 220 rounds; the troop
+advanced before the ambush was set and was shot down by the defenders; and the
+troop walked into the trench itself. Station 7 exposed a respawn of the training
+troop on the line while the section was out of ammunition. Ammunition still runs
+low in long stations (a balance item for the redesign). Stations 4 to 7 are covered end to end by
 `tests/e2e/training-campaign.spec.ts` (each station, the full run with a reload
 and Continue, and the cohesion failure with retry) but were not yet played by
 hand, and the EN pass is still to do.

@@ -62,17 +62,43 @@ describe('bootcamp exercise director', () => {
     expect(later.objectives[0]).toMatchObject({ done: true, current: 11, target: 11 });
   });
 
-  it('sends the start command of an objective when it becomes active', () => {
-    // Station 4 (defense): once defenders are in cover, the ambush starts and the
-    // training troop is ordered to advance on the trench.
+  it('sends the troop into the ambush only once the ambush is set', () => {
+    // Station 4 (defense): defenders in cover move the station on to the ambush,
+    // but the training troop waits until four soldiers carry the Ambush order.
     const defense = BOOTCAMP_EXERCISE.phases.findIndex((phase) => phase.id === 'defense');
     const state = at(startExercise(), defense, 1);
     const defenders = players(52, -18, 4).map((unit) => ({ ...unit, order: 'defend', cover: 0.5 }) as UnitSnapshot);
     const result = advanceExercise(state, frame(1, [...defenders, ...trainingEnemies(3, 82, 10)]));
     expect(activeObjective(result.state)?.kind).toBe('ambush-trigger');
-    expect(result.commands).toContainEqual(
-      expect.objectContaining({ type: 'move', to: { x: 52, y: -18 } }),
+    expect(result.commands).not.toContainEqual(expect.objectContaining({ type: 'move' }));
+    const ambushers = defenders.map((unit) => ({ ...unit, order: 'ambush' }) as UnitSnapshot);
+    const set = advanceExercise(result.state, frame(2, [...ambushers, ...trainingEnemies(3, 82, 10)]));
+    const advance = set.commands.find((command) => command.type === 'move') as { to: { x: number; y: number } } | undefined;
+    expect(advance).toBeDefined();
+    // It stops 12 m short of the line, toward where the troop came from.
+    expect(Math.hypot(advance!.to.x - 52, advance!.to.y + 18)).toBeCloseTo(12, 0);
+  });
+
+  it('brings in a fresh training troop when the ambush has nobody to ambush', () => {
+    const defense = BOOTCAMP_EXERCISE.phases.findIndex((phase) => phase.id === 'defense');
+    const state = at(startExercise(), defense, 2);
+    const noTroop = advanceExercise(state, frame(10, players(52, -18, 6)));
+    expect(noTroop.commands).toContainEqual(
+      expect.objectContaining({ type: 'spawn_troop', role: 'training-enemy', to: { x: 82, y: 10 } }),
     );
+    // Once the troop is there and the ambush is set, the delayed advance is sent.
+    const ambushers = players(52, -18, 6).map((unit) => ({ ...unit, order: 'ambush' }) as UnitSnapshot);
+    const withTroop = advanceExercise(noTroop.state, frame(11, [...ambushers, ...trainingEnemies(3, 82, 10)]));
+    expect(withTroop.commands).toContainEqual(expect.objectContaining({ type: 'move' }));
+    // and only once.
+    const later = advanceExercise(withTroop.state, frame(12, [...ambushers, ...trainingEnemies(3, 80, 8)]));
+    expect(later.commands).toEqual([]);
+  });
+
+  it('never respawns a troop for objectives a downed troop already satisfies', () => {
+    const final = BOOTCAMP_EXERCISE.phases.findIndex((phase) => phase.id === 'final');
+    const result = advanceExercise(at(startExercise(), final, 0), frame(10, players(30, 4, 8)));
+    expect(result.commands.some((command) => command.type === 'spawn_troop')).toBe(false);
   });
 
   it('takes the instructor out when the cohesion objective starts', () => {

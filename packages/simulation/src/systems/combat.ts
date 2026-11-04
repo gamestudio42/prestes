@@ -443,15 +443,26 @@ export function updateOutcome(ctx: SimContext, tick: number, events: SimEvent[])
 }
 
 /** Orders that let a soldier engage training enemies (training target discipline). */
-const TRAINING_ENGAGE_ORDERS = new Set(['attack', 'suppress', 'flank', 'pursue', 'ambush', 'defend']);
+const TRAINING_ENGAGE_ORDERS = new Set(['attack', 'suppress', 'flank', 'pursue', 'ambush']);
+/** A defender engages a training enemy once it is this close to the defended area. */
+const DEFEND_ENGAGE_MARGIN = 12;
 
 /**
  * Training enemies are never picked automatically: only an explicit fire,
- * flank, pursue or ambush order, or a defended area, lets a soldier engage them.
+ * flank, pursue or ambush order lets a soldier engage them, or a defender once
+ * the enemy enters the defended area.
  */
 export function mayEngage(unit: MutableUnit, candidate: MutableUnit): boolean {
   if (candidate.role !== 'training-enemy') {
     return true;
   }
-  return unit.ambush || (unit.currentOrder !== null && TRAINING_ENGAGE_ORDERS.has(unit.currentOrder));
+  if (unit.ambush || (unit.currentOrder !== null && TRAINING_ENGAGE_ORDERS.has(unit.currentOrder))) {
+    return true;
+  }
+  if (unit.currentOrder === 'defend') {
+    const center = unit.orderRegionCenter ?? { x: unit.x, y: unit.y };
+    const reach = unit.orderRegionRadius + DEFEND_ENGAGE_MARGIN;
+    return (candidate.x - center.x) ** 2 + (candidate.y - center.y) ** 2 <= reach * reach;
+  }
+  return false;
 }
