@@ -208,6 +208,21 @@ Future scope recorded from the review: in campaign and skirmish the player
 commands a command troop (commander plus two); the bootcamp keeps the instructor
 as an NPC.
 
+## Redesign plan (agreed 2026-11-03)
+
+Four phases, each its own OpenSpec change:
+
+1. `add-cover-slots`: cover slots on every cover kind and buildings as cover, so
+   soldiers can be placed in trenches, behind walls and at building corners.
+2. Training ground in Rio de Janeiro: a new bootcamp map at a fictional training
+   field near Vila Militar / Deodoro (where Prestes served in the 1st Engineer
+   Company in 1922; Macaulay ch. II, pp. 37-38), with the stations laid out in
+   sequence and the commander giving each order in a text callout and the panel.
+   Includes the manual play of stations 5 to 7 and the EN pass carried over from
+   `complete-bootcamp-tutorial`.
+3. Pixel-art HUD, menus and the Coluna Prestes compendium (in-game stays low-poly).
+4. Low-poly art pass: objects, movement and firing feedback.
+
 ## Deferred
 
 - Mission content, campaign progression and save/load.

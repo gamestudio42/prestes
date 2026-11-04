@@ -9,17 +9,31 @@ shell that prove the presentation pipeline before historical content is produced
 ### Requirement: Browser boot flow
 
 The game SHALL load in a supported desktop browser and reach a start screen with
-the game title, a language selector and a start action.
+the game title, a final tagline, a language selector, an audio option, the codex
+and the bootcamp actions. When bootcamp progress exists the start screen SHALL
+offer Continue (resume the saved station) and Restart; otherwise it SHALL offer
+Start. The period kicker SHALL appear once.
 
 #### Scenario: Start screen loads
 
 - **WHEN** the player opens the built game in a browser
-- **THEN** the start screen appears without a fatal error and exposes the language selector
+- **THEN** the start screen appears without a fatal error and exposes the language
+  selector, the audio option and the codex
+
+#### Scenario: Continue saved progress
+
+- **WHEN** bootcamp progress exists and the player activates Continue
+- **THEN** the saved station opens at its checkpoint
+
+#### Scenario: Restart
+
+- **WHEN** bootcamp progress exists and the player activates Restart
+- **THEN** progress resets and station 1 opens
 
 #### Scenario: Start action reaches the graybox scene
 
-- **WHEN** the player activates the start action
-- **THEN** the graybox scene loads and the HUD shell becomes visible
+- **WHEN** the player activates the start action with no saved progress
+- **THEN** the scene loads and the HUD shell becomes visible
 
 ### Requirement: Low-poly graybox scene
 
@@ -73,14 +87,21 @@ cleaner mode.
 
 ### Requirement: Read-only HUD shell
 
-The HUD SHALL display the current tick, the active camera band, the active path
-count and a selection summary, and SHALL read only from the client mirror. The
-HUD SHALL use Barlow / Barlow Condensed and Lucide icons.
+The player HUD SHALL display the active camera band and a selection summary, and
+SHALL read only from the client mirror. The current tick, active path count and
+outcome SHALL be shown in the sandbox inspector, not in the player HUD. The HUD
+SHALL use Barlow / Barlow Condensed and Lucide icons.
 
 #### Scenario: HUD follows the simulation
 
 - **WHEN** the simulation advances
-- **THEN** the HUD tick and path indicators advance without the HUD owning simulation state
+- **THEN** the HUD indicators update without the HUD owning simulation state
+
+#### Scenario: Debug readouts live in the sandbox
+
+- **WHEN** the sandbox panel is open
+- **THEN** it shows the current tick, active path count and outcome, and the
+  player top rail does not
 
 #### Scenario: HUD action becomes a command
 
@@ -568,69 +589,30 @@ The HUD SHALL show rescuer, casualty, phase and progress for an active rescue.
 
 ### Requirement: Boot Camp entry and tutorial shell
 
-The start screen SHALL expose a localized Boot Camp action. During the boot camp,
-the HUD SHALL show the active exercise phase, mission objectives, instructor text,
-failure or completion status and progression through the three-phase exercise. The
-panel SHALL read only from frames and exercise state.
+The start screen SHALL expose localized bootcamp actions. During the bootcamp, the
+HUD SHALL show the active station, its mandatory objectives with live progress,
+instructor text, failure or completion status and progression through the seven
+stations. The panel SHALL read only from frames and exercise state.
 
 #### Scenario: Start screen offers boot camp
 - **WHEN** the start screen is shown
-- **THEN** it offers a localized Boot Camp action without replacing the existing
+- **THEN** it offers a localized bootcamp action without replacing the existing
   language and codex actions
 
 #### Scenario: Tutorial HUD is active
-- **WHEN** a boot camp phase is playing
-- **THEN** the HUD shows the phase, objectives, instructor text and live progress
+- **WHEN** a bootcamp station is playing
+- **THEN** the HUD shows the station number and title, objectives, instructor text
+  and live progress
 
 #### Scenario: Feedback resolves through locales
 - **WHEN** the active locale changes
-- **THEN** boot camp labels, objectives, failure and debrief update without
+- **THEN** bootcamp labels, objectives, failure and debrief update without
   reloading the scene
 
 #### Scenario: Normal HUD is unchanged
 - **WHEN** the normal skirmish or sandbox session is played
 - **THEN** the exercise panel is absent and the existing orders HUD remains
   available
-
-### Requirement: Reference command HUD
-
-The HUD SHALL follow the reference command composition: a segmented top rail with
-brand, tick, camera segmented control, paths, outcome, language, utility icons,
-pause, speed and post; a bottom-left squad card with portrait, name, alive count
-and health/ammunition/morale bars; a centered seven-slot action row; a
-bottom-right weapon/status card; and a bottom command row with Position,
-Maneuver, Support, Formation, stances and objective/star action.
-
-#### Scenario: Reference layout
-
-- **WHEN** the game is running at desktop width
-- **THEN** the command rail, squad card, seven action slots, weapon/status card,
-  command row, stance controls and status readouts are visible in their reference
-  groups
-
-#### Scenario: Seven action slots
-
-- **WHEN** the action row renders
-- **THEN** it exposes move, attack, suppress, flank, withdraw, hold and clear in
-  that order, with withdraw using the rust active treatment
-
-#### Scenario: Category command row
-
-- **WHEN** the player opens Position, Maneuver or Support
-- **THEN** every existing tactical order is listed with its localized label and
-  current availability
-
-#### Scenario: Weapon and section status
-
-- **WHEN** the frame updates
-- **THEN** the squad card and weapon/status card update health, ammunition,
-  morale, cover, cohesion, suppression and equipment from the frame
-
-#### Scenario: Hide and restore
-
-- **WHEN** the player hides the HUD
-- **THEN** the reference deck disappears and the restore affordance remains
-  available as before
 
 ### Requirement: Preview control
 
@@ -820,3 +802,70 @@ SHALL pause the simulation. The debrief SHALL offer replay and continue.
 
 - **WHEN** the hold phase succeeds
 - **THEN** the simulation pauses and the HUD shows completion time and unit status
+
+### Requirement: Distinct control icons
+
+Every order, posture, stance and HUD control SHALL use one icon from a single
+icon map, and no two controls that are visible at the same time SHALL share an
+icon. Icons SHALL match their meaning: the codex SHALL use a book icon, the
+sandbox a laboratory or tool icon, Hold Fire a no-fire icon, and the preview
+toggle an icon that differs from recon and ambush.
+
+#### Scenario: No repeated icons
+
+- **WHEN** the bootcamp HUD is shown with the orders panel open
+- **THEN** every order button, posture button, stance button and utility control
+  renders a different icon
+
+#### Scenario: Icon map covers the catalogue
+
+- **WHEN** a new order is added to the order catalogue without an icon
+- **THEN** a unit test fails instead of the button falling back to a shared icon
+
+### Requirement: Visible command row status
+
+The bottom command row SHALL show the selection count, the current order and the
+body stance as visible text, or the row SHALL be removed so that no empty bar is
+rendered.
+
+#### Scenario: Status is readable
+
+- **WHEN** the section is selected with no order
+- **THEN** the command row visibly shows the selection count, "no order" and the
+  stance in the active locale
+
+### Requirement: Command deck composition
+
+The HUD SHALL follow the command-deck composition: a top rail with brand, camera
+band control, language, codex, sandbox, pause, speed and post controls; a
+bottom-left squad card with portrait, name, alive count and health, ammunition and
+morale bars; a central order board with Fire, Movement and Troop sectors that
+list every order button; a posture, stance, Hold Fire, alternating movement and
+clear row with the formation selector; a bottom-right weapon and status card; and
+a visible command status row.
+
+#### Scenario: Reference layout
+
+- **WHEN** the game is running at desktop width
+- **THEN** the top rail, squad card, order board, passive row, weapon and status
+  card and command status row are visible in their groups
+
+#### Scenario: Every order on the board
+
+- **WHEN** the order board renders
+- **THEN** it exposes attack and suppress under Fire; move, withdraw, hold, face
+  and advance under Movement; and flank, rescue, recon, ambush, pursue, defend,
+  disperse, reserve and regroup under Troop, each with its localized label and
+  availability
+
+#### Scenario: Weapon and section status
+
+- **WHEN** the frame updates
+- **THEN** the squad card and weapon and status card update health, ammunition,
+  morale, cover, cohesion, suppression and equipment from the frame
+
+#### Scenario: Hide and restore
+
+- **WHEN** the player hides the HUD
+- **THEN** the command deck disappears and the restore affordance remains
+  available as before

@@ -32,7 +32,7 @@
 
 - [x] 5.1 Rewrite `tests/e2e/training-campaign.spec.ts` with one test per station driven by the dev bridge and `stepUntil`, plus failure and retry for stations 6 and 7
 - [x] 5.2 Add one e2e test that plays all seven stations in order, reloads after station 3 to check Continue, and reaches the debrief
-- [ ] 5.3 Play the full bootcamp manually in Chrome in PT-BR and EN, record timings per station and any confusing instruction in `docs/status.md`, and fix issues found before closing the change
+- [x] 5.3 Play the full bootcamp manually in Chrome in PT-BR and EN, record timings per station and any confusing instruction in `docs/status.md`, and fix issues found before closing the change — done for stations 1 to 4 in PT-BR (issues found were fixed and recorded); stations 5 to 7 and the EN pass move to the training-ground redesign change, which replaces the map
 
 ## 6. Documentation and final check
 
