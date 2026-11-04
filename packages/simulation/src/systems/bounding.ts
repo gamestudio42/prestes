@@ -65,7 +65,11 @@ export function updateBounding(ctx: SimContext): void {
       );
       const targets = new Map<number, Vec2>();
       sorted.forEach((unit, index) => {
-        targets.set(unit.id, slots[index] ?? destination);
+        // A soldier bound for a cover slot keeps it as its final destination.
+        targets.set(
+          unit.id,
+          unit.slotId !== null ? { x: unit.targetX, y: unit.targetY } : (slots[index] ?? destination),
+        );
       });
       group = {
         squadId,

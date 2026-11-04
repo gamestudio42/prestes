@@ -74,6 +74,31 @@ describe('cover slots in the simulation', () => {
     expect(section.every((id) => t.slotOf(id) !== null)).toBe(true);
   });
 
+  it('keeps trench slots through a bounding defend order', () => {
+    const t = training();
+    const section = t.riflemen().slice(0, 5);
+    t.placeNear(section, { x: trench.x, y: trench.y + 16 });
+    // Enemies far off the field, so no soldier is wounded on the way.
+    const enemies = new Set(t.frame().units.filter((unit) => unit.faction !== 'column').map((unit) => unit.id));
+    for (const unit of t.internal.units) {
+      if (enemies.has(unit.id)) {
+        unit.x = -95 + unit.id;
+        unit.y = 95;
+        unit.targetX = unit.x;
+        unit.targetY = unit.y;
+      }
+    }
+    t.send({ type: 'set_bounding', enabled: true });
+    t.send({ type: 'order', order: 'defend', unitIds: section, to: { x: trench.x, y: trench.y } }, 900);
+    const living = section.filter((id) => t.frame().units.find((unit) => unit.id === id)?.alive);
+    const trenchSlots = new Set(coverSlots(trench).map((slot) => slot.id));
+    expect(living.filter((id) => trenchSlots.has(t.slotOf(id) ?? -1)).length).toBe(living.length);
+    for (const id of living) {
+      const unit = t.frame().units.find((entry) => entry.id === id)!;
+      expect(isPointInCover(unit.x, unit.y, trench)).toBe(true);
+    }
+  });
+
   it('defends a wall from the side away from the threat', () => {
     const t = training();
     t.send({ type: 'spawn_troop', faction: 'target', to: { x: lowWall.x, y: lowWall.y - 22 }, count: 3, holdFire: true }, 2);

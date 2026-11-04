@@ -40,8 +40,10 @@ export function maintainSlots(ctx: SimContext): void {
       !unit.alive ||
       unit.incapacitated ||
       unit.routed ||
-      (unit.targetX - slot.x) ** 2 + (unit.targetY - slot.y) ** 2 >
-        SLOT_KEEP_DISTANCE * SLOT_KEEP_DISTANCE
+      // While bounding, a soldier waits short of its slot and keeps it.
+      (unit.boundTeam === null &&
+        (unit.targetX - slot.x) ** 2 + (unit.targetY - slot.y) ** 2 >
+          SLOT_KEEP_DISTANCE * SLOT_KEEP_DISTANCE)
     ) {
       unit.slotId = null;
       continue;

@@ -229,25 +229,28 @@ async function playWounded(page: Page): Promise<void> {
 async function playFinal(page: Page): Promise<void> {
   await suppressTroop(page);
   await untilObjective(page, 'final-suppress', 1500);
-  await command(page, { type: 'move', unitIds: await section(page), to: { x: 52, y: -18 } });
-  await stepRendered(page, 600);
-  // Training targets are only engaged on order: clear whoever is left in the trench.
-  for (let attempt = 0; attempt < 6 && !(await objectiveDone(page, 'final-secure')); attempt += 1) {
-    // Clear whoever is inside the line first, as a player would.
-    const inside = (await currentFrame(page)).units.find(
-      (unit) =>
-        unit.role === 'training-enemy' &&
-        unit.alive &&
-        !unit.incapacitated &&
-        Math.hypot(unit.x - 52, unit.y + 18) <= 9,
-    );
-    const [remaining] = await trainingEnemies(page);
-    const target = inside?.id ?? remaining;
-    if (target !== undefined) {
-      await command(page, { type: 'attack', unitIds: await section(page), targetId: target });
+  // Training targets are only engaged on order: clear the line first, as a
+  // player would, spreading the fire over whoever is left inside it.
+  for (let attempt = 0; attempt < 8; attempt += 1) {
+    const inside = (await currentFrame(page)).units
+      .filter(
+        (unit) =>
+          unit.role === 'training-enemy' &&
+          unit.alive &&
+          !unit.incapacitated &&
+          Math.hypot(unit.x - 52, unit.y + 18) <= 9,
+      )
+      .map((unit) => unit.id);
+    if (inside.length === 0) {
+      break;
     }
+    const ids = await section(page);
+    ids.forEach((id, index) => {
+      void command(page, { type: 'attack', unitIds: [id], targetId: inside[index % inside.length]! });
+    });
     await stepRendered(page, 300);
   }
+  await command(page, { type: 'move', unitIds: await section(page), to: { x: 52, y: -18 } });
   await untilObjective(page, 'final-secure', 600);
   await command(page, { type: 'order', order: 'defend', unitIds: await section(page), to: { x: 52, y: -18 } });
   await until(page, async () => page.getByTestId('training-complete').isVisible(), {
