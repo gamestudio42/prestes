@@ -26,5 +26,5 @@
 ## 5. Close
 
 - [x] 5.1 Remove Lucide, Barlow and Cinzel and the old custom icon; re-record visual baselines after reviewing each screen
-- [ ] 5.2 `pnpm verify`
-- [ ] 5.3 Hand check in Chrome (PT-BR and EN): start screen, a full station, sandbox and compendium; record in `docs/status.md`
+- [x] 5.2 `pnpm verify`
+- [x] 5.3 Hand check in Chrome (PT-BR and EN): start screen, a full station, sandbox and compendium; record in `docs/status.md`

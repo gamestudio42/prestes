@@ -295,6 +295,30 @@ Four phases, each its own OpenSpec change:
      is placed at each station's entry rather than marching the road between
      stations.
 3. Pixel-art HUD, menus and the Coluna Prestes compendium (in-game stays low-poly).
+   In progress as `pixel-art-interface` (2026-11-04):
+   - Pixel kit: Pixelify Sans (OFL) at 10 to 32 px, sepia tokens in
+     `styles/pixel.css`, 2 px borders, stepped corners, hard shadows. Barlow,
+     Cinzel and Lucide removed.
+   - 61 original 16 x 16 icons in `assets/icons/prestes-icons.aseprite` (one
+     slice each, first drawn from `icons.txt` by `tools/icons`); `pnpm icons`
+     exports the sheet the game uses as alpha masks in the text colour.
+   - Floating HUD windows (asked by the user): Orders, Troops and Troop
+     summary, dragged by the title bar, minimized, kept in localStorage; the
+     summary shows a helmet per soldier with health, morale and ammunition bars.
+   - Main menu (asked by the user): an animated pixel scene of the column
+     marching at dusk behind a vertical keyboard menu; still for reduced motion.
+   - Compendium: a pixel book with figures, events, places, weapons and
+     corrections from `docs/history`, each with its source and confidence,
+     PT-BR and EN; the public-domain photograph is its pixelated cover.
+   - Hand check in Chrome (929 px window, PT-BR): menu animates and the arrow
+     keys move the cursor; windows drag, minimize and restore; the compendium
+     reads in both languages. Found and fixed on the way: the stepped-corner
+     clip cut off menus and banners that open from inside a window (the frame
+     is now a clipped layer behind the content).
+   - Verify: 298 unit tests and 39 e2e pass. On a loaded machine the suite took
+     38 minutes and two long campaign tests timed out; both passed alone in
+     1.5 minutes, and a step measured about 100 ms, so the interface did not
+     slow the game.
 4. Low-poly art pass: objects, movement and firing feedback.
 
 ## Deferred
