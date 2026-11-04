@@ -337,13 +337,15 @@ After `refactor-structural-modules` (2026-11-03): check, build, bundle budget
 hold-failure spec while the machine was under heavy load (suite 8.1 min instead
 of about 3); the rerun passed 23/23 in 3.1 min, including the 5 visual specs.
 
-Last `pnpm verify` run (2026-11-04, after `tune-training-ammunition`): every
-step passed. check (279 unit tests after the endurance test), build, bundle
-budget (index JS 998,709 / 1,000,000 B, at 99.9%; worker 78,489 / 90,000 B; CSS
-46,204 / 85,000 B), determinism (golden `d2698a02`, from `44beb560` because the
-default run suppresses a pinned target at the normal rate), OpenSpec and e2e
-34/34 in 8.5 min. The index JS budget needs room
-before the next feature (raise it or split a chunk).
+Last `pnpm verify` run (2026-11-04, `redesign-training-ground` in progress):
+every step passed in 4.9 min. check 289 unit tests, build, bundle budget (index
+JS 254,907 / 400,000 B; three 526,340 / 560,000 B; react 221,715 / 240,000 B;
+worker 85,610 / 90,000 B; CSS 47,059 / 85,000 B), determinism, OpenSpec and e2e
+35/35 in 4.5 min. E2E videos are kept only for failing tests (test-results was
+4.8 MB, about 160 MB before). One worker: two were tried and made timing
+sensitive tests fail on software rendering for about 20% less time. A loaded
+machine stretched the suite to 40 min and timed out station tests; the same
+code ran in 4.5 min after a restart.
 
 Previous `pnpm verify` run (2026-11-03): every step passed. check 184 unit tests,
 build, bundle budget (index JS 953,147 / 1,000,000 B; worker 73,869 / 90,000 B;
