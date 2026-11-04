@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Eye } from 'lucide-react';
+import { Eye } from './ui/icons';
 import { BOOTCAMP_EXERCISE, translate, type Locale, type TrainingAction } from '@prestes/content';
 import { trainingStation, type Frame } from '@prestes/shared';
 import type { CameraBand } from '@prestes/view3d';

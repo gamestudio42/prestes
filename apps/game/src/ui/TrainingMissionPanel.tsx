@@ -1,4 +1,4 @@
-﻿import { Check, ChevronRight, RotateCcw, Target } from 'lucide-react';
+﻿import { Check, ChevronRight, Restart as RotateCcw, Target } from './icons';
 import { translate, type ExercisePhase, type Locale, type MessageKey } from '@prestes/content';
 import type { RuntimeObjective } from '../training/exercise';
 

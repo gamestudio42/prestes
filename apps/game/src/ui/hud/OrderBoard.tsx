@@ -1,4 +1,4 @@
-import { Crosshair } from 'lucide-react';
+import { Crosshair } from '../icons';
 import { ORDER_CATALOG, ORDER_CATEGORY_LABELS, type OrderActivation } from '@prestes/content';
 import type { FormationKind, Posture, Stance, TacticalOrder, UnitOrder } from '@prestes/shared';
 import { Tooltip } from '../Tooltip';

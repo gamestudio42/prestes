@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { BrickWall, EyeOff, Heart, Link2, MoreHorizontal, Settings2, Zap } from 'lucide-react';
+import { CoverIcon as BrickWall, EyeOff, Health as Heart, Cohesion as Link2, More as MoreHorizontal, Settings as Settings2, Suppression as Zap } from '../icons';
 import type { MessageKey } from '@prestes/content';
 import type { Frame, UnitSnapshot } from '@prestes/shared';
-import { RifleIcon } from '../HudIcons';
+import { Rifle as RifleIcon } from '../icons';
 import { Tooltip } from '../Tooltip';
 import { orderLetter, type Translate } from './orderMeta';
 

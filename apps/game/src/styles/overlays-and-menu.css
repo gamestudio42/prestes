@@ -509,7 +509,8 @@
   padding: 0;
 }
 
-.order-card span,
+/* Order cards show only their icon; the name is in the tooltip. */
+.order-card span:not(.pixel-icon),
 .order-card small {
   display: none;
 }

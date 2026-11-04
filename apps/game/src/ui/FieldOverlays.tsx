@@ -1,4 +1,4 @@
-import { Crosshair, Shield } from 'lucide-react';
+import { Crosshair, CoverIcon as Shield } from './icons';
 import { translate, type Locale } from '@prestes/content';
 import type { CoverSlotView } from '@prestes/shared';
 import type { PlacementPreview } from '@prestes/view3d';

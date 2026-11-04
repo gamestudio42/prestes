@@ -1,4 +1,4 @@
-import { BookOpen, Languages, Play, RotateCcw, Volume2, VolumeX } from 'lucide-react';
+import { Book as BookOpen, Languages, Play, Restart as RotateCcw, SoundOn as Volume2, SoundOff as VolumeX } from './icons';
 import { translate, type Locale, type MessageKey } from '@prestes/content';
 import heroImage from '../assets/menu/coluna-prestes.webp';
 

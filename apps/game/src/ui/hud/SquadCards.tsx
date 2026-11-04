@@ -1,4 +1,4 @@
-import { User } from 'lucide-react';
+import { Soldier as User } from '../icons';
 import type { MessageKey } from '@prestes/content';
 import type { Frame } from '@prestes/shared';
 import { IconButton } from './IconButton';

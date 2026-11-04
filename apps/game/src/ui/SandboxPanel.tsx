@@ -1,4 +1,4 @@
-import { Box, Crosshair, RotateCcw, StepForward, Users, FlaskConical, X } from 'lucide-react';
+import { Crate as Box, Crosshair, Restart as RotateCcw, Step as StepForward, Troop as Users, Lab as FlaskConical, Close as X } from './icons';
 import { terrainHeightAt, terrainSpeedFactor, type Frame } from '@prestes/shared';
 import { translate, type Locale, type MessageKey } from '@prestes/content';
 

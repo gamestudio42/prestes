@@ -158,3 +158,12 @@ canvas {
 .tutorial-chapter strong {
   white-space: nowrap;
 }
+
+/* Pixel icons: a slice of the sheet as an alpha mask over the text colour. */
+.pixel-icon {
+  display: inline-block;
+  flex: none;
+  vertical-align: middle;
+  background-color: currentColor;
+  image-rendering: pixelated;
+}

@@ -1,4 +1,4 @@
-import { ChevronDown, ChevronUp, X } from 'lucide-react';
+import { ChevronDown, ChevronUp, Close as X } from '../icons';
 import type { MessageKey } from '@prestes/content';
 import type { Stance, TacticalOrder, UnitOrder } from '@prestes/shared';
 import { Tooltip } from '../Tooltip';

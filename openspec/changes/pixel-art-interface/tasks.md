@@ -5,9 +5,9 @@
 
 ## 2. Icons
 
-- [ ] 2.1 `tools/icons/build-icons.lua`: draw every icon (orders, postures, stances, top bar, status glyphs) from text grids into `assets/icons/prestes-icons.aseprite` with one named slice each; review them at 1x and 2x
-- [ ] 2.2 `pnpm icons` export script (Aseprite CLI) to `apps/game/src/assets/icons.png` and `icons.json`; commit both
-- [ ] 2.3 `PixelIcon` component (CSS mask, current colour, integer scale) and the icon map moved to slices; unit tests: every control has a slice, no shared slices, JSON matches the PNG
+- [x] 2.1 `tools/icons/build-icons.lua`: draw every icon (orders, postures, stances, top bar, status glyphs) from text grids into `assets/icons/prestes-icons.aseprite` with one named slice each; review them at 1x and 2x
+- [x] 2.2 `pnpm icons` export script (Aseprite CLI) to `apps/game/src/assets/icons.png` and `icons.json`; commit both
+- [x] 2.3 `PixelIcon` component (CSS mask, current colour, integer scale) and the icon map moved to slices; unit tests: every control has a slice, no shared slices, JSON matches the PNG
 
 ## 3. HUD and menus
 

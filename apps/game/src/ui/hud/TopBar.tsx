@@ -1,4 +1,4 @@
-import { Camera, Contrast, Languages, Pause, Play } from 'lucide-react';
+import { Camera, PostEffect as Contrast, Languages, Pause, Play } from '../icons';
 import type { Locale } from '@prestes/content';
 import type { CameraBand } from '@prestes/view3d';
 import { IconButton } from './IconButton';

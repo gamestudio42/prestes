@@ -29,7 +29,8 @@
     "e2e": "playwright test",
     "sim": "tsx tools/headless-sim.ts",
     "bench": "tsx tools/sim-bench.ts",
-    "models": "tsx tools/prepare-models.ts"
+    "models": "tsx tools/prepare-models.ts",
+    "icons": "tsx tools/export-icons.ts"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
