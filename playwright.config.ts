@@ -3,6 +3,8 @@
 export default defineConfig({
   testDir: './tests/e2e',
   timeout: 120_000,
+  // One worker: the scenes render in software (no GPU in headless Chromium)
+  // and two at once made timing-sensitive tests fail for a ~20% gain.
   workers: 1,
   expect: { timeout: 10_000 },
   use: {

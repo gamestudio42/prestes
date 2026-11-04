@@ -16,7 +16,8 @@ declare global {
   }
 }
 
-test.use({ video: { mode: 'on', size: { width: 1440, height: 900 } } });
+// Recorded only when a test fails: passing runs leave no video on disk.
+test.use({ video: { mode: 'retain-on-failure', size: { width: 1440, height: 900 } } });
 test.setTimeout(240_000);
 
 const STATIONS = ['formation', 'fire', 'maneuver', 'defense', 'recon', 'wounded', 'final'];
@@ -85,7 +86,7 @@ const untilObjective = (page: Page, id: string, maxTicks: number, chunk = 20) =>
   until(page, () => objectiveDone(page, id), { maxTicks, chunk, label: id });
 
 async function untilStation(page: Page, station: string, maxTicks = 200): Promise<void> {
-  await until(page, () => phaseIs(page, station), { maxTicks, chunk: 10, label: `station ${station}` });
+  await until(page, () => phaseIs(page, station), { maxTicks, chunk: 20, label: `station ${station}` });
   // The station setup (troop, training enemies) lands on the following tick.
   await stepRendered(page, 2);
 }
@@ -264,7 +265,7 @@ async function playFinal(page: Page): Promise<void> {
   await command(page, { type: 'order', order: 'defend', unitIds: await section(page), to: point('final', 'line') });
   await until(page, async () => page.getByTestId('training-complete').isVisible(), {
     maxTicks: 900,
-    chunk: 30,
+    chunk: 60,
     label: 'debrief',
   });
 }
@@ -360,13 +361,20 @@ test('shows a sandbox preview for every placement and inserts an enemy troop wit
   const canvas = page.getByTestId('game-canvas');
   const box = await canvas.boundingBox();
   expect(box).not.toBeNull();
-  await page.mouse.move(box!.x + box!.width * 0.36, box!.y + box!.height * 0.28);
+  // Open ground on the parade ground, north of the road, wherever the camera is.
+  const ground = stationPoint('formation', { x: -6, y: -10 });
+  const screen = await page.evaluate(
+    ({ x, y }) =>
+      (window as unknown as { __prestesScene?: { groundToScreen: (x: number, y: number) => { x: number; y: number } | null } })
+        .__prestesScene!.groundToScreen(x, y),
+    ground,
+  );
+  expect(screen).not.toBeNull();
+  await page.mouse.move(box!.x + screen!.x, box!.y + screen!.y);
   await page.keyboard.press('x');
   await expect(page.getByTestId('placement-status')).toBeVisible();
-  if ((await page.getByTestId('placement-status').textContent())?.match(/blocked|bloqueada/i)) {
-    await page.mouse.move(box!.x + box!.width * 0.42, box!.y + box!.height * 0.22);
-  }
-  await page.mouse.click(box!.x + box!.width * 0.42, box!.y + box!.height * 0.22);
+  await expect(page.getByTestId('placement-status')).not.toHaveText(/blocked|bloqueada/i);
+  await page.mouse.click(box!.x + screen!.x, box!.y + screen!.y);
   await expect
     .poll(async () => (await currentFrame(page)).units.length, { timeout: 20_000 })
     .toBeGreaterThan(before.units.length);

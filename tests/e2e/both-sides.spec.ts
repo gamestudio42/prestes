@@ -11,7 +11,8 @@ declare global {
   }
 }
 
-test.use({ video: { mode: 'on', size: { width: 1440, height: 900 } } });
+// Recorded only when a test fails: passing runs leave no video on disk.
+test.use({ video: { mode: 'retain-on-failure', size: { width: 1440, height: 900 } } });
 test.setTimeout(180_000);
 
 async function currentFrame(page: Page): Promise<Frame> {
