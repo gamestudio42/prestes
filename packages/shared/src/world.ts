@@ -132,12 +132,53 @@ export const TRAINING_SIGHT_OBSTACLES = [
   { id: 1, x: -26, y: 15, halfWidth: 2.8, halfDepth: 2.8, height: 3.0 },
   { id: 2, x: 26, y: 15, halfWidth: 2.8, halfDepth: 2.8, height: 3.0 },
   { id: 3, x: -25, y: -10, halfWidth: 2.8, halfDepth: 2.8, height: 3.0 },
-  { id: 4, x: 24, y: 17, halfWidth: 3.5, halfDepth: 2.3, height: 3.2 },
   { id: 5, x: -16, y: 9, halfWidth: 1.1, halfDepth: 1.1, height: 4.2 },
   { id: 6, x: 17, y: 8, halfWidth: 1.1, halfDepth: 1.1, height: 4.2 },
   { id: 7, x: -13, y: -13, halfWidth: 1.1, halfDepth: 1.1, height: 4.2 },
   { id: 8, x: 15, y: -12, halfWidth: 1.1, halfDepth: 1.1, height: 4.2 },
 ];
+
+export type BuildingModel = 'farmhouse' | 'barn' | 'chapel' | 'training-house';
+
+/**
+ * Buildings shared by the simulation (as `building` cover) and the view (which
+ * places its meshes from this table). `rotation` is the simulation rotation;
+ * the view turns the mesh by `-rotation` about its vertical axis.
+ */
+export interface Building {
+  id: number;
+  model: BuildingModel;
+  x: number;
+  y: number;
+  rotation: number;
+  halfWidth: number;
+  halfDepth: number;
+  height: number;
+}
+
+export const BUILDINGS: readonly Building[] = [
+  { id: 121, model: 'training-house', x: 24, y: 17, rotation: 0.1, halfWidth: 3.6, halfDepth: 2.5, height: 3.7 },
+  { id: 122, model: 'farmhouse', x: -56, y: 36, rotation: -0.22, halfWidth: 4.35, halfDepth: 2.85, height: 4.8 },
+  { id: 123, model: 'barn', x: 58, y: 44, rotation: 0.16, halfWidth: 5.65, halfDepth: 3.5, height: 6 },
+  { id: 124, model: 'chapel', x: 78, y: -52, rotation: -0.1, halfWidth: 3.2, halfDepth: 4.8, height: 5.2 },
+];
+
+export function buildingCover(building: Building): CoverPoint {
+  return {
+    id: building.id,
+    kind: 'building',
+    x: building.x,
+    y: building.y,
+    rotation: building.rotation,
+    halfWidth: building.halfWidth,
+    halfDepth: building.halfDepth,
+    height: building.height,
+    radius: Math.max(building.halfWidth, building.halfDepth) + 1.5,
+    quality: 0.8,
+    blocksMovement: true,
+    blocksSight: true,
+  };
+}
 
 export const BOOTCAMP_COVERS: readonly CoverPoint[] = [
   ...COVER_POINTS,
@@ -151,6 +192,7 @@ export const BOOTCAMP_COVERS: readonly CoverPoint[] = [
   { id: 108, kind: 'stone', x: 18, y: 22, halfWidth: 4, halfDepth: 3, height: 3, radius: 5, quality: 0.5, blocksMovement: true, blocksSight: true },
   { id: 109, kind: 'trench', x: 52, y: -18, halfWidth: 7, halfDepth: 2.8, height: 0.2, radius: 3, quality: 0.4, blocksMovement: false, blocksSight: false },
   { id: 110, kind: 'sandbag', x: 52, y: -15.5, halfWidth: 7, halfDepth: 0.4, height: 0.9, radius: 3.5, quality: 0.3, blocksMovement: false, blocksSight: false },
+  ...BUILDINGS.map(buildingCover),
 ] as const;
 export const MAP_BOUNDS = { minX: -120, minY: -120, maxX: 120, maxY: 120 } as const;
 

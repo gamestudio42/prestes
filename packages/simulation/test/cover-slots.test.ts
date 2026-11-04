@@ -37,6 +37,7 @@ function training() {
 
 const trench = BOOTCAMP_COVERS.find((cover) => cover.id === 109)!;
 const lowWall = BOOTCAMP_COVERS.find((cover) => cover.id === 106)!;
+const house = BOOTCAMP_COVERS.find((cover) => cover.kind === 'building' && cover.id === 121)!;
 
 describe('cover slots in the simulation', () => {
   it('puts a section of 11 into the trench, each in its own place', () => {
@@ -88,6 +89,18 @@ describe('cover slots in the simulation', () => {
       shots += t.engine.tick().events.filter((event) => event.type === 'shot' && section.includes(event.source)).length;
     }
     expect(shots).toBeGreaterThan(0);
+  });
+
+  it('takes a corner slot at the training house', () => {
+    const t = training();
+    const [soldier] = t.riflemen() as [number];
+    const corner = coverSlots(house)[0]!;
+    t.placeNear([soldier], { x: corner.x + 4, y: corner.y + 4 });
+    const frame = t.send({ type: 'move', unitIds: [soldier], to: { x: corner.x, y: corner.y } }, 200);
+    const unit = frame.units.find((entry) => entry.id === soldier)!;
+    expect(t.slotOf(soldier)).toBe(corner.id);
+    expect(Math.hypot(unit.x - corner.x, unit.y - corner.y)).toBeLessThan(0.6);
+    expect(isPointInCover(unit.x, unit.y, house)).toBe(false);
   });
 
   it('releases a slot on a new destination and on a fall', () => {

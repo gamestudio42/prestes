@@ -1,5 +1,6 @@
 ﻿import * as THREE from 'three';
-import { terrainHeightAt, terrainSurfaceAt } from '@prestes/shared';
+import { BUILDINGS, terrainHeightAt, terrainSurfaceAt } from '@prestes/shared';
+import type { BuildingModel } from '@prestes/shared';
 import { toon } from './materials';
 import { PALETTE } from './palette';
 
@@ -249,6 +250,18 @@ function chapel(parent: THREE.Object3D, x: number, z: number, rotation: number):
   box(group, PALETTE.bell, 0, base + wall + 3.0, -2.5, 0.46, 0.7, 0.28);
   box(group, PALETTE.wood, 0, base + wall + 4.55, -2.5, 0.12, 1.3, 0.12);
   box(group, PALETTE.wood, 0, base + wall + 4.78, -2.5, 0.72, 0.12, 0.12);
+}
+
+/** Places a building mesh at its simulation footprint (view turns by -rotation). */
+export function placeBuilding(
+  parent: THREE.Object3D,
+  model: BuildingModel,
+  x: number,
+  y: number,
+  rotation: number,
+): void {
+  const builders = { farmhouse, barn, chapel, 'training-house': trainingHouse };
+  builders[model](parent, x, y, -rotation);
 }
 
 export function trainingHouse(
@@ -503,9 +516,12 @@ export class WorldLayer {
   }
 
   private buildBuildings(): void {
-    farmhouse(this.group, -56, 36, 0.22);
-    barn(this.group, 58, 44, -0.16);
-    chapel(this.group, 78, -52, 0.1);
+    // The training house belongs to the training layer.
+    for (const building of BUILDINGS) {
+      if (building.model !== 'training-house') {
+        placeBuilding(this.group, building.model, building.x, building.y, building.rotation);
+      }
+    }
     ruin(this.group, -70, -42, 0.4);
   }
 

@@ -1,8 +1,8 @@
 ﻿import * as THREE from 'three';
-import { terrainHeightAt } from '@prestes/shared';
+import { BUILDINGS, terrainHeightAt } from '@prestes/shared';
 import { toon } from './materials';
 import { PALETTE } from './palette';
-import { trainingHouse } from './world-layer';
+import { placeBuilding } from './world-layer';
 
 export interface TrainingMarker {
   id: string;
@@ -226,7 +226,9 @@ export class TrainingLayer {
     tent(this.props, 26, 15, PALETTE.adobeDark);
     tent(this.props, -25, -10, PALETTE.adobe);
 
-    trainingHouse(this.props, 24, 17, -0.1);
+    for (const building of BUILDINGS.filter((entry) => entry.model === 'training-house')) {
+      placeBuilding(this.props, building.model, building.x, building.y, building.rotation);
+    }
     box(this.props, -18, 12, 1.1, 0.9, 1.1, PALETTE.wood);
     box(this.props, -16.5, 12, 1.1, 0.9, 1.1, PALETTE.wood);
     box(this.props, 18, 11, 1.1, 0.9, 1.1, PALETTE.wood);

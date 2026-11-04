@@ -1,5 +1,5 @@
 import type { CoverPoint, Stance, Vec2 } from './protocol';
-import { findPath } from './pathfinding';
+import { findPath, isInsidePathGrid } from './pathfinding';
 import { isPointBlockedByCovers, isPointInCover } from './world';
 
 /** A place where one soldier takes cover behind (or inside) a cover object. */
@@ -107,11 +107,17 @@ export function coverSlots(cover: CoverPoint): CoverSlot[] {
   });
 }
 
-/** Slots of every cover that are not inside some movement-blocking footprint. */
+/**
+ * Slots of every cover that are on the walkable grid and not inside some
+ * movement-blocking footprint.
+ */
 export function allCoverSlots(covers: readonly CoverPoint[]): CoverSlot[] {
   return covers
     .flatMap((cover) => coverSlots(cover))
-    .filter((slot) => !isPointBlockedByCovers(slot.x, slot.y, covers, 0.8));
+    .filter(
+      (slot) =>
+        isInsidePathGrid(slot.x, slot.y) && !isPointBlockedByCovers(slot.x, slot.y, covers, 0.8),
+    );
 }
 
 export interface SlotPickOptions {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { BOOTCAMP_COVERS, allCoverSlots, coverSlots, isPointBlockedByCovers, isPointInCover, pickSlots } from '../src';
+import { BOOTCAMP_COVERS, allCoverSlots, findPath, coverSlots, isPointBlockedByCovers, isPointInCover, pickSlots } from '../src';
 import type { CoverPoint } from '../src';
 
 const wall: CoverPoint = { id: 1, kind: 'low-wall', x: 0, y: 0, halfWidth: 3, halfDepth: 0.5, height: 1.4, radius: 3.2, quality: 0.35, blocksMovement: true, blocksSight: true };
@@ -35,6 +35,16 @@ describe('cover slots', () => {
   it('keeps every bootcamp slot outside blocking footprints', () => {
     const slots = allCoverSlots(BOOTCAMP_COVERS);
     expect(slots.every((slot) => !isPointBlockedByCovers(slot.x, slot.y, BOOTCAMP_COVERS, 0.8))).toBe(true);
+  });
+});
+
+describe('bootcamp slots', () => {
+  it('can all be reached from open ground', () => {
+    const start = { x: 0, y: 2 };
+    const unreachable = allCoverSlots(BOOTCAMP_COVERS).filter(
+      (slot) => findPath(start, slot, BOOTCAMP_COVERS).length === 0,
+    );
+    expect(unreachable.map((slot) => slot.id)).toEqual([]);
   });
 });
 

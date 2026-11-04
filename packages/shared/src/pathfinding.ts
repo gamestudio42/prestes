@@ -5,6 +5,11 @@ import type { CoverPoint } from './protocol';
 const MIN = -100;
 const MAX = 100;
 const SIZE = MAX - MIN + 1;
+
+/** True inside the walkable pathfinding grid (one cell in from its edge). */
+export function isInsidePathGrid(x: number, y: number): boolean {
+  return x > MIN + 1 && x < MAX - 1 && y > MIN + 1 && y < MAX - 1;
+}
 const DIRECTIONS: ReadonlyArray<readonly [number, number]> = [
   [1, 0],
   [-1, 0],
