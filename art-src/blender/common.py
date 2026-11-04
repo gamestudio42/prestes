@@ -37,11 +37,11 @@ def atlas_material(texture: str) -> bpy.types.Material:
     shader.inputs["Roughness"].default_value = 1.0
     if "Specular IOR Level" in shader.inputs:
         shader.inputs["Specular IOR Level"].default_value = 0.0
-    texture = nodes.new("ShaderNodeTexImage")
-    texture.image = bpy.data.images.load(os.path.join(TEXTURES, f"{texture}.png"))
-    texture.interpolation = "Closest"
-    material.node_tree.links.new(texture.outputs["Color"], shader.inputs["Base Color"])
-    material.node_tree.links.new(texture.outputs["Alpha"], shader.inputs["Alpha"])
+    sampler = nodes.new("ShaderNodeTexImage")
+    sampler.image = bpy.data.images.load(os.path.join(TEXTURES, f"{texture}.png"))
+    sampler.interpolation = "Closest"
+    material.node_tree.links.new(sampler.outputs["Color"], shader.inputs["Base Color"])
+    material.node_tree.links.new(sampler.outputs["Alpha"], shader.inputs["Alpha"])
     return material
 
 

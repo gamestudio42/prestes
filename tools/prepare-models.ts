@@ -1,6 +1,6 @@
 import { NodeIO } from '@gltf-transform/core';
 import { dedup, prune } from '@gltf-transform/functions';
-import { existsSync, mkdirSync, readdirSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, readdirSync } from 'node:fs';
 import { basename, join } from 'node:path';
 
 const SOURCES = ['art-src/characters', 'art-src/environment'];
@@ -28,3 +28,12 @@ for (const input of files) {
   await io.write(output, document);
   console.log(`${output}: ${document.getRoot().listMeshes().length} meshes`);
 }
+
+// The pixel textures the game swaps at runtime (outfits, effects).
+const TEXTURES = 'art-src/textures';
+const TEXTURE_OUT = join(OUTPUT, 'textures');
+mkdirSync(TEXTURE_OUT, { recursive: true });
+for (const file of readdirSync(TEXTURES).filter((name) => name.endsWith('.png'))) {
+  copyFileSync(join(TEXTURES, file), join(TEXTURE_OUT, file));
+}
+console.log(`${TEXTURE_OUT}: textures copied`);

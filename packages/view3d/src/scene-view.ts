@@ -1,4 +1,4 @@
-﻿import * as THREE from 'three';
+import * as THREE from 'three';
 import {
   SANDBOX_TERRAIN,
   TRAINING_TERRAIN,
@@ -138,6 +138,7 @@ export class SceneView {
     // The training ground has its own terrain and countryside.
     setActiveTerrain(options.trainingField ? TRAINING_TERRAIN : SANDBOX_TERRAIN);
     this.world = new WorldLayer(options.trainingField ? 'training' : 'sandbox');
+    this.characters.loadModels();
     this.addWorld();
     if (options.trainingField) {
       this.scene.add(this.training.group);

@@ -26,3 +26,4 @@ sons referencia/
 .pi/skills/web-game-release/
 art-src/**/*.blend1
 art-src/environment/smoke.*
+art-src/**/__pycache__/

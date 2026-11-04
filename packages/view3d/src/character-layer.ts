@@ -1,4 +1,6 @@
 import * as THREE from 'three';
+import { soldierClip, soldierOutfit, walkTimeScale } from './soldier-clips';
+import { SoldierInstance, loadSoldierAsset, type SoldierAsset } from './soldier-models';
 import {
   terrainHeightAt,
   type Faction,
@@ -7,7 +9,7 @@ import {
   type UnitKind,
 } from '@prestes/shared';
 import type { InterpolatedFrame } from '@prestes/shared';
-import { unitScaleForSpan } from './camera-rig';
+import { TACTICAL_SPAN, unitScaleForSpan } from './camera-rig';
 import { toon } from './materials';
 import { PALETTE } from './palette';
 
@@ -28,6 +30,10 @@ interface CharacterRig {
 
 interface CharacterView {
   rig: CharacterRig;
+  /** The Blender-built soldier, once the model has loaded. */
+  soldier?: SoldierInstance;
+  /** Until when (performance.now ms) the soldier shows its firing pose. */
+  fireUntil: number;
   phase: number;
   lastX: number;
   lastY: number;
@@ -397,6 +403,8 @@ export class CharacterLayer {
   private readonly proxyQuaternion = new THREE.Quaternion();
   private readonly proxyPosition = new THREE.Vector3();
   private readonly proxyScale = new THREE.Vector3();
+  private asset: SoldierAsset | null = null;
+  private lastUpdate = performance.now();
   private readonly flatQuaternion = new THREE.Quaternion().setFromEuler(
     new THREE.Euler(-Math.PI / 2, 0, 0),
   );
@@ -434,12 +442,30 @@ export class CharacterLayer {
     }
   }
 
+  /** Loads the modelled soldier; until it arrives (or if it fails) the part rig draws. */
+  loadModels(base = './models/'): void {
+    loadSoldierAsset(base)
+      .then((asset) => {
+        this.asset = asset;
+      })
+      .catch((error: unknown) => {
+        console.warn('soldier model unavailable, keeping the part rig', error);
+      });
+  }
+
   update(frame: Frame | InterpolatedFrame, span: number): void {
+    const now = performance.now();
+    const seconds = Math.min(0.1, Math.max(0, (now - this.lastUpdate) / 1000));
+    this.lastUpdate = now;
+    const shooters = new Set<number>();
+    for (const event of frame.events) {
+      if (event.type === 'shot') shooters.add(event.source);
+    }
     const scale = unitScaleForSpan(span) * 1.25;
     const seen = new Set<number>();
     let proxyIndex = 0;
     let corpseIndex = 0;
-    const useProxy = span > 60;
+    const useProxy = span > TACTICAL_SPAN;
     for (const unit of frame.units) {
       seen.add(unit.id);
       let view = this.views.get(unit.id);
@@ -457,6 +483,7 @@ export class CharacterLayer {
           facingAngle: Math.atan2(-unit.facingX, -unit.facingY),
           idle: unit.id * 0.7,
           lean: 0,
+          fireUntil: 0,
         };
         this.views.set(unit.id, view);
       }
@@ -473,6 +500,13 @@ export class CharacterLayer {
       view.crouch += (targetCrouch - view.crouch) * 0.08;
       view.prone += (targetProne - view.prone) * 0.08;
       view.idle += 1 / 60;
+
+      if (shooters.has(unit.id)) {
+        view.fireUntil = now + 450;
+        view.soldier?.retrigger(
+          soldierClip(unit, { moving: false, firing: true }),
+        );
+      }
 
       const rig = view.rig;
       rig.root.visible = !useProxy && !unit.routed;
@@ -549,6 +583,27 @@ export class CharacterLayer {
         continue;
       }
 
+      if (this.asset && !view.soldier && unit.kind !== 'dummy') {
+        view.soldier = new SoldierInstance(this.asset, soldierOutfit(unit));
+        rig.root.add(view.soldier.root);
+      }
+      if (view.soldier) {
+        const metresPerSecond = seconds > 0 ? moved / seconds : 0;
+        const clip = soldierClip(unit, { moving: moved > 0.0005, firing: now < view.fireUntil });
+        const walking = clip === 'walk' || clip === 'crouch-walk' || clip === 'crawl';
+        view.soldier.play(clip, walking ? walkTimeScale(metresPerSecond) : 1);
+        view.soldier.update(seconds);
+        rig.body.visible = false;
+        rig.corpse.visible = false;
+        rig.ring.visible = unit.alive && !unit.routed && !unit.incapacitated;
+        rig.shadow.rotation.set(-Math.PI / 2, 0, 0);
+        if (rig.ring.visible) {
+          (rig.ring.material as THREE.MeshBasicMaterial).color.setHex(ringColorFor(unit));
+          rig.ring.rotation.set(-Math.PI / 2, 0, 0);
+        }
+        continue;
+      }
+
       rig.body.visible = unit.alive;
       rig.corpse.visible = !unit.alive;
       rig.ring.visible = unit.alive && !unit.routed;
@@ -616,6 +671,7 @@ export class CharacterLayer {
 
     for (const [id, view] of this.views) {
       if (!seen.has(id)) {
+        view.soldier?.dispose();
         this.group.remove(view.rig.root);
         disposeObject(view.rig.root);
         this.views.delete(id);
@@ -625,6 +681,7 @@ export class CharacterLayer {
 
   dispose(): void {
     for (const view of this.views.values()) {
+      view.soldier?.dispose();
       disposeObject(view.rig.root);
     }
     this.views.clear();

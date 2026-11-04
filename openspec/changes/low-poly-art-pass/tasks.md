@@ -5,9 +5,9 @@
 
 ## 2. Soldier
 
-- [ ] 2.1 Soldier mesh (about 400 triangles, Mauser included) with UVs into the atlas and the armature; review in Blender renders at the tactical and strategic angles
-- [ ] 2.2 Clips: idle, walk, crouch-idle, crouch-walk, prone, crawl, aim and fire in three stances, wounded, corpse
-- [ ] 2.3 Character layer: load the glTF, one skinned instance per soldier at tactical span, outfit by faction and officer, clip choice from the snapshot with cross-fade and speed-scaled walk; strategic proxies unchanged; fallback to the part rig if loading fails; view unit tests for the clip choice
+- [x] 2.1 Soldier mesh (about 400 triangles, Mauser included) with UVs into the atlas and the armature; review in Blender renders at the tactical and strategic angles
+- [x] 2.2 Clips: idle, walk, crouch-idle, crouch-walk, prone, crawl, aim and fire in three stances, wounded, corpse
+- [x] 2.3 Character layer: load the glTF, one skinned instance per soldier at tactical span, outfit by faction and officer, clip choice from the snapshot with cross-fade and speed-scaled walk; strategic proxies unchanged; fallback to the part rig if loading fails; view unit tests for the clip choice
 
 ## 3. Training ground
 
