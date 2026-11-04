@@ -8,9 +8,6 @@ import { nearestOpenPoint, occupied } from './geometry';
 import { queueUnitOrder } from './movement';
 
 export function updateBounding(ctx: SimContext): void {
-  if (!ctx.boundingEnabled) {
-    return;
-  }
   const eligible = ctx.units.filter(
     (unit) =>
       unit.faction === 'column' &&
@@ -21,7 +18,12 @@ export function updateBounding(ctx: SimContext): void {
       unit.state !== 'pinned' &&
       !unit.lineMove &&
       unit.currentOrder !== null &&
-      BOUNDING_ORDERS.has(unit.currentOrder),
+      BOUNDING_ORDERS.has(unit.currentOrder) &&
+      // Only a soldier with ground still to cover bounds: an advance that has
+      // arrived stays put instead of starting the bounds over.
+      (unit.boundTeam !== null ||
+        unit.path.length > 0 ||
+        (unit.x - unit.targetX) ** 2 + (unit.y - unit.targetY) ** 2 > 1),
   );
   const activeSquads = new Set(eligible.map((unit) => unit.squadId));
   for (const [squadId] of ctx.bounding) {
@@ -48,8 +50,12 @@ export function updateBounding(ctx: SimContext): void {
       const teamA = sorted.slice(0, split);
       const teamB = sorted.slice(split);
       const first = sorted[0]!;
+      // Only an assault bounds onto its target; an advance bounds to the
+      // ordered destination even when it sees the enemy on the way.
       const target =
-        first.targetId === null ? null : ctx.units.find((entry) => entry.id === first.targetId);
+        first.targetId === null || first.currentOrder !== 'attack'
+          ? null
+          : ctx.units.find((entry) => entry.id === first.targetId);
       const destination = target
         ? { x: target.x, y: target.y }
         : (first.orderDestination ?? {
@@ -76,7 +82,7 @@ export function updateBounding(ctx: SimContext): void {
         teamA: teamA.map((unit) => unit.id),
         teamB: teamB.map((unit) => unit.id),
         destination,
-        targetId: first.targetId,
+        targetId: target?.id ?? null,
         phase: 'b',
         mode: first.currentOrder === 'attack' ? 'attack' : 'move',
         targets,
@@ -101,7 +107,9 @@ export function updateBounding(ctx: SimContext): void {
 
     const first = units[0]!;
     const target =
-      first.targetId === null ? null : ctx.units.find((entry) => entry.id === first.targetId);
+      first.targetId === null || group.mode !== 'attack'
+        ? null
+        : ctx.units.find((entry) => entry.id === first.targetId);
     if (target) {
       group.destination = { x: target.x, y: target.y };
     }

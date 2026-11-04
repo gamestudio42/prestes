@@ -294,7 +294,46 @@ export function applyTacticalOrder(
   reject(ctx, tick, seq, 'invalid_order', events);
 }
 
+/** An attack that turns into a pursuit follows at most this far (metres). */
+export const PURSUIT_LEASH = 40;
+
+/**
+ * Attack follows a target that runs: when the enemy withdraws or flees out of
+ * effective range, an attacker that is not defensive goes after him, up to
+ * the pursuit leash from where he started.
+ */
+function followRunningTargets(ctx: SimContext): void {
+  for (const unit of ctx.units) {
+    if (
+      unit.currentOrder !== 'attack' ||
+      unit.posture === 'defensive' ||
+      !unit.alive ||
+      unit.incapacitated ||
+      unit.targetId === null
+    ) {
+      continue;
+    }
+    const target = ctx.units.find((entry) => entry.id === unit.targetId);
+    if (!target || !target.alive || target.routed || target.incapacitated) {
+      continue;
+    }
+    const running = target.currentOrder === 'withdraw' || target.currentOrder === 'flee';
+    if (!running) {
+      continue;
+    }
+    // Out of the range soldiers actually fire at.
+    if (Math.sqrt((target.x - unit.x) ** 2 + (target.y - unit.y) ** 2) <= ctx.combatRange * 0.85) {
+      continue;
+    }
+    unit.currentOrder = 'pursue';
+    unit.targetLocked = true;
+    unit.orderIssued = true;
+    unit.pursueOrigin = { x: unit.x, y: unit.y };
+  }
+}
+
 export function updatePursuit(ctx: SimContext, tick: number, events: SimEvent[]): void {
+  followRunningTargets(ctx);
   for (const unit of ctx.units) {
     if (unit.currentOrder !== 'pursue' || !unit.alive || unit.incapacitated) {
       continue;
@@ -308,8 +347,12 @@ export function updatePursuit(ctx: SimContext, tick: number, events: SimEvent[])
       target.incapacitated ||
       unit.state === 'pinned' ||
       unit.state === 'panicked' ||
-      unit.fatigue >= 90;
+      unit.fatigue >= 90 ||
+      (unit.pursueOrigin != null &&
+        (unit.x - unit.pursueOrigin.x) ** 2 + (unit.y - unit.pursueOrigin.y) ** 2 >
+          PURSUIT_LEASH * PURSUIT_LEASH);
     if (stop) {
+      unit.pursueOrigin = null;
       unit.currentOrder = 'hold';
       unit.orderIssued = false;
       unit.holdPosition = true;

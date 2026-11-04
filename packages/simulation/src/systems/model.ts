@@ -25,17 +25,11 @@ export const OPEN_POINT_DIRECTIONS = [
   { x: -Math.SQRT1_2, y: -Math.SQRT1_2 },
 ] as const;
 
-export const BOUNDING_ORDERS = new Set<UnitOrder>([
-  'move',
-  'advance',
-  'attack',
-  'defend',
-  'ambush',
-  'disperse',
-  'recon',
-  'reserve',
-  'pursue',
-]);
+/**
+ * Orders that move by bounds (one half covers, the other moves): the tactical
+ * advance and the assault closing on its target. A march (Move) does not.
+ */
+export const BOUNDING_ORDERS = new Set<UnitOrder>(['advance', 'attack']);
 
 export const FLANK_COOLDOWN = 180;
 export const SUPPRESSION_COOLDOWN = 150;
@@ -50,6 +44,8 @@ export const FATIGUE_MARCH = 0.25;
 /** Fatigue recovered every tick: about 1.5 minutes from tired to fresh at rest. */
 export const FATIGUE_REST = 0.1;
 export const AMBUSH_RADIUS = 14;
+/** Fire control on contact opens when an enemy is this close (metres). */
+export const CONTACT_RADIUS = 25;
 export const AWARENESS_RANGE = 120;
 export const RESCUE_CONTACT_DISTANCE = 1.4;
 export const RESCUE_CARRY_TICKS = 30;
@@ -87,6 +83,10 @@ export interface MutableUnit {
   lastShooter?: number | null;
   /** Ticks before he looks for cover under fire again. */
   fireCoverCooldown?: number;
+  /** Fire control on contact: hold fire beyond `CONTACT_RADIUS` until the section opens. */
+  fireOnContact?: boolean;
+  /** Where an attack turned into a pursuit (the 40 m leash). */
+  pursueOrigin?: Vec2 | null;
   orderDestination: Vec2 | null;
   orderIssued: boolean;
   orderRegionCenter: Vec2 | null;

@@ -8,12 +8,30 @@ import {
 } from '@prestes/shared';
 import type { Outcome, SimEvent } from '@prestes/shared';
 import { TARGET_HYSTERESIS, targetScore } from '../tactical';
-import { AMBUSH_RADIUS, AWARENESS_RANGE, SUPPRESS_FIRE_INTERVAL, clamp } from './model';
+import { CONTACT_RADIUS, AMBUSH_RADIUS, AWARENESS_RANGE, SUPPRESS_FIRE_INTERVAL, clamp } from './model';
 import type { MutableUnit } from './model';
 import type { SimContext } from './context';
 import { nearestEnemy } from './geometry';
 import { woundAccuracyFactor } from './casualties';
 import { markUnderFire, shooterOf } from './fire-reaction';
+
+/**
+ * Ambush and fire on contact hold their fire beyond their radius: the shooter
+ * only takes targets this close.
+ */
+function withinHoldRange(unit: MutableUnit, target: MutableUnit): boolean {
+  const radius = unit.fireOnContact ? CONTACT_RADIUS : unit.ambush ? AMBUSH_RADIUS : Infinity;
+  return (target.x - unit.x) ** 2 + (target.y - unit.y) ** 2 <= radius * radius;
+}
+
+/** A section on fire-on-contact opens fire all together. */
+export function openFireOnContact(ctx: SimContext, unit: MutableUnit): void {
+  for (const other of ctx.units) {
+    if (other.fireOnContact && other.faction === unit.faction && other.squadId === unit.squadId) {
+      other.fireOnContact = false;
+    }
+  }
+}
 
 export function acquireTargets(ctx: SimContext): void {
   const engaged = new Map<number, number>();
@@ -51,8 +69,7 @@ export function acquireTargets(ctx: SimContext): void {
       current.alive &&
       mayEngage(unit, current) &&
       visible(ctx, unit, current) &&
-      (!unit.ambush ||
-        (current.x - unit.x) ** 2 + (current.y - unit.y) ** 2 <= AMBUSH_RADIUS * AMBUSH_RADIUS)
+      withinHoldRange(unit, current)
     ) {
       if (unit.targetLocked) {
         continue;
@@ -85,10 +102,7 @@ export function acquireTargets(ctx: SimContext): void {
         if (!visible(ctx, unit, candidate)) {
           continue;
         }
-        if (
-          unit.ambush &&
-          (candidate.x - unit.x) ** 2 + (candidate.y - unit.y) ** 2 > AMBUSH_RADIUS * AMBUSH_RADIUS
-        ) {
+        if (!withinHoldRange(unit, candidate)) {
           continue;
         }
         const score = targetScore(
@@ -247,7 +261,7 @@ export function fire(ctx: SimContext, tick: number, events: SimEvent[]): void {
     }
 
     const distance = Math.sqrt((target.x - unit.x) ** 2 + (target.y - unit.y) ** 2);
-    if (unit.ambush && distance > AMBUSH_RADIUS) {
+    if (!withinHoldRange(unit, target)) {
       continue;
     }
     const rangeFactor = Math.max(0.25, 1 - (distance / ctx.combatRange) * 0.55);
@@ -278,6 +292,9 @@ export function fire(ctx: SimContext, tick: number, events: SimEvent[]): void {
       hit,
     });
     markUnderFire(ctx, unit, target);
+    if (unit.fireOnContact) {
+      openFireOnContact(ctx, unit);
+    }
 
     if (unit.ambush) {
       unit.ambush = false;
@@ -469,7 +486,11 @@ export function mayEngage(unit: MutableUnit, candidate: MutableUnit): boolean {
   if (candidate.role !== 'training-enemy') {
     return true;
   }
-  if (unit.ambush || (unit.currentOrder !== null && TRAINING_ENGAGE_ORDERS.has(unit.currentOrder))) {
+  if (
+    unit.ambush ||
+    unit.fireOnContact ||
+    (unit.currentOrder !== null && TRAINING_ENGAGE_ORDERS.has(unit.currentOrder))
+  ) {
     return true;
   }
   if (unit.currentOrder === 'defend') {

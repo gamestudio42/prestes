@@ -5,6 +5,7 @@ import type { SimContext } from './context';
 import { occupied } from './geometry';
 import { queueUnitOrder } from './movement';
 import { slotHolders, takeSlot } from './slots';
+import { openFireOnContact } from './combat';
 
 /** How long a soldier stays under fire after a shot at him or near him (ticks). */
 export const UNDER_FIRE_TICKS = 30;
@@ -61,6 +62,10 @@ export function reactToFire(ctx: SimContext): void {
       continue;
     }
     unit.underFireTicks -= 1;
+    // Fired upon, a section holding for contact opens fire.
+    if (unit.fireOnContact) {
+      openFireOnContact(ctx, unit);
+    }
     if (
       !unit.alive ||
       unit.dummy ||
@@ -143,4 +148,93 @@ function coverInReach(ctx: SimContext, unit: MutableUnit, shooter: MutableUnit):
     bestDistance = distance;
   }
   return best;
+}
+
+/** Soldiers this close to an officer under fire screen him (metres). */
+export const OFFICER_SCREEN_RADIUS = 10;
+/** At most this many soldiers screen one officer. */
+const OFFICER_SCREENS = 3;
+
+/**
+ * Protecting the officer, in every posture: when an officer is under fire, up
+ * to three of his soldiers within reach take free cover slots between him and
+ * the shooter. Soldiers on a moving order, suppressing or already screening
+ * keep what they do.
+ */
+export function screenOfficers(ctx: SimContext): void {
+  for (const officer of ctx.units) {
+    if (officer.kind !== 'officer' || !officer.alive || officer.incapacitated || !officer.underFireTicks) {
+      continue;
+    }
+    const shooter = shooterOf(ctx, officer);
+    if (!shooter) {
+      continue;
+    }
+    const officerRange = Math.sqrt((officer.x - shooter.x) ** 2 + (officer.y - shooter.y) ** 2);
+    const guards = ctx.units
+      .filter(
+        (unit) =>
+          unit !== officer &&
+          unit.alive &&
+          !unit.incapacitated &&
+          !unit.routed &&
+          !unit.dummy &&
+          unit.faction === officer.faction &&
+          unit.state !== 'panicked' &&
+          unit.state !== 'pinned' &&
+          !unit.suppress &&
+          unit.path.length === 0 &&
+          !unit.fireCoverCooldown &&
+          (unit.currentOrder === null || !KEEPS_MOVING.has(unit.currentOrder)) &&
+          (unit.x - officer.x) ** 2 + (unit.y - officer.y) ** 2 <= OFFICER_SCREEN_RADIUS * OFFICER_SCREEN_RADIUS,
+      )
+      .sort(
+        (left, right) =>
+          (left.x - officer.x) ** 2 + (left.y - officer.y) ** 2 - ((right.x - officer.x) ** 2 + (right.y - officer.y) ** 2) ||
+          left.id - right.id,
+      )
+      .slice(0, OFFICER_SCREENS);
+    const holders = slotHolders(ctx);
+    for (const guard of guards) {
+      let best: CoverSlot | null = null;
+      let bestDistance = Number.POSITIVE_INFINITY;
+      for (const slot of cachedCoverSlots(ctx.covers)) {
+        const holder = holders.get(slot.id);
+        if (holder !== undefined && holder !== guard.id) {
+          continue;
+        }
+        // Between the officer and the shooter: near him, nearer the shooter.
+        const fromOfficer = (slot.x - officer.x) ** 2 + (slot.y - officer.y) ** 2;
+        if (fromOfficer > 25) {
+          continue;
+        }
+        if (Math.sqrt((slot.x - shooter.x) ** 2 + (slot.y - shooter.y) ** 2) > officerRange - 1) {
+          continue;
+        }
+        if (!slotGuards(slot, shooter, null) || occupied(ctx, slot.x, slot.y, guard)) {
+          continue;
+        }
+        const distance = (slot.x - guard.x) ** 2 + (slot.y - guard.y) ** 2;
+        if (distance < bestDistance) {
+          best = slot;
+          bestDistance = distance;
+        }
+      }
+      guard.fireCoverCooldown = FIRE_COVER_COOLDOWN;
+      if (!best || guard.slotId === best.id) {
+        continue;
+      }
+      const path = findPath({ x: guard.x, y: guard.y }, best, ctx.covers);
+      if (path.length === 0) {
+        continue;
+      }
+      takeSlot(guard, best);
+      holders.set(best.id, guard.id);
+      guard.path = path;
+      guard.pathIndex = 0;
+      guard.targetX = best.x;
+      guard.targetY = best.y;
+      queueUnitOrder(ctx, guard, path, 'move');
+    }
+  }
 }

@@ -1,12 +1,12 @@
 ## 1. Simulation
 
-- [ ] 1.1 Fire control (`free | contact | hold`) with contact opening at 25 m or when fired upon; `hold_fire` mapped
-- [ ] 1.2 Advance always bounds; `set_bounding` accepted and ignored
-- [ ] 1.3 Attack follows a running target (pursue folded in; defensive does not follow; 40 m leash)
-- [ ] 1.4 Halt takes cover within 6 m and accepts a facing
-- [ ] 1.5 Old orders mapped: ambush, reserve, disperse, regroup, pursue, protect-officer
-- [ ] 1.6 Automatic officer cover in fire reaction and cover seeking
-- [ ] 1.7 Tests for each mapping and new behaviour; determinism golden recorded if it moves
+- [x] 1.1 Fire control (`free | contact | hold`) with contact opening at 25 m or when fired upon; `hold_fire` mapped
+- [x] 1.2 Advance always bounds; `set_bounding` accepted and ignored
+- [x] 1.3 Attack follows a running target (pursue folded in; defensive does not follow; 40 m leash)
+- [x] 1.4 Halt takes cover within 6 m and accepts a facing
+- [x] 1.5 Old orders mapped: ambush, reserve, disperse, regroup, pursue, protect-officer
+- [x] 1.6 Automatic officer cover in fire reaction and cover seeking
+- [x] 1.7 Tests for each mapping and new behaviour; determinism golden recorded if it moves
 
 ## 2. Interface
 

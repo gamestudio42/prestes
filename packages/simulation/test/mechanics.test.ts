@@ -187,9 +187,11 @@ describe('mechanics: movement', () => {
     expect(ids.every((id) => t.unit(id).facingY > 0.5)).toBe(true);
   });
 
-  it('bounding: a move splits the section into alternating teams', () => {
-    const t = harness({ bounding: true });
+  it('bounding: an advance splits the section into alternating teams, a move does not', () => {
+    const t = harness();
     t.send({ type: 'move', unitIds: COLUMN, to: { x: 0, y: 25 } }, 2);
+    expect(COLUMN.every((id) => t.unit(id).boundTeam === null)).toBe(true);
+    t.send({ type: 'order', order: 'advance', unitIds: COLUMN, to: { x: 0, y: 40 } }, 2);
     const teams = new Set(COLUMN.map((id) => t.unit(id).boundTeam));
     expect(teams.has('a') && teams.has('b')).toBe(true);
   });
@@ -215,7 +217,8 @@ describe('mechanics: troop orders', () => {
   it('ambush: the section holds fire until the enemy enters, then fires', () => {
     const t = harness();
     t.send({ type: 'hold_fire', unitIds: ENEMY, hold: true });
-    t.send({ type: 'order', order: 'ambush', unitIds: COLUMN, to: { x: 0, y: 7 } }, 60);
+    // On contact (25 m): set the ambush where the enemy starts out of reach.
+    t.send({ type: 'order', order: 'ambush', unitIds: COLUMN, to: { x: 0, y: 14 } }, 60);
     expect(t.shotsBy(COLUMN)).toBe(0);
     t.send({ type: 'move', unitIds: ENEMY, to: { x: 0, y: -2 } }, 300);
     expect(t.shotsBy(COLUMN)).toBeGreaterThan(0);
@@ -234,7 +237,8 @@ describe('mechanics: troop orders', () => {
       const t = harness();
       t.send({ type: 'hold_fire', unitIds: ENEMY, hold: true });
       const center = { x: 0, y: 18 };
-      t.send({ type: 'order', order, unitIds: COLUMN, to: center }, 300);
+      // An advance goes by bounds (half covers while half moves): slower.
+      t.send({ type: 'order', order, unitIds: COLUMN, to: center }, order === 'advance' ? 800 : 300);
       expect(Math.max(...COLUMN.map((id) => distance(t.unit(id), center)))).toBeLessThan(12);
     });
   }
@@ -651,5 +655,75 @@ describe('mechanics: suppress keeps on the troop', () => {
     for (const unit of enemies) unit.alive = false;
     t.run(1);
     for (const id of COLUMN) expect(t.unit(id).order).not.toBe('suppress');
+  });
+});
+
+describe('mechanics: compact orders', () => {
+  it('fire on contact holds beyond 25 m and opens when the enemy closes', () => {
+    const t = harness();
+    // Both sides hold while the enemy draws off (no one dies before the test).
+    t.send({ type: 'hold_fire', unitIds: [...COLUMN, OFFICER, ...ENEMY], hold: true });
+    t.send({ type: 'move', unitIds: ENEMY, to: { x: 0, y: -70 } }, 500);
+    const before = t.shotsBy(COLUMN);
+    t.send({ type: 'fire_control', unitIds: COLUMN, mode: 'contact' }, 60);
+    expect(t.shotsBy(COLUMN)).toBe(before);
+    expect(t.unit(COLUMN[0]!).fireControl).toBe('contact');
+    t.send({ type: 'move', unitIds: ENEMY, to: { x: 0, y: -8 } }, 400);
+    expect(t.shotsBy(COLUMN)).toBeGreaterThan(0);
+    expect(t.unit(COLUMN[0]!).fireControl).toBe('free');
+  });
+
+  it('halt faces the dragged way', () => {
+    const t = harness();
+    t.send({ type: 'hold_fire', unitIds: [...COLUMN, OFFICER, ...ENEMY], hold: true });
+    t.send({ type: 'hold', unitIds: COLUMN, facing: { x: -1, y: 0 } }, 120);
+    // The ordered facing; with an enemy in sight they still watch him.
+    for (const id of COLUMN) {
+      expect(t.unit(id).order).toBe('hold');
+      expect(t.unit(id).aimX).toBeCloseTo(-1);
+    }
+  });
+
+  it('the old disperse order is an open-order move', () => {
+    const t = harness();
+    t.send({ type: 'hold_fire', unitIds: [...COLUMN, OFFICER, ...ENEMY], hold: true });
+    t.send({ type: 'order', order: 'disperse', unitIds: COLUMN, to: { x: -30, y: 34 } }, 900);
+    const internal = t.engine as unknown as { units: Array<{ id: number; formationSpacing?: number }> };
+    expect(internal.units.find((unit) => unit.id === COLUMN[0])!.formationSpacing).toBe(6);
+  });
+
+  it('soldiers near an officer under fire screen him', () => {
+    const t = harness({ training: false });
+    // The officer stands in the open 2.6 m south of the slots of a low cover
+    // north of him, his section around him; the enemy fires from the north.
+    const wall = { x: 0, y: 4 };
+    const place = (id: number, dx: number, dy: number) => {
+      const unit = t.engine.units.find((entry) => entry.id === id)!;
+      unit.x = wall.x + dx;
+      unit.y = wall.y + dy;
+      unit.targetX = unit.x;
+      unit.targetY = unit.y;
+      unit.path = [];
+    };
+    place(OFFICER, 0, -5);
+    COLUMN.forEach((id, index) => place(id, (index - 2) * 2, -4));
+    ENEMY.forEach((id, index) => place(id, (index - 1) * 3, -30));
+    t.send({ type: 'hold_fire', unitIds: [...COLUMN, OFFICER], hold: true });
+    t.send({ type: 'attack', unitIds: ENEMY, targetId: OFFICER });
+    let screened = false;
+    for (let index = 0; index < 300 && !screened; index += 1) {
+      t.run(1);
+      const officer = t.unit(OFFICER);
+      const shooter = t.unit(ENEMY[0]!);
+      screened = COLUMN.some((id) => {
+        const unit = t.unit(id);
+        return (
+          (unit.slotId ?? null) !== null &&
+          distance(unit, officer) < 6 &&
+          distance(unit, shooter) < distance(officer, shooter)
+        );
+      });
+    }
+    expect(screened).toBe(true);
   });
 });

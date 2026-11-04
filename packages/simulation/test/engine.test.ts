@@ -101,16 +101,14 @@ describe('SimulationEngine', () => {
     expect(moving.every((unit) => unit.boundTeam === null)).toBe(true);
   });
 
-  it('splits a drawn line when alternating movement is enabled', () => {
+  it('a drawn line marches to its slots without bounds', () => {
     const engine = new SimulationEngine({ seed: 1922, training: true, opposition: false, bounding: true });
     const unitIds = Array.from({ length: 11 }, (_, index) => index + 1);
     engine.enqueue({ type: 'move_line', unitIds, from: { x: -14, y: 6 }, to: { x: 14, y: 6 } });
     const started = engine.runTicks(1);
-    const teams = new Set(
-      started.units.filter((unit) => unitIds.includes(unit.id)).map((unit) => unit.boundTeam),
-    );
-    expect(teams.has('a')).toBe(true);
-    expect(teams.has('b')).toBe(true);
+    expect(
+      started.units.filter((unit) => unitIds.includes(unit.id)).every((unit) => unit.boundTeam === null),
+    ).toBe(true);
     engine.runTicks(1800);
     const internal = engine as unknown as {
       units: Array<{ id: number; x: number; y: number; targetX: number; targetY: number }>;
@@ -120,31 +118,19 @@ describe('SimulationEngine', () => {
       moving.every((unit) => (unit.x - unit.targetX) ** 2 + (unit.y - unit.targetY) ** 2 < 1),
     ).toBe(true);
   });
-  it('toggles alternating movement for active movement orders', () => {
+  it('a move marches and an advance bounds, whatever the old switch says', () => {
     const engine = new SimulationEngine({ seed: 1922, training: true, opposition: false, bounding: true });
     const unitIds = [1, 2, 3, 7];
     engine.enqueue({ type: 'move', unitIds, to: { x: 0, y: -5 } });
-    const started = engine.runTicks(1);
+    const marched = engine.runTicks(1);
     expect(
-      started.units.some((unit) => unitIds.includes(unit.id) && unit.boundTeam !== null),
+      marched.units.filter((unit) => unitIds.includes(unit.id)).every((unit) => unit.boundTeam === null),
     ).toBe(true);
-
     engine.enqueue({ type: 'set_bounding', enabled: false });
-    const stopped = engine.runTicks(1);
+    engine.enqueue({ type: 'order', order: 'advance', unitIds, to: { x: 0, y: -20 } });
+    const advanced = engine.runTicks(2);
     expect(
-      stopped.units
-        .filter((unit) => unitIds.includes(unit.id))
-        .every((unit) => unit.boundTeam === null),
-    ).toBe(true);
-    const internal = engine as unknown as {
-      boundingEnabled: boolean;
-      units: Array<{ id: number; path: unknown[]; holdPosition: boolean }>;
-    };
-    expect(internal.boundingEnabled).toBe(false);
-    expect(
-      internal.units
-        .filter((unit) => unitIds.includes(unit.id))
-        .every((unit) => unit.path.length > 0 || !unit.holdPosition),
+      advanced.units.some((unit) => unitIds.includes(unit.id) && unit.boundTeam !== null),
     ).toBe(true);
   });
 
@@ -163,10 +149,10 @@ describe('SimulationEngine', () => {
     expect(Math.hypot(unit.targetX - blockedSlot.x, unit.targetY - blockedSlot.y)).toBeLessThanOrEqual(3);
   });
 
-  it('moves every soldier to its slot when alternating movement finishes', () => {
-    const engine = new SimulationEngine({ seed: 1922, training: true, opposition: false, bounding: true });
+  it('moves every soldier to its slot when an advance by bounds finishes', () => {
+    const engine = new SimulationEngine({ seed: 1922, training: true, opposition: false });
     const unitIds = Array.from({ length: 11 }, (_, index) => index + 1);
-    engine.enqueue({ type: 'move', unitIds, to: { x: 0, y: -12 } });
+    engine.enqueue({ type: 'order', order: 'advance', unitIds, to: { x: 0, y: -12 } });
     const started = engine.runTicks(1);
     const teams = new Set(
       started.units.filter((unit) => unitIds.includes(unit.id)).map((unit) => unit.boundTeam),
@@ -525,9 +511,11 @@ describe('SimulationEngine', () => {
     let frame = engine.runTicks(1);
     expect(frame.units.filter((unit) => unit.faction === 'column').every((unit) => unit.order === 'defend')).toBe(true);
 
+    // Reserve is folded into Defend with fire held (compact-orders).
     engine.enqueue({ type: 'order', order: 'reserve', unitIds: [1, 2], to: { x: -10, y: 10 } });
     frame = engine.runTicks(20);
-    expect(frame.units.find((unit) => unit.id === 1)?.order).toBe('reserve');
+    expect(frame.units.find((unit) => unit.id === 1)?.order).toBe('defend');
+    expect(frame.units.find((unit) => unit.id === 1)?.fireControl).toBe('hold');
     expect((frame.units.find((unit) => unit.id === 1)?.magazine ?? 0) + (frame.units.find((unit) => unit.id === 1)?.reserve ?? 0)).toBe(20);
 
     engine.enqueue({ type: 'order', order: 'protect-officer', unitIds: [1, 2, 7] });
@@ -582,18 +570,27 @@ describe('SimulationEngine', () => {
     );
   });
 
-  it('implements each tactical order type', () => {
-    const areaOrders = ['advance', 'defend', 'ambush', 'disperse', 'recon', 'reserve'] as const;
-    for (const order of areaOrders) {
+  it('implements each tactical order type, folded ones as their new order', () => {
+    // compact-orders: ambush and reserve are Defend with a fire control,
+    // disperse is an open-order Move, pursue is Attack.
+    const areaOrders = {
+      advance: 'advance',
+      defend: 'defend',
+      ambush: 'defend',
+      disperse: 'move',
+      recon: 'recon',
+      reserve: 'defend',
+    } as const;
+    for (const [order, expected] of Object.entries(areaOrders)) {
       const engine = new SimulationEngine({ seed: 1922, sandbox: true });
-      engine.enqueue({ type: 'order', order, unitIds: [1, 2, 3, 7, 8, 9], to: { x: 0, y: 7 } });
+      engine.enqueue({ type: 'order', order: order as keyof typeof areaOrders, unitIds: [1, 2, 3, 7, 8, 9], to: { x: 0, y: 7 } });
       const frame = engine.runTicks(1);
-      expect(frame.units.find((unit) => unit.id === 1)?.order).toBe(order);
+      expect(frame.units.find((unit) => unit.id === 1)?.order).toBe(expected);
     }
 
     const pursue = new SimulationEngine({ seed: 1922, sandbox: true });
     pursue.enqueue({ type: 'order', order: 'pursue', unitIds: [1, 2], targetId: 4 });
-    expect(pursue.runTicks(1).units.find((unit) => unit.id === 1)?.order).toBe('pursue');
+    expect(pursue.runTicks(1).units.find((unit) => unit.id === 1)?.order).toBe('attack');
 
     for (const order of ['regroup', 'protect-officer'] as const) {
       const engine = new SimulationEngine({ seed: 1922, sandbox: true });
@@ -601,9 +598,18 @@ describe('SimulationEngine', () => {
       expect(engine.runTicks(1).units.find((unit) => unit.id === 1)?.order).toBe(order);
     }
   });
-  it('stops pursuit when the target is lost and reports the interruption', () => {
+  it('stops a pursuit when the target is lost and reports the interruption', () => {
     const engine = new SimulationEngine({ seed: 1922, sandbox: true });
-    engine.enqueue({ type: 'order', order: 'pursue', unitIds: [1], targetId: 4 });
+    // An attack on a withdrawing target turns into a pursuit.
+    engine.enqueue({ type: 'attack', unitIds: [1], targetId: 4 });
+    engine.runTicks(1);
+    // The target falls back out of effective range: the attacker follows.
+    const runner = (engine as unknown as { units: Array<{ id: number; x: number; y: number }> }).units.find(
+      (unit) => unit.id === 4,
+    )!;
+    runner.y = -90;
+    engine.enqueue({ type: 'withdraw', unitIds: [4] });
+    expect(engine.runTicks(3).units.find((unit) => unit.id === 1)?.order).toBe('pursue');
     engine.runTicks(1);
     const internal = engine as unknown as {
       units: Array<{ id: number; alive: boolean }>;
@@ -680,7 +686,8 @@ describe('SimulationEngine', () => {
     const frame = engine.runTicks(2);
     expect(frame.units.find((unit) => unit.id === 2)?.order).toBe('rescue');
     for (const id of [3, 7, 8, 9]) {
-      expect(frame.units.find((unit) => unit.id === id)?.order).toBe('ambush');
+      // Defend; its fire on contact may already have opened (enemy close).
+      expect(frame.units.find((unit) => unit.id === id)?.order).toBe('defend');
     }
     expect(frame.units.find((unit) => unit.id === 1)?.incapacitated).toBe(true);
   });
@@ -1080,7 +1087,7 @@ describe('SimulationEngine', () => {
       to: { x: 0, y: 7 },
     });
     const dispersed = engine.runTicks(1);
-    expect(dispersed.units.find((unit) => unit.id === 2)?.order).toBe('disperse');
+    expect(dispersed.units.find((unit) => unit.id === 2)?.order).toBe('move');
 
     engine.enqueue({ type: 'move', unitIds: [1, 2, 3, 7, 8, 9], to: { x: -8, y: 7 } });
     const moved = engine.runTicks(1);
@@ -1190,7 +1197,7 @@ describe('SimulationEngine', () => {
     expect(withdrawFrame.units.find((unit) => unit.id === 1)?.order).toBe('withdraw');
   });
 
-  it('holds position and still fires', () => {
+  it('halts within reach of cover and still fires', () => {
     const engine = new SimulationEngine({ seed: 1922 });
     approach(engine, [1], 60, { x: -7, y: -8 });
     const before = engine.frame().units.find((entry) => entry.id === 1);
@@ -1198,8 +1205,8 @@ describe('SimulationEngine', () => {
     const frame = engine.runTicks(20);
     const unit = frame.units.find((entry) => entry.id === 1);
     expect(unit?.order).toBe('hold');
-    expect(unit?.x).toBeCloseTo(before?.x ?? 0);
-    expect(unit?.y).toBeCloseTo(before?.y ?? 0);
+    // Halt takes the cover within 6 m, if any, and holds there.
+    expect(Math.hypot((unit?.x ?? 0) - (before?.x ?? 0), (unit?.y ?? 0) - (before?.y ?? 0))).toBeLessThan(6.5);
     expect((unit?.magazine ?? 0) + (unit?.reserve ?? 0)).toBeLessThan(20);
   });
 

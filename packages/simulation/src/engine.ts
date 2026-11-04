@@ -66,7 +66,7 @@ import {
 } from './systems/orders';
 import { applyCommand } from './systems/commands';
 import { applyRoster } from './systems/spawning';
-import { reactToFire } from './systems/fire-reaction';
+import { reactToFire, screenOfficers } from './systems/fire-reaction';
 import { handoverSuppress } from './systems/orders';
 
 export interface SimulationOptions {
@@ -293,6 +293,8 @@ export class SimulationEngine implements SimContext {
 
       handoverSuppress(this);
       acquireTargets(this);
+      // The officer's guards are placed before each soldier's own reaction.
+      screenOfficers(this);
       reactToFire(this);
       reactToSuppression(this);
       seekFlank(this);

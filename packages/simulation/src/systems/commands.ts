@@ -1,6 +1,7 @@
 import {
   MAP_BOUNDS,
   DEFAULT_SPACING,
+  MAX_SPACING,
   averageAim,
   averageFacing,
   clampSpacing,
@@ -14,12 +15,11 @@ import {
 import type { Command, CommandEnvelope, RejectionReason, SimEvent, Vec2 } from '@prestes/shared';
 import { formationSlots } from '../tactical';
 import { clamp } from './model';
-import type { BoundingGroup, MutableUnit } from './model';
+import type { MutableUnit } from './model';
 import type { SimContext } from './context';
 import { nearestOpenPoint, nearestEnemyAt } from './geometry';
 import { reflowFormation, reformInPlace } from './formations';
-import { repairStalledMovement, queueUnitOrder } from './movement';
-import { assignBoundingDirect, setBoundingCover } from './bounding';
+import { queueUnitOrder } from './movement';
 import { spawnCover } from './cover';
 import { matchedDestinations, orderSlots, takeSlot } from './slots';
 import { routeFor, sectionRoutes } from './routes';
@@ -38,24 +38,9 @@ export function applyCommand(
     return;
   }
 
+  // Bounding is part of Advance and Attack now; the old switch is accepted
+  // (replays, tests) and has no effect.
   if (command.type === 'set_bounding') {
-    ctx.boundingEnabled = command.enabled;
-    if (!command.enabled) {
-      ctx.bounding.clear();
-      for (const unit of ctx.units) {
-        if (unit.boundTeam === null) {
-          continue;
-        }
-        unit.boundTeam = null;
-        unit.boundPhase = null;
-        if ((unit.x - unit.targetX) ** 2 + (unit.y - unit.targetY) ** 2 > 1) {
-          unit.holdPosition = false;
-          unit.currentOrder = 'move';
-          unit.lineMove = false;
-        }
-      }
-      repairStalledMovement(ctx);
-    }
     return;
   }
 
@@ -108,7 +93,10 @@ export function applyCommand(
 
   // An ordered facing must be a direction; it is used normalised.
   let facing: Vec2 | undefined;
-  if ((command.type === 'move' || command.type === 'order') && command.facing !== undefined) {
+  if (
+    (command.type === 'move' || command.type === 'order' || command.type === 'hold') &&
+    command.facing !== undefined
+  ) {
     const length = Math.sqrt(command.facing.x * command.facing.x + command.facing.y * command.facing.y);
     if (!Number.isFinite(length) || length < 0.001) {
       reject(ctx, tick, envelope.seq, 'invalid_position', events);
@@ -126,6 +114,30 @@ export function applyCommand(
   }
 
   if (command.type === 'order') {
+    // Orders folded into others (compact-orders), still accepted:
+    // ambush = defend with fire on contact; reserve = defend with fire held;
+    // disperse = an open-order move; pursue = attack (which follows a runner).
+    if (command.order === 'ambush' || command.order === 'reserve') {
+      applyTacticalOrder(ctx, { ...command, order: 'defend', facing, spacing }, actionable, tick, envelope.seq, events);
+      for (const unit of actionable) {
+        unit.fireOnContact = command.order === 'ambush';
+        unit.holdFire = command.order === 'reserve';
+      }
+      return;
+    }
+    if (command.order === 'disperse' && command.to) {
+      applyCommand(
+        ctx,
+        { ...envelope, command: { type: 'move', unitIds: command.unitIds, to: command.to, spacing: MAX_SPACING, ...(facing ? { facing } : {}) } },
+        tick,
+        events,
+      );
+      return;
+    }
+    if (command.order === 'pursue' && command.targetId !== undefined) {
+      applyCommand(ctx, { ...envelope, command: { type: 'attack', unitIds: command.unitIds, targetId: command.targetId } }, tick, events);
+      return;
+    }
     applyTacticalOrder(ctx, { ...command, facing, spacing }, actionable, tick, envelope.seq, events);
     return;
   }
@@ -144,6 +156,15 @@ export function applyCommand(
   if (command.type === 'hold_fire') {
     for (const unit of actionable) {
       unit.holdFire = command.hold;
+      unit.fireOnContact = false;
+    }
+    return;
+  }
+
+  if (command.type === 'fire_control') {
+    for (const unit of actionable) {
+      unit.holdFire = command.mode === 'hold';
+      unit.fireOnContact = command.mode === 'contact';
     }
     return;
   }
@@ -198,7 +219,12 @@ export function applyCommand(
       unit.currentOrder = 'hold';
       unit.lineMove = false;
       unit.orderIssued = false;
+      if (facing) {
+        unit.aimX = facing.x;
+        unit.aimY = facing.y;
+      }
     }
+    haltIntoCover(ctx, actionable, facing);
     return;
   }
 
@@ -243,7 +269,8 @@ export function applyCommand(
     ctx.orders = ctx.orders.filter(
       (order) => !order.unitIds.some((id) => command.unitIds.includes(id)),
     );
-    const split = command.type === 'flank' && actionable.length > 1 && ctx.boundingEnabled;
+    // Doctrine: a flank always splits, one half fixing the enemy by fire.
+    const split = command.type === 'flank' && actionable.length > 1;
     const suppressors = split ? actionable.slice(0, Math.ceil(actionable.length / 2)) : [];
     const flankers = split ? actionable.slice(Math.ceil(actionable.length / 2)) : actionable;
     for (const unit of actionable) {
@@ -448,62 +475,6 @@ export function applyLineMove(
     y: (command.from.y + command.to.y) / 2,
   };
   const slots = matchDestinations(living, lineFormationSlots(command.from, command.to, living.length));
-  const squads = new Set(living.map((unit) => unit.squadId));
-  if (ctx.boundingEnabled && living.length > 1 && squads.size === 1) {
-    const sorted = [...living].sort((left, right) => left.id - right.id);
-    const sortedSlots = matchDestinations(sorted, lineFormationSlots(command.from, command.to, sorted.length));
-    const targets = new Map<number, Vec2>();
-    sorted.forEach((unit, index) => {
-      targets.set(unit.id, sortedSlots[index] ?? center);
-    });
-    for (const unit of sorted) {
-      releaseCarry(ctx, unit);
-      unit.orderDestination = { ...center };
-      unit.orderIssued = true;
-      unit.orderRegionCenter = null;
-      unit.orderRegionRadius = 0;
-      unit.targetId = null;
-      unit.targetLocked = false;
-      unit.suppress = false;
-      unit.flankTargetId = null;
-      unit.ambush = false;
-      unit.reserveMode = false;
-      unit.recon = false;
-      unit.rescueTargetId = null;
-      unit.currentOrder = 'move';
-      unit.lineMove = false;
-      unit.aimX = lineDirection.x;
-      unit.aimY = lineDirection.y;
-      unit.path = [];
-      unit.pathIndex = 0;
-      unit.holdPosition = false;
-    }
-    const split = Math.ceil(sorted.length / 2);
-    const teamA = sorted.slice(0, split);
-    const teamB = sorted.slice(split);
-    const group: BoundingGroup = {
-      squadId: sorted[0]!.squadId,
-      teamA: teamA.map((unit) => unit.id),
-      teamB: teamB.map((unit) => unit.id),
-      destination: center,
-      targetId: null,
-      phase: 'b',
-      mode: 'move',
-      targets,
-    };
-    ctx.bounding.set(group.squadId, group);
-    for (const unit of teamA) {
-      unit.boundTeam = 'a';
-      unit.boundPhase = 'cover';
-    }
-    for (const unit of teamB) {
-      unit.boundTeam = 'b';
-      unit.boundPhase = 'advance';
-    }
-    setBoundingCover(ctx, teamA);
-    assignBoundingDirect(ctx, teamB, center, targets);
-    return;
-  }
   const coverSlots = orderSlots(ctx, living, slots, {
     threat: living[0] ? nearestEnemyAt(ctx, center, living[0].faction) : null,
     facing: lineDirection,
@@ -566,4 +537,49 @@ export function reject(
   events: SimEvent[],
 ): void {
   events.push({ type: 'command_rejected', tick, seq, reason });
+}
+
+/** Cover a halting soldier will move to, at most (metres). */
+const HALT_COVER_RADIUS = 6;
+
+/**
+ * Halt: each soldier takes a free cover slot within reach that guards against
+ * the nearest enemy (or the ordered facing), then holds there.
+ */
+function haltIntoCover(ctx: SimContext, units: readonly MutableUnit[], facing: Vec2 | undefined): void {
+  const living = units.filter((unit) => unit.alive && !unit.incapacitated && !unit.routed);
+  if (living.length === 0) {
+    return;
+  }
+  const centre = {
+    x: living.reduce((sum, unit) => sum + unit.x, 0) / living.length,
+    y: living.reduce((sum, unit) => sum + unit.y, 0) / living.length,
+  };
+  const slots = orderSlots(
+    ctx,
+    living,
+    living.map((unit) => ({ x: unit.x, y: unit.y })),
+    {
+      threat: nearestEnemyAt(ctx, centre, living[0]!.faction),
+      facing: facing ?? averageAim(living) ?? averageFacing(living) ?? null,
+      click: null,
+      maxDistance: HALT_COVER_RADIUS,
+    },
+  );
+  for (const unit of living) {
+    const slot = slots.get(unit.id);
+    if (!slot) {
+      continue;
+    }
+    const path = findPath({ x: unit.x, y: unit.y }, slot, ctx.covers);
+    if (path.length === 0) {
+      continue;
+    }
+    const destination = takeSlot(unit, slot);
+    unit.path = path;
+    unit.pathIndex = 0;
+    unit.targetX = destination.x;
+    unit.targetY = destination.y;
+    queueUnitOrder(ctx, unit, path, 'move');
+  }
 }

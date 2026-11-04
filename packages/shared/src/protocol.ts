@@ -86,6 +86,9 @@ export type Stance = 'standing' | 'crouched' | 'prone';
 
 export type Posture = 'balanced' | 'aggressive' | 'defensive' | 'protect-officer';
 
+/** A section's fire control. */
+export type FireControl = 'free' | 'contact' | 'hold';
+
 export type Outcome = 'playing' | 'victory' | 'defeat';
 
 export type UnitRole = 'training-enemy';
@@ -147,6 +150,7 @@ export interface UnitSnapshot {
   /** Reserved cover slot, if any. */
   slotId?: number | null;
   holdFire?: boolean;
+  fireControl?: FireControl;
   posture?: Posture;
   boundTeam?: 'a' | 'b' | null;
   boundPhase?: 'cover' | 'advance' | null;
@@ -221,8 +225,11 @@ export type Command =
   | { type: 'wound'; targetId: number; hp: number }
   | { type: 'reinforce'; faction: 'column' | 'legalist' }
   | { type: 'move_line'; unitIds: number[]; from: Vec2; to: Vec2 }
-  | { type: 'hold'; unitIds: number[] }
+  /** Halt: stop and hold here, taking cover within reach; `facing` turns the section. */
+  | { type: 'hold'; unitIds: number[]; facing?: Vec2 }
   | { type: 'hold_fire'; unitIds: number[]; hold: boolean }
+  /** Free fire, fire on contact (hold until an enemy is close), or hold fire. */
+  | { type: 'fire_control'; unitIds: number[]; mode: FireControl }
   | { type: 'posture'; unitIds: number[]; posture: Posture }
   | { type: 'face'; unitIds: number[]; to: Vec2 }
   | { type: 'set_bounding'; enabled: boolean }
