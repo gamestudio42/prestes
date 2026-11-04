@@ -3,7 +3,7 @@ import { Eye } from 'lucide-react';
 import { BOOTCAMP_EXERCISE, translate, type Locale, type TrainingAction } from '@prestes/content';
 import type { Frame } from '@prestes/shared';
 import type { CameraBand } from '@prestes/view3d';
-import { GameClient } from './client/GameClient';
+import { DEFAULT_SPEED, GameClient } from './client/GameClient';
 import { CodexPanel } from './ui/CodexPanel';
 import { FieldOverlays } from './ui/FieldOverlays';
 import { GameCanvas } from './ui/GameCanvas';
@@ -36,7 +36,7 @@ export function App() {
     null,
   );
   const [postStrong, setPostStrong] = useState(true);
-  const [speed, setSpeed] = useState<0 | 1 | 2 | 4>(1);
+  const [speed, setSpeed] = useState<0 | 1 | 2 | 4>(DEFAULT_SPEED);
   const [ordersCollapsed, setOrdersCollapsed] = useState(false);
   const [boundingEnabled, setBoundingEnabled] = useState(true);
   const [hudHidden, setHudHidden] = useState(false);
@@ -48,6 +48,7 @@ export function App() {
   } | null>(null);
 
   const clientRef = useRef<GameClient | null>(null);
+  const resumeSpeed = useRef<1 | 2 | 4>(DEFAULT_SPEED);
   const cameraNonce = useRef(0);
   const selectionInitialized = useRef(false);
   const selectedCountRef = useRef(0);
@@ -203,7 +204,7 @@ export function App() {
         }
       },
     });
-    client.setSpeed(1);
+    client.setSpeed(DEFAULT_SPEED);
     client.start();
     clientRef.current = client;
     return client;
@@ -243,7 +244,7 @@ export function App() {
     setExerciseObjectives(objectivePlaceholders(currentPhase(resumed)));
     setExerciseFeedback(null);
     setTrainingActions(new Set());
-    setSpeed(1);
+    setSpeed(DEFAULT_SPEED);
     setStarted(true);
     const client = createClient(true, false, 'bootcamp');
     client.sendCommand(phaseCommand(currentPhase(resumed)));
@@ -273,7 +274,7 @@ export function App() {
     setExerciseFeedback(null);
     setTrainingActions(new Set());
     setSelectedUnitIds([]);
-    setSpeed(1);
+    setSpeed(DEFAULT_SPEED);
   };
 
   const handleMissionReplay = (): void => {
@@ -303,7 +304,7 @@ export function App() {
     setExerciseFeedback(null);
     setTrainingActions(new Set());
     setSessionMode('battle');
-    setSpeed(1);
+    setSpeed(DEFAULT_SPEED);
     setStarted(true);
     createClient(false, true, 'battle3v3');
   };
@@ -312,8 +313,8 @@ export function App() {
     setFrame(null);
     selectionInitialized.current = false;
     setSelectedUnitIds([]);
-    setSpeed(1);
-    clientRef.current?.setSpeed(1);
+    setSpeed(DEFAULT_SPEED);
+    clientRef.current?.setSpeed(DEFAULT_SPEED);
     setSandboxTool(null);
   };
 
@@ -323,7 +324,7 @@ export function App() {
   };
 
   const handleTogglePause = (): void => {
-    handleSetSpeed(speed === 0 ? 1 : 0);
+    handleSetSpeed(speed === 0 ? resumeSpeed.current : 0);
   };
 
   const handleStep = (): void => {

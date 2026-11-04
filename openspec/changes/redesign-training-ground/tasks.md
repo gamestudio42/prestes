@@ -1,7 +1,7 @@
 ## 1. Speed and budget
 
-- [ ] 1.1 Default speed 1x (two ticks per 100 ms) in `App.tsx` and `GameClient`, and on start, retry, Continue and phase change; unit and e2e tests for the default and the reset
-- [ ] 1.2 Make room in the index JS bundle (raise the budget with a recorded reason, or split training data into a lazy chunk)
+- [x] 1.1 Default speed 1x (two ticks per 100 ms) in `App.tsx` and `GameClient`, and on start, retry, Continue and phase change; unit and e2e tests for the default and the reset
+- [x] 1.2 Make room in the index JS bundle (raise the budget with a recorded reason, or split training data into a lazy chunk)
 
 ## 2. Organized movement
 

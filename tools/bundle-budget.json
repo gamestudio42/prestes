@@ -1,7 +1,9 @@
 {
   "assetsDir": "apps/game/dist/assets",
   "groups": [
-    { "name": "index JS", "prefix": "index-", "extension": ".js", "maxBytes": 1000000 },
+    { "name": "index JS", "prefix": "index-", "extension": ".js", "maxBytes": 400000 },
+    { "name": "three JS", "prefix": "three-", "extension": ".js", "maxBytes": 560000 },
+    { "name": "react JS", "prefix": "react-", "extension": ".js", "maxBytes": 240000 },
     { "name": "sim.worker JS", "prefix": "sim.worker-", "extension": ".js", "maxBytes": 90000 },
     { "name": "index CSS", "prefix": "index-", "extension": ".css", "maxBytes": 85000 }
   ]

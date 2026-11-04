@@ -10,7 +10,7 @@ import {
 import { BOOTCAMP_EXERCISE, translate, type Locale, type TrainingAction } from '@prestes/content';
 import type { Frame } from '@prestes/shared';
 import type { OrderCallout } from '@prestes/view3d';
-import type { GameClient } from '../client/GameClient';
+import { DEFAULT_SPEED, type GameClient } from '../client/GameClient';
 import { trainingStorage } from '../storage';
 import {
   activeObjective,
@@ -83,8 +83,8 @@ export function useExerciseDirector({
     setExerciseObjectives(objectivePlaceholders(currentPhase(result.state)));
     setExerciseFeedback(null);
     clientRef.current?.sendCommand(result.command);
-    setSpeed(1);
-    clientRef.current?.setSpeed(1);
+    setSpeed(DEFAULT_SPEED);
+    clientRef.current?.setSpeed(DEFAULT_SPEED);
   };
 
   useEffect(() => {

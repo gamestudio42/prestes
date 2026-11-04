@@ -8,6 +8,9 @@ import {
   type WorkerResponse,
 } from '@prestes/shared';
 
+/** Ticks per 100 ms at the speed labelled 1x; 0.5x is 1 tick, 2x is 4. */
+export const DEFAULT_SPEED = 2 as const;
+
 export interface GameClientOptions {
   seed: number;
   sandbox?: boolean;
@@ -35,7 +38,7 @@ export class GameClient {
   private readonly scenario?: 'bootcamp' | 'battle3v3';
   private bounding?: boolean;
   private timer: number | null = null;
-  private speed = 1;
+  private speed: 0 | 1 | 2 | 4 = DEFAULT_SPEED;
 
   constructor(options: GameClientOptions) {
     this.onFrame = options.onFrame;

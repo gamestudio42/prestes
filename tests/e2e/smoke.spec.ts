@@ -26,12 +26,16 @@ test('boots, selects a section, gives orders, fights and toggles the post', asyn
   await expect(page.getByTestId('hud')).not.toContainText('Tick');
   await expect(page.getByTestId('band-value')).toContainText('Estratégica');
   await expect(page.getByTestId('squad-1')).toHaveAttribute('aria-pressed', 'true');
+  // The game starts at the speed labelled 1x; 0.5x is the slow option.
+  await expect(page.getByTestId('speed-2')).toHaveClass(/active/);
+  await expect(page.getByTestId('speed-2')).toHaveAttribute('aria-label', '1x');
 
 
   await page.getByTestId('pause-button').click();
   await expect(page.getByTestId('pause-button')).toHaveAttribute('aria-label', 'Retomar');
   await page.getByTestId('pause-button').click();
   await expect(page.getByTestId('pause-button')).toHaveAttribute('aria-label', 'Pausar');
+  await expect(page.getByTestId('speed-2')).toHaveClass(/active/);
 
   await page.getByTestId('speed-2').click();
   await expect(page.getByTestId('speed-2')).toHaveClass(/active/);
