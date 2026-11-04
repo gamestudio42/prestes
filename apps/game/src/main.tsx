@@ -2,10 +2,6 @@
 import { createRoot } from 'react-dom/client';
 import '@fontsource/pixelify-sans/400.css';
 import '@fontsource/pixelify-sans/600.css';
-import '@fontsource/barlow/400.css';
-import '@fontsource/barlow/600.css';
-import '@fontsource/barlow-condensed/600.css';
-import '@fontsource/cinzel/600.css';
 import { App } from './App';
 import './styles/index.css';
 

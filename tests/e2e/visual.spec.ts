@@ -5,6 +5,9 @@ import { expect, test, type Page } from '@playwright/test';
 
 const SCREENSHOT = { animations: 'disabled', caret: 'hide', maxDiffPixelRatio: 0.002 } as const;
 
+// The menu's marching column holds still for reduced motion, so its frame is stable.
+test.use({ contextOptions: { reducedMotion: 'reduce' } });
+
 async function stableFonts(page: Page): Promise<void> {
   await page.evaluate(() => document.fonts.ready);
 }

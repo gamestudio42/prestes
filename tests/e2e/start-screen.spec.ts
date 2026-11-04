@@ -40,3 +40,22 @@ test('toggles sound from the start screen', async ({ page }) => {
   await audio.click();
   await expect(audio).not.toHaveAttribute('aria-pressed', before ?? '');
 });
+
+test('the menu shows the marching column and the arrow keys move the cursor', async ({ page }) => {
+  await page.goto('/');
+  const scene = page.getByTestId('marching-scene');
+  await expect(scene).toBeVisible();
+  // The column moves: two frames of the scene differ.
+  const first = await scene.evaluate((canvas: HTMLCanvasElement) => canvas.toDataURL());
+  await page.waitForTimeout(400);
+  const second = await scene.evaluate((canvas: HTMLCanvasElement) => canvas.toDataURL());
+  expect(second).not.toBe(first);
+
+  await page.getByTestId('start-button').focus();
+  await page.keyboard.press('ArrowDown');
+  await expect(page.getByTestId('start-codex')).toBeFocused();
+  await page.keyboard.press('ArrowUp');
+  await expect(page.getByTestId('start-button')).toBeFocused();
+  await page.keyboard.press('ArrowUp');
+  await expect(page.getByTestId('language-select')).toBeFocused();
+});

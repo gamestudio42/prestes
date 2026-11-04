@@ -67,8 +67,12 @@ The HUD and menus SHALL use the pixel kit over the low-poly scene: the sepia
 period palette from shared tokens, Pixelify Sans at its crisp sizes, panels and
 buttons with 2 px borders and stepped corners, hard offset shadows without
 blur, and pixel focus and pressed states. They SHALL NOT use rounded corners,
-blurred shadows, CDN fonts or player-facing hardcoded text. The start screen
-SHALL show the public-domain photograph pixelated under the sepia palette.
+blurred shadows, CDN fonts or player-facing hardcoded text. The main menu SHALL
+show an animated pixel-art scene of the column marching along a road at dusk,
+drawn in code and held still when the player prefers reduced motion, behind a
+vertical menu with a cursor that the arrow keys and Enter can drive. The
+public-domain photograph SHALL appear pixelated in the sepia palette as the
+compendium's cover.
 
 #### Scenario: Sepia treatment
 
@@ -86,6 +90,12 @@ SHALL show the public-domain photograph pixelated under the sepia palette.
 
 - **WHEN** the bootcamp HUD is shown at 1440 x 900 in PT-BR or EN
 - **THEN** no HUD label, order name or objective row overflows its control
+
+#### Scenario: Marching menu
+
+- **WHEN** the main menu is open
+- **THEN** soldiers march across the pixel scene behind the menu, and the
+  arrow keys move the cursor between the menu entries
 
 #### Scenario: Localized labels
 

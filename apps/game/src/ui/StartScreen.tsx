@@ -1,7 +1,7 @@
-import { Book as BookOpen, Languages, Play, Restart as RotateCcw, SoundOn as Volume2, SoundOff as VolumeX } from './icons';
+import { useRef, type KeyboardEvent } from 'react';
 import { translate, type Locale, type MessageKey } from '@prestes/content';
-import { PixelPhoto } from './PixelPhoto';
-import heroImage from '../assets/menu/coluna-prestes.webp';
+import { Book, Languages, Restart, SoundOff, SoundOn } from './icons';
+import { MarchingScene } from './MarchingScene';
 
 export interface StartScreenProps {
   locale: Locale;
@@ -16,6 +16,11 @@ export interface StartScreenProps {
   onToggleCodex: () => void;
 }
 
+/**
+ * The main menu: the column marching at dusk behind a classic vertical menu.
+ * The arrow keys move between entries (the ▶ cursor follows focus and hover)
+ * and Enter chooses.
+ */
 export function StartScreen({
   locale,
   resumeStation,
@@ -29,78 +34,86 @@ export function StartScreen({
 }: StartScreenProps) {
   const t = (key: MessageKey, values?: Readonly<Record<string, string | number>>) =>
     translate(locale, key, values);
+  const listRef = useRef<HTMLUListElement | null>(null);
+
+  const moveFocus = (event: KeyboardEvent<HTMLUListElement>) => {
+    if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return;
+    const items = [...(listRef.current?.querySelectorAll<HTMLElement>('.menu-entry') ?? [])];
+    const index = items.indexOf(document.activeElement as HTMLElement);
+    const next = event.key === 'ArrowDown' ? index + 1 : index - 1;
+    items[(next + items.length) % items.length]?.focus();
+    event.preventDefault();
+  };
 
   return (
-    <main className="start-screen" data-testid="start-screen">
-      <div className="start-backdrop" aria-hidden="true">
-        <PixelPhoto src={heroImage} className="start-photo" />
-      </div>
-      <div className="start-scrim" aria-hidden="true" />
-      <div className="start-grain" aria-hidden="true" />
-      <div className="start-light" aria-hidden="true" />
-      <section className="start-card">
+    <main className="start-screen menu-screen" data-testid="start-screen">
+      <MarchingScene className="menu-scene" />
+      <div className="menu-vignette" aria-hidden="true" />
+
+      <header className="menu-title">
         <p className="eyebrow">{t('app.subtitle')}</p>
         <h1>{t('app.title')}</h1>
-        <div className="start-actions">
+      </header>
+
+      <nav className="start-card menu-card" aria-label={t('app.title')}>
+        <ul className="menu-list" ref={listRef} onKeyDown={moveFocus}>
           {resumeStation === null ? (
-            <button type="button" className="primary" onClick={onStart} data-testid="start-button">
-              <Play aria-hidden="true" size={18} />
-              {t('start.bootcamp')}
-            </button>
+            <li>
+              <button type="button" className="menu-entry primary" onClick={onStart} data-testid="start-button" autoFocus>
+                {t('start.bootcamp')}
+              </button>
+            </li>
           ) : (
             <>
-              <button type="button" className="primary" onClick={onStart} data-testid="start-continue">
-                <Play aria-hidden="true" size={18} />
-                {t('start.continue', { station: resumeStation, total: totalStations })}
-              </button>
-              <button type="button" className="secondary" onClick={onRestart} data-testid="start-restart">
-                <RotateCcw aria-hidden="true" size={16} />
-                {t('start.restart')}
-              </button>
+              <li>
+                <button type="button" className="menu-entry primary" onClick={onStart} data-testid="start-continue" autoFocus>
+                  {t('start.continue', { station: resumeStation, total: totalStations })}
+                </button>
+              </li>
+              <li>
+                <button type="button" className="menu-entry" onClick={onRestart} data-testid="start-restart">
+                  <Restart aria-hidden="true" size={16} />
+                  {t('start.restart')}
+                </button>
+              </li>
             </>
           )}
-
-          <label className="field">
-            <span>
-              <Languages aria-hidden="true" size={14} />
-              {t('start.language')}
-            </span>
-            <select
-              value={locale}
-              onChange={(event) => onLocaleChange(event.target.value as Locale)}
-              data-testid="language-select"
+          <li>
+            <button type="button" className="menu-entry" onClick={onToggleCodex} data-testid="start-codex">
+              <Book aria-hidden="true" size={16} />
+              {t('start.codex')}
+            </button>
+          </li>
+          <li>
+            <button
+              type="button"
+              className="menu-entry"
+              onClick={onToggleAudio}
+              aria-pressed={!audioMuted}
+              data-testid="start-audio"
             >
-              <option value="en">{t('language.en')}</option>
-              <option value="pt-BR">{t('language.ptBR')}</option>
-            </select>
-          </label>
-          <button
-            type="button"
-            className="secondary"
-            onClick={onToggleAudio}
-            aria-pressed={!audioMuted}
-            data-testid="start-audio"
-          >
-            {audioMuted ? (
-              <VolumeX aria-hidden="true" size={16} />
-            ) : (
-              <Volume2 aria-hidden="true" size={16} />
-            )}
-            {audioMuted ? t('start.audioOff') : t('start.audioOn')}
-          </button>
-          <button
-            type="button"
-            className="secondary"
-            onClick={onToggleCodex}
-            data-testid="start-codex"
-          >
-            <BookOpen aria-hidden="true" size={16} />
-            {t('start.codex')}
-          </button>
-        </div>
-        <p className="footer-note">{t('start.footer')}</p>
-      </section>
+              {audioMuted ? <SoundOff aria-hidden="true" size={16} /> : <SoundOn aria-hidden="true" size={16} />}
+              {audioMuted ? t('start.audioOff') : t('start.audioOn')}
+            </button>
+          </li>
+          <li>
+            <label className="menu-entry menu-language">
+              <Languages aria-hidden="true" size={16} />
+              <span>{t('start.language')}</span>
+              <select
+                value={locale}
+                onChange={(event) => onLocaleChange(event.target.value as Locale)}
+                data-testid="language-select"
+              >
+                <option value="en">{t('language.en')}</option>
+                <option value="pt-BR">{t('language.ptBR')}</option>
+              </select>
+            </label>
+          </li>
+        </ul>
+      </nav>
+
+      <p className="footer-note menu-footer">{t('start.footer')}</p>
     </main>
   );
 }
-

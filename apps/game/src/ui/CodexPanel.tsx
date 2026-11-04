@@ -12,6 +12,8 @@ import {
   type MessageKey,
 } from '@prestes/content';
 import { Book, Close } from './icons';
+import { PixelPhoto } from './PixelPhoto';
+import coverImage from '../assets/menu/coluna-prestes.webp';
 
 export interface CodexPanelProps {
   locale: Locale;
@@ -48,6 +50,8 @@ export function CodexPanel({ locale, onClose }: CodexPanelProps) {
           <span>{t('codex.close')}</span>
         </button>
       </header>
+
+      <PixelPhoto src={coverImage} width={240} className="codex-cover" />
 
       <nav className="codex-tabs" role="tablist" aria-label={t('compendium.title')}>
         {COMPENDIUM_SECTIONS.map((id) => (

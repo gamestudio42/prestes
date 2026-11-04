@@ -12,10 +12,10 @@
 ## 3. HUD and menus
 
 - [x] 3.0 `FloatingWindow` (drag by title bar, clamp to view, minimize, keyboard move, persisted layout with defaults); Orders, Troops and Troop summary windows replace the docked bottom bar; Troop summary with a helmet and health, morale and ammunition bars per soldier; unit tests for the layout store and e2e for drag, minimize, reload and the helmets
-- [ ] 3.1 Restyle the top bar, order and troop content, weapon line and tooltips with the tokens and pixel icons
-- [ ] 3.2 Restyle the training panel, debrief, sandbox panel, field overlays, order callouts and the commander balloon
-- [ ] 3.3 Start screen: pixelated, dithered sepia photograph and pixel title and buttons
-- [ ] 3.4 Check every HUD string in PT-BR and EN at 1440 x 900 and 929 px; fix overflows through the catalogs
+- [x] 3.1 Restyle the top bar, order and troop content, weapon line and tooltips with the tokens and pixel icons
+- [x] 3.2 Restyle the training panel, debrief, sandbox panel, field overlays, order callouts and the commander balloon
+- [x] 3.3 Main menu: animated marching column in pixel art (reduced motion holds still), vertical keyboard menu; the photograph becomes the compendium cover
+- [x] 3.4 Check every HUD string in PT-BR and EN at 1440 x 900 and 929 px; fix overflows through the catalogs
 
 ## 4. Compendium
 
@@ -25,6 +25,6 @@
 
 ## 5. Close
 
-- [ ] 5.1 Remove Lucide, Barlow and Cinzel and the old custom icon; re-record visual baselines after reviewing each screen
+- [x] 5.1 Remove Lucide, Barlow and Cinzel and the old custom icon; re-record visual baselines after reviewing each screen
 - [ ] 5.2 `pnpm verify`
 - [ ] 5.3 Hand check in Chrome (PT-BR and EN): start screen, a full station, sandbox and compendium; record in `docs/status.md`

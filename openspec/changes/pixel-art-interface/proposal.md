@@ -46,9 +46,11 @@ Decisions taken with the user on 2026-11-04:
 - **HUD restyle**: top bar, tooltips, field overlays (cover slot chip, placement
   status), training panel, sandbox panel, debrief, order callouts and the
   commander balloon.
-- **Menus**: the start screen keeps the public-domain photograph, shown
-  pixelated (downscaled and drawn with nearest-neighbour scaling under a sepia
-  palette overlay); title and buttons in the pixel kit.
+- **Main menu** (asked by the user on 2026-11-04): an animated pixel scene of
+  the column marching along a road at dusk (sky, hills, two ranks of soldiers
+  with kepis and rifles, a flag bearer, dust), drawn in code, behind a classic
+  vertical menu with a ▶ cursor driven by mouse or keyboard. The
+  public-domain photograph moves to the compendium, as its pixelated cover.
 - **Compendium**: a pixel-art book with tabs Figures, Events, Places and Weapons.
   Entries come from a new content registry built from the sourced history
   documents (the two figures, the timeline events, the places named in them,
