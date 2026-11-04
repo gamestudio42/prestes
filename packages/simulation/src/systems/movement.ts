@@ -82,6 +82,11 @@ export function separateUnits(ctx: SimContext): void {
         dy = 0.001;
         distance = Math.sqrt(dx * dx + dy * dy);
       }
+      // Soldiers bound for different reserved slots end up spaced by the slot
+      // layout; pushing them apart would keep one from ever reaching its slot.
+      if (left.slotId !== null && right.slotId !== null && left.slotId !== right.slotId) {
+        continue;
+      }
       // A soldier settled in a cover slot holds it; the other one gives way.
       const leftAnchored = inSlot(left);
       const rightAnchored = inSlot(right);

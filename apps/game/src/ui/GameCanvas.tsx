@@ -205,6 +205,17 @@ export function GameCanvas({
     onPreviewUnit(null);
   };
 
+  // With an order armed, an able soldier of our own under the cursor is not a
+  // pick: the click goes to the ground (cover he stands in, for example).
+  // Wounded friendlies stay pickable for Rescue.
+  const orderPick = (unitId: number | null): number | null => {
+    if (unitId === null || !(pendingAction || aimPending)) {
+      return unitId;
+    }
+    const unit = client.currentFrame()?.units.find((entry) => entry.id === unitId);
+    return unit && unit.faction === 'column' && !unit.incapacitated ? null : unitId;
+  };
+
   const handlePointerMove = (event: PointerEvent<HTMLDivElement>): void => {
     const scene = sceneRef.current;
     if (!scene) {
@@ -246,7 +257,7 @@ export function GameCanvas({
     }
 
     const frame = client.currentFrame();
-    const unitId = scene.pickUnit(x, y);
+    const unitId = orderPick(scene.pickUnit(x, y));
     if (unitId !== null && frame) {
       const unit = frame.units.find((entry) => entry.id === unitId);
       if (unit && unit.alive && unit.faction !== 'column') {
@@ -323,7 +334,7 @@ export function GameCanvas({
       );
       onSelectUnits(ids, x < startX ? 'all' : 'troops');
     } else {
-      const unitId = scene.pickUnit(x, y);
+      const unitId = orderPick(scene.pickUnit(x, y));
       if (unitId !== null) {
         onPrimaryUnit(unitId);
       } else if (pendingAction || aimPending) {

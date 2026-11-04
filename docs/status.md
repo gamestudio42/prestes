@@ -220,7 +220,16 @@ Four phases, each its own OpenSpec change:
    e2e: slots within 4 m unless the cover is clicked, never more than 2 m toward
    the threat, no slots for recon (it must see) or the scripted training troop
    (it must stop at its standoff), automatic cover within 8 m. The determinism
-   golden moved from `758a402c` to `6036890d`.
+   golden moved from `758a402c` to `44beb560`.
+   Manual Chrome run (2026-11-04, PT-BR): station 4 completed by hand; the
+   Defend preview and hover chip showed 11/11 slots, all 11 soldiers ended in
+   distinct trench slots and the ambush fired from them. The run found and fixed
+   three issues: bounding replaced slot destinations (4/11 in slots), separation
+   pushed a soldier off its slot and stalled the bounding team, and with an order
+   armed a click on cover full of our own soldiers picked a soldier instead of
+   the ground. Station 7 by hand: the Suppress order drains all 20 rounds of every
+   soldier in about 20 s, leaving nothing to clear the line, so the station cannot
+   be finished by hand yet (see the ammunition item below).
 2. Training ground in Rio de Janeiro: a new bootcamp map at a fictional training
    field near Vila Militar / Deodoro (where Prestes served in the 1st Engineer
    Company in 1922; Macaulay ch. II, pp. 37-38), with the stations laid out in
@@ -263,6 +272,10 @@ encoding test now guards against mojibake. Still open:
 - In a headless training engine, a soldier walking about 47 m on a defend order
   lost the order (and its slot) around tick 300 before arriving. Seen while
   testing cover slots; the cause is not yet investigated.
+- Station 7 by hand (2026-11-04): Suppress empties every magazine (20 rounds)
+  in about 20 s at 2x, so the line cannot be cleared afterwards. Needs a balance
+  decision (training ammunition, suppress fire rate, or suppress stopping once
+  the target is pinned).
 - In a manual Chrome run the section was down to 15/0 rounds early in phase 2;
   the training ammunition budget may be too tight for the suppress objective.
 
@@ -284,7 +297,13 @@ After `refactor-structural-modules` (2026-11-03): check, build, bundle budget
 hold-failure spec while the machine was under heavy load (suite 8.1 min instead
 of about 3); the rerun passed 23/23 in 3.1 min, including the 5 visual specs.
 
-Last `pnpm verify` run (2026-11-03): every step passed. check 184 unit tests,
+Last `pnpm verify` run (2026-11-04, after `add-cover-slots`): every step passed.
+check 276 unit tests, build, bundle budget (index JS 998,709 / 1,000,000 B, at
+99.9%; worker 78,402 / 90,000 B; CSS 46,204 / 85,000 B), determinism (golden
+`44beb560`), OpenSpec and e2e 34/34 in 4.5 min. The index JS budget needs room
+before the next feature (raise it or split a chunk).
+
+Previous `pnpm verify` run (2026-11-03): every step passed. check 184 unit tests,
 build, bundle budget (index JS 953,147 / 1,000,000 B; worker 73,869 / 90,000 B;
 CSS 70,670 / 85,000 B), determinism (golden `eee8ea8f`, seed 1922, 600 ticks),
 OpenSpec 15 specs and e2e 18/18 in 2.6 min.

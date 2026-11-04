@@ -17,5 +17,5 @@
 
 ## 4. Close
 
-- [ ] 4.1 Play stations 4 (trench defense) and 7 (take the line) by hand in Chrome and check soldiers end in visible slots; record the result in `docs/status.md`
-- [ ] 4.2 Update `docs/architecture.md`, run `openspec validate add-cover-slots --type change --strict` and the full `pnpm verify`
+- [x] 4.1 Play stations 4 (trench defense) and 7 (take the line) by hand in Chrome and check soldiers end in visible slots; record the result in `docs/status.md`
+- [x] 4.2 Update `docs/architecture.md`, run `openspec validate add-cover-slots --type change --strict` and the full `pnpm verify`

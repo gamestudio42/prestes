@@ -7,8 +7,8 @@ type Internal = {
   units: Array<{ id: number; x: number; y: number; targetX: number; targetY: number; slotId: number | null; alive: boolean; routed: boolean }>;
 };
 
-function training() {
-  const engine = new SimulationEngine({ seed: 1922, sandbox: true, training: true });
+function training(opposition?: boolean) {
+  const engine = new SimulationEngine({ seed: 1922, sandbox: true, training: true, opposition });
   let frame: Frame = engine.runTicks(1);
   const send = (command: Command, ticks = 1): Frame => {
     engine.enqueue(command);
@@ -75,9 +75,17 @@ describe('cover slots in the simulation', () => {
   });
 
   it('keeps trench slots through a bounding defend order', () => {
-    const t = training();
-    const section = t.riflemen().slice(0, 5);
-    t.placeNear(section, { x: trench.x, y: trench.y + 16 });
+    // The bootcamp section: one squad of 11 plus the instructor.
+    const t = training(false);
+    // One squad of 11, as in the bootcamp stations.
+    t.send({
+      type: 'training_phase',
+      setup: { phase: 'defense', playerPoint: { x: 28, y: 4 }, officerPoint: { x: 40, y: -8 } },
+    }, 3);
+    const section = t.frame().units
+      .filter((unit) => unit.faction === 'column' && unit.squadId === 1 && unit.kind !== 'officer')
+      .map((unit) => unit.id);
+    expect(section.length).toBeGreaterThanOrEqual(10);
     // Enemies far off the field, so no soldier is wounded on the way.
     const enemies = new Set(t.frame().units.filter((unit) => unit.faction !== 'column').map((unit) => unit.id));
     for (const unit of t.internal.units) {
@@ -89,7 +97,7 @@ describe('cover slots in the simulation', () => {
       }
     }
     t.send({ type: 'set_bounding', enabled: true });
-    t.send({ type: 'order', order: 'defend', unitIds: section, to: { x: trench.x, y: trench.y } }, 900);
+    t.send({ type: 'order', order: 'defend', unitIds: section, to: { x: trench.x, y: trench.y } }, 2500);
     const living = section.filter((id) => t.frame().units.find((unit) => unit.id === id)?.alive);
     const trenchSlots = new Set(coverSlots(trench).map((slot) => slot.id));
     expect(living.filter((id) => trenchSlots.has(t.slotOf(id) ?? -1)).length).toBe(living.length);
