@@ -114,6 +114,8 @@ export function GameCanvas({
       // Playwright hovers world points through this dev-only hook.
       (window as unknown as { __prestesScene?: unknown }).__prestesScene = {
         groundToScreen: (x: number, y: number) => scene.groundToScreen(x, y),
+        focusOn: (x: number, y: number) => scene.focusOn(x, y),
+        setBand: (band: 'tactical' | 'strategic') => scene.setBand(band),
       };
     }
 

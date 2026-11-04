@@ -7,6 +7,7 @@ import {
   terrainSurfaceAt,
 } from '@prestes/shared';
 import type { BuildingModel, TrainingBuildingModel } from '@prestes/shared';
+import { detachChildren, ModelPlacements, treeModel, type EnvironmentAsset } from './environment-models';
 import { toon } from './materials';
 import { PALETTE } from './palette';
 
@@ -567,6 +568,9 @@ export class WorldLayer {
   readonly group = new THREE.Group();
   private readonly postMatrices: THREE.Matrix4[] = [];
   private readonly railMatrices: THREE.Matrix4[] = [];
+  private readonly trees = new THREE.Group();
+  private treeSpots: ReadonlyArray<readonly [number, number, number, boolean]> = [];
+  private fenceMeshes: THREE.InstancedMesh[] = [];
 
   /**
    * The countryside around a map. On the training ground it is only grass,
@@ -619,13 +623,14 @@ export class WorldLayer {
       [-30, 72, 1.2, false],
       [62, 70, 1.15, true],
     ];
-    const trees =
+    this.treeSpots =
       this.map === 'training'
         ? TRAINING_TREES.map(([x, z, scale], index) => [x, z, scale, index % 2 === 0] as const)
         : sandboxTrees;
-    for (const [x, z, scale, dark] of trees) {
-      tree(this.group, x, z, scale, dark);
+    for (const [x, z, scale, dark] of this.treeSpots) {
+      tree(this.trees, x, z, scale, dark);
     }
+    this.group.add(this.trees);
 
     const random = seededRandom(1922);
     const tufts = new THREE.InstancedMesh(unitTuft, toon({ color: 0xffffff }), 380);
@@ -691,7 +696,26 @@ export class WorldLayer {
     rails.instanceMatrix.needsUpdate = true;
     posts.frustumCulled = false;
     rails.frustumCulled = false;
+    posts.name = 'fence-post';
+    rails.name = 'fence-rail';
+    this.fenceMeshes = [posts, rails];
     this.group.add(posts, rails);
+  }
+
+  /** Swaps the procedural trees and fence boxes for the Blender models. */
+  useModels(asset: EnvironmentAsset): void {
+    const placements = new ModelPlacements();
+    this.treeSpots.forEach(([x, z, scale], index) => placements.add(treeModel(index), x, z, (x + z) * 0.35, scale));
+    if (placements.missing(asset).length === 0) {
+      detachChildren(this.trees);
+      this.trees.add(placements.build(asset));
+    }
+    for (const mesh of this.fenceMeshes) {
+      const geometry = asset.geometry(mesh.name);
+      if (!geometry) continue;
+      mesh.geometry = geometry;
+      mesh.material = asset.material;
+    }
   }
 
   private addFence(points: readonly { x: number; y: number }[]): void {

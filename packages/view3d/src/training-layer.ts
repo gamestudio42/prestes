@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { TRAINING_GROUND, terrainHeightAt, type TrainingProp } from '@prestes/shared';
+import { detachChildren, ModelPlacements, type EnvironmentAsset } from './environment-models';
 import { toon } from './materials';
 import { PALETTE } from './palette';
 import { box, cart, cylinder, haystack, placeBuilding, well } from './world-layer';
@@ -105,6 +106,24 @@ export class TrainingLayer {
     disposeChildren(this.markers);
     disposeChildren(this.props);
     this.group.clear();
+  }
+
+  /**
+   * Swaps the procedural buildings and props for the Blender models, all at
+   * once so the ground never mixes the two styles.
+   */
+  useModels(asset: EnvironmentAsset): void {
+    const placements = new ModelPlacements();
+    for (const building of TRAINING_GROUND.buildings) {
+      placements.add(building.model, building.x, building.y, building.rotation);
+    }
+    for (const prop of TRAINING_GROUND.props) {
+      const rotation = prop.rotation ?? (prop.kind === 'crate' ? prop.x * 0.3 : 0);
+      placements.add(prop.kind, prop.x, prop.y, rotation, prop.kind === 'haystack' ? 0.9 : 1);
+    }
+    if (placements.missing(asset).length > 0) return;
+    detachChildren(this.props);
+    this.props.add(placements.build(asset));
   }
 
   /** The training ground's buildings and small props, from the shared data. */

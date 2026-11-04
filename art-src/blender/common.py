@@ -7,6 +7,7 @@ that sample those atlases with nearest filtering, and GLB export.
 from __future__ import annotations
 
 import json
+import math
 import os
 
 import bmesh
@@ -87,8 +88,34 @@ class MeshBuilder:
             loop[self.uv].uv = (u, v)
         face.smooth = False
 
-    def box(self, center, size, swatch, top=None, bottom=None, group=None, matrix=None) -> None:
-        """An axis-aligned box (then `matrix`), faces textured by swatch."""
+    def quad(self, corners, swatch: str, index: int | None, tile: float | None = None) -> None:
+        """A quad (counter-clockwise seen from outside), split into cells of
+        about `tile` metres that each show the whole swatch."""
+        a, b, c, d = corners
+        across = max(1, round((b - a).length / tile)) if tile else 1
+        up = max(1, round((d - a).length / tile)) if tile else 1
+
+        def point(s: float, t: float) -> Vector:
+            bottom = a.lerp(b, s)
+            top = d.lerp(c, s)
+            return bottom.lerp(top, t)
+
+        for i in range(across):
+            for j in range(up):
+                s0, s1 = i / across, (i + 1) / across
+                t0, t1 = j / up, (j + 1) / up
+                verts = [self._vert(point(s, t), index) for s, t in ((s0, t0), (s1, t0), (s1, t1), (s0, t1))]
+                self._face(verts, swatch, None)
+
+    def _vert(self, co: Vector, index: int | None):
+        vert = self.bm.verts.new(co)
+        if index is not None:
+            vert[self.deform][index] = 1.0
+        return vert
+
+    def box(self, center, size, swatch, top=None, bottom=None, group=None, matrix=None, tile=None) -> None:
+        """An axis-aligned box (then `matrix`), faces textured by swatch; with
+        `tile` each face repeats the swatch about every `tile` metres."""
         cx, cy, cz = center
         sx, sy, sz = (s / 2 for s in size)
         corners = [
@@ -100,20 +127,52 @@ class MeshBuilder:
         if matrix is not None:
             corners = [matrix @ c for c in corners]
         index = self._group(group)
-        verts = [self.bm.verts.new(c) for c in corners]
-        if index is not None:
-            for vert in verts:
-                vert[self.deform][index] = 1.0
-        b = verts
+        b = corners
         # 0..3 bottom (z-), 4..7 top (z+); order x-,x+ within y-,y+
-        self._face([b[0], b[2], b[3], b[1]], bottom or swatch, index)  # bottom
-        self._face([b[4], b[5], b[7], b[6]], top or swatch, index)  # top
-        self._face([b[0], b[1], b[5], b[4]], swatch, index)  # y-
-        self._face([b[3], b[2], b[6], b[7]], swatch, index)  # y+
-        self._face([b[2], b[0], b[4], b[6]], swatch, index)  # x-
-        self._face([b[1], b[3], b[7], b[5]], swatch, index)  # x+
+        self.quad([b[0], b[2], b[3], b[1]], bottom or swatch, index, tile)  # bottom
+        self.quad([b[4], b[5], b[7], b[6]], top or swatch, index, tile)  # top
+        self.quad([b[0], b[1], b[5], b[4]], swatch, index, tile)  # y-
+        self.quad([b[3], b[2], b[6], b[7]], swatch, index, tile)  # y+
+        self.quad([b[2], b[0], b[4], b[6]], swatch, index, tile)  # x-
+        self.quad([b[1], b[3], b[7], b[5]], swatch, index, tile)  # x+
 
-    def prism(self, center, width, depth, height, swatch, end=None, group=None, matrix=None) -> None:
+    def cylinder(self, center, radius, height, swatch, sides=8, top=None, group=None, matrix=None, radius_top=None) -> None:
+        """An upright cylinder (or frustum with `radius_top`) centred on `center`."""
+        cx, cy, cz = center
+        upper = radius if radius_top is None else radius_top
+        index = self._group(group)
+        ring = []
+        for k in range(sides):
+            angle = 2 * math.pi * k / sides
+            ca, sa = math.cos(angle), math.sin(angle)
+            ring.append((
+                Vector((cx + ca * radius, cy + sa * radius, cz - height / 2)),
+                Vector((cx + ca * upper, cy + sa * upper, cz + height / 2)),
+            ))
+        if matrix is not None:
+            ring = [(matrix @ lo, matrix @ hi) for lo, hi in ring]
+        for k in range(sides):
+            lo0, hi0 = ring[k]
+            lo1, hi1 = ring[(k + 1) % sides]
+            if upper > 0:
+                self.quad([lo0, lo1, hi1, hi0], swatch, index)
+            else:
+                self._face([self._vert(lo0, index), self._vert(lo1, index), self._vert(hi0, index)], swatch, None)
+        mid_top = sum((hi for _, hi in ring), Vector()) / sides
+        mid_bottom = sum((lo for lo, _ in ring), Vector()) / sides
+        for k in range(sides):
+            lo0, hi0 = ring[k]
+            lo1, hi1 = ring[(k + 1) % sides]
+            if upper > 0:
+                self._face([self._vert(hi0, index), self._vert(hi1, index), self._vert(mid_top, index)], top or swatch, None)
+            self._face([self._vert(lo1, index), self._vert(lo0, index), self._vert(mid_bottom, index)], top or swatch, None)
+
+    def cone(self, center, radius, height, swatch, sides=6, group=None, matrix=None) -> None:
+        """A cone standing on `center` (its base), apex `height` above."""
+        cx, cy, cz = center
+        self.cylinder((cx, cy, cz + height / 2), radius, height, swatch, sides=sides, group=group, matrix=matrix, radius_top=0)
+
+    def prism(self, center, width, depth, height, swatch, end=None, group=None, matrix=None, tile=None) -> None:
         """A gable roof: a triangular prism along x."""
         cx, cy, cz = center
         hw, hd = width / 2, depth / 2
@@ -125,19 +184,17 @@ class MeshBuilder:
         if matrix is not None:
             points = [matrix @ p for p in points]
         index = self._group(group)
-        v = [self.bm.verts.new(p) for p in points]
-        if index is not None:
-            for vert in v:
-                vert[self.deform][index] = 1.0
-        self._face([v[0], v[1], v[5], v[4]], swatch, index)
-        self._face([v[2], v[3], v[4], v[5]], swatch, index)
-        self._face([v[0], v[4], v[3]], end or swatch, index)
-        self._face([v[1], v[2], v[5]], end or swatch, index)
-        self._face([v[0], v[3], v[2], v[1]], end or swatch, index)
+        p = points
+        self.quad([p[0], p[1], p[5], p[4]], swatch, index, tile)
+        self.quad([p[2], p[3], p[4], p[5]], swatch, index, tile)
+        self._face([self._vert(p[0], index), self._vert(p[4], index), self._vert(p[3], index)], end or swatch, None)
+        self._face([self._vert(p[1], index), self._vert(p[2], index), self._vert(p[5], index)], end or swatch, None)
+        self.quad([p[0], p[3], p[2], p[1]], end or swatch, index)
 
     def to_object(self, name: str) -> bpy.types.Object:
         mesh = bpy.data.meshes.new(name)
-        bmesh.ops.recalc_face_normals(self.bm, faces=self.bm.faces)
+        # Every part is wound outward by construction; the faces are not
+        # connected, so recalculating normals could not tell in from out.
         self.bm.to_mesh(mesh)
         self.bm.free()
         obj = bpy.data.objects.new(name, mesh)
@@ -170,3 +227,8 @@ def save_and_export(name: str, folder: str) -> str:
 
 def rotation_z(angle: float) -> Matrix:
     return Matrix.Rotation(angle, 4, "Z")
+
+
+def placed(x: float, y: float, z: float, rx: float = 0.0, rz: float = 0.0) -> Matrix:
+    """Translation then rotation about X and Z (for parts built at the origin)."""
+    return Matrix.Translation((x, y, z)) @ Matrix.Rotation(rz, 4, "Z") @ Matrix.Rotation(rx, 4, "X")

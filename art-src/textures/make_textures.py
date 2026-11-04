@@ -188,6 +188,11 @@ def environment_atlas() -> Atlas:
     def door(i, j, rng):
         return WOOD_DARK if i % 4 == 0 or j in (0, S - 1) else WOOD
 
+    def hay(i, j, rng):
+        if (i + j * 2) % 7 == 0:
+            return TAN
+        return GOLD if rng.random() > 0.35 else SAND
+
     def grass(i, j, rng):
         r = rng.random()
         return LEAF_DARK if r < 0.35 else LEAF if r < 0.85 else LEAF_LIGHT
@@ -214,6 +219,7 @@ def environment_atlas() -> Atlas:
         ("grass", grass),
         ("flag", noise(RED, RED_DARK, 0.15)),
         ("ink", noise(INK, DARK, 0.1)),
+        ("hay", hay),
     ]
     for index, (name, paint) in enumerate(swatches):
         x, y = cell(index)

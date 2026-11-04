@@ -11,10 +11,10 @@
 
 ## 3. Training ground
 
-- [ ] 3.1 Buildings: barracks, chapel, farmhouse, barn, aid tent; flagpole, target frames and butts
-- [ ] 3.2 Fortifications: trench section with sandbag parapet, stone wall, low wall, crates, barrels; cover layer tiles them along each footprint
-- [ ] 3.3 Vegetation and fences: three tree types, hedge, fence section, instanced
-- [ ] 3.4 Training and world layers place the models from `TRAINING_GROUND`
+- [x] 3.1 Buildings: barracks, chapel, farmhouse, barn, aid tent; flagpole, target frames and butts
+- [x] 3.2 Fortifications: trench section with sandbag parapet, stone wall, low wall, crates, barrels; cover layer tiles them along each footprint
+- [x] 3.3 Vegetation and fences: three tree types, hedge, fence section, instanced
+- [x] 3.4 Training and world layers place the models from `TRAINING_GROUND`
 
 ## 4. Feedback
 

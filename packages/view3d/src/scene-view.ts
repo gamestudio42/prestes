@@ -17,6 +17,7 @@ import {
 import { CameraRig, type CameraBand } from './camera-rig';
 import { CharacterLayer } from './character-layer';
 import { CoverLayer } from './cover-layer';
+import { loadEnvironmentAsset } from './environment-models';
 import { toon } from './materials';
 import { PALETTE } from './palette';
 import { PathLayer } from './path-layer';
@@ -82,6 +83,7 @@ export class SceneView {
   private readonly preview = new PreviewLayer();
   private readonly training = new TrainingLayer();
   private readonly world: WorldLayer;
+  private disposed = false;
   private selectedUnits: readonly number[] = [];
   private readonly placementRoot = new THREE.Group();
   private readonly targetRoot = new THREE.Group();
@@ -139,6 +141,7 @@ export class SceneView {
     setActiveTerrain(options.trainingField ? TRAINING_TERRAIN : SANDBOX_TERRAIN);
     this.world = new WorldLayer(options.trainingField ? 'training' : 'sandbox');
     this.characters.loadModels();
+    this.loadEnvironment();
     this.addWorld();
     if (options.trainingField) {
       this.scene.add(this.training.group);
@@ -519,7 +522,22 @@ export class SceneView {
     this.post.setStrong(strong);
   }
 
+  /** Swaps the procedural world for the Blender models when they arrive. */
+  private loadEnvironment(): void {
+    loadEnvironmentAsset()
+      .then((asset) => {
+        if (this.disposed) return;
+        this.world.useModels(asset);
+        this.covers.useModels(asset);
+        this.training.useModels(asset);
+      })
+      .catch((error: unknown) => {
+        console.warn('environment models unavailable, keeping the procedural world', error);
+      });
+  }
+
   dispose(): void {
+    this.disposed = true;
     cancelAnimationFrame(this.frameHandle);
     window.removeEventListener('resize', this.resize);
     window.removeEventListener('keydown', this.onKeyDown);
