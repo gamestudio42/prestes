@@ -342,8 +342,9 @@ e2e 40/40 in 4.5 min (41/41 and 313 unit tests with the spacing). Checked in gam
 arrival positions; a hand check in Chrome is still to do.
 
 After the user's first hand check (they liked the movement) the drag length
-also sets the spacing: up to 6 m of drag keeps the default 2.8 m between
-soldiers, then it opens linearly to 6 m at 20 m of drag. A label beside the
+also sets the spacing. After the second hand check (it only opened, never
+closed) the drag starts in close order, 1.5 m between soldiers, and opens
+linearly to 6 m at 20 m of drag; a plain click keeps 2.8 m. A label beside the
 cursor shows the spacing (decimal comma in pt-BR) and the preview lays the
 slots at it. The section keeps the spacing for formation changes and bounding
 until an order without spacing; a formation change also keeps the ordered

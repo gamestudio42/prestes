@@ -30,8 +30,8 @@ facing, orders SHALL behave as before, deterministically.
 
 ### Requirement: Ordered spacing
 
-A ground order SHALL accept an optional spacing between soldiers, from 2.8 m
-(the default) to 6 m. With a spacing, the formation slots SHALL use it, and the
+A ground order SHALL accept an optional spacing between soldiers, from 1.5 m
+(close order) to 6 m; without one the spacing is the default 2.8 m. With a spacing, the formation slots SHALL use it, and the
 section SHALL keep it for formation changes and bounding until an order without
 spacing returns it to the default. A spacing that is not a finite number SHALL
 be rejected with `invalid_position`; finite values SHALL be clamped to the

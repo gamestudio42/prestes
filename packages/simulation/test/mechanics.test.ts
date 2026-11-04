@@ -515,6 +515,9 @@ describe('mechanics: ordered spacing', () => {
     t.send({ type: 'move', unitIds: COLUMN, to: { x: -30, y: 20 }, facing: { x: 1, y: 0 } }, 900);
     expect(internal.units.find((unit) => unit.id === COLUMN[0])!.formationSpacing).toBeUndefined();
     expectSpacing(gaps(COLUMN.map((id) => t.unit(id))), 2.8);
+    // Close order: the line steps forward (east) and closes up.
+    t.send({ type: 'move', unitIds: COLUMN, to: { x: -18, y: 20 }, facing: { x: 1, y: 0 }, spacing: 1.5 }, 900);
+    expectSpacing(gaps(COLUMN.map((id) => t.unit(id))), 1.5);
   });
 
   it('clamps the spacing and rejects one that is not a number', () => {
@@ -522,6 +525,8 @@ describe('mechanics: ordered spacing', () => {
     t.send({ type: 'move', unitIds: COLUMN, to: { x: -30, y: 34 }, spacing: 40 }, 2);
     const internal = t.engine as unknown as { units: Array<{ id: number; formationSpacing?: number }> };
     expect(internal.units.find((unit) => unit.id === COLUMN[0])!.formationSpacing).toBe(6);
+    t.send({ type: 'move', unitIds: COLUMN, to: { x: -30, y: 34 }, spacing: 0.2 }, 2);
+    expect(internal.units.find((unit) => unit.id === COLUMN[0])!.formationSpacing).toBe(1.5);
     t.send({ type: 'move', unitIds: COLUMN, to: { x: -30, y: 34 }, spacing: Number.NaN }, 2);
     expect(t.count('command_rejected')).toBe(1);
   });

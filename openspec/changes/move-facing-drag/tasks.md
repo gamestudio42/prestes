@@ -17,6 +17,7 @@
 - [x] 3.1 `spacing?: number` on `move` and `order`; validated and clamped; kept on the section for formation changes and bounding; reset by orders without spacing
 - [x] 3.2 `dragSpacing(length)` in shared; preview uses the request spacing; spacing label at the cursor while dragging
 - [x] 3.3 Tests: open order, kept while bounding, reset, drag mapping; e2e drag length
+- [x] 3.4 The drag starts in close order (1.5 m) and opens to 6 m, asked after the second hand check
 
 ## 4. Close
 

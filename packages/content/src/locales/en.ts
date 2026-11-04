@@ -463,7 +463,7 @@ export const en = {
   'training.exercise.assembly.title': 'Form the section',
   'training.exercise.assembly.objective': 'Reach the assembly zone with at least five soldiers.',
   'training.exercise.assembly.briefing': 'The instructor wants the section formed at the marked assembly point before the exercise begins.',
-  'training.exercise.assembly.hint': 'Select the troop, order a move to the marked zone and keep the formation together. Hold and drag on the destination to turn its front.',
+  'training.exercise.assembly.hint': 'Select the troop, order a move to the marked zone and keep the formation together. Hold and drag on the destination to turn its front; a short drag closes the formation, a long one opens it.',
   'training.exercise.assembly.instructor': 'Instructor: Form the section at the assembly point. Keep five soldiers inside the marker.',
   'training.exercise.assembly.reach': 'Soldiers in the assembly zone',
   'training.exercise.assault.title': 'Take the line',

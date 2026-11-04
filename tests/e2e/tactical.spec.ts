@@ -147,7 +147,7 @@ test('a drag from the destination turns the section to face that way', async ({ 
     .toBe(true);
 });
 
-test('a longer drag opens the spacing, shown beside the cursor', async ({ page }) => {
+test('the drag closes or opens the spacing, shown beside the cursor', async ({ page }) => {
   await page.goto('/');
   await page.getByTestId('start-button').click();
   await expect(page.getByTestId('hud')).toBeVisible();
@@ -158,11 +158,12 @@ test('a longer drag opens the spacing, shown beside the cursor', async ({ page }
   await page.mouse.move(500, 420);
   await page.mouse.down();
   await page.mouse.move(520, 420, { steps: 4 });
-  // A short drag only turns the section: default spacing.
-  await expect(page.getByTestId('drag-spacing')).toHaveText('2.8 m');
+  // A short drag starts in close order; a longer one opens it.
+  const short = Number.parseFloat((await page.getByTestId('drag-spacing').textContent()) ?? '0');
+  expect(short).toBeLessThan(2.8);
   await page.mouse.move(900, 420, { steps: 8 });
-  const label = await page.getByTestId('drag-spacing').textContent();
-  expect(Number.parseFloat(label ?? '0')).toBeGreaterThan(2.8);
+  const long = Number.parseFloat((await page.getByTestId('drag-spacing').textContent()) ?? '0');
+  expect(long).toBeGreaterThan(short);
   await page.mouse.up();
   await expect(page.getByTestId('drag-spacing')).toHaveCount(0);
   await expect(page.getByTestId('order-value')).toContainText('Move', { timeout: 5000 });

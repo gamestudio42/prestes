@@ -12,7 +12,6 @@ import {
   nearestTargetGroups,
   spreadTargetGroups,
   planOrderPreview,
-  DEFAULT_SPACING,
   dragSpacing,
   coverAtPoint,
   coverSlotView,
@@ -51,12 +50,11 @@ interface OrderOptions {
 
 /**
  * The facing and spacing a drag adds to a ground order: the direction turns
- * the section, the length opens it beyond the dead zone.
+ * the section, the length sets the spacing from close to open order.
  */
 function dragOrder(facing: Vec2 | undefined): { facing?: Vec2; spacing?: number } {
   if (!facing) return {};
-  const spacing = dragSpacing(Math.sqrt(facing.x * facing.x + facing.y * facing.y));
-  return spacing > DEFAULT_SPACING ? { facing, spacing } : { facing };
+  return { facing, spacing: dragSpacing(Math.sqrt(facing.x * facing.x + facing.y * facing.y)) };
 }
 
 /** Selection, pending orders, previews, officer callouts and every order handler. */

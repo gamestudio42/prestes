@@ -21,15 +21,15 @@ facing.
 
 ### Requirement: Drag sets the spacing
 
-The length of a facing drag SHALL set the order's spacing: up to 6 m of drag
-on the ground keeps the default 2.8 m; beyond that the spacing grows with the
-drag up to 6 m between soldiers at 20 m of drag. While dragging, the preview
+The length of a facing drag SHALL set the order's spacing: the drag starts in
+close order (1.5 m between soldiers) and opens linearly to 6 m at 20 m of drag
+on the ground. A click without dragging keeps the default 2.8 m. While dragging, the preview
 SHALL show the slots at that spacing and the spacing in metres beside the
 cursor.
 
-#### Scenario: Short drag only turns
-- **WHEN** the player drags 4 m from the destination
-- **THEN** the order carries the facing and the default spacing
+#### Scenario: Short drag closes the order
+- **WHEN** the player drags 2 m from the destination
+- **THEN** the order carries the facing and about 2 m between soldiers
 
 #### Scenario: Long drag opens the order
 - **WHEN** the player drags 20 m from the destination

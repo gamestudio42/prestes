@@ -42,10 +42,9 @@ const enemy = {
 } as Partial<UnitSnapshot>;
 
 describe('drag spacing', () => {
-  it('keeps the default for a short drag and opens to 6 m at 20 m', () => {
-    expect(dragSpacing(0)).toBe(2.8);
-    expect(dragSpacing(6)).toBe(2.8);
-    expect(dragSpacing(13)).toBeCloseTo(4.4);
+  it('starts in close order and opens to 6 m at 20 m', () => {
+    expect(dragSpacing(0)).toBe(1.5);
+    expect(dragSpacing(10)).toBeCloseTo(3.75);
     expect(dragSpacing(20)).toBe(6);
     expect(dragSpacing(80)).toBe(6);
   });

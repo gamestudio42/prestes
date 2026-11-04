@@ -18,26 +18,28 @@ export const PREVIEW_CONE_RADIUS = 120;
 export const DEFEND_REGION_RADIUS = 8;
 const PREVIEW_FORMATION_SPACING = 2.8;
 
-/** Spacing between soldiers: the default and the widest open order, metres. */
+/**
+ * Spacing between soldiers, metres: the default of a plain order, the close
+ * order a drag starts from and the widest open order it reaches.
+ */
 export const DEFAULT_SPACING = 2.8;
+export const MIN_SPACING = 1.5;
 export const MAX_SPACING = 6;
-/** Drag length (m) that only turns the section, and the one that opens it fully. */
-export const SPACING_DEAD_ZONE = 6;
+/** Drag length (m) at which the section is fully opened. */
 export const SPACING_FULL_DRAG = 20;
 
 /** Clamps an ordered spacing to the allowed range. */
 export function clampSpacing(spacing: number): number {
-  return Math.min(MAX_SPACING, Math.max(DEFAULT_SPACING, spacing));
+  return Math.min(MAX_SPACING, Math.max(MIN_SPACING, spacing));
 }
 
 /**
- * The spacing a facing drag of `length` metres asks for: the default up to the
- * dead zone, then growing linearly to the widest order at the full drag.
+ * The spacing a facing drag of `length` metres asks for: the drag starts in
+ * close order and opens linearly to the widest order at the full drag.
  */
 export function dragSpacing(length: number): number {
-  if (!(length > SPACING_DEAD_ZONE)) return DEFAULT_SPACING;
-  const t = (length - SPACING_DEAD_ZONE) / (SPACING_FULL_DRAG - SPACING_DEAD_ZONE);
-  return clampSpacing(DEFAULT_SPACING + t * (MAX_SPACING - DEFAULT_SPACING));
+  const t = Math.max(0, Math.min(1, length / SPACING_FULL_DRAG));
+  return MIN_SPACING + t * (MAX_SPACING - MIN_SPACING);
 }
 
 export function clampToRegion(point: Vec2, center: Vec2, radius: number): Vec2 {
