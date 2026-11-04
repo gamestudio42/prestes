@@ -81,6 +81,12 @@ export interface MutableUnit {
   formation: FormationKind;
   /** Ordered spacing between soldiers; the default when unset. */
   formationSpacing?: number;
+  /** Ticks left under fire (a shot at him or a squad mate near him). */
+  underFireTicks?: number;
+  /** Who fired the last shot that put him under fire. */
+  lastShooter?: number | null;
+  /** Ticks before he looks for cover under fire again. */
+  fireCoverCooldown?: number;
   orderDestination: Vec2 | null;
   orderIssued: boolean;
   orderRegionCenter: Vec2 | null;

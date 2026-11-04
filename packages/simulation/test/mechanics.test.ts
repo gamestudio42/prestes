@@ -507,6 +507,9 @@ describe('mechanics: ordered spacing', () => {
   it('opens the line to the ordered spacing and resets without one', () => {
     const t = harness();
     t.send({ type: 'hold_fire', unitIds: [...COLUMN, OFFICER, ...ENEMY], hold: true });
+    // The opening tick's shots made some crouch (reaction to fire): stand the
+    // section so this measures spacing only.
+    t.send({ type: 'stance', unitIds: COLUMN, stance: 'standing' });
     const to = { x: -30, y: 34 };
     t.send({ type: 'move', unitIds: COLUMN, to, facing: { x: 1, y: 0 }, spacing: 5 }, 900);
     expectSpacing(gaps(COLUMN.map((id) => t.unit(id))), 5);
@@ -568,5 +571,85 @@ describe('mechanics: formation change while standing', () => {
     const moved = { x: after.reduce((s, u) => s + u.x, 0) / 5, y: after.reduce((s, u) => s + u.y, 0) / 5 };
     expect(Math.hypot(moved.x - centre.x, moved.y - centre.y)).toBeLessThan(6);
     for (const unit of after) expect(unit.facingX).toBeGreaterThan(0.9);
+  });
+});
+
+describe('mechanics: reaction to fire', () => {
+  const columnHit = (t: ReturnType<typeof harness>) =>
+    t.events.some((event) => event.type === 'shot' && COLUMN.includes(event.target));
+  /** The legalists open fire on the column (it holds its own). */
+  const underAttack = (t: ReturnType<typeof harness>) =>
+    t.send({ type: 'attack', unitIds: ENEMY, targetId: COLUMN[0]! });
+
+  it('an idle soldier reacts to the first shots, before he is suppressed', () => {
+    const t = harness({ training: false });
+    t.send({ type: 'hold_fire', unitIds: [...COLUMN, OFFICER], hold: true });
+    underAttack(t);
+    for (let index = 0; index < 200 && !columnHit(t); index += 1) t.run(1);
+    expect(columnHit(t)).toBe(true);
+    t.run(2);
+    const shotAt = t.events.find((event) => event.type === 'shot' && COLUMN.includes(event.target)) as { target: number };
+    // He reacts at once: crouches, or heads for a cover slot in reach (whose
+    // stance he takes), while not yet suppressed.
+    const shot = t.unit(shotAt.target);
+    expect(shot.stance !== 'standing' || (shot.slotId ?? null) !== null).toBe(true);
+    expect(shot.suppressed).toBe(false);
+  });
+
+  it('an aggressive soldier keeps his stance', () => {
+    const t = harness({ training: false });
+    t.send({ type: 'hold_fire', unitIds: [...COLUMN, OFFICER], hold: true });
+    t.send({ type: 'posture', unitIds: COLUMN, posture: 'aggressive' });
+    underAttack(t);
+    for (let index = 0; index < 200 && !columnHit(t); index += 1) t.run(1);
+    t.run(2);
+    for (const id of COLUMN) expect(t.unit(id).stance).toBe('standing');
+  });
+
+  it('a soldier shot at from behind turns toward the shooter', () => {
+    const t = harness({ training: false });
+    t.send({ type: 'hold_fire', unitIds: [...COLUMN, OFFICER], hold: true });
+    // Face the column south, away from the legalists to the north.
+    t.send({ type: 'face', unitIds: COLUMN, to: { x: 0, y: 80 } }, 2);
+    expect(t.unit(COLUMN[0]!).facingY).toBeGreaterThan(0.5);
+    underAttack(t);
+    for (let index = 0; index < 200 && !columnHit(t); index += 1) t.run(1);
+    t.run(2);
+    const shotAt = t.events.find((event) => event.type === 'shot' && COLUMN.includes(event.target)) as { target: number };
+    expect(t.unit(shotAt.target).facingY).toBeLessThan(0);
+  });
+
+  it('a soldier on a move order keeps his path and stance under fire', () => {
+    const t = harness({ training: false });
+    t.send({ type: 'hold_fire', unitIds: [...COLUMN, OFFICER], hold: true });
+    t.send({ type: 'move', unitIds: COLUMN, to: { x: -40, y: 40 } });
+    underAttack(t);
+    for (let index = 0; index < 200 && !columnHit(t); index += 1) t.run(1);
+    t.run(2);
+    for (const id of COLUMN) {
+      if (!t.unit(id).alive) continue;
+      expect(t.unit(id).stance).toBe('standing');
+      expect(t.unit(id).order).toBe('move');
+    }
+  });
+});
+
+describe('mechanics: suppress keeps on the troop', () => {
+  it('moves on to the next man of the squad, and ends when none is left', () => {
+    const t = harness({ training: false });
+    t.send({ type: 'suppress', unitIds: COLUMN, targetId: ENEMY[0]! }, 2);
+    const enemies = t.engine.units.filter((unit) => ENEMY.includes(unit.id));
+    enemies.find((unit) => unit.id === ENEMY[0])!.alive = false;
+    t.run(1);
+    const next = t.unit(COLUMN[0]!).targetId;
+    expect(next).not.toBeNull();
+    expect(ENEMY.slice(1)).toContain(next);
+    for (const id of COLUMN) {
+      expect(t.unit(id).targetId).toBe(next);
+      expect(t.unit(id).order).toBe('suppress');
+    }
+    for (const unit of enemies) unit.alive = false;
+    t.run(1);
+    for (const id of COLUMN) expect(t.unit(id).order).not.toBe('suppress');
   });
 });

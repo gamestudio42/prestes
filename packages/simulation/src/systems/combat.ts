@@ -13,6 +13,7 @@ import type { MutableUnit } from './model';
 import type { SimContext } from './context';
 import { nearestEnemy } from './geometry';
 import { woundAccuracyFactor } from './casualties';
+import { markUnderFire, shooterOf } from './fire-reaction';
 
 export function acquireTargets(ctx: SimContext): void {
   const engaged = new Map<number, number>();
@@ -276,6 +277,7 @@ export function fire(ctx: SimContext, tick: number, events: SimEvent[]): void {
       y2: target.y,
       hit,
     });
+    markUnderFire(ctx, unit, target);
 
     if (unit.ambush) {
       unit.ambush = false;
@@ -381,6 +383,12 @@ export function updateFacing(ctx: SimContext): void {
         dx = point.x - unit.x;
         dy = point.y - unit.y;
       }
+    } else if (shooterOf(ctx, unit)) {
+      // Under fire with no target: turn toward whoever is shooting, so he can
+      // see him and answer (an ordered aim comes back once the fire stops).
+      const shooter = shooterOf(ctx, unit)!;
+      dx = shooter.x - unit.x;
+      dy = shooter.y - unit.y;
     } else if (unit.aimX !== null && unit.aimY !== null) {
       dx = unit.aimX;
       dy = unit.aimY;

@@ -66,6 +66,8 @@ import {
 } from './systems/orders';
 import { applyCommand } from './systems/commands';
 import { applyRoster } from './systems/spawning';
+import { reactToFire } from './systems/fire-reaction';
+import { handoverSuppress } from './systems/orders';
 
 export interface SimulationOptions {
   seed: number;
@@ -289,7 +291,9 @@ export class SimulationEngine implements SimContext {
 
       separateUnits(this);
 
+      handoverSuppress(this);
       acquireTargets(this);
+      reactToFire(this);
       reactToSuppression(this);
       seekFlank(this);
       seekCover(this);

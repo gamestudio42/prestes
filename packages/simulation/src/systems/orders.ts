@@ -661,6 +661,63 @@ export function beginWithdraw(ctx: SimContext, unit: MutableUnit): void {
   queueUnitOrder(ctx, unit, path, 'withdraw');
 }
 
+/** Suppress moves on to squad mates of a fallen target this close to him (m). */
+export const SUPPRESS_HANDOVER_RADIUS = 15;
+
+/**
+ * The next man of a broken target's squad for a suppressing section: the
+ * nearest one still fighting within the hand-over radius of the old target.
+ */
+function suppressHandover(ctx: SimContext, old: MutableUnit): MutableUnit | null {
+  let best: MutableUnit | null = null;
+  let bestDistance = SUPPRESS_HANDOVER_RADIUS * SUPPRESS_HANDOVER_RADIUS;
+  for (const other of ctx.units) {
+    if (
+      other === old ||
+      !other.alive ||
+      other.routed ||
+      other.incapacitated ||
+      other.dummy ||
+      other.faction !== old.faction ||
+      other.squadId !== old.squadId
+    ) {
+      continue;
+    }
+    const distance = (other.x - old.x) ** 2 + (other.y - old.y) ** 2;
+    if (distance < bestDistance || (distance === bestDistance && best !== null && other.id < best.id)) {
+      best = other;
+      bestDistance = distance;
+    }
+  }
+  return best;
+}
+
+/**
+ * Suppressing sections keep on the target's troop: when the target is down or
+ * running, the whole section moves on together to the next man of his squad
+ * (run before targets are chosen, while the old target is still known).
+ */
+export function handoverSuppress(ctx: SimContext): void {
+  const handovers = new Map<number, MutableUnit | null>();
+  for (const unit of ctx.units) {
+    if (!unit.suppress || !unit.alive || unit.routed || unit.incapacitated || unit.targetId === null) {
+      continue;
+    }
+    const target = ctx.units.find((entry) => entry.id === unit.targetId);
+    if (!target || (target.alive && !target.routed && !target.incapacitated)) {
+      continue;
+    }
+    if (!handovers.has(target.id)) {
+      handovers.set(target.id, suppressHandover(ctx, target));
+    }
+    const next = handovers.get(target.id) ?? null;
+    if (next) {
+      unit.targetId = next.id;
+      unit.targetLocked = true;
+    }
+  }
+}
+
 export function cleanupOrders(ctx: SimContext): void {
   for (const unit of ctx.units) {
     if (!unit.alive || unit.routed || unit.dummy || unit.incapacitated) {
@@ -668,7 +725,7 @@ export function cleanupOrders(ctx: SimContext): void {
     }
     const target =
       unit.targetId === null ? null : ctx.units.find((entry) => entry.id === unit.targetId);
-    if (unit.suppress && (!target || !target.alive || target.routed)) {
+    if (unit.suppress && (!target || !target.alive || target.routed || target.incapacitated)) {
       unit.suppress = false;
       unit.holdPosition = false;
       unit.currentOrder = null;

@@ -95,6 +95,17 @@ order clean-up and finally `updateFacing`.
     at 70% of range or when fired upon; defensive only when fired upon or at
     40% of range; aggressive as now.
 
+### Found while applying `reaction-to-fire`
+
+15. **A slower mate stops the others short.** With one soldier crouched (and
+    so slower) a line re-forming along its own axis came to rest up to 2 m
+    short of its slots: the group pacing and the end-of-route spread do not
+    agree when one member lags. Seen in a test with an opening volley.
+16. **A soldier displaced by a reaction can miss a slot.** A soldier who had
+    just reacted to fire (moved, crouched) got no cover slot when the
+    section was then ordered to a wall, and stopped short of it. To look into
+    with the slot planner's anchors.
+
 ## Suggested order
 
 1. Findings 8 and 9 (reaction to fire, suppress keeps on the troop): most

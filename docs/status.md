@@ -357,6 +357,19 @@ Four phases, each its own OpenSpec change:
   and spacing (it only re-laid a moving one).
 - A Routes button in the top bar hides or shows the movement lines of orders;
   the choice is remembered.
+
+## Reaction to fire (`reaction-to-fire`, 2026-11-04)
+
+From the soldier AI review (findings 8 and 9), chosen by the user. A soldier
+is under fire for 3 s after a shot at him or a squad mate within 6 m: with no
+target he turns toward the shooter; standing, he crouches unless his order
+keeps him moving or his stance is locked (a soldier in a cover slot keeps the
+slot's stance); idle with the balanced or defensive posture he takes a free
+cover slot within 6 m that guards against the shooter and is not closer to
+him. An ordered Hold stays put; aggressive soldiers only turn. Suppress moves
+on together to the nearest man of the target's squad within 15 m when the
+target falls or runs, and ends when none is left. The determinism golden
+moved from `7d7706bf` to `f8378a18` on purpose (soldiers now react to fire).
    The glTF loaders are a separate chunk fetched on demand; the animation
    system raised the three chunk to 591 KB, so its budget went from 560 to
    610 KB (2026-11-04).

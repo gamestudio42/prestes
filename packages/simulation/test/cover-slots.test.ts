@@ -33,6 +33,12 @@ function training(opposition?: boolean) {
       unit.targetY = unit.y;
     }
   }
+  // Their opening volley (tick 1) put the column under fire: clear it, so the
+  // tests start from a quiet field.
+  for (const unit of internal.units as unknown as Array<{ underFireTicks?: number; stance: string; stanceLocked: boolean }>) {
+    unit.underFireTicks = 0;
+    if (!unit.stanceLocked) unit.stance = 'standing';
+  }
   const slotOf = (id: number) => internal.units.find((unit) => unit.id === id)!.slotId;
   const riflemen = () =>
     frame.units
