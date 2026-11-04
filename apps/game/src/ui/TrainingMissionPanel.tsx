@@ -70,6 +70,9 @@ export function TrainingMissionPanel({
       <div className="tutorial-chapter">
         <span>{t(phase.titleKey)}</span>
         <strong>{t('training.exercise.phase', { phase: phaseIndex + 1, total: totalPhases })}</strong>
+        <span className="tutorial-area" data-testid="training-area">
+          {t(`training.area.${phase.id}` as MessageKey)}
+        </span>
         <span data-testid="training-zone">{t(phase.objectiveKey)}</span>
       </div>
 

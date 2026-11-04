@@ -9,7 +9,7 @@ import {
 } from 'react';
 import { BOOTCAMP_EXERCISE, translate, type Locale, type TrainingAction } from '@prestes/content';
 import type { Frame } from '@prestes/shared';
-import type { OrderCallout } from '@prestes/view3d';
+import type { CommanderBalloon } from '@prestes/view3d';
 import { DEFAULT_SPEED, type GameClient } from '../client/GameClient';
 import { trainingStorage } from '../storage';
 import {
@@ -55,7 +55,7 @@ export function useExerciseDirector({
   const [exerciseFeedback, setExerciseFeedback] = useState<string | null>(null);
   const [trainingActions, setTrainingActions] = useState<Set<TrainingAction>>(new Set());
   const exerciseTickRef = useRef(-1);
-  const [instructorCallout, setInstructorCallout] = useState<OrderCallout | null>(null);
+  const [instructorCallout, setInstructorCallout] = useState<CommanderBalloon | null>(null);
   const calloutObjective = useRef<string | null>(null);
 
   const recordTrainingAction = (action: TrainingAction): void => {
@@ -157,15 +157,20 @@ export function useExerciseDirector({
       return;
     }
     const objective = activeObjective(exerciseState);
-    if (!objective || calloutObjective.current === objective.id) {
+    // One balloon per objective and language; wait until the instructor is on the field.
+    const key = `${objective?.id ?? ''}:${locale}`;
+    if (!objective || calloutObjective.current === key) {
       return;
     }
-    calloutObjective.current = objective.id;
     const instructor = frame.units.find(
       (unit) => unit.faction === 'column' && unit.kind === 'officer' && unit.squadId === 99,
     );
+    if (!instructor) {
+      return;
+    }
+    calloutObjective.current = key;
     const text = translate(locale, objective.instructorKey).replace(/^[^:]{3,12}:\s*/, '');
-    setInstructorCallout({ officerId: instructor?.id ?? null, troopIds: [], officerText: text, troopText: '' });
+    setInstructorCallout({ officerId: instructor.id, text });
   }, [exerciseState, frame, locale, sessionMode]);
   const exercisePhase = exerciseState ? currentPhase(exerciseState) : null;
   const debrief =

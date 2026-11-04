@@ -4,6 +4,7 @@ export {
   type PlacementKind,
   type PlacementPreview,
 } from './scene-view';
+export type { CommanderBalloon } from './scene-view';
 export {
   CameraRig,
   MAX_SPAN,

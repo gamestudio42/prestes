@@ -833,7 +833,7 @@ describe('SimulationEngine', () => {
   });
 
   it('aims the section and accepts a click on a low wall for cover distribution', () => {
-    const engine = new SimulationEngine({ seed: 1922, training: true, opposition: false });
+    const engine = new SimulationEngine({ seed: 1922, training: true, opposition: false, map: 'training-kit' });
     const unitIds = [4, 5, 6, 7];
     const startUnits = engine.frame().units.filter((unit) => unitIds.includes(unit.id));
     const center = startUnits.reduce(

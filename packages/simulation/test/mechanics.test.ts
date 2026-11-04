@@ -9,7 +9,8 @@ const OFFICER = 3;
 const ENEMY = [4, 5, 6];
 
 function harness(options: Partial<SimulationOptions> = {}) {
-  const engine = new SimulationEngine({ seed: 1922, sandbox: true, training: true, ...options });
+  // The mechanics are laid out on the earlier training kit around the origin.
+  const engine = new SimulationEngine({ seed: 1922, sandbox: true, training: true, map: 'training-kit', ...options });
   const events: SimEvent[] = [];
   let frame: Frame = engine.runTicks(1);
   const run = (ticks: number, each?: (next: Frame) => void): Frame => {

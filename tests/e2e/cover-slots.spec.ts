@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import type { Command, Frame, Vec2 } from '@prestes/shared';
+import { STATION_OFFSETS, stationPoint } from '../../packages/shared/src/training-ground';
 
 type Bridge = {
   __prestes?: { command: (command: Command) => void; step: (ticks: number) => void; frame: () => Frame | null };
@@ -8,7 +9,7 @@ type Bridge = {
 
 test.setTimeout(120_000);
 
-const TRENCH = { x: 52, y: -18 };
+const TRENCH = stationPoint('defense', STATION_OFFSETS.line);
 const STATIONS = ['formation', 'fire', 'maneuver', 'defense'];
 
 async function frame(page: Page): Promise<Frame> {

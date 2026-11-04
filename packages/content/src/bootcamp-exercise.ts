@@ -1,4 +1,5 @@
-﻿import type { MessageKey } from './locales';
+import { STATION_OFFSETS, stationPoint } from '@prestes/shared';
+import type { MessageKey } from './locales';
 
 export type TrainingAction =
   | 'camera-pan'
@@ -153,14 +154,12 @@ export interface BootcampExercise {
   phases: readonly ExercisePhase[];
 }
 
-const START_POINT = { x: 0, y: 6 } as const;
-const ASSEMBLY_POINT = { x: 28, y: 4 } as const;
-const LINE_POINT = { x: 52, y: -18 } as const;
-const APPROACH_POINT = { x: 82, y: 10 } as const;
-const BOUND_LINE = { x: 40, y: -4 } as const;
-const FACE_POINT = { x: 28, y: 34 } as const;
-/** Overlooks the training line without the trench parapet in the way. */
-const RECON_POINT = { x: 42, y: -10 } as const;
+// Every station has the same local layout, measured from its entry on the
+// training ground (see packages/shared/src/training-ground.ts).
+const pointOf = (id: ExercisePhaseId, offset: keyof typeof STATION_OFFSETS): ExercisePoint =>
+  stationPoint(id, STATION_OFFSETS[offset]);
+const entryOf = (id: ExercisePhaseId): ExercisePoint => stationPoint(id, { x: 0, y: 0 });
+const at = (id: ExercisePhaseId, x: number, y: number): ExercisePoint => stationPoint(id, { x, y });
 
 const key = (station: ExercisePhaseId, part: string) =>
   `training.station.${station}.${part}` as MessageKey;
@@ -207,10 +206,10 @@ export const BOOTCAMP_EXERCISE: BootcampExercise = {
         objective('formation', 'prone', 'stance', { stance: 'prone', minUnits: 8 }),
         objective('formation', 'crouch', 'stance', { stance: 'crouched', minUnits: 8 }),
         objective('formation', 'stand', 'stance', { stance: 'standing', minUnits: 8 }),
-        objective('formation', 'reach', 'reach', { point: ASSEMBLY_POINT, radius: 10, minUnits: 5 }),
+        objective('formation', 'reach', 'reach', { point: entryOf('formation'), radius: 10, minUnits: 5 }),
       ],
-      markers: [{ id: 'formation-zone', kind: 'zone', point: ASSEMBLY_POINT, radius: 10 }],
-      setup: { playerPoint: START_POINT, officerPoint: { x: 10, y: 11 } },
+      markers: [{ id: 'formation-zone', kind: 'zone', point: entryOf('formation'), radius: 10 }],
+      setup: { playerPoint: pointOf('formation', 'start'), officerPoint: at('formation', -18, 7) },
     }),
     station('fire', {
       objectives: [
@@ -218,16 +217,16 @@ export const BOOTCAMP_EXERCISE: BootcampExercise = {
         objective('fire', 'aggressive', 'posture', { posture: 'aggressive', minUnits: 8 }),
         objective('fire', 'suppress', 'suppress', { count: 2, ticks: 20 }),
         objective('fire', 'holdfire', 'hold-fire', { minUnits: 8, ticks: 50 }),
-        objective('fire', 'face', 'facing', { point: FACE_POINT, minUnits: 8, threshold: 30 }),
+        objective('fire', 'face', 'facing', { point: pointOf('fire', 'face'), minUnits: 8, threshold: 30 }),
       ],
       markers: [
-        { id: 'fire-target', kind: 'approach', point: LINE_POINT, radius: 9 },
-        { id: 'fire-face', kind: 'fallback', point: FACE_POINT, radius: 3 },
+        { id: 'fire-target', kind: 'approach', point: pointOf('fire', 'line'), radius: 9 },
+        { id: 'fire-face', kind: 'fallback', point: pointOf('fire', 'face'), radius: 3 },
       ],
       setup: {
-        playerPoint: ASSEMBLY_POINT,
-        officerPoint: { x: 28, y: 10 },
-        trainingEnemyPoint: LINE_POINT,
+        playerPoint: entryOf('fire'),
+        officerPoint: at('fire', 0, 6),
+        trainingEnemyPoint: pointOf('fire', 'line'),
         trainingEnemyCount: 6,
       },
     }),
@@ -235,18 +234,18 @@ export const BOOTCAMP_EXERCISE: BootcampExercise = {
       objectives: [
         objective('maneuver', 'flank', 'flank-position', { minUnits: 2, threshold: 50 }),
         // A line of 11 at 2.8 m spacing is ~28 m wide: 12 m catches its centre.
-        objective('maneuver', 'bound', 'bounding-advance', { point: BOUND_LINE, radius: 12, minUnits: 4 }),
-        objective('maneuver', 'withdraw', 'withdraw-out', { point: BOUND_LINE, radius: 8, minUnits: 8 }),
+        objective('maneuver', 'bound', 'bounding-advance', { point: pointOf('maneuver', 'bound'), radius: 12, minUnits: 4 }),
+        objective('maneuver', 'withdraw', 'withdraw-out', { point: pointOf('maneuver', 'bound'), radius: 8, minUnits: 8 }),
         objective('maneuver', 'hold', 'order', { order: 'hold', minUnits: 8, action: 'hold' }),
       ],
       markers: [
-        { id: 'maneuver-target', kind: 'approach', point: LINE_POINT, radius: 9 },
-        { id: 'maneuver-line', kind: 'zone', point: BOUND_LINE, radius: 12 },
+        { id: 'maneuver-target', kind: 'approach', point: pointOf('maneuver', 'line'), radius: 9 },
+        { id: 'maneuver-line', kind: 'zone', point: pointOf('maneuver', 'bound'), radius: 12 },
       ],
       setup: {
-        playerPoint: ASSEMBLY_POINT,
-        officerPoint: { x: 28, y: 10 },
-        trainingEnemyPoint: LINE_POINT,
+        playerPoint: entryOf('maneuver'),
+        officerPoint: at('maneuver', 0, 6),
+        trainingEnemyPoint: pointOf('maneuver', 'line'),
         trainingEnemyCount: 6,
       },
     }),
@@ -254,18 +253,18 @@ export const BOOTCAMP_EXERCISE: BootcampExercise = {
       objectives: [
         objective('defense', 'defensive', 'posture', { posture: 'defensive', minUnits: 8 }),
         objective('defense', 'defend', 'defend-in-cover', {
-          point: LINE_POINT,
+          point: pointOf('defense', 'line'),
           radius: 9,
           minUnits: 4,
           threshold: 0.25,
         }),
         objective('defense', 'ambush', 'ambush-trigger', {
-          point: LINE_POINT,
+          point: pointOf('defense', 'line'),
           minUnits: 4,
           onStart: 'enemy-advance',
         }),
         objective('defense', 'hold', 'hold', {
-          point: LINE_POINT,
+          point: pointOf('defense', 'line'),
           radius: 9,
           minUnits: 3,
           ticks: 300,
@@ -273,13 +272,13 @@ export const BOOTCAMP_EXERCISE: BootcampExercise = {
         }),
       ],
       markers: [
-        { id: 'defense-zone', kind: 'zone', point: LINE_POINT, radius: 9 },
-        { id: 'defense-approach', kind: 'approach', point: APPROACH_POINT, radius: 5 },
+        { id: 'defense-zone', kind: 'zone', point: pointOf('defense', 'line'), radius: 9 },
+        { id: 'defense-approach', kind: 'approach', point: pointOf('defense', 'approach'), radius: 5 },
       ],
       setup: {
-        playerPoint: ASSEMBLY_POINT,
-        officerPoint: { x: 40, y: -8 },
-        trainingEnemyPoint: APPROACH_POINT,
+        playerPoint: entryOf('defense'),
+        officerPoint: at('defense', 12, -12),
+        trainingEnemyPoint: pointOf('defense', 'approach'),
         trainingEnemyCount: 6,
       },
       failure: { zoneEmptyTicks: 80, enemyInZoneTicks: 60 },
@@ -293,11 +292,11 @@ export const BOOTCAMP_EXERCISE: BootcampExercise = {
         objective('recon', 'advance', 'order', { order: 'advance', minUnits: 5 }),
         objective('recon', 'regroup', 'regroup', { radius: 8, minUnits: 9 }),
       ],
-      markers: [{ id: 'recon-area', kind: 'approach', point: RECON_POINT, radius: 6 }],
+      markers: [{ id: 'recon-area', kind: 'approach', point: pointOf('recon', 'recon'), radius: 6 }],
       setup: {
-        playerPoint: ASSEMBLY_POINT,
-        officerPoint: { x: 28, y: 10 },
-        trainingEnemyPoint: LINE_POINT,
+        playerPoint: entryOf('recon'),
+        officerPoint: at('recon', 0, 6),
+        trainingEnemyPoint: pointOf('recon', 'line'),
         trainingEnemyCount: 4,
       },
     }),
@@ -311,11 +310,11 @@ export const BOOTCAMP_EXERCISE: BootcampExercise = {
           onStart: 'instructor-out',
         }),
       ],
-      markers: [{ id: 'wounded-zone', kind: 'zone', point: ASSEMBLY_POINT, radius: 10 }],
+      markers: [{ id: 'wounded-zone', kind: 'zone', point: entryOf('wounded'), radius: 10 }],
       setup: {
-        playerPoint: ASSEMBLY_POINT,
-        officerPoint: { x: 30, y: 12 },
-        trainingEnemyPoint: LINE_POINT,
+        playerPoint: entryOf('wounded'),
+        officerPoint: at('wounded', 2, 8),
+        trainingEnemyPoint: pointOf('wounded', 'line'),
         trainingEnemyCount: 3,
         releaseTrainingFire: true,
         casualtyCount: 1,
@@ -325,17 +324,17 @@ export const BOOTCAMP_EXERCISE: BootcampExercise = {
     station('final', {
       objectives: [
         objective('final', 'suppress', 'suppress', { count: 2, ticks: 20 }),
-        objective('final', 'secure', 'secure', { point: LINE_POINT, radius: 9, minUnits: 3 }),
-        objective('final', 'hold', 'hold', { point: LINE_POINT, radius: 9, minUnits: 3, ticks: 600 }),
+        objective('final', 'secure', 'secure', { point: pointOf('final', 'line'), radius: 9, minUnits: 3 }),
+        objective('final', 'hold', 'hold', { point: pointOf('final', 'line'), radius: 9, minUnits: 3, ticks: 600 }),
       ],
       markers: [
-        { id: 'final-zone', kind: 'zone', point: LINE_POINT, radius: 9 },
-        { id: 'final-fallback', kind: 'fallback', point: ASSEMBLY_POINT, radius: 4 },
+        { id: 'final-zone', kind: 'zone', point: pointOf('final', 'line'), radius: 9 },
+        { id: 'final-fallback', kind: 'fallback', point: entryOf('final'), radius: 4 },
       ],
       setup: {
-        playerPoint: ASSEMBLY_POINT,
-        officerPoint: { x: 28, y: 10 },
-        trainingEnemyPoint: LINE_POINT,
+        playerPoint: entryOf('final'),
+        officerPoint: at('final', 0, 6),
+        trainingEnemyPoint: pointOf('final', 'line'),
         trainingEnemyCount: 6,
         releaseTrainingFire: true,
       },

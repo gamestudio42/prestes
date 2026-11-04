@@ -74,6 +74,32 @@ instructor or let it follow the section (`updateInstructorFollow`), start
 casualty drills, and training enemies are only engaged on an explicit order
 (`mayEngage`).
 
+### Training ground
+
+The bootcamp map is data in `packages/shared/src/training-ground.ts`: station
+entries and areas, covers, buildings, trees (sight obstacles), roads and the
+parade ground (terrain features), the fence and small props. The simulation
+(`map: 'training-ground'`, the default for a training engine) and the view
+(`WorldLayer('training')` for the countryside, `TrainingLayer` for buildings
+and props) read the same tables, and the station points in
+`bootcamp-exercise.ts` are `stationPoint(id, offset)` from it. Every station
+shares one local layout (`STATION_OFFSETS`), which the objectives were tuned
+on. Everything stays inside the 200 m pathfinding grid. Terrain queries read
+the active terrain (`setActiveTerrain`): the engine selects its map's terrain
+before every tick and the scene view when it is built. `map: 'training-kit'`
+keeps the earlier layout around the origin for the battle lab and the
+mechanics tests.
+
+### Section movement
+
+Orders that place several soldiers match destinations to soldiers by minimum
+total distance (`matchDestinations`, a Hungarian assignment), for formation
+slots, line slots and the final cover slots alike, and the preview runs the same
+matching; with Euclidean cost the straight routes never cross. A gathered
+section (all within 15 m) going at least 12 m follows one route
+(`sectionRoutes`): the path from its centroid, each soldier keeping its place in
+a body compacted to 5 m, then spreading to its own destination near the end.
+
 ## Determinism
 
 - Fixed tick: 100 ms (10 Hz).

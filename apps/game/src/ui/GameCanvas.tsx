@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type PointerEvent } from 'react';
-import {
+import { type CommanderBalloon,
   SceneView,
   type CameraBand,
   type OrderCallout,
@@ -15,6 +15,10 @@ export interface GameCanvasProps {
   client: GameClient;
   postStrong: boolean;
   cameraRequest: { band: CameraBand; nonce: number } | null;
+  /** The commander's current order, shown in a balloon over the officer. */
+  commanderBalloon?: CommanderBalloon | null;
+  /** Ground point the camera centres on when it changes (the current station). */
+  cameraFocus?: { x: number; y: number; key: string } | null;
   preview: PreviewPlan | null;
   slotMarkers?: readonly SlotMarker[];
   aimPending?: boolean;
@@ -54,6 +58,8 @@ export function GameCanvas({
   client,
   postStrong,
   cameraRequest,
+  cameraFocus = null,
+  commanderBalloon = null,
   preview,
   slotMarkers,
   aimPending = false,
@@ -167,6 +173,19 @@ export function GameCanvas({
       sceneRef.current?.setBand(cameraRequest.band);
     }
   }, [cameraRequest]);
+
+  const balloonKey = commanderBalloon ? `${commanderBalloon.officerId}:${commanderBalloon.text}` : '';
+  useEffect(() => {
+    sceneRef.current?.setCommanderBalloon(commanderBalloon);
+  }, [balloonKey, client]);
+
+  const focusKey = cameraFocus?.key ?? null;
+  useEffect(() => {
+    if (cameraFocus) {
+      sceneRef.current?.focusOn(cameraFocus.x, cameraFocus.y);
+    }
+    // Only a new station (or a new scene) moves the camera.
+  }, [focusKey, client]);
 
   const localPoint = (event: PointerEvent<HTMLDivElement>): { x: number; y: number } => {
     const rect = containerRef.current?.getBoundingClientRect();

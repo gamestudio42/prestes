@@ -84,6 +84,8 @@ export {
 
 export {
   SANDBOX_TERRAIN,
+  activeTerrainFeatures,
+  setActiveTerrain,
   terrainCoverAgainst,
   terrainHeightAt,
   terrainSlopeAt,
@@ -141,3 +143,23 @@ export {
 
 export { normaliseRotation, rotateOffset, troopFormationOffsets } from './placement';
 export { matchDestinations, minCostAssignment } from './assignment';
+export {
+  STATION_OFFSETS,
+  TRAINING_BUILDINGS,
+  TRAINING_FENCES,
+  TRAINING_GROUND,
+  TRAINING_PROPS,
+  TRAINING_STATIONS,
+  TRAINING_TERRAIN,
+  TRAINING_TREES,
+  stationPoint,
+  trainingStation,
+} from './training-ground';
+export type {
+  TrainingBuilding,
+  TrainingBuildingModel,
+  TrainingProp,
+  TrainingPropKind,
+  TrainingStation,
+  TrainingStationId,
+} from './training-ground';

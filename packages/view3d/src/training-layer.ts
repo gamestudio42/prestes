@@ -1,8 +1,8 @@
-﻿import * as THREE from 'three';
-import { BUILDINGS, terrainHeightAt } from '@prestes/shared';
+import * as THREE from 'three';
+import { TRAINING_GROUND, terrainHeightAt, type TrainingProp } from '@prestes/shared';
 import { toon } from './materials';
 import { PALETTE } from './palette';
-import { placeBuilding } from './world-layer';
+import { box, cart, cylinder, haystack, placeBuilding, well } from './world-layer';
 
 export interface TrainingMarker {
   id: string;
@@ -25,120 +25,6 @@ function disposeChildren(group: THREE.Group): void {
         material?.dispose();
       }
     });
-  }
-}
-
-function box(
-  group: THREE.Group,
-  x: number,
-  z: number,
-  width: number,
-  height: number,
-  depth: number,
-  color: number,
-  yOffset = 0,
-): void {
-  const mesh = new THREE.Mesh(new THREE.BoxGeometry(width, height, depth), toon({ color }));
-  mesh.position.set(x, terrainHeightAt(x, z) + height / 2 + yOffset, z);
-  group.add(mesh);
-}
-
-function tent(group: THREE.Group, x: number, z: number, color: number): void {
-  const base = terrainHeightAt(x, z);
-  const width = 5.2;
-  const depth = 4.4;
-  const height = 2.75;
-  const angle = Math.atan2(height, depth / 2);
-  const slope = Math.sqrt((depth / 2) ** 2 + height ** 2);
-  const shadow = new THREE.Mesh(
-    new THREE.PlaneGeometry(width + 1.2, depth + 1.2),
-    new THREE.MeshBasicMaterial({
-      color: 0x14130e,
-      transparent: true,
-      opacity: 0.22,
-      depthWrite: false,
-    }),
-  );
-  shadow.rotation.x = -Math.PI / 2;
-  shadow.position.set(x, base + 0.03, z);
-  group.add(shadow);
-  for (const side of [-1, 1]) {
-    const panel = new THREE.Mesh(
-      new THREE.BoxGeometry(width, 0.08, slope + 0.15),
-      toon({ color }),
-    );
-    panel.position.set(x, base + height / 2, z + (side * depth) / 4);
-    panel.rotation.x = side * angle;
-    group.add(panel);
-  }
-  const ridge = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.06, 0.06, width + 0.3, 5),
-    toon({ color: PALETTE.wood }),
-  );
-  ridge.rotation.z = Math.PI / 2;
-  ridge.position.set(x, base + height + 0.04, z);
-  group.add(ridge);
-  for (const side of [-1, 1]) {
-    const pole = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.08, 0.1, height + 0.5, 5),
-      toon({ color: PALETTE.wood }),
-    );
-    pole.position.set(x + (side * width) / 2, base + height / 2, z);
-    group.add(pole);
-    const stake = new THREE.Mesh(
-      new THREE.BoxGeometry(0.7, 0.08, 0.08),
-      toon({ color: PALETTE.wood }),
-    );
-    stake.position.set(x + side * (width / 2 + 0.8), base + 0.05, z);
-    group.add(stake);
-    const rope = new THREE.Line(
-      new THREE.BufferGeometry().setFromPoints([
-        new THREE.Vector3(x + side * (width / 2), base + height + 0.04, z),
-        new THREE.Vector3(x + side * (width / 2 + 0.8), base + 0.05, z),
-      ]),
-      new THREE.LineBasicMaterial({
-        color: PALETTE.bandolier,
-        transparent: true,
-        opacity: 0.5,
-      }),
-    );
-    group.add(rope);
-  }
-  const back = new THREE.Mesh(
-    new THREE.BufferGeometry().setFromPoints([
-      new THREE.Vector3(x - width / 2, base, z - depth / 2),
-      new THREE.Vector3(x + width / 2, base, z - depth / 2),
-      new THREE.Vector3(x, base + height, z - depth / 2),
-    ]),
-    toon({ color }),
-  );
-  back.geometry.setIndex([0, 1, 2]);
-  back.geometry.computeVertexNormals();
-  group.add(back);
-  const flap = new THREE.Mesh(
-    new THREE.BoxGeometry(1.5, 1.9, 0.06),
-    toon({ color: PALETTE.roofDark }),
-  );
-  flap.position.set(x, base + 0.98, z + depth / 2 - 0.02);
-  group.add(flap);
-}
-
-function fence(group: THREE.Group, z: number): void {
-  for (let x = -30; x <= 30; x += 2.4) {
-    const post = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.08, 0.1, 1.4, 4),
-      toon({ color: PALETTE.wood }),
-    );
-    post.position.set(x, terrainHeightAt(x, z) + 0.7, z);
-    group.add(post);
-  }
-  for (const offset of [-0.45, 0.35]) {
-    const rail = new THREE.Mesh(
-      new THREE.BoxGeometry(60, 0.08, 0.1),
-      toon({ color: PALETTE.wood }),
-    );
-    rail.position.set(0, terrainHeightAt(0, z) + 1.1 + offset, z);
-    group.add(rail);
   }
 }
 
@@ -221,38 +107,52 @@ export class TrainingLayer {
     this.group.clear();
   }
 
+  /** The training ground's buildings and small props, from the shared data. */
   private buildProps(): void {
-    tent(this.props, -26, 15, PALETTE.adobe);
-    tent(this.props, 26, 15, PALETTE.adobeDark);
-    tent(this.props, -25, -10, PALETTE.adobe);
-
-    for (const building of BUILDINGS.filter((entry) => entry.model === 'training-house')) {
+    for (const building of TRAINING_GROUND.buildings) {
       placeBuilding(this.props, building.model, building.x, building.y, building.rotation);
     }
-    box(this.props, -18, 12, 1.1, 0.9, 1.1, PALETTE.wood);
-    box(this.props, -16.5, 12, 1.1, 0.9, 1.1, PALETTE.wood);
-    box(this.props, 18, 11, 1.1, 0.9, 1.1, PALETTE.wood);
-    box(this.props, 8, 17, 1.4, 1.0, 1.0, PALETTE.sandbag);
-    box(this.props, -8, 17, 1.4, 1.0, 1.0, PALETTE.sandbag);
-
-    fence(this.props, 22);
-
-    const flagPole = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.09, 0.12, 6, 5),
-      toon({ color: PALETTE.wood }),
-    );
-    flagPole.position.set(0, terrainHeightAt(0, 23) + 3, 23);
-    this.props.add(flagPole);
-    const flag = new THREE.Mesh(new THREE.PlaneGeometry(2.4, 1.3), toon({ color: PALETTE.scarf }));
-    flag.position.set(1.2, terrainHeightAt(0, 23) + 5.1, 23);
-    this.props.add(flag);
+    for (const prop of TRAINING_GROUND.props) {
+      buildProp(this.props, prop);
+    }
   }
 }
 
-
-
-
-
-
-
-
+function buildProp(parent: THREE.Group, prop: TrainingProp): void {
+  const base = terrainHeightAt(prop.x, prop.y);
+  switch (prop.kind) {
+    case 'flagpole': {
+      cylinder(parent, PALETTE.wood, prop.x, base + 3.5, prop.y, 0.1, 7);
+      const flag = new THREE.Mesh(new THREE.PlaneGeometry(2.4, 1.4), toon({ color: PALETTE.scarf, side: THREE.DoubleSide }));
+      flag.position.set(prop.x + 1.25, base + 6.2, prop.y);
+      parent.add(flag);
+      break;
+    }
+    case 'target-frame': {
+      // A wooden frame holding a pale paper target at the range butts.
+      for (const side of [-0.6, 0.6]) {
+        box(parent, PALETTE.wood, prop.x + side, base + 0.9, prop.y, 0.1, 1.8, 0.1);
+      }
+      box(parent, PALETTE.whitewash, prop.x, base + 1.35, prop.y, 1.1, 0.9, 0.05);
+      box(parent, PALETTE.window, prop.x, base + 1.35, prop.y + 0.03, 0.3, 0.3, 0.02);
+      break;
+    }
+    case 'haystack':
+      haystack(parent, prop.x, prop.y, 0.9);
+      break;
+    case 'crate':
+      box(parent, PALETTE.wood, prop.x, base + 0.45, prop.y, 0.9, 0.9, 0.9, prop.x * 0.3);
+      break;
+    case 'well':
+      well(parent, prop.x, prop.y);
+      break;
+    case 'cart':
+      cart(parent, prop.x, prop.y, prop.rotation ?? 0);
+      break;
+    case 'signpost': {
+      box(parent, PALETTE.wood, prop.x, base + 0.9, prop.y, 0.12, 1.8, 0.12);
+      box(parent, PALETTE.plaster, prop.x + 0.45, base + 1.55, prop.y, 1.0, 0.36, 0.06);
+      break;
+    }
+  }
+}

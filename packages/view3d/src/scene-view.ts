@@ -1,5 +1,8 @@
 ﻿import * as THREE from 'three';
 import {
+  SANDBOX_TERRAIN,
+  TRAINING_TERRAIN,
+  setActiveTerrain,
   terrainHeightAt,
   terrainSurfaceAt,
   type TerrainSurface,
@@ -56,6 +59,12 @@ export interface SceneViewOptions {
 
 const INTERNAL_HEIGHT = 300;
 
+/** The commander's current order shown over the officer. */
+export interface CommanderBalloon {
+  officerId: number;
+  text: string;
+}
+
 export class SceneView {
   private readonly container: HTMLElement;
   private readonly onBandChange?: (band: CameraBand) => void;
@@ -71,7 +80,7 @@ export class SceneView {
   private readonly tracers = new TracerLayer();
   private readonly preview = new PreviewLayer();
   private readonly training = new TrainingLayer();
-  private readonly world = new WorldLayer();
+  private readonly world: WorldLayer;
   private selectedUnits: readonly number[] = [];
   private readonly placementRoot = new THREE.Group();
   private readonly targetRoot = new THREE.Group();
@@ -82,6 +91,7 @@ export class SceneView {
     callout: OrderCallout;
     expiresAt: number;
   } | null = null;
+  private balloon: { element: HTMLDivElement; officerId: number } | null = null;
   private readonly keys = new Set<string>();
   private readonly raycaster = new THREE.Raycaster();
   private readonly groundPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
@@ -124,6 +134,9 @@ export class SceneView {
     sun.position.set(40, 70, 30);
     this.scene.add(sun);
 
+    // The training ground has its own terrain and countryside.
+    setActiveTerrain(options.trainingField ? TRAINING_TERRAIN : SANDBOX_TERRAIN);
+    this.world = new WorldLayer(options.trainingField ? 'training' : 'sandbox');
     this.addWorld();
     if (options.trainingField) {
       this.scene.add(this.training.group);
@@ -266,8 +279,74 @@ export class SceneView {
     this.preview.setSlotMarkers(markers);
   }
 
+  /** Centres the camera on a ground point (a new training station). */
+  focusOn(x: number, y: number): void {
+    this.rig.focusX = x;
+    this.rig.focusY = y;
+  }
+
   setBand(band: CameraBand): void {
     this.rig.targetSpan = band === 'strategic' ? 240 : band === 'tactical' ? 80 : 180;
+  }
+
+  /**
+   * The commander's current order, in a speech balloon over the officer. It
+   * stays while the order is current and hides while the officer is off
+   * screen (the training panel still shows it).
+   */
+  setCommanderBalloon(balloon: CommanderBalloon | null): void {
+    if (!balloon) {
+      this.balloon?.element.remove();
+      this.balloon = null;
+      return;
+    }
+    let element = this.balloon?.element;
+    if (!element) {
+      element = document.createElement('div');
+      element.className = 'commander-balloon';
+      element.dataset.testid = 'commander-balloon';
+      element.setAttribute('role', 'status');
+      this.calloutRoot.append(element);
+    }
+    if (element.textContent !== balloon.text) {
+      element.textContent = balloon.text;
+      // Restart the entrance animation for a new order.
+      element.classList.remove('commander-balloon-new');
+      void element.offsetWidth;
+      element.classList.add('commander-balloon-new');
+    }
+    this.balloon = { element, officerId: balloon.officerId };
+    this.updateBalloon();
+  }
+
+  private updateBalloon(): void {
+    const balloon = this.balloon;
+    const frame = this.lastFrame;
+    if (!balloon || !frame) {
+      return;
+    }
+    const officer = frame.units.find((unit) => unit.id === balloon.officerId && unit.alive);
+    if (!officer) {
+      balloon.element.style.display = 'none';
+      balloon.element.dataset.visible = 'false';
+      return;
+    }
+    const width = this.container.clientWidth;
+    const height = this.container.clientHeight;
+    const point = new THREE.Vector3(officer.x, terrainHeightAt(officer.x, officer.y) + 2.6, officer.y).project(
+      this.rig.camera,
+    );
+    const screenX = ((point.x + 1) / 2) * width;
+    const screenY = ((1 - point.y) / 2) * height;
+    const onScreen = point.z <= 1 && screenX >= 0 && screenX <= width && screenY >= 0 && screenY <= height;
+    balloon.element.style.display = onScreen ? '' : 'none';
+    balloon.element.dataset.visible = onScreen ? 'true' : 'false';
+    if (onScreen) {
+      // Keep the balloon inside the view horizontally.
+      const half = Math.min(150, balloon.element.offsetWidth / 2 || 120);
+      balloon.element.style.left = `${Math.max(half + 4, Math.min(width - half - 4, screenX))}px`;
+      balloon.element.style.top = `${screenY}px`;
+    }
   }
 
   showOrderCallout(callout: OrderCallout): void {
@@ -294,7 +373,11 @@ export class SceneView {
   }
 
   private clearOrderCallout(): void {
-    this.calloutRoot.replaceChildren();
+    for (const child of [...this.calloutRoot.children]) {
+      if (child !== this.balloon?.element) {
+        child.remove();
+      }
+    }
     this.callout = null;
   }
 
@@ -497,6 +580,7 @@ export class SceneView {
     }
     this.tracers.update(delta);
     this.updateCallout(time);
+    this.updateBalloon();
 
     this.post.render(this.renderer, this.scene, this.rig.camera);
     this.frameHandle = requestAnimationFrame(this.animate);

@@ -7,7 +7,10 @@ import {
   TRAINING_AMMUNITION,
   MAX_HP,
   MAX_MORALE,
+  SANDBOX_TERRAIN,
+  TRAINING_GROUND,
   TRAINING_SIGHT_OBSTACLES,
+  setActiveTerrain,
   coverAgainst,
   coverForStance,
   getWeapon,
@@ -15,6 +18,7 @@ import {
   SUPPRESSION_DECAY,
 } from '@prestes/shared';
 import type {
+  TerrainFeature,
   Command,
   CommandEnvelope,
   CoverPoint,
@@ -70,6 +74,12 @@ export interface SimulationOptions {
   sandbox?: boolean;
   training?: boolean;
   opposition?: boolean;
+  /**
+   * The map a training engine runs on: the training ground (the bootcamp and
+   * its sandbox tools) or the earlier training kit around the origin, which
+   * the battle lab and the mechanics tests are laid out on.
+   */
+  map?: 'training-ground' | 'training-kit';
   bounding?: boolean;
   roster?: readonly RosterRecord[];
 }
@@ -83,6 +93,7 @@ export class SimulationEngine implements SimContext {
   readonly sandbox: boolean;
   readonly training: boolean;
   readonly opposition: boolean;
+  private readonly terrain: readonly TerrainFeature[];
   readonly scenario: 'bootcamp' | 'battle3v3';
   readonly combatRange: number;
   boundingEnabled: boolean;
@@ -109,10 +120,24 @@ export class SimulationEngine implements SimContext {
       options.combatRange ??
       (this.training || this.scenario === 'battle3v3' ? WEAPONS[DEFAULT_WEAPON_ID].range : 26);
     this.boundingEnabled = options.bounding === true;
+    // The bootcamp runs on the training ground; the battle lab keeps the old
+    // training kit and the default engine its sandbox map.
+    const trainingGround =
+      this.training && (options.map ?? 'training-ground') === 'training-ground';
     this.covers = (
-      this.training || this.scenario === 'battle3v3' ? BOOTCAMP_COVERS : COVER_POINTS
+      trainingGround
+        ? TRAINING_GROUND.covers
+        : this.training || this.scenario === 'battle3v3'
+          ? BOOTCAMP_COVERS
+          : COVER_POINTS
     ).map((cover) => ({ ...cover }));
-    this.sightObstacles = this.training ? TRAINING_SIGHT_OBSTACLES : [];
+    this.sightObstacles = trainingGround
+      ? TRAINING_GROUND.sightObstacles
+      : this.training
+        ? TRAINING_SIGHT_OBSTACLES
+        : [];
+    this.terrain = trainingGround ? TRAINING_GROUND.terrain : SANDBOX_TERRAIN;
+    setActiveTerrain(this.terrain);
     const source =
       this.scenario === 'battle3v3'
         ? BATTLE_UNITS
@@ -221,6 +246,8 @@ export class SimulationEngine implements SimContext {
   }
 
   tick(): Frame {
+    // Engines can share a thread (tests, tools): select this map's terrain.
+    setActiveTerrain(this.terrain);
     const nextTick = this.tickCount + 1;
     const events: SimEvent[] = [];
 

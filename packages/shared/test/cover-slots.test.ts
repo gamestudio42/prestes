@@ -30,7 +30,7 @@ describe('cover slots', () => {
   it('gives buildings corner and wall slots', () => {
     const house: CoverPoint = { ...wall, id: 2, kind: 'building', halfWidth: 4, halfDepth: 3, height: 4 };
     expect(coverSlots(house).length).toBe(4 + 2 * 4 + 2 * 3);
-    const building = buildingCover({ id: 9, model: 'farmhouse', x: 20, y: 20, rotation: 0, halfWidth: 4, halfDepth: 3, height: 4 });
+    const building = buildingCover({ id: 9, x: 20, y: 20, rotation: 0, halfWidth: 4, halfDepth: 3, height: 4 });
     const [corner] = coverSlots(building);
     // A threat beyond the building, opposite the corner.
     const covered = coverAgainst(corner!.x, corner!.y, 20 - 15, 20 - 12, 'standing', [building]);

@@ -55,6 +55,21 @@ export const SANDBOX_TERRAIN: readonly TerrainFeature[] = [
   },
 ];
 
+let activeTerrain: readonly TerrainFeature[] = SANDBOX_TERRAIN;
+
+/**
+ * Selects the terrain the height, surface, speed and cover queries read. The
+ * simulation sets its own map's terrain before every tick and the view sets
+ * it when it builds its scene; each runs in its own thread.
+ */
+export function setActiveTerrain(features: readonly TerrainFeature[]): void {
+  activeTerrain = features;
+}
+
+export function activeTerrainFeatures(): readonly TerrainFeature[] {
+  return activeTerrain;
+}
+
 function influence(feature: TerrainFeature, x: number, y: number): number {
   const dx = (x - feature.x) / feature.radiusX;
   const dy = (y - feature.y) / feature.radiusY;
@@ -64,7 +79,7 @@ function influence(feature: TerrainFeature, x: number, y: number): number {
 
 export function terrainHeightAt(x: number, y: number): number {
   let height = 0;
-  for (const feature of SANDBOX_TERRAIN) {
+  for (const feature of activeTerrain) {
     if (feature.kind === 'ridge') {
       height += feature.height * influence(feature, x, y);
     } else if (feature.kind === 'trench' || feature.kind === 'crater') {
@@ -76,7 +91,7 @@ export function terrainHeightAt(x: number, y: number): number {
 
 export function terrainSurfaceAt(x: number, y: number): TerrainSurface {
   let surface: TerrainSurface = 'grass';
-  for (const feature of SANDBOX_TERRAIN) {
+  for (const feature of activeTerrain) {
     if (influence(feature, x, y) <= 0.05) {
       continue;
     }
@@ -119,7 +134,7 @@ export function terrainCoverAgainst(
   const threatHeight = terrainHeightAt(threatX, threatY);
   let cover = 0;
 
-  for (const feature of SANDBOX_TERRAIN) {
+  for (const feature of activeTerrain) {
     if (feature.kind === 'trench' || feature.kind === 'crater') {
       if (influence(feature, x, y) > 0) {
         cover = Math.max(cover, feature.cover);
@@ -127,7 +142,7 @@ export function terrainCoverAgainst(
     }
   }
 
-  for (const feature of SANDBOX_TERRAIN) {
+  for (const feature of activeTerrain) {
     if (feature.kind !== 'ridge' || feature.cover <= cover) {
       continue;
     }

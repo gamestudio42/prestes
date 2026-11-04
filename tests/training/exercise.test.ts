@@ -11,6 +11,14 @@ import {
   type ExerciseState,
 } from '../../apps/game/src/training/exercise';
 import { frame, officer, players, trainingEnemies } from './fixtures';
+import { stationPoint, type TrainingStationId } from '../../packages/shared/src/training-ground';
+
+/** A point given in the old single-field layout (assembly at 28,4), moved to its station. */
+const old = (id: TrainingStationId, x: number, y: number): [number, number] => {
+  const moved = stationPoint(id, { x: x - 28, y: y - 4 });
+  return [moved.x, moved.y];
+};
+const point = ([x, y]: [number, number]) => ({ x, y });
 
 const at = (state: ExerciseState, phaseIndex: number, objectiveIndex = 0): ExerciseState => ({
   ...state,
@@ -43,14 +51,14 @@ describe('bootcamp exercise director', () => {
   it('evaluates objectives in order: a later objective does not count early', () => {
     // Station 1, objective "select": soldiers already in the assembly zone do not
     // complete the later reach objective.
-    const units = players(28, 4, 11);
+    const units = players(...old('formation', 28, 4), 11);
     const result = advanceExercise(startExercise(), frame(1, units));
     expect(result.state.objectiveIndex).toBe(0);
     expect(result.objectives.find((objective) => objective.kind === 'reach')?.done).toBe(false);
   });
 
   it('advances to the next objective once the active one is met', () => {
-    const units = players(0, 6, 11);
+    const units = players(...old('formation', 0, 6), 11);
     const result = advanceExercise(startExercise(), frame(1, units), BOOTCAMP_EXERCISE, 1, {
       actions: new Set(['select']),
       selectedCount: 11,
@@ -67,51 +75,51 @@ describe('bootcamp exercise director', () => {
     // but the training troop waits until four soldiers carry the Ambush order.
     const defense = BOOTCAMP_EXERCISE.phases.findIndex((phase) => phase.id === 'defense');
     const state = at(startExercise(), defense, 1);
-    const defenders = players(52, -18, 4).map((unit) => ({ ...unit, order: 'defend', cover: 0.5 }) as UnitSnapshot);
-    const result = advanceExercise(state, frame(1, [...defenders, ...trainingEnemies(3, 82, 10)]));
+    const defenders = players(...old('defense', 52, -18), 4).map((unit) => ({ ...unit, order: 'defend', cover: 0.5 }) as UnitSnapshot);
+    const result = advanceExercise(state, frame(1, [...defenders, ...trainingEnemies(3, ...old('defense', 82, 10))]));
     expect(activeObjective(result.state)?.kind).toBe('ambush-trigger');
     expect(result.commands).not.toContainEqual(expect.objectContaining({ type: 'move' }));
     const ambushers = defenders.map((unit) => ({ ...unit, order: 'ambush' }) as UnitSnapshot);
-    const set = advanceExercise(result.state, frame(2, [...ambushers, ...trainingEnemies(3, 82, 10)]));
+    const set = advanceExercise(result.state, frame(2, [...ambushers, ...trainingEnemies(3, ...old('defense', 82, 10))]));
     const advance = set.commands.find((command) => command.type === 'move') as { to: { x: number; y: number } } | undefined;
     expect(advance).toBeDefined();
     // It stops 12 m short of the line, toward where the troop came from.
-    expect(Math.hypot(advance!.to.x - 52, advance!.to.y + 18)).toBeCloseTo(12, 0);
+    expect(Math.hypot(advance!.to.x - old('defense', 52, -18)[0], advance!.to.y - old('defense', 52, -18)[1])).toBeCloseTo(12, 0);
   });
 
   it('brings in a fresh training troop when the ambush has nobody to ambush', () => {
     const defense = BOOTCAMP_EXERCISE.phases.findIndex((phase) => phase.id === 'defense');
     const state = at(startExercise(), defense, 2);
-    const noTroop = advanceExercise(state, frame(10, players(52, -18, 6)));
+    const noTroop = advanceExercise(state, frame(10, players(...old('defense', 52, -18), 6)));
     expect(noTroop.commands).toContainEqual(
-      expect.objectContaining({ type: 'spawn_troop', role: 'training-enemy', to: { x: 82, y: 10 } }),
+      expect.objectContaining({ type: 'spawn_troop', role: 'training-enemy', to: point(old('defense', 82, 10)) }),
     );
     // Once the troop is there and the ambush is set, the delayed advance is sent.
-    const ambushers = players(52, -18, 6).map((unit) => ({ ...unit, order: 'ambush' }) as UnitSnapshot);
-    const withTroop = advanceExercise(noTroop.state, frame(11, [...ambushers, ...trainingEnemies(3, 82, 10)]));
+    const ambushers = players(...old('defense', 52, -18), 6).map((unit) => ({ ...unit, order: 'ambush' }) as UnitSnapshot);
+    const withTroop = advanceExercise(noTroop.state, frame(11, [...ambushers, ...trainingEnemies(3, ...old('defense', 82, 10))]));
     expect(withTroop.commands).toContainEqual(expect.objectContaining({ type: 'move' }));
     // and only once.
-    const later = advanceExercise(withTroop.state, frame(12, [...ambushers, ...trainingEnemies(3, 80, 8)]));
+    const later = advanceExercise(withTroop.state, frame(12, [...ambushers, ...trainingEnemies(3, ...old('defense', 80, 8))]));
     expect(later.commands).toEqual([]);
   });
 
   it('never respawns a troop for objectives a downed troop already satisfies', () => {
     const final = BOOTCAMP_EXERCISE.phases.findIndex((phase) => phase.id === 'final');
-    const result = advanceExercise(at(startExercise(), final, 0), frame(10, players(30, 4, 8)));
+    const result = advanceExercise(at(startExercise(), final, 0), frame(10, players(...old('final', 30, 4), 8)));
     expect(result.commands.some((command) => command.type === 'spawn_troop')).toBe(false);
   });
 
   it('takes the instructor out when the cohesion objective starts', () => {
     const wounded = BOOTCAMP_EXERCISE.phases.findIndex((phase) => phase.id === 'wounded');
     const state = at(startExercise(), wounded, 1);
-    const guards = players(28, 10, 4).map((unit) => ({ ...unit, order: 'protect-officer' }) as UnitSnapshot);
-    const result = advanceExercise(state, frame(1, [...guards, officer(28, 12)]));
+    const guards = players(...old('wounded', 28, 10), 4).map((unit) => ({ ...unit, order: 'protect-officer' }) as UnitSnapshot);
+    const result = advanceExercise(state, frame(1, [...guards, officer(...old('wounded', 28, 12))]));
     expect(result.commands).toContainEqual({ type: 'incapacitate', targetId: 99 });
   });
 
   it('applies line failures only while the hold objective is active', () => {
     const final = BOOTCAMP_EXERCISE.phases.findIndex((phase) => phase.id === 'final');
-    const empty = (tick: number) => frame(tick, [...players(0, 40, 5), officer(52, -8), ...trainingEnemies(3, 82, 10)]);
+    const empty = (tick: number) => frame(tick, [...players(...old('final', 0, 40), 5), officer(...old('final', 52, -8)), ...trainingEnemies(3, ...old('final', 82, 10))]);
     const suppressing = run(at(startExercise(), final, 0), empty, 200);
     expect(suppressing.state.failed).toBe(false);
     const holding = run(at(startExercise(), final, 2), empty, 200);
@@ -122,7 +130,7 @@ describe('bootcamp exercise director', () => {
   it('fails station 6 when cohesion collapses and retries the station', () => {
     const wounded = BOOTCAMP_EXERCISE.phases.findIndex((phase) => phase.id === 'wounded');
     const shaken = (tick: number) =>
-      frame(tick, players(28, 4, 8).map((unit) => ({ ...unit, cohesion: 10 }) as UnitSnapshot));
+      frame(tick, players(...old('wounded', 28, 4), 8).map((unit) => ({ ...unit, cohesion: 10 }) as UnitSnapshot));
     const failed = run(at(startExercise(), wounded, 2), shaken, 200);
     expect(failed.state.failureReason).toBe('training.exercise.failure.cohesion');
     const retry = retryPhase(failed.state);
@@ -138,7 +146,7 @@ describe('bootcamp exercise director', () => {
       phases: [BOOTCAMP_EXERCISE.phases[0]!, BOOTCAMP_EXERCISE.phases[1]!],
     };
     const state = at(startExercise(), 0, BOOTCAMP_EXERCISE.phases[0]!.objectives.length - 1);
-    const result = advanceExercise(state, frame(50, players(28, 4, 6)), exercise);
+    const result = advanceExercise(state, frame(50, players(...old('formation', 28, 4), 6)), exercise);
     expect(result.phaseCompleted?.id).toBe('formation');
     expect(result.state.phaseIndex).toBe(1);
     expect(result.state.objectiveIndex).toBe(0);
@@ -157,7 +165,7 @@ describe('bootcamp exercise director', () => {
   it('completes the exercise after the final station', () => {
     const final = BOOTCAMP_EXERCISE.phases.length - 1;
     const hold = BOOTCAMP_EXERCISE.phases[final]!.objectives.length - 1;
-    const holding = (tick: number) => frame(tick, [...players(52, -18, 5), officer(52, -10)]);
+    const holding = (tick: number) => frame(tick, [...players(...old('final', 52, -18), 5), officer(...old('final', 52, -10))]);
     const done = run(at(startExercise(), final, hold), holding, 700);
     expect(done.state.completed).toBe(true);
     expect(done.state.completedPhases).toContain('final');

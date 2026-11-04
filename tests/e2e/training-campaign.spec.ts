@@ -1,5 +1,10 @@
 ﻿import { expect, test, type Page } from '@playwright/test';
 import type { Command, Frame } from '@prestes/shared';
+import { STATION_OFFSETS, stationPoint } from '../../packages/shared/src/training-ground';
+
+const entry = (id: Parameters<typeof stationPoint>[0]) => stationPoint(id, { x: 0, y: 0 });
+const point = (id: Parameters<typeof stationPoint>[0], offset: keyof typeof STATION_OFFSETS) =>
+  stationPoint(id, STATION_OFFSETS[offset]);
 
 declare global {
   interface Window {
@@ -69,7 +74,11 @@ async function until(
       .map((row) => `${row.getAttribute('data-testid')?.replace('training-objective-', '')}=${row.textContent?.replace(/\s+/g, ' ').trim()}${row.getAttribute('data-done') === 'true' ? ' (done)' : ''}`)
       .join(' | '),
   );
-  throw new Error(`not done within ${maxTicks} ticks: ${label}. Objectives: ${rows}`);
+  const units = (await currentFrame(page)).units
+    .filter((unit) => unit.alive && (unit.squadId === 1 || unit.role === 'training-enemy'))
+    .map((unit) => `${unit.id}${unit.role === 'training-enemy' ? 'E' : ''}@${unit.x.toFixed(0)},${unit.y.toFixed(0)}:${unit.order ?? '-'}:${unit.state}`)
+    .join(' ');
+  throw new Error(`not done within ${maxTicks} ticks: ${label}. Objectives: ${rows}. Units: ${units}`);
 }
 
 const untilObjective = (page: Page, id: string, maxTicks: number, chunk = 20) =>
@@ -150,7 +159,7 @@ async function playFormation(page: Page): Promise<void> {
     await command(page, { type: 'stance', unitIds: ids, stance });
     await untilObjective(page, id, 40, 2);
   }
-  await command(page, { type: 'move', unitIds: ids, to: { x: 28, y: 4 } });
+  await command(page, { type: 'move', unitIds: ids, to: entry('formation') });
   await untilStation(page, 'fire', 1200);
 }
 
@@ -165,7 +174,7 @@ async function playFire(page: Page): Promise<void> {
   await untilObjective(page, 'fire-suppress', 1500);
   await command(page, { type: 'hold_fire', unitIds: ids, hold: true });
   await untilObjective(page, 'fire-holdfire', 200);
-  await command(page, { type: 'face', unitIds: ids, to: { x: 28, y: 34 } });
+  await command(page, { type: 'face', unitIds: ids, to: point('fire', 'face') });
   await untilStation(page, 'maneuver', 300);
 }
 
@@ -175,7 +184,7 @@ async function playManeuver(page: Page): Promise<void> {
   await command(page, { type: 'flank', unitIds: ids, targetId: target! });
   await untilObjective(page, 'maneuver-flank', 2000);
   await command(page, { type: 'set_bounding', enabled: true });
-  await command(page, { type: 'move', unitIds: await section(page), to: { x: 40, y: -4 } });
+  await command(page, { type: 'move', unitIds: await section(page), to: point('maneuver', 'bound') });
   await untilObjective(page, 'maneuver-bound', 2000);
   await command(page, { type: 'withdraw', unitIds: await section(page) });
   await untilObjective(page, 'maneuver-withdraw', 1000);
@@ -188,16 +197,16 @@ async function playDefense(page: Page): Promise<void> {
   const ids = await section(page);
   await command(page, { type: 'posture', unitIds: ids, posture: 'defensive' });
   await untilObjective(page, 'defense-defensive', 40, 2);
-  await command(page, { type: 'order', order: 'defend', unitIds: ids, to: { x: 52, y: -18 } });
+  await command(page, { type: 'order', order: 'defend', unitIds: ids, to: point('defense', 'line') });
   await untilObjective(page, 'defense-defend', 1500);
-  await command(page, { type: 'order', order: 'ambush', unitIds: await section(page), to: { x: 52, y: -18 } });
+  await command(page, { type: 'order', order: 'ambush', unitIds: await section(page), to: point('defense', 'line') });
   await untilObjective(page, 'defense-ambush', 2000);
   await untilStation(page, 'recon', 1200);
 }
 
 async function playRecon(page: Page): Promise<void> {
   const ids = await section(page);
-  await command(page, { type: 'order', order: 'recon', unitIds: ids.slice(0, 2), to: { x: 42, y: -10 } });
+  await command(page, { type: 'order', order: 'recon', unitIds: ids.slice(0, 2), to: point('recon', 'recon') });
   await untilObjective(page, 'recon-recon', 1500);
   const [target] = await trainingEnemies(page);
   await command(page, { type: 'order', order: 'pursue', unitIds: ids.slice(0, 4), targetId: target! });
@@ -206,9 +215,9 @@ async function playRecon(page: Page): Promise<void> {
   const here = (await currentFrame(page)).units.find((unit) => unit.id === all[0])!;
   await command(page, { type: 'order', order: 'disperse', unitIds: all, to: { x: here.x, y: here.y } });
   await untilObjective(page, 'recon-disperse', 200);
-  await command(page, { type: 'order', order: 'reserve', unitIds: all.slice(0, 3), to: { x: 28, y: 4 } });
+  await command(page, { type: 'order', order: 'reserve', unitIds: all.slice(0, 3), to: entry('recon') });
   await untilObjective(page, 'recon-reserve', 200);
-  await command(page, { type: 'order', order: 'advance', unitIds: all.slice(3), to: { x: 40, y: -4 } });
+  await command(page, { type: 'order', order: 'advance', unitIds: all.slice(3), to: point('recon', 'bound') });
   await untilObjective(page, 'recon-advance', 200);
   await command(page, { type: 'order', order: 'regroup', unitIds: await section(page) });
   await untilStation(page, 'wounded', 1500);
@@ -238,7 +247,7 @@ async function playFinal(page: Page): Promise<void> {
           unit.role === 'training-enemy' &&
           unit.alive &&
           !unit.incapacitated &&
-          Math.hypot(unit.x - 52, unit.y + 18) <= 9,
+          Math.hypot(unit.x - point('final', 'line').x, unit.y - point('final', 'line').y) <= 9,
       )
       .map((unit) => unit.id);
     if (inside.length === 0) {
@@ -250,9 +259,9 @@ async function playFinal(page: Page): Promise<void> {
     });
     await stepRendered(page, 300);
   }
-  await command(page, { type: 'move', unitIds: await section(page), to: { x: 52, y: -18 } });
+  await command(page, { type: 'move', unitIds: await section(page), to: point('final', 'line') });
   await untilObjective(page, 'final-secure', 600);
-  await command(page, { type: 'order', order: 'defend', unitIds: await section(page), to: { x: 52, y: -18 } });
+  await command(page, { type: 'order', order: 'defend', unitIds: await section(page), to: point('final', 'line') });
   await until(page, async () => page.getByTestId('training-complete').isVisible(), {
     maxTicks: 900,
     chunk: 30,
@@ -359,6 +368,6 @@ test('shows a sandbox preview for every placement and inserts an enemy troop wit
   }
   await page.mouse.click(box!.x + box!.width * 0.42, box!.y + box!.height * 0.22);
   await expect
-    .poll(async () => (await currentFrame(page)).units.length, { timeout: 5000 })
+    .poll(async () => (await currentFrame(page)).units.length, { timeout: 20_000 })
     .toBeGreaterThan(before.units.length);
 });

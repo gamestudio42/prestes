@@ -163,7 +163,9 @@ export const BUILDINGS: readonly Building[] = [
   { id: 124, model: 'chapel', x: 78, y: -52, rotation: -0.1, halfWidth: 3.2, halfDepth: 4.8, height: 5.2 },
 ];
 
-export function buildingCover(building: Building): CoverPoint {
+export function buildingCover(
+  building: Pick<Building, 'id' | 'x' | 'y' | 'rotation' | 'halfWidth' | 'halfDepth' | 'height'>,
+): CoverPoint {
   return {
     id: building.id,
     kind: 'building',

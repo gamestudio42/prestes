@@ -51,10 +51,14 @@ test('controls both sides with reinforcements and exercises combat commands', as
   await page.getByTestId('start-button').click();
   await page.waitForFunction(() => Boolean(window.__prestes?.frame()));
   await expect(page.getByTestId('squad-status')).toContainText('Selection: 11/11');
+  // Paused: the test steps the simulation itself, so a slow machine cannot let
+  // the fight run on between commands.
+  await page.evaluate(() => window.__prestes?.step(0));
 
   await page.keyboard.press('F1');
   await page.getByTestId('sandbox-both-sides').click();
   await page.waitForFunction(() => Boolean(window.__prestes?.frame()));
+  await page.evaluate(() => window.__prestes?.step(0));
   await page.evaluate(() => {
     const frame = window.__prestes?.frame();
     if (!frame) return;

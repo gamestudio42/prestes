@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { BOOTCAMP_COVERS, coverSlots, isPointInCover, planOrderPreview } from '@prestes/shared';
+import { TRAINING_GROUND, coverSlots, isPointInCover, planOrderPreview, stationPoint } from '@prestes/shared';
 import type { Command, Frame } from '@prestes/shared';
 import { SimulationEngine } from '../src/engine';
 
@@ -8,14 +8,31 @@ type Internal = {
 };
 
 function training(opposition?: boolean) {
-  const engine = new SimulationEngine({ seed: 1922, sandbox: true, training: true, opposition });
+  const engine = new SimulationEngine({
+    seed: 1922,
+    sandbox: true,
+    training: true,
+    opposition,
+    map: 'training-ground',
+  });
   let frame: Frame = engine.runTicks(1);
   const send = (command: Command, ticks = 1): Frame => {
     engine.enqueue(command);
     frame = engine.runTicks(ticks);
     return frame;
   };
-  const internal = engine as unknown as Internal;
+  const internal = engine as unknown as Internal & { units: Array<{ faction: string }> };
+  // The default legalists stand in open field on the training ground: move
+  // them out of range so no test ends in a stray fight (which freezes the
+  // simulation once a side is beaten). Tests spawn their own targets.
+  for (const unit of internal.units) {
+    if (unit.faction === 'legalist') {
+      unit.x = -110 + unit.id;
+      unit.y = 110;
+      unit.targetX = unit.x;
+      unit.targetY = unit.y;
+    }
+  }
   const slotOf = (id: number) => internal.units.find((unit) => unit.id === id)!.slotId;
   const riflemen = () =>
     frame.units
@@ -35,15 +52,16 @@ function training(opposition?: boolean) {
   return { engine, send, slotOf, riflemen, placeNear, frame: () => frame, internal };
 }
 
-const trench = BOOTCAMP_COVERS.find((cover) => cover.id === 109)!;
-const lowWall = BOOTCAMP_COVERS.find((cover) => cover.id === 106)!;
-const house = BOOTCAMP_COVERS.find((cover) => cover.kind === 'building' && cover.id === 121)!;
+// The trench line, the maneuver field's bound wall and a barracks block.
+const trench = TRAINING_GROUND.covers.find((cover) => cover.id === 220)!;
+const lowWall = TRAINING_GROUND.covers.find((cover) => cover.id === 212)!;
+const house = TRAINING_GROUND.covers.find((cover) => cover.kind === 'building' && cover.id === 301)!;
 
 describe('cover slots in the simulation', () => {
   it('puts a section of 11 into the trench, each in its own place', () => {
     const t = training();
-    t.send({ type: 'spawn_troop', faction: 'column', to: { x: 52, y: -4 }, count: 6 }, 2);
-    t.send({ type: 'spawn_troop', faction: 'column', to: { x: 52, y: -4 }, count: 6 }, 2);
+    t.send({ type: 'spawn_troop', faction: 'column', to: { x: trench.x, y: trench.y + 14 }, count: 6 }, 2);
+    t.send({ type: 'spawn_troop', faction: 'column', to: { x: trench.x, y: trench.y + 14 }, count: 6 }, 2);
     const ids = t.riflemen();
     expect(ids.length).toBeGreaterThanOrEqual(11);
     const section = ids.slice(0, 11);
@@ -80,7 +98,11 @@ describe('cover slots in the simulation', () => {
     // One squad of 11, as in the bootcamp stations.
     t.send({
       type: 'training_phase',
-      setup: { phase: 'defense', playerPoint: { x: 28, y: 4 }, officerPoint: { x: 40, y: -8 } },
+      setup: {
+        phase: 'defense',
+        playerPoint: stationPoint('defense', { x: 0, y: 0 }),
+        officerPoint: stationPoint('defense', { x: 12, y: -12 }),
+      },
     }, 3);
     const section = t.frame().units
       .filter((unit) => unit.faction === 'column' && unit.squadId === 1 && unit.kind !== 'officer')
@@ -122,11 +144,16 @@ describe('cover slots in the simulation', () => {
   it('fires over a low wall from its slots', () => {
     const t = training();
     const section = t.riflemen().slice(0, 4);
+    // The threat is north of the wall, so the slots are on its south side.
+    t.send({ type: 'spawn_troop', faction: 'target', to: { x: lowWall.x, y: lowWall.y - 18 }, count: 2, holdFire: true }, 2);
     t.placeNear(section, { x: lowWall.x, y: lowWall.y + 8 });
+    // Everyone holds fire on the way in so the target is still there to shoot at.
+    const column = t.frame().units.filter((unit) => unit.faction === 'column').map((unit) => unit.id);
+    t.send({ type: 'hold_fire', unitIds: column, hold: true });
     t.send({ type: 'move', unitIds: section, to: { x: lowWall.x, y: lowWall.y + 2 } }, 200);
+    t.send({ type: 'hold_fire', unitIds: section, hold: false });
     const living = section.filter((id) => t.frame().units.find((unit) => unit.id === id)?.alive);
     expect(living.every((id) => t.slotOf(id) !== null)).toBe(true);
-    t.send({ type: 'spawn_troop', faction: 'target', to: { x: lowWall.x, y: lowWall.y - 18 }, count: 2, holdFire: true }, 2);
     const target = t.frame().units.find((unit) => unit.faction === 'target' && unit.alive)!;
     let shots = 0;
     t.engine.enqueue({ type: 'attack', unitIds: section, targetId: target.id });
@@ -139,8 +166,18 @@ describe('cover slots in the simulation', () => {
   it('takes a corner slot at the training house', () => {
     const t = training();
     const [soldier] = t.riflemen() as [number];
-    const corner = coverSlots(house)[0]!;
-    t.placeNear([soldier], { x: corner.x + 4, y: corner.y + 4 });
+    // A threat north of the barracks: the south-west corner faces away from it.
+    t.send({ type: 'spawn_troop', faction: 'target', to: { x: house.x, y: house.y - 30 }, count: 1, holdFire: true }, 2);
+    const southWest = { x: house.x - house.halfWidth - 1, y: house.y + house.halfDepth + 1 };
+    const corner = [...coverSlots(house)].sort(
+      (left, right) =>
+        (left.x - southWest.x) ** 2 + (left.y - southWest.y) ** 2 -
+        ((right.x - southWest.x) ** 2 + (right.y - southWest.y) ** 2),
+    )[0]!;
+    // Start 4 m out from the corner, away from the building.
+    const out = { x: corner.x - house.x, y: corner.y - house.y };
+    const length = Math.sqrt(out.x ** 2 + out.y ** 2);
+    t.placeNear([soldier], { x: corner.x + (out.x / length) * 4, y: corner.y + (out.y / length) * 4 });
     const frame = t.send({ type: 'move', unitIds: [soldier], to: { x: corner.x, y: corner.y } }, 200);
     const unit = frame.units.find((entry) => entry.id === soldier)!;
     expect(t.slotOf(soldier)).toBe(corner.id);

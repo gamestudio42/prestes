@@ -11,14 +11,14 @@
 
 ## 3. Training ground
 
-- [ ] 3.1 `TRAINING_GROUND` data in `packages/shared` (covers, buildings, sight obstacles, terrain, road, station areas with locale keys); engine uses it in training; sandbox unchanged; tests: covers and slots reachable, no sandbox props, sandbox still uses its map
-- [ ] 3.2 Move every station's points, markers and training troop into its area; update mechanics tests and e2e scripts to read points from the area table
-- [ ] 3.3 View: build the training map from `TRAINING_GROUND` (parade ground, barracks, flagpole, firing range butts, hedges, trench line, hamlet, aid tent, assault line, road); camera starts on the current station
-- [ ] 3.4 PT-BR and EN names for the area labels; `pnpm check:locales`
+- [x] 3.1 `TRAINING_GROUND` data in `packages/shared` (covers, buildings, sight obstacles, terrain, road, station areas with locale keys); engine uses it in training; sandbox unchanged; tests: covers and slots reachable, no sandbox props, sandbox still uses its map
+- [x] 3.2 Move every station's points, markers and training troop into its area; update mechanics tests and e2e scripts to read points from the area table
+- [x] 3.3 View: build the training map from `TRAINING_GROUND` (parade ground, barracks, flagpole, firing range butts, hedges, trench line, hamlet, aid tent, assault line, road); camera starts on the current station
+- [x] 3.4 PT-BR and EN names for the area labels; `pnpm check:locales`
 
 ## 4. Commander balloon
 
-- [ ] 4.1 Balloon over the instructor with the current order, positioned from the scene view each frame, hidden off screen; panel unchanged; e2e: balloon text matches the current objective's callout
+- [x] 4.1 Balloon over the instructor with the current order, positioned from the scene view each frame, hidden off screen; panel unchanged; e2e: balloon text matches the current objective's callout
 
 ## 5. Close
 

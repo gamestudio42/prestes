@@ -236,6 +236,34 @@ Four phases, each its own OpenSpec change:
    sequence and the commander giving each order in a text callout and the panel.
    Includes the manual play of stations 5 to 7 and the EN pass carried over from
    `complete-bootcamp-tutorial`.
+   In progress as `redesign-training-ground` (2026-11-04), which also covers the
+   user's play-through notes (disorganized movement, slow default speed):
+   - Default speed is now the one labelled 1x (two ticks per 100 ms); 0.5x is
+     the slow option; start, retry and Continue reset to 1x; unpausing resumes
+     the last speed. Three and React moved to their own chunks (game code
+     247 kB of a 400 kB budget).
+   - Movement: destinations (formation, line and cover slots) are matched to
+     soldiers by minimum total distance in the simulation and the preview, so
+     routes no longer cross; a gathered section follows one route in a compact
+     body (5 m) and spreads to its slots near the end.
+   - Map: `packages/shared/src/training-ground.ts` holds the course (stations,
+     covers, buildings, trees, roads, fence, props) for the simulation and the
+     view. Three rows on a winding road inside the 200 m path grid: parade
+     ground, firing range, maneuver field (north); trench line, hamlet
+     (middle); aid post, assault line (south). Each station keeps the tuned
+     local layout (line 24 m east and 22 m north of the entry, and so on). The
+     camera centres on each station; the panel names the place. The engine
+     option `map` keeps the earlier training kit for the battle lab and the
+     mechanics tests; the bootcamp and its sandbox tools use the training
+     ground.
+   - Commander balloon over the instructor with the current order, persistent
+     while it is current, hidden off screen, following a language switch.
+   - Flanking goes around the target's troop (its squad within 15 m), not the
+     clicked soldier: flanking the end soldier of a line put the flankers in
+     front of the rest of it (found by the full e2e run on the new map).
+   - Not done yet: the art of the new map is plain (phase 4), the section is
+     placed at each station's entry rather than marching the road between
+     stations, the hand play of all seven stations and the EN pass.
 3. Pixel-art HUD, menus and the Coluna Prestes compendium (in-game stays low-poly).
 4. Low-poly art pass: objects, movement and firing feedback.
 

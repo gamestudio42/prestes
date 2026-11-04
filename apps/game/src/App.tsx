@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Eye } from 'lucide-react';
 import { BOOTCAMP_EXERCISE, translate, type Locale, type TrainingAction } from '@prestes/content';
-import type { Frame } from '@prestes/shared';
+import { trainingStation, type Frame } from '@prestes/shared';
 import type { CameraBand } from '@prestes/view3d';
 import { DEFAULT_SPEED, GameClient } from './client/GameClient';
 import { CodexPanel } from './ui/CodexPanel';
@@ -158,7 +158,6 @@ export function App() {
   // The newest callout wins: the instructor's line or the player's last order.
   const [callout, setCallout] = useState<typeof orderCallout>(null);
   useEffect(() => setCallout(orderCallout), [orderCallout]);
-  useEffect(() => setCallout(instructorCallout), [instructorCallout]);
 
   useEffect(() => {
     return () => {
@@ -440,6 +439,12 @@ export function App() {
         client={client}
         postStrong={postStrong}
         cameraRequest={cameraRequest}
+        commanderBalloon={sessionMode === 'training' ? instructorCallout : null}
+        cameraFocus={
+          sessionMode === 'training' && exercisePhase
+            ? { ...trainingStation(exercisePhase.id).center, key: exercisePhase.id }
+            : null
+        }
         preview={previewPlan}
         slotMarkers={slotView?.markers}
         aimPending={aimPending}

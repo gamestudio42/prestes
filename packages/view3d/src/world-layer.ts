@@ -1,6 +1,12 @@
 ﻿import * as THREE from 'three';
-import { BUILDINGS, terrainHeightAt, terrainSurfaceAt } from '@prestes/shared';
-import type { BuildingModel } from '@prestes/shared';
+import {
+  BUILDINGS,
+  TRAINING_FENCES,
+  TRAINING_TREES,
+  terrainHeightAt,
+  terrainSurfaceAt,
+} from '@prestes/shared';
+import type { BuildingModel, TrainingBuildingModel } from '@prestes/shared';
 import { toon } from './materials';
 import { PALETTE } from './palette';
 
@@ -30,7 +36,7 @@ function material(color: number): THREE.MeshToonMaterial {
   return value;
 }
 
-function box(
+export function box(
   parent: THREE.Object3D,
   color: number,
   x: number,
@@ -51,7 +57,7 @@ function box(
   return mesh;
 }
 
-function cylinder(
+export function cylinder(
   parent: THREE.Object3D,
   color: number,
   x: number,
@@ -255,13 +261,74 @@ function chapel(parent: THREE.Object3D, x: number, z: number, rotation: number):
 /** Places a building mesh at its simulation footprint (view turns by -rotation). */
 export function placeBuilding(
   parent: THREE.Object3D,
-  model: BuildingModel,
+  model: BuildingModel | TrainingBuildingModel,
   x: number,
   y: number,
   rotation: number,
 ): void {
-  const builders = { farmhouse, barn, chapel, 'training-house': trainingHouse };
+  const builders = {
+    farmhouse,
+    barn,
+    chapel,
+    'training-house': trainingHouse,
+    barracks,
+    'aid-tent': aidTent,
+  };
   builders[model](parent, x, y, -rotation);
+}
+
+/** A long single-storey army barracks block (11 x 6 m footprint). */
+function barracks(parent: THREE.Object3D, x: number, z: number, rotation: number): void {
+  const group = new THREE.Group();
+  group.position.set(x, terrainHeightAt(x, z), z);
+  group.rotation.y = rotation;
+  parent.add(group);
+  const width = 10.4;
+  const depth = 5.4;
+  const wall = 2.6;
+  const base = 0.35;
+  groundShadow(group, 0, 0, width + 2.2, depth + 2.2);
+  box(group, PALETTE.stoneDark, 0, 0.14, 0, width + 0.5, 0.9, depth + 0.5);
+  box(group, PALETTE.whitewash, 0, base + wall / 2, 0, width, wall, depth);
+  box(group, PALETTE.plasterShade, 0, base + 0.3, 0, width + 0.04, 0.6, depth + 0.04);
+  gableRoof(group, width, depth, base + wall, 1.3, PALETTE.tile, PALETTE.whitewash, PALETTE.roofDark);
+  box(group, PALETTE.wood, 0, base + 1.0, depth / 2 + 0.04, 1.3, 2.0, 0.12);
+  for (const offset of [-3.8, -1.9, 1.9, 3.8]) {
+    windowDetail(group, offset, base + 1.65, depth / 2 + 0.04, 0.7, 0.8);
+    windowDetail(group, offset, base + 1.65, -depth / 2 - 0.04, 0.7, 0.8);
+  }
+  box(group, PALETTE.wood, 0, base + 2.35, depth / 2 + 0.6, 3.4, 0.1, 1.2, 0, -0.12);
+}
+
+/** The aid post: a field tent marked with a red cross. */
+function aidTent(parent: THREE.Object3D, x: number, z: number, rotation: number): void {
+  const group = new THREE.Group();
+  group.position.set(x, terrainHeightAt(x, z), z);
+  group.rotation.y = rotation;
+  parent.add(group);
+  const width = 5.4;
+  const depth = 4.4;
+  const height = 2.7;
+  groundShadow(group, 0, 0, width + 1.4, depth + 1.4);
+  const slope = Math.sqrt((depth / 2) ** 2 + height ** 2);
+  const angle = Math.atan2(height, depth / 2);
+  for (const side of [-1, 1]) {
+    const panel = box(group, PALETTE.whitewash, 0, height / 2, (side * depth) / 4, width, 0.08, slope + 0.1);
+    panel.rotation.x = side * angle;
+  }
+  box(group, PALETTE.wood, 0, height + 0.05, 0, width + 0.3, 0.1, 0.1);
+  for (const side of [-1, 1]) {
+    box(group, PALETTE.wood, (side * width) / 2, height / 2, 0, 0.12, height + 0.3, 0.12);
+  }
+  // Red cross on both roof slopes.
+  for (const side of [-1, 1]) {
+    const cross = new THREE.Group();
+    cross.position.set(0, height / 2 + 0.06, (side * depth) / 4);
+    cross.rotation.x = side * angle;
+    group.add(cross);
+    box(cross, PALETTE.scarf, 0, 0.06, 0, 1.4, 0.04, 0.42);
+    box(cross, PALETTE.scarf, 0, 0.06, 0, 0.42, 0.04, 1.4);
+  }
 }
 
 export function trainingHouse(
@@ -318,7 +385,7 @@ function ruin(parent: THREE.Object3D, x: number, z: number, rotation: number): v
   }
 }
 
-function tree(parent: THREE.Object3D, x: number, z: number, scale: number, dark: boolean): void {
+export function tree(parent: THREE.Object3D, x: number, z: number, scale: number, dark: boolean): void {
   const base = terrainHeightAt(x, z);
   cylinder(parent, PALETTE.bark, x, base + 1.25 * scale, z, 0.22 * scale, 2.5 * scale);
   const crown = dark ? PALETTE.leafDark : PALETTE.leaf;
@@ -335,7 +402,7 @@ function tree(parent: THREE.Object3D, x: number, z: number, scale: number, dark:
   }
 }
 
-function haystack(parent: THREE.Object3D, x: number, z: number, scale: number): void {
+export function haystack(parent: THREE.Object3D, x: number, z: number, scale: number): void {
   const base = terrainHeightAt(x, z);
   cylinder(parent, PALETTE.hayDark, x, base + 0.55 * scale, z, 1.15 * scale, 1.1 * scale);
   const top = new THREE.Mesh(unitCone, material(PALETTE.hay));
@@ -345,7 +412,7 @@ function haystack(parent: THREE.Object3D, x: number, z: number, scale: number): 
   parent.add(top);
 }
 
-function well(parent: THREE.Object3D, x: number, z: number): void {
+export function well(parent: THREE.Object3D, x: number, z: number): void {
   const base = terrainHeightAt(x, z);
   cylinder(parent, PALETTE.stone, x, base + 0.42, z, 0.95, 0.85);
   cylinder(parent, PALETTE.stoneDark, x, base + 0.86, z, 1.02, 0.16);
@@ -442,7 +509,7 @@ function windmill(parent: THREE.Object3D, x: number, z: number): void {
   }
 }
 
-function cart(parent: THREE.Object3D, x: number, z: number, rotation: number): void {
+export function cart(parent: THREE.Object3D, x: number, z: number, rotation: number): void {
   const base = terrainHeightAt(x, z);
   const group = new THREE.Group();
   group.position.set(x, base, z);
@@ -494,12 +561,24 @@ function buildFieldRows(
   parent.add(mesh);
 }
 
+export type WorldMap = 'sandbox' | 'training';
+
 export class WorldLayer {
   readonly group = new THREE.Group();
   private readonly postMatrices: THREE.Matrix4[] = [];
   private readonly railMatrices: THREE.Matrix4[] = [];
 
-  constructor() {
+  /**
+   * The countryside around a map. On the training ground it is only grass,
+   * trees and the boundary fence: the stations' own buildings and props are
+   * the training layer's.
+   */
+  constructor(private readonly map: WorldMap = 'sandbox') {
+    if (map === 'training') {
+      this.buildVegetation();
+      this.buildFences();
+      return;
+    }
     this.buildBuildings();
     this.buildFields();
     this.buildVegetation();
@@ -516,17 +595,14 @@ export class WorldLayer {
   }
 
   private buildBuildings(): void {
-    // The training house belongs to the training layer.
     for (const building of BUILDINGS) {
-      if (building.model !== 'training-house') {
-        placeBuilding(this.group, building.model, building.x, building.y, building.rotation);
-      }
+      placeBuilding(this.group, building.model, building.x, building.y, building.rotation);
     }
     ruin(this.group, -70, -42, 0.4);
   }
 
   private buildVegetation(): void {
-    const trees: Array<readonly [number, number, number, boolean]> = [
+    const sandboxTrees: Array<readonly [number, number, number, boolean]> = [
       [-16, 9, 1.0, false],
       [17, 8, 0.92, true],
       [-13, -13, 1.08, true],
@@ -543,6 +619,10 @@ export class WorldLayer {
       [-30, 72, 1.2, false],
       [62, 70, 1.15, true],
     ];
+    const trees =
+      this.map === 'training'
+        ? TRAINING_TREES.map(([x, z, scale], index) => [x, z, scale, index % 2 === 0] as const)
+        : sandboxTrees;
     for (const [x, z, scale, dark] of trees) {
       tree(this.group, x, z, scale, dark);
     }
@@ -583,13 +663,26 @@ export class WorldLayer {
   }
 
   private buildFences(): void {
+    if (this.map === 'training') {
+      for (const line of TRAINING_FENCES) {
+        this.addFence(line);
+      }
+    } else {
+      this.addSandboxFences();
+    }
+    this.instanceFences();
+  }
+
+  private addSandboxFences(): void {
     this.addFence([{ x: -82, y: 58 }, { x: -34, y: 58 }]);
     this.addFence([{ x: -82, y: 24 }, { x: -34, y: 24 }]);
     this.addFence([{ x: 42, y: 64 }, { x: 76, y: 64 }]);
     this.addFence([{ x: 76, y: 64 }, { x: 76, y: 24 }]);
     this.addFence([{ x: 18, y: -42 }, { x: 18, y: -22 }]);
     this.addFence([{ x: 18, y: 24 }, { x: 18, y: 44 }]);
+  }
 
+  private instanceFences(): void {
     const posts = new THREE.InstancedMesh(unitBox, material(PALETTE.wood), this.postMatrices.length);
     const rails = new THREE.InstancedMesh(unitBox, material(PALETTE.wood), this.railMatrices.length);
     this.postMatrices.forEach((matrix, index) => posts.setMatrixAt(index, matrix));

@@ -396,6 +396,33 @@ export function seekFlank(ctx: SimContext): void {
   }
 }
 
+/** Members of the target's troop this close to it are flanked together. */
+const FLANK_TROOP_RADIUS = 15;
+
+/**
+ * The point a flank goes around: the centre of the target's troop (its squad
+ * members near it), not the one soldier clicked. Flanking a soldier at the end
+ * of a line would otherwise put the flankers in front of the rest of it.
+ */
+export function flankAnchor(ctx: SimContext, target: MutableUnit): Vec2 {
+  const members = ctx.units.filter(
+    (unit) =>
+      unit.alive &&
+      !unit.routed &&
+      !unit.incapacitated &&
+      unit.faction === target.faction &&
+      unit.squadId === target.squadId &&
+      (unit.x - target.x) ** 2 + (unit.y - target.y) ** 2 <= FLANK_TROOP_RADIUS * FLANK_TROOP_RADIUS,
+  );
+  if (members.length === 0) {
+    return { x: target.x, y: target.y };
+  }
+  return {
+    x: members.reduce((sum, unit) => sum + unit.x, 0) / members.length,
+    y: members.reduce((sum, unit) => sum + unit.y, 0) / members.length,
+  };
+}
+
 export function chooseFlankSide(
   ctx: SimContext,
   units: readonly MutableUnit[],
@@ -407,8 +434,9 @@ export function chooseFlankSide(
     (sum, unit) => ({ x: sum.x + unit.x / active.length, y: sum.y + unit.y / active.length }),
     { x: 0, y: 0 },
   );
-  const dx = centroid.x - target.x;
-  const dy = centroid.y - target.y;
+  const anchor = flankAnchor(ctx, target);
+  const dx = centroid.x - anchor.x;
+  const dy = centroid.y - anchor.y;
   const length = Math.sqrt(dx * dx + dy * dy);
   if (length < 0.001) return 1;
   const perpendicular = { x: -dy / length, y: dx / length };
@@ -416,10 +444,10 @@ export function chooseFlankSide(
   let bestScore = Number.NEGATIVE_INFINITY;
   for (const side of [1, -1]) {
     const probe = {
-      x: target.x + perpendicular.x * FLANK_RADIUS * side,
-      y: target.y + perpendicular.y * FLANK_RADIUS * side,
+      x: anchor.x + perpendicular.x * FLANK_RADIUS * side,
+      y: anchor.y + perpendicular.y * FLANK_RADIUS * side,
     };
-    const cover = coverAgainst(probe.x, probe.y, target.x, target.y, 'crouched', ctx.covers);
+    const cover = coverAgainst(probe.x, probe.y, anchor.x, anchor.y, 'crouched', ctx.covers);
     const path = findPath(centroid, probe, ctx.covers);
     const score = cover * 100 + (path.length > 0 ? 20 : 0);
     if (score > bestScore) {
@@ -460,18 +488,15 @@ export function assignFlankPath(
 ): boolean {
   let best: Vec2[] | null = null;
   let bestScore = Number.NEGATIVE_INFINITY;
-  for (const candidate of flankCandidates(
-    { x: target.x, y: target.y },
-    { x: unit.x, y: unit.y },
-    FLANK_RADIUS,
-  )) {
+  const anchor = flankAnchor(ctx, target);
+  for (const candidate of flankCandidates(anchor, { x: unit.x, y: unit.y }, FLANK_RADIUS)) {
     if (isPointBlockedByCovers(candidate.x, candidate.y, ctx.covers, 0.8)) {
       continue;
     }
     if (side !== undefined && origin) {
       const cross =
-        (origin.x - target.x) * (candidate.y - target.y) -
-        (origin.y - target.y) * (candidate.x - target.x);
+        (origin.x - anchor.x) * (candidate.y - anchor.y) -
+        (origin.y - anchor.y) * (candidate.x - anchor.x);
       if (Math.sign(cross) !== side) {
         continue;
       }
@@ -498,8 +523,8 @@ export function assignFlankPath(
     const cover = coverAgainst(
       candidate.x,
       candidate.y,
-      target.x,
-      target.y,
+      anchor.x,
+      anchor.y,
       'crouched',
       ctx.covers,
     );
