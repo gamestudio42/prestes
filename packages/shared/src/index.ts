@@ -63,6 +63,7 @@ export {
   getWeapon,
   reloadMagazine,
   totalRounds,
+  TRAINING_AMMUNITION,
   validateWeapons,
   type HistoricalStatus,
   type WeaponId,

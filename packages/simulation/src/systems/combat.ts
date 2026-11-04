@@ -283,7 +283,12 @@ export function fire(ctx: SimContext, tick: number, events: SimEvent[]): void {
       unit.holdPosition = true;
     }
     unit.magazine -= 1;
-    unit.cooldown = unit.suppress ? SUPPRESS_FIRE_INTERVAL : weapon.fireIntervalTicks;
+    // Suppressive fire is fast until the target is pinned, then eases to the
+    // weapon's normal rate to keep it pinned without emptying the reserve.
+    unit.cooldown =
+      unit.suppress && target.state !== 'pinned'
+        ? SUPPRESS_FIRE_INTERVAL
+        : weapon.fireIntervalTicks;
     if (unit.magazine === 0 && unit.reserve > 0) {
       unit.reload = weapon.reloadTicks;
     }

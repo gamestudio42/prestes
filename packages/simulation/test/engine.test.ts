@@ -369,7 +369,7 @@ describe('SimulationEngine', () => {
       (unit) => unit.faction === 'column' && unit.alive && !unit.dummy,
     );
     expect(column.every((unit) => unit.targetId === null)).toBe(true);
-    expect(column.every((unit) => unit.magazine === 5 && unit.reserve === 15)).toBe(true);
+    expect(column.every((unit) => unit.magazine === 5 && unit.reserve === 45)).toBe(true);
     const target = started.units.find((unit) => unit.faction === 'target');
     if (!target) throw new Error('missing training target');
 

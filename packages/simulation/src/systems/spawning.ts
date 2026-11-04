@@ -2,6 +2,7 @@ import {
   DEFAULT_WEAPON_ID,
   MAP_BOUNDS,
   WEAPONS,
+  TRAINING_AMMUNITION,
   MAX_HP,
   MAX_MORALE,
   troopFormationOffsets,
@@ -377,8 +378,8 @@ export function resetTrainingUnit(
   unit.targetX = x;
   unit.targetY = y;
   unit.hp = MAX_HP;
-  unit.magazine = WEAPONS[DEFAULT_WEAPON_ID].magazine;
-  unit.reserve = WEAPONS[DEFAULT_WEAPON_ID].reserve;
+  unit.magazine = TRAINING_AMMUNITION.magazine;
+  unit.reserve = TRAINING_AMMUNITION.reserve;
   unit.morale = MAX_MORALE;
   unit.alive = true;
   unit.suppressed = false;

@@ -49,6 +49,16 @@ export const WEAPONS: Readonly<Record<WeaponId, WeaponProfile>> = {
 
 export const DEFAULT_WEAPON_ID: WeaponId = 'mauser-7mm';
 
+/**
+ * Ammunition issued to the player troop in the training exercise: depot issue to
+ * a regular army troop at Vila Militar. A game abstraction, not a sourced figure;
+ * the Coluna keeps the Mauser profile's scarcity (Macaulay, p. 113).
+ */
+export const TRAINING_AMMUNITION: Readonly<{ magazine: number; reserve: number }> = {
+  magazine: 5,
+  reserve: 45,
+};
+
 export function getWeapon(id: string): WeaponProfile | null {
   return id in WEAPONS ? WEAPONS[id as WeaponId] : null;
 }

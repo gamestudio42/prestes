@@ -272,12 +272,15 @@ encoding test now guards against mojibake. Still open:
 - In a headless training engine, a soldier walking about 47 m on a defend order
   lost the order (and its slot) around tick 300 before arriving. Seen while
   testing cover slots; the cause is not yet investigated.
-- Station 7 by hand (2026-11-04): Suppress empties every magazine (20 rounds)
-  in about 20 s at 2x, so the line cannot be cleared afterwards. Needs a balance
-  decision (training ammunition, suppress fire rate, or suppress stopping once
-  the target is pinned).
-- In a manual Chrome run the section was down to 15/0 rounds early in phase 2;
-  the training ammunition budget may be too tight for the suppress objective.
+- Station 7 by hand (2026-11-04): Suppress emptied every magazine (20 rounds)
+  in about 20 s at 2x, so the line could not be cleared afterwards. Fixed by
+  `tune-training-ammunition`: the training troop and the instructor carry 5 + 45
+  rounds (depot issue at Vila Militar, a game abstraction), and suppress fire
+  eases to the rifle's normal rate once the target is pinned. The Coluna's
+  sandbox, the battle lab and the training enemy keep 5 + 15 (Macaulay, p. 113);
+  campaign ammunition is to be decided later. A mechanics test suppresses for
+  40 s and checks every soldier keeps at least 10 rounds (it fails on the old
+  values). Station 7 has not yet been replayed by hand with the new load.
 
 ## Verification
 
@@ -297,10 +300,12 @@ After `refactor-structural-modules` (2026-11-03): check, build, bundle budget
 hold-failure spec while the machine was under heavy load (suite 8.1 min instead
 of about 3); the rerun passed 23/23 in 3.1 min, including the 5 visual specs.
 
-Last `pnpm verify` run (2026-11-04, after `add-cover-slots`): every step passed.
-check 276 unit tests, build, bundle budget (index JS 998,709 / 1,000,000 B, at
-99.9%; worker 78,402 / 90,000 B; CSS 46,204 / 85,000 B), determinism (golden
-`44beb560`), OpenSpec and e2e 34/34 in 4.5 min. The index JS budget needs room
+Last `pnpm verify` run (2026-11-04, after `tune-training-ammunition`): every
+step passed. check (279 unit tests after the endurance test), build, bundle
+budget (index JS 998,709 / 1,000,000 B, at 99.9%; worker 78,489 / 90,000 B; CSS
+46,204 / 85,000 B), determinism (golden `d2698a02`, from `44beb560` because the
+default run suppresses a pinned target at the normal rate), OpenSpec and e2e
+34/34 in 8.5 min. The index JS budget needs room
 before the next feature (raise it or split a chunk).
 
 Previous `pnpm verify` run (2026-11-03): every step passed. check 184 unit tests,

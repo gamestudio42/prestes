@@ -4,6 +4,7 @@ import {
   COVER_POINTS,
   DEFAULT_WEAPON_ID,
   WEAPONS,
+  TRAINING_AMMUNITION,
   MAX_HP,
   MAX_MORALE,
   TRAINING_SIGHT_OBSTACLES,
@@ -130,8 +131,12 @@ export class SimulationEngine implements SimContext {
         targetY: unit.y,
         hp: MAX_HP,
         weaponId: DEFAULT_WEAPON_ID,
-        magazine: WEAPONS[DEFAULT_WEAPON_ID].magazine,
-        reserve: WEAPONS[DEFAULT_WEAPON_ID].reserve,
+        ...(this.training && unit.faction === 'column'
+          ? TRAINING_AMMUNITION
+          : {
+              magazine: WEAPONS[DEFAULT_WEAPON_ID].magazine,
+              reserve: WEAPONS[DEFAULT_WEAPON_ID].reserve,
+            }),
         morale: MAX_MORALE,
         alive: true,
         suppressed: false,

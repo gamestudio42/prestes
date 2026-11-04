@@ -51,6 +51,28 @@ describe('mechanics: fire', () => {
     expect(t.shotsBy(COLUMN)).toBeGreaterThan(0);
   });
 
+  it('suppress: fast fire until the target is pinned, then the normal rate', () => {
+    const minGap = (pinned: boolean) => {
+      const t = harness();
+      t.send({ type: 'hold_fire', unitIds: [...ENEMY, OFFICER, 2, 7, 8, 9], hold: true });
+      const hold = () => {
+        const target = t.engine.units.find((unit) => unit.id === 6)!;
+        target.hp = 100;
+        target.morale = 100;
+        target.suppression = pinned ? 100 : 0;
+      };
+      t.send({ type: 'suppress', unitIds: [1], targetId: 6 });
+      t.run(400, hold);
+      const ticks = t.events
+        .filter((event) => event.type === 'shot' && event.source === 1)
+        .map((event) => event.tick);
+      expect(ticks.length).toBeGreaterThan(4);
+      return Math.min(...ticks.slice(1).map((tick, index) => tick - ticks[index]!));
+    };
+    expect(minGap(false)).toBe(8);
+    expect(minGap(true)).toBe(12);
+  });
+
   it('hold fire: nobody fires while targets are in range', () => {
     const t = harness();
     t.send({ type: 'hold_fire', unitIds: [...COLUMN, OFFICER, ...ENEMY], hold: true });
@@ -331,7 +353,36 @@ describe('training station setup', () => {
       unit.reserve = 0;
     }
     const frame = t.send(setup(), 2);
-    expect(section(frame).every((unit) => unit.magazine === 5 && unit.reserve === 15)).toBe(true);
+    expect(section(frame).every((unit) => unit.magazine === 5 && unit.reserve === 45)).toBe(true);
+    expect(instructor(frame)).toMatchObject({ magazine: 5, reserve: 45 });
+  });
+
+  it('a section suppressing for 40 s still has rounds to clear the line', () => {
+    const t = harness({ opposition: false });
+    t.send(setup({ enemyPoint: { x: 28, y: -40 }, enemyCount: 6 }), 2);
+    const enemies = t.frame().units.filter((unit) => unit.role === 'training-enemy');
+    t.send({ type: 'hold_fire', unitIds: enemies.map((unit) => unit.id), hold: true });
+    const ids = section(t.frame()).map((unit) => unit.id);
+    t.send({ type: 'suppress', unitIds: ids, targetId: enemies[0]!.id });
+    const keepAlive = () => {
+      for (const unit of t.engine.units) {
+        if (unit.role === 'training-enemy') unit.hp = 100;
+      }
+    };
+    t.run(400, keepAlive);
+    expect(t.shotsBy(ids)).toBeGreaterThan(ids.length * 10);
+    const frame = t.frame();
+    const left = section(frame).filter((unit) => unit.alive);
+    expect(left.every((unit) => unit.magazine + unit.reserve >= 10)).toBe(true);
+  });
+
+  it('carries the training load; the training enemy keeps the Mauser profile', () => {
+    const t = harness({ opposition: false });
+    expect(section(t.frame()).every((unit) => unit.magazine === 5 && unit.reserve === 45)).toBe(true);
+    const frame = t.send(setup({ enemyPoint: { x: 28, y: -40 }, enemyCount: 3 }), 2);
+    const enemies = frame.units.filter((unit) => unit.faction !== 'column' && unit.alive);
+    expect(enemies.length).toBeGreaterThan(0);
+    expect(enemies.every((unit) => unit.magazine === 5 && unit.reserve === 15)).toBe(true);
   });
 
   it('the instructor follows the section', () => {
