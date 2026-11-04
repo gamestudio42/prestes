@@ -24,4 +24,4 @@
 
 - [x] 5.1 `pnpm verify`
 - [x] 5.2 Play all seven stations by hand in Chrome (PT-BR) on the new map; record times, problems and fixes in `docs/status.md`
-- [ ] 5.3 EN pass: play at least stations 1 and 7 in EN and fix untranslated or overflowing text
+- [x] 5.3 EN pass: play at least stations 1 and 7 in EN and fix untranslated or overflowing text

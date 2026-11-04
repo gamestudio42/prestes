@@ -306,7 +306,8 @@
 .start-screen {
   position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(420px, 620px);
+  /* The card's column keeps its width; the empty one gives way first. */
+  grid-template-columns: minmax(400px, 560px) minmax(0, 1fr);
   align-items: end;
   justify-items: start;
   min-height: 100%;
@@ -375,6 +376,7 @@
 
 .start-card h1 {
   color: #f1e5cc;
+  white-space: nowrap;
   text-shadow: 0 2px 18px rgba(0, 0, 0, 0.9);
 }
 

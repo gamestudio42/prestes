@@ -283,9 +283,17 @@ Four phases, each its own OpenSpec change:
      Seen but not changed: one Reserve click did not register and worked on
      the second try (not reproduced); a Pursue aimed at the nearest troop
      member ends when that soldier falls.
-   - Not done yet: the art of the new map is plain (phase 4), the section is
-     placed at each station's entry rather than marching the road between
-     stations, and the EN pass.
+   - EN pass in Chrome (2026-11-04): stations 1 and 7 played in English through
+     the HUD and completed; the station 2 to 6 instructor texts and the
+     debrief checked in the catalog and on screen. No untranslated player text;
+     long instructor lines wrap in the balloon. Fixed: at a 929 px window the
+     start card shrank to about 210 px and split the title ("Pres / tes"); the
+     card's column now keeps 400 to 560 px. Left as is: `training.subtitle`
+     ("Campo de Instrução — 1920") and the old `training.mission.*` texts are
+     unused keys.
+   - Not done yet: the art of the new map is plain (phase 4), and the section
+     is placed at each station's entry rather than marching the road between
+     stations.
 3. Pixel-art HUD, menus and the Coluna Prestes compendium (in-game stays low-poly).
 4. Low-poly art pass: objects, movement and firing feedback.
 
