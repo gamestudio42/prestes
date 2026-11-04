@@ -236,7 +236,7 @@ Four phases, each its own OpenSpec change:
    sequence and the commander giving each order in a text callout and the panel.
    Includes the manual play of stations 5 to 7 and the EN pass carried over from
    `complete-bootcamp-tutorial`.
-   In progress as `redesign-training-ground` (2026-11-04), which also covers the
+   Implemented as `redesign-training-ground`, archived 2026-11-04, which also covers the
    user's play-through notes (disorganized movement, slow default speed):
    - Default speed is now the one labelled 1x (two ticks per 100 ms); 0.5x is
      the slow option; start, retry and Continue reset to 1x; unpausing resumes

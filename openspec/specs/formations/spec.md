@@ -8,12 +8,28 @@ Defines coordinated movement, formations, cohesion, fatigue and defensive region
 ### Requirement: Coordinated advance
 
 An advance SHALL assign one destination per fit soldier, preserve a unit reference
-and limit separation. Blocked routes SHALL recalculate; laggards SHALL slow or pause
-the group rather than be teleported.
+and limit separation. Destinations (formation, line and cover slots) SHALL be
+matched to soldiers by minimum total distance, with ties broken by unit id, so
+that soldiers' routes do not cross. Soldiers ordered to destinations near each
+other SHALL follow one route for the section, each offset by its formation
+position, and SHALL spread to their own destinations at the end of the route.
+Blocked routes SHALL recalculate; laggards SHALL slow or pause the group rather
+than be teleported. The result SHALL be deterministic for the same seed and
+commands.
 
 #### Scenario: Assigned slots
 - **WHEN** a unit advances to a destination
 - **THEN** each fit soldier receives a distinct slot and path
+
+#### Scenario: No crossing
+- **WHEN** a section in line is ordered to a line of slots ahead of it
+- **THEN** the soldier on the left takes the leftmost slot and no two
+  soldiers' straight routes to their slots cross
+
+#### Scenario: Section marches as a body
+- **WHEN** a section of 11 is ordered to a point 40 m away
+- **THEN** its soldiers follow one shared route with formation offsets and stay
+  within the cohesion limit of the section centroid while marching
 
 #### Scenario: Obstacle
 - **WHEN** a soldier's route is blocked
