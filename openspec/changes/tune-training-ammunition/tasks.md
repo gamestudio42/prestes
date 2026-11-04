@@ -6,4 +6,4 @@
 ## 2. Close
 
 - [x] 2.1 Update the determinism golden with `--update` if it changes and record why; run `pnpm verify`
-- [ ] 2.2 Play station 7 by hand in Chrome and record the result in `docs/status.md`
+- [x] 2.2 Play station 7 by hand in Chrome and record the result in `docs/status.md`

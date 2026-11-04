@@ -280,7 +280,16 @@ encoding test now guards against mojibake. Still open:
   sandbox, the battle lab and the training enemy keep 5 + 15 (Macaulay, p. 113);
   campaign ammunition is to be decided later. A mechanics test suppresses for
   40 s and checks every soldier keeps at least 10 rounds (it fails on the old
-  values). Station 7 has not yet been replayed by hand with the new load.
+  values). Station 7 replayed by hand in Chrome (PT-BR, 2x, 2026-11-04):
+  Suppress through the HUD finished the suppress objective at once; the section
+  kept suppressing until all six training soldiers fell (about 80 s of game
+  time) and still had about 20 rounds each; Move onto the trench took the line
+  (10 soldiers in distinct slots) and the station completed in 6:55 with 201
+  rounds left and 11/11 soldiers. Two observations, not changed: suppress fire
+  alone killed the whole training troop, so it may be too lethal; and the camera
+  switched from the strategic to the tactical view during the station without
+  a click on the view toggle, so a Move click aimed in the old view landed
+  elsewhere.
 
 ## Verification
 
