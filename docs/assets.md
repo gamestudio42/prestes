@@ -10,7 +10,7 @@
 | Farmhouse, barn, chapel, ruin, windmill, fields, fences, telegraph line, crops and ground clutter | `packages/view3d/src/world-layer.ts` | Prestes project | CC-BY-4.0 | Procedural 1920s rural kit; instanced fields, grass, rocks, fence posts and rails; visual only, not simulation cover |
 | Layered sandbag, stone, low-wall, barrel and trench visuals | `packages/view3d/src/cover-layer.ts` | Prestes project | CC-BY-4.0 | Instanced bags, blocks, barrel bands and trench lips matched to the simulation cover footprint and rotation |
 | Palette and toon materials | `packages/view3d/src/palette.ts`, `materials.ts` | Prestes project | CC-BY-4.0 | Theme colours and three-band toon ramp |
-| Section portrait placeholder | `apps/game/src/ui/Hud.tsx` | Prestes project | AGPL-3.0-or-later | CSS hatch and Lucide `User` silhouette; explicitly a placeholder until final portraits |
+| Section portrait placeholder | `apps/game/src/ui/Hud.tsx` | Prestes project | AGPL-3.0-or-later | CSS hatch and the pixel `status-soldier` icon; explicitly a placeholder until final portraits |
 | Start menu hero | `apps/game/src/assets/menu/coluna-prestes.webp` | Provided by the project owner | Public domain (verified by the project owner, 2026-11-03) | Historical photograph used as a sepia menu hero; copied from the user's reference folder |
 | Camera, post and path layers | `packages/view3d/src/camera-rig.ts`, `post.ts`, `path-layer.ts` | Prestes project | AGPL-3.0-or-later | Code; techniques inspired by Vazante with attribution |
 
@@ -25,11 +25,9 @@ in-game characters are procedural proxies.
 
 | Asset | Path | Author / source | Licence | Notes |
 | --- | --- | --- | --- | --- |
-| Barlow | `@fontsource/barlow` (npm, bundled) | Jeremy Tribby, via Fontsource | SIL OFL 1.1 | Body font, self-hosted |
-| Barlow Condensed | `@fontsource/barlow-condensed` (npm, bundled) | Jeremy Tribby, via Fontsource | SIL OFL 1.1 | Display font, self-hosted |
-| Cinzel | `@fontsource/cinzel` (npm, bundled) | Natanael Gama, via Fontsource | SIL OFL 1.1 | Display serif for the brand and mission headings |
+| Pixelify Sans | `@fontsource/pixelify-sans` (npm, bundled) | Stefie Justprince, via Fontsource | SIL OFL 1.1 | The single interface font of the pixel kit, self-hosted |
+| Pixel icon set | `assets/icons/prestes-icons.aseprite` (source), `apps/game/src/assets/icons.png` and `icons.json` (export) | Prestes project | AGPL-3.0-or-later | 61 original 16 x 16 icons, one named slice each; first drawn from `assets/icons/icons.txt` by `tools/icons/icon_grids.py` and `build-icons.lua`, edited in Aseprite and exported with `pnpm icons` |
 | Gunshot | `apps/game/src/audio/ShotAudio.ts` | Prestes project | CC-BY-4.0 | Original procedural gunshot synthesized at runtime; no third-party sample is redistributed |
-| Lucide icons | `lucide-react` (npm, bundled) | Lucide contributors, lucide.dev | ISC | HUD, menu and debug icons |
 
 ## Rules
 

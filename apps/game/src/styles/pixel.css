@@ -167,3 +167,322 @@ canvas {
   background-color: currentColor;
   image-rendering: pixelated;
 }
+
+/* --- Floating HUD windows ------------------------------------------------- */
+.hud-windows {
+  position: fixed;
+  inset: 0;
+  z-index: 15;
+  pointer-events: none;
+}
+
+.floating-window {
+  position: absolute;
+  pointer-events: auto;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  max-width: calc(100vw - 8px);
+  padding: 2px;
+  color: var(--px-parchment);
+}
+
+/* The frame is a clipped layer behind the content, so menus and banners that
+   open from inside the window are not cut off by the stepped corners. */
+.floating-window::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--px-panel);
+  border: 2px solid var(--px-border);
+  clip-path: var(--px-corner);
+  box-shadow: inset -2px -2px 0 rgba(8, 5, 2, 0.55), inset 2px 2px 0 rgba(255, 236, 196, 0.06);
+}
+
+.floating-window-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 24px;
+  padding: 2px 4px 2px 6px;
+  background: var(--px-panel-raised);
+  border-bottom: 2px solid var(--px-border);
+  color: var(--px-gold);
+  font-size: 12px;
+  text-transform: uppercase;
+  cursor: grab;
+  user-select: none;
+  touch-action: none;
+}
+
+.floating-window-title:active {
+  cursor: grabbing;
+}
+
+.floating-window.minimized .floating-window-title {
+  border-bottom: 0;
+}
+
+.floating-window-name {
+  flex: 1;
+  white-space: nowrap;
+}
+
+.floating-window-toggle {
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--px-parchment-dim);
+  cursor: pointer;
+}
+
+.floating-window-toggle:hover {
+  color: var(--px-parchment);
+}
+
+.floating-window-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 6px;
+}
+
+/* The order board and the cards drop their own frames inside a window; they
+   stay positioned so their menus open from them. */
+.floating-window-body .order-board,
+.floating-window-body .squad-cards,
+.floating-window-body .weapon-cluster,
+.floating-window-body .weapon-card,
+.floating-window-body .command-row {
+  position: relative;
+  inset: auto;
+  margin: 0;
+  border: 0;
+  clip-path: none;
+  box-shadow: none;
+  background: transparent;
+}
+
+/* --- Troop summary: a helmet and three bars per soldier ------------------- */
+.troop-helmets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  max-width: 300px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.troop-helmet {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  width: 22px;
+  padding: 2px 0;
+}
+
+.troop-helmet.tone-fit { color: var(--px-parchment); }
+.troop-helmet.tone-selected { color: var(--px-gold); }
+.troop-helmet.tone-wounded { color: #d0644f; }
+.troop-helmet.tone-down { color: var(--px-disabled); }
+.troop-helmet.tone-dead { color: #3b3228; }
+
+.helmet-bars {
+  display: flex;
+  gap: 1px;
+  height: 14px;
+}
+
+.helmet-bar {
+  position: relative;
+  width: 4px;
+  height: 14px;
+  background: var(--px-ink-deep);
+}
+
+.helmet-bar > span {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+.helmet-bar.health > span { background: #c25b46; }
+.helmet-bar.morale > span { background: var(--px-gold); }
+.helmet-bar.ammo > span { background: #a8b97c; }
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* The pending-order banner lives inside the Orders window, not above it. */
+.floating-window .pending-banner {
+  position: static;
+  transform: none;
+  max-width: none;
+  margin-top: 2px;
+  border-width: 2px;
+}
+
+/* --- Compendium: a pixel field book --------------------------------------- */
+.codex.codex-book {
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr);
+  gap: 8px;
+  width: min(880px, calc(100vw - 32px));
+  height: min(620px, calc(100vh - 96px));
+  max-height: none;
+  overflow: hidden;
+  padding: 12px;
+  background: var(--px-panel);
+}
+
+.codex-book .codex-header {
+  justify-content: flex-start;
+  gap: 8px;
+  color: var(--px-gold);
+}
+
+.codex-book .codex-header h2 {
+  flex: 1;
+  font-size: 20px;
+  font-weight: 400;
+}
+
+.codex-close {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.codex-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  border-bottom: 2px solid var(--px-border);
+}
+
+.codex-tab {
+  padding: 4px 10px;
+  border: 2px solid var(--px-border);
+  border-bottom: 0;
+  background: var(--px-ink);
+  color: var(--px-parchment-dim);
+  font-size: 14px;
+  cursor: pointer;
+  clip-path: polygon(0 4px, 2px 4px, 2px 2px, 4px 2px, 4px 0, calc(100% - 4px) 0, calc(100% - 4px) 2px, calc(100% - 2px) 2px, calc(100% - 2px) 4px, 100% 4px, 100% 100%, 0 100%);
+}
+
+.codex-tab.active {
+  background: var(--px-parchment);
+  color: var(--px-ink);
+}
+
+.codex-pages {
+  display: grid;
+  grid-template-columns: minmax(200px, 300px) minmax(0, 1fr);
+  gap: 10px;
+  min-height: 0;
+}
+
+.codex-index {
+  margin: 0;
+  padding: 0;
+  overflow: auto;
+  list-style: none;
+  border-right: 2px dashed var(--px-border);
+}
+
+.codex-index-entry {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+  padding: 4px 6px;
+  border: 0;
+  background: transparent;
+  color: var(--px-parchment-dim);
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.codex-index-entry:hover,
+.codex-index-entry.active {
+  background: var(--px-panel-raised);
+  color: var(--px-parchment);
+}
+
+.codex-index-entry.active {
+  box-shadow: inset 2px 0 0 var(--px-gold);
+}
+
+.codex-date {
+  color: var(--px-gold-dim);
+  white-space: nowrap;
+}
+
+/* The reading page is parchment, like a notebook page. */
+.codex-page {
+  overflow: auto;
+  margin: 0;
+  padding: 14px 16px;
+  background: var(--px-parchment);
+  color: var(--px-ink);
+  font-size: 16px;
+  line-height: 1.5;
+  clip-path: var(--px-corner);
+  box-shadow: inset -2px -2px 0 rgba(120, 96, 58, 0.45);
+}
+
+.codex-page h3 {
+  margin: 0 0 8px;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.codex-page .codex-date {
+  margin: 0 0 4px;
+  color: #7a5a2c;
+}
+
+.codex-page .codex-labels span {
+  border-color: #7a5a2c;
+  color: #5a3f1c;
+}
+
+.codex-page .codex-sources,
+.codex-page .codex-confidence {
+  margin: 12px 0 0;
+  font-size: 12px;
+  color: #5a4a30;
+}
+
+.codex-confidence.confidence-high { color: #3f5a1c; }
+.codex-confidence.confidence-medium { color: #7a5a2c; }
+.codex-confidence.confidence-low { color: #8e3a2c; }
+
+.codex-empty {
+  color: #5a4a30;
+}
+
+/* Start screen: the photograph drawn as dithered sepia pixel art. */
+.start-backdrop .start-photo {
+  width: 108%;
+  height: 108%;
+  margin: -4%;
+  object-fit: cover;
+  object-position: center 38%;
+  image-rendering: pixelated;
+  animation: menu-kenburns 30s ease-in-out infinite alternate;
+}

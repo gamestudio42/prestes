@@ -44,3 +44,13 @@ export {
 } from './order-catalog';
 
 
+export {
+  COMPENDIUM,
+  COMPENDIUM_SECTIONS,
+  compendiumBodyKey,
+  compendiumTitleKey,
+  validateCompendium,
+  type CompendiumEntry,
+  type CompendiumSection,
+  type Confidence,
+} from './compendium';

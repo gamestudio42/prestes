@@ -1,7 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import { Eye } from './ui/icons';
 import { BOOTCAMP_EXERCISE, translate, type Locale, type TrainingAction } from '@prestes/content';
-import { trainingStation, type Frame } from '@prestes/shared';
+import {
+  DEFAULT_WEAPON_ID,
+  TRAINING_AMMUNITION,
+  WEAPONS,
+  trainingStation,
+  type Frame,
+} from '@prestes/shared';
 import type { CameraBand } from '@prestes/view3d';
 import { DEFAULT_SPEED, GameClient } from './client/GameClient';
 import { CodexPanel } from './ui/CodexPanel';
@@ -487,6 +493,12 @@ export function App() {
         ordersCollapsed={ordersCollapsed}
         previewEnabled={previewEnabled}
         selectedCount={selectedIds.length}
+        selectedUnitIds={selectedIds}
+        ammoFull={
+          sessionMode === 'training'
+            ? TRAINING_AMMUNITION.magazine + TRAINING_AMMUNITION.reserve
+            : WEAPONS[DEFAULT_WEAPON_ID].magazine + WEAPONS[DEFAULT_WEAPON_ID].reserve
+        }
         speed={speed}
         pendingOrder={pendingOrder}
         pendingTactical={pendingTactical}

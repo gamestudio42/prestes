@@ -1,5 +1,6 @@
 import { Book as BookOpen, Languages, Play, Restart as RotateCcw, SoundOn as Volume2, SoundOff as VolumeX } from './icons';
 import { translate, type Locale, type MessageKey } from '@prestes/content';
+import { PixelPhoto } from './PixelPhoto';
 import heroImage from '../assets/menu/coluna-prestes.webp';
 
 export interface StartScreenProps {
@@ -32,7 +33,7 @@ export function StartScreen({
   return (
     <main className="start-screen" data-testid="start-screen">
       <div className="start-backdrop" aria-hidden="true">
-        <img src={heroImage} alt="" />
+        <PixelPhoto src={heroImage} className="start-photo" />
       </div>
       <div className="start-scrim" aria-hidden="true" />
       <div className="start-grain" aria-hidden="true" />

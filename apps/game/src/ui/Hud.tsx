@@ -7,11 +7,35 @@ import type {
   Stance,
   TacticalOrder,
 } from '@prestes/shared';
+import { useState } from 'react';
+import { FloatingWindow } from './FloatingWindow';
 import { CommandRow } from './hud/CommandRow';
 import { OrderBoard } from './hud/OrderBoard';
 import { SquadCards } from './hud/SquadCards';
 import { TopBar } from './hud/TopBar';
+import { TroopSummary } from './hud/TroopSummary';
 import { WeaponCard } from './hud/WeaponCard';
+import {
+  defaultPosition,
+  loadLayout,
+  saveLayout,
+  type WindowId,
+  type WindowLayout,
+  type WindowState,
+} from './windowLayout';
+
+const troopsSize = () => {
+  const rect = document.querySelector('[data-window="troops"]')?.getBoundingClientRect();
+  return { w: rect?.width ?? 0, h: rect?.height ?? 0 };
+};
+
+const layoutStorage = (): Storage | null => {
+  try {
+    return window.localStorage;
+  } catch {
+    return null;
+  }
+};
 
 export type OrderMode = 'move' | 'attack' | 'suppress' | 'flank';
 
@@ -58,6 +82,10 @@ export interface HudProps {
   audioVolume: number;
   onToggleAudio: () => void;
   onAudioVolume: (volume: number) => void;
+  /** Units currently selected (their helmets are highlighted). */
+  selectedUnitIds?: readonly number[];
+  /** Rounds a soldier carries when full, for the ammunition bars. */
+  ammoFull?: number;
 }
 
 export function Hud({
@@ -102,7 +130,16 @@ export function Hud({
   audioVolume,
   onToggleAudio,
   onAudioVolume,
+  selectedUnitIds = [],
+  ammoFull = 20,
 }: HudProps) {
+  const [layout, setLayout] = useState<WindowLayout>(() => loadLayout(layoutStorage()));
+  const updateWindow = (id: WindowId) => (next: WindowState) =>
+    setLayout((previous) => {
+      const updated = { ...previous, [id]: next };
+      saveLayout(layoutStorage(), updated);
+      return updated;
+    });
   const t = (key: MessageKey, values?: Readonly<Record<string, string | number>>) =>
     translate(locale, key, values);
   const squadUnits = frame?.units.filter((unit) => unit.squadId === selectedSquadId) ?? [];
@@ -134,11 +171,17 @@ export function Hud({
         onToggleCodex={onToggleCodex}
       />
 
-      <section
-        className={`orders-panel ${ordersCollapsed ? 'collapsed' : ''}`}
-        data-testid="squad-status"
-      >
-        <div className="hud-deck">
+      <div className="hud-windows" data-testid="squad-status">
+        <FloatingWindow
+          id="troops"
+          title={t('hud.windowTroops')}
+          state={layout.troops}
+          place={(size, view) => defaultPosition('troops', size, view)}
+          onChange={updateWindow('troops')}
+          minimizeLabel={t('hud.windowMinimize')}
+          restoreLabel={t('hud.windowRestore')}
+          moveLabel={t('hud.windowMove')}
+        >
           <SquadCards
             t={t}
             frame={frame}
@@ -149,29 +192,24 @@ export function Hud({
             onSelectSquad={onSelectSquad}
             onTogglePreview={onTogglePreview}
           />
+        </FloatingWindow>
 
-          <OrderBoard
-            currentOrder={currentOrder}
-            pendingOrder={pendingOrder}
-            pendingTactical={pendingTactical}
-            aimPending={aimPending}
-            posture={posture}
-            holdFire={holdFire}
-            boundingEnabled={boundingEnabled}
-            stance={stance}
-            formation={formation}
-            selectedCount={selectedCount}
-            canClear={canClear}
-            onClear={onClearOrder}
-            onActivateOrder={onActivateOrder}
-            onPosture={onPosture}
-            onHoldFire={onHoldFire}
-            onToggleBounding={onToggleBounding}
-            onStance={onStance}
-            onFormation={onFormation}
+        <FloatingWindow
+          id="summary"
+          title={t('hud.windowSummary')}
+          state={layout.summary}
+          place={(size, view) => defaultPosition('summary', size, view, troopsSize())}
+          onChange={updateWindow('summary')}
+          minimizeLabel={t('hud.windowMinimize')}
+          restoreLabel={t('hud.windowRestore')}
+          moveLabel={t('hud.windowMove')}
+        >
+          <TroopSummary
             t={t}
+            squadUnits={squadUnits}
+            selectedIds={new Set(selectedUnitIds)}
+            ammoFull={ammoFull}
           />
-
           <WeaponCard
             t={t}
             frame={frame}
@@ -183,22 +221,57 @@ export function Hud({
             onToggleAudio={onToggleAudio}
             onAudioVolume={onAudioVolume}
           />
-        </div>
+        </FloatingWindow>
 
-        <CommandRow
-          t={t}
-          selectedCount={selectedCount}
-          aliveCount={aliveUnits.length}
-          currentOrder={currentOrder}
-          stance={stance}
-          pendingOrder={pendingOrder}
-          pendingTactical={pendingTactical}
-          aimPending={aimPending}
-          ordersCollapsed={ordersCollapsed}
-          onToggleOrders={onToggleOrders}
-          onCancelOrder={onCancelOrder}
-        />
-      </section>
+        <FloatingWindow
+          id="orders"
+          title={t('hud.windowOrders')}
+          state={layout.orders}
+          place={(size, view) => defaultPosition('orders', size, view, troopsSize())}
+          onChange={updateWindow('orders')}
+          minimizeLabel={t('hud.windowMinimize')}
+          restoreLabel={t('hud.windowRestore')}
+          moveLabel={t('hud.windowMove')}
+          className={ordersCollapsed ? 'orders-collapsed' : ''}
+        >
+          {!ordersCollapsed ? (
+            <OrderBoard
+              currentOrder={currentOrder}
+              pendingOrder={pendingOrder}
+              pendingTactical={pendingTactical}
+              aimPending={aimPending}
+              posture={posture}
+              holdFire={holdFire}
+              boundingEnabled={boundingEnabled}
+              stance={stance}
+              formation={formation}
+              selectedCount={selectedCount}
+              canClear={canClear}
+              onClear={onClearOrder}
+              onActivateOrder={onActivateOrder}
+              onPosture={onPosture}
+              onHoldFire={onHoldFire}
+              onToggleBounding={onToggleBounding}
+              onStance={onStance}
+              onFormation={onFormation}
+              t={t}
+            />
+          ) : null}
+          <CommandRow
+            t={t}
+            selectedCount={selectedCount}
+            aliveCount={aliveUnits.length}
+            currentOrder={currentOrder}
+            stance={stance}
+            pendingOrder={pendingOrder}
+            pendingTactical={pendingTactical}
+            aimPending={aimPending}
+            ordersCollapsed={ordersCollapsed}
+            onToggleOrders={onToggleOrders}
+            onCancelOrder={onCancelOrder}
+          />
+        </FloatingWindow>
+      </div>
     </>
   );
 }

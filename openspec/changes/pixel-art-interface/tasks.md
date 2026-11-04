@@ -1,7 +1,7 @@
 ## 1. Visual system
 
 - [x] 1.1 Add Pixelify Sans (Fontsource) and `styles/pixel.css` tokens (palette, 2 px unit, stepped-corner panel, hard shadow, pressed and focus states); verify the font serves from the build
-- [ ] 1.2 Record the asset changes in `docs/assets.md` (Pixelify Sans OFL, original icons and their Aseprite source)
+- [x] 1.2 Record the asset changes in `docs/assets.md` (Pixelify Sans OFL, original icons and their Aseprite source)
 
 ## 2. Icons
 
@@ -11,7 +11,7 @@
 
 ## 3. HUD and menus
 
-- [ ] 3.0 `FloatingWindow` (drag by title bar, clamp to view, minimize, keyboard move, persisted layout with defaults); Orders, Troops and Troop summary windows replace the docked bottom bar; Troop summary with a helmet and health, morale and ammunition bars per soldier; unit tests for the layout store and e2e for drag, minimize, reload and the helmets
+- [x] 3.0 `FloatingWindow` (drag by title bar, clamp to view, minimize, keyboard move, persisted layout with defaults); Orders, Troops and Troop summary windows replace the docked bottom bar; Troop summary with a helmet and health, morale and ammunition bars per soldier; unit tests for the layout store and e2e for drag, minimize, reload and the helmets
 - [ ] 3.1 Restyle the top bar, order and troop content, weapon line and tooltips with the tokens and pixel icons
 - [ ] 3.2 Restyle the training panel, debrief, sandbox panel, field overlays, order callouts and the commander balloon
 - [ ] 3.3 Start screen: pixelated, dithered sepia photograph and pixel title and buttons
@@ -19,9 +19,9 @@
 
 ## 4. Compendium
 
-- [ ] 4.1 `COMPENDIUM` registry (figures, events, places, weapons, corrections) from `docs/history`, with sources and confidence; validation and unit tests
-- [ ] 4.2 PT-BR and EN texts for every entry; `pnpm check:locales`
-- [ ] 4.3 Pixel book UI: tabs, list, reading page with source line and confidence, corrections page; e2e: open Events, read the 1922 revolt, switch to EN
+- [x] 4.1 `COMPENDIUM` registry (figures, events, places, weapons, corrections) from `docs/history`, with sources and confidence; validation and unit tests
+- [x] 4.2 PT-BR and EN texts for every entry; `pnpm check:locales`
+- [x] 4.3 Pixel book UI: tabs, list, reading page with source line and confidence, corrections page; e2e: open Events, read the 1922 revolt, switch to EN
 
 ## 5. Close
 

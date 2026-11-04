@@ -13,7 +13,7 @@ test('boots, selects a section, gives orders, fights and toggles the post', asyn
   await page.getByTestId('start-button').click();
   await expect(page.getByTestId('hud')).toBeVisible();
   await page.evaluate(() => document.fonts.ready);
-  expect(await page.evaluate(() => document.fonts.check('600 20px Cinzel'))).toBe(true);
+  expect(await page.evaluate(() => document.fonts.check('400 16px "Pixelify Sans"'))).toBe(true);
   await expect(page.getByTestId('game-canvas')).toBeVisible();
   await expect(page.getByTestId('squad-status')).toBeVisible();
   await expect(page.getByTestId('tutorial-panel')).toHaveCount(0);
