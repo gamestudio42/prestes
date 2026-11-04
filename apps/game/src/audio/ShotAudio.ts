@@ -2,8 +2,24 @@
 
 export interface GunshotOutput {
   unlock(): Promise<boolean>;
-  play(volume: number): void;
+  /** One shot; `rate` shifts the pitch a little so a volley does not repeat. */
+  play(volume: number, rate?: number): void;
+  /** The rifle's bolt worked `delay` seconds later (outputs that have it). */
+  playBolt?(volume: number, delay: number, rate?: number): void;
   dispose(): void;
+}
+
+/** The bolt follows a shot like in the recording: 1.3 s later, much softer. */
+export const BOLT_DELAY = 1.3;
+export const BOLT_LEVEL = 0.3;
+
+/** A repeatable playback rate in [0.94, 1.06] for a shot key. */
+export function shotRate(key: string): number {
+  let hash = 2166136261;
+  for (let index = 0; index < key.length; index += 1) {
+    hash = Math.imul(hash ^ key.charCodeAt(index), 16777619);
+  }
+  return 0.94 + ((hash >>> 0) / 4294967296) * 0.12;
 }
 
 interface ShotAudioOptions {
@@ -67,7 +83,9 @@ export class ShotAudio {
       return;
     }
     this.activeVoices += 1;
-    this.output.play(this.volume);
+    const rate = shotRate(key);
+    this.output.play(this.volume, rate);
+    this.output.playBolt?.(this.volume * BOLT_LEVEL, BOLT_DELAY, rate);
     globalThis.setTimeout(() => {
       this.activeVoices = Math.max(0, this.activeVoices - 1);
     }, this.voiceMs);
@@ -91,36 +109,100 @@ interface AudioContextConstructor {
   new (): AudioContext;
 }
 
+async function openContext(existing: AudioContext | null): Promise<AudioContext | null> {
+  const Constructor =
+    window.AudioContext ??
+    (window as unknown as { webkitAudioContext?: AudioContextConstructor }).webkitAudioContext;
+  if (!Constructor) {
+    return null;
+  }
+  const context = existing ?? new Constructor();
+  if (context.state === 'suspended') {
+    await context.resume();
+  }
+  return context;
+}
+
+function playBuffer(context: AudioContext, buffer: AudioBuffer, volume: number, rate = 1, delay = 0): void {
+  const source = context.createBufferSource();
+  const gain = context.createGain();
+  source.buffer = buffer;
+  source.playbackRate.value = rate;
+  gain.gain.value = volume;
+  source.connect(gain);
+  gain.connect(context.destination);
+  source.start(context.currentTime + delay);
+}
+
+/**
+ * The Mauser recorded by the project owner: the shot, then the bolt worked
+ * 1.3 s later. Falls back to the synthesized shot if the files do not load.
+ */
+export class RecordedGunshotOutput implements GunshotOutput {
+  private context: AudioContext | null = null;
+  private shot: AudioBuffer | null = null;
+  private bolt: AudioBuffer | null = null;
+
+  constructor(private readonly base = './audio/') {}
+
+  async unlock(): Promise<boolean> {
+    this.context = await openContext(this.context);
+    if (!this.context) {
+      return false;
+    }
+    if (!this.shot) {
+      const [shot, bolt] = await Promise.all([
+        this.load('mauser-shot.wav'),
+        this.load('mauser-bolt.wav'),
+      ]);
+      this.shot = shot ?? synthesizeGunshot(this.context);
+      this.bolt = bolt;
+    }
+    return true;
+  }
+
+  play(volume: number, rate = 1): void {
+    if (this.context && this.shot) playBuffer(this.context, this.shot, volume, rate);
+  }
+
+  playBolt(volume: number, delay: number, rate = 1): void {
+    if (this.context && this.bolt) playBuffer(this.context, this.bolt, volume, rate, delay);
+  }
+
+  dispose(): void {
+    void this.context?.close();
+    this.context = null;
+    this.shot = null;
+    this.bolt = null;
+  }
+
+  private async load(file: string): Promise<AudioBuffer | null> {
+    try {
+      const response = await fetch(`${this.base}${file}`);
+      if (!response.ok) return null;
+      return await this.context!.decodeAudioData(await response.arrayBuffer());
+    } catch {
+      return null;
+    }
+  }
+}
+
+/** A procedural shot, used when the recording is not available. */
 export class SynthesizedGunshotOutput implements GunshotOutput {
   private context: AudioContext | null = null;
   private buffer: AudioBuffer | null = null;
 
   async unlock(): Promise<boolean> {
-    const Constructor =
-      window.AudioContext ??
-      (window as unknown as { webkitAudioContext?: AudioContextConstructor }).webkitAudioContext;
-    if (!Constructor) {
+    this.context = await openContext(this.context);
+    if (!this.context) {
       return false;
     }
-    this.context ??= new Constructor();
-    if (this.context.state === 'suspended') {
-      await this.context.resume();
-    }
-    this.buffer ??= this.createBuffer(this.context);
+    this.buffer ??= synthesizeGunshot(this.context);
     return true;
   }
 
-  play(volume: number): void {
-    if (!this.context || !this.buffer) {
-      return;
-    }
-    const source = this.context.createBufferSource();
-    const gain = this.context.createGain();
-    source.buffer = this.buffer;
-    gain.gain.value = volume;
-    source.connect(gain);
-    gain.connect(this.context.destination);
-    source.start();
+  play(volume: number, rate = 1): void {
+    if (this.context && this.buffer) playBuffer(this.context, this.buffer, volume, rate);
   }
 
   dispose(): void {
@@ -128,22 +210,22 @@ export class SynthesizedGunshotOutput implements GunshotOutput {
     this.context = null;
     this.buffer = null;
   }
+}
 
-  private createBuffer(context: AudioContext): AudioBuffer {
-    const seconds = 0.55;
-    const length = Math.floor(context.sampleRate * seconds);
-    const buffer = context.createBuffer(1, length, context.sampleRate);
-    const data = buffer.getChannelData(0);
-    let filter = 0;
-    for (let index = 0; index < length; index += 1) {
-      const time = index / context.sampleRate;
-      const noise = Math.random() * 2 - 1;
-      filter = filter * 0.82 + noise * 0.18;
-      const crack = time < 0.055 ? noise * 0.5 : 0;
-      const thump = Math.sin(Math.PI * 2 * 76 * time) * Math.exp(-time * 16) * 0.32;
-      const decay = Math.exp(-time * 7.5);
-      data[index] = Math.max(-0.95, Math.min(0.95, (filter * 0.8 + crack + thump) * decay));
-    }
-    return buffer;
+function synthesizeGunshot(context: AudioContext): AudioBuffer {
+  const seconds = 0.55;
+  const length = Math.floor(context.sampleRate * seconds);
+  const buffer = context.createBuffer(1, length, context.sampleRate);
+  const data = buffer.getChannelData(0);
+  let filter = 0;
+  for (let index = 0; index < length; index += 1) {
+    const time = index / context.sampleRate;
+    const noise = Math.random() * 2 - 1;
+    filter = filter * 0.82 + noise * 0.18;
+    const crack = time < 0.055 ? noise * 0.5 : 0;
+    const thump = Math.sin(Math.PI * 2 * 76 * time) * Math.exp(-time * 16) * 0.32;
+    const decay = Math.exp(-time * 7.5);
+    data[index] = Math.max(-0.95, Math.min(0.95, (filter * 0.8 + crack + thump) * decay));
   }
+  return buffer;
 }

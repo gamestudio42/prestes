@@ -27,7 +27,8 @@ in-game characters are procedural proxies.
 | --- | --- | --- | --- | --- |
 | Pixelify Sans | `@fontsource/pixelify-sans` (npm, bundled) | Stefie Justprince, via Fontsource | SIL OFL 1.1 | The single interface font of the pixel kit, self-hosted |
 | Pixel icon set | `assets/icons/prestes-icons.aseprite` (source), `apps/game/src/assets/icons.png` and `icons.json` (export) | Prestes project | AGPL-3.0-or-later | 61 original 16 x 16 icons, one named slice each; first drawn from `assets/icons/icons.txt` by `tools/icons/icon_grids.py` and `build-icons.lua`, edited in Aseprite and exported with `pnpm icons` |
-| Gunshot | `apps/game/src/audio/ShotAudio.ts` | Prestes project | CC-BY-4.0 | Original procedural gunshot synthesized at runtime; no third-party sample is redistributed |
+| Mauser shot and bolt | `apps/game/public/audio/mauser-shot.wav`, `mauser-bolt.wav` | Project owner's own recording (video `sons referencia/mouser shot.mp4`, kept out of git) | Owner's own work, given for the game (2026-11-04) | Cut with Blender's audio library: one shot (0.9 s, the recording's saturation kept, -1 dBFS) and the bolt cycle (0.53 s, -6 dBFS). Played by `ShotAudio`, the bolt 1.3 s after each shot at 30% |
+| Fallback gunshot | `apps/game/src/audio/ShotAudio.ts` | Prestes project | CC-BY-4.0 | Procedural gunshot synthesized at runtime, used only when the recording does not load |
 
 ## Rules
 

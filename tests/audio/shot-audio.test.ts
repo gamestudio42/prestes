@@ -1,9 +1,11 @@
 ﻿import { describe, expect, it } from 'vitest';
 import type { SimEvent } from '@prestes/shared';
-import { ShotAudio, type GunshotOutput } from '../../apps/game/src/audio/ShotAudio';
+import { BOLT_DELAY, BOLT_LEVEL, ShotAudio, shotRate, type GunshotOutput } from '../../apps/game/src/audio/ShotAudio';
 
 class FakeOutput implements GunshotOutput {
   plays = 0;
+  rates: number[] = [];
+  bolts: Array<{ volume: number; delay: number }> = [];
   disposed = false;
   constructor(private readonly ready = true) {}
 
@@ -11,8 +13,13 @@ class FakeOutput implements GunshotOutput {
     return this.ready;
   }
 
-  play(): void {
+  play(_volume: number, rate = 1): void {
     this.plays += 1;
+    this.rates.push(rate);
+  }
+
+  playBolt(volume: number, delay: number): void {
+    this.bolts.push({ volume, delay });
   }
 
   dispose(): void {
@@ -35,6 +42,23 @@ function shot(tick: number, source = 1, target = 2): SimEvent {
 }
 
 describe('ShotAudio', () => {
+  it('works the bolt after each shot, softer, and varies the pitch repeatably', async () => {
+    const output = new FakeOutput();
+    const audio = new ShotAudio(output, { maxVoices: 4, volume: 0.5 });
+    await audio.unlock();
+    audio.handleEvent(shot(1));
+    audio.handleEvent(shot(2, 3));
+    expect(output.bolts).toEqual([
+      { volume: 0.5 * BOLT_LEVEL, delay: BOLT_DELAY },
+      { volume: 0.5 * BOLT_LEVEL, delay: BOLT_DELAY },
+    ]);
+    for (const rate of output.rates) {
+      expect(rate).toBeGreaterThanOrEqual(0.94);
+      expect(rate).toBeLessThanOrEqual(1.06);
+    }
+    expect(shotRate('1:1:2')).toBe(shotRate('1:1:2'));
+  });
+
   it('plays once per shot event and deduplicates repeats', async () => {
     const output = new FakeOutput();
     const audio = new ShotAudio(output, { maxVoices: 4 });

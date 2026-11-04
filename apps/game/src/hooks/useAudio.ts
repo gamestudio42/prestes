@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { ShotAudio, SynthesizedGunshotOutput } from '../audio/ShotAudio';
+import { RecordedGunshotOutput, ShotAudio } from '../audio/ShotAudio';
 import { loadAudioSettings, saveAudioSettings } from '../storage';
 
 /** Shot audio with persisted mute and volume. */
@@ -9,7 +9,7 @@ export function useAudio() {
   const audioRef = useRef<ShotAudio | null>(null);
 
   useEffect(() => {
-    const audio = new ShotAudio(new SynthesizedGunshotOutput(), {
+    const audio = new ShotAudio(new RecordedGunshotOutput(), {
       muted: audioMuted,
       volume: audioVolume,
     });
