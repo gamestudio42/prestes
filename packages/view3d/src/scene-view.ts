@@ -11,6 +11,7 @@ import {
   type Vec2,
   type PreviewPlan,
   type SlotMarker,
+  type UnitSnapshot,
   troopFormationOffsets,
 } from '@prestes/shared';
 import { CameraRig, type CameraBand } from './camera-rig';
@@ -435,7 +436,8 @@ export class SceneView {
     }
   }
 
-  pickUnit(cssX: number, cssY: number): number | null {
+  /** Nearest unit to a screen point (within 28 px) that `accept` allows. */
+  pickUnit(cssX: number, cssY: number, accept?: (unit: UnitSnapshot) => boolean): number | null {
     const frame = this.lastFrame;
     if (!frame) return null;
     const width = Math.max(1, this.container.clientWidth);
@@ -444,7 +446,7 @@ export class SceneView {
     let best: number | null = null;
     let bestDistance = 28 * 28;
     for (const unit of frame.units) {
-      if (!unit.alive || unit.routed) continue;
+      if (!unit.alive || unit.routed || (accept && !accept(unit))) continue;
       point.set(unit.x, terrainHeightAt(unit.x, unit.y) + 1, unit.y).project(this.rig.camera);
       const x = ((point.x + 1) / 2) * width;
       const y = ((1 - point.y) / 2) * height;

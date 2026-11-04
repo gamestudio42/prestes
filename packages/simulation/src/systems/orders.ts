@@ -9,13 +9,25 @@ import {
   isLineBlocked,
   isPointNearCover,
   isPointBlockedByCovers,
+  matchDestinations,
+  troopFormationOffsets,
 } from '@prestes/shared';
 import type { Command, SimEvent, TacticalOrder, Vec2 } from '@prestes/shared';
 import { FLANK_RADIUS, flankCandidates, formationSlots } from '../tactical';
 import { FLANK_COOLDOWN, WITHDRAW_DISTANCE } from './model';
+
+const REGROUP_FILES = 4;
+const REGROUP_SPACING = 2;
 import type { MutableUnit } from './model';
 import type { SimContext } from './context';
-import { occupied, nearestEnemy, nearestEnemyAt, facingToward, clampToRegion } from './geometry';
+import {
+  occupied,
+  nearestEnemy,
+  nearestEnemyAt,
+  nearestOpenPoint,
+  facingToward,
+  clampToRegion,
+} from './geometry';
 import { queueUnitOrder } from './movement';
 import { releaseCarry } from './casualties';
 import { matchedDestinations, orderSlots, takeSlot } from './slots';
@@ -157,15 +169,31 @@ export function applyTacticalOrder(
       reject(ctx, tick, seq, 'no_officer', events);
       return;
     }
-    const slots = formationSlots(
-      units.map((unit) => ({ x: unit.x, y: unit.y })),
-      { x: officer.x, y: officer.y },
-      undefined,
-      units[0]?.formation ?? 'line',
+    // Regroup closes the section into a compact block on the officer (four
+    // files, 2 m apart), whatever formation it marches in; protect-officer
+    // keeps the formation around him.
+    const centre = { x: officer.x, y: officer.y };
+    const compact = troopFormationOffsets(units.length, REGROUP_FILES, REGROUP_SPACING, 0).map(
+      (offset, _index, all) => {
+        const rows = Math.ceil(all.length / REGROUP_FILES);
+        return nearestOpenPoint(ctx, {
+          x: centre.x + offset.x,
+          y: centre.y + offset.y - ((rows - 1) * REGROUP_SPACING) / 2,
+        });
+      },
     );
+    const slots =
+      command.order === 'regroup'
+        ? matchDestinations(units, compact)
+        : formationSlots(
+            units.map((unit) => ({ x: unit.x, y: unit.y })),
+            centre,
+            undefined,
+            units[0]?.formation ?? 'line',
+          );
     units.forEach((unit, index) => {
       clear(unit);
-      const destination = slots[index] ?? { x: officer.x, y: officer.y };
+      const destination = slots[index] ?? centre;
       const path = findPath({ x: unit.x, y: unit.y }, destination, ctx.covers);
       unit.currentOrder = command.order;
       unit.orderIssued = true;

@@ -611,7 +611,7 @@ export const ptBR: Record<MessageKey, string> = {
   'training.station.fire.holdfire.label': 'Fogo contido',
   'training.station.fire.holdfire.instructor': 'Instrutor: Cessar fogo! Aperte Conter fogo e mantenha a seção em silêncio.',
   'training.station.fire.face.label': 'Voltados para a marca',
-  'training.station.fire.face.instructor': 'Instrutor: Dê a ordem Encarar e clique na marca ao norte.',
+  'training.station.fire.face.instructor': 'Instrutor: Dê a ordem Encarar e clique na marca atrás da seção.',
   'training.station.maneuver.title': 'Manobra',
   'training.station.maneuver.objective': 'Flanquear, avançar em lances, recuar e manter a posição.',
   'training.station.maneuver.briefing': 'A tropa de treino não atira nesta estação: aprenda primeiro o movimento.',

@@ -9,7 +9,7 @@ import {
   isPointBlockedByCovers,
 } from '@prestes/shared';
 import type { SimEvent, Vec2 } from '@prestes/shared';
-import { FATIGUE_MAX, OPEN_POINT_DIRECTIONS, clamp } from './model';
+import { FATIGUE_MARCH, FATIGUE_MAX, OPEN_POINT_DIRECTIONS, clamp } from './model';
 import type { ActiveOrder, MutableUnit } from './model';
 import type { SimContext } from './context';
 import { hasLineOfSight, nearestOpenPoint, occupied, nearestEnemy } from './geometry';
@@ -230,7 +230,7 @@ export function moveUnit(
   }
   unit.x = nextX;
   unit.y = nextY;
-  unit.fatigue = Math.min(FATIGUE_MAX, unit.fatigue + 0.8);
+  unit.fatigue = Math.min(FATIGUE_MAX, unit.fatigue + FATIGUE_MARCH);
 }
 
 export function queueUnitOrder(

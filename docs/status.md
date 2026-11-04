@@ -261,9 +261,31 @@ Four phases, each its own OpenSpec change:
    - Flanking goes around the target's troop (its squad within 15 m), not the
      clicked soldier: flanking the end soldier of a line put the flankers in
      front of the rest of it (found by the full e2e run on the new map).
+   - Hand play in Chrome (PT-BR, 1x, 2026-11-04), all seven stations through
+     the HUD on the new map: formation about 1,360 ticks, fire about 1,400,
+     maneuver about 1,780 (flank 2/2 on the first try), defense about 1,800,
+     recon about 1,600 on its replay, wounded about 1,000, final completed with
+     91 rounds left and 11/11 soldiers. Fixed during the play:
+     - Regroup used the section's formation (a 28 m line) around the
+       instructor, which split the section across the hamlet's trench and
+       wall (4/9 regrouped): it now closes into a compact block (four files,
+       2 m apart) on the instructor.
+     - Fatigue rose 0.8 a tick while walking and recovered 0.03, so a 25 m
+       walk took soldiers to 85 and Pursue stopped at 90 straight away: now
+       marching nets 0.15 a tick (about a minute, 120 m, to 90) and rest
+       recovers 0.1 (about 1.5 minutes).
+     - With an order armed, a click picked the nearest soldier and dropped
+       it if it was an able friendly, so Rescue on a casualty lying among his
+       comrades went nowhere: able friendlies are now skipped by the pick
+       itself.
+     - The Face instruction said "the north marker"; the marker is behind the
+       section. The balloon now clears when the exercise ends.
+     Seen but not changed: one Reserve click did not register and worked on
+     the second try (not reproduced); a Pursue aimed at the nearest troop
+     member ends when that soldier falls.
    - Not done yet: the art of the new map is plain (phase 4), the section is
      placed at each station's entry rather than marching the road between
-     stations, the hand play of all seven stations and the EN pass.
+     stations, and the EN pass.
 3. Pixel-art HUD, menus and the Coluna Prestes compendium (in-game stays low-poly).
 4. Low-poly art pass: objects, movement and firing feedback.
 

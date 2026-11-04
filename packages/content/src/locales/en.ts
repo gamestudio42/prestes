@@ -609,7 +609,7 @@ export const en = {
   'training.station.fire.holdfire.label': 'Holding fire',
   'training.station.fire.holdfire.instructor': 'Instructor: Cease fire! Press Hold Fire and keep the section silent.',
   'training.station.fire.face.label': 'Facing the marker',
-  'training.station.fire.face.instructor': 'Instructor: Give Face and click the north marker.',
+  'training.station.fire.face.instructor': 'Instructor: Give Face and click the marker behind the section.',
   'training.station.maneuver.title': 'Maneuver',
   'training.station.maneuver.objective': 'Flank, advance by bounds, withdraw and hold position.',
   'training.station.maneuver.briefing': 'The training troop holds its fire here: learn the movement first.',

@@ -42,6 +42,13 @@ export const SUPPRESSION_COOLDOWN = 150;
 export const SUPPRESS_FIRE_INTERVAL = 8;
 export const WITHDRAW_DISTANCE = 12;
 export const FATIGUE_MAX = 100;
+/**
+ * Fatigue per tick of movement. Rest (below) applies every tick, so marching
+ * nets 0.15 a tick: about a minute (120 m) takes a fresh soldier to 90.
+ */
+export const FATIGUE_MARCH = 0.25;
+/** Fatigue recovered every tick: about 1.5 minutes from tired to fresh at rest. */
+export const FATIGUE_REST = 0.1;
 export const AMBUSH_RADIUS = 14;
 export const AWARENESS_RANGE = 120;
 export const RESCUE_CONTACT_DISTANCE = 1.4;

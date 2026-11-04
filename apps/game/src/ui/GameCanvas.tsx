@@ -227,13 +227,12 @@ export function GameCanvas({
   // With an order armed, an able soldier of our own under the cursor is not a
   // pick: the click goes to the ground (cover he stands in, for example).
   // Wounded friendlies stay pickable for Rescue.
-  const orderPick = (unitId: number | null): number | null => {
-    if (unitId === null || !(pendingAction || aimPending)) {
-      return unitId;
-    }
-    const unit = client.currentFrame()?.units.find((entry) => entry.id === unitId);
-    return unit && unit.faction === 'column' && !unit.incapacitated ? null : unitId;
-  };
+  // The pick skips them, so the nearest pickable soldier (an enemy, or a
+  // casualty for Rescue among his comrades) is found behind them.
+  const orderPick = (scene: SceneView, x: number, y: number): number | null =>
+    pendingAction || aimPending
+      ? scene.pickUnit(x, y, (unit) => unit.faction !== 'column' || unit.incapacitated)
+      : scene.pickUnit(x, y);
 
   const handlePointerMove = (event: PointerEvent<HTMLDivElement>): void => {
     const scene = sceneRef.current;
@@ -276,7 +275,7 @@ export function GameCanvas({
     }
 
     const frame = client.currentFrame();
-    const unitId = orderPick(scene.pickUnit(x, y));
+    const unitId = orderPick(scene, x, y);
     if (unitId !== null && frame) {
       const unit = frame.units.find((entry) => entry.id === unitId);
       if (unit && unit.alive && unit.faction !== 'column') {
@@ -353,7 +352,7 @@ export function GameCanvas({
       );
       onSelectUnits(ids, x < startX ? 'all' : 'troops');
     } else {
-      const unitId = orderPick(scene.pickUnit(x, y));
+      const unitId = orderPick(scene, x, y);
       if (unitId !== null) {
         onPrimaryUnit(unitId);
       } else if (pendingAction || aimPending) {

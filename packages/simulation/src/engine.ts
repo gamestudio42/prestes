@@ -29,7 +29,7 @@ import type {
   SightObstacle,
 } from '@prestes/shared';
 import { OrderManager } from './order-manager';
-import { BATTLE_UNITS, DEFAULT_UNITS, TRAINING_UNITS } from './systems/model';
+import { BATTLE_UNITS, DEFAULT_UNITS, FATIGUE_REST, TRAINING_UNITS } from './systems/model';
 import type { ActiveOrder, BoundingGroup, MutableUnit } from './systems/model';
 import type { SimContext } from './systems/context';
 import { snapshotUnits } from './systems/snapshot';
@@ -269,7 +269,7 @@ export class SimulationEngine implements SimContext {
             : coverForStance(unit.stance);
         }
         if (unit.alive && !unit.incapacitated) {
-          unit.fatigue = Math.max(0, unit.fatigue - 0.03);
+          unit.fatigue = Math.max(0, unit.fatigue - FATIGUE_REST);
         }
         if (unit.cooldown > 0) {
           unit.cooldown -= 1;

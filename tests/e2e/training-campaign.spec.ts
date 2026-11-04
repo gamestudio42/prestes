@@ -268,6 +268,8 @@ async function playFinal(page: Page): Promise<void> {
     chunk: 60,
     label: 'debrief',
   });
+  // The exercise is over: the instructor has no order left in a balloon.
+  await expect(page.getByTestId('commander-balloon')).toHaveCount(0);
 }
 
 const PLAY = [playFormation, playFire, playManeuver, playDefense, playRecon, playWounded, playFinal];

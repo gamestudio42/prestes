@@ -153,7 +153,15 @@ export function useExerciseDirector({
   }, [exerciseFeedback]);
   // The instructor speaks the order for each new objective over his head.
   useEffect(() => {
-    if (sessionMode !== 'training' || !exerciseState || exerciseState.completed || !frame) {
+    if (sessionMode !== 'training' || !exerciseState || !frame) {
+      return;
+    }
+    // The exercise is over: nothing left to order.
+    if (exerciseState.completed) {
+      if (calloutObjective.current !== 'completed') {
+        calloutObjective.current = 'completed';
+        setInstructorCallout(null);
+      }
       return;
     }
     const objective = activeObjective(exerciseState);
