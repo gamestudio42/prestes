@@ -1,7 +1,7 @@
 /* Base reset, controls, early HUD rails, codex, sandbox panel, selection and tutorial objectives. */
 :root {
   color-scheme: dark;
-  font-family: 'Barlow', 'Segoe UI', system-ui, sans-serif;
+  font-family: var(--px-font);
   background: #10130f;
   color: #e9e4d0;
 }
@@ -46,23 +46,23 @@ body {
   border: 1px solid #3a4433;
   background: rgba(20, 25, 18, 0.88);
   padding: 40px;
-  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.4);
+  box-shadow: var(--px-shadow);
 }
 
 .eyebrow {
   margin: 0 0 12px;
   text-transform: uppercase;
-  letter-spacing: 0.22em;
-  font-size: 0.72rem;
+  letter-spacing: 0;
+  font-size: 12px;
   color: #b8c29c;
 }
 
 h1 {
-  font-family: 'Barlow Condensed', 'Barlow', sans-serif;
+  font-family: var(--px-font);
   margin: 0;
   font-size: clamp(3rem, 12vw, 7rem);
   line-height: 0.9;
-  letter-spacing: 0.08em;
+  letter-spacing: 0;
 }
 
 .start-actions {
@@ -91,7 +91,7 @@ button {
   border: 1px solid #8fb05a;
   padding: 12px 22px;
   font-weight: 700;
-  letter-spacing: 0.06em;
+  letter-spacing: 0;
   text-transform: uppercase;
 }
 
@@ -114,9 +114,9 @@ button {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  font-size: 0.72rem;
+  font-size: 12px;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
+  letter-spacing: 0;
   color: #b8c29c;
 }
 
@@ -136,7 +136,7 @@ select {
 .footer-note {
   margin: 32px 0 0;
   color: #98a184;
-  font-size: 0.82rem;
+  font-size: 14px;
 }
 
 .game-canvas {
@@ -160,10 +160,10 @@ select {
 }
 
 .hud-brand {
-  font-family: 'Barlow Condensed', 'Barlow', sans-serif;
-  font-size: 1.65rem;
+  font-family: var(--px-font);
+  font-size: 32px;
   font-weight: 700;
-  letter-spacing: 0.16em;
+  letter-spacing: 0;
   line-height: 1;
   text-transform: uppercase;
   color: #f0e6c4;
@@ -172,10 +172,10 @@ select {
 .hud-eyebrow {
   display: block;
   margin-top: 4px;
-  font-family: 'Barlow', sans-serif;
-  font-size: 0.62rem;
+  font-family: var(--px-font);
+  font-size: 10px;
   font-weight: 400;
-  letter-spacing: 0.2em;
+  letter-spacing: 0;
   color: #b8c29c;
 }
 
@@ -243,15 +243,15 @@ select {
 .codex-labels span {
   border: 1px solid #6b7a58;
   padding: 2px 7px;
-  font-size: 0.72rem;
+  font-size: 12px;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
+  letter-spacing: 0;
   color: #b8c29c;
 }
 
 .codex-sources {
   color: #98a184;
-  font-size: 0.8rem;
+  font-size: 14px;
 }
 
 .secondary.active {
@@ -273,8 +273,8 @@ select {
     linear-gradient(180deg, rgba(22, 27, 20, 0.9), rgba(12, 15, 11, 0.98) 38%),
     #0c0f0b;
   border-top: 1px solid #6b7a58;
-  box-shadow: 0 -12px 30px rgba(0, 0, 0, 0.45);
-  font-size: 0.78rem;
+  box-shadow: var(--px-shadow);
+  font-size: 12px;
 }
 
 .orders-panel::before {
@@ -307,8 +307,8 @@ select {
   right: 0;
   bottom: 0;
   padding: 1px 2px;
-  font-size: 0.42rem;
-  letter-spacing: 0.08em;
+  font-size: 10px;
+  letter-spacing: 0;
   text-align: center;
   text-transform: uppercase;
   color: #8f9a7c;
@@ -324,10 +324,10 @@ select {
 .section-copy strong {
   overflow: hidden;
   color: #f0e6c4;
-  font-family: 'Barlow Condensed', 'Barlow', sans-serif;
-  font-size: 0.86rem;
+  font-family: var(--px-font);
+  font-size: 14px;
   font-weight: 600;
-  letter-spacing: 0.08em;
+  letter-spacing: 0;
   text-overflow: ellipsis;
   text-transform: uppercase;
   white-space: nowrap;
@@ -335,8 +335,8 @@ select {
 
 .section-copy > span:not(.mini-bar) {
   color: #b8c29c;
-  font-size: 0.68rem;
-  letter-spacing: 0.06em;
+  font-size: 12px;
+  letter-spacing: 0;
   text-transform: uppercase;
 }
 
@@ -369,14 +369,14 @@ select {
   min-height: 56px;
   padding: 6px 4px;
   color: #e9e4d0;
-  font-family: 'Barlow Condensed', 'Barlow', sans-serif;
-  font-size: 0.78rem;
+  font-family: var(--px-font);
+  font-size: 12px;
   font-weight: 600;
-  letter-spacing: 0.08em;
+  letter-spacing: 0;
   text-transform: uppercase;
   background: linear-gradient(180deg, #242b20, #171c14);
   border: 1px solid #46523b;
-  box-shadow: inset 0 0 0 1px rgba(240, 230, 196, 0.03);
+  box-shadow: var(--px-inset);
 }
 
 .order-button:hover {
@@ -400,8 +400,8 @@ select {
 .stance-row > span {
   margin-right: 2px;
   color: #8f9a7c;
-  font-size: 0.66rem;
-  letter-spacing: 0.12em;
+  font-size: 12px;
+  letter-spacing: 0;
   text-transform: uppercase;
 }
 
@@ -409,7 +409,7 @@ select {
   flex: 1;
   justify-content: center;
   padding: 6px 8px;
-  font-size: 0.7rem;
+  font-size: 12px;
   text-transform: uppercase;
 }
 
@@ -429,16 +429,16 @@ select {
   justify-content: space-between;
   gap: 8px;
   color: #b8c29c;
-  font-size: 0.68rem;
-  letter-spacing: 0.08em;
+  font-size: 12px;
+  letter-spacing: 0;
   text-transform: uppercase;
 }
 
 .order-status-line strong {
   color: #f0e6c4;
-  font-family: 'Barlow Condensed', 'Barlow', sans-serif;
-  font-size: 0.92rem;
-  letter-spacing: 0.1em;
+  font-family: var(--px-font);
+  font-size: 14px;
+  letter-spacing: 0;
 }
 
 .order-status-line.muted {
@@ -451,14 +451,14 @@ select {
 .order-hint {
   margin: 0;
   color: #d9d2b6;
-  font-size: 0.72rem;
+  font-size: 12px;
   line-height: 1.4;
 }
 
 .cancel {
   justify-self: start;
   padding: 5px 8px;
-  font-size: 0.68rem;
+  font-size: 12px;
   text-transform: uppercase;
 }
 
@@ -505,10 +505,10 @@ select {
   overflow: auto;
   padding: 10px;
   color: #d9d2b6;
-  font-size: 0.74rem;
+  font-size: 12px;
   background: rgba(12, 15, 11, 0.96);
   border: 1px solid #6b7a58;
-  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.45);
+  box-shadow: var(--px-shadow);
 }
 
 .sandbox-panel header {
@@ -518,9 +518,9 @@ select {
   gap: 8px;
   padding-bottom: 8px;
   color: #f0e6c4;
-  font-family: 'Barlow Condensed', 'Barlow', sans-serif;
-  font-size: 0.92rem;
-  letter-spacing: 0.1em;
+  font-family: var(--px-font);
+  font-size: 14px;
+  letter-spacing: 0;
   text-transform: uppercase;
   border-bottom: 1px solid #3a4433;
 }
@@ -538,8 +538,8 @@ select {
 .sandbox-panel h3 {
   margin: 10px 0 6px;
   color: #b8c29c;
-  font-size: 0.66rem;
-  letter-spacing: 0.12em;
+  font-size: 12px;
+  letter-spacing: 0;
   text-transform: uppercase;
 }
 
@@ -559,8 +559,8 @@ select {
 
 .sandbox-panel dt {
   color: #8f9a7c;
-  font-size: 0.6rem;
-  letter-spacing: 0.08em;
+  font-size: 10px;
+  letter-spacing: 0;
   text-transform: uppercase;
 }
 
@@ -579,13 +579,13 @@ select {
 .sandbox-tool-grid .secondary {
   justify-content: flex-start;
   padding: 6px 8px;
-  font-size: 0.7rem;
+  font-size: 12px;
 }
 
 .sandbox-hint {
   margin: 6px 0 0;
   color: #b8c29c;
-  font-size: 0.68rem;
+  font-size: 12px;
   line-height: 1.35;
 }
 
@@ -598,7 +598,7 @@ select {
 .sandbox-actions .secondary {
   flex: 1;
   justify-content: center;
-  font-size: 0.68rem;
+  font-size: 12px;
   text-transform: uppercase;
 }
 
@@ -615,8 +615,8 @@ select {
   margin: 8px 0 0;
   padding: 4px 6px;
   color: #8f9a7c;
-  font-size: 0.66rem;
-  letter-spacing: 0.08em;
+  font-size: 12px;
+  letter-spacing: 0;
   text-transform: uppercase;
   background: #171c14;
   border: 1px solid #2b3325;
@@ -626,7 +626,7 @@ select {
   margin: 8px 0 0;
   padding: 4px 6px;
   color: #e0b0a2;
-  font-size: 0.66rem;
+  font-size: 12px;
   background: #2a1a16;
   border: 1px solid #7a4a3f;
 }
@@ -658,9 +658,9 @@ select {
   color: #f0e6c4;
   background: rgba(12, 15, 11, 0.88);
   border: 1px solid #c9b978;
-  border-radius: 50%;
+  border-radius: 0;
   transform: translate(12px, 12px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  box-shadow: var(--px-shadow);
 }
 
 .slot-count {
@@ -676,7 +676,7 @@ select {
   white-space: nowrap;
   background: rgba(12, 15, 11, 0.88);
   border: 1px solid #c9b978;
-  border-radius: 4px;
+  border-radius: 0;
   transform: translate(46px, 16px);
 }
 
@@ -688,8 +688,8 @@ select {
 .order-button.small {
   min-height: 32px;
   padding: 4px 3px;
-  font-size: 0.62rem;
-  letter-spacing: 0.04em;
+  font-size: 10px;
+  letter-spacing: 0;
 }
 
 .tutorial-panel {
@@ -703,7 +703,7 @@ select {
   padding: 10px 12px;
   border: 1px solid #4b513d;
   background: rgba(12, 16, 10, 0.9);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  box-shadow: var(--px-shadow);
 }
 
 .tutorial-panel header {
@@ -712,8 +712,8 @@ select {
   gap: 8px;
   align-items: center;
   color: #f0e6c4;
-  font-family: 'Barlow Condensed', 'Barlow', sans-serif;
-  letter-spacing: 0.1em;
+  font-family: var(--px-font);
+  letter-spacing: 0;
   text-transform: uppercase;
 }
 
@@ -725,8 +725,8 @@ select {
 
 .tutorial-fictional {
   color: #8f9a7c;
-  font-size: 0.58rem;
-  letter-spacing: 0.08em;
+  font-size: 10px;
+  letter-spacing: 0;
 }
 
 .tutorial-chapter {
@@ -738,35 +738,35 @@ select {
 
 .tutorial-chapter > span:first-child {
   color: #d8a84e;
-  font-size: 0.7rem;
+  font-size: 12px;
 }
 
 .tutorial-chapter > span:last-child {
   grid-column: 1 / -1;
   color: #8f9a7c;
-  font-size: 0.62rem;
+  font-size: 10px;
   text-transform: uppercase;
 }
 
 .tutorial-chapter strong {
   color: #f0e6c4;
-  font-family: 'Barlow Condensed', 'Barlow', sans-serif;
-  font-size: 1rem;
-  letter-spacing: 0.08em;
+  font-family: var(--px-font);
+  font-size: 16px;
+  letter-spacing: 0;
   text-transform: uppercase;
 }
 
 .tutorial-objective {
   margin: 0;
   color: #e6e0c2;
-  font-size: 0.78rem;
+  font-size: 12px;
   line-height: 1.35;
 }
 
 .tutorial-hint {
   margin: 0;
   color: #8f9a7c;
-  font-size: 0.68rem;
+  font-size: 12px;
   line-height: 1.4;
 }
 
@@ -789,7 +789,7 @@ select {
   align-items: center;
   margin: 0;
   color: #a8c47a;
-  font-size: 0.7rem;
+  font-size: 12px;
 }
 
 .tutorial-actions {
@@ -801,7 +801,7 @@ select {
   flex: 1;
   justify-content: center;
   padding: 6px 8px;
-  font-size: 0.68rem;
+  font-size: 12px;
   text-transform: uppercase;
 }
 
@@ -812,31 +812,31 @@ select {
 
 .tutorial-graduation strong {
   color: #f0e6c4;
-  font-family: 'Barlow Condensed', 'Barlow', sans-serif;
-  font-size: 1.1rem;
-  letter-spacing: 0.1em;
+  font-family: var(--px-font);
+  font-size: 16px;
+  letter-spacing: 0;
   text-transform: uppercase;
 }
 
 .tutorial-graduation p {
   margin: 0;
   color: #8f9a7c;
-  font-size: 0.72rem;
+  font-size: 12px;
 }
 
 .camera-band {
   pointer-events: auto;
   padding: 3px 7px;
-  font-size: 0.62rem;
-  letter-spacing: 0.06em;
+  font-size: 10px;
+  letter-spacing: 0;
   text-transform: uppercase;
 }
 
 .orders-toggle {
   justify-content: center;
   padding: 4px 6px;
-  font-size: 0.62rem;
-  letter-spacing: 0.08em;
+  font-size: 10px;
+  letter-spacing: 0;
   text-transform: uppercase;
 }
 

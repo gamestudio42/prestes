@@ -54,6 +54,31 @@ numbers with `image-rendering: pixelated`. A unit test checks that every
 order, posture, stance and HUD control in the icon map has a slice, that no
 two controls share a slice, and that the JSON and the PNG agree.
 
+### Floating windows
+
+A `FloatingWindow` component (title bar with grip, title and minimize button,
+pixel frame) wraps each of the three HUD windows. Dragging uses pointer events
+on the title bar with pointer capture; the window is clamped inside the
+viewport (re-clamped on resize) and snaps to the 2 px grid. Minimizing keeps
+only the title bar. Positions and minimized flags are stored per window in
+`localStorage` (`prestes.hud.windows.v1`), read and written in try/catch so a
+blocked storage only loses the layout; defaults place Orders bottom centre,
+Troops bottom left and Troop summary above Troops, clear of the training
+panel on the right. Windows never cover the top bar; clicks on a window never
+reach the map. Keyboard: the minimize button is a real button; a window can be
+moved with the arrow keys while its title bar has focus.
+
+- **Orders** reuses the order board content (fire, movement, troop groups,
+  postures, stances, Hold Fire, bounding, clear) in a compact grid.
+- **Troops** lists the player's troops (squad cards with name and living
+  count) and keeps box and click selection on the map unchanged.
+- **Troop summary** shows, for the selected troop, one `unit-helmet` per
+  soldier in a wrapping row; under each helmet three 3 x 14 px vertical bars
+  (health, morale, ammunition as magazine plus reserve over the full load).
+  Helmet colour: parchment fit, gold selected, red wounded, dim incapacitated,
+  dark dead; a tooltip names the soldier's state, fatigue and wound. Below:
+  the weapon line, cover and cohesion, as in the current weapon card.
+
 ### Start screen photograph
 
 At build time nothing changes: the component draws the existing WebP into a

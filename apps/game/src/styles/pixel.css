@@ -1,0 +1,160 @@
+/*
+ * Pixel kit: the interface layer over the low-poly scene (phase 3).
+ * Tokens live here; the other files use them. Rules: Pixelify Sans only, no
+ * rounded corners, no blurred shadows, 2 px borders, stepped corners.
+ */
+:root {
+  --px-font: 'Pixelify Sans', monospace;
+  --px: 2px;
+
+  /* Palette: sepia ink, parchment, gold, muted red and olive. */
+  --px-ink: #1b140d;
+  --px-ink-deep: #120d08;
+  --px-panel: #2a1f14;
+  --px-panel-raised: #3a2b1b;
+  --px-border: #6d5130;
+  --px-border-light: #a8873f;
+  --px-parchment: #efe2c4;
+  --px-parchment-dim: #c9b68f;
+  --px-faint: #8a7350;
+  --px-gold: #e0b85a;
+  --px-gold-dim: #a8873f;
+  --px-red: #a3473a;
+  --px-olive: #6f7a3e;
+  --px-disabled: #6b6152;
+
+  --px-shadow: 2px 2px 0 rgba(8, 5, 2, 0.75);
+  --px-shadow-deep: 4px 4px 0 rgba(8, 5, 2, 0.75);
+  --px-inset: inset 2px 2px 0 rgba(8, 5, 2, 0.6);
+
+  /* Stepped corners: 2 px notches, drawn with clip-path. */
+  --px-corner: polygon(
+    0 4px, 2px 4px, 2px 2px, 4px 2px, 4px 0,
+    calc(100% - 4px) 0, calc(100% - 4px) 2px, calc(100% - 2px) 2px, calc(100% - 2px) 4px, 100% 4px,
+    100% calc(100% - 4px), calc(100% - 2px) calc(100% - 4px), calc(100% - 2px) calc(100% - 2px),
+    calc(100% - 4px) calc(100% - 2px), calc(100% - 4px) 100%,
+    4px 100%, 4px calc(100% - 2px), 2px calc(100% - 2px), 2px calc(100% - 4px), 0 calc(100% - 4px)
+  );
+
+  /* The earlier HUD tokens now point at the pixel palette. */
+  --hud-ink: var(--px-ink);
+  --hud-ink-deep: var(--px-ink-deep);
+  --hud-panel: var(--px-panel);
+  --hud-panel-soft: var(--px-panel);
+  --hud-panel-raised: var(--px-panel-raised);
+  --hud-border: var(--px-border);
+  --hud-border-soft: var(--px-border);
+  --hud-paper: var(--px-parchment);
+  --hud-paper-bright: #fff4da;
+  --hud-dim: var(--px-parchment-dim);
+  --hud-faint: var(--px-faint);
+  --hud-gold: var(--px-gold);
+  --hud-gold-bright: #f4cf73;
+  --hud-rust: var(--px-red);
+  --hud-rust-bright: #c56a4d;
+  --hud-positive: #a8b97c;
+  --hud-radius: 0;
+  --hud-radius-sm: 0;
+
+  font-family: var(--px-font);
+}
+
+/* Crisp glyphs where the browser allows it. */
+.app,
+.app * {
+  -webkit-font-smoothing: none;
+  font-smooth: never;
+}
+
+button,
+input,
+select,
+textarea {
+  font-family: var(--px-font);
+}
+
+/* Focus: a 2 px gold outline, offset by 2 px. */
+:focus-visible {
+  outline: 2px solid var(--px-gold);
+  outline-offset: 2px;
+}
+
+/* Pressed buttons sink by the inset shadow instead of moving. */
+button:active:not(:disabled) {
+  box-shadow: var(--px-inset);
+}
+
+img,
+canvas {
+  image-rendering: pixelated;
+}
+
+/* --- Pixel panels and controls ------------------------------------------- */
+/* Every bordered box: 2 px borders and stepped corners, no rounding. */
+.commander-balloon,
+.camera-segmented,
+.language-control,
+.icon-button,
+.speed-button,
+.post-button,
+.squad-card,
+.section-portrait,
+.order-sector,
+.action-button,
+.passive-group,
+.passive-button,
+.weapon-card,
+.command-row,
+.orders-toggle,
+.tutorial-panel,
+.training-objective-row,
+.sandbox-panel,
+.codex,
+.start-card,
+.primary,
+.secondary,
+.field select,
+.order-callout,
+.slot-count,
+.placement-status,
+.hud-tooltip {
+  border-width: 2px;
+  border-radius: 0;
+  clip-path: var(--px-corner);
+}
+
+/* Panels sit on a hard shadow; clipped boxes cannot show an outer shadow, so
+   the shadow is drawn as an inner bottom-right edge instead. */
+.squad-card,
+.order-sector,
+.weapon-card,
+.command-row,
+.tutorial-panel,
+.sandbox-panel,
+.codex,
+.start-card {
+  box-shadow: inset -2px -2px 0 rgba(8, 5, 2, 0.55), inset 2px 2px 0 rgba(255, 236, 196, 0.06);
+}
+
+.action-button,
+.passive-button,
+.icon-button,
+.speed-button,
+.post-button,
+.primary,
+.secondary {
+  box-shadow: inset -2px -2px 0 rgba(8, 5, 2, 0.5), inset 2px 2px 0 rgba(255, 236, 196, 0.08);
+}
+
+.action-button:active:not(:disabled),
+.passive-button:active:not(:disabled),
+.icon-button:active:not(:disabled),
+.primary:active:not(:disabled),
+.secondary:active:not(:disabled) {
+  box-shadow: inset 2px 2px 0 rgba(8, 5, 2, 0.6);
+}
+
+/* Pixel text sizes do not fit two-word station labels on one line. */
+.tutorial-chapter strong {
+  white-space: nowrap;
+}

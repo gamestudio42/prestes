@@ -1,6 +1,6 @@
 ## 1. Visual system
 
-- [ ] 1.1 Add Pixelify Sans (Fontsource) and `styles/pixel.css` tokens (palette, 2 px unit, stepped-corner panel, hard shadow, pressed and focus states); verify the font serves from the build
+- [x] 1.1 Add Pixelify Sans (Fontsource) and `styles/pixel.css` tokens (palette, 2 px unit, stepped-corner panel, hard shadow, pressed and focus states); verify the font serves from the build
 - [ ] 1.2 Record the asset changes in `docs/assets.md` (Pixelify Sans OFL, original icons and their Aseprite source)
 
 ## 2. Icons
@@ -11,7 +11,8 @@
 
 ## 3. HUD and menus
 
-- [ ] 3.1 Restyle the top bar, squad card, order board, command row, weapon card and tooltips with the tokens and pixel icons
+- [ ] 3.0 `FloatingWindow` (drag by title bar, clamp to view, minimize, keyboard move, persisted layout with defaults); Orders, Troops and Troop summary windows replace the docked bottom bar; Troop summary with a helmet and health, morale and ammunition bars per soldier; unit tests for the layout store and e2e for drag, minimize, reload and the helmets
+- [ ] 3.1 Restyle the top bar, order and troop content, weapon line and tooltips with the tokens and pixel icons
 - [ ] 3.2 Restyle the training panel, debrief, sandbox panel, field overlays, order callouts and the commander balloon
 - [ ] 3.3 Start screen: pixelated, dithered sepia photograph and pixel title and buttons
 - [ ] 3.4 Check every HUD string in PT-BR and EN at 1440 x 900 and 929 px; fix overflows through the catalogs

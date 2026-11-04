@@ -35,9 +35,17 @@ Decisions taken with the user on 2026-11-04:
   nearest-neighbour scaling. A tools script exports the sheet with the
   Aseprite command line; the exported files are committed, so building and
   testing do not need Aseprite. Lucide is removed.
-- **HUD restyle**: top bar, squad card, order board, command row, weapon card,
-  tooltips, field overlays (cover slot chip, placement status), training panel,
-  sandbox panel, debrief, order callouts and the commander balloon.
+- **Floating HUD windows** (asked by the user on 2026-11-04): the docked
+  bottom bar is replaced by three pixel windows over the map that the player
+  can drag anywhere and minimize to their title bar: **Orders** (every order,
+  posture, stance and control, grouped), **Troops** (the troop selector) and
+  **Troop summary** (the selected troop: one small helmet per soldier with
+  three vertical bars for health, morale and ammunition, the helmet tinted by
+  the soldier's state, and the weapon, cover and cohesion line). Each window's
+  position and minimized state are remembered in the browser.
+- **HUD restyle**: top bar, tooltips, field overlays (cover slot chip, placement
+  status), training panel, sandbox panel, debrief, order callouts and the
+  commander balloon.
 - **Menus**: the start screen keeps the public-domain photograph, shown
   pixelated (downscaled and drawn with nearest-neighbour scaling under a sepia
   palette overlay); title and buttons in the pixel kit.
