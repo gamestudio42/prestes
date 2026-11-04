@@ -14,6 +14,8 @@ export type SelectionMode = 'all' | 'troops';
 export interface GameCanvasProps {
   client: GameClient;
   postStrong: boolean;
+  /** Draw the movement routes of orders. */
+  routesVisible?: boolean;
   cameraRequest: { band: CameraBand; nonce: number } | null;
   /** The commander's current order, shown in a balloon over the officer. */
   commanderBalloon?: CommanderBalloon | null;
@@ -69,6 +71,7 @@ function dragFacing(from: Vec2, to: Vec2): Vec2 {
 export function GameCanvas({
   client,
   postStrong,
+  routesVisible = true,
   cameraRequest,
   cameraFocus = null,
   commanderBalloon = null,
@@ -144,6 +147,7 @@ export function GameCanvas({
         focusOn: (x: number, y: number) => scene.focusOn(x, y),
         setBand: (band: 'tactical' | 'strategic') => scene.setBand(band),
         effects: () => scene.effectsState(),
+        clips: (unitId: number) => scene.clipState(unitId),
       };
     }
 
@@ -185,6 +189,10 @@ export function GameCanvas({
   useEffect(() => {
     sceneRef.current?.setPostStrong(postStrong);
   }, [postStrong]);
+
+  useEffect(() => {
+    sceneRef.current?.setRoutesVisible(routesVisible);
+  }, [routesVisible, client, trainingField, strategicField]);
 
   useEffect(() => {
     sceneRef.current?.setPreview(preview);

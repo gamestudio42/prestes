@@ -17,7 +17,7 @@ import { clamp } from './model';
 import type { BoundingGroup, MutableUnit } from './model';
 import type { SimContext } from './context';
 import { nearestOpenPoint, nearestEnemyAt } from './geometry';
-import { reflowFormation } from './formations';
+import { reflowFormation, reformInPlace } from './formations';
 import { repairStalledMovement, queueUnitOrder } from './movement';
 import { assignBoundingDirect, setBoundingCover } from './bounding';
 import { spawnCover } from './cover';
@@ -159,7 +159,11 @@ export function applyCommand(
     for (const unit of actionable) {
       unit.formation = command.formation;
     }
-    reflowFormation(ctx, actionable);
+    // A moving section re-lays at its destination; a standing one re-forms
+    // where it is.
+    if (!reflowFormation(ctx, actionable)) {
+      reformInPlace(ctx, actionable);
+    }
     return;
   }
 

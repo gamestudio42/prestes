@@ -9,9 +9,10 @@ export interface GunshotOutput {
   dispose(): void;
 }
 
-/** The bolt follows a shot like in the recording: 1.3 s later, much softer. */
+/** The bolt follows a shot like in the recording, 1.3 s later; louder than
+ * there (the user could not hear it under a volley). */
 export const BOLT_DELAY = 1.3;
-export const BOLT_LEVEL = 0.3;
+export const BOLT_LEVEL = 0.8;
 
 /** A repeatable playback rate in [0.94, 1.06] for a shot key. */
 export function shotRate(key: string): number {

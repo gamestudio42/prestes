@@ -288,6 +288,16 @@ export class SceneView {
     this.preview.setSlotMarkers(markers);
   }
 
+  /** Shows or hides the movement routes of orders (the player's choice). */
+  setRoutesVisible(visible: boolean): void {
+    this.paths.group.visible = visible;
+  }
+
+  /** A soldier's animation state (dev checks). */
+  clipState(unitId: number) {
+    return this.characters.clipState(unitId);
+  }
+
   /** Live effect particles and whether the sheet is loaded (dev checks). */
   effectsState(): { count: number; ready: boolean; tracers: number } {
     return { count: this.effects.count, ready: this.effects.ready, tracers: this.tracers.count };

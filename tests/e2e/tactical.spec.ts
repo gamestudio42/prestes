@@ -240,3 +240,15 @@ test('splits a UI move with alternating movement and clears the order', async ({
   await page.getByTestId('order-clear').click();
   await expect(page.getByTestId('order-value')).toContainText('Hold', { timeout: 5000 });
 });
+
+test('hides the movement routes and remembers the choice', async ({ page }) => {
+  await page.goto('/');
+  await page.getByTestId('start-button').click();
+  await expect(page.getByTestId('hud')).toBeVisible();
+  await expect(page.getByTestId('routes-toggle')).toHaveAttribute('aria-pressed', 'true');
+  await page.getByTestId('routes-toggle').click();
+  await expect(page.getByTestId('routes-toggle')).toHaveAttribute('aria-pressed', 'false');
+  await page.reload();
+  await page.getByTestId('start-button').click();
+  await expect(page.getByTestId('routes-toggle')).toHaveAttribute('aria-pressed', 'false');
+});

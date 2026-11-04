@@ -1,4 +1,4 @@
-import { Camera, PostEffect as Contrast, Languages, Pause, Play } from '../icons';
+import { Camera, PostEffect as Contrast, Eye, EyeOff, Languages, Pause, Play } from '../icons';
 import type { Locale } from '@prestes/content';
 import type { CameraBand } from '@prestes/view3d';
 import { IconButton } from './IconButton';
@@ -10,6 +10,7 @@ interface TopBarProps {
   locale: Locale;
   band: CameraBand;
   postStrong: boolean;
+  routesVisible: boolean;
   speed: 0 | 1 | 2 | 4;
   sandboxOpen: boolean;
   onLocaleChange: (locale: Locale) => void;
@@ -17,6 +18,7 @@ interface TopBarProps {
   onSetSpeed: (speed: 0 | 1 | 2 | 4) => void;
   onTogglePause: () => void;
   onTogglePost: () => void;
+  onToggleRoutes: () => void;
   onToggleSandbox: () => void;
   onToggleCodex: () => void;
 }
@@ -26,6 +28,7 @@ export function TopBar({
   locale,
   band,
   postStrong,
+  routesVisible,
   speed,
   sandboxOpen,
   onLocaleChange,
@@ -33,6 +36,7 @@ export function TopBar({
   onSetSpeed,
   onTogglePause,
   onTogglePost,
+  onToggleRoutes,
   onToggleSandbox,
   onToggleCodex,
 }: TopBarProps) {
@@ -136,6 +140,17 @@ export function TopBar({
             </button>
           ))}
         </div>
+        <button
+          type="button"
+          className="post-button"
+          onClick={onToggleRoutes}
+          title={t('hud.tip.routes')}
+          aria-pressed={routesVisible}
+          data-testid="routes-toggle"
+        >
+          {routesVisible ? <Eye aria-hidden="true" size={15} /> : <EyeOff aria-hidden="true" size={15} />}
+          <span>{t('hud.routes')}</span>
+        </button>
         <button
           type="button"
           className="post-button"

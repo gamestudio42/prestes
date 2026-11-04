@@ -97,6 +97,17 @@ export class SoldierInstance {
     if (action && this.current === clip) action.reset().play();
   }
 
+  /** Actions currently weighing on the pose (dev checks). */
+  activeClips(): Array<{ clip: string; weight: number }> {
+    return [...this.actions]
+      .filter(([, action]) => action.isScheduled())
+      .map(([clip, action]) => ({ clip, weight: Math.round(action.getEffectiveWeight() * 100) / 100 }));
+  }
+
+  get playing(): string | null {
+    return this.current;
+  }
+
   update(seconds: number): void {
     this.mixer.update(seconds);
   }

@@ -41,6 +41,14 @@ describe('soldierClip', () => {
   });
 });
 
+describe('engaged', () => {
+  it('keeps the rifle up between shots with no target marked', () => {
+    expect(soldierClip(base, { moving: false, firing: false, engaged: true })).toBe('aim-stand');
+    expect(soldierClip({ ...base, stance: 'prone' }, { moving: false, firing: false, engaged: true })).toBe('aim-prone');
+    expect(soldierClip(base, { moving: false, firing: false })).toBe('idle');
+  });
+});
+
 describe('ready carry', () => {
   it('carries the rifle at the ready on contact orders, sloped on the march', () => {
     expect(soldierClip({ ...base, order: 'recon' }, { moving: true, firing: false })).toBe('walk-ready');

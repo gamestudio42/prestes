@@ -44,6 +44,7 @@ export interface HudProps {
   frame: Frame | null;
   band: CameraBand;
   postStrong: boolean;
+  routesVisible: boolean;
   selectedSquadId: number;
   controlBothSides: boolean;
   selectedCount: number;
@@ -76,6 +77,7 @@ export interface HudProps {
   onSetSpeed: (speed: 0 | 1 | 2 | 4) => void;
   onTogglePause: () => void;
   onTogglePost: () => void;
+  onToggleRoutes: () => void;
   onToggleSandbox: () => void;
   onToggleCodex: () => void;
   audioMuted: boolean;
@@ -93,6 +95,7 @@ export function Hud({
   frame,
   band,
   postStrong,
+  routesVisible,
   selectedSquadId,
   controlBothSides,
   selectedCount,
@@ -124,6 +127,7 @@ export function Hud({
   onSetSpeed,
   onTogglePause,
   onTogglePost,
+  onToggleRoutes,
   onToggleSandbox,
   onToggleCodex,
   audioMuted,
@@ -160,6 +164,7 @@ export function Hud({
         locale={locale}
         band={band}
         postStrong={postStrong}
+        routesVisible={routesVisible}
         speed={speed}
         sandboxOpen={sandboxOpen}
         onLocaleChange={onLocaleChange}
@@ -167,6 +172,7 @@ export function Hud({
         onSetSpeed={onSetSpeed}
         onTogglePause={onTogglePause}
         onTogglePost={onTogglePost}
+        onToggleRoutes={onToggleRoutes}
         onToggleSandbox={onToggleSandbox}
         onToggleCodex={onToggleCodex}
       />

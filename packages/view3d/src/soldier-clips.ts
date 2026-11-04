@@ -38,6 +38,11 @@ export interface ClipState {
   firing: boolean;
   /** The soldier was struck a moment ago (also just before he falls). */
   hit?: boolean;
+  /**
+   * He fired in the last few seconds: he keeps the rifle up between shots
+   * even when no target is marked, instead of shouldering it each time.
+   */
+  engaged?: boolean;
 }
 
 /**
@@ -75,7 +80,7 @@ export function soldierClip(unit: ClipUnit, state: ClipState): SoldierClip {
   if (state.hit) return 'hit';
   if (!unit.alive) return 'corpse';
   if (unit.incapacitated) return 'wounded';
-  const aiming = unit.targetId !== null;
+  const aiming = unit.targetId !== null || state.engaged === true;
   if (unit.stance === 'prone') {
     if (state.moving) return 'crawl';
     if (state.firing) return 'fire-prone';

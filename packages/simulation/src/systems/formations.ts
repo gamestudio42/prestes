@@ -1,11 +1,55 @@
-import { DEFAULT_SPACING, averageAim, findPath } from '@prestes/shared';
+import { DEFAULT_SPACING, averageAim, averageFacing, findPath } from '@prestes/shared';
 import { formationSlots } from '../tactical';
 import type { MutableUnit } from './model';
 import type { SimContext } from './context';
 import { clampToRegion } from './geometry';
 import { queueUnitOrder } from './movement';
 
-export function reflowFormation(ctx: SimContext, units: readonly MutableUnit[]): void {
+/**
+ * A section standing with no order takes its new formation where it is: the
+ * slots are laid around its centre, facing its ordered facing (aim) or the way
+ * it faces now, at its spacing, and every soldier walks to his.
+ */
+export function reformInPlace(ctx: SimContext, units: readonly MutableUnit[]): void {
+  const group = units.filter(
+    (unit) => unit.alive && !unit.incapacitated && !unit.routed && unit.state !== 'pinned',
+  );
+  if (group.length < 2) {
+    return;
+  }
+  const centre = {
+    x: group.reduce((sum, unit) => sum + unit.x, 0) / group.length,
+    y: group.reduce((sum, unit) => sum + unit.y, 0) / group.length,
+  };
+  const slots = formationSlots(
+    group.map((unit) => ({ x: unit.x, y: unit.y })),
+    centre,
+    group[0]?.formationSpacing ?? DEFAULT_SPACING,
+    group[0]?.formation ?? 'line',
+    averageAim(group) ?? averageFacing(group),
+  );
+  group.forEach((unit, index) => {
+    const destination = slots[index] ?? centre;
+    const path = findPath({ x: unit.x, y: unit.y }, destination, ctx.covers);
+    if (path.length === 0) {
+      return;
+    }
+    unit.path = path;
+    unit.pathIndex = 0;
+    unit.targetX = destination.x;
+    unit.targetY = destination.y;
+    unit.holdPosition = false;
+    unit.currentOrder = 'move';
+    // A short shuffle into the new shape, not a bound.
+    unit.lineMove = true;
+    unit.orderIssued = true;
+    unit.orderDestination = { ...centre };
+    queueUnitOrder(ctx, unit, path, 'move');
+  });
+}
+
+/** Returns whether a moving section was re-laid (else it was standing). */
+export function reflowFormation(ctx: SimContext, units: readonly MutableUnit[]): boolean {
   const active = units.filter(
     (unit) =>
       unit.alive &&
@@ -14,11 +58,11 @@ export function reflowFormation(ctx: SimContext, units: readonly MutableUnit[]):
       unit.orderDestination !== null,
   );
   if (active.length < 2) {
-    return;
+    return false;
   }
   const anchor = active[0]?.orderDestination;
   if (!anchor) {
-    return;
+    return false;
   }
   const group = active.filter(
     (unit) =>
@@ -27,7 +71,7 @@ export function reflowFormation(ctx: SimContext, units: readonly MutableUnit[]):
       Math.abs(unit.orderDestination.y - anchor.y) < 0.01,
   );
   if (group.length < 2) {
-    return;
+    return false;
   }
   const spacing =
     group[0]?.currentOrder === 'disperse' ? 5 : (group[0]?.formationSpacing ?? DEFAULT_SPACING);
@@ -58,4 +102,5 @@ export function reflowFormation(ctx: SimContext, units: readonly MutableUnit[]):
     unit.targetY = destination.y;
     queueUnitOrder(ctx, unit, path, 'move');
   });
+  return true;
 }

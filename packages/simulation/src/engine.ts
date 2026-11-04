@@ -327,13 +327,21 @@ export class SimulationEngine implements SimContext {
     return this.frame();
   }
 
+  /**
+   * Runs several ticks and returns the last frame carrying the events of
+   * every tick run. The client steps two ticks at 1x: dropping the earlier
+   * ticks' events lost whole volleys (a section fires on the same tick), so
+   * their shots had no sound, tracer or effect.
+   */
   runTicks(count: number): Frame {
     let frame = this.frame();
     const safeCount = Math.max(0, Math.floor(count));
+    const events: SimEvent[] = [];
     for (let index = 0; index < safeCount; index += 1) {
       frame = this.tick();
+      events.push(...frame.events);
     }
-    return frame;
+    return safeCount > 1 ? { ...frame, events } : frame;
   }
 
   frame(): Frame {

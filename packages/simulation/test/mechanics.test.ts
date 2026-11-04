@@ -531,3 +531,42 @@ describe('mechanics: ordered spacing', () => {
     expect(t.count('command_rejected')).toBe(1);
   });
 });
+
+describe('mechanics: stepping several ticks', () => {
+  it('a multi-tick step keeps the shots of every tick it ran', () => {
+    const one = harness({ training: false });
+    const many = harness({ training: false });
+    for (const t of [one, many]) {
+      t.send({ type: 'attack', unitIds: COLUMN, targetId: ENEMY[0]! });
+    }
+    let single = 0;
+    for (let index = 0; index < 40; index += 1) {
+      single += one.engine.runTicks(1).events.filter((event) => event.type === 'shot').length;
+    }
+    let stepped = 0;
+    for (let index = 0; index < 20; index += 1) {
+      stepped += many.engine.runTicks(2).events.filter((event) => event.type === 'shot').length;
+    }
+    expect(single).toBeGreaterThan(0);
+    expect(stepped).toBe(single);
+  });
+});
+
+describe('mechanics: formation change while standing', () => {
+  it('a standing section re-forms in place, keeping its front', () => {
+    const t = harness();
+    t.send({ type: 'hold_fire', unitIds: [...COLUMN, OFFICER, ...ENEMY], hold: true });
+    t.send({ type: 'move', unitIds: COLUMN, to: { x: -30, y: 34 }, facing: { x: 1, y: 0 } }, 900);
+    const before = COLUMN.map((id) => t.unit(id));
+    const centre = { x: before.reduce((s, u) => s + u.x, 0) / 5, y: before.reduce((s, u) => s + u.y, 0) / 5 };
+    // A line facing east runs north-south; a column facing east runs east-west.
+    expect(Math.max(...before.map((u) => u.y)) - Math.min(...before.map((u) => u.y))).toBeGreaterThan(8);
+    t.send({ type: 'formation', unitIds: COLUMN, formation: 'column' }, 900);
+    const after = COLUMN.map((id) => t.unit(id));
+    expect(Math.max(...after.map((u) => u.y)) - Math.min(...after.map((u) => u.y))).toBeLessThan(1.5);
+    expect(Math.max(...after.map((u) => u.x)) - Math.min(...after.map((u) => u.x))).toBeGreaterThan(8);
+    const moved = { x: after.reduce((s, u) => s + u.x, 0) / 5, y: after.reduce((s, u) => s + u.y, 0) / 5 };
+    expect(Math.hypot(moved.x - centre.x, moved.y - centre.y)).toBeLessThan(6);
+    for (const unit of after) expect(unit.facingX).toBeGreaterThan(0.9);
+  });
+});

@@ -23,7 +23,7 @@ import {
   saveExerciseProgress,
   type ExerciseProgress,
 } from './training/exercise-progress';
-import { loadLocale, saveLocale, trainingStorage } from './storage';
+import { loadLocale, loadRoutesVisible, saveLocale, saveRoutesVisible, trainingStorage } from './storage';
 import { useAudio } from './hooks/useAudio';
 import { useExerciseDirector } from './hooks/useExerciseDirector';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
@@ -42,6 +42,8 @@ export function App() {
     null,
   );
   const [postStrong, setPostStrong] = useState(true);
+  const [routesVisible, setRoutesVisible] = useState(() => loadRoutesVisible());
+  useEffect(() => saveRoutesVisible(routesVisible), [routesVisible]);
   const [speed, setSpeed] = useState<0 | 1 | 2 | 4>(DEFAULT_SPEED);
   const [ordersCollapsed, setOrdersCollapsed] = useState(false);
   const [boundingEnabled, setBoundingEnabled] = useState(true);
@@ -445,6 +447,7 @@ export function App() {
       <GameCanvas
         client={client}
         postStrong={postStrong}
+        routesVisible={routesVisible}
         cameraRequest={cameraRequest}
         commanderBalloon={sessionMode === 'training' ? instructorCallout : null}
         cameraFocus={
@@ -533,6 +536,8 @@ export function App() {
         onSetSpeed={handleSetSpeed}
         onTogglePause={handleTogglePause}
         onTogglePost={() => setPostStrong((value) => !value)}
+        routesVisible={routesVisible}
+        onToggleRoutes={() => setRoutesVisible((value) => !value)}
         onToggleCodex={() => setShowCodex((open) => !open)}
         onToggleSandbox={handleToggleSandbox}
         audioMuted={audioMuted}

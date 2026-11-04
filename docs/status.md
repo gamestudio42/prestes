@@ -339,6 +339,24 @@ Four phases, each its own OpenSpec change:
    grass too. Asked next: tracers are now a short streak, bright gold at the
    head fading to red, flying from the muzzle to the target at a readable
    90 m/s instead of a white line. The close (section 5) remains.
+
+## Fixes after the hand check of 2026-11-04 (evening)
+
+- Silent volleys: the client steps two ticks at 1x and the worker returned
+  only the last tick's frame, so the earlier tick's events were lost. A
+  section fires on the same tick (an 8-tick cooldown, even), so whole volleys
+  vanished: no sound, tracer or effect, and Suppress looked like it did not
+  fire. `runTicks` now returns every tick's events (golden unchanged).
+  Suppress itself fires; against training targets it ends quickly because the
+  target panics and runs.
+- Arms half way between shoulder and aim: between shots the soldier went back
+  to the shouldered idle and blended to the firing pose on each shot. He now
+  keeps the aim pose for 4 s after firing.
+- The bolt plays at 80% of the shot volume (it was lost under a volley).
+- A standing section takes a new formation where it is, keeping its front
+  and spacing (it only re-laid a moving one).
+- A Routes button in the top bar hides or shows the movement lines of orders;
+  the choice is remembered.
    The glTF loaders are a separate chunk fetched on demand; the animation
    system raised the three chunk to 591 KB, so its budget went from 560 to
    610 KB (2026-11-04).

@@ -28,6 +28,9 @@ interface CharacterRig {
   shadow: THREE.Mesh;
 }
 
+/** After a shot the soldier keeps his rifle up this long (ms). */
+const ENGAGED_MS = 4000;
+
 interface CharacterView {
   rig: CharacterRig;
   /** The Blender-built soldier, once the model has loaded. */
@@ -38,6 +41,8 @@ interface CharacterView {
   hitUntil: number;
   /** He was down (dead or incapacitated) at the last update. */
   down: boolean;
+  /** Until when he keeps the rifle up after firing. */
+  engagedUntil: number;
   phase: number;
   lastX: number;
   lastY: number;
@@ -447,6 +452,12 @@ export class CharacterLayer {
     }
   }
 
+  /** The modelled soldier's clip and the actions weighing on it (dev checks). */
+  clipState(unitId: number): { playing: string | null; active: Array<{ clip: string; weight: number }> } | null {
+    const soldier = this.views.get(unitId)?.soldier;
+    return soldier ? { playing: soldier.playing, active: soldier.activeClips() } : null;
+  }
+
   /** Loads the modelled soldier; until it arrives (or if it fails) the part rig draws. */
   loadModels(base = './models/'): void {
     loadSoldierAsset(base)
@@ -495,6 +506,7 @@ export class CharacterLayer {
           lean: 0,
           fireUntil: 0,
           hitUntil: 0,
+          engagedUntil: 0,
           down: !unit.alive || unit.incapacitated,
         };
         this.views.set(unit.id, view);
@@ -521,6 +533,7 @@ export class CharacterLayer {
 
       if (shooters.has(unit.id)) {
         view.fireUntil = now + 450;
+        view.engagedUntil = now + ENGAGED_MS;
         view.soldier?.retrigger(
           soldierClip(unit, { moving: false, firing: true }),
         );
@@ -611,6 +624,7 @@ export class CharacterLayer {
           moving: moved > 0.0005,
           firing: now < view.fireUntil,
           hit: now < view.hitUntil,
+          engaged: now < view.engagedUntil,
         });
         const authored = CLIP_SPEED[clip];
         view.soldier.play(clip, authored ? walkTimeScale(metresPerSecond, authored) : 1);
