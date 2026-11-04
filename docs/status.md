@@ -286,10 +286,10 @@ encoding test now guards against mojibake. Still open:
   time) and still had about 20 rounds each; Move onto the trench took the line
   (10 soldiers in distinct slots) and the station completed in 6:55 with 201
   rounds left and 11/11 soldiers. Two observations, not changed: suppress fire
-  alone killed the whole training troop, so it may be too lethal; and the camera
-  switched from the strategic to the tactical view during the station without
-  a click on the view toggle, so a Move click aimed in the old view landed
-  elsewhere.
+  alone killed the whole training troop, so it may be too lethal; and the
+  section looked disorganized on the move (crossing paths, clustering), which
+  `redesign-training-ground` addresses. The camera switch seen in this run was
+  the user moving the camera during the test, not a bug.
 
 ## Verification
 
