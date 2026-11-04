@@ -320,6 +320,26 @@ Four phases, each its own OpenSpec change:
      1.5 minutes, and a step measured about 100 ms, so the interface did not
      slow the game.
 4. Low-poly art pass: objects, movement and firing feedback.
+   In progress as `low-poly-art-pass`: the Blender soldier (16 clips, with the
+   low crawl and the rifle at the ready on contact orders) and the training
+   ground models load in game; effects and the close (sections 4 and 5) remain.
+   The glTF loaders are a separate chunk fetched on demand; the animation
+   system raised the three chunk to 591 KB, so its budget went from 560 to
+   610 KB (2026-11-04).
+
+## Facing drag (`move-facing-drag`, 2026-11-04)
+
+Asked by the user after playing: with a ground order armed (Move, Advance,
+Recon, Defend, Ambush, Reserve, Disperse), pressing on the destination and
+dragging turns the section to face that way; the formation is kept and laid
+out rotated, and the soldiers keep the facing (as their aim) after arriving.
+The right-button quick move does the same. The old drag that spreads the
+soldiers on a line is now Shift + drag. Bounding re-laid the formation with
+the soldiers' heading and reversed the wedge; it now prefers their aim, like
+the move handler. Commands without facing are unchanged (golden kept).
+`pnpm verify` passed: 308 unit tests, bundle budget, determinism, OpenSpec and
+e2e 40/40 in 4.5 min. Checked in game through Playwright captures and the
+arrival positions; a hand check in Chrome is still to do.
 
 ## Deferred
 

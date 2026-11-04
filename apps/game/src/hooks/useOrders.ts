@@ -70,6 +70,7 @@ export function useOrders({
   const [pendingTactical, setPendingTactical] = useState<TacticalOrder | null>(null);
   const [aimPending, setAimPending] = useState(false);
   const [lineDrag, setLineDrag] = useState<{ from: Vec2; to: Vec2 } | null>(null);
+  const [facingDrag, setFacingDrag] = useState<{ from: Vec2; to: Vec2 } | null>(null);
   const lastBoundPhase = useRef<string | null>(null);
   const [orderCallout, setOrderCallout] = useState<OrderCallout | null>(null);
   const [previewEnabled, setPreviewEnabled] = useState(false);
@@ -88,7 +89,8 @@ export function useOrders({
   const selectedIds = selectedUnits.map((unit) => unit.id);
   const holdFire = selectedUnits.length > 0 && selectedUnits.every((unit) => unit.holdFire === true);
   const posture = selectedUnits[0]?.posture ?? 'balanced';
-  const previewOrder = pendingTactical ?? pendingOrder ?? (aimPending ? 'aim' : null);
+  const previewOrder =
+    pendingTactical ?? pendingOrder ?? (aimPending ? 'aim' : facingDrag || lineDrag ? 'move' : null);
   const needsTarget =
     pendingOrder === 'attack' ||
     pendingOrder === 'suppress' ||
@@ -102,14 +104,19 @@ export function useOrders({
           unitIds: selectedIds,
           order: previewOrder,
           formation: selectedUnits[0]?.formation,
-          to: lineDrag
+          to: facingDrag
+            ? facingDrag.from
+            : lineDrag
             ? {
                 x: (lineDrag.from.x + lineDrag.to.x) / 2,
                 y: (lineDrag.from.y + lineDrag.to.y) / 2,
               }
             : hoverPoint ?? undefined,
           targetId: hoverUnitId ?? undefined,
-          line: pendingOrder === 'move' ? lineDrag ?? undefined : undefined,
+          line: previewOrder === 'move' ? lineDrag ?? undefined : undefined,
+          facing: facingDrag
+            ? { x: facingDrag.to.x - facingDrag.from.x, y: facingDrag.to.y - facingDrag.from.y }
+            : undefined,
           fast: previewOrder === 'move',
         })
       : null;
@@ -537,7 +544,8 @@ export function useOrders({
     setPendingOrder(null);
   };
 
-  const handlePrimaryGround = (point: Vec2): void => {
+  const handlePrimaryGround = (point: Vec2, facing?: Vec2): void => {
+    setFacingDrag(null);
     if (aimPending) {
       if (selectedIds.length > 0) {
         clientRef.current?.sendCommand({ type: 'face', unitIds: selectedIds, to: point });
@@ -557,6 +565,7 @@ export function useOrders({
           order: pendingTactical,
           unitIds: selectedIds,
           to: point,
+          ...(facing ? { facing } : {}),
         });
       }
       recordTrainingAction(pendingTactical as TrainingAction);
@@ -584,28 +593,38 @@ export function useOrders({
     }
     if (pendingOrder === 'move' && selectedIds.length > 0) {
       recordTrainingAction('move');
-      clientRef.current?.sendCommand({ type: 'move', unitIds: selectedIds, to: point });
+      clientRef.current?.sendCommand({ type: 'move', unitIds: selectedIds, to: point, ...(facing ? { facing } : {}) });
       triggerOrderCallout('move', selectedIds);
       setPendingOrder(null);
     }
   };
 
-  const handleQuickGround = (point: Vec2): void => {
+  const handleQuickGround = (point: Vec2, facing?: Vec2): void => {
     setPendingOrder(null);
     setPendingTactical(null);
     setAimPending(false);
     setLineDrag(null);
+    setFacingDrag(null);
     if (selectedIds.length === 0) {
       return;
     }
     recordTrainingAction('move');
-    clientRef.current?.sendCommand({ type: 'move', unitIds: selectedIds, to: point });
+    clientRef.current?.sendCommand({ type: 'move', unitIds: selectedIds, to: point, ...(facing ? { facing } : {}) });
     triggerOrderCallout('move', selectedIds);
   };
 
   const handlePreviewLine = (line: { from: Vec2; to: Vec2 } | null): void => {
     setLineDrag(line);
     if (line) {
+      setPreviewEnabled(true);
+      setHoverPoint(null);
+      setHoverUnitId(null);
+    }
+  };
+
+  const handlePreviewFacing = (drag: { from: Vec2; to: Vec2 } | null): void => {
+    setFacingDrag(drag);
+    if (drag) {
       setPreviewEnabled(true);
       setHoverPoint(null);
       setHoverUnitId(null);
@@ -798,6 +817,7 @@ export function useOrders({
     handlePrimaryGround,
     handleQuickGround,
     handlePreviewLine,
+    handlePreviewFacing,
     handlePrimaryLine,
     handleQuickLine,
     handleQuickUnit,

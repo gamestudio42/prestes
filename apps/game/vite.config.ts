@@ -16,6 +16,8 @@ export default defineConfig({
         // Vendor libraries in their own chunks: they change rarely (better
         // caching) and the game code keeps its own budget.
         manualChunks(id) {
+          // glTF loading is fetched on demand, apart from the renderer.
+          if (id.includes('node_modules/three/examples/')) return 'model-loaders';
           if (id.includes('node_modules/three/')) return 'three';
           if (/node_modules\/(react|react-dom|scheduler)\//.test(id)) return 'react';
           return undefined;

@@ -32,6 +32,7 @@ export class PreviewLayer {
   private readonly position = new THREE.Vector3();
   private readonly quaternion = new THREE.Quaternion();
   private readonly scale = new THREE.Vector3(1, 1, 1);
+  private readonly arrow: THREE.Mesh;
 
   constructor() {
     this.pathGeometry.setAttribute('position', this.pathPositions);
@@ -91,10 +92,43 @@ export class PreviewLayer {
     this.slotMarkers.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
     this.slotMarkers.frustumCulled = false;
     this.slotMarkers.count = 0;
-    this.group.add(pathLines, losClear, losBlocked, this.rings, this.slotMarkers);
+    // The dragged facing: a flat arrow 6 m long, pointing along local +X.
+    const shape = new THREE.Shape();
+    shape.moveTo(0, -0.35);
+    shape.lineTo(4.4, -0.35);
+    shape.lineTo(4.4, -1.1);
+    shape.lineTo(6, 0);
+    shape.lineTo(4.4, 1.1);
+    shape.lineTo(4.4, 0.35);
+    shape.lineTo(0, 0.35);
+    shape.closePath();
+    const arrowGeometry = new THREE.ShapeGeometry(shape);
+    arrowGeometry.rotateX(-Math.PI / 2);
+    this.arrow = new THREE.Mesh(
+      arrowGeometry,
+      new THREE.MeshBasicMaterial({
+        color: PALETTE.preview,
+        transparent: true,
+        opacity: 0.85,
+        depthWrite: false,
+        side: THREE.DoubleSide,
+      }),
+    );
+    this.arrow.name = 'facing-arrow';
+    this.arrow.renderOrder = 3;
+    this.arrow.visible = false;
+    this.group.add(pathLines, losClear, losBlocked, this.rings, this.slotMarkers, this.arrow);
+  }
+
+  private setArrow(arrow: PreviewPlan['facingArrow']): void {
+    this.arrow.visible = Boolean(arrow);
+    if (!arrow) return;
+    this.arrow.position.set(arrow.x, terrainHeightAt(arrow.x, arrow.y) + 0.26, arrow.y);
+    this.arrow.rotation.set(0, Math.atan2(-arrow.facingY, arrow.facingX), 0);
   }
 
   setPlan(plan: PreviewPlan | null): void {
+    this.setArrow(plan?.facingArrow);
     if (!plan) {
       this.pathGeometry.setDrawRange(0, 0);
       this.losClearGeometry.setDrawRange(0, 0);

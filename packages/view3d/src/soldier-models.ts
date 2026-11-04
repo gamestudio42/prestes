@@ -1,6 +1,4 @@
 import * as THREE from 'three';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import { clone as cloneSkinned } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { HELD_CLIPS, type SoldierClip, type SoldierOutfit } from './soldier-clips';
 import { toonGradient } from './materials';
 
@@ -14,6 +12,8 @@ export interface SoldierAsset {
   scene: THREE.Group;
   clips: Map<string, THREE.AnimationClip>;
   materials: Record<SoldierOutfit, THREE.Material>;
+  /** Skeleton-aware clone (three's SkeletonUtils, loaded with the asset). */
+  clone: (source: THREE.Object3D) => THREE.Object3D;
 }
 
 const OUTFITS: readonly SoldierOutfit[] = ['column', 'legalist', 'officer'];
@@ -29,6 +29,11 @@ function pixelTexture(texture: THREE.Texture): THREE.Texture {
 }
 
 export async function loadSoldierAsset(base = './models/'): Promise<SoldierAsset> {
+  // The loaders are a separate chunk, fetched only when models are wanted.
+  const [{ GLTFLoader }, { clone }] = await Promise.all([
+    import('three/examples/jsm/loaders/GLTFLoader.js'),
+    import('three/examples/jsm/utils/SkeletonUtils.js'),
+  ]);
   const gltf = await new GLTFLoader().loadAsync(`${base}soldier.glb`);
   const textureLoader = new THREE.TextureLoader();
   const materials = {} as Record<SoldierOutfit, THREE.Material>;
@@ -40,6 +45,7 @@ export async function loadSoldierAsset(base = './models/'): Promise<SoldierAsset
     scene: gltf.scene,
     clips: new Map(gltf.animations.map((clip) => [clip.name, clip])),
     materials,
+    clone,
   };
 }
 
@@ -51,7 +57,7 @@ export class SoldierInstance {
   private current: SoldierClip | null = null;
 
   constructor(asset: SoldierAsset, outfit: SoldierOutfit) {
-    this.root = cloneSkinned(asset.scene);
+    this.root = asset.clone(asset.scene);
     this.root.traverse((child) => {
       const mesh = child as THREE.SkinnedMesh;
       if (!mesh.isMesh) return;

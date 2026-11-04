@@ -42,6 +42,26 @@ const enemy = {
 } as Partial<UnitSnapshot>;
 
 describe('order preview', () => {
+  it('turns the formation and the cones to a dragged facing', () => {
+    const second = { ...player, id: 2, x: -2 };
+    const plan = planOrderPreview({
+      frame: frame([player, second, enemy]),
+      unitIds: [1, 2],
+      order: 'move',
+      to: { x: -30, y: 34 },
+      formation: 'line',
+      facing: { x: 4, y: 0 },
+      fast: true,
+    });
+    for (const cone of plan?.cones ?? []) {
+      expect(cone.facingX).toBeCloseTo(1);
+    }
+    // A line facing east runs north-south.
+    const [a, b] = plan!.paths.map((path) => path.destination);
+    expect(Math.abs(a!.x - b!.x)).toBeLessThan(0.01);
+    expect(Math.abs(a!.y - b!.y)).toBeGreaterThan(2);
+  });
+
   it('plans paths and cones without mutating the frame', () => {
     const value = frame([player, enemy]);
     const before = JSON.stringify(value);

@@ -87,7 +87,7 @@ test('shows action names immediately and descriptions after five seconds', async
   await page.waitForTimeout(5200);
   await expect(page.getByRole('tooltip')).toContainText('Pick an enemy');
 });
-test('draws a line formation when Move is pending', async ({ page }) => {
+test('draws a line formation with Shift held when Move is pending', async ({ page }) => {
   await page.goto('/');
   await page.getByTestId('start-button').click();
   await expect(page.getByTestId('hud')).toBeVisible();
@@ -95,10 +95,12 @@ test('draws a line formation when Move is pending', async ({ page }) => {
   await page.getByTestId('order-tab-movement').click();
   await page.getByTestId('order-move').click();
   await page.mouse.move(620, 420);
+  await page.keyboard.down('Shift');
   await page.mouse.down();
   await page.mouse.move(920, 420, { steps: 8 });
   await expect(page.locator('.selection-box')).toHaveCount(0);
   await page.mouse.up();
+  await page.keyboard.up('Shift');
   await expect(page.getByTestId('order-value')).toContainText('Move', { timeout: 5000 });
   await expect.poll(() =>
     page.evaluate(
@@ -111,6 +113,39 @@ test('draws a line formation when Move is pending', async ({ page }) => {
 
 
 
+
+test('a drag from the destination turns the section to face that way', async ({ page }) => {
+  await page.goto('/');
+  await page.getByTestId('start-button').click();
+  await expect(page.getByTestId('hud')).toBeVisible();
+  await page.waitForFunction(() => Boolean(window.__prestes?.frame()));
+  await expect(page.getByTestId('squad-status')).toContainText('Selection: 11/11');
+
+  await page.getByTestId('order-tab-movement').click();
+  await page.getByTestId('order-move').click();
+  await page.mouse.move(620, 420);
+  await page.mouse.down();
+  await page.mouse.move(820, 420, { steps: 8 });
+  await expect(page.locator('.selection-box')).toHaveCount(0);
+  await expect.poll(() => page.getByTestId('game-canvas').getAttribute('data-preview')).not.toBe('0');
+  await page.mouse.up();
+  await expect(page.getByTestId('order-value')).toContainText('Move', { timeout: 5000 });
+  // Every soldier of the section holds the same dragged facing as his aim.
+  await expect
+    .poll(() =>
+      page.evaluate(() => {
+        const units = window.__prestes!.frame()!.units.filter((unit) => unit.squadId === 1 && unit.alive);
+        const first = units[0]!;
+        return (
+          first.aimX != null &&
+          units.every(
+            (unit) => Math.abs((unit.aimX ?? 9) - first.aimX!) < 1e-6 && Math.abs((unit.aimY ?? 9) - first.aimY!) < 1e-6,
+          )
+        );
+      }),
+    )
+    .toBe(true);
+});
 
 test('turns alternating movement off for real orders', async ({ page }) => {
   await page.goto('/');

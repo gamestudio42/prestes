@@ -104,8 +104,19 @@ export function applyCommand(
   }
   const actionable = resolution.actionable;
 
+  // An ordered facing must be a direction; it is used normalised.
+  let facing: Vec2 | undefined;
+  if ((command.type === 'move' || command.type === 'order') && command.facing !== undefined) {
+    const length = Math.sqrt(command.facing.x * command.facing.x + command.facing.y * command.facing.y);
+    if (!Number.isFinite(length) || length < 0.001) {
+      reject(ctx, tick, envelope.seq, 'invalid_position', events);
+      return;
+    }
+    facing = { x: command.facing.x / length, y: command.facing.y / length };
+  }
+
   if (command.type === 'order') {
-    applyTacticalOrder(ctx, command, actionable, tick, envelope.seq, events);
+    applyTacticalOrder(ctx, { ...command, facing }, actionable, tick, envelope.seq, events);
     return;
   }
 
@@ -331,7 +342,7 @@ export function applyCommand(
     (order) => !order.unitIds.some((id) => command.unitIds.includes(id)),
   );
   const living = actionable;
-  const aimFacing = averageAim(living);
+  const aimFacing = facing ?? averageAim(living);
   const coverFacing = aimFacing ?? averageFacing(living);
   const moveFacing =
     aimFacing ?? (isPointNearCover(command.to, ctx.covers) ? averageFacing(living) : undefined);
@@ -367,6 +378,11 @@ export function applyCommand(
     unit.rescueTargetId = null;
     unit.currentOrder = null;
     unit.lineMove = false;
+    if (facing) {
+      // Faced and aimed that way once there, until something changes it.
+      unit.aimX = facing.x;
+      unit.aimY = facing.y;
+    }
     const final = finals[index]!;
     let destination: Vec2 = final.slot ? takeSlot(unit, final.slot) : { x: final.x, y: final.y };
     // A click on cover still moves the soldier: use the nearest open point.

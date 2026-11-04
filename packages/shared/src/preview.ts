@@ -62,6 +62,8 @@ export interface PreviewPlan {
   paths: PreviewPath[];
   cones: PreviewCone[];
   los: PreviewLos[];
+  /** The facing the player is dragging, drawn as an arrow from the destination. */
+  facingArrow?: { x: number; y: number; facingX: number; facingY: number };
 }
 
 export interface PreviewRequest {
@@ -72,6 +74,8 @@ export interface PreviewRequest {
   to?: Vec2;
   targetId?: number;
   line?: { from: Vec2; to: Vec2 };
+  /** Ground orders: the facing dragged by the player (not normalised). */
+  facing?: Vec2;
   fast?: boolean;
 }
 
@@ -352,8 +356,14 @@ export function planOrderPreview(request: PreviewRequest): PreviewPlan | null {
     request.order === 'move' && request.line
       ? lineFacing(request.line.from, request.line.to)
       : undefined;
+  const orderedFacing =
+    request.facing && GROUND_ORDERS.has(request.order) && Math.sqrt(request.facing.x * request.facing.x + request.facing.y * request.facing.y) > 0.001
+      ? facingToward({ x: 0, y: 0 }, request.facing)
+      : undefined;
   let formationFacing: Vec2 | undefined;
-  if (lineDirection) {
+  if (orderedFacing) {
+    formationFacing = orderedFacing;
+  } else if (lineDirection) {
     formationFacing = lineDirection;
   } else if (hasDestination && (request.order === 'defend' || request.order === 'ambush')) {
     const threat = target ?? nearestEnemyAt(request.frame, request.to!, units[0]!.faction);
@@ -539,7 +549,11 @@ export function planOrderPreview(request: PreviewRequest): PreviewPlan | null {
     }
   });
 
-  return { unitIds: units.map((unit) => unit.id), paths, cones, los };
+  const facingArrow =
+    orderedFacing && request.to
+      ? { x: request.to.x, y: request.to.y, facingX: orderedFacing.x, facingY: orderedFacing.y }
+      : undefined;
+  return { unitIds: units.map((unit) => unit.id), paths, cones, los, ...(facingArrow ? { facingArrow } : {}) };
 }
 
 

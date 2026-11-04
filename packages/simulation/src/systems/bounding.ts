@@ -1,4 +1,4 @@
-import { averageFacing, findPath, isPointBlockedByCovers } from '@prestes/shared';
+import { averageAim, averageFacing, findPath, isPointBlockedByCovers } from '@prestes/shared';
 import type { Vec2 } from '@prestes/shared';
 import { formationSlots } from '../tactical';
 import { BOUNDING_ORDERS } from './model';
@@ -61,7 +61,7 @@ export function updateBounding(ctx: SimContext): void {
         destination,
         2.8,
         first.formation ?? 'line',
-        averageFacing(sorted),
+        averageAim(sorted) ?? averageFacing(sorted),
       );
       const targets = new Map<number, Vec2>();
       sorted.forEach((unit, index) => {
@@ -194,7 +194,7 @@ export function assignBoundingDirect(
     destination,
     2.8,
     units[0]?.formation ?? 'line',
-    averageFacing(units),
+    averageAim(units) ?? averageFacing(units),
   );
   units.forEach((unit, index) => {
     // A slot inside a cover's clearance has no path; without this the soldier

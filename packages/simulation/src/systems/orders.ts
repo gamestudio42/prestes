@@ -88,10 +88,11 @@ export function applyTacticalOrder(
       command.order === 'defend' || command.order === 'ambush'
         ? nearestEnemyAt(ctx, command.to, units[0]!.faction)
         : null;
-    const formationFacing = formationThreat
+    // The player's facing wins over the direction of the nearest enemy.
+    const formationFacing = command.facing ?? (formationThreat
       ? facingToward(ctx, command.to, formationThreat)
       : (averageAim(units) ??
-        (isPointNearCover(command.to, ctx.covers) ? averageFacing(units) : undefined));
+        (isPointNearCover(command.to, ctx.covers) ? averageFacing(units) : undefined)));
     const coverFacing = formationFacing ?? averageFacing(units);
     const slots = formationSlots(
       units.map((unit) => ({ x: unit.x, y: unit.y })),
@@ -119,6 +120,10 @@ export function applyTacticalOrder(
     const routes = command.order === 'disperse' ? units.map(() => null) : sectionRoutes(ctx, units, finals);
     units.forEach((unit, index) => {
       clear(unit);
+      if (command.facing) {
+        unit.aimX = command.facing.x;
+        unit.aimY = command.facing.y;
+      }
       const final = finals[index]!;
       const destination: Vec2 = final.slot ? takeSlot(unit, final.slot) : { x: final.x, y: final.y };
       let path = routeFor(routes[index], destination) ?? findPath({ x: unit.x, y: unit.y }, destination, ctx.covers);

@@ -24,6 +24,8 @@ export interface GameCanvasProps {
   aimPending?: boolean;
   pendingAction?: boolean;
   lineMoveArmed?: boolean;
+  /** A ground order is armed: dragging from the destination sets the facing. */
+  groundOrderArmed?: boolean;
   trainingField?: boolean;
   strategicField?: boolean;
   trainingMarkers?: readonly TrainingMarker[];
@@ -35,12 +37,13 @@ export interface GameCanvasProps {
   onBandChange: (band: CameraBand) => void;
   onSelectUnits: (unitIds: number[], mode: SelectionMode) => void;
   onPrimaryUnit: (unitId: number) => void;
-  onPrimaryGround: (point: Vec2) => void;
+  onPrimaryGround: (point: Vec2, facing?: Vec2) => void;
   onQuickUnit: (unitId: number) => void;
-  onQuickGround: (point: Vec2) => void;
+  onQuickGround: (point: Vec2, facing?: Vec2) => void;
   onPrimaryLine: (from: Vec2, to: Vec2) => void;
   onQuickLine: (from: Vec2, to: Vec2) => void;
   onPreviewLine: (line: { from: Vec2; to: Vec2 } | null) => void;
+  onPreviewFacing: (drag: { from: Vec2; to: Vec2 } | null) => void;
   onPreviewGround: (point: Vec2 | null) => void;
   onPreviewUnit: (unitId: number | null) => void;
   onHover: (hint: 'cover' | 'target' | null, x: number, y: number) => void;
@@ -52,6 +55,13 @@ interface DragState {
   x: number;
   y: number;
   dragging: boolean;
+  /** Shift was held at the press: the drag spreads a line instead of facing. */
+  shift?: boolean;
+}
+
+/** The facing of a drag from `from` to `to` on the ground. */
+function dragFacing(from: Vec2, to: Vec2): Vec2 {
+  return { x: to.x - from.x, y: to.y - from.y };
 }
 
 export function GameCanvas({
@@ -65,6 +75,7 @@ export function GameCanvas({
   aimPending = false,
   pendingAction = false,
   lineMoveArmed = false,
+  groundOrderArmed = false,
   trainingField = false,
   strategicField = false,
   trainingMarkers = [],
@@ -82,6 +93,7 @@ export function GameCanvas({
   onPrimaryLine,
   onQuickLine,
   onPreviewLine,
+  onPreviewFacing,
   onPreviewGround,
   onPreviewUnit,
   onHover,
@@ -212,7 +224,7 @@ export function GameCanvas({
     const unitId = scene.pickUnit(x, y);
     if (event.button === 0) {
       event.currentTarget.setPointerCapture?.(event.pointerId);
-      setDrag({ startX: x, startY: y, x, y, dragging: false });
+      setDrag({ startX: x, startY: y, x, y, dragging: false, shift: event.shiftKey });
       return;
     }
     if (unitId !== null) {
@@ -220,7 +232,7 @@ export function GameCanvas({
       return;
     }
     event.currentTarget.setPointerCapture?.(event.pointerId);
-    const nextDrag = { startX: x, startY: y, x, y, dragging: false };
+    const nextDrag = { startX: x, startY: y, x, y, dragging: false, shift: event.shiftKey };
     rightDragRef.current = nextDrag;
     setRightDrag(nextDrag);
     onPreviewUnit(null);
@@ -248,6 +260,7 @@ export function GameCanvas({
         rightDragRef.current = null;
         setRightDrag(null);
         onPreviewLine(null);
+        onPreviewFacing(null);
         return;
       }
       const dragging =
@@ -260,18 +273,28 @@ export function GameCanvas({
       if (dragging) {
         const from = scene.screenToGround(activeRightDrag.startX, activeRightDrag.startY);
         const to = scene.screenToGround(x, y);
-        onPreviewLine(from && to ? { from, to } : null);
+        if (activeRightDrag.shift) {
+          onPreviewLine(from && to ? { from, to } : null);
+        } else {
+          onPreviewFacing(from && to ? { from, to } : null);
+        }
       }
       return;
     }
     if (drag) {
       const dragging =
-        drag.dragging || Math.abs(x - drag.startX) > 5 || Math.abs(y - drag.startY) > 5;
+        drag.dragging ||
+        Math.abs(x - drag.startX) > (groundOrderArmed ? 8 : 5) ||
+        Math.abs(y - drag.startY) > (groundOrderArmed ? 8 : 5);
       setDrag({ ...drag, x, y, dragging });
-      if (lineMoveArmed && dragging) {
+      if (groundOrderArmed && dragging) {
         const from = scene.screenToGround(drag.startX, drag.startY);
         const to = scene.screenToGround(x, y);
-        onPreviewLine(from && to ? { from, to } : null);
+        if (drag.shift && lineMoveArmed) {
+          onPreviewLine(from && to ? { from, to } : null);
+        } else {
+          onPreviewFacing(from && to ? { from, to } : null);
+        }
       }
       return;
     }
@@ -324,11 +347,16 @@ export function GameCanvas({
       const from = scene.screenToGround(activeRightDrag.startX, activeRightDrag.startY);
       const to = scene.screenToGround(activeRightDrag.x, activeRightDrag.y);
       if (activeRightDrag.dragging && from && to) {
-        onQuickLine(from, to);
+        if (activeRightDrag.shift) {
+          onQuickLine(from, to);
+        } else {
+          onQuickGround(from, dragFacing(from, to));
+        }
       } else if (to) {
         onQuickGround(to);
       }
       onPreviewLine(null);
+      onPreviewFacing(null);
       rightDragRef.current = null;
       setRightDrag(null);
       event.currentTarget.releasePointerCapture?.(event.pointerId);
@@ -337,14 +365,19 @@ export function GameCanvas({
     if (!drag) {
       return;
     }
-    const { startX, startY, x, y, dragging } = drag;
-    if (dragging && lineMoveArmed) {
+    const { startX, startY, x, y, dragging, shift } = drag;
+    if (dragging && groundOrderArmed) {
       const from = scene.screenToGround(startX, startY);
       const to = scene.screenToGround(x, y);
       if (from && to) {
-        onPrimaryLine(from, to);
+        if (shift && lineMoveArmed) {
+          onPrimaryLine(from, to);
+        } else {
+          onPrimaryGround(from, dragFacing(from, to));
+        }
       }
       onPreviewLine(null);
+      onPreviewFacing(null);
     } else if (dragging) {
       const ids = scene.unitsInScreenRect(
         Math.min(startX, x),
@@ -367,7 +400,7 @@ export function GameCanvas({
     event.currentTarget.releasePointerCapture?.(event.pointerId);
     setDrag(null);
   };
-  const selection = drag?.dragging && !lineMoveArmed
+  const selection = drag?.dragging && !groundOrderArmed
     ? {
         left: Math.min(drag.startX, drag.x),
         top: Math.min(drag.startY, drag.y),
@@ -391,6 +424,7 @@ export function GameCanvas({
         setRightDrag(null);
         setDrag(null);
         onPreviewLine(null);
+        onPreviewFacing(null);
       }}
       onPointerLeave={() => {
         if ((rightDragRef.current?.dragging ?? false) === false) {

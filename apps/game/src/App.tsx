@@ -122,6 +122,7 @@ export function App() {
     handlePrimaryGround,
     handleQuickGround,
     handlePreviewLine,
+    handlePreviewFacing,
     handlePrimaryLine,
     handleQuickLine,
     handleQuickUnit,
@@ -456,6 +457,11 @@ export function App() {
         aimPending={aimPending}
         pendingAction={pendingOrder !== null || pendingTactical !== null || aimPending || sandboxTool !== null}
         lineMoveArmed={pendingOrder === 'move'}
+        groundOrderArmed={
+          pendingOrder === 'move' ||
+          (pendingTactical !== null &&
+            ['advance', 'defend', 'ambush', 'disperse', 'recon', 'reserve'].includes(pendingTactical))
+        }
         orderCallout={callout}
         placementPreview={placementPreview}
         targetUnitIds={targetUnitIds}
@@ -475,6 +481,7 @@ export function App() {
         onPrimaryLine={handlePrimaryLine}
         onQuickLine={handleQuickLine}
         onPreviewLine={handlePreviewLine}
+        onPreviewFacing={handlePreviewFacing}
         onPreviewGround={handlePreviewGround}
         onPreviewUnit={handlePreviewUnit}
         onHover={(kind, x, y) => {

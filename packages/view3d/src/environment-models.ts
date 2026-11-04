@@ -1,5 +1,4 @@
 import * as THREE from 'three';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { terrainHeightAt } from '@prestes/shared';
 import { toonGradient } from './materials';
 
@@ -17,6 +16,8 @@ export interface EnvironmentAsset {
 const FILES = ['buildings', 'fortifications', 'vegetation', 'props'];
 
 export async function loadEnvironmentAsset(base = './models/'): Promise<EnvironmentAsset> {
+  // The loader is a separate chunk, fetched only when models are wanted.
+  const { GLTFLoader } = await import('three/examples/jsm/loaders/GLTFLoader.js');
   const loader = new GLTFLoader();
   const [map, ...scenes] = await Promise.all([
     new THREE.TextureLoader().loadAsync(`${base}textures/environment.png`),

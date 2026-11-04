@@ -212,3 +212,44 @@ describe('cover slots in the simulation', () => {
     expect(broken!.slotId).toBeNull();
   });
 });
+
+describe('ordered facing while bounding', () => {
+  it('the bounding section keeps its wedge turned to the dragged facing', () => {
+    // The bootcamp formation station, as the game sets it up.
+    const t = training(false);
+    t.send({
+      type: 'training_phase',
+      setup: {
+        phase: 'formation',
+        playerPoint: stationPoint('formation', { x: 0, y: 0 }),
+        officerPoint: stationPoint('formation', { x: 12, y: -12 }),
+      },
+    }, 3);
+    const internal = t.internal as unknown as { units: Array<{ id: number; faction: string; x: number; y: number; targetX: number; targetY: number }> };
+    for (const unit of internal.units) {
+      if (unit.faction !== 'column') {
+        unit.x = -95 + unit.id;
+        unit.y = 95;
+        unit.targetX = unit.x;
+        unit.targetY = unit.y;
+      }
+    }
+    const section = t.frame().units
+      .filter((unit) => unit.faction === 'column' && unit.squadId === 1 && unit.kind !== 'officer')
+      .map((unit) => unit.id);
+    const centre = t.frame().units
+      .filter((unit) => section.includes(unit.id))
+      .reduce((sum, unit) => ({ x: sum.x + unit.x / section.length, y: sum.y + unit.y / section.length }), { x: 0, y: 0 });
+    t.send({ type: 'set_bounding', enabled: true });
+    t.send({ type: 'formation', unitIds: section, formation: 'wedge' });
+    const to = { x: centre.x + 16, y: centre.y };
+    // Facing south (+y): the point leads, the arms trail to the north.
+    t.send({ type: 'move', unitIds: section, to, facing: { x: 0, y: 1 } }, 1200);
+    const units = t.frame().units.filter((unit) => section.includes(unit.id));
+    for (const unit of units) {
+      expect(unit.facingY).toBeGreaterThan(0.9);
+      expect(unit.y - to.y).toBeLessThan(0.5);
+    }
+    expect(units.filter((unit) => unit.y < to.y - 1.5).length).toBe(units.length - 1);
+  });
+});

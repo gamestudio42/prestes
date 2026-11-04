@@ -454,3 +454,38 @@ describe('training station setup', () => {
     expect(instructor(frame).incapacitated).toBe(true);
   });
 });
+
+describe('mechanics: ordered facing', () => {
+  it('move with facing: the wedge is turned to it and kept on arrival', () => {
+    const t = harness();
+    t.send({ type: 'hold_fire', unitIds: [...COLUMN, OFFICER, ...ENEMY], hold: true });
+    t.send({ type: 'formation', unitIds: COLUMN, formation: 'wedge' });
+    const to = { x: -30, y: 34 };
+    t.send({ type: 'move', unitIds: COLUMN, to, facing: { x: 3, y: 0 } }, 900);
+    const units = COLUMN.map((id) => t.unit(id));
+    for (const unit of units) {
+      expect(unit.facingX).toBeGreaterThan(0.9);
+      expect(unit.aimX).toBeCloseTo(1);
+    }
+    // The wedge's point is the destination; its arms trail to the west.
+    const east = Math.max(...units.map((unit) => unit.x));
+    expect(Math.abs(east - to.x)).toBeLessThan(1.5);
+    expect(units.filter((unit) => unit.x < to.x - 1.5).length).toBe(COLUMN.length - 1);
+  });
+
+  it('defend with facing: the player side wins over the enemy direction', () => {
+    const t = harness();
+    t.send({ type: 'hold_fire', unitIds: [...COLUMN, OFFICER, ...ENEMY], hold: true });
+    t.send({ type: 'order', order: 'defend', unitIds: COLUMN, to: { x: -30, y: 34 }, facing: { x: -1, y: 0 } }, 900);
+    for (const id of COLUMN) {
+      if (t.unit(id).targetId === null) expect(t.unit(id).facingX).toBeLessThan(-0.9);
+    }
+  });
+
+  it('rejects a facing with no direction', () => {
+    const t = harness();
+    t.send({ type: 'move', unitIds: COLUMN, to: { x: -30, y: 34 }, facing: { x: 0, y: 0 } }, 2);
+    expect(t.count('command_rejected')).toBe(1);
+  });
+});
+

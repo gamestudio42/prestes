@@ -465,7 +465,7 @@ export const ptBR: Record<MessageKey, string> = {
   'training.exercise.assembly.title': 'Formar a seção',
   'training.exercise.assembly.objective': 'Chegar à zona de reunião com pelo menos cinco soldados.',
   'training.exercise.assembly.briefing': 'O instrutor quer a seção formada no ponto marcado antes do exercício começar.',
-  'training.exercise.assembly.hint': 'Selecione a tropa, ordene o movimento até a zona marcada e mantenha a formação unida.',
+  'training.exercise.assembly.hint': 'Selecione a tropa, ordene o movimento até a zona marcada e mantenha a formação unida. Segure e arraste no destino para virar a frente da tropa.',
   'training.exercise.assembly.instructor': 'Instrutor: Forme a seção no ponto de reunião. Mantenha cinco soldados dentro da marcação.',
   'training.exercise.assembly.reach': 'Soldados na zona de reunião',
   'training.exercise.assault.title': 'Tomar a linha',

@@ -183,7 +183,8 @@ export type RejectionReason =
   | 'no_rescue_target';
 
 export type Command =
-  | { type: 'move'; unitIds: number[]; to: Vec2 }
+  /** `facing`: the way the section faces on arrival, formation kept. */
+  | { type: 'move'; unitIds: number[]; to: Vec2; facing?: Vec2 }
   | { type: 'stance'; unitIds: number[]; stance: Stance }
   | { type: 'formation'; unitIds: number[]; formation: FormationKind }
   | { type: 'attack'; unitIds: number[]; targetId: number }
@@ -196,6 +197,8 @@ export type Command =
       unitIds: number[];
       to?: Vec2;
       targetId?: number;
+      /** Ground orders: the way the section faces on arrival. */
+      facing?: Vec2;
     }
   | { type: 'spawn_cover'; kind: CoverKind; to: Vec2; rotation?: number }
   | { type: 'spawn_dummy'; to: Vec2; rotation?: number }
