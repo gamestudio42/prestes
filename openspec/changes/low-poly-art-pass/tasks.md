@@ -1,7 +1,7 @@
 ## 1. Pipeline
 
-- [ ] 1.1 `art-src/blender/build.py` and `pnpm art` (Blender located like Aseprite), environment folder in `tools/prepare-models.ts`; a smoke target exports one cube end to end
-- [ ] 1.2 Pixel texture grids (`art-src/textures/`) and atlases: soldier 64 x 64 (column, legalist, officer), environment 128 x 128; loader with nearest filtering
+- [x] 1.1 `art-src/blender/build.py` and `pnpm art` (Blender located like Aseprite), environment folder in `tools/prepare-models.ts`; a smoke target exports one cube end to end
+- [x] 1.2 Pixel texture grids (`art-src/textures/`) and atlases: soldier 64 x 64 (column, legalist, officer), environment 128 x 128; loader with nearest filtering
 
 ## 2. Soldier
 

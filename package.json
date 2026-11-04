@@ -30,7 +30,8 @@
     "sim": "tsx tools/headless-sim.ts",
     "bench": "tsx tools/sim-bench.ts",
     "models": "tsx tools/prepare-models.ts",
-    "icons": "tsx tools/export-icons.ts"
+    "icons": "tsx tools/export-icons.ts",
+    "art": "tsx tools/build-art.ts"
   },
   "pnpm": {
     "onlyBuiltDependencies": [

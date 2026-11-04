@@ -24,3 +24,5 @@ sons referencia/
 .pi/skills/feature-design/
 .pi/skills/playtest-review/
 .pi/skills/web-game-release/
+art-src/**/*.blend1
+art-src/environment/smoke.*

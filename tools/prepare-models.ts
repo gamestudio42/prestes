@@ -3,28 +3,25 @@ import { dedup, prune } from '@gltf-transform/functions';
 import { existsSync, mkdirSync, readdirSync } from 'node:fs';
 import { basename, join } from 'node:path';
 
-const SOURCE = 'art-src/characters';
+const SOURCES = ['art-src/characters', 'art-src/environment'];
 const OUTPUT = 'apps/game/public/models';
 
 mkdirSync(OUTPUT, { recursive: true });
 
-if (!existsSync(SOURCE)) {
-  console.log(`No source models at ${SOURCE}. Create .gltf exports there and rerun.`);
-  process.exit(0);
-}
-
-const files = readdirSync(SOURCE).filter(
-  (file) => file.endsWith('.gltf') || file.endsWith('.glb'),
+const files = SOURCES.filter((source) => existsSync(source)).flatMap((source) =>
+  readdirSync(source)
+    .filter((file) => (file.endsWith('.gltf') || file.endsWith('.glb')) && !file.startsWith('smoke'))
+    .map((file) => join(source, file)),
 );
 
 if (files.length === 0) {
-  console.log(`No .gltf or .glb files in ${SOURCE}; nothing to export.`);
+  console.log(`No .gltf or .glb files in ${SOURCES.join(', ')}; nothing to export.`);
   process.exit(0);
 }
 
 const io = new NodeIO();
-for (const file of files) {
-  const input = join(SOURCE, file);
+for (const input of files) {
+  const file = basename(input);
   const output = join(OUTPUT, `${basename(file, file.endsWith('.gltf') ? '.gltf' : '.glb')}.glb`);
   const document = await io.read(input);
   await document.transform(prune(), dedup());
