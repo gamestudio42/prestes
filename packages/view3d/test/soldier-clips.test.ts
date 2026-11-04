@@ -36,6 +36,16 @@ describe('soldierClip', () => {
   });
 });
 
+describe('ready carry', () => {
+  it('carries the rifle at the ready on contact orders, sloped on the march', () => {
+    expect(soldierClip({ ...base, order: 'recon' }, { moving: true, firing: false })).toBe('walk-ready');
+    expect(soldierClip({ ...base, order: 'advance' }, still)).toBe('idle-ready');
+    expect(soldierClip({ ...base, order: 'move' }, { moving: true, firing: false })).toBe('walk');
+    expect(soldierClip({ ...base, order: 'move', boundTeam: 'a' }, { moving: true, firing: false })).toBe('walk-ready');
+    expect(soldierClip({ ...base, order: null, suppression: 0.4 }, still)).toBe('idle-ready');
+  });
+});
+
 describe('soldierOutfit', () => {
   it('dresses officers, the column and the legalists apart', () => {
     expect(soldierOutfit({ kind: 'officer', faction: 'column' })).toBe('officer');
@@ -49,5 +59,6 @@ describe('walkTimeScale', () => {
     expect(walkTimeScale(1.4)).toBeCloseTo(1);
     expect(walkTimeScale(0)).toBe(0.4);
     expect(walkTimeScale(10)).toBe(2.2);
+    expect(walkTimeScale(0.45, 0.45)).toBeCloseTo(1);
   });
 });

@@ -122,6 +122,17 @@ class Poser:
             # For a bone pointing down, "forward" moves the tail to +Y; for a
             # bone pointing up (chest, head, rifle), forward tips it to +Y too.
             self.sign[name] = 1.0 if tail.y > rest.y else -1.0
+        self.spread_sign: dict[str, float] = {}
+        for name in ("thigh.L", "thigh.R", "shin.L", "shin.R", "upper_arm.L", "upper_arm.R"):
+            bone = rig.pose.bones[name]
+            bone.rotation_euler = (0, 0, 0.4)
+            bpy.context.view_layer.update()
+            tail = rig.matrix_world @ bone.tail
+            rest = rig.matrix_world @ rig.data.bones[name].tail_local
+            bone.rotation_euler = (0, 0, 0)
+            bpy.context.view_layer.update()
+            # Positive spread moves the tail away from the body's midline.
+            self.spread_sign[name] = 1.0 if abs(tail.x) > abs(rest.x) else -1.0
 
     def clear(self) -> None:
         for bone in self.rig.pose.bones:
@@ -132,6 +143,11 @@ class Poser:
         """Positive: the bone's tail moves forward (+Y)."""
         bone = self.rig.pose.bones[name]
         bone.rotation_euler.x = self.sign[name] * math.radians(degrees)
+
+    def spread(self, name: str, degrees: float) -> None:
+        """Positive: the bone's tail moves out from the midline (abduction)."""
+        bone = self.rig.pose.bones[name]
+        bone.rotation_euler.z = self.spread_sign[name] * math.radians(degrees)
 
     def side(self, name: str, degrees: float) -> None:
         self.rig.pose.bones[name].rotation_euler.y = math.radians(degrees)
@@ -179,6 +195,19 @@ def slung(p: Poser) -> None:
     p.swing("forearm.R", 70)
 
 
+def ready(p: Poser) -> None:
+    """Low ready: butt at the shoulder, muzzle forward and down, both hands
+    on the rifle, so the soldier can bring it up and fire at once."""
+    p.swing("chest", 6)
+    p.swing("rifle", 102)
+    p.swing("upper_arm.R", 42)
+    p.swing("forearm.R", 38)
+    p.swing("upper_arm.L", 58)
+    p.swing("forearm.L", 34)
+    p.spread("upper_arm.L", -14)
+    p.swing("head", -4)
+
+
 def stand(p: Poser) -> None:
     slung(p)
 
@@ -189,36 +218,38 @@ def stand_breathe(p: Poser) -> None:
     p.swing("head", -2)
 
 
-def walk_a(p: Poser) -> None:
-    slung(p)
+def walk_a(p: Poser, arms=None) -> None:
+    (arms or slung)(p)
     p.swing("thigh.L", 24)
     p.swing("shin.L", -8)
     p.swing("thigh.R", -20)
     p.swing("shin.R", -22)
-    p.swing("upper_arm.L", -20)
+    if arms is None:
+        p.swing("upper_arm.L", -20)
     p.root(z=0.0)
 
 
-def walk_pass(p: Poser) -> None:
-    slung(p)
+def walk_pass(p: Poser, arms=None) -> None:
+    (arms or slung)(p)
     p.swing("thigh.L", 2)
     p.swing("thigh.R", -2)
     p.swing("shin.R", -30)
     p.root(z=0.03)
 
 
-def walk_b(p: Poser) -> None:
-    slung(p)
+def walk_b(p: Poser, arms=None) -> None:
+    (arms or slung)(p)
     p.swing("thigh.R", 24)
     p.swing("shin.R", -8)
     p.swing("thigh.L", -20)
     p.swing("shin.L", -22)
-    p.swing("upper_arm.L", 20)
+    if arms is None:
+        p.swing("upper_arm.L", 20)
     p.root(z=0.0)
 
 
-def walk_pass_b(p: Poser) -> None:
-    slung(p)
+def walk_pass_b(p: Poser, arms=None) -> None:
+    (arms or slung)(p)
     p.swing("thigh.R", 2)
     p.swing("thigh.L", -2)
     p.swing("shin.L", -30)
@@ -235,7 +266,7 @@ def crouch(p: Poser, aim: bool = False) -> None:
     if aim:
         aim_arms(p)
     else:
-        slung(p)
+        ready(p)
 
 
 def aim_arms(p: Poser, recoil: float = 0.0) -> None:
@@ -251,13 +282,13 @@ def aim_arms(p: Poser, recoil: float = 0.0) -> None:
     p.swing("head", 6)
 
 
-def prone(p: Poser, aim: bool = True, crawl: float = 0.0) -> None:
+def prone(p: Poser, aim: bool = True) -> None:
     p.root(pitch=-90, y=-0.95, z=0.13)
     p.swing("head", -60)
-    p.swing("thigh.L", -6 + crawl * 25)
-    p.swing("shin.L", -10 - max(0.0, crawl) * 40)
-    p.swing("thigh.R", -6 - crawl * 25)
-    p.swing("shin.R", -10 - max(0.0, -crawl) * 40)
+    p.swing("thigh.L", -6)
+    p.swing("shin.L", -10)
+    p.swing("thigh.R", -6)
+    p.swing("shin.R", -10)
     if aim:
         p.swing("rifle", 0)
         p.swing("upper_arm.R", 160)
@@ -265,6 +296,28 @@ def prone(p: Poser, aim: bool = True, crawl: float = 0.0) -> None:
         p.side("upper_arm.L", 15)
         p.swing("forearm.R", 10)
         p.swing("forearm.L", 10)
+
+
+def crawl(p: Poser, side: float) -> None:
+    """Low crawl: belly on the ground, one knee drawn up sideways along the
+    ground while the opposite elbow reaches forward; the rifle lies along the
+    right forearm, muzzle forward. `side` 1 draws the left knee, -1 the right."""
+    p.root(pitch=-90, y=-0.95, z=0.12, roll=side * 4, x=side * 0.03)
+    p.swing("head", -55)
+    drawn, straight = ("L", "R") if side > 0 else ("R", "L")
+    p.spread(f"thigh.{drawn}", 42)
+    p.spread(f"shin.{drawn}", -85)
+    p.swing(f"thigh.{drawn}", -4)
+    p.spread(f"thigh.{straight}", 6)
+    p.swing(f"thigh.{straight}", -8)
+    p.swing(f"shin.{straight}", -6)
+    p.swing("rifle", 4)
+    # The arm on the straight-leg side reaches; the other pulls back.
+    p.swing(f"upper_arm.{straight}", 150)
+    p.swing(f"forearm.{straight}", 25)
+    p.swing(f"upper_arm.{drawn}", 115)
+    p.swing(f"forearm.{drawn}", 75)
+    p.spread(f"upper_arm.{drawn}", 18)
 
 
 def wounded(p: Poser) -> None:
@@ -299,13 +352,20 @@ def build():
 
     clip(rig, poser, "idle", [(1, stand), (24, stand_breathe), (48, stand)], loop=False)
     clip(rig, poser, "walk", [(1, walk_a), (7, walk_pass), (13, walk_b), (19, walk_pass_b)])
+    clip(rig, poser, "idle-ready", [(1, ready), (24, lambda p: (ready(p), p.swing("head", 2))), (48, ready)], loop=False)
+    clip(rig, poser, "walk-ready", [
+        (1, lambda p: walk_a(p, ready)),
+        (7, lambda p: walk_pass(p, ready)),
+        (13, lambda p: walk_b(p, ready)),
+        (19, lambda p: walk_pass_b(p, ready)),
+    ])
     clip(rig, poser, "crouch-idle", [(1, lambda p: crouch(p)), (24, lambda p: crouch(p))], loop=False)
     clip(rig, poser, "crouch-walk", [
         (1, lambda p: (crouch(p), p.swing("thigh.L", 60), p.swing("thigh.R", 40))),
         (10, lambda p: (crouch(p), p.swing("thigh.L", 40), p.swing("thigh.R", 60))),
     ])
     clip(rig, poser, "prone", [(1, lambda p: prone(p)), (24, lambda p: prone(p))], loop=False)
-    clip(rig, poser, "crawl", [(1, lambda p: prone(p, crawl=1)), (12, lambda p: prone(p, crawl=-1))])
+    clip(rig, poser, "crawl", [(1, lambda p: crawl(p, 1)), (16, lambda p: crawl(p, -1))])
     clip(rig, poser, "aim-stand", [(1, lambda p: aim_arms(p)), (24, lambda p: aim_arms(p))], loop=False)
     clip(rig, poser, "fire-stand", [(1, lambda p: aim_arms(p)), (3, lambda p: aim_arms(p, 1)), (10, lambda p: aim_arms(p))], loop=False)
     clip(rig, poser, "aim-crouch", [(1, lambda p: crouch(p, aim=True)), (24, lambda p: crouch(p, aim=True))], loop=False)

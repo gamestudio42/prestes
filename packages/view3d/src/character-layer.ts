@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { soldierClip, soldierOutfit, walkTimeScale } from './soldier-clips';
+import { CLIP_SPEED, soldierClip, soldierOutfit, walkTimeScale } from './soldier-clips';
 import { SoldierInstance, loadSoldierAsset, type SoldierAsset } from './soldier-models';
 import {
   terrainHeightAt,
@@ -590,8 +590,8 @@ export class CharacterLayer {
       if (view.soldier) {
         const metresPerSecond = seconds > 0 ? moved / seconds : 0;
         const clip = soldierClip(unit, { moving: moved > 0.0005, firing: now < view.fireUntil });
-        const walking = clip === 'walk' || clip === 'crouch-walk' || clip === 'crawl';
-        view.soldier.play(clip, walking ? walkTimeScale(metresPerSecond) : 1);
+        const authored = CLIP_SPEED[clip];
+        view.soldier.play(clip, authored ? walkTimeScale(metresPerSecond, authored) : 1);
         view.soldier.update(seconds);
         rig.body.visible = false;
         rig.corpse.visible = false;

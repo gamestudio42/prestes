@@ -4,6 +4,8 @@ import type { UnitSnapshot } from '@prestes/shared';
 export type SoldierClip =
   | 'idle'
   | 'walk'
+  | 'idle-ready'
+  | 'walk-ready'
   | 'crouch-idle'
   | 'crouch-walk'
   | 'prone'
@@ -34,11 +36,38 @@ export interface ClipState {
   firing: boolean;
 }
 
+/**
+ * Orders that expect contact: the soldier carries the rifle at the ready,
+ * muzzle forward, instead of sloped on the shoulder for the march.
+ */
+export const READY_ORDERS: ReadonlySet<UnitSnapshot['order']> = new Set<UnitSnapshot['order']>([
+  'advance',
+  'recon',
+  'attack',
+  'flank',
+  'pursue',
+  'defend',
+  'ambush',
+  'suppress',
+  'aim',
+  'protect-officer',
+  'withdraw',
+]);
+
+type ClipUnit = Pick<UnitSnapshot, 'alive' | 'incapacitated' | 'routed' | 'stance' | 'targetId'> &
+  Partial<Pick<UnitSnapshot, 'order' | 'suppression' | 'boundTeam'>>;
+
+/** At the ready: a contact order, bounding, or under fire. */
+export function atTheReady(unit: ClipUnit): boolean {
+  return (
+    READY_ORDERS.has(unit.order ?? null) ||
+    (unit.boundTeam ?? null) !== null ||
+    (unit.suppression ?? 0) > 0.15
+  );
+}
+
 /** The clip a soldier plays for its snapshot and what it is doing. */
-export function soldierClip(
-  unit: Pick<UnitSnapshot, 'alive' | 'incapacitated' | 'routed' | 'stance' | 'targetId'>,
-  state: ClipState,
-): SoldierClip {
+export function soldierClip(unit: ClipUnit, state: ClipState): SoldierClip {
   if (!unit.alive) return 'corpse';
   if (unit.incapacitated) return 'wounded';
   const aiming = unit.targetId !== null;
@@ -52,9 +81,11 @@ export function soldierClip(
     if (state.firing) return 'fire-crouch';
     return aiming ? 'aim-crouch' : 'crouch-idle';
   }
-  if (state.moving) return 'walk';
+  const ready = atTheReady(unit);
+  if (state.moving) return ready ? 'walk-ready' : 'walk';
   if (state.firing) return 'fire-stand';
-  return aiming ? 'aim-stand' : 'idle';
+  if (aiming) return 'aim-stand';
+  return ready ? 'idle-ready' : 'idle';
 }
 
 /** The column wears the slouch hat and khaki; legalists olive and the kepi. */
@@ -63,7 +94,15 @@ export function soldierOutfit(unit: Pick<UnitSnapshot, 'kind' | 'faction'>): Sol
   return unit.faction === 'column' ? 'column' : 'legalist';
 }
 
-/** Walk clips are authored at 1.4 m/s; play them in step with the ground speed. */
-export function walkTimeScale(metresPerSecond: number): number {
-  return Math.max(0.4, Math.min(2.2, metresPerSecond / 1.4));
+/** Ground speed each moving clip is authored at, in metres per second. */
+export const CLIP_SPEED: Partial<Record<SoldierClip, number>> = {
+  walk: 1.4,
+  'walk-ready': 1.4,
+  'crouch-walk': 1.0,
+  crawl: 0.45,
+};
+
+/** Play a moving clip in step with the ground speed. */
+export function walkTimeScale(metresPerSecond: number, authored = 1.4): number {
+  return Math.max(0.4, Math.min(2.2, metresPerSecond / authored));
 }
