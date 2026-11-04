@@ -15,8 +15,11 @@ station order: parade ground and barracks (formation), firing range (fire),
 maneuver field (maneuver), training trench line (defense), farm hamlet (recon),
 aid post (wounded) and assault line (final). Each station SHALL start with the
 section at the entry of its own area, and its objectives, markers and training
-troop SHALL lie inside that area. The training map SHALL NOT contain sandbox
-props. Area names SHALL come from the PT-BR and EN locale catalogs.
+troop SHALL lie inside that area. The road SHALL connect the areas in course
+order on the map; between stations the section is placed at the next entry and
+the camera moves to it. The training map SHALL NOT contain the props of the
+default sandbox map. Sandbox tools opened during the bootcamp act on the
+training map. Area names SHALL come from the PT-BR and EN locale catalogs.
 
 #### Scenario: Stations follow the road
 

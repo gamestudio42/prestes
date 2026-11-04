@@ -42,9 +42,10 @@ describe('tactical helpers', () => {
       { x: 10, y: 0 },
     );
     expect(slots).toHaveLength(3);
-    expect(slots[0]?.y).not.toBeCloseTo(slots[1]?.y ?? 0);
-    expect(slots[1]?.y).toBeCloseTo(0);
-    expect(slots[2]?.y).not.toBeCloseTo(slots[1]?.y ?? 0);
+    // A line across the march direction; which soldier takes which slot is
+    // decided by distance matching.
+    expect(slots.map((slot) => Math.round(slot.y * 10) / 10).sort((a, b) => a - b)).toEqual([-2.8, 0, 2.8]);
+    expect(slots.every((slot) => Math.abs(slot.x - 10) < 0.001)).toBe(true);
     expect(formationSlots([{ x: 0, y: 0 }], { x: 3, y: 4 })).toEqual([{ x: 3, y: 4 }]);
   });
 });

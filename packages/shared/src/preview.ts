@@ -1,4 +1,5 @@
 ﻿import { findPath } from './pathfinding';
+import { matchDestinations } from './assignment';
 import type {
   CoverPoint,
   FormationKind,
@@ -365,7 +366,7 @@ export function planOrderPreview(request: PreviewRequest): PreviewPlan | null {
     formationFacing = averageAim(units);
   }
   const coverFacing = formationFacing ?? averageFacing(units);
-  const slots = hasDestination
+  const rawSlots = hasDestination
     ? request.line && request.order === 'move'
       ? lineFormationSlots(request.line.from, request.line.to, units.length)
       : formationSlots(
@@ -376,11 +377,38 @@ export function planOrderPreview(request: PreviewRequest): PreviewPlan | null {
         formationFacing,
       )
     : units.map((unit) => ({ x: unit.x, y: unit.y }));
+  // Same matching as the simulation: no two soldiers' routes cross.
+  const slots = hasDestination ? matchDestinations(units, rawSlots) : rawSlots;
 
   const paths: PreviewPath[] = [];
   const cones: PreviewCone[] = [];
   const los: PreviewLos[] = [];
-  const coverSlots = previewCoverSlots(request, units, slots, target, coverFacing, fast);
+  const plannedSlots = previewCoverSlots(request, units, slots, target, coverFacing, fast);
+  const groundFinal = !fast && hasDestination && GROUND_ORDERS.has(request.order);
+  const finals = groundFinal
+    ? matchDestinations(
+        units,
+        units.map((unit, index) => {
+          const slot = plannedSlots.get(unit.id);
+          if (slot) return { x: slot.x, y: slot.y, slot };
+          const anchor = slots[index] ?? { x: unit.x, y: unit.y };
+          const point =
+            request.order === 'defend'
+              ? clampToRegion(anchor, request.to!, DEFEND_REGION_RADIUS)
+              : anchor;
+          return { x: point.x, y: point.y, slot: null as CoverSlot | null };
+        }),
+      )
+    : null;
+  const coverSlots = new Map<number, CoverSlot>();
+  if (finals) {
+    units.forEach((unit, index) => {
+      const slot = finals[index]?.slot;
+      if (slot) coverSlots.set(unit.id, slot);
+    });
+  } else {
+    for (const [id, slot] of plannedSlots) coverSlots.set(id, slot);
+  }
   units.forEach((unit, index) => {
     let destination = slots[index] ?? { x: unit.x, y: unit.y };
     let cover = false;
@@ -438,12 +466,10 @@ export function planOrderPreview(request: PreviewRequest): PreviewPlan | null {
       return;
     }
     if (!fast && hasDestination && GROUND_ORDERS.has(request.order)) {
-      const coverSlot = coverSlots.get(unit.id);
-      if (coverSlot) {
-        destination = { x: coverSlot.x, y: coverSlot.y };
-        cover = true;
-      } else if (request.order === 'defend') {
-        destination = clampToRegion(destination, request.to!, DEFEND_REGION_RADIUS);
+      const final = finals?.[index];
+      if (final) {
+        destination = { x: final.x, y: final.y };
+        cover = final.slot !== null;
       }
     }
     const path = hasDestination

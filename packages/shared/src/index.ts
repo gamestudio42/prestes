@@ -140,3 +140,4 @@ export {
 } from './cover-slots';
 
 export { normaliseRotation, rotateOffset, troopFormationOffsets } from './placement';
+export { matchDestinations, minCostAssignment } from './assignment';

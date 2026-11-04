@@ -7,6 +7,7 @@ import {
   isPointBlockedByCovers,
   lineFacing,
   lineFormationSlots,
+  matchDestinations,
 } from '@prestes/shared';
 import type { Command, CommandEnvelope, RejectionReason, SimEvent, Vec2 } from '@prestes/shared';
 import { formationSlots } from '../tactical';
@@ -18,7 +19,8 @@ import { reflowFormation } from './formations';
 import { repairStalledMovement, queueUnitOrder } from './movement';
 import { assignBoundingDirect, setBoundingCover } from './bounding';
 import { spawnCover } from './cover';
-import { orderSlots, takeSlot } from './slots';
+import { matchedDestinations, orderSlots, takeSlot } from './slots';
+import { routeFor, sectionRoutes } from './routes';
 import { incapacitate, wound, releaseCarry } from './casualties';
 import { applyTacticalOrder, assignFlankPaths, beginWithdraw } from './orders';
 import { spawnDummy, spawnTroop, setTrainingPhase, despawnRole, reinforce } from './spawning';
@@ -346,6 +348,8 @@ export function applyCommand(
     facing: coverFacing ?? null,
     click: command.to,
   });
+  const finals = matchedDestinations(living, slots, coverSlots, command.to);
+  const routes = sectionRoutes(ctx, living, finals);
   living.forEach((unit, index) => {
     releaseCarry(ctx, unit);
     unit.orderDestination = null;
@@ -363,17 +367,14 @@ export function applyCommand(
     unit.rescueTargetId = null;
     unit.currentOrder = null;
     unit.lineMove = false;
-    let destination = slots[index] ?? command.to;
-    const coverSlot = coverSlots.get(unit.id);
-    if (coverSlot) {
-      destination = takeSlot(unit, coverSlot);
-    }
+    const final = finals[index]!;
+    let destination: Vec2 = final.slot ? takeSlot(unit, final.slot) : { x: final.x, y: final.y };
     // A click on cover still moves the soldier: use the nearest open point.
     const fallback = nearestOpenPoint(ctx, command.to);
     if (isPointBlockedByCovers(destination.x, destination.y, ctx.covers, 0.8)) {
       destination = fallback;
     }
-    let path = findPath({ x: unit.x, y: unit.y }, destination, ctx.covers);
+    let path = routeFor(routes[index], destination) ?? findPath({ x: unit.x, y: unit.y }, destination, ctx.covers);
     if (path.length === 0 && (destination.x !== fallback.x || destination.y !== fallback.y)) {
       destination = fallback;
       path = findPath({ x: unit.x, y: unit.y }, destination, ctx.covers);
@@ -414,13 +415,14 @@ export function applyLineMove(
     x: (command.from.x + command.to.x) / 2,
     y: (command.from.y + command.to.y) / 2,
   };
-  const slots = lineFormationSlots(command.from, command.to, living.length);
+  const slots = matchDestinations(living, lineFormationSlots(command.from, command.to, living.length));
   const squads = new Set(living.map((unit) => unit.squadId));
   if (ctx.boundingEnabled && living.length > 1 && squads.size === 1) {
     const sorted = [...living].sort((left, right) => left.id - right.id);
+    const sortedSlots = matchDestinations(sorted, lineFormationSlots(command.from, command.to, sorted.length));
     const targets = new Map<number, Vec2>();
     sorted.forEach((unit, index) => {
-      targets.set(unit.id, slots[index] ?? center);
+      targets.set(unit.id, sortedSlots[index] ?? center);
     });
     for (const unit of sorted) {
       releaseCarry(ctx, unit);
@@ -474,6 +476,8 @@ export function applyLineMove(
     threat: living[0] ? nearestEnemyAt(ctx, center, living[0].faction) : null,
     facing: lineDirection,
   });
+  const finals = matchedDestinations(living, slots, coverSlots, center);
+  const routes = sectionRoutes(ctx, living, finals);
   living.forEach((unit, index) => {
     releaseCarry(ctx, unit);
     unit.orderDestination = null;
@@ -490,13 +494,10 @@ export function applyLineMove(
     unit.recon = false;
     unit.rescueTargetId = null;
     unit.currentOrder = null;
-    let destination = slots[index] ?? center;
-    const coverSlot = coverSlots.get(unit.id);
-    if (coverSlot) {
-      destination = takeSlot(unit, coverSlot);
-    }
+    const final = finals[index]!;
+    let destination: Vec2 = final.slot ? takeSlot(unit, final.slot) : { x: final.x, y: final.y };
     destination = nearestOpenPoint(ctx, destination);
-    let path = findPath({ x: unit.x, y: unit.y }, destination, ctx.covers);
+    let path = routeFor(routes[index], destination) ?? findPath({ x: unit.x, y: unit.y }, destination, ctx.covers);
     if (path.length === 0) {
       const fallback = nearestOpenPoint(ctx, center);
       if (fallback.x !== destination.x || fallback.y !== destination.y) {

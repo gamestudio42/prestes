@@ -1,4 +1,4 @@
-import { cachedCoverSlots, planCoverSlots } from '@prestes/shared';
+import { cachedCoverSlots, matchDestinations, planCoverSlots } from '@prestes/shared';
 import type { CoverSlot, CoverSlotPlan, Vec2 } from '@prestes/shared';
 import type { SimContext } from './context';
 import type { MutableUnit } from './model';
@@ -88,4 +88,25 @@ export function takeSlot(unit: MutableUnit, slot: CoverSlot): Vec2 {
     unit.stance = slot.stance;
   }
   return { x: slot.x, y: slot.y };
+}
+
+/**
+ * Final destinations for an order: each soldier's cover slot or its anchor
+ * (passed through `place`), re-matched to the soldiers by minimum total
+ * distance so the routes into the slots do not cross.
+ */
+export function matchedDestinations(
+  units: readonly MutableUnit[],
+  anchors: readonly (Vec2 | undefined)[],
+  coverSlots: ReadonlyMap<number, CoverSlot>,
+  fallback: Vec2,
+  place: (anchor: Vec2) => Vec2 = (anchor) => anchor,
+): Array<{ x: number; y: number; slot: CoverSlot | null }> {
+  const finals = units.map((unit, index) => {
+    const slot = coverSlots.get(unit.id);
+    if (slot) return { x: slot.x, y: slot.y, slot };
+    const point = place(anchors[index] ?? fallback);
+    return { x: point.x, y: point.y, slot: null };
+  });
+  return matchDestinations(units, finals);
 }

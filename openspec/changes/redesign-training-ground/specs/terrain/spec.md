@@ -12,7 +12,7 @@ cover rules SHALL apply to it as to the sandbox terrain.
 - **WHEN** a section marches along the training road
 - **THEN** it moves at the road's terrain speed
 
-#### Scenario: Sandbox unchanged
+#### Scenario: Other maps unchanged
 
-- **WHEN** the sandbox starts
-- **THEN** it uses the sandbox terrain and props, not the training ground
+- **WHEN** the battle lab or a non-training engine starts
+- **THEN** it uses its existing terrain and props, not the training ground

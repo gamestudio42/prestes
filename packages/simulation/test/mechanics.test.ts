@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Command, Frame, SimEvent } from '@prestes/shared';
+import type { Command, Frame, SimEvent, Vec2 } from '@prestes/shared';
 import { SimulationEngine, type SimulationOptions } from '../src/engine';
 
 // One scenario per troop and officer mechanic, on the default scenario: riflemen
@@ -248,6 +248,8 @@ describe('mechanics: troop orders', () => {
 
   it('protect-officer: the section closes on the officer', () => {
     const t = harness();
+    // No enemy fire: a suppressed soldier would not answer the order.
+    t.send({ type: 'hold_fire', unitIds: ENEMY, hold: true });
     t.send({ type: 'move', unitIds: COLUMN, to: { x: -20, y: 25 } }, 200);
     const gap = distance(t.unit(1), t.unit(OFFICER));
     t.send({ type: 'order', order: 'protect-officer', unitIds: COLUMN }, 300);
@@ -374,6 +376,48 @@ describe('training station setup', () => {
     const frame = t.frame();
     const left = section(frame).filter((unit) => unit.alive);
     expect(left.every((unit) => unit.magazine + unit.reserve >= 10)).toBe(true);
+  });
+
+  it('a section of 11 marches 40 m as one body and its routes do not cross', () => {
+    const t = harness({ opposition: false });
+    t.send(setup(), 2);
+    const ids = section(t.frame()).map((unit) => unit.id);
+    expect(ids).toHaveLength(11);
+    const start = centroid(t.frame());
+    const to = { x: start.x - 40, y: start.y + 4 };
+    const starts = new Map(section(t.frame()).map((unit) => [unit.id, { x: unit.x, y: unit.y }]));
+    const frame = t.send({ type: 'move', unitIds: ids, to }, 1);
+    const ends = new Map(frame.orders.map((order) => [order.unitIds[0]!, order.points.at(-1)!]));
+    const side = (p: Vec2, q: Vec2, r: Vec2) =>
+      Math.sign((q.x - p.x) * (r.y - p.y) - (q.y - p.y) * (r.x - p.x));
+    for (const a of ids) {
+      for (const b of ids) {
+        if (a >= b) continue;
+        const [a0, a1, b0, b1] = [starts.get(a)!, ends.get(a)!, starts.get(b)!, ends.get(b)!];
+        const crossing = side(a0, a1, b0) * side(a0, a1, b1) < 0 && side(b0, b1, a0) * side(b0, b1, a1) < 0;
+        expect(crossing, `routes of ${a} and ${b} cross`).toBe(false);
+      }
+    }
+    // On the march the body stays compact (it spreads only near the end); a
+    // soldier may trail while it walks around a prop.
+    let widest = 0;
+    let total = 0;
+    let samples = 0;
+    t.run(400, (next) => {
+      const here = centroid(next);
+      const travelled = Math.hypot(here.x - start.x, here.y - start.y);
+      if (travelled > 8 && travelled < 28) {
+        for (const unit of section(next)) {
+          const away = Math.hypot(unit.x - here.x, unit.y - here.y);
+          widest = Math.max(widest, away);
+          total += away;
+          samples += 1;
+        }
+      }
+    });
+    expect(samples).toBeGreaterThan(0);
+    expect(total / samples).toBeLessThan(4);
+    expect(widest).toBeLessThan(12);
   });
 
   it('carries the training load; the training enemy keeps the Mauser profile', () => {

@@ -1218,8 +1218,7 @@ describe('SimulationEngine', () => {
     expect(changed.units.find((unit) => unit.id === 1)?.formation).toBe('wedge');
     expect(changed.units.find((unit) => unit.id === 1)?.order).toBe('move');
     const wedgeEnds = changed.orders.map((order) => order.points.at(-1));
-    expect(Math.abs(wedgeEnds[1]?.x ?? 0)).toBeGreaterThan(0.1);
-    expect(wedgeEnds[1]?.y).not.toBeCloseTo(columnEnds[1]?.y ?? 0);
+    expect(wedgeEnds.some((end) => Math.abs(end?.x ?? 0) > 0.1)).toBe(true);
   });
 
   it('spaces a multi-unit move into distinct orders', () => {

@@ -1,4 +1,9 @@
-﻿import { formationSlots, type UnitKind, type Vec2 } from '@prestes/shared';
+﻿import {
+  formationSlots as layoutSlots,
+  matchDestinations,
+  type UnitKind,
+  type Vec2,
+} from '@prestes/shared';
 
 export interface ScoringUnit {
   x: number;
@@ -56,5 +61,13 @@ export function flankCandidates(target: Vec2, from: Vec2, radius = FLANK_RADIUS)
   }));
 }
 
-export { formationSlots };
+/**
+ * Formation slots for `positions`, each matched to the soldier at the same
+ * index by minimum total distance, so their routes do not cross.
+ */
+export function formationSlots(
+  ...args: Parameters<typeof layoutSlots>
+): Vec2[] {
+  return matchDestinations(args[0], layoutSlots(...args));
+}
 

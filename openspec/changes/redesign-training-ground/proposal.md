@@ -33,9 +33,10 @@ campaign work. Phase 3 (pixel-art HUD, menus and compendium) and phase 4
   firing line and earth target butts (fire), maneuver field with hedges and low
   walls (maneuver), training trench line (defense), farm hamlet with farmhouse,
   barn and chapel (recon), aid post tent (wounded), and an assault line of
-  trenches and walls (final). The section marches along the road from one station
-  to the next. The sandbox props are removed from the training map; the sandbox
-  and battle lab keep their own maps.
+  trenches and walls (final). The road links the stations in order; at each new
+  station the section starts at its entry and the camera moves there. The
+  default map's props are removed from the training map; the battle lab and
+  the non-training engine keep their own maps.
 - **Organized movement**: a section moves as a body. Destinations (formation
   slots, line slots and cover slots) are matched to soldiers so their paths do
   not cross. Soldiers going to the same place share one route (a path for the

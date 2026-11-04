@@ -18,7 +18,8 @@ import type { SimContext } from './context';
 import { occupied, nearestEnemy, nearestEnemyAt, facingToward, clampToRegion } from './geometry';
 import { queueUnitOrder } from './movement';
 import { releaseCarry } from './casualties';
-import { orderSlots, takeSlot } from './slots';
+import { matchedDestinations, orderSlots, takeSlot } from './slots';
+import { routeFor, sectionRoutes } from './routes';
 import { reject } from './commands';
 
 export function applyTacticalOrder(
@@ -98,17 +99,17 @@ export function applyTacticalOrder(
           region: regionLimited ? { center: command.to, radius: DEFEND_REGION_RADIUS } : null,
         })
       : new Map();
+    const regionRadius = DEFEND_REGION_RADIUS;
+    const finals = matchedDestinations(units, slots, coverSlots, command.to, (anchor) =>
+      command.order === 'defend' ? clampToRegion(ctx, anchor, command.to!, regionRadius) : anchor,
+    );
+    // Dispersal scatters on purpose: no shared route.
+    const routes = command.order === 'disperse' ? units.map(() => null) : sectionRoutes(ctx, units, finals);
     units.forEach((unit, index) => {
       clear(unit);
-      const regionRadius = DEFEND_REGION_RADIUS;
-      let destination = slots[index] ?? command.to!;
-      const coverSlot = coverSlots.get(unit.id);
-      if (coverSlot) {
-        destination = takeSlot(unit, coverSlot);
-      } else if (command.order === 'defend') {
-        destination = clampToRegion(ctx, destination, command.to!, regionRadius);
-      }
-      let path = findPath({ x: unit.x, y: unit.y }, destination, ctx.covers);
+      const final = finals[index]!;
+      const destination: Vec2 = final.slot ? takeSlot(unit, final.slot) : { x: final.x, y: final.y };
+      let path = routeFor(routes[index], destination) ?? findPath({ x: unit.x, y: unit.y }, destination, ctx.covers);
       if (path.length === 0) {
         path = findPath({ x: unit.x, y: unit.y }, command.to!, ctx.covers);
       }

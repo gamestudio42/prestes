@@ -5,9 +5,9 @@
 
 ## 2. Organized movement
 
-- [ ] 2.1 Deterministic minimum-distance matching of soldiers to formation, line and cover slots (ties by id); replace id-sorted line slots and greedy cover order; unit test: no crossing for a line moving to a line of slots
-- [ ] 2.2 Shared section route with formation offsets and per-soldier fallback, spreading to own destinations on the last segment; bounding uses the matched destinations; mechanics test: 11 soldiers march 40 m within the cohesion limit
-- [ ] 2.3 Run mechanics, cover slot and bootcamp tests; update the determinism golden and record why
+- [x] 2.1 Deterministic minimum-distance matching of soldiers to formation, line and cover slots (ties by id); replace id-sorted line slots and greedy cover order; unit test: no crossing for a line moving to a line of slots
+- [x] 2.2 Shared section route with formation offsets and per-soldier fallback, spreading to own destinations on the last segment; bounding uses the matched destinations; mechanics test: 11 soldiers march 40 m within the cohesion limit
+- [x] 2.3 Run mechanics, cover slot and bootcamp tests; update the determinism golden and record why
 
 ## 3. Training ground
 
