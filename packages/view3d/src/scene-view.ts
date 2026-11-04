@@ -288,6 +288,11 @@ export class SceneView {
     this.preview.setSlotMarkers(markers);
   }
 
+  /** Live effect particles and whether the sheet is loaded (dev checks). */
+  effectsState(): { count: number; ready: boolean } {
+    return { count: this.effects.count, ready: this.effects.ready };
+  }
+
   /** Centres the camera on a ground point (a new training station). */
   focusOn(x: number, y: number): void {
     this.rig.focusX = x;

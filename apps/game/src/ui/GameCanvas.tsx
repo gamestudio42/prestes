@@ -143,6 +143,7 @@ export function GameCanvas({
         groundToScreen: (x: number, y: number) => scene.groundToScreen(x, y),
         focusOn: (x: number, y: number) => scene.focusOn(x, y),
         setBand: (band: 'tactical' | 'strategic') => scene.setBand(band),
+        effects: () => scene.effectsState(),
       };
     }
 

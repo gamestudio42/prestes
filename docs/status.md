@@ -330,8 +330,13 @@ Four phases, each its own OpenSpec change:
    hand check the arms were reworked (rifle slung nearly upright with the hand
    on the sling; aim and ready angle the rifle across the body with the left
    hand under the forend) and the stride lengthened: at 1x game time runs at
-   twice real time, so walk cadence is capped at 1.5x and the feet slide a
-   little. The close (section 5) remains.
+   twice real time, so walk cadence is capped and the feet slide a little.
+   Second hand check (legs still fast, aiming down, prone poor, no shots or
+   dust seen): cadence capped at 1x; the rifle is levelled against the chest
+   lean (ready about 8 degrees down, crouched aim level); prone is a real
+   firing position (chest up on the elbows, head up, legs apart); the effect
+   sprites got a dark outline, longer lives and bigger sizes, and dust shows on
+   grass too. The close (section 5) remains.
    The glTF loaders are a separate chunk fetched on demand; the animation
    system raised the three chunk to 591 KB, so its budget went from 560 to
    610 KB (2026-11-04).

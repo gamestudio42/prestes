@@ -63,7 +63,7 @@ describe('walkTimeScale', () => {
   it('keeps the step in time with the ground speed, within limits', () => {
     expect(walkTimeScale(1.75)).toBeCloseTo(1);
     expect(walkTimeScale(0)).toBe(0.4);
-    expect(walkTimeScale(10)).toBe(1.5);
+    expect(walkTimeScale(10)).toBe(1);
     expect(walkTimeScale(0.45, 0.45)).toBeCloseTo(1);
   });
 });

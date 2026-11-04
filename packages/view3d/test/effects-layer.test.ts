@@ -24,7 +24,7 @@ describe('effects layer', () => {
   it('effects expire', () => {
     const layer = new EffectsLayer();
     layer.onFrame(frame(5, [shot(false)]));
-    layer.update(null, 2, 8);
+    layer.update(null, 3, 8);
     expect(layer.count).toBe(0);
   });
 
@@ -35,7 +35,7 @@ describe('effects layer', () => {
     for (let step = 1; step <= 10; step += 1) {
       layer.update(frame(1, [], [{ ...unit, x: step * 0.4 }]), 0.016, 8);
     }
-    expect(layer.count).toBe(2); // 4 m walked, a puff every 1.6 m
+    expect(layer.count).toBe(3); // 4 m walked, a puff every 1.1 m
   });
 
   it('misses land past the target and splinter on stone', () => {

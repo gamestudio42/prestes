@@ -110,9 +110,10 @@ export const CLIP_SPEED: Partial<Record<SoldierClip, number>> = {
 
 /**
  * Play a moving clip in step with the ground speed, but never faster than
- * 1.5 times: game time runs at twice real time at 1x, and full cadence there
- * reads as frantic running. The feet slide a little instead.
+ * authored: game time runs at twice real time at 1x, and the full cadence
+ * there reads as frantic running (the user found even 1.5x too fast). The
+ * feet slide instead.
  */
 export function walkTimeScale(metresPerSecond: number, authored = 1.75): number {
-  return Math.max(0.4, Math.min(1.5, metresPerSecond / authored));
+  return Math.max(0.4, Math.min(1, metresPerSecond / authored));
 }

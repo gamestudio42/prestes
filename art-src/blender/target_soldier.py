@@ -22,6 +22,9 @@ READY_YAW = -14
 LEFT_REACH = -40
 # Walk leg swings are scaled up for a longer stride (fewer steps per metre).
 STRIDE = 1.25
+# Prone: how far the chest rises on the elbows, and the upper arms' angle.
+PRONE_RISE = 18
+PRONE_ELBOW = 128
 
 BONES = {
     # name: (head, tail, parent)
@@ -205,7 +208,8 @@ def ready(p: Poser) -> None:
     """Low ready: butt at the shoulder, muzzle forward and down across the
     body, both hands on the rifle, so the soldier can raise it and fire."""
     p.swing("chest", 6)
-    p.swing("rifle", 112)
+    # Muzzle only a little below level (the chest leans 6 degrees).
+    p.swing("rifle", 92)
     p.side("rifle", READY_YAW)
     p.swing("upper_arm.R", 35)
     p.swing("forearm.R", 45)
@@ -271,15 +275,16 @@ def crouch(p: Poser, aim: bool = False) -> None:
     p.swing("shin.R", -110)
     p.swing("chest", 14)
     if aim:
-        aim_arms(p)
+        aim_arms(p, lean=14)
     else:
         ready(p)
 
 
-def aim_arms(p: Poser, recoil: float = 0.0) -> None:
+def aim_arms(p: Poser, recoil: float = 0.0, lean: float = 0.0) -> None:
     """Rifle forward at the right shoulder, angled a little across the body;
     the right hand at the grip, the left under the forend."""
-    p.swing("rifle", 90 - recoil * 6)
+    # Level whatever the chest lean (`lean` degrees forward).
+    p.swing("rifle", 90 - recoil * 6 - lean)
     p.side("rifle", AIM_YAW)
     p.swing("upper_arm.R", 75)
     p.swing("forearm.R", 35)
@@ -291,19 +296,23 @@ def aim_arms(p: Poser, recoil: float = 0.0) -> None:
 
 
 def prone(p: Poser, aim: bool = True) -> None:
+    """Prone firing position: chest raised on the elbows, head up behind the
+    sights, elbows on the ground ahead of the shoulders, legs apart."""
     p.root(pitch=-90, y=-0.95, z=0.13)
-    p.swing("head", -60)
-    p.swing("thigh.L", -6)
-    p.swing("shin.L", -10)
-    p.swing("thigh.R", -6)
-    p.swing("shin.R", -10)
-    if aim:
-        p.swing("rifle", 0)
-        p.swing("upper_arm.R", 160)
-        p.swing("upper_arm.L", 165)
-        p.side("upper_arm.L", 15)
-        p.swing("forearm.R", 10)
-        p.swing("forearm.L", 10)
+    p.swing("chest", -PRONE_RISE)
+    p.swing("head", -42)
+    for side in ("L", "R"):
+        p.spread(f"thigh.{side}", 12)
+        p.swing(f"thigh.{side}", -4)
+        p.swing(f"shin.{side}", -8)
+    # Level with the ground: the chest is raised by PRONE_RISE.
+    p.swing("rifle", PRONE_RISE)
+    p.side("rifle", AIM_YAW)
+    p.swing("upper_arm.R", PRONE_ELBOW)
+    p.swing("forearm.R", 55)
+    p.swing("upper_arm.L", PRONE_ELBOW + 8)
+    p.swing("forearm.L", 40)
+    p.side("upper_arm.L", LEFT_REACH)
 
 
 def crawl(p: Poser, side: float) -> None:
@@ -396,13 +405,13 @@ def build():
     clip(rig, poser, "aim-crouch", [(1, lambda p: crouch(p, aim=True)), (24, lambda p: crouch(p, aim=True))], loop=False)
     clip(rig, poser, "fire-crouch", [
         (1, lambda p: crouch(p, aim=True)),
-        (3, lambda p: (crouch(p, aim=True), aim_arms(p, 1))),
+        (3, lambda p: (crouch(p, aim=True), aim_arms(p, 1, lean=14))),
         (10, lambda p: crouch(p, aim=True)),
     ], loop=False)
     clip(rig, poser, "aim-prone", [(1, lambda p: prone(p)), (24, lambda p: prone(p))], loop=False)
     clip(rig, poser, "fire-prone", [
         (1, lambda p: prone(p)),
-        (3, lambda p: (prone(p), p.swing("upper_arm.R", 150))),
+        (3, lambda p: (prone(p), p.swing("rifle", PRONE_RISE - 6), p.swing("chest", -PRONE_RISE + 3))),
         (10, lambda p: prone(p)),
     ], loop=False)
     clip(rig, poser, "hit", [(1, lambda p: hit(p, 0)), (4, lambda p: hit(p, 1)), (8, lambda p: hit(p, 0.85))], loop=False)

@@ -323,7 +323,22 @@ def effects_atlas() -> Atlas:
         "........",
         "........",
     ], spurt)
+    outline(atlas, INK)
     return atlas
+
+
+def outline(atlas: Atlas, colour) -> None:
+    """A one-pixel dark outline around every sprite, inside its own cell, so
+    the light effects read against any ground."""
+    width, height = atlas.image.size
+    painted = {(x, y) for x in range(width) for y in range(height) if atlas.px[x, y][3] > 0}
+    for x, y in [(x, y) for x in range(width) for y in range(height) if (x, y) not in painted]:
+        cell_x, cell_y = x // 8, y // 8
+        for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+            nx, ny = x + dx, y + dy
+            if (nx, ny) in painted and nx // 8 == cell_x and ny // 8 == cell_y:
+                atlas.px[x, y] = (*colour, 255)
+                break
 
 
 def main() -> None:

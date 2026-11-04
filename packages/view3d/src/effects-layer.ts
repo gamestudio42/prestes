@@ -25,7 +25,7 @@ export type EffectKind = keyof typeof EFFECT_FRAMES;
 
 const CAPACITY = 512;
 /** Metres a walking soldier covers between two dust puffs. */
-const STEP_DUST_DISTANCE = 1.6;
+const STEP_DUST_DISTANCE = 1.1;
 
 /** Tints multiply the sprite colours. */
 const TINT = {
@@ -34,7 +34,7 @@ const TINT = {
   stone: [0.85, 0.85, 0.82],
   wood: [0.95, 0.75, 0.55],
   sand: [1.1, 1.05, 0.95],
-  grass: [0.75, 0.82, 0.6],
+  grass: [0.9, 0.82, 0.68],
 } as const;
 
 type Tint = keyof typeof TINT;
@@ -207,6 +207,10 @@ export class EffectsLayer {
       });
   }
 
+  get ready(): boolean {
+    return this.points.visible;
+  }
+
   get count(): number {
     return this.particles.length;
   }
@@ -233,7 +237,7 @@ export class EffectsLayer {
     const mx = event.x + ux * 0.8;
     const my = event.y + uy * 0.8;
     const mh = terrainHeightAt(mx, my) + muzzleHeight(source?.stance ?? 'standing');
-    this.spawn({ kind: 'muzzle', x: mx, y: mh, z: my, vx: 0, vy: 0, vz: 0, life: 0.09, size: 0.9, grow: 0, tint: 'none' });
+    this.spawn({ kind: 'muzzle', x: mx, y: mh, z: my, vx: 0, vy: 0, vz: 0, life: 0.16, size: 1.1, grow: 0, tint: 'none' });
     this.spawn({
       kind: 'smoke',
       x: mx,
@@ -242,22 +246,22 @@ export class EffectsLayer {
       vx: ux * 0.3,
       vy: 0.35,
       vz: uy * 0.3,
-      life: 1.1,
-      size: 0.5,
-      grow: 0.8,
+      life: 2,
+      size: 0.8,
+      grow: 1,
       tint: 'none',
     });
     if (event.hit) {
       const h = terrainHeightAt(event.x2, event.y2) + muzzleHeight(target?.stance ?? 'standing') * 0.85;
-      this.spawn({ kind: 'spurt', x: event.x2, y: h, z: event.y2, vx: ux * 0.6, vy: 0.4, vz: uy * 0.6, life: 0.35, size: 0.55, grow: 0.4, tint: 'blood' });
+      this.spawn({ kind: 'spurt', x: event.x2, y: h, z: event.y2, vx: ux * 0.6, vy: 0.4, vz: uy * 0.6, life: 0.6, size: 0.8, grow: 0.4, tint: 'blood' });
       return;
     }
     const point = missPoint(event);
     const impact = impactAt(point, covers);
     const ground = terrainHeightAt(point.x, point.y);
-    this.spawn({ kind: impact.kind, x: point.x, y: ground + 0.25, z: point.y, vx: 0, vy: 0.9, vz: 0, life: 0.45, size: 0.7, grow: 0.3, tint: impact.tint });
+    this.spawn({ kind: impact.kind, x: point.x, y: ground + 0.3, z: point.y, vx: 0, vy: 1.1, vz: 0, life: 0.8, size: 1, grow: 0.3, tint: impact.tint });
     if (impact.kind !== 'dust') {
-      this.spawn({ kind: 'dust', x: point.x, y: ground + 0.15, z: point.y, vx: 0, vy: 0.25, vz: 0, life: 0.7, size: 0.5, grow: 0.6, tint: impact.tint === 'stone' ? 'stone' : 'none' });
+      this.spawn({ kind: 'dust', x: point.x, y: ground + 0.15, z: point.y, vx: 0, vy: 0.25, vz: 0, life: 1.2, size: 0.8, grow: 0.6, tint: impact.tint === 'stone' ? 'stone' : 'none' });
     }
   }
 
@@ -322,8 +326,8 @@ export class EffectsLayer {
         vx: 0,
         vy: 0.15,
         vz: 0,
-        life: road ? 0.7 : 0.45,
-        size: unit.stance === 'prone' ? 0.6 : road ? 0.5 : 0.35,
+        life: road ? 1.1 : 0.8,
+        size: unit.stance === 'prone' ? 0.8 : road ? 0.8 : 0.6,
         grow: 0.5,
         tint: road ? 'sand' : 'grass',
       });
