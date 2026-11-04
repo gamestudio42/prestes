@@ -6,7 +6,7 @@ import { type CommanderBalloon,
   type PlacementPreview,
   type TrainingMarker,
 } from '@prestes/view3d';
-import { coverAgainst, type PreviewPlan, type SlotMarker, type Vec2 } from '@prestes/shared';
+import { coverAgainst, dragSpacing, type PreviewPlan, type SlotMarker, type Vec2 } from '@prestes/shared';
 import type { GameClient } from '../client/GameClient';
 
 export type SelectionMode = 'all' | 'troops';
@@ -26,6 +26,8 @@ export interface GameCanvasProps {
   lineMoveArmed?: boolean;
   /** A ground order is armed: dragging from the destination sets the facing. */
   groundOrderArmed?: boolean;
+  /** Interface language, for the spacing label's decimal separator. */
+  locale?: string;
   trainingField?: boolean;
   strategicField?: boolean;
   trainingMarkers?: readonly TrainingMarker[];
@@ -76,6 +78,7 @@ export function GameCanvas({
   pendingAction = false,
   lineMoveArmed = false,
   groundOrderArmed = false,
+  locale = 'en',
   trainingField = false,
   strategicField = false,
   trainingMarkers = [],
@@ -104,6 +107,18 @@ export function GameCanvas({
   const [drag, setDrag] = useState<DragState | null>(null);
   const [rightDrag, setRightDrag] = useState<DragState | null>(null);
   const rightDragRef = useRef<DragState | null>(null);
+  // Spacing shown beside the cursor while a facing drag is under way.
+  const [spacingLabel, setSpacingLabel] = useState<{ x: number; y: number; metres: number } | null>(null);
+  const previewFacing = (drag: { from: Vec2; to: Vec2 } | null, x: number, y: number): void => {
+    onPreviewFacing(drag);
+    setSpacingLabel(
+      drag ? { x, y, metres: dragSpacing(Math.sqrt((drag.to.x - drag.from.x) ** 2 + (drag.to.y - drag.from.y) ** 2)) } : null,
+    );
+  };
+  const clearFacing = (): void => {
+    onPreviewFacing(null);
+    setSpacingLabel(null);
+  };
   onBandChangeRef.current = onBandChange;
 
   useEffect(() => {
@@ -260,7 +275,7 @@ export function GameCanvas({
         rightDragRef.current = null;
         setRightDrag(null);
         onPreviewLine(null);
-        onPreviewFacing(null);
+        clearFacing();
         return;
       }
       const dragging =
@@ -276,7 +291,7 @@ export function GameCanvas({
         if (activeRightDrag.shift) {
           onPreviewLine(from && to ? { from, to } : null);
         } else {
-          onPreviewFacing(from && to ? { from, to } : null);
+          previewFacing(from && to ? { from, to } : null, x, y);
         }
       }
       return;
@@ -293,7 +308,7 @@ export function GameCanvas({
         if (drag.shift && lineMoveArmed) {
           onPreviewLine(from && to ? { from, to } : null);
         } else {
-          onPreviewFacing(from && to ? { from, to } : null);
+          previewFacing(from && to ? { from, to } : null, x, y);
         }
       }
       return;
@@ -356,7 +371,7 @@ export function GameCanvas({
         onQuickGround(to);
       }
       onPreviewLine(null);
-      onPreviewFacing(null);
+      clearFacing();
       rightDragRef.current = null;
       setRightDrag(null);
       event.currentTarget.releasePointerCapture?.(event.pointerId);
@@ -377,7 +392,7 @@ export function GameCanvas({
         }
       }
       onPreviewLine(null);
-      onPreviewFacing(null);
+      clearFacing();
     } else if (dragging) {
       const ids = scene.unitsInScreenRect(
         Math.min(startX, x),
@@ -424,7 +439,7 @@ export function GameCanvas({
         setRightDrag(null);
         setDrag(null);
         onPreviewLine(null);
-        onPreviewFacing(null);
+        clearFacing();
       }}
       onPointerLeave={() => {
         if ((rightDragRef.current?.dragging ?? false) === false) {
@@ -434,6 +449,15 @@ export function GameCanvas({
       }}
       onContextMenu={(event) => event.preventDefault()}
     >
+      {spacingLabel ? (
+        <div
+          className="drag-spacing"
+          data-testid="drag-spacing"
+          style={{ left: spacingLabel.x + 14, top: spacingLabel.y + 14 }}
+        >
+          {`${new Intl.NumberFormat(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(spacingLabel.metres)} m`}
+        </div>
+      ) : null}
       {selection ? (
         <div
           className={`selection-box ${selection.mode}`}

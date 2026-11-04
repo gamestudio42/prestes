@@ -338,8 +338,16 @@ soldiers on a line is now Shift + drag. Bounding re-laid the formation with
 the soldiers' heading and reversed the wedge; it now prefers their aim, like
 the move handler. Commands without facing are unchanged (golden kept).
 `pnpm verify` passed: 308 unit tests, bundle budget, determinism, OpenSpec and
-e2e 40/40 in 4.5 min. Checked in game through Playwright captures and the
+e2e 40/40 in 4.5 min (41/41 and 313 unit tests with the spacing). Checked in game through Playwright captures and the
 arrival positions; a hand check in Chrome is still to do.
+
+After the user's first hand check (they liked the movement) the drag length
+also sets the spacing: up to 6 m of drag keeps the default 2.8 m between
+soldiers, then it opens linearly to 6 m at 20 m of drag. A label beside the
+cursor shows the spacing (decimal comma in pt-BR) and the preview lays the
+slots at it. The section keeps the spacing for formation changes and bounding
+until an order without spacing; a formation change also keeps the ordered
+facing now.
 
 ## Deferred
 

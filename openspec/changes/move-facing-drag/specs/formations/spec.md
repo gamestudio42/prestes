@@ -27,3 +27,25 @@ facing, orders SHALL behave as before, deterministically.
 #### Scenario: No facing
 - **WHEN** the same commands are replayed without facing
 - **THEN** the simulation hash equals the golden replay
+
+### Requirement: Ordered spacing
+
+A ground order SHALL accept an optional spacing between soldiers, from 2.8 m
+(the default) to 6 m. With a spacing, the formation slots SHALL use it, and the
+section SHALL keep it for formation changes and bounding until an order without
+spacing returns it to the default. A spacing that is not a finite number SHALL
+be rejected with `invalid_position`; finite values SHALL be clamped to the
+range.
+
+#### Scenario: Open order
+- **WHEN** a section in line is ordered to a point with a spacing of 5 m
+- **THEN** neighbouring soldiers stand about 5 m apart on arrival
+
+#### Scenario: Spacing kept while bounding
+- **WHEN** a section with a 5 m spacing advances by bounds
+- **THEN** both teams take slots 5 m apart
+
+#### Scenario: Back to default
+- **WHEN** a later move carries no spacing
+- **THEN** the section returns to 2.8 m
+

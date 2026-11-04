@@ -3,6 +3,7 @@ import {
   FIRE_RANGE,
   averageAim,
   averageFacing,
+  DEFAULT_SPACING,
   coverAgainst,
   getWeapon,
   findPath,
@@ -83,7 +84,8 @@ export function applyTacticalOrder(
       reject(ctx, tick, seq, 'invalid_position', events);
       return;
     }
-    const spacing = command.order === 'disperse' ? 5 : 2.8;
+    const spacing =
+      command.order === 'disperse' ? Math.max(5, command.spacing ?? 0) : (command.spacing ?? DEFAULT_SPACING);
     const formationThreat =
       command.order === 'defend' || command.order === 'ambush'
         ? nearestEnemyAt(ctx, command.to, units[0]!.faction)
@@ -120,6 +122,7 @@ export function applyTacticalOrder(
     const routes = command.order === 'disperse' ? units.map(() => null) : sectionRoutes(ctx, units, finals);
     units.forEach((unit, index) => {
       clear(unit);
+      unit.formationSpacing = command.spacing;
       if (command.facing) {
         unit.aimX = command.facing.x;
         unit.aimY = command.facing.y;

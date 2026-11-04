@@ -489,3 +489,40 @@ describe('mechanics: ordered facing', () => {
   });
 });
 
+
+/** Soldiers stop within their arrival tolerance: the mean gap is exact. */
+function expectSpacing(gaps: number[], spacing: number): void {
+  const mean = gaps.reduce((sum, gap) => sum + gap, 0) / gaps.length;
+  expect(Math.abs(mean - spacing)).toBeLessThan(0.1);
+  for (const gap of gaps) expect(Math.abs(gap - spacing)).toBeLessThan(1);
+}
+
+describe('mechanics: ordered spacing', () => {
+  const gaps = (units: Array<{ x: number; y: number }>) => {
+    // Neighbour distances along a line facing east (soldiers spread on y).
+    const ys = units.map((unit) => unit.y).sort((a, b) => a - b);
+    return ys.slice(1).map((y, index) => y - ys[index]!);
+  };
+
+  it('opens the line to the ordered spacing and resets without one', () => {
+    const t = harness();
+    t.send({ type: 'hold_fire', unitIds: [...COLUMN, OFFICER, ...ENEMY], hold: true });
+    const to = { x: -30, y: 34 };
+    t.send({ type: 'move', unitIds: COLUMN, to, facing: { x: 1, y: 0 }, spacing: 5 }, 900);
+    expectSpacing(gaps(COLUMN.map((id) => t.unit(id))), 5);
+    const internal = t.engine as unknown as { units: Array<{ id: number; formationSpacing?: number }> };
+    expect(internal.units.find((unit) => unit.id === COLUMN[0])!.formationSpacing).toBe(5);
+    t.send({ type: 'move', unitIds: COLUMN, to: { x: -30, y: 20 }, facing: { x: 1, y: 0 } }, 900);
+    expect(internal.units.find((unit) => unit.id === COLUMN[0])!.formationSpacing).toBeUndefined();
+    expectSpacing(gaps(COLUMN.map((id) => t.unit(id))), 2.8);
+  });
+
+  it('clamps the spacing and rejects one that is not a number', () => {
+    const t = harness();
+    t.send({ type: 'move', unitIds: COLUMN, to: { x: -30, y: 34 }, spacing: 40 }, 2);
+    const internal = t.engine as unknown as { units: Array<{ id: number; formationSpacing?: number }> };
+    expect(internal.units.find((unit) => unit.id === COLUMN[0])!.formationSpacing).toBe(6);
+    t.send({ type: 'move', unitIds: COLUMN, to: { x: -30, y: 34 }, spacing: Number.NaN }, 2);
+    expect(t.count('command_rejected')).toBe(1);
+  });
+});

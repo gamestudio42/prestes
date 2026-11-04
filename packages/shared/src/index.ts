@@ -98,6 +98,12 @@ export {
 
 export {
   DEFEND_REGION_RADIUS,
+  DEFAULT_SPACING,
+  MAX_SPACING,
+  SPACING_DEAD_ZONE,
+  SPACING_FULL_DRAG,
+  clampSpacing,
+  dragSpacing,
   PREVIEW_CONE_DEGREES,
   averageAim,
   averageFacing,

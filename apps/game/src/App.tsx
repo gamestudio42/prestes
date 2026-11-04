@@ -457,6 +457,7 @@ export function App() {
         aimPending={aimPending}
         pendingAction={pendingOrder !== null || pendingTactical !== null || aimPending || sandboxTool !== null}
         lineMoveArmed={pendingOrder === 'move'}
+        locale={locale}
         groundOrderArmed={
           pendingOrder === 'move' ||
           (pendingTactical !== null &&

@@ -79,6 +79,8 @@ export interface MutableUnit {
   cohesion: number;
   fatigue: number;
   formation: FormationKind;
+  /** Ordered spacing between soldiers; the default when unset. */
+  formationSpacing?: number;
   orderDestination: Vec2 | null;
   orderIssued: boolean;
   orderRegionCenter: Vec2 | null;

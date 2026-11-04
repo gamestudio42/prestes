@@ -147,6 +147,27 @@ test('a drag from the destination turns the section to face that way', async ({ 
     .toBe(true);
 });
 
+test('a longer drag opens the spacing, shown beside the cursor', async ({ page }) => {
+  await page.goto('/');
+  await page.getByTestId('start-button').click();
+  await expect(page.getByTestId('hud')).toBeVisible();
+  await page.waitForFunction(() => Boolean(window.__prestes?.frame()));
+
+  await page.getByTestId('order-tab-movement').click();
+  await page.getByTestId('order-move').click();
+  await page.mouse.move(500, 420);
+  await page.mouse.down();
+  await page.mouse.move(520, 420, { steps: 4 });
+  // A short drag only turns the section: default spacing.
+  await expect(page.getByTestId('drag-spacing')).toHaveText('2.8 m');
+  await page.mouse.move(900, 420, { steps: 8 });
+  const label = await page.getByTestId('drag-spacing').textContent();
+  expect(Number.parseFloat(label ?? '0')).toBeGreaterThan(2.8);
+  await page.mouse.up();
+  await expect(page.getByTestId('drag-spacing')).toHaveCount(0);
+  await expect(page.getByTestId('order-value')).toContainText('Move', { timeout: 5000 });
+});
+
 test('turns alternating movement off for real orders', async ({ page }) => {
   await page.goto('/');
   await page.getByTestId('start-button').click();

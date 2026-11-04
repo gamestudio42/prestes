@@ -1,4 +1,4 @@
-import { averageAim, averageFacing, findPath, isPointBlockedByCovers } from '@prestes/shared';
+import { DEFAULT_SPACING, averageAim, averageFacing, findPath, isPointBlockedByCovers } from '@prestes/shared';
 import type { Vec2 } from '@prestes/shared';
 import { formationSlots } from '../tactical';
 import { BOUNDING_ORDERS } from './model';
@@ -59,7 +59,7 @@ export function updateBounding(ctx: SimContext): void {
       const slots = formationSlots(
         sorted.map((unit) => ({ x: unit.x, y: unit.y })),
         destination,
-        2.8,
+        first.formationSpacing ?? DEFAULT_SPACING,
         first.formation ?? 'line',
         averageAim(sorted) ?? averageFacing(sorted),
       );
@@ -192,7 +192,7 @@ export function assignBoundingDirect(
   const slots = formationSlots(
     units.map((unit) => ({ x: unit.x, y: unit.y })),
     destination,
-    2.8,
+    units[0]?.formationSpacing ?? DEFAULT_SPACING,
     units[0]?.formation ?? 'line',
     averageAim(units) ?? averageFacing(units),
   );

@@ -639,6 +639,18 @@ select {
   background: color-mix(in srgb, currentColor 14%, transparent);
 }
 
+.drag-spacing {
+  position: absolute;
+  z-index: 5;
+  pointer-events: none;
+  padding: 2px 6px;
+  font-family: var(--px-font, 'Pixelify Sans', monospace);
+  font-size: 12px;
+  color: var(--px-ink, #1b140d);
+  background: var(--px-parchment, #efe2c4);
+  border: 2px solid var(--px-ink, #1b140d);
+}
+
 .selection-box.all {
   color: #6fa8ff;
 }

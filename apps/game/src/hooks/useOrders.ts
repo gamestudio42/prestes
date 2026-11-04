@@ -12,6 +12,8 @@ import {
   nearestTargetGroups,
   spreadTargetGroups,
   planOrderPreview,
+  DEFAULT_SPACING,
+  dragSpacing,
   coverAtPoint,
   coverSlotView,
   planCoverSlots,
@@ -45,6 +47,16 @@ interface OrderOptions {
   placementRotation: number;
   setPlacementPoint: Dispatch<SetStateAction<Vec2 | null>>;
   recordTrainingAction: (action: TrainingAction) => void;
+}
+
+/**
+ * The facing and spacing a drag adds to a ground order: the direction turns
+ * the section, the length opens it beyond the dead zone.
+ */
+function dragOrder(facing: Vec2 | undefined): { facing?: Vec2; spacing?: number } {
+  if (!facing) return {};
+  const spacing = dragSpacing(Math.sqrt(facing.x * facing.x + facing.y * facing.y));
+  return spacing > DEFAULT_SPACING ? { facing, spacing } : { facing };
 }
 
 /** Selection, pending orders, previews, officer callouts and every order handler. */
@@ -116,6 +128,9 @@ export function useOrders({
           line: previewOrder === 'move' ? lineDrag ?? undefined : undefined,
           facing: facingDrag
             ? { x: facingDrag.to.x - facingDrag.from.x, y: facingDrag.to.y - facingDrag.from.y }
+            : undefined,
+          spacing: facingDrag
+            ? dragSpacing(Math.sqrt((facingDrag.to.x - facingDrag.from.x) ** 2 + (facingDrag.to.y - facingDrag.from.y) ** 2))
             : undefined,
           fast: previewOrder === 'move',
         })
@@ -565,7 +580,7 @@ export function useOrders({
           order: pendingTactical,
           unitIds: selectedIds,
           to: point,
-          ...(facing ? { facing } : {}),
+          ...dragOrder(facing),
         });
       }
       recordTrainingAction(pendingTactical as TrainingAction);
@@ -593,7 +608,7 @@ export function useOrders({
     }
     if (pendingOrder === 'move' && selectedIds.length > 0) {
       recordTrainingAction('move');
-      clientRef.current?.sendCommand({ type: 'move', unitIds: selectedIds, to: point, ...(facing ? { facing } : {}) });
+      clientRef.current?.sendCommand({ type: 'move', unitIds: selectedIds, to: point, ...dragOrder(facing) });
       triggerOrderCallout('move', selectedIds);
       setPendingOrder(null);
     }
@@ -609,7 +624,7 @@ export function useOrders({
       return;
     }
     recordTrainingAction('move');
-    clientRef.current?.sendCommand({ type: 'move', unitIds: selectedIds, to: point, ...(facing ? { facing } : {}) });
+    clientRef.current?.sendCommand({ type: 'move', unitIds: selectedIds, to: point, ...dragOrder(facing) });
     triggerOrderCallout('move', selectedIds);
   };
 

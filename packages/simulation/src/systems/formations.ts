@@ -1,4 +1,4 @@
-import { findPath } from '@prestes/shared';
+import { DEFAULT_SPACING, averageAim, findPath } from '@prestes/shared';
 import { formationSlots } from '../tactical';
 import type { MutableUnit } from './model';
 import type { SimContext } from './context';
@@ -29,12 +29,15 @@ export function reflowFormation(ctx: SimContext, units: readonly MutableUnit[]):
   if (group.length < 2) {
     return;
   }
-  const spacing = group[0]?.currentOrder === 'disperse' ? 5 : 2.8;
+  const spacing =
+    group[0]?.currentOrder === 'disperse' ? 5 : (group[0]?.formationSpacing ?? DEFAULT_SPACING);
+  // A changed formation keeps the ordered facing (the soldiers' aim).
   const slots = formationSlots(
     group.map((unit) => ({ x: unit.x, y: unit.y })),
     anchor,
     spacing,
     group[0]?.formation ?? 'line',
+    averageAim(group),
   );
   const ids = new Set(group.map((unit) => unit.id));
   ctx.orders = ctx.orders.filter(

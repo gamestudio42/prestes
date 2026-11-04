@@ -18,6 +18,28 @@ export const PREVIEW_CONE_RADIUS = 120;
 export const DEFEND_REGION_RADIUS = 8;
 const PREVIEW_FORMATION_SPACING = 2.8;
 
+/** Spacing between soldiers: the default and the widest open order, metres. */
+export const DEFAULT_SPACING = 2.8;
+export const MAX_SPACING = 6;
+/** Drag length (m) that only turns the section, and the one that opens it fully. */
+export const SPACING_DEAD_ZONE = 6;
+export const SPACING_FULL_DRAG = 20;
+
+/** Clamps an ordered spacing to the allowed range. */
+export function clampSpacing(spacing: number): number {
+  return Math.min(MAX_SPACING, Math.max(DEFAULT_SPACING, spacing));
+}
+
+/**
+ * The spacing a facing drag of `length` metres asks for: the default up to the
+ * dead zone, then growing linearly to the widest order at the full drag.
+ */
+export function dragSpacing(length: number): number {
+  if (!(length > SPACING_DEAD_ZONE)) return DEFAULT_SPACING;
+  const t = (length - SPACING_DEAD_ZONE) / (SPACING_FULL_DRAG - SPACING_DEAD_ZONE);
+  return clampSpacing(DEFAULT_SPACING + t * (MAX_SPACING - DEFAULT_SPACING));
+}
+
 export function clampToRegion(point: Vec2, center: Vec2, radius: number): Vec2 {
   const dx = point.x - center.x;
   const dy = point.y - center.y;
@@ -63,7 +85,7 @@ export interface PreviewPlan {
   cones: PreviewCone[];
   los: PreviewLos[];
   /** The facing the player is dragging, drawn as an arrow from the destination. */
-  facingArrow?: { x: number; y: number; facingX: number; facingY: number };
+  facingArrow?: { x: number; y: number; facingX: number; facingY: number; spacing: number };
 }
 
 export interface PreviewRequest {
@@ -76,6 +98,8 @@ export interface PreviewRequest {
   line?: { from: Vec2; to: Vec2 };
   /** Ground orders: the facing dragged by the player (not normalised). */
   facing?: Vec2;
+  /** Ground orders: the spacing between soldiers set by the drag length. */
+  spacing?: number;
   fast?: boolean;
 }
 
@@ -382,7 +406,9 @@ export function planOrderPreview(request: PreviewRequest): PreviewPlan | null {
       : formationSlots(
         units.map((unit) => ({ x: unit.x, y: unit.y })),
         request.to!,
-        PREVIEW_FORMATION_SPACING,
+        request.spacing !== undefined && GROUND_ORDERS.has(request.order)
+          ? clampSpacing(request.spacing)
+          : PREVIEW_FORMATION_SPACING,
         request.formation ?? 'line',
         formationFacing,
       )
@@ -551,7 +577,13 @@ export function planOrderPreview(request: PreviewRequest): PreviewPlan | null {
 
   const facingArrow =
     orderedFacing && request.to
-      ? { x: request.to.x, y: request.to.y, facingX: orderedFacing.x, facingY: orderedFacing.y }
+      ? {
+          x: request.to.x,
+          y: request.to.y,
+          facingX: orderedFacing.x,
+          facingY: orderedFacing.y,
+          spacing: clampSpacing(request.spacing ?? DEFAULT_SPACING),
+        }
       : undefined;
   return { unitIds: units.map((unit) => unit.id), paths, cones, los, ...(facingArrow ? { facingArrow } : {}) };
 }

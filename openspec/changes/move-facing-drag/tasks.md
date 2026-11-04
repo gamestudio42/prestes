@@ -12,7 +12,13 @@
 - [x] 2.3 Facing arrow in the preview layer (pixel style)
 - [x] 2.4 The assembly hint teaches the facing drag (pt-BR and EN); no station taught the line drag
 
-## 3. Close
+## 3. Spacing by drag (asked after the first hand check)
 
-- [x] 3.1 e2e: drag a facing on the training ground and check the arrival facing
-- [ ] 3.2 `pnpm verify`; hand check in Chrome; record in `docs/status.md`
+- [x] 3.1 `spacing?: number` on `move` and `order`; validated and clamped; kept on the section for formation changes and bounding; reset by orders without spacing
+- [x] 3.2 `dragSpacing(length)` in shared; preview uses the request spacing; spacing label at the cursor while dragging
+- [x] 3.3 Tests: open order, kept while bounding, reset, drag mapping; e2e drag length
+
+## 4. Close
+
+- [x] 4.1 e2e: drag a facing on the training ground and check the arrival facing
+- [ ] 4.2 `pnpm verify`; hand check in Chrome; record in `docs/status.md`

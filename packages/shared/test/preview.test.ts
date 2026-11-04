@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { COVER_POINTS, clampToRegion, planOrderPreview, type Frame, type UnitSnapshot } from '../src';
+import { COVER_POINTS, clampToRegion, dragSpacing, planOrderPreview, type Frame, type UnitSnapshot } from '../src';
 
 function frame(units: Array<Partial<UnitSnapshot>>): Frame {
   return {
@@ -41,7 +41,34 @@ const enemy = {
   facingY: 1,
 } as Partial<UnitSnapshot>;
 
+describe('drag spacing', () => {
+  it('keeps the default for a short drag and opens to 6 m at 20 m', () => {
+    expect(dragSpacing(0)).toBe(2.8);
+    expect(dragSpacing(6)).toBe(2.8);
+    expect(dragSpacing(13)).toBeCloseTo(4.4);
+    expect(dragSpacing(20)).toBe(6);
+    expect(dragSpacing(80)).toBe(6);
+  });
+});
+
 describe('order preview', () => {
+  it('lays the slots at the dragged spacing', () => {
+    const second = { ...player, id: 2, x: -2 };
+    const plan = planOrderPreview({
+      frame: frame([player, second, enemy]),
+      unitIds: [1, 2],
+      order: 'move',
+      to: { x: -30, y: 34 },
+      formation: 'line',
+      facing: { x: 1, y: 0 },
+      spacing: 5,
+      fast: true,
+    });
+    const [a, b] = plan!.paths.map((path) => path.destination);
+    expect(Math.abs(a!.y - b!.y)).toBeCloseTo(5);
+    expect(plan!.facingArrow?.spacing).toBe(5);
+  });
+
   it('turns the formation and the cones to a dragged facing', () => {
     const second = { ...player, id: 2, x: -2 };
     const plan = planOrderPreview({

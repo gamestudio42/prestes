@@ -18,3 +18,20 @@ facing.
 #### Scenario: Shift keeps the line
 - **WHEN** the player drags with Move armed while holding Shift
 - **THEN** the soldiers are spread along the dragged line as before
+
+### Requirement: Drag sets the spacing
+
+The length of a facing drag SHALL set the order's spacing: up to 6 m of drag
+on the ground keeps the default 2.8 m; beyond that the spacing grows with the
+drag up to 6 m between soldiers at 20 m of drag. While dragging, the preview
+SHALL show the slots at that spacing and the spacing in metres beside the
+cursor.
+
+#### Scenario: Short drag only turns
+- **WHEN** the player drags 4 m from the destination
+- **THEN** the order carries the facing and the default spacing
+
+#### Scenario: Long drag opens the order
+- **WHEN** the player drags 20 m from the destination
+- **THEN** the preview shows the soldiers 6 m apart and the order carries 6 m
+

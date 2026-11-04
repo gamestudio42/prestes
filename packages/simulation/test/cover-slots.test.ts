@@ -253,3 +253,43 @@ describe('ordered facing while bounding', () => {
     expect(units.filter((unit) => unit.y < to.y - 1.5).length).toBe(units.length - 1);
   });
 });
+
+describe('ordered spacing while bounding', () => {
+  it('both bounding teams take slots at the ordered spacing', () => {
+    const t = training(false);
+    t.send({
+      type: 'training_phase',
+      setup: {
+        phase: 'formation',
+        playerPoint: stationPoint('formation', { x: 0, y: 0 }),
+        officerPoint: stationPoint('formation', { x: 12, y: -12 }),
+      },
+    }, 3);
+    const internal = t.internal as unknown as { units: Array<{ id: number; faction: string; x: number; y: number; targetX: number; targetY: number }> };
+    for (const unit of internal.units) {
+      if (unit.faction !== 'column') {
+        unit.x = -95 + unit.id;
+        unit.y = 95;
+        unit.targetX = unit.x;
+        unit.targetY = unit.y;
+      }
+    }
+    const section = t.frame().units
+      .filter((unit) => unit.faction === 'column' && unit.squadId === 1 && unit.kind !== 'officer')
+      .map((unit) => unit.id);
+    const centre = t.frame().units
+      .filter((unit) => section.includes(unit.id))
+      .reduce((sum, unit) => ({ x: sum.x + unit.x / section.length, y: sum.y + unit.y / section.length }), { x: 0, y: 0 });
+    t.send({ type: 'set_bounding', enabled: true });
+    const to = { x: centre.x + 16, y: centre.y };
+    // A line facing south runs east-west, 4.5 m between soldiers.
+    t.send({ type: 'move', unitIds: section, to, facing: { x: 0, y: 1 }, spacing: 4.5 }, 1500);
+    const xs = t.frame().units.filter((unit) => section.includes(unit.id)).map((unit) => unit.x).sort((a, b) => a - b);
+    // Soldiers stop within their arrival tolerance: the mean gap is exact.
+    const gaps = xs.slice(1).map((x, index) => x - xs[index]!);
+    const mean = gaps.reduce((sum, gap) => sum + gap, 0) / gaps.length;
+    expect(Math.abs(mean - 4.5)).toBeLessThan(0.1);
+    for (const gap of gaps) expect(Math.abs(gap - 4.5)).toBeLessThan(1);
+  });
+});
+

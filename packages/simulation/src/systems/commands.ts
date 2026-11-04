@@ -1,7 +1,9 @@
 import {
   MAP_BOUNDS,
+  DEFAULT_SPACING,
   averageAim,
   averageFacing,
+  clampSpacing,
   findPath,
   isPointNearCover,
   isPointBlockedByCovers,
@@ -114,9 +116,17 @@ export function applyCommand(
     }
     facing = { x: command.facing.x / length, y: command.facing.y / length };
   }
+  let spacing: number | undefined;
+  if ((command.type === 'move' || command.type === 'order') && command.spacing !== undefined) {
+    if (!Number.isFinite(command.spacing)) {
+      reject(ctx, tick, envelope.seq, 'invalid_position', events);
+      return;
+    }
+    spacing = clampSpacing(command.spacing);
+  }
 
   if (command.type === 'order') {
-    applyTacticalOrder(ctx, { ...command, facing }, actionable, tick, envelope.seq, events);
+    applyTacticalOrder(ctx, { ...command, facing, spacing }, actionable, tick, envelope.seq, events);
     return;
   }
 
@@ -309,7 +319,7 @@ export function applyCommand(
         const slots = formationSlots(
           actionable.map((unit) => ({ x: unit.x, y: unit.y })),
           retreat,
-          2.8,
+          actionable[0]?.formationSpacing ?? DEFAULT_SPACING,
           actionable[0]?.formation ?? 'line',
           facing,
         );
@@ -349,7 +359,7 @@ export function applyCommand(
   const slots = formationSlots(
     living.map((unit) => ({ x: unit.x, y: unit.y })),
     command.to,
-    undefined,
+    spacing,
     living[0]?.formation ?? 'line',
     moveFacing,
   );
@@ -378,6 +388,8 @@ export function applyCommand(
     unit.rescueTargetId = null;
     unit.currentOrder = null;
     unit.lineMove = false;
+    // The section keeps the ordered spacing; a move without one resets it.
+    unit.formationSpacing = spacing;
     if (facing) {
       // Faced and aimed that way once there, until something changes it.
       unit.aimX = facing.x;
