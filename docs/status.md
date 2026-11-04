@@ -339,7 +339,7 @@ the soldiers' heading and reversed the wedge; it now prefers their aim, like
 the move handler. Commands without facing are unchanged (golden kept).
 `pnpm verify` passed: 308 unit tests, bundle budget, determinism, OpenSpec and
 e2e 40/40 in 4.5 min (41/41 and 313 unit tests with the spacing). Checked in game through Playwright captures and the
-arrival positions; a hand check in Chrome is still to do.
+arrival positions, and the user played it in Chrome (2026-11-04): it works.
 
 After the user's first hand check (they liked the movement) the drag length
 also sets the spacing. After the second hand check (it only opened, never

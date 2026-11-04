@@ -22,4 +22,4 @@
 ## 4. Close
 
 - [x] 4.1 e2e: drag a facing on the training ground and check the arrival facing
-- [ ] 4.2 `pnpm verify`; hand check in Chrome; record in `docs/status.md`
+- [x] 4.2 `pnpm verify`; hand check in Chrome; record in `docs/status.md`
