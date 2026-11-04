@@ -295,7 +295,7 @@ Four phases, each its own OpenSpec change:
      is placed at each station's entry rather than marching the road between
      stations.
 3. Pixel-art HUD, menus and the Coluna Prestes compendium (in-game stays low-poly).
-   In progress as `pixel-art-interface` (2026-11-04):
+   Implemented as `pixel-art-interface`, archived 2026-11-04:
    - Pixel kit: Pixelify Sans (OFL) at 10 to 32 px, sepia tokens in
      `styles/pixel.css`, 2 px borders, stepped corners, hard shadows. Barlow,
      Cinzel and Lucide removed.
