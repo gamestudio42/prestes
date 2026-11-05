@@ -5,7 +5,10 @@ import { expect, test, type Page } from '@playwright/test';
 
 const SCREENSHOT = { animations: 'disabled', caret: 'hide', maxDiffPixelRatio: 0.002 } as const;
 
-// The menu's marching column holds still for reduced motion, so its frame is stable.
+// The menu video holds its first frame for reduced motion, but that frame depends on
+// when the video finishes loading, so the screenshots hide it. A mask would cover the
+// book too: the video canvas fills the screen.
+const HIDE_MENU_VIDEO = '[data-testid="menu-video"] { visibility: hidden; }';
 test.use({ contextOptions: { reducedMotion: 'reduce' } });
 
 async function stableFonts(page: Page): Promise<void> {
@@ -15,6 +18,7 @@ async function stableFonts(page: Page): Promise<void> {
 test('start screen matches the baseline', async ({ page }) => {
   await page.goto('/');
   await expect(page.getByTestId('start-screen')).toBeVisible();
+  await page.addStyleTag({ content: HIDE_MENU_VIDEO });
   await stableFonts(page);
   await expect(page).toHaveScreenshot('start-screen.png', SCREENSHOT);
 });
@@ -84,6 +88,7 @@ test('codex matches the baseline', async ({ page }) => {
   await page.goto('/');
   await page.getByTestId('start-codex').click();
   await expect(page.getByTestId('codex')).toBeVisible();
+  await page.addStyleTag({ content: HIDE_MENU_VIDEO });
   await stableFonts(page);
   await expect(page).toHaveScreenshot('codex.png', SCREENSHOT);
 });

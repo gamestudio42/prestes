@@ -789,6 +789,20 @@ export const en = {
   'training.station.final.hold.instructor': 'Instructor: Hold the line for one minute and keep me safe.',
   'training.exercise.failure.cohesion': 'The section lost its cohesion.',
   'training.exercise.debrief.stations': 'Stations',
+  'menu.mark.campaign': 'Campaign',
+  'menu.mark.skirmish': 'Skirmish',
+  'menu.mark.compendium': 'Compendium',
+  'menu.mark.options': 'Options',
+  'menu.campaign.heading': 'Play campaign',
+  'menu.campaign.text': 'Follow the column from the barracks: the bootcamp teaches orders, cover and fire before the march begins.',
+  'menu.campaign.epigraph': 'Every march begins with a single order.',
+  'menu.skirmish.heading': 'Play skirmish',
+  'menu.skirmish.text': 'Three column sections against three legalist sections. Aimed fire, rushes and an enemy commander.',
+  'menu.skirmish.epigraph': 'A quick fight, no campaign attached.',
+  'menu.options.heading': 'Options',
+  'menu.page': 'p. {page}',
+  'menu.pagePrev': 'Previous page',
+  'menu.pageNext': 'Next page',
 } as const;
 
 export type MessageKey = keyof typeof en;

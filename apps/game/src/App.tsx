@@ -441,13 +441,7 @@ export function App() {
           onRestart={() => handleStartBootcamp(true)}
           onStartBattle3v3={handleStartBattle3v3}
           onToggleAudio={handleToggleAudio}
-          onToggleCodex={() => setShowCodex((open) => !open)}
         />
-        {showCodex ? (
-          <div className="overlay">
-            <CodexPanel locale={locale} onClose={() => setShowCodex(false)} />
-          </div>
-        ) : null}
       </div>
     );
   }

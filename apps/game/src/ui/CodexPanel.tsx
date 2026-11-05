@@ -33,7 +33,6 @@ export function CodexPanel({ locale, onClose }: CodexPanelProps) {
   const [openId, setOpenId] = useState<string | null>(entries[0]?.id ?? null);
   const open: CompendiumEntry | undefined =
     entries.find((entry) => entry.id === openId) ?? entries[0];
-  const figure = open ? FIGURES.find((entry) => entry.id === open.id) : undefined;
 
   const pickSection = (next: CompendiumSection) => {
     setSection(next);
@@ -88,30 +87,48 @@ export function CodexPanel({ locale, onClose }: CodexPanelProps) {
         </ol>
 
         {open ? (
-          <article className="codex-page" data-testid="codex-page" data-entry={open.id}>
-            {open.date ? <p className="codex-date">{open.date}</p> : null}
-            <h3>{t(compendiumTitleKey(open))}</h3>
-            {figure ? (
-              <p className="codex-labels">
-                {figure.labels.map((label) => (
-                  <span key={label} data-testid={`codex-label-${label}`}>
-                    {t(`codex.${label}` as MessageKey)}
-                  </span>
-                ))}
-              </p>
-            ) : null}
-            <p className="codex-body">{t(compendiumBodyKey(open))}</p>
-            <p className="codex-sources" data-testid="codex-source">
-              {t('compendium.source')}: {open.cite} · {open.sourceRefs.join(', ')}
-            </p>
-            <p className={`codex-confidence confidence-${open.confidence}`} data-testid="codex-confidence">
-              {t('compendium.confidence')}: {t(`compendium.confidence.${open.confidence}` as MessageKey)}
-            </p>
-          </article>
+          <CodexEntryArticle locale={locale} entry={open} />
         ) : (
           <p className="codex-page codex-empty">{t('compendium.pick')}</p>
         )}
       </div>
     </section>
+  );
+}
+
+/** One compendium entry as a parchment page: date, title, labels, body, source and confidence. */
+export function CodexEntryArticle({
+  locale,
+  entry,
+  className = '',
+}: {
+  locale: Locale;
+  entry: CompendiumEntry;
+  className?: string;
+}) {
+  const t = (key: MessageKey, values?: Readonly<Record<string, string | number>>) =>
+    translate(locale, key, values);
+  const figure = FIGURES.find((candidate) => candidate.id === entry.id);
+  return (
+    <article className={`codex-page ${className}`.trim()} data-testid="codex-page" data-entry={entry.id}>
+      {entry.date ? <p className="codex-date">{entry.date}</p> : null}
+      <h3>{t(compendiumTitleKey(entry))}</h3>
+      {figure ? (
+        <p className="codex-labels">
+          {figure.labels.map((label) => (
+            <span key={label} data-testid={`codex-label-${label}`}>
+              {t(`codex.${label}` as MessageKey)}
+            </span>
+          ))}
+        </p>
+      ) : null}
+      <p className="codex-body">{t(compendiumBodyKey(entry))}</p>
+      <p className="codex-sources" data-testid="codex-source">
+        {t('compendium.source')}: {entry.cite} · {entry.sourceRefs.join(', ')}
+      </p>
+      <p className={`codex-confidence confidence-${entry.confidence}`} data-testid="codex-confidence">
+        {t('compendium.confidence')}: {t(`compendium.confidence.${entry.confidence}` as MessageKey)}
+      </p>
+    </article>
   );
 }

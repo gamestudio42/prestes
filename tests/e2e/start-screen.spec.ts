@@ -7,7 +7,7 @@ test('offers Start with no progress and shows the period kicker once', async ({ 
   await expect(page.getByTestId('start-button')).toBeVisible();
   await expect(page.getByTestId('start-continue')).toHaveCount(0);
   await expect(page.getByTestId('start-screen')).not.toContainText('Visual prototype');
-  await expect(page.getByText('The Prestes Column', { exact: false })).toHaveCount(2);
+  await expect(page.getByText('The Prestes Column', { exact: false })).toHaveCount(1);
 });
 
 test('continues and restarts saved bootcamp progress', async ({ page }) => {
@@ -35,30 +35,31 @@ test('continues and restarts saved bootcamp progress', async ({ page }) => {
 
 test('toggles sound from the start screen', async ({ page }) => {
   await page.goto('/');
+  await page.getByTestId('menu-mark-options').click();
   const audio = page.getByTestId('start-audio');
   const before = await audio.getAttribute('aria-pressed');
   await audio.click();
   await expect(audio).not.toHaveAttribute('aria-pressed', before ?? '');
 });
 
-test('the menu shows the marching column and the arrow keys move the cursor', async ({ page }) => {
+test('the menu is a book over the pixel video; bookmarks open its spreads', async ({ page }) => {
   await page.goto('/');
-  const scene = page.getByTestId('marching-scene');
+  // The backdrop is the menu video drawn as pixel art, or the marching column if it cannot play.
+  const scene = page.getByTestId('menu-video').or(page.getByTestId('marching-scene'));
   await expect(scene).toBeVisible();
-  // The column moves: two frames of the scene differ.
-  const first = await scene.evaluate((canvas: HTMLCanvasElement) => canvas.toDataURL());
-  await page.waitForTimeout(400);
-  const second = await scene.evaluate((canvas: HTMLCanvasElement) => canvas.toDataURL());
-  expect(second).not.toBe(first);
 
-  await page.getByTestId('start-button').focus();
+  // Campaign is the first spread; the arrow keys move between the bookmarks.
+  await expect(page.getByTestId('menu-mark-campaign')).toHaveAttribute('aria-selected', 'true');
+  await page.getByTestId('menu-mark-campaign').focus();
   await page.keyboard.press('ArrowDown');
-  await expect(page.getByTestId('start-battle-3v3')).toBeFocused();
+  await expect(page.getByTestId('menu-mark-skirmish')).toBeFocused();
+  await expect(page.getByTestId('start-battle-3v3')).toBeVisible();
   await page.keyboard.press('ArrowDown');
   await expect(page.getByTestId('start-codex')).toBeFocused();
-  await page.keyboard.press('ArrowUp');
-  await page.keyboard.press('ArrowUp');
-  await expect(page.getByTestId('start-button')).toBeFocused();
-  await page.keyboard.press('ArrowUp');
-  await expect(page.getByTestId('language-select')).toBeFocused();
+  await expect(page.getByTestId('codex')).toBeVisible();
+  await page.keyboard.press('ArrowDown');
+  await expect(page.getByTestId('language-select')).toBeVisible();
+  await page.keyboard.press('ArrowDown');
+  await expect(page.getByTestId('menu-mark-campaign')).toBeFocused();
+  await expect(page.getByTestId('start-button')).toBeVisible();
 });

@@ -1,0 +1,661 @@
+/*
+ * Main menu: an open pixel-art book over the menu video. Bookmarks on the
+ * right edge open the spreads (campaign, skirmish, compendium, options).
+ * Pixel-kit rules apply: hard steps, no blur, no rounded corners.
+ */
+.start-screen.menu-screen {
+  --book-leather: #4a2216;
+  --book-leather-dark: #2e140c;
+  --book-leather-light: #6b3420;
+  --book-paper: #efe2c4;
+  --book-paper-shade: #e2d1aa;
+  --book-paper-deep: #cdb88b;
+  --book-edge: #b29a6c;
+  --book-ink: #2a1f14;
+  --book-ink-soft: #5a4a30;
+  --book-accent: #8e3a2c;
+  --book-blue: #3b4a6b;
+
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr;
+  place-items: center;
+  min-height: 100%;
+  padding: 16px;
+  overflow: hidden;
+  background: var(--px-ink-deep);
+}
+
+.menu-scene {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  image-rendering: pixelated;
+}
+
+/* The decoded video stays in the page (some browsers stop decoding hidden
+   video) but is invisible; the canvas shows its pixel drawing. */
+.pixel-video-source {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.menu-vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at center, rgba(18, 13, 8, 0) 45%, rgba(18, 13, 8, 0.7) 100%),
+    rgba(18, 13, 8, 0.2);
+}
+
+.menu-book {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  width: min(1120px, 100%);
+  animation: book-open 420ms steps(6) both;
+}
+
+/* Leather boards with a gold rule and stepped gold corners. */
+.book-cover {
+  position: relative;
+  z-index: 2;
+  height: min(640px, calc(100vh - 48px));
+  min-height: 420px;
+  padding: 14px 14px 20px;
+  background: var(--book-leather);
+  box-shadow:
+    inset 0 0 0 2px var(--book-leather-dark),
+    inset 0 0 0 4px var(--book-leather-light),
+    inset 0 0 0 6px var(--book-leather-dark),
+    6px 6px 0 rgba(8, 5, 2, 0.75);
+}
+
+.book-cover::before,
+.book-cover::after {
+  content: '';
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  background: var(--px-gold);
+  clip-path: polygon(0 0, 100% 0, 100% 4px, 4px 4px, 4px 100%, 0 100%);
+  pointer-events: none;
+}
+
+.book-cover::before {
+  top: 2px;
+  left: 2px;
+}
+
+.book-cover::after {
+  right: 2px;
+  bottom: 2px;
+  transform: rotate(180deg);
+}
+
+.book-spread {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  height: 100%;
+  animation: book-spread-in 240ms steps(4) both;
+}
+
+.book-compendium {
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: 1fr 1fr;
+  height: 100%;
+  min-height: 0;
+}
+
+/* The gutter: a dark stepped crease between the pages. */
+.book-spine {
+  position: absolute;
+  top: 14px;
+  bottom: 20px;
+  left: 50%;
+  width: 16px;
+  transform: translateX(-50%);
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    rgba(42, 31, 20, 0) 0 2px,
+    rgba(42, 31, 20, 0.16) 2px 4px,
+    rgba(42, 31, 20, 0.32) 4px 6px,
+    rgba(42, 31, 20, 0.58) 6px 10px,
+    rgba(42, 31, 20, 0.32) 10px 12px,
+    rgba(42, 31, 20, 0.16) 12px 14px,
+    rgba(42, 31, 20, 0) 14px 16px
+  );
+}
+
+.book-page {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  color: var(--book-ink);
+  font-size: 16px;
+  line-height: 1.45;
+}
+
+/* Each page darkens in hard steps toward the gutter; stacked page edges show
+   as stripes on the outer side and along the bottom. */
+.book-page-left {
+  background: linear-gradient(
+    90deg,
+    var(--book-paper) 0 91%,
+    var(--book-paper-shade) 91% 96.5%,
+    var(--book-paper-deep) 96.5% 100%
+  );
+  box-shadow:
+    -2px 2px 0 var(--book-edge),
+    -4px 4px 0 var(--book-paper-shade),
+    -6px 6px 0 var(--book-edge);
+}
+
+.book-page-right {
+  background: linear-gradient(
+    270deg,
+    var(--book-paper) 0 91%,
+    var(--book-paper-shade) 91% 96.5%,
+    var(--book-paper-deep) 96.5% 100%
+  );
+  box-shadow:
+    2px 2px 0 var(--book-edge),
+    4px 4px 0 var(--book-paper-shade),
+    6px 6px 0 var(--book-edge);
+}
+
+.book-page-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-height: 0;
+  overflow: auto;
+  padding: 28px 36px 8px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--book-edge) transparent;
+}
+
+.book-page-left .book-page-body {
+  padding-right: 44px;
+}
+
+.book-page-right .book-page-body {
+  padding-left: 44px;
+}
+
+.book-folio {
+  margin: 0;
+  padding: 6px 36px 12px;
+  color: var(--book-ink-soft);
+  font-size: 12px;
+  text-align: center;
+}
+
+.book-title {
+  text-align: center;
+}
+
+.book-title .eyebrow {
+  margin: 0 0 4px;
+  color: var(--book-accent);
+  font-size: 13px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.book-title h1 {
+  margin: 0;
+  color: var(--book-ink);
+  font-size: clamp(48px, 7vw, 84px);
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 4px;
+  text-shadow: 3px 3px 0 var(--book-paper-deep);
+  white-space: nowrap;
+}
+
+.book-plate {
+  align-self: center;
+  width: min(100%, 320px);
+  height: auto;
+  border: 2px solid var(--book-ink);
+  box-shadow: 4px 4px 0 var(--book-paper-deep);
+  image-rendering: pixelated;
+}
+
+.book-heading {
+  margin: 0;
+  padding-bottom: 6px;
+  border-bottom: 2px dashed var(--book-edge);
+  color: var(--book-ink);
+  font-size: 26px;
+  font-weight: 600;
+  line-height: 1.1;
+}
+
+.book-text,
+.book-colophon {
+  margin: 0;
+  color: var(--book-ink-soft);
+}
+
+.book-epigraph {
+  margin: auto 0 0;
+  color: var(--book-accent);
+  font-size: 14px;
+  font-style: italic;
+  text-align: center;
+}
+
+.book-colophon {
+  margin: auto 0;
+  font-size: 14px;
+  text-align: center;
+}
+
+/* Entries on a page: ink on parchment with the ▶ cursor in red. */
+.book-page .menu-list {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.book-page .menu-entry {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 40px;
+  padding: 6px 12px 6px 30px;
+  border: 0;
+  clip-path: none;
+  box-shadow: none;
+  background: transparent;
+  color: var(--book-ink-soft);
+  font-size: 18px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.book-page .menu-entry.primary {
+  color: var(--book-ink);
+  font-weight: 600;
+}
+
+.book-page .menu-entry:hover,
+.book-page .menu-entry:focus-visible,
+.book-page .menu-entry:focus-within {
+  background: rgba(142, 58, 44, 0.12);
+  color: var(--book-accent);
+  outline: none;
+}
+
+.book-page .menu-entry:hover::before,
+.book-page .menu-entry:focus-visible::before,
+.book-page .menu-entry:focus-within::before {
+  content: '▶';
+  position: absolute;
+  left: 10px;
+  color: var(--book-accent);
+  font-size: 12px;
+}
+
+.book-page .menu-language select {
+  margin-left: auto;
+  padding: 2px 6px;
+  border: 2px solid var(--book-ink-soft);
+  background: var(--book-paper);
+  color: var(--book-ink);
+  font-size: 14px;
+}
+
+/* Skirmish: three pips against three. */
+.book-versus {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  margin: auto 0 16px;
+  color: var(--book-ink);
+  font-size: 40px;
+}
+
+.book-pips {
+  display: grid;
+  gap: 8px;
+}
+
+.book-pips i {
+  display: block;
+  width: 28px;
+  height: 28px;
+  box-shadow: inset -4px -4px 0 rgba(8, 5, 2, 0.35);
+}
+
+.book-pips.column i {
+  background: var(--book-accent);
+}
+
+.book-pips.legalist i {
+  background: var(--book-blue);
+}
+
+/* Bookmarks: cloth ribbons tucked under the board, with a swallowtail. */
+.book-marks {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 164px;
+  margin-top: 56px;
+  margin-left: -8px;
+}
+
+.book-mark {
+  --mark-color: var(--book-accent);
+
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  min-height: 38px;
+  padding: 6px 26px 6px 40px;
+  border: 0;
+  background: var(--mark-color);
+  color: var(--px-parchment);
+  font: 600 15px/1 var(--px-font);
+  text-align: left;
+  text-shadow: 1px 1px 0 rgba(8, 5, 2, 0.6);
+  cursor: pointer;
+  box-shadow: inset 0 -4px 0 rgba(8, 5, 2, 0.3), inset 0 2px 0 rgba(255, 236, 196, 0.18);
+  clip-path: polygon(0 0, 100% 0, calc(100% - 12px) 50%, 100% 100%, 0 100%);
+  transform: translateX(-22px);
+  filter: brightness(0.75);
+  transition: transform 120ms steps(3), filter 120ms steps(3);
+}
+
+.book-mark-skirmish {
+  --mark-color: #5f6a32;
+}
+
+.book-mark-compendium {
+  --mark-color: var(--book-blue);
+}
+
+.book-mark-options {
+  --mark-color: #8a6c2f;
+}
+
+.book-mark:hover,
+.book-mark:focus-visible {
+  transform: translateX(-12px);
+  filter: brightness(0.95);
+  outline: none;
+}
+
+.book-mark.active {
+  transform: translateX(0);
+  filter: none;
+}
+
+.book-mark:focus-visible span {
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+}
+
+/* Compendium: section tabs, a dotted index and one entry a page. */
+.book-section-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.book-section-tab {
+  padding: 3px 8px;
+  border: 2px solid var(--book-edge);
+  background: transparent;
+  color: var(--book-ink-soft);
+  font: 500 13px/1.2 var(--px-font);
+  cursor: pointer;
+}
+
+.book-section-tab:hover,
+.book-section-tab:focus-visible {
+  border-color: var(--book-ink-soft);
+  color: var(--book-ink);
+  outline: none;
+}
+
+.book-section-tab.active {
+  border-color: var(--book-blue);
+  background: var(--book-blue);
+  color: var(--px-parchment);
+}
+
+.book-index {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.book-index-entry {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  width: 100%;
+  padding: 3px 4px;
+  border: 0;
+  background: transparent;
+  color: var(--book-ink-soft);
+  font: 400 14px/1.3 var(--px-font);
+  text-align: left;
+  cursor: pointer;
+}
+
+.book-index-entry:hover,
+.book-index-entry:focus-visible {
+  color: var(--book-ink);
+  background: rgba(59, 74, 107, 0.1);
+  outline: none;
+}
+
+.book-index-entry.active {
+  color: var(--book-accent);
+  font-weight: 600;
+}
+
+.book-index-dots {
+  flex: 1;
+  min-width: 12px;
+  border-bottom: 2px dotted var(--book-edge);
+  transform: translateY(-4px);
+}
+
+.book-index-folio {
+  color: var(--book-ink-soft);
+}
+
+.book-turns {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.book-turn {
+  width: 32px;
+  height: 28px;
+  border: 2px solid var(--book-ink-soft);
+  background: var(--book-paper-shade);
+  color: var(--book-ink);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.book-turn:hover:not(:disabled),
+.book-turn:focus-visible {
+  border-color: var(--book-accent);
+  background: var(--book-accent);
+  color: var(--px-parchment);
+  outline: none;
+}
+
+.book-turn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.book-entry.codex-page {
+  overflow: visible;
+  padding: 0;
+  background: transparent;
+  clip-path: none;
+  box-shadow: none;
+}
+
+.book-turn-in-next {
+  transform-origin: left center;
+  animation: book-turn 260ms steps(5) both;
+}
+
+.book-turn-in-prev {
+  transform-origin: right center;
+  animation: book-turn 260ms steps(5) both;
+}
+
+@keyframes book-open {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes book-spread-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes book-turn {
+  from {
+    transform: scaleX(0.15);
+    opacity: 0.2;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+
+@media (max-width: 820px) {
+  .start-screen.menu-screen {
+    place-items: start center;
+    overflow: auto;
+  }
+
+  .menu-book {
+    grid-template-columns: 1fr;
+  }
+
+  .book-marks {
+    order: -1;
+    flex-direction: row;
+    flex-wrap: wrap;
+    margin: 0 0 -6px 8px;
+  }
+
+  .book-marks {
+    width: auto;
+  }
+
+  .book-mark {
+    width: auto;
+    padding: 8px 12px 16px;
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 50% calc(100% - 8px), 0 100%);
+    transform: translateY(8px);
+  }
+
+  .book-mark:hover,
+  .book-mark:focus-visible {
+    transform: translateY(4px);
+  }
+
+  .book-mark.active {
+    transform: none;
+  }
+
+  .book-cover {
+    height: auto;
+    min-height: 0;
+  }
+
+  .book-spread,
+  .book-compendium {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+
+  .book-spine {
+    display: none;
+  }
+
+  .book-page-left,
+  .book-page-right {
+    background: var(--book-paper);
+    box-shadow: 0 2px 0 var(--book-edge);
+  }
+
+  .book-page-body,
+  .book-page-left .book-page-body,
+  .book-page-right .book-page-body {
+    overflow: visible;
+    padding: 20px 18px 6px;
+  }
+
+  .book-title h1 {
+    white-space: normal;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .menu-book,
+  .book-spread,
+  .book-turn-in-next,
+  .book-turn-in-prev {
+    animation: none;
+  }
+
+  .book-mark {
+    transition: none;
+  }
+}
+
+.book-versus + .menu-list {
+  margin-bottom: auto;
+}

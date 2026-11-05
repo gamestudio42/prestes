@@ -17,7 +17,14 @@ test('the compendium opens on a section, reads an entry and follows the language
   await expect(page.getByTestId('codex-page')).toContainText('Prestes não estava no Forte');
 
   // In English the tabs, the entry and its confidence change too.
-  await page.getByRole('button', { name: 'Fechar' }).click();
+  // The page corners turn through the entries, one per page.
+  await page.getByTestId('codex-tab-events').click();
+  await page.getByTestId('book-page-next').click();
+  await expect(page.getByTestId('codex-page')).not.toContainText('Revolta dos 18 do Forte');
+  await page.getByTestId('book-page-prev').click();
+  await expect(page.getByTestId('codex-page')).toContainText('Revolta dos 18 do Forte');
+
+  await page.getByTestId('menu-mark-options').click();
   await page.getByTestId('language-select').selectOption('en');
   await page.getByTestId('start-codex').click();
   await page.getByTestId('codex-tab-events').click();
@@ -25,5 +32,5 @@ test('the compendium opens on a section, reads an entry and follows the language
   await expect(page.getByTestId('codex-tab-events')).toHaveText('Events');
   await expect(page.getByTestId('codex-page')).toContainText('Revolt of the 18 of the Fort');
   await expect(page.getByTestId('codex-confidence')).toContainText('high');
-  await page.getByTestId('language-select').evaluate(() => window.localStorage.setItem('prestes.locale', 'pt-BR'));
+  await page.evaluate(() => window.localStorage.setItem('prestes.locale', 'pt-BR'));
 });

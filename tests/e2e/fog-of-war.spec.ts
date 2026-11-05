@@ -20,6 +20,7 @@ interface Bridge {
 
 async function start3v3(page: Page): Promise<void> {
   await page.goto('/');
+  await page.getByTestId('menu-mark-skirmish').click();
   await page.getByTestId('start-battle-3v3').click();
   await expect(page.getByTestId('hud')).toBeVisible();
   await expect

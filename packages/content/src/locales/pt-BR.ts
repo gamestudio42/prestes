@@ -791,6 +791,20 @@ export const ptBR: Record<MessageKey, string> = {
   'training.station.final.hold.instructor': 'Instrutor: Segure a linha por um minuto e me mantenha a salvo.',
   'training.exercise.failure.cohesion': 'A seção perdeu a coesão.',
   'training.exercise.debrief.stations': 'Estações',
+  'menu.mark.campaign': 'Campanha',
+  'menu.mark.skirmish': 'Escaramuça',
+  'menu.mark.compendium': 'Compêndio',
+  'menu.mark.options': 'Opções',
+  'menu.campaign.heading': 'Jogar campanha',
+  'menu.campaign.text': 'Acompanhe a coluna desde o quartel: o bootcamp ensina ordens, cobertura e fogo antes da marcha começar.',
+  'menu.campaign.epigraph': 'Toda marcha começa com uma única ordem.',
+  'menu.skirmish.heading': 'Jogar escaramuça',
+  'menu.skirmish.text': 'Três seções da Coluna contra três seções legalistas. Fogo apontado, lanços e um comandante inimigo.',
+  'menu.skirmish.epigraph': 'Um combate rápido, sem campanha.',
+  'menu.options.heading': 'Opções',
+  'menu.page': 'p. {page}',
+  'menu.pagePrev': 'Página anterior',
+  'menu.pageNext': 'Próxima página',
 };
 
 

@@ -4,7 +4,9 @@ test('boots, selects a section, gives orders, fights and toggles the post', asyn
   await page.goto('/');
   await expect(page.getByTestId('start-screen')).toBeVisible();
 
+  await page.getByTestId('menu-mark-options').click();
   await page.getByTestId('language-select').selectOption('pt-BR');
+  await page.getByTestId('menu-mark-campaign').click();
   await expect(page.getByTestId('start-button')).toHaveText('Iniciar bootcamp');
 
   await page.reload();
