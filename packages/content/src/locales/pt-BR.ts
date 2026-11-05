@@ -143,6 +143,7 @@ export const ptBR: Record<MessageKey, string> = {
   'sandbox.commandTroop': 'Tropa de comando (3)',
   'sandbox.control': 'Controle e reforços',
   'sandbox.bothSides': 'Controlar os dois lados',
+  'sandbox.fog': 'Névoa de guerra',
   'sandbox.reinforceColumn': 'Adicionar fuzileiro',
   'sandbox.reinforceLegalist': 'Adicionar legalista',
   'sandbox.casualty': 'Ensaio de baixa',

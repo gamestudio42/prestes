@@ -1,12 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import type { SimEvent } from '@prestes/shared';
 import { SimulationEngine } from '../src/engine';
+import { knownEnemies } from '../src/systems/enemy-commander';
 
 // battle-feel-3v3: aimed fire spreads over time, and two or three hits put a
 // soldier out of action.
 
-function battle(seed = 1922) {
-  const engine = new SimulationEngine({ seed, scenario: 'battle3v3', sandbox: true });
+function battle(seed = 1922, fog?: boolean) {
+  const engine = new SimulationEngine({ seed, scenario: 'battle3v3', sandbox: true, fog });
   const events: Array<SimEvent & { at: number }> = [];
   const run = (ticks: number) => {
     for (let index = 0; index < ticks; index += 1) {
@@ -108,12 +109,32 @@ describe('battle feel: the enemy commander', () => {
   it('goes looking with all but one section when the player waits', () => {
     const t = battle();
     t.run(400);
-    const attacking = [11, 12, 13].filter((squad) => sectionOf(t, squad).some((unit) => unit.currentOrder === 'attack'));
-    expect(attacking).toHaveLength(2);
+    // Under fog he sees no one: the two sections advance on the player's side.
+    const going = [11, 12, 13].filter((squad) =>
+      sectionOf(t, squad).some((unit) => unit.currentOrder === 'attack' || unit.currentOrder === 'advance'),
+    );
+    expect(going).toHaveLength(2);
+    expect([...t.engine.battle.plans.values()].filter((plan) => plan === 'attack')).toHaveLength(2);
+  });
+
+  it('counts only the player soldiers he knows of (fog of war)', () => {
+    const t = battle();
+    t.run(20);
+    const fit = (unit: { alive: boolean; incapacitated: boolean; routed: boolean }) => unit.alive && !unit.incapacitated && !unit.routed;
+    // The legalists see sections 1 and 2 (placed 60 m in front of them), not 3.
+    for (const unit of t.engine.units) {
+      if (unit.squadId === 1 || unit.squadId === 2) unit.y = -20;
+    }
+    t.run(4);
+    const known = knownEnemies(t.engine, 'legalist', t.engine.tickCount);
+    expect(known.filter((entry) => entry.unit.squadId === 3)).toHaveLength(0);
+    expect(known.length).toBeGreaterThan(0);
+    expect(known.length).toBeLessThanOrEqual(t.engine.units.filter((unit) => unit.faction === 'column' && fit(unit) && unit.squadId !== 3).length);
   });
 
   it('counterattacks by bounds when it clearly outnumbers the player', () => {
-    const t = battle();
+    // Without fog: the rule itself (under fog he must first see the losses).
+    const t = battle(1922, false);
     t.run(50);
     for (const unit of t.engine.units.filter((entry) => entry.faction === 'column').slice(0, 20)) {
       unit.alive = false;

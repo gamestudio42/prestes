@@ -166,6 +166,8 @@ export function App() {
   // The newest callout wins: the instructor's line or the player's last order.
   const [callout, setCallout] = useState<typeof orderCallout>(null);
   useEffect(() => setCallout(orderCallout), [orderCallout]);
+  // fog-of-war: controlling both sides shows both sides.
+  useEffect(() => clientRef.current?.setFogView(!controlBothSides), [controlBothSides, frame === null]);
 
   useEffect(() => {
     return () => {
@@ -606,6 +608,7 @@ export function App() {
           onAdvance={handleAdvance}
           onReinforce={handleReinforce}
           onToggleControlBothSides={handleToggleControlBothSides}
+          onToggleFog={() => clientRef.current?.sendCommand({ type: 'fog', enabled: frame?.fog !== true })}
           onStartBattle3v3={handleStartBattle3v3}
           onClose={() => {
             setSandboxOpen(false);

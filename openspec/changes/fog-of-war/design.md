@@ -95,3 +95,31 @@ the report adds the time to first sight.
   quiet-field rule still sends the enemy looking, and the feel bands hold it.
 - The "?" error must read as useful, not as noise. The hand check decides,
   and the numbers are constants in one place.
+
+## Apply findings
+
+- **Ghost strength.** Under fog the commander first counted only the player
+  soldiers he knew of. Seeing 7, he judged himself 4 to 1 ahead and threw in
+  every section. A commander does not assume unseen men are absent. He now
+  takes the player's starting strength less the losses he saw fall (never
+  less than the soldiers he knows of). The player's scripted counterattack in
+  the report does the same.
+- **Attack on sight.** A section sent to look for the enemy advances on a
+  point. An advance keeps marching into fire, so the section now switches to
+  Attack as soon as it sees him.
+- **One-section probe, tried and reverted.** Probing blind with one section
+  instead of two made three of five report seeds stall for over 9 minutes:
+  the commander won the attrition, then could not find the last hidden
+  survivors. Searching for them is follow-up work. The two-section attack
+  stays.
+- **The fog lifts at the end.** The end panel read losses from the fogged
+  frame and showed the enemy's unseen casualties as zero. The view now shows
+  everything once the battle has an outcome.
+- **One filter for the whole view.** `FogView` (in `shared`, unit tested)
+  filters each frame inside the client, so the scene, effects, tracers,
+  sound, picking and HUD all get the same fogged frame. The developer bridge
+  reads the raw one.
+- **Balance.** Report on five seeds, the player holding then
+  counterattacking: victory in 4 to 5.5 minutes, losing 2 to 14 of 33 (it was
+  12 to 17 without fog). The fogged enemy attacks blind into a dug-in line,
+  so the defence is easier. The hand check decides whether that needs tuning.

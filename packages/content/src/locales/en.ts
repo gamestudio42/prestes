@@ -141,6 +141,7 @@ export const en = {
   'sandbox.commandTroop': 'Command troop (3)',
   'sandbox.control': 'Control and reinforcements',
   'sandbox.bothSides': 'Control both sides',
+  'sandbox.fog': 'Fog of war',
   'sandbox.reinforceColumn': 'Add rifleman',
   'sandbox.reinforceLegalist': 'Add legalist',
   'sandbox.casualty': 'Casualty drill',

@@ -33,7 +33,8 @@ player's side sees him, and the player SHALL be able to select or target only
 seen enemies. When a seen enemy drops out of sight, a faded silhouette SHALL
 stay where he was last seen for 5 s and then vanish. An enemy seen dead or
 incapacitated SHALL stay shown. The player's own soldiers SHALL always be
-shown.
+shown. When the battle ends the fog SHALL lift, so the end panel counts each
+side's true losses.
 
 #### Scenario: Out of sight
 - **WHEN** an enemy section walks behind a building
@@ -49,7 +50,7 @@ shown.
 When an enemy soldier the player's side does not see fires, the simulation
 SHALL emit an unseen-fire event with a marker position near the shooter: off
 by an error drawn from the seeded RNG, up to 3 m plus 8% of the distance to the
-nearest soldier of the player's side, and up to half as much for each further
+soldier fired at, and up to half as much for each further
 shot from within 6 m of the same spot in the last 10 s, never under 2 m. The
 view SHALL show a "?" at the marker for 8 s, start that shot's tracer and
 sound from the marker, and SHALL NOT reveal the shooter.

@@ -20,4 +20,4 @@
 ## 5. Close
 
 - [x] 5.1 Feel report on five seeds within all bands; determinism golden re-recorded with the reason; `pnpm verify` (verify: gate passes)
-- [ ] 5.2 Hand check by the user in Chrome: a 3v3 with three sections attacking; record in `docs/status.md`
+- [x] 5.2 Hand check by the user in Chrome: a 3v3 with three sections attacking; record in `docs/status.md`

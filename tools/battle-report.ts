@@ -6,6 +6,7 @@ import { SimulationEngine } from '../packages/simulation/src/engine';
  * Battle feel report (battle-feel-3v3): runs the 3v3 headless with the
  * player holding his line and counterattacking once he outnumbers the enemy
  * (the game loop the playtests found), and measures how the fight plays.
+ * Under fog of war the player knows only what his side sees.
  */
 
 export interface BattleReport {
@@ -24,6 +25,8 @@ export interface BattleReport {
   firstShot: number;
   /** Largest share of a side's fit soldiers with a mate within 1 m. */
   bunching: number;
+  /** Seconds until the player's side first sees an enemy (fog-of-war). */
+  firstSight: number;
 }
 
 const ORDER_EVERY = 50;
@@ -42,14 +45,30 @@ function centroid(units: readonly UnitSnapshot[]): { x: number; y: number } {
 /** The player counterattacks once he has this many fit soldiers per enemy. */
 const COUNTER_AT = 1.25;
 
+/** The enemy's line, where the player looks for him when he sees no one (a map fact). */
+const ENEMY_LINE = { x: 0, y: -78 };
+
+interface ScriptState {
+  countering: boolean;
+  /** Enemy soldiers the player saw fall (fog-of-war: his only count of the enemy's losses). */
+  seenDown: Set<number>;
+}
+
 /**
  * The player's script, the 3v3's game loop: hold the section's own line,
- * break the enemy's attack, then counterattack with every section, each on
- * the enemy nearest to it, once the player clearly outnumbers him.
+ * break the enemy's attack, then counterattack once he clearly outnumbers the
+ * enemy. Under fog of war he knows only what his side sees: he estimates the
+ * enemy as 33 less the casualties he saw, attacks the nearest enemy he sees,
+ * and with no one in sight advances on the enemy's line.
  */
-function orderPlayer(engine: SimulationEngine, frame: Frame, state: { countering: boolean }): void {
+function orderPlayer(engine: SimulationEngine, frame: Frame, state: ScriptState): void {
   const own = frame.units.filter((unit) => unit.faction === 'column' && fit(unit));
-  const enemies = frame.units.filter((unit) => unit.faction === 'legalist' && fit(unit));
+  const seen = new Set(frame.fog && frame.seen ? frame.seen.column : frame.units.map((unit) => unit.id));
+  for (const unit of frame.units) {
+    if (unit.faction === 'legalist' && seen.has(unit.id) && !fit(unit)) state.seenDown.add(unit.id);
+  }
+  const enemies = frame.units.filter((unit) => unit.faction === 'legalist' && fit(unit) && seen.has(unit.id));
+  const estimate = frame.units.filter((unit) => unit.faction === 'legalist').length - state.seenDown.size;
   if (frame.tick === 0) {
     for (const [squad, x] of [[1, -44], [2, 0], [3, 44]] as const) {
       const ids = own.filter((unit) => unit.squadId === squad).map((unit) => unit.id);
@@ -57,21 +76,27 @@ function orderPlayer(engine: SimulationEngine, frame: Frame, state: { countering
     }
     return;
   }
-  if (!state.countering && own.length >= enemies.length * COUNTER_AT) state.countering = true;
-  if (!state.countering || enemies.length === 0) return;
+  if (!state.countering && own.length >= estimate * COUNTER_AT) state.countering = true;
+  if (!state.countering) return;
   for (const squad of new Set(own.map((unit) => unit.squadId))) {
     const section = own.filter((unit) => unit.squadId === squad);
-    const engaged = section.some((unit) => {
+    const busy = section.some((unit) => {
+      if (unit.order === 'advance' && unit.gait !== undefined) return true;
       if (unit.order !== 'attack' || unit.targetId === null) return false;
       const target = frame.units.find((entry) => entry.id === unit.targetId);
       return target !== undefined && fit(target);
     });
-    if (engaged) continue;
+    if (busy) continue;
+    const ids = section.map((unit) => unit.id);
+    if (enemies.length === 0) {
+      engine.enqueue({ type: 'order', order: 'advance', unitIds: ids, to: ENEMY_LINE });
+      continue;
+    }
     const centre = centroid(section);
     const nearest = enemies.reduce((best, unit) =>
       (unit.x - centre.x) ** 2 + (unit.y - centre.y) ** 2 < (best.x - centre.x) ** 2 + (best.y - centre.y) ** 2 ? unit : best,
     );
-    engine.enqueue({ type: 'attack', unitIds: section.map((unit) => unit.id), targetId: nearest.id });
+    engine.enqueue({ type: 'attack', unitIds: ids, targetId: nearest.id });
   }
 }
 
@@ -91,7 +116,8 @@ export async function battleReport(seed = 1922, maxSeconds = 900): Promise<Battl
   let silenceStart = 0;
   let longestSilence = 0;
   let outcome: BattleReport['outcome'] = 'none';
-  const script = { countering: false };
+  const script: ScriptState = { countering: false, seenDown: new Set() };
+  let firstSight = -1;
   const maxTicks = maxSeconds * 10;
   for (let tick = 0; tick < maxTicks && outcome === 'none'; tick += 1) {
     if (tick % YIELD_EVERY === 0) await new Promise<void>((resolve) => setImmediate(resolve));
@@ -109,6 +135,7 @@ export async function battleReport(seed = 1922, maxSeconds = 900): Promise<Battl
       if (event.type === 'outcome' && event.outcome !== 'playing') outcome = event.outcome;
     }
     shots += tickShots;
+    if (firstSight < 0 && (frame.seen?.column.length ?? 0) > 0) firstSight = frame.tick;
     if (frame.tick % 10 === 0) bunching = Math.max(bunching, bunchedShare(frame, 'column'), bunchedShare(frame, 'legalist'));
     maxShotsPerTick = Math.max(maxShotsPerTick, tickShots);
     if (tickShots > 0) {
@@ -130,6 +157,7 @@ export async function battleReport(seed = 1922, maxSeconds = 900): Promise<Battl
     longestSilence: longestSilence / 10,
     firstShot: firstShot < 0 ? -1 : firstShot / 10,
     bunching: Number(bunching.toFixed(2)),
+    firstSight: firstSight < 0 ? -1 : firstSight / 10,
   };
 }
 

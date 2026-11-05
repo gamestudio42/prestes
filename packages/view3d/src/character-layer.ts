@@ -182,6 +182,8 @@ export class CharacterLayer {
   private readonly proxyHead: THREE.InstancedMesh;
   private readonly proxyRing: THREE.InstancedMesh;
   private readonly proxyCorpse: THREE.InstancedMesh;
+  /** fog-of-war: faded silhouettes where enemies were last seen. */
+  private readonly ghosts: THREE.InstancedMesh;
   private readonly proxyMatrix = new THREE.Matrix4();
   private readonly proxyQuaternion = new THREE.Quaternion();
   private readonly proxyPosition = new THREE.Vector3();
@@ -219,7 +221,12 @@ export class CharacterLayer {
       toon({ color: 0xffffff }),
       256,
     );
-    for (const mesh of [this.proxyBody, this.proxyHead, this.proxyRing, this.proxyCorpse]) {
+    this.ghosts = new THREE.InstancedMesh(
+      bodyGeometry,
+      new THREE.MeshBasicMaterial({ color: PALETTE.factions.legalist, transparent: true, opacity: 0.35, depthWrite: false }),
+      128,
+    );
+    for (const mesh of [this.proxyBody, this.proxyHead, this.proxyRing, this.proxyCorpse, this.ghosts]) {
       mesh.count = 0;
       mesh.frustumCulled = false;
       this.group.add(mesh);
@@ -464,6 +471,22 @@ export class CharacterLayer {
         this.views.delete(id);
       }
     }
+  }
+
+  /** fog-of-war: the faded silhouettes of enemies last seen there. */
+  updateGhosts(ghosts: readonly { x: number; y: number; facingX: number; facingY: number }[], span: number): void {
+    const scale = unitScaleForSpan(span) * 1.25;
+    let index = 0;
+    for (const ghost of ghosts.slice(0, 128)) {
+      this.proxyQuaternion.setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.atan2(-ghost.facingX, -ghost.facingY));
+      this.proxyPosition.set(ghost.x, terrainHeightAt(ghost.x, ghost.y) + 0.72, ghost.y);
+      this.proxyScale.set(scale, scale, scale);
+      this.proxyMatrix.compose(this.proxyPosition, this.proxyQuaternion, this.proxyScale);
+      this.ghosts.setMatrixAt(index, this.proxyMatrix);
+      index += 1;
+    }
+    this.ghosts.count = index;
+    this.ghosts.instanceMatrix.needsUpdate = true;
   }
 
   dispose(): void {

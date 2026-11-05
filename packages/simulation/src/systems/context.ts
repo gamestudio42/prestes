@@ -9,6 +9,7 @@ import type {
 import type { OrderManager } from '../order-manager';
 import type { ActiveOrder, BoundingGroup, MutableUnit } from './model';
 import type { BattleMemory } from './enemy-commander';
+import type { VisionState } from './vision';
 
 /**
  * The mutable simulation state every system reads and writes. The engine
@@ -42,4 +43,8 @@ export interface SimContext {
   readonly bounding: Map<number, BoundingGroup>;
   /** The 3v3 battle's commander plans and each section's last contact. */
   readonly battle: BattleMemory;
+  /** fog-of-war: whether the player is shown only what his side sees. */
+  fog: boolean;
+  /** fog-of-war: what each side sees and last saw of the other. */
+  readonly vision: VisionState;
 }

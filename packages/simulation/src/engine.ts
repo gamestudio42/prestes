@@ -68,6 +68,7 @@ import {
 } from './systems/orders';
 import { applyCommand } from './systems/commands';
 import { createBattleMemory, updateBattleFlow } from './systems/enemy-commander';
+import { createVisionState, seenSnapshot, updateVision } from './systems/vision';
 import { applyRoster } from './systems/spawning';
 import { reactToFire, screenOfficers } from './systems/fire-reaction';
 import { handoverSuppress } from './systems/orders';
@@ -75,6 +76,8 @@ import { handoverSuppress } from './systems/orders';
 export interface SimulationOptions {
   seed: number;
   scenario?: 'bootcamp' | 'battle3v3';
+  /** fog-of-war: on by default in the 3v3, off elsewhere. */
+  fog?: boolean;
   combatRange?: number;
   sandbox?: boolean;
   training?: boolean;
@@ -115,6 +118,8 @@ export class SimulationEngine implements SimContext {
   readonly orderManager = new OrderManager();
   readonly bounding = new Map<number, BoundingGroup>();
   readonly battle = createBattleMemory();
+  readonly vision = createVisionState();
+  fog: boolean;
 
   constructor(options: SimulationOptions) {
     this.rng = new RNG(options.seed);
@@ -122,6 +127,7 @@ export class SimulationEngine implements SimContext {
     this.training = options.training === true;
     this.opposition = options.opposition !== false;
     this.scenario = options.scenario ?? 'bootcamp';
+    this.fog = options.fog ?? this.scenario === 'battle3v3';
     this.combatRange =
       options.combatRange ??
       (this.training || this.scenario === 'battle3v3' ? WEAPONS[DEFAULT_WEAPON_ID].range : 26);
@@ -297,6 +303,8 @@ export class SimulationEngine implements SimContext {
       }
 
       separateUnits(this);
+      // Vision before targets and fire: a side shoots with what it knows.
+      updateVision(this, nextTick);
 
       handoverSuppress(this);
       acquireTargets(this);
@@ -372,6 +380,8 @@ export class SimulationEngine implements SimContext {
       events: this.lastEvents.slice(),
       covers: this.covers.map((cover) => ({ ...cover })),
       sightObstacles: this.sightObstacles,
+      seen: seenSnapshot(this),
+      fog: this.fog,
       outcome: this.outcome,
       hash: this.hashState(),
     };

@@ -185,3 +185,5 @@ export {
   WINDED_RECOVER,
 } from './gait';
 export type { Gait } from './gait';
+export { FogView, GHOST_TICKS, MARKER_SHOW_TICKS } from './fog-view';
+export type { FogExtras, FogGhost, FogMarker } from './fog-view';

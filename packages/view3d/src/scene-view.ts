@@ -12,12 +12,14 @@ import {
   type PreviewPlan,
   type SlotMarker,
   type UnitSnapshot,
+  type FogExtras,
   troopFormationOffsets,
 } from '@prestes/shared';
 import { CameraRig, type CameraBand } from './camera-rig';
 import { CharacterLayer } from './character-layer';
 import { CoverLayer } from './cover-layer';
 import { EffectsLayer } from './effects-layer';
+import { MarkerLayer } from './marker-layer';
 import { loadEnvironmentAsset } from './environment-models';
 import { toon } from './materials';
 import { PALETTE } from './palette';
@@ -82,6 +84,7 @@ export class SceneView {
   private readonly paths = new PathLayer();
   private readonly tracers = new TracerLayer();
   private readonly effects = new EffectsLayer();
+  private readonly markers = new MarkerLayer();
   private readonly preview = new PreviewLayer();
   private readonly training = new TrainingLayer();
   private readonly world: WorldLayer;
@@ -156,6 +159,7 @@ export class SceneView {
       this.paths.group,
       this.tracers.group,
       this.effects.group,
+      this.markers.group,
       this.preview.group,
       this.placementRoot,
       this.targetRoot,
@@ -298,9 +302,14 @@ export class SceneView {
     return this.characters.clipState(unitId);
   }
 
+  /** fog-of-war: the units the view is drawing, by id (dev checks). */
+  shownUnitIds(): number[] {
+    return this.lastFrame?.units.map((unit) => unit.id) ?? [];
+  }
+
   /** Live effect particles and whether the sheet is loaded (dev checks). */
-  effectsState(): { count: number; ready: boolean; tracers: number } {
-    return { count: this.effects.count, ready: this.effects.ready, tracers: this.tracers.count };
+  effectsState(): { count: number; ready: boolean; tracers: number; markers: number } {
+    return { count: this.effects.count, ready: this.effects.ready, tracers: this.tracers.count, markers: this.markers.count };
   }
 
   /** The ground point the camera looks at and the metres across the view. */
@@ -453,6 +462,10 @@ export class SceneView {
     this.lastFrame = frame;
     this.covers.update(frame.covers);
     this.characters.update(frame, this.rig.span);
+    // fog-of-war: the fogged frame carries the ghosts and the "?" markers.
+    const fogged = frame as (Frame | InterpolatedFrame) & FogExtras;
+    this.characters.updateGhosts(fogged.ghosts ?? [], this.rig.span);
+    this.markers.update(fogged.markers ?? [], frame.tick, this.rig.span);
     this.paths.update(selectedOrders(frame.orders, this.selectedUnits), this.rig.span);
     if (frame.tick !== this.lastEventTick) {
       this.lastEventTick = frame.tick;
@@ -577,6 +590,7 @@ export class SceneView {
     this.paths.dispose();
     this.tracers.dispose();
     this.effects.dispose();
+    this.markers.dispose();
     this.preview.dispose();
     this.post.dispose();
     disposeObject(this.scene);

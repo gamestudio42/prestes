@@ -236,6 +236,8 @@ export type Command =
   | { type: 'posture'; unitIds: number[]; posture: Posture }
   | { type: 'face'; unitIds: number[]; to: Vec2 }
   | { type: 'set_bounding'; enabled: boolean }
+  /** Sandbox: fog of war on or off (fog-of-war). */
+  | { type: 'fog'; enabled: boolean }
   | { type: 'noop' };
 
 export interface CommandEnvelope {
@@ -266,7 +268,12 @@ export type SimEvent =
   | { type: 'unit_recovered'; tick: number; unitId: number }
   | { type: 'recon_report'; tick: number; unitId: number; enemyIds: number[] }
   | { type: 'order_interrupted'; tick: number; unitId: number; order: UnitOrder }
-  | { type: 'outcome'; tick: number; outcome: Outcome };
+  | { type: 'outcome'; tick: number; outcome: Outcome }
+  /**
+   * fog-of-war: a shot by a soldier the target's side does not see. The marker
+   * lies near the shooter, off by up to `radius` metres; it never names him.
+   */
+  | { type: 'unseen_fire'; tick: number; side: Faction; target: number; x: number; y: number; radius: number };
 
 export interface Frame {
   tick: number;
@@ -277,6 +284,12 @@ export interface Frame {
   events: readonly SimEvent[];
   outcome: Outcome;
   hash: string;
+  /**
+   * fog-of-war: the enemy soldiers each side sees (sorted ids), and whether
+   * fog of war is on for this battle.
+   */
+  seen?: { readonly column: readonly number[]; readonly legalist: readonly number[] };
+  fog?: boolean;
 }
 
 export type WorkerRequest =

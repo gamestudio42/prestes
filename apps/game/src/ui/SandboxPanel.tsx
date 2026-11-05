@@ -1,4 +1,4 @@
-import { Crate as Box, Crosshair, Restart as RotateCcw, Step as StepForward, Troop as Users, Lab as FlaskConical, Close as X } from './icons';
+import { Eye, EyeOff, Crate as Box, Crosshair, Restart as RotateCcw, Step as StepForward, Troop as Users, Lab as FlaskConical, Close as X } from './icons';
 import { terrainHeightAt, terrainSpeedFactor, type Frame } from '@prestes/shared';
 import { translate, type Locale, type MessageKey } from '@prestes/content';
 
@@ -24,6 +24,8 @@ export interface SandboxPanelProps {
   onReset: () => void;
   onStep: () => void;
   onToggleControlBothSides: () => void;
+  /** fog-of-war: the sandbox's fog toggle. */
+  onToggleFog: () => void;
   onStartBattle3v3: () => void;
   onTool: (tool: SandboxTool | null) => void;
 }
@@ -42,6 +44,7 @@ export function SandboxPanel({
   onReset,
   onStep,
   onToggleControlBothSides,
+  onToggleFog,
   onStartBattle3v3,
   onTool,
 }: SandboxPanelProps) {
@@ -220,6 +223,17 @@ export function SandboxPanel({
         >
           <Users aria-hidden="true" size={15} />
           {t('sandbox.bothSides')}
+        </button>
+        <button
+          type="button"
+          className={`secondary ${frame?.fog ? 'active' : ''}`}
+          onClick={onToggleFog}
+          aria-pressed={frame?.fog === true}
+          disabled={controlBothSides}
+          data-testid="sandbox-fog"
+        >
+          {frame?.fog ? <EyeOff aria-hidden="true" size={15} /> : <Eye aria-hidden="true" size={15} />}
+          {t('sandbox.fog')}
         </button>
         <div className="sandbox-tool-grid">
           <button

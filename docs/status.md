@@ -421,6 +421,36 @@ from 90 to 100 KB. Determinism golden `f8378a18` ->
    system raised the three chunk to 591 KB, so its budget went from 560 to
    610 KB (2026-11-04).
 
+## Fog of war (`fog-of-war`, 2026-11-05)
+
+Asked by the user after the 3v3: only what your soldiers see appears, and an
+unseen enemy's shot leaves a "?" near where it came from.
+
+- Vision in the simulation, per side, every 0.2 s. An enemy is seen within
+  120 m inside a soldier's 65-degree cone, or within 15 m all around, with a
+  clear line of sight. `Frame.seen` carries both sides' sets. The 3v3 tick
+  stays at 1.8 ms.
+- An unseen shot emits `unseen_fire` with a marker off by up to 3 m plus 8%
+  of the distance (about 11 m at 100 m), halved per repeated shot from the
+  same spot in 10 s, never under 2 m. It does not name the shooter.
+- The player's view (`FogView`, inside the client) hides unseen enemies and
+  makes them unpickable. It keeps enemies seen fallen, leaves a faded
+  silhouette for 5 s where one dropped out of sight, and draws a "?" with
+  its uncertainty ring for 8 s. The unseen shot's tracer and sound start at
+  the "?". The fog lifts when the battle ends.
+- The enemy commander knows only what his side saw or heard: soldiers seen
+  in the last 30 s, the "?" of shots, his contacts, and the deployment line.
+  He estimates the player's strength as the starting strength less the
+  losses he saw fall. He attacks only men he sees, otherwise he advances on
+  a known point and attacks on sight.
+- On in the 3v3, off in the bootcamp; a sandbox toggle ("Névoa de guerra"),
+  off when controlling both sides.
+- Report under fog (player also fogged): victory in 4 to 5.5 minutes,
+  losing 2 to 14 of 33 (12 to 17 without fog), first sight at 60 s, no
+  bunching, at most 4 shots on one tick.
+
+Determinism golden `17b3b200` -> `5b81a45d` (vision and marker draws).
+
 ## Movement polish (`movement-polish`, 2026-11-05)
 
 From the user's 3v3 hand check: the enemy bunched up, a rush sometimes went
@@ -446,7 +476,8 @@ sideways, and the preview weighed on the game before a click.
 - The flaky e2e "toggles passive posture and hold fire" now waits for the
   section to be selected before clicking.
 
-Determinism golden `b849b931` -> `17b3b200` (positions).
+Determinism golden `b849b931` -> `17b3b200` (positions). Hand check by the
+user in Chrome (2026-11-05): all fine.
 
 ## Battle feel (`battle-feel-3v3`, 2026-11-05)
 

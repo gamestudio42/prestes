@@ -8,6 +8,8 @@ export interface InterpolatedFrame {
   events: readonly SimEvent[];
   outcome: Outcome;
   hash: string;
+  seen?: Frame['seen'];
+  fog?: boolean;
 }
 
 /**
@@ -47,6 +49,8 @@ export class ClientMirror {
         outcome: current.outcome,
         hash: current.hash,
         events: current.events,
+        seen: current.seen,
+        fog: current.fog,
         units: current.units.map((unit) => ({ ...unit })),
       };
     }
@@ -59,6 +63,8 @@ export class ClientMirror {
       outcome: current.outcome,
       hash: current.hash,
       events: current.events,
+      seen: current.seen,
+      fog: current.fog,
       units: current.units.map((unit) => {
         const previousUnit = previousById.get(unit.id);
         if (!previousUnit) {

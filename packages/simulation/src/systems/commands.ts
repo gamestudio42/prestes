@@ -84,6 +84,12 @@ export function applyCommand(
     return;
   }
 
+  // fog-of-war: the sandbox's toggle.
+  if (command.type === 'fog') {
+    ctx.fog = command.enabled;
+    return;
+  }
+
   const resolution = ctx.orderManager.resolve(command.unitIds, ctx.units);
   if (resolution.rejection !== null) {
     reject(ctx, tick, envelope.seq, resolution.rejection, events);

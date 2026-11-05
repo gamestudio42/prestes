@@ -1,5 +1,6 @@
 import {
   ClientMirror,
+  FogView,
   type Command,
   type Frame,
   type InterpolatedFrame,
@@ -32,6 +33,8 @@ export interface GameClientOptions {
 export class GameClient {
   private readonly worker: Worker;
   private readonly mirror = new ClientMirror();
+  /** fog-of-war: the player's view of each frame (the bridge reads the raw one). */
+  private readonly fog = new FogView('column');
   private readonly onFrame?: (frame: Frame) => void;
   private readonly onEvent?: (event: SimEvent) => void;
   private readonly seed: number;
@@ -68,10 +71,11 @@ export class GameClient {
         }
         this.frameAt = now;
         this.mirror.apply(message.frame);
-        for (const simEvent of message.frame.events) {
+        const view = this.fog.apply(message.frame);
+        for (const simEvent of view.events) {
           this.onEvent?.(simEvent);
         }
-        this.onFrame?.(message.frame);
+        this.onFrame?.(view);
         return;
       }
       if (message.type === 'error') {
@@ -135,8 +139,14 @@ export class GameClient {
     this.send({ type: 'command', command });
   }
 
+  /** The simulation's latest frame, unfiltered (developer bridge). */
   currentFrame(): Frame | null {
     return this.mirror.current;
+  }
+
+  /** fog-of-war: the player sees only what his side sees, unless turned off (control of both sides). */
+  setFogView(enabled: boolean): void {
+    this.fog.enabled = enabled;
   }
 
   /**
@@ -147,7 +157,8 @@ export class GameClient {
    */
   interpolated(alpha?: number): InterpolatedFrame | null {
     const t = alpha ?? (performance.now() - this.frameAt) / this.frameGap;
-    return this.mirror.interpolate(t);
+    const frame = this.mirror.interpolate(t);
+    return frame ? this.fog.apply(frame) : null;
   }
 
   dispose(): void {

@@ -13,12 +13,18 @@ describe('order preview cost', () => {
   const column = frame.units.filter((unit) => unit.faction === 'column').map((unit) => unit.id);
   const enemy = frame.units.find((unit) => unit.faction === 'legalist')!;
 
+  // The best of five batches: the preview's cost, not the load of whatever
+  // else the test run is doing in parallel (whole battles in other workers).
   const time = (request: PreviewRequest): number => {
     planOrderPreview(request);
-    const runs = 20;
-    const start = performance.now();
-    for (let index = 0; index < runs; index += 1) planOrderPreview({ ...request, to: { x: -10 + index, y: 30 } });
-    return (performance.now() - start) / runs;
+    const runs = 10;
+    let best = Number.POSITIVE_INFINITY;
+    for (let batch = 0; batch < 5; batch += 1) {
+      const start = performance.now();
+      for (let index = 0; index < runs; index += 1) planOrderPreview({ ...request, to: { x: -10 + index, y: 30 } });
+      best = Math.min(best, (performance.now() - start) / runs);
+    }
+    return best;
   };
 
   for (const order of ['attack', 'flank', 'advance', 'defend', 'move'] as const) {

@@ -14,6 +14,7 @@ import type { SimContext } from './context';
 import { nearestEnemy } from './geometry';
 import { woundAccuracyFactor } from './casualties';
 import { markUnderFire, shooterOf } from './fire-reaction';
+import { unseenFireMarker } from './vision';
 
 /**
  * Ambush and fire on contact hold their fire beyond their radius: the shooter
@@ -319,6 +320,8 @@ export function fire(ctx: SimContext, tick: number, events: SimEvent[]): void {
       y2: target.y,
       hit,
     });
+    const marker = unseenFireMarker(ctx, unit, target, tick);
+    if (marker) events.push(marker);
     markUnderFire(ctx, unit, target);
     if (unit.fireOnContact) {
       openFireOnContact(ctx, unit);

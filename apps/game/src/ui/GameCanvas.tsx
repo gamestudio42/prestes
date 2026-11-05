@@ -152,6 +152,11 @@ export function GameCanvas({
         setBand: (band: 'tactical' | 'strategic') => scene.setBand(band),
         effects: () => scene.effectsState(),
         clips: (unitId: number) => scene.clipState(unitId),
+        shown: () => scene.shownUnitIds(),
+        pick: (x: number, y: number) => {
+          const screen = scene.groundToScreen(x, y);
+          return screen ? scene.pickUnit(screen.x, screen.y) : null;
+        },
       };
     }
 
