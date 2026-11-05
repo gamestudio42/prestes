@@ -303,6 +303,11 @@ export class SceneView {
     return { count: this.effects.count, ready: this.effects.ready, tracers: this.tracers.count };
   }
 
+  /** The ground point the camera looks at and the metres across the view. */
+  view(): { x: number; y: number; span: number } {
+    return { x: this.rig.focusX, y: this.rig.focusY, span: this.rig.span };
+  }
+
   /** Centres the camera on a ground point (a new training station). */
   focusOn(x: number, y: number): void {
     this.rig.focusX = x;

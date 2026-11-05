@@ -32,6 +32,29 @@ interface ShotAudioOptions {
 
 const MAX_SEEN = 512;
 
+/** Where the player is looking: shots far from it are heard faintly. */
+export interface AudioListener {
+  x: number;
+  y: number;
+  /** Ground metres across the view. */
+  span: number;
+  /** The player's side: only its rifles' bolts are heard. */
+  faction: string;
+  /** Faction of a unit by id (the shooter's side). */
+  factionOf: (unitId: number) => string | undefined;
+}
+
+/**
+ * Loudness of a shot for the listener: full inside the view, falling off as
+ * the square of distance beyond it, never quite silent (8%).
+ */
+export function shotLoudness(listener: AudioListener | null, x: number, y: number): number {
+  if (!listener) return 1;
+  const reach = listener.span * 0.6;
+  const distance = Math.sqrt((x - listener.x) ** 2 + (y - listener.y) ** 2);
+  return distance <= reach ? 1 : Math.max(0.08, (reach / distance) ** 2);
+}
+
 export class ShotAudio {
   private muted: boolean;
   private volume: number;
@@ -39,6 +62,7 @@ export class ShotAudio {
   private readonly voiceMs: number;
   private readonly seen = new Set<string>();
   private activeVoices = 0;
+  private listener: AudioListener | null = null;
   private ready = false;
   private failed = false;
 
@@ -85,11 +109,22 @@ export class ShotAudio {
     }
     this.activeVoices += 1;
     const rate = shotRate(key);
-    this.output.play(this.volume, rate);
-    this.output.playBolt?.(this.volume * BOLT_LEVEL, BOLT_DELAY, rate);
+    const loudness = shotLoudness(this.listener, event.x, event.y);
+    this.output.play(this.volume * loudness, rate);
+    // Only the player's own rifles are heard working their bolts: the enemy's
+    // would double every shot into noise.
+    const side = this.listener?.factionOf(event.source);
+    if (!this.listener || side === this.listener.faction) {
+      this.output.playBolt?.(this.volume * BOLT_LEVEL * loudness, BOLT_DELAY, rate);
+    }
     globalThis.setTimeout(() => {
       this.activeVoices = Math.max(0, this.activeVoices - 1);
     }, this.voiceMs);
+  }
+
+  /** The view the player hears from (set every frame by the canvas). */
+  setListener(listener: AudioListener | null): void {
+    this.listener = listener;
   }
 
   setMuted(muted: boolean): void {

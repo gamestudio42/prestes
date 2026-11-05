@@ -727,3 +727,18 @@ describe('mechanics: compact orders', () => {
     expect(screened).toBe(true);
   });
 });
+
+describe('mechanics: return fire in training', () => {
+  it('a soldier fired on by a training troop answers it without an order', () => {
+    const t = harness();
+    // Training discipline: no fire at training targets without an order...
+    t.send({ type: 'spawn_troop', faction: 'target', to: { x: 0, y: 26 }, count: 2, holdFire: false, nonLethal: true, role: 'training-enemy' }, 2);
+    const troop = t.frame().units.filter((unit) => unit.role === 'training-enemy').map((unit) => unit.id);
+    expect(troop.length).toBeGreaterThan(0);
+    // ...but once they open fire, the soldiers they shoot at answer them.
+    t.run(400);
+    const answered = t.events.some((event) => event.type === 'shot' && COLUMN.includes(event.source) && troop.includes(event.target));
+    expect(answered).toBe(true);
+  });
+});
+

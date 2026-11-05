@@ -486,6 +486,10 @@ export function mayEngage(unit: MutableUnit, candidate: MutableUnit): boolean {
   if (candidate.role !== 'training-enemy') {
     return true;
   }
+  // Fired upon, a soldier answers whoever shoots him (reaction to fire).
+  if (unit.underFireTicks && unit.lastShooter === candidate.id) {
+    return true;
+  }
   if (
     unit.ambush ||
     unit.fireOnContact ||

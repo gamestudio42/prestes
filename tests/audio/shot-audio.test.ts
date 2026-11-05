@@ -1,6 +1,6 @@
 ﻿import { describe, expect, it } from 'vitest';
 import type { SimEvent } from '@prestes/shared';
-import { BOLT_DELAY, BOLT_LEVEL, ShotAudio, shotRate, type GunshotOutput } from '../../apps/game/src/audio/ShotAudio';
+import { BOLT_DELAY, BOLT_LEVEL, ShotAudio, shotLoudness, shotRate, type GunshotOutput } from '../../apps/game/src/audio/ShotAudio';
 
 class FakeOutput implements GunshotOutput {
   plays = 0;
@@ -105,6 +105,33 @@ describe('ShotAudio', () => {
     const audio = new ShotAudio(output);
     audio.dispose();
     expect(output.disposed).toBe(true);
+  });
+});
+
+describe('ShotAudio listener', () => {
+  const listener = (factions: Record<number, string>) => ({
+    x: 0,
+    y: 0,
+    span: 80,
+    faction: 'column',
+    factionOf: (id: number) => factions[id],
+  });
+
+  it('plays shots in view at full volume and far ones faintly', () => {
+    expect(shotLoudness(listener({}), 10, 10)).toBe(1);
+    expect(shotLoudness(listener({}), 200, 0)).toBeLessThan(0.1);
+    expect(shotLoudness(null, 500, 500)).toBe(1);
+  });
+
+  it('works the bolt only for the player own rifles', async () => {
+    const output = new FakeOutput();
+    const audio = new ShotAudio(output, { maxVoices: 8 });
+    await audio.unlock();
+    audio.setListener(listener({ 1: 'column', 9: 'target' }));
+    audio.handleEvent(shot(1, 1, 9));
+    audio.handleEvent(shot(2, 9, 1));
+    expect(output.plays).toBe(2);
+    expect(output.bolts).toHaveLength(1);
   });
 });
 

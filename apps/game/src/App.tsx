@@ -445,6 +445,7 @@ export function App() {
         client={client}
         postStrong={postStrong}
         routesVisible={routesVisible}
+        onAudioView={(listener) => audioRef.current?.setListener(listener)}
         cameraRequest={cameraRequest}
         commanderBalloon={sessionMode === 'training' ? instructorCallout : null}
         cameraFocus={

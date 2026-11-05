@@ -8,6 +8,7 @@ import { type CommanderBalloon,
 } from '@prestes/view3d';
 import { coverAgainst, dragSpacing, type PreviewPlan, type SlotMarker, type Vec2 } from '@prestes/shared';
 import type { GameClient } from '../client/GameClient';
+import type { AudioListener } from '../audio/ShotAudio';
 
 export type SelectionMode = 'all' | 'troops';
 
@@ -16,6 +17,8 @@ export interface GameCanvasProps {
   postStrong: boolean;
   /** Draw the movement routes of orders. */
   routesVisible?: boolean;
+  /** Called every frame with what the player hears from (shot audio). */
+  onAudioView?: (listener: AudioListener) => void;
   cameraRequest: { band: CameraBand; nonce: number } | null;
   /** The commander's current order, shown in a balloon over the officer. */
   commanderBalloon?: CommanderBalloon | null;
@@ -72,6 +75,7 @@ export function GameCanvas({
   client,
   postStrong,
   routesVisible = true,
+  onAudioView,
   cameraRequest,
   cameraFocus = null,
   commanderBalloon = null,
@@ -156,6 +160,10 @@ export function GameCanvas({
       const frame = client.interpolated(0.5);
       if (frame) {
         scene.update(frame);
+        if (onAudioView) {
+          const units = new Map(frame.units.map((unit) => [unit.id, unit.faction]));
+          onAudioView({ ...scene.view(), faction: 'column', factionOf: (id) => units.get(id) });
+        }
       }
       frameHandle = requestAnimationFrame(loop);
     };
