@@ -2,19 +2,22 @@
 
 ### Requirement: Order catalogue
 
-The order board SHALL offer nine orders grounded in infantry doctrine: Move,
+The order board SHALL offer ten orders grounded in infantry doctrine: Move,
 Advance (always by bounds), Withdraw and Halt for movement; Attack (which
-follows a running target), Suppress and Flank for fire and manoeuvre; Defend
-and Recon for position. Rescue SHALL be reached from a wounded comrade rather
-than the board. Aim, disperse, regroup, reserve, ambush, pursue and
+follows a running target), Suppress, Flank and Aim (turn the front to a
+clicked point, showing each soldier's line of sight) for fire and manoeuvre;
+Defend and Recon for position. Halt SHALL clear every pending order (as Escape
+does), then stop the section and take
+cover. Rescue SHALL be reached from a wounded comrade rather than the board.
+Disperse, regroup, reserve, ambush, pursue and
 protect-officer SHALL be expressed through the facing and spacing drag, fire
 control, posture and automatic behaviour, and the simulation SHALL still
 accept their commands, mapped to the new behaviour.
 
-#### Scenario: Nine orders
+#### Scenario: Ten orders
 - **WHEN** the player opens the order board
 - **THEN** it shows Move, Advance, Withdraw, Halt, Attack, Suppress, Flank,
-  Defend and Recon, each with its availability
+  Aim, Defend and Recon, each with its availability
 
 #### Scenario: All catalogue orders are addressable
 - **WHEN** the player opens the order menu

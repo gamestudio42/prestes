@@ -24,8 +24,6 @@ interface OrderBoardProps {
   stance: Stance;
   formation: FormationKind;
   selectedCount: number;
-  canClear: boolean;
-  onClear: () => void;
   onActivateOrder: (order: string, activation: OrderActivation) => void;
   onPosture: (posture: Posture) => void;
   onFireControl: (mode: FireControl) => void;
@@ -53,7 +51,6 @@ const FIRE_CONTROLS: ReadonlyArray<{
   { mode: 'contact', icon: ContactIcon, label: 'hud.fireContact', tip: 'hud.tip.fireContact', testId: 'fire-contact' },
   { mode: 'hold', icon: HoldFireIcon, label: 'hud.holdFire', tip: 'hud.tip.holdFire', testId: 'hold-fire' },
 ];
-const ClearIcon = ICONS.clear;
 
 const FORMATIONS: ReadonlyArray<{ kind: FormationKind; icon: typeof Crosshair }> = [
   { kind: 'line', icon: ICONS['formation-line'] },
@@ -72,8 +69,6 @@ export function OrderBoard({
   stance,
   formation,
   selectedCount,
-  canClear,
-  onClear,
   onActivateOrder,
   onPosture,
   onFireControl,
@@ -97,7 +92,7 @@ export function OrderBoard({
                 const active =
                   pendingOrder === entry.id ||
                   pendingTactical === entry.id ||
-                  (entry.id === 'hold' && aimPending) ||
+                  (entry.id === 'aim' && aimPending) ||
                   currentOrder === entry.id;
                 return (
                   <Tooltip
@@ -198,21 +193,6 @@ export function OrderBoard({
             </Tooltip>
           ))}
         </section>
-        <Tooltip
-          title={t('hud.clear')}
-          description={canClear ? t('hud.tip.clear') : t('hud.tip.clearUnavailable')}
-        >
-          <button
-            type="button"
-            className="passive-button square-button clear-order"
-            onClick={onClear}
-            disabled={!canClear}
-            aria-label={t('hud.clear')}
-            data-testid="order-clear"
-          >
-            <ClearIcon aria-hidden="true" size={18} />
-          </button>
-        </Tooltip>
         <section className="passive-group formation-group" data-testid="formation-select" data-value={formation}>
           <span className="passive-label">{t('hud.formation')}</span>
           {FORMATIONS.map(({ kind, icon: Icon }) => (

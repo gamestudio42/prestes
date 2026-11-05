@@ -700,13 +700,14 @@ export function useOrders({
       return;
     }
     if (order === 'hold') {
-      // Halt stops the section at once; the next ground click turns its front
-      // that way (the old Face order).
-      handleHold();
+      // Halt clears every pending order (as Escape does), then stops the
+      // section at once and takes cover; turning its front is Aim's job.
       setPendingOrder(null);
       setPendingTactical(null);
-      setPreviewEnabled(true);
-      setAimPending(true);
+      setAimPending(false);
+      setLineDrag(null);
+      setFacingDrag(null);
+      handleHold();
       return;
     }
     if (order === 'aim') {

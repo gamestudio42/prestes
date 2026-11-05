@@ -58,7 +58,6 @@ export interface HudProps {
   battleMode: boolean;
   sandboxOpen: boolean;
   onCancelOrder: () => void;
-  onClearOrder: () => void;
   onLocaleChange: (locale: Locale) => void;
 
   onActivateOrder: (order: string, activation: OrderActivation) => void;
@@ -107,7 +106,6 @@ export function Hud({
   battleMode,
   sandboxOpen,
   onCancelOrder,
-  onClearOrder,
   onLocaleChange,
   onActivateOrder,
   onPosture,
@@ -148,11 +146,6 @@ export function Hud({
   const stance = aliveUnits[0]?.stance ?? squadUnits[0]?.stance ?? 'standing';
   const formation = aliveUnits[0]?.formation ?? 'line';
   const currentOrder = aliveUnits.find((unit) => unit.order !== null)?.order ?? null;
-  const canClear =
-    pendingOrder !== null ||
-    pendingTactical !== null ||
-    aimPending ||
-    (currentOrder !== null && currentOrder !== 'hold');
 
   return (
     <>
@@ -248,8 +241,6 @@ export function Hud({
               stance={stance}
               formation={formation}
               selectedCount={selectedCount}
-              canClear={canClear}
-              onClear={onClearOrder}
               onActivateOrder={onActivateOrder}
               onPosture={onPosture}
               onFireControl={onFireControl}

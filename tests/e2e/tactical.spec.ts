@@ -250,7 +250,19 @@ test('splits a UI advance into bounds and clears the order', async ({ page }) =>
       ),
     )
     .toBe(2);
-  await page.getByTestId('order-clear').click();
+  // Halt clears the order and stops the section.
+  await page.getByTestId('order-hold').click();
+  await expect(page.getByTestId('order-value')).toContainText('Halt', { timeout: 5000 });
+});
+
+test('Halt also drops an order still waiting for its click', async ({ page }) => {
+  await page.goto('/');
+  await page.getByTestId('start-button').click();
+  await page.waitForFunction(() => Boolean(window.__prestes?.frame()));
+  await page.getByTestId('order-move').click();
+  await expect(page.getByTestId('order-move')).toHaveAttribute('aria-pressed', 'true');
+  await page.getByTestId('order-hold').click();
+  await expect(page.getByTestId('order-move')).toHaveAttribute('aria-pressed', 'false');
   await expect(page.getByTestId('order-value')).toContainText('Halt', { timeout: 5000 });
 });
 

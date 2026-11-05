@@ -517,7 +517,6 @@ export function App() {
         battleMode={sessionMode === 'battle'}
         sandboxOpen={sandboxOpen}
         onCancelOrder={handleClearOrder}
-        onClearOrder={handleClearOrder}
         onLocaleChange={handleLocaleChange}
         onActivateOrder={handleActivateOrder}
         onPosture={handlePosture}

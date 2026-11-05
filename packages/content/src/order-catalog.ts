@@ -12,7 +12,7 @@ export interface OrderDefinition {
 }
 
 /**
- * The nine orders of the board (compact-orders), grouped by what the section
+ * The ten orders of the board (compact-orders), grouped by what the section
  * does: move, fight, hold ground. Aim, disperse, regroup, reserve, ambush,
  * pursue and protect-officer live on as the facing and spacing drag, fire
  * control, posture and automatic behaviour; rescue starts from the wounded
@@ -26,6 +26,7 @@ export const ORDER_CATALOG: readonly OrderDefinition[] = [
   { id: 'attack', category: 'fire', activation: 'target', labelKey: 'hud.orderAttack', tipKey: 'hud.tip.attack' },
   { id: 'suppress', category: 'fire', activation: 'target', labelKey: 'hud.orderSuppress', tipKey: 'hud.tip.suppress' },
   { id: 'flank', category: 'fire', activation: 'target', labelKey: 'hud.orderFlank', tipKey: 'hud.tip.flank' },
+  { id: 'aim', category: 'fire', activation: 'direction', labelKey: 'hud.orderFace', tipKey: 'hud.tip.face' },
   { id: 'defend', category: 'position', activation: 'area', labelKey: 'hud.orderDefend', tipKey: 'hud.tip.defend' },
   { id: 'recon', category: 'position', activation: 'area', labelKey: 'hud.orderRecon', tipKey: 'hud.tip.recon' },
 ];
