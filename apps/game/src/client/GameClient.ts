@@ -43,6 +43,9 @@ export class GameClient {
   private timer: number | null = null;
   /** Half ticks owed: the interval runs every 100 ms, the speed is per 200 ms. */
   private owed = 0;
+  /** When the latest frame arrived, and the smoothed time between frames (ms). */
+  private frameAt = 0;
+  private frameGap = 100;
   private speed: 0 | 1 | 2 | 4 | 8 = DEFAULT_SPEED;
 
   constructor(options: GameClientOptions) {
@@ -58,6 +61,12 @@ export class GameClient {
     this.worker.onmessage = (event: MessageEvent<WorkerResponse>) => {
       const message = event.data;
       if (message.type === 'ready' || message.type === 'frame') {
+        const now = performance.now();
+        if (this.frameAt > 0) {
+          const gap = Math.min(400, Math.max(30, now - this.frameAt));
+          this.frameGap += (gap - this.frameGap) * 0.2;
+        }
+        this.frameAt = now;
         this.mirror.apply(message.frame);
         for (const simEvent of message.frame.events) {
           this.onEvent?.(simEvent);
@@ -130,8 +139,15 @@ export class GameClient {
     return this.mirror.current;
   }
 
-  interpolated(alpha: number): InterpolatedFrame | null {
-    return this.mirror.interpolate(alpha);
+  /**
+   * The units between the last two frames. Without `alpha`, by the time since
+   * the latest frame arrived over the usual gap between frames, so soldiers
+   * glide at an even pace between the 10 frames a second (5 at 0.5x) instead
+   * of stepping on each one; the view draws one frame behind the simulation.
+   */
+  interpolated(alpha?: number): InterpolatedFrame | null {
+    const t = alpha ?? (performance.now() - this.frameAt) / this.frameGap;
+    return this.mirror.interpolate(t);
   }
 
   dispose(): void {

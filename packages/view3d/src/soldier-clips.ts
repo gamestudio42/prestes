@@ -102,7 +102,9 @@ export function soldierClip(unit: ClipUnit, state: ClipState): SoldierClip {
     return aiming ? 'aim-crouch' : 'crouch-idle';
   }
   const ready = state.ready ?? atTheReady(unit);
-  if (state.moving && ((state.speed ?? 0) > RUN_SPEED || (state.gait === 'run' && (state.speed ?? 0) > 1.6))) {
+  // Only the simulation's run gait runs: a hitch in the frame positions can
+  // spike the measured speed, and the legs must not answer it.
+  if (state.moving && state.gait === 'run') {
     return 'run';
   }
   if (state.moving) return ready ? 'walk-ready' : 'walk';
@@ -117,9 +119,6 @@ export function soldierOutfit(unit: Pick<UnitSnapshot, 'kind' | 'faction'>): Sol
   return unit.faction === 'column' ? 'column' : 'legalist';
 }
 
-/** Above this ground speed (m/s) a standing soldier plays the run clip. */
-export const RUN_SPEED = 2.2;
-
 /**
  * A halted soldier starts walking above START_SPEED and a walking one stops
  * below STOP_SPEED (m/s): the gap keeps a nudge from his mates, or a soldier
@@ -128,12 +127,40 @@ export const RUN_SPEED = 2.2;
 export const START_SPEED = 0.35;
 export const STOP_SPEED = 0.12;
 
-export function isMoving(speed: number, wasMoving: boolean): boolean {
-  return speed > (wasMoving ? STOP_SPEED : START_SPEED);
+/** A walking soldier counts as halted only after this long below STOP_SPEED (ms). */
+export const STOP_DELAY_MS = 300;
+
+/**
+ * Walking or halted, with hysteresis on speed and a short delay before a
+ * halt: a late frame from the simulation freezes the drawn position for a
+ * moment, and the legs must not stop for it. `stillSince` is when the speed
+ * last fell below STOP_SPEED (null while above it); returns it updated.
+ */
+export function isMoving(
+  speed: number,
+  wasMoving: boolean,
+  now = 0,
+  stillSince: number | null = null,
+): { moving: boolean; stillSince: number | null } {
+  if (!wasMoving) return { moving: speed > START_SPEED, stillSince: null };
+  if (speed > STOP_SPEED) return { moving: true, stillSince: null };
+  const since = stillSince ?? now;
+  return { moving: now - since < STOP_DELAY_MS, stillSince: since };
 }
 
 /** Once at the ready, a soldier keeps the rifle up this long (ms). */
 export const READY_HOLD_MS = 3000;
+
+/**
+ * Until when the rifle stays at the ready. Anything that calls for it (a
+ * contact order, a target, recent fire, suppression) holds it READY_HOLD_MS;
+ * once up during a march it stays up until he halts, so a walking soldier
+ * never swaps between the ready and the shoulder at every flicker of fire.
+ */
+export function holdReady(readyUntil: number, now: number, wantsReady: boolean, moving: boolean): number {
+  if (wantsReady || (moving && now < readyUntil)) return now + READY_HOLD_MS;
+  return readyUntil;
+}
 
 /** A clip plays at least this long (ms) before an ordinary change. */
 export const MIN_CLIP_MS = 600;

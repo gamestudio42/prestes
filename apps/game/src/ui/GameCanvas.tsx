@@ -157,7 +157,7 @@ export function GameCanvas({
 
     let frameHandle = 0;
     const loop = (): void => {
-      const frame = client.interpolated(0.5);
+      const frame = client.interpolated();
       if (frame) {
         scene.update(frame);
         if (onAudioView) {

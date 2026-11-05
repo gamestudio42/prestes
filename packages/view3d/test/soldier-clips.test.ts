@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
   CLIP_SPEED,
+  holdReady,
   isMoving,
+  STOP_DELAY_MS,
+  READY_HOLD_MS,
   MIN_CLIP_MS,
   soldierClip,
   soldierOutfit,
@@ -89,19 +92,16 @@ describe('walkTimeScale', () => {
 describe('gaits in the view (order-tempo-and-facing)', () => {
   const rifleman = { alive: true, incapacitated: false, routed: false, stance: 'standing' as const, targetId: null };
 
-  it('runs above the run speed, walks below it', () => {
-    expect(soldierClip(rifleman, { moving: true, firing: false, speed: 3.4 })).toBe('run');
+  it('runs on the run gait only, never on a speed spike', () => {
+    expect(soldierClip(rifleman, { moving: true, firing: false, speed: 3.4, gait: 'run' })).toBe('run');
+    expect(soldierClip(rifleman, { moving: true, firing: false, speed: 0.9, gait: 'run' })).toBe('run');
+    expect(soldierClip(rifleman, { moving: true, firing: false, speed: 3.4, gait: 'walk' })).toBe('walk');
     expect(soldierClip(rifleman, { moving: true, firing: false, speed: 1.5 })).toBe('walk');
   });
 
-  it('a run gait runs once he is under way', () => {
-    expect(soldierClip(rifleman, { moving: true, firing: false, speed: 1.8, gait: 'run' })).toBe('run');
-    expect(soldierClip(rifleman, { moving: true, firing: false, speed: 1.0, gait: 'run' })).toBe('walk');
-  });
-
   it('crouched and prone keep their own moving clips', () => {
-    expect(soldierClip({ ...rifleman, stance: 'crouched' }, { moving: true, firing: false, speed: 3 })).toBe('crouch-walk');
-    expect(soldierClip({ ...rifleman, stance: 'prone' }, { moving: true, firing: false, speed: 3 })).toBe('crawl');
+    expect(soldierClip({ ...rifleman, stance: 'crouched' }, { moving: true, firing: false, speed: 3, gait: 'run' })).toBe('crouch-walk');
+    expect(soldierClip({ ...rifleman, stance: 'prone' }, { moving: true, firing: false, speed: 3, gait: 'run' })).toBe('crawl');
   });
 
   it('turns the body at about 270 degrees a second, the short way', () => {
@@ -114,10 +114,18 @@ describe('gaits in the view (order-tempo-and-facing)', () => {
 
 describe('steady clips (no flicker)', () => {
   it('walks only past the start speed and stops only below the stop speed', () => {
-    expect(isMoving(0.25, false)).toBe(false);
-    expect(isMoving(0.4, false)).toBe(true);
-    expect(isMoving(0.25, true)).toBe(true);
-    expect(isMoving(0.1, true)).toBe(false);
+    expect(isMoving(0.25, false).moving).toBe(false);
+    expect(isMoving(0.4, false).moving).toBe(true);
+    expect(isMoving(0.25, true).moving).toBe(true);
+  });
+
+  it('waits a moment before a walking soldier counts as halted', () => {
+    const first = isMoving(0.05, true, 1000, null);
+    expect(first.moving).toBe(true);
+    expect(isMoving(0.05, true, 1200, first.stillSince).moving).toBe(true);
+    expect(isMoving(0.05, true, 1000 + STOP_DELAY_MS, first.stillSince).moving).toBe(false);
+    // Speed back up: the clock resets.
+    expect(isMoving(0.5, true, 1250, first.stillSince).stillSince).toBeNull();
   });
 
   it('holds an ordinary clip a moment before changing', () => {
@@ -135,5 +143,20 @@ describe('steady clips (no flicker)', () => {
   it('a caller-held ready keeps the rifle up', () => {
     const rifleman = { alive: true, incapacitated: false, routed: false, stance: 'standing' as const, targetId: null };
     expect(soldierClip(rifleman, { moving: false, firing: false, ready: true })).toBe('idle-ready');
+  });
+});
+
+describe('ready through a march', () => {
+  it('stays at the ready for the whole walk once raised', () => {
+    let until = holdReady(0, 1000, true, true);
+    // Fire stops calling for it, but he keeps walking: still ready.
+    for (let now = 2000; now < 20000; now += 1000) until = holdReady(until, now, false, true);
+    expect(until).toBeGreaterThan(20000);
+  });
+
+  it('shoulders the rifle a while after he halts with nothing to face', () => {
+    let until = holdReady(0, 1000, true, true);
+    until = holdReady(until, 2000, false, false);
+    expect(until).toBe(1000 + READY_HOLD_MS);
   });
 });

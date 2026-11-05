@@ -3,7 +3,7 @@ import {
   atTheReady,
   CLIP_SPEED,
   isMoving,
-  READY_HOLD_MS,
+  holdReady,
   soldierClip,
   soldierOutfit,
   steadyClip,
@@ -64,6 +64,8 @@ interface CharacterView {
   speed: number;
   /** Walking by the start/stop hysteresis. */
   moving: boolean;
+  /** When his speed last fell below the stop speed (null while above). */
+  stillSince: number | null;
   /** Until when he keeps the rifle at the ready. */
   readyUntil: number;
   /** The clip playing and since when (ms). */
@@ -535,6 +537,7 @@ export class CharacterLayer {
           facingAngle: Math.atan2(-unit.facingX, -unit.facingY),
           speed: 0,
           moving: false,
+          stillSince: null,
           readyUntil: 0,
           clip: null,
           clipSince: 0,
@@ -660,8 +663,15 @@ export class CharacterLayer {
         rig.root.add(view.soldier.root);
       }
       if (view.soldier) {
-        view.moving = isMoving(view.speed, view.moving);
-        if (atTheReady(unit)) view.readyUntil = now + READY_HOLD_MS;
+        const motion = isMoving(view.speed, view.moving, now, view.stillSince);
+        view.moving = motion.moving;
+        view.stillSince = motion.stillSince;
+        view.readyUntil = holdReady(
+          view.readyUntil,
+          now,
+          atTheReady(unit) || unit.targetId !== null || now < view.engagedUntil || unit.gait === 'run',
+          view.moving,
+        );
         const wanted = soldierClip(unit, {
           moving: view.moving,
           ready: now < view.readyUntil,
