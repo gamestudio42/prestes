@@ -1,4 +1,4 @@
-import { Crosshair, CoverIcon as Shield } from './icons';
+import { Crosshair, CoverIcon as Shield, Health } from './icons';
 import { translate, type Locale } from '@prestes/content';
 import type { CoverSlotView } from '@prestes/shared';
 import type { PlacementPreview } from '@prestes/view3d';
@@ -9,7 +9,7 @@ interface FieldOverlaysProps {
   hoverUnitId: number | null;
   cursor: { x: number; y: number } | null;
   placementPreview: PlacementPreview | null;
-  hoverHint: { kind: 'cover' | 'target'; x: number; y: number } | null;
+  hoverHint: { kind: 'cover' | 'target' | 'rescue'; x: number; y: number } | null;
   slotView?: CoverSlotView | null;
 }
 
@@ -65,6 +65,8 @@ export function FieldOverlays({
       >
         {hoverHint.kind === 'cover' ? (
           <Shield aria-hidden="true" size={16} />
+        ) : hoverHint.kind === 'rescue' ? (
+          <Health aria-hidden="true" size={16} />
         ) : (
           <Crosshair aria-hidden="true" size={16} />
         )}

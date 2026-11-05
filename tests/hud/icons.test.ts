@@ -25,12 +25,9 @@ describe('HUD icon map', () => {
     expect(shared).toEqual([]);
   });
 
-  it('lists all sixteen orders on the board', () => {
+  it('lists the nine orders of the board (compact-orders)', () => {
     expect(ORDER_CATALOG.map((entry) => entry.id).sort()).toEqual(
-      [
-        'advance', 'aim', 'ambush', 'attack', 'defend', 'disperse', 'flank', 'hold',
-        'move', 'pursue', 'recon', 'regroup', 'rescue', 'reserve', 'suppress', 'withdraw',
-      ].sort(),
+      ['advance', 'attack', 'defend', 'flank', 'hold', 'move', 'recon', 'suppress', 'withdraw'].sort(),
     );
   });
 

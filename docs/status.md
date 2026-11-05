@@ -370,6 +370,26 @@ him. An ordered Hold stays put; aggressive soldiers only turn. Suppress moves
 on together to the nearest man of the target's squad within 15 m when the
 target falls or runs, and ends when none is left. The determinism golden
 moved from `7d7706bf` to `f8378a18` on purpose (soldiers now react to fire).
+
+## Compact orders (`compact-orders`, 2026-11-04)
+
+Asked by the user ("muitos tipos de ordem... sem perder doutrina de
+infantaria"). The board has nine orders in three groups: Movement (Move,
+Advance, Withdraw, Halt), Fire & manoeuvre (Attack, Suppress, Flank) and
+Position (Defend, Recon). Advance always goes by bounds and Move marches (the
+bounding toggle is gone); Attack follows a target that withdraws out of
+combat range (40 m leash, not defensive); Halt stops the section, takes cover
+within 6 m and the next ground click turns its front (the old Face). Fire
+control has three settings: free, on contact (holds until an enemy is within
+25 m or the section is fired upon: the ambush) and hold. Postures are three;
+soldiers near an officer under fire screen him automatically. Rescue starts
+with a right-click on a wounded comrade; G regroups. The simulation still
+accepts the old orders (ambush, reserve, disperse, pursue, regroup,
+protect-officer, set_bounding), mapped to the new behaviour. Stations 2 to 6
+teach the new way (texts in both languages). The simulation worker grew to
+91 KB with fire reaction, fire control and officer screening; its budget went
+from 90 to 100 KB. Determinism golden `f8378a18` ->
+`ae3a0a1d`.
    The glTF loaders are a separate chunk fetched on demand; the animation
    system raised the three chunk to 591 KB, so its budget went from 560 to
    610 KB (2026-11-04).

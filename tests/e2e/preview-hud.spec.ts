@@ -16,7 +16,7 @@ test('toggles the opt-in preview and hides/restores the HUD', async ({ page }) =
   await page.getByTestId('game-canvas').hover({ position: { x: 700, y: 300 } });
   await expect(page.getByTestId('target-reticle')).toBeVisible();
   await page.getByTestId('order-cancel').click();
-  await page.getByTestId('order-tab-troop').click();
+  await page.getByTestId('order-tab-position').click();
   await page.getByTestId('order-defend').click();
   await page.getByTestId('game-canvas').hover({ position: { x: 900, y: 300 } });
   await page.waitForTimeout(300);

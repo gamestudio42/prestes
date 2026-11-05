@@ -13,6 +13,8 @@ interface KeyboardShortcutOptions {
   setPendingOrder: Dispatch<SetStateAction<OrderMode | null>>;
   setPendingTactical: Dispatch<SetStateAction<TacticalOrder | null>>;
   setAimPending: Dispatch<SetStateAction<boolean>>;
+  /** G closes the selected section on its centre (the old Regroup order). */
+  onRegroup: () => void;
 }
 
 /** H hides the HUD, F1 toggles the sandbox, Escape cancels tools and pending orders. */
@@ -26,12 +28,18 @@ export function useKeyboardShortcuts({
   setPendingOrder,
   setPendingTactical,
   setAimPending,
+  onRegroup,
 }: KeyboardShortcutOptions): void {
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent): void => {
       if (!event.ctrlKey && !event.metaKey && !event.altKey && event.key.toLowerCase() === 'h') {
         event.preventDefault();
         setHudHidden((hidden) => !hidden);
+      }
+      const typing = event.target instanceof HTMLElement && ['INPUT', 'SELECT', 'TEXTAREA'].includes(event.target.tagName);
+      if (!typing && !event.ctrlKey && !event.metaKey && !event.altKey && event.key.toLowerCase() === 'g') {
+        event.preventDefault();
+        onRegroup();
       }
       if (event.key === 'F1') {
         event.preventDefault();
@@ -57,5 +65,5 @@ export function useKeyboardShortcuts({
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [controlBothSides, selectedSquadId, sandboxTool]);
+  }, [controlBothSides, selectedSquadId, sandboxTool, onRegroup]);
 }

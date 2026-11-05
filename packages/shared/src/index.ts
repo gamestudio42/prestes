@@ -11,6 +11,7 @@
   Outcome,
   MoraleState,
   Posture,
+  FireControl,
   PortLike,
   RejectionReason,
   RosterRecord,

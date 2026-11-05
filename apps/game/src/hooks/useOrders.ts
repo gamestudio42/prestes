@@ -17,6 +17,7 @@ import {
   coverSlotView,
   planCoverSlots,
   type CoverSlotView,
+  type FireControl,
   type FormationKind,
   type Frame,
   type Posture,
@@ -37,8 +38,6 @@ interface OrderOptions {
   clientRef: MutableRefObject<GameClient | null>;
   speed: 0 | 1 | 2 | 4;
   hudHidden: boolean;
-  boundingEnabled: boolean;
-  setBoundingEnabled: Dispatch<SetStateAction<boolean>>;
   controlBothSides: boolean;
   setControlBothSides: Dispatch<SetStateAction<boolean>>;
   sandboxTool: SandboxTool | null;
@@ -64,8 +63,6 @@ export function useOrders({
   clientRef,
   speed,
   hudHidden,
-  boundingEnabled,
-  setBoundingEnabled,
   controlBothSides,
   setControlBothSides,
   sandboxTool,
@@ -98,6 +95,8 @@ export function useOrders({
     ) ?? [];
   const selectedIds = selectedUnits.map((unit) => unit.id);
   const holdFire = selectedUnits.length > 0 && selectedUnits.every((unit) => unit.holdFire === true);
+  const fireControl: FireControl =
+    selectedUnits[0]?.fireControl ?? (holdFire ? 'hold' : 'free');
   const posture = selectedUnits[0]?.posture ?? 'balanced';
   const previewOrder =
     pendingTactical ?? pendingOrder ?? (aimPending ? 'aim' : facingDrag || lineDrag ? 'move' : null);
@@ -678,6 +677,13 @@ export function useOrders({
     }
     unitId = target.id;
     const selectedFaction = selectedUnits[0]?.faction ?? 'column';
+    // A wounded comrade: the casualty drill (rescue) starts from him.
+    if (target.faction === selectedFaction && target.incapacitated && selectedIds.length > 0) {
+      clientRef.current?.sendCommand({ type: 'order', order: 'rescue', unitIds: selectedIds, targetId: target.id });
+      recordTrainingAction('rescue');
+      triggerOrderCallout('rescue', selectedIds);
+      return;
+    }
     if (target.faction === selectedFaction) {
       handleSelectUnit(unitId);
       return;
@@ -694,7 +700,13 @@ export function useOrders({
       return;
     }
     if (order === 'hold') {
+      // Halt stops the section at once; the next ground click turns its front
+      // that way (the old Face order).
       handleHold();
+      setPendingOrder(null);
+      setPendingTactical(null);
+      setPreviewEnabled(true);
+      setAimPending(true);
       return;
     }
     if (order === 'aim') {
@@ -739,24 +751,24 @@ export function useOrders({
     triggerPostureCallout(next);
   };
 
-  const handleHoldFire = (): void => {
+  /** Closes the selected section on its centre (G; the old Regroup order). */
+  const handleRegroup = (): void => {
     if (selectedIds.length === 0) {
       return;
     }
-    clientRef.current?.sendCommand({
-      type: 'hold_fire',
-      unitIds: selectedIds,
-      hold: !holdFire,
-    });
-    recordTrainingAction('hold-fire');
-    triggerHoldFireCallout(!holdFire);
+    clientRef.current?.sendCommand({ type: 'order', order: 'regroup', unitIds: selectedIds });
+    recordTrainingAction('regroup' as TrainingAction);
+    triggerOrderCallout('regroup', selectedIds);
   };
 
-  const handleToggleBounding = (): void => {
-    recordTrainingAction('bounding');
-    const next = !boundingEnabled;
-    setBoundingEnabled(next);
-    clientRef.current?.setBounding(next);
+  /** Free fire, fire on contact (ambush) or hold fire. */
+  const handleFireControl = (mode: FireControl): void => {
+    if (selectedIds.length === 0) {
+      return;
+    }
+    clientRef.current?.sendCommand({ type: 'fire_control', unitIds: selectedIds, mode });
+    if (mode === 'hold') recordTrainingAction('hold-fire');
+    triggerHoldFireCallout(mode !== 'free');
   };
   const handleFormation = (formation: FormationKind): void => {
     if (selectedIds.length > 0) {
@@ -815,6 +827,7 @@ export function useOrders({
     selectedUnits,
     selectedIds,
     holdFire,
+    fireControl,
     posture,
     needsTarget,
     previewPlan,
@@ -836,8 +849,8 @@ export function useOrders({
     handleQuickUnit,
     handleActivateOrder,
     handlePosture,
-    handleHoldFire,
-    handleToggleBounding,
+    handleFireControl,
+    handleRegroup,
     handleFormation,
     handleStance,
   };

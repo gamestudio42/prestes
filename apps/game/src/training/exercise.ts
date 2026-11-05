@@ -226,7 +226,8 @@ function stationUpkeep(
   // would shoot it down before the player gives the order.
   const ambushSet =
     objective.kind !== 'ambush-trigger' ||
-    playerUnits(frame).filter((unit) => unit.order === 'ambush').length >= (objective.minUnits ?? 1);
+    playerUnits(frame).filter((unit) => unit.fireControl === 'contact' || unit.order === 'ambush').length >=
+      (objective.minUnits ?? 1);
   if (memory[startedKey] !== 1 && ambushSet) {
     const start = objectiveStartCommands(objective, frame);
     const waitsForTroop = objective.onStart?.startsWith('enemy-') === true && start.length === 0;

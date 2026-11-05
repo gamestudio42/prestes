@@ -1,6 +1,6 @@
 import { Crosshair } from '../icons';
 import { ORDER_CATALOG, ORDER_CATEGORY_LABELS, type OrderActivation } from '@prestes/content';
-import type { FormationKind, Posture, Stance, TacticalOrder, UnitOrder } from '@prestes/shared';
+import type { FireControl, FormationKind, Posture, Stance, TacticalOrder, UnitOrder } from '@prestes/shared';
 import { Tooltip } from '../Tooltip';
 import type { OrderMode } from '../Hud';
 import {
@@ -20,8 +20,7 @@ interface OrderBoardProps {
   pendingTactical: TacticalOrder | null;
   aimPending: boolean;
   posture: Posture;
-  holdFire: boolean;
-  boundingEnabled: boolean;
+  fireControl: FireControl;
   stance: Stance;
   formation: FormationKind;
   selectedCount: number;
@@ -29,8 +28,7 @@ interface OrderBoardProps {
   onClear: () => void;
   onActivateOrder: (order: string, activation: OrderActivation) => void;
   onPosture: (posture: Posture) => void;
-  onHoldFire: () => void;
-  onToggleBounding: () => void;
+  onFireControl: (mode: FireControl) => void;
   onStance: (stance: Stance) => void;
   onFormation: (formation: FormationKind) => void;
   t: Translate;
@@ -41,7 +39,20 @@ const StandIcon = ICONS['stance-standing'];
 const CrouchIcon = ICONS['stance-crouched'];
 const ProneIcon = ICONS['stance-prone'];
 const HoldFireIcon = ICONS['hold-fire'];
-const BoundingIcon = ICONS.bounding;
+const ContactIcon = orderIcon('ambush') ?? Crosshair;
+const FreeFireIcon = Crosshair;
+
+const FIRE_CONTROLS: ReadonlyArray<{
+  mode: FireControl;
+  icon: typeof Crosshair;
+  label: 'hud.fireFree' | 'hud.fireContact' | 'hud.holdFire';
+  tip: 'hud.tip.fireFree' | 'hud.tip.fireContact' | 'hud.tip.holdFire';
+  testId: string;
+}> = [
+  { mode: 'free', icon: FreeFireIcon, label: 'hud.fireFree', tip: 'hud.tip.fireFree', testId: 'fire-free' },
+  { mode: 'contact', icon: ContactIcon, label: 'hud.fireContact', tip: 'hud.tip.fireContact', testId: 'fire-contact' },
+  { mode: 'hold', icon: HoldFireIcon, label: 'hud.holdFire', tip: 'hud.tip.holdFire', testId: 'hold-fire' },
+];
 const ClearIcon = ICONS.clear;
 
 export function OrderBoard({
@@ -50,8 +61,7 @@ export function OrderBoard({
   pendingTactical,
   aimPending,
   posture,
-  holdFire,
-  boundingEnabled,
+  fireControl,
   stance,
   formation,
   selectedCount,
@@ -59,8 +69,7 @@ export function OrderBoard({
   onClear,
   onActivateOrder,
   onPosture,
-  onHoldFire,
-  onToggleBounding,
+  onFireControl,
   onStance,
   onFormation,
   t,
@@ -81,7 +90,7 @@ export function OrderBoard({
                 const active =
                   pendingOrder === entry.id ||
                   pendingTactical === entry.id ||
-                  (entry.id === 'aim' && aimPending) ||
+                  (entry.id === 'hold' && aimPending) ||
                   currentOrder === entry.id;
                 return (
                   <Tooltip
@@ -165,33 +174,23 @@ export function OrderBoard({
             </button>
           </Tooltip>
         </section>
-        <Tooltip title={t('hud.holdFire')} description={t('hud.tip.holdFire')}>
-          <button
-            type="button"
-            className={`passive-button square-button hold-fire ${holdFire ? 'active' : ''}`}
-            onClick={onHoldFire}
-            aria-label={holdFire ? t('hud.holdingFire') : t('hud.holdFire')}
-            aria-pressed={holdFire}
-            data-testid="hold-fire"
-          >
-            <HoldFireIcon aria-hidden="true" size={18} />
-          </button>
-        </Tooltip>
-        <Tooltip
-          title={t('hud.alternatingMove')}
-          description={t('hud.tip.alternatingMove')}
-        >
-          <button
-            type="button"
-            className={`passive-button square-button ${boundingEnabled ? 'active' : ''}`}
-            onClick={onToggleBounding}
-            aria-label={t('hud.alternatingMove')}
-            aria-pressed={boundingEnabled}
-            data-testid="bounding-toggle"
-          >
-            <BoundingIcon aria-hidden="true" size={18} />
-          </button>
-        </Tooltip>
+        <section className="passive-group fire-control-group" data-testid="fire-control">
+          <span className="passive-label">{t('hud.fireControl')}</span>
+          {FIRE_CONTROLS.map(({ mode, icon: Icon, label, tip, testId }) => (
+            <Tooltip key={mode} title={t(label)} description={t(tip)}>
+              <button
+                type="button"
+                className={`passive-button square-button ${mode === 'hold' ? 'hold-fire' : ''} ${fireControl === mode ? 'active' : ''}`}
+                onClick={() => onFireControl(mode)}
+                aria-label={t(label)}
+                aria-pressed={fireControl === mode}
+                data-testid={testId}
+              >
+                <Icon aria-hidden="true" size={18} />
+              </button>
+            </Tooltip>
+          ))}
+        </section>
         <Tooltip
           title={t('hud.clear')}
           description={canClear ? t('hud.tip.clear') : t('hud.tip.clearUnavailable')}

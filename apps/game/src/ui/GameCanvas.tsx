@@ -50,7 +50,7 @@ export interface GameCanvasProps {
   onPreviewFacing: (drag: { from: Vec2; to: Vec2 } | null) => void;
   onPreviewGround: (point: Vec2 | null) => void;
   onPreviewUnit: (unitId: number | null) => void;
-  onHover: (hint: 'cover' | 'target' | null, x: number, y: number) => void;
+  onHover: (hint: 'cover' | 'target' | 'rescue' | null, x: number, y: number) => void;
 }
 
 interface DragState {
@@ -330,6 +330,12 @@ export function GameCanvas({
       if (unit && unit.alive && unit.faction !== 'column') {
         onPreviewUnit(unitId);
         onHover('target', event.clientX, event.clientY);
+        return;
+      }
+      // A wounded comrade: right-click starts the casualty drill.
+      if (unit && unit.alive && unit.incapacitated && unit.faction === 'column') {
+        onPreviewUnit(null);
+        onHover('rescue', event.clientX, event.clientY);
         return;
       }
       onPreviewUnit(null);

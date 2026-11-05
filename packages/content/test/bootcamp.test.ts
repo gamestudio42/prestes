@@ -42,8 +42,8 @@ describe('bootcamp exercise content', () => {
       pursue: (kind) => kind === 'pursue',
       defend: (kind) => kind === 'defend-in-cover',
       advance: (_kind, order) => order === 'advance',
-      disperse: (_kind, order) => order === 'disperse',
-      reserve: (_kind, order) => order === 'reserve',
+      disperse: (kind) => kind === 'open-order',
+      reserve: (_kind, order) => order === 'defend',
       regroup: (kind) => kind === 'regroup',
     };
     for (const entry of ORDER_CATALOG) {

@@ -46,11 +46,10 @@ export function App() {
   useEffect(() => saveRoutesVisible(routesVisible), [routesVisible]);
   const [speed, setSpeed] = useState<0 | 1 | 2 | 4>(DEFAULT_SPEED);
   const [ordersCollapsed, setOrdersCollapsed] = useState(false);
-  const [boundingEnabled, setBoundingEnabled] = useState(true);
   const [hudHidden, setHudHidden] = useState(false);
   const [cursor, setCursor] = useState<{ x: number; y: number } | null>(null);
   const [hoverHint, setHoverHint] = useState<{
-    kind: 'cover' | 'target';
+    kind: 'cover' | 'target' | 'rescue';
     x: number;
     y: number;
   } | null>(null);
@@ -108,7 +107,7 @@ export function App() {
     targetUnitIds,
     selectedUnits,
     selectedIds,
-    holdFire,
+    fireControl,
     posture,
     needsTarget,
     previewPlan,
@@ -130,8 +129,8 @@ export function App() {
     handleQuickUnit,
     handleActivateOrder,
     handlePosture,
-    handleHoldFire,
-    handleToggleBounding,
+    handleFireControl,
+    handleRegroup,
     handleFormation,
     handleStance,
   } = useOrders({
@@ -140,8 +139,6 @@ export function App() {
     clientRef,
     speed,
     hudHidden,
-    boundingEnabled,
-    setBoundingEnabled,
     controlBothSides,
     setControlBothSides,
     sandboxTool,
@@ -161,6 +158,7 @@ export function App() {
     setPendingOrder,
     setPendingTactical,
     setAimPending,
+    onRegroup: handleRegroup,
   });
   useTestBridge(clientRef, setSpeed);
 
@@ -190,7 +188,6 @@ export function App() {
       sandbox: true,
       training,
       opposition,
-      bounding: boundingEnabled,
       scenario,
       onEvent: (event) => audioRef.current?.handleEvent(event),
       onFrame: (next) => {
@@ -515,8 +512,7 @@ export function App() {
         pendingTactical={pendingTactical}
         aimPending={aimPending}
         posture={posture}
-        holdFire={holdFire}
-        boundingEnabled={boundingEnabled}
+        fireControl={fireControl}
         battleMode={sessionMode === 'battle'}
         sandboxOpen={sandboxOpen}
         onCancelOrder={handleClearOrder}
@@ -524,8 +520,7 @@ export function App() {
         onLocaleChange={handleLocaleChange}
         onActivateOrder={handleActivateOrder}
         onPosture={handlePosture}
-        onHoldFire={handleHoldFire}
-        onToggleBounding={handleToggleBounding}
+        onFireControl={handleFireControl}
         onSelectSquad={handleSelectSquad}
         onToggleOrders={handleToggleOrders}
         onTogglePreview={handleTogglePreview}

@@ -149,7 +149,23 @@ const evaluators: Record<ExerciseObjective['kind'], Evaluator> = {
     if (objective.action && !input.actions.has(objective.action)) {
       return count(0, objective.minUnits ?? 1);
     }
-    return count(withOrder(playerUnits(frame), objective.order ?? '').length, objective.minUnits ?? 1);
+    const units = withOrder(playerUnits(frame), objective.order ?? '').filter(
+      (unit) => objective.fireControl === undefined || unit.fireControl === objective.fireControl,
+    );
+    return count(units.length, objective.minUnits ?? 1);
+  },
+  'open-order'(objective, { frame }) {
+    // The section opened out: its soldiers stand, on average, at least
+    // `threshold` metres from their nearest comrade.
+    const units = playerUnits(frame).filter((unit) => !unit.incapacitated);
+    if (units.length < (objective.minUnits ?? 2)) {
+      return count(0, objective.minUnits ?? 2);
+    }
+    const nearest = units.map((unit) =>
+      Math.min(...units.filter((other) => other !== unit).map((other) => Math.hypot(other.x - unit.x, other.y - unit.y))),
+    );
+    const mean = nearest.reduce((sum, value) => sum + value, 0) / nearest.length;
+    return count(mean >= (objective.threshold ?? 5) ? units.length : 0, objective.minUnits ?? 2);
   },
   'target-hit'(objective, { frame, memory }) {
     // Done once the training troop has lost health since the objective started.
@@ -238,7 +254,9 @@ const evaluators: Record<ExerciseObjective['kind'], Evaluator> = {
   },
   'ambush-trigger'(objective, context) {
     const player = playerUnits(context.frame);
-    const set = seen(objective, context, 'set', withOrder(player, 'ambush').length >= (objective.minUnits ?? 1));
+    // Set: the section waits with fire on contact (the old Ambush order too).
+    const waiting = player.filter((unit) => unit.fireControl === 'contact' || unit.order === 'ambush');
+    const set = seen(objective, context, 'set', waiting.length >= (objective.minUnits ?? 1));
     const struck = trainingEnemies(context.frame).some((unit) => unit.suppressed || unit.suppression > 0);
     return count(set && struck ? 1 : 0, 1);
   },
@@ -266,7 +284,10 @@ const evaluators: Record<ExerciseObjective['kind'], Evaluator> = {
     // A pursuit succeeds when a pursuer closes within `threshold` metres of its
     // target or the pursued target is brought down.
     const enemies = trainingEnemies(context.frame);
-    const pursuers = withOrder(playerUnits(context.frame), 'pursue');
+    // Attack follows a running target (compact-orders): attackers and
+    // pursuers both count.
+    const player = playerUnits(context.frame);
+    const pursuers = [...withOrder(player, 'pursue'), ...withOrder(player, 'attack')];
     const key = `${objective.id}:target`;
     const chased = pursuers.find((unit) => unit.targetId !== null)?.targetId;
     if (chased !== undefined && chased !== null) {
@@ -305,7 +326,7 @@ const evaluators: Record<ExerciseObjective['kind'], Evaluator> = {
     }
     const guards = playerUnits(frame).filter(
       (unit) =>
-        (unit.order === 'protect-officer' || unit.posture === 'protect-officer') &&
+        // Protecting the officer is automatic now: the section keeps by him.
         inside(unit, instructor, objective.radius ?? 10),
     );
     return count(guards.length, objective.minUnits ?? 1);

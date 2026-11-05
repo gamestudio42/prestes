@@ -54,7 +54,7 @@ test('boots, selects a section, gives orders, fights and toggles the post', asyn
   await page.getByTestId('order-cancel').click();
   await expect(page.getByTestId('order-suppress')).not.toHaveClass(/active/);
 
-  await page.getByTestId('order-tab-troop').click();
+  await page.getByTestId('order-tab-fire').click();
   await page.getByTestId('order-flank').click();
   await expect(page.getByTestId('order-flank')).toHaveClass(/active/);
   await expect(page.getByTestId('order-hint')).toContainText('flanquear');

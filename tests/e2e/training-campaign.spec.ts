@@ -184,8 +184,8 @@ async function playManeuver(page: Page): Promise<void> {
   const [target] = await trainingEnemies(page);
   await command(page, { type: 'flank', unitIds: ids, targetId: target! });
   await untilObjective(page, 'maneuver-flank', 2000);
-  await command(page, { type: 'set_bounding', enabled: true });
-  await command(page, { type: 'move', unitIds: await section(page), to: point('maneuver', 'bound') });
+  // Advance goes by bounds (compact-orders).
+  await command(page, { type: 'order', order: 'advance', unitIds: await section(page), to: point('maneuver', 'bound') });
   await untilObjective(page, 'maneuver-bound', 2000);
   await command(page, { type: 'withdraw', unitIds: await section(page) });
   await untilObjective(page, 'maneuver-withdraw', 1000);

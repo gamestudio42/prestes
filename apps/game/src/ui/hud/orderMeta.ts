@@ -104,12 +104,8 @@ export const ACTIVATION_LABEL: Record<OrderActivation, MessageKey> = {
   direction: 'hud.activationDirection',
 };
 
-export const POSTURES: readonly Posture[] = [
-  'balanced',
-  'aggressive',
-  'defensive',
-  'protect-officer',
-];
+/** Three postures; protecting the officer is automatic (compact-orders). */
+export const POSTURES: readonly Posture[] = ['balanced', 'aggressive', 'defensive'];
 
 export const POSTURE_ICONS: Record<Posture, PixelIconComponent> = {
   balanced: ICONS['posture-balanced'],
@@ -125,4 +121,4 @@ export const POSTURE_LABELS: Record<Posture, MessageKey> = {
   'protect-officer': 'hud.postureProtectOfficer',
 };
 
-export const ORDER_SECTORS: readonly OrderCategory[] = ['fire', 'movement', 'troop'];
+export const ORDER_SECTORS: readonly OrderCategory[] = ['movement', 'fire', 'position'];

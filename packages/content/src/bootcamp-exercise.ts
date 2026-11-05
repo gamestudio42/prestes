@@ -64,6 +64,7 @@ export type ExerciseObjectiveKind =
   | 'suppress'
   | 'hold-fire'
   | 'facing'
+  | 'open-order'
   | 'flank-position'
   | 'bounding-advance'
   | 'withdraw-out'
@@ -98,6 +99,8 @@ export interface ExerciseObjective {
   ticks?: number;
   /** Order the soldiers must be carrying (order objectives). */
   order?: string;
+  /** With `order`: the units must also have this fire control. */
+  fireControl?: 'free' | 'contact' | 'hold';
   /**
    * HUD action that must also have been used, for orders the simulation can set
    * by itself (a finished withdrawal leaves the soldiers holding).
@@ -287,8 +290,8 @@ export const BOOTCAMP_EXERCISE: BootcampExercise = {
       objectives: [
         objective('recon', 'recon', 'recon-report'),
         objective('recon', 'pursue', 'pursue', { threshold: 15, onStart: 'enemy-withdraw' }),
-        objective('recon', 'disperse', 'order', { order: 'disperse', minUnits: 6 }),
-        objective('recon', 'reserve', 'order', { order: 'reserve', minUnits: 3 }),
+        objective('recon', 'disperse', 'open-order', { minUnits: 6, threshold: 5 }),
+        objective('recon', 'reserve', 'order', { order: 'defend', fireControl: 'hold', minUnits: 3 }),
         objective('recon', 'advance', 'order', { order: 'advance', minUnits: 5 }),
         objective('recon', 'regroup', 'regroup', { radius: 8, minUnits: 9 }),
       ],
@@ -370,8 +373,9 @@ export const CURRICULUM: readonly { mechanic: string; covered: (objective: Exerc
   { mechanic: 'hold-line', covered: (o) => o.kind === 'hold' },
   { mechanic: 'recon', covered: (o) => o.kind === 'recon-report' },
   { mechanic: 'pursue', covered: (o) => o.kind === 'pursue' },
-  { mechanic: 'disperse', covered: (o) => o.order === 'disperse' },
-  { mechanic: 'reserve', covered: (o) => o.order === 'reserve' },
+  { mechanic: 'disperse', covered: (o) => o.kind === 'open-order' },
+  { mechanic: 'reserve', covered: (o) => o.order === 'defend' && o.fireControl === 'hold' },
+  { mechanic: 'fire-contact', covered: (o) => o.kind === 'ambush-trigger' },
   { mechanic: 'regroup', covered: (o) => o.kind === 'regroup' },
   { mechanic: 'rescue', covered: (o) => o.kind === 'rescue-complete' },
   { mechanic: 'protect-officer', covered: (o) => o.kind === 'protect-officer' },

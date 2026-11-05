@@ -1,6 +1,7 @@
 import { translate, type Locale, type MessageKey, type OrderActivation } from '@prestes/content';
 import type { CameraBand } from '@prestes/view3d';
 import type {
+  FireControl,
   FormationKind,
   Frame,
   Posture,
@@ -53,8 +54,7 @@ export interface HudProps {
   pendingTactical: TacticalOrder | null;
   aimPending: boolean;
   posture: Posture;
-  holdFire: boolean;
-  boundingEnabled: boolean;
+  fireControl: FireControl;
   battleMode: boolean;
   sandboxOpen: boolean;
   onCancelOrder: () => void;
@@ -63,8 +63,7 @@ export interface HudProps {
 
   onActivateOrder: (order: string, activation: OrderActivation) => void;
   onPosture: (posture: Posture) => void;
-  onHoldFire: () => void;
-  onToggleBounding: () => void;
+  onFireControl: (mode: FireControl) => void;
   onSelectSquad: (squadId: number) => void;
   ordersCollapsed: boolean;
   previewEnabled: boolean;
@@ -104,8 +103,7 @@ export function Hud({
   pendingTactical,
   aimPending,
   posture,
-  holdFire,
-  boundingEnabled,
+  fireControl,
   battleMode,
   sandboxOpen,
   onCancelOrder,
@@ -113,8 +111,7 @@ export function Hud({
   onLocaleChange,
   onActivateOrder,
   onPosture,
-  onHoldFire,
-  onToggleBounding,
+  onFireControl,
   onSelectSquad,
   ordersCollapsed,
   previewEnabled,
@@ -247,8 +244,7 @@ export function Hud({
               pendingTactical={pendingTactical}
               aimPending={aimPending}
               posture={posture}
-              holdFire={holdFire}
-              boundingEnabled={boundingEnabled}
+              fireControl={fireControl}
               stance={stance}
               formation={formation}
               selectedCount={selectedCount}
@@ -256,8 +252,7 @@ export function Hud({
               onClear={onClearOrder}
               onActivateOrder={onActivateOrder}
               onPosture={onPosture}
-              onHoldFire={onHoldFire}
-              onToggleBounding={onToggleBounding}
+              onFireControl={onFireControl}
               onStance={onStance}
               onFormation={onFormation}
               t={t}

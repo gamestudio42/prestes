@@ -7,7 +7,7 @@ test('issues an area order and an immediate group order', async ({ page }) => {
   await page.waitForFunction(() => Boolean(window.__prestes?.frame()));
   await expect(page.getByTestId('squad-status')).toContainText('Selection: 11/11');
 
-  await page.getByTestId('order-tab-troop').click();
+  await page.getByTestId('order-tab-position').click();
   await page.getByTestId('order-defend').click();
   await expect(page.getByTestId('order-hint')).toContainText('tactical order');
   await page.getByTestId('game-canvas').click({
@@ -17,7 +17,7 @@ test('issues an area order and an immediate group order', async ({ page }) => {
 
   await page.getByTestId('order-tab-movement').click();
   await page.getByTestId('order-hold').click();
-  await expect(page.getByTestId('order-value')).toContainText('Hold', { timeout: 5000 });
+  await expect(page.getByTestId('order-value')).toContainText('Halt', { timeout: 5000 });
 });
 
 test('changes formation without clearing the current order', async ({ page }) => {
@@ -30,9 +30,16 @@ test('changes formation without clearing the current order', async ({ page }) =>
   await page.getByTestId('formation-select').selectOption('wedge');
   await expect(page.getByTestId('formation-select')).toHaveValue('wedge');
 
+  // Right-click a ground point 12 m east of the section (inside the map).
+  const target = await page.evaluate(() => {
+    const units = window.__prestes!.frame()!.units.filter((unit) => unit.faction === 'column' && unit.squadId === 1);
+    const x = units.reduce((sum, unit) => sum + unit.x, 0) / units.length + 12;
+    const y = units.reduce((sum, unit) => sum + unit.y, 0) / units.length;
+    return (window as unknown as { __prestesScene: { groundToScreen: (x: number, y: number) => { x: number; y: number } } }).__prestesScene.groundToScreen(x, y);
+  });
   await page.getByTestId('game-canvas').click({
     button: 'right',
-    position: { x: 300, y: 150 },
+    position: { x: target.x, y: target.y },
   });
   await expect(page.getByTestId('order-value')).toContainText('Move', { timeout: 5000 });
   await expect(page.getByTestId('formation-select')).toHaveValue('wedge');
@@ -69,11 +76,13 @@ test('toggles passive posture and hold fire', async ({ page }) => {
     )
     .toBe(true);
 
-  await expect(page.getByTestId('bounding-toggle')).toHaveAttribute('aria-pressed', 'true');
-  await page.getByTestId('bounding-toggle').click();
-  await expect(page.getByTestId('bounding-toggle')).toHaveAttribute('aria-pressed', 'false');
-  await page.getByTestId('bounding-toggle').click();
-  await expect(page.getByTestId('bounding-toggle')).toHaveAttribute('aria-pressed', 'true');
+  // Fire on contact, then free fire again (one control, three settings).
+  await page.getByTestId('fire-contact').click();
+  await expect(page.getByTestId('fire-contact')).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByTestId('hold-fire')).toHaveAttribute('aria-pressed', 'false');
+  await page.getByTestId('fire-free').click();
+  await expect(page.getByTestId('fire-free')).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByTestId('bounding-toggle')).toHaveCount(0);
 });
 test('shows action names immediately and descriptions after five seconds', async ({ page }) => {
   await page.goto('/');
@@ -169,7 +178,7 @@ test('the drag closes or opens the spacing, shown beside the cursor', async ({ p
   await expect(page.getByTestId('order-value')).toContainText('Move', { timeout: 5000 });
 });
 
-test('turns alternating movement off for real orders', async ({ page }) => {
+test('a move marches and an advance goes by bounds', async ({ page }) => {
   await page.goto('/');
   await page.getByTestId('start-button').click();
   await expect(page.getByTestId('hud')).toBeVisible();
@@ -199,30 +208,34 @@ test('turns alternating movement off for real orders', async ({ page }) => {
         .map((unit) => unit.boundTeam),
     );
 
-  await expect(page.getByTestId('bounding-toggle')).toHaveAttribute('aria-pressed', 'true');
-  await page.getByTestId('bounding-toggle').click();
-  await expect(page.getByTestId('bounding-toggle')).toHaveAttribute('aria-pressed', 'false');
+  // A move marches; an advance goes by bounds (compact-orders).
   await sendMove(0, -4);
   await page.evaluate(() =>
     (window as unknown as { __prestes: { step: (ticks: number) => void } }).__prestes.step(3),
   );
   await expect.poll(async () => (await boundTeams()).every((team) => team === null)).toBe(true);
 
-  await page.getByTestId('bounding-toggle').click();
-  await expect(page.getByTestId('bounding-toggle')).toHaveAttribute('aria-pressed', 'true');
-  await sendMove(0, 4);
+  await page.evaluate(
+    ({ unitIds }) =>
+      (window as unknown as { __prestes: { command: (command: unknown) => void } }).__prestes.command({
+        type: 'order',
+        order: 'advance',
+        unitIds,
+        to: { x: 0, y: 20 },
+      }),
+    { unitIds: ids },
+  );
   await page.evaluate(() =>
     (window as unknown as { __prestes: { step: (ticks: number) => void } }).__prestes.step(3),
   );
   await expect.poll(async () => (await boundTeams()).some((team) => team !== null)).toBe(true);
 });
-test('splits a UI move with alternating movement and clears the order', async ({ page }) => {
+test('splits a UI advance into bounds and clears the order', async ({ page }) => {
   await page.goto('/');
   await page.getByTestId('start-button').click();
   await page.waitForFunction(() => Boolean(window.__prestes?.frame()));
-  await expect(page.getByTestId('bounding-toggle')).toHaveAttribute('aria-pressed', 'true');
   await page.getByTestId('order-tab-movement').click();
-  await page.getByTestId('order-move').click();
+  await page.getByTestId('order-advance').click();
   await page.getByTestId('game-canvas').click({ position: { x: 820, y: 430 } });
   await expect
     .poll(() =>
@@ -238,7 +251,7 @@ test('splits a UI move with alternating movement and clears the order', async ({
     )
     .toBe(2);
   await page.getByTestId('order-clear').click();
-  await expect(page.getByTestId('order-value')).toContainText('Hold', { timeout: 5000 });
+  await expect(page.getByTestId('order-value')).toContainText('Halt', { timeout: 5000 });
 });
 
 test('hides the movement routes and remembers the choice', async ({ page }) => {
