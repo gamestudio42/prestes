@@ -26,6 +26,7 @@ import {
   type TacticalOrder,
   type Vec2,
 } from '@prestes/shared';
+import { previewKey } from './previewKey';
 import type { OrderCallout, PlacementPreview } from '@prestes/view3d';
 import type { GameClient } from '../client/GameClient';
 import type { SelectionMode } from '../ui/GameCanvas';
@@ -106,8 +107,27 @@ export function useOrders({
     pendingOrder === 'flank' ||
     pendingTactical === 'pursue' ||
     pendingTactical === 'rescue';
-  const previewPlan: PreviewPlan | null =
-    previewEnabled && !hudHidden && frame && previewOrder && (!needsTarget || hoverUnitId !== null)
+  // Recomputed only when what it depends on changes, not on every frame
+  // (movement-polish: a still pointer over a running battle cost a preview a frame).
+  const previewActive = Boolean(
+    previewEnabled && !hudHidden && frame && previewOrder && (!needsTarget || hoverUnitId !== null),
+  );
+  const planKey = previewActive
+    ? previewKey({
+        order: previewOrder!,
+        selected: selectedUnits,
+        hoverPoint,
+        hoverUnitId,
+        formation: selectedUnits[0]?.formation,
+        drag: facingDrag ?? lineDrag,
+        dragKind: facingDrag ? 'facing' : lineDrag ? 'line' : null,
+      })
+    : null;
+  const latestFrame = useRef(frame);
+  latestFrame.current = frame;
+  const previewPlan: PreviewPlan | null = useMemo(() => {
+    const frame = latestFrame.current;
+    return planKey !== null && frame && previewOrder
       ? planOrderPreview({
           frame,
           unitIds: selectedIds,
@@ -132,6 +152,7 @@ export function useOrders({
           fast: previewOrder === 'move',
         })
       : null;
+  }, [planKey]);
 
   // Cover slots under the cursor, and the ones the pending ground order would fill.
   const hoveredCoverId =

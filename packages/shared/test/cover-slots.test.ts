@@ -71,3 +71,18 @@ describe('pickSlots', () => {
     expect([...picked.values()].every((slot) => slot.id !== slots[0]!.id && Math.hypot(slot.x, slot.y) <= 2)).toBe(true);
   });
 });
+
+describe('slots keep a soldier\'s room (movement-polish)', () => {
+  it('a trench bay and its parapet offer no two slots closer than 1.15 m', () => {
+    const bay: CoverPoint = { id: 1, kind: 'trench', x: 0, y: 0, halfWidth: 2.8, halfDepth: 1.6, height: 0.2, radius: 3.2, quality: 0.4, blocksMovement: false, blocksSight: false };
+    const parapet: CoverPoint = { id: 2, kind: 'sandbag', x: 0, y: 1.9, halfWidth: 2.8, halfDepth: 0.4, height: 0.9, radius: 3.5, quality: 0.3, blocksMovement: false, blocksSight: false };
+    const slots = allCoverSlots([bay, parapet]);
+    for (const a of slots) {
+      for (const b of slots) {
+        if (a !== b) expect((a.x - b.x) ** 2 + (a.y - b.y) ** 2).toBeGreaterThanOrEqual(1.15 * 1.15 - 1e-9);
+      }
+    }
+    // The trench, the better cover, keeps all its slots.
+    expect(slots.filter((slot) => slot.coverId === 1)).toHaveLength(coverSlots(bay).length);
+  });
+});

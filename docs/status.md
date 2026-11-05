@@ -421,6 +421,33 @@ from 90 to 100 KB. Determinism golden `f8378a18` ->
    system raised the three chunk to 591 KB, so its budget went from 560 to
    610 KB (2026-11-04).
 
+## Movement polish (`movement-polish`, 2026-11-05)
+
+From the user's 3v3 hand check: the enemy bunched up, a rush sometimes went
+sideways, and the preview weighed on the game before a click.
+
+- Bunching came from the defence, not the attack. A trench bay and its
+  parapet offered cover slots 0.5 m apart, which stood men in pairs, and the
+  men without a slot all got one fallback point. Slots now keep a man's width
+  (1.15 m, the better cover's first), and a man without a slot takes a place
+  of his own. The report's new bunching figure (halted men with a halted mate
+  within 1 m) went from 0.36 to 0.
+- A rush takes only cover inside a 45-degree cone toward the objective that
+  gains at least 6 m; otherwise it runs straight on.
+- Preview: targeted orders (attack, flank, pursue, rescue) draw straight
+  approach guides instead of searching a route per soldier. They move by
+  rushes, so that route was not what would happen. Ground orders search one
+  route per section. The preview is memoized on the pointer's 1 m cell, the
+  hovered unit, the selection, the order, a drag and positions rounded to
+  1 m. Three sections: Attack 364 ms -> 0.2 ms, Advance 1.8 -> 1.5 ms.
+- Report (seeds 1922, 7, 42, 5, 11, hold-then-counter player): victory in 5
+  to 6 minutes losing 12 to 17 of 33 (seed 5: 32 lost, 10.6 minutes),
+  bunching 0, at most 6 shots on one tick.
+- The flaky e2e "toggles passive posture and hold fire" now waits for the
+  section to be selected before clicking.
+
+Determinism golden `b849b931` -> `17b3b200` (positions).
+
 ## Battle feel (`battle-feel-3v3`, 2026-11-05)
 
 Asked by the user after the low-poly hand check: soldiers all fired at once,
@@ -468,6 +495,11 @@ Determinism golden `962153ae` -> `b849b931` (fire timing, damage, cover and
 the commander). 3v3 headless tick time went from 3.8 to 2.1 ms. The
 simulation worker grew to 100.1 KB with the commander and the combat rules;
 its budget went from 100 to 110 KB.
+Hand check by the user in Chrome (2026-11-05): a full 3v3 played, a frontal
+attack on three fronts, fun. Noted for next: the enemy still bunches (easy
+to kill), a rush sometimes goes sideways before it advances, the movement
+preview weighs on the frame before a placement click, and the maps are still
+simple.
 
 ## Order tempo (`order-tempo-and-facing`, 2026-11-05)
 

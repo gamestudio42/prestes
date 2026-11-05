@@ -22,6 +22,8 @@ export interface BattleReport {
   longestSilence: number;
   /** Seconds until the first shot. */
   firstShot: number;
+  /** Largest share of a side's fit soldiers with a mate within 1 m. */
+  bunching: number;
 }
 
 const ORDER_EVERY = 50;
@@ -85,6 +87,7 @@ export async function battleReport(seed = 1922, maxSeconds = 900): Promise<Battl
   let shots = 0;
   let maxShotsPerTick = 0;
   let firstShot = -1;
+  let bunching = 0;
   let silenceStart = 0;
   let longestSilence = 0;
   let outcome: BattleReport['outcome'] = 'none';
@@ -106,6 +109,7 @@ export async function battleReport(seed = 1922, maxSeconds = 900): Promise<Battl
       if (event.type === 'outcome' && event.outcome !== 'playing') outcome = event.outcome;
     }
     shots += tickShots;
+    if (frame.tick % 10 === 0) bunching = Math.max(bunching, bunchedShare(frame, 'column'), bunchedShare(frame, 'legalist'));
     maxShotsPerTick = Math.max(maxShotsPerTick, tickShots);
     if (tickShots > 0) {
       if (firstShot < 0) firstShot = frame.tick;
@@ -125,7 +129,29 @@ export async function battleReport(seed = 1922, maxSeconds = 900): Promise<Battl
     maxShotsPerTick,
     longestSilence: longestSilence / 10,
     firstShot: firstShot < 0 ? -1 : firstShot / 10,
+    bunching: Number(bunching.toFixed(2)),
   };
+}
+
+/**
+ * Closer than a man's width: soldiers in a line 1.2 to 1.4 m apart (a trench
+ * line) are not bunched; a mate within this is (the pairs half a metre apart
+ * of the old slot layout).
+ */
+const CROWDED = 1.0;
+
+/** Share of a side's fit soldiers (6 or more) who stand halted with a fit mate within CROWDED m. */
+export function bunchedShare(frame: Frame, faction: 'column' | 'legalist'): number {
+  const side = frame.units.filter((unit) => unit.faction === faction && fit(unit));
+  // A handful of survivors together is not a bunched section.
+  if (side.length < 6) return 0;
+  // Men passing each other on the move are not bunched: only halted men count,
+  // and only next to halted mates.
+  const halted = side.filter((unit) => unit.gait === undefined);
+  const crowded = halted.filter(
+    (unit) => halted.some((mate) => mate !== unit && (mate.x - unit.x) ** 2 + (mate.y - unit.y) ** 2 < CROWDED * CROWDED),
+  ).length;
+  return crowded / side.length;
 }
 
 function bothSidesFit(frame: Frame): boolean {

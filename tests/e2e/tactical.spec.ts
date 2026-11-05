@@ -49,6 +49,9 @@ test('toggles passive posture and hold fire', async ({ page }) => {
   await page.getByTestId('start-button').click();
   await expect(page.getByTestId('hud')).toBeVisible();
   await page.waitForFunction(() => Boolean((window as unknown as { __prestes?: unknown }).__prestes));
+  // The section is selected once the first frames arrive: until then a
+  // posture click has no one to command (the test was flaky under load).
+  await expect(page.getByTestId('selection-count')).not.toHaveAttribute('data-selected', '0');
 
   await page.getByTestId('posture-aggressive').click();
   await expect(page.getByTestId('posture-aggressive')).toHaveAttribute('aria-pressed', 'true');

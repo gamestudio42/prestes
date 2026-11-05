@@ -339,6 +339,9 @@ function previewCoverSlots(
   });
 }
 
+/** A soldier this close to his place (m) gets his own route rather than the section's. */
+const SECTION_ROUTE_MIN = 12;
+
 export function planOrderPreview(request: PreviewRequest): PreviewPlan | null {
   const unitIds = new Set(request.unitIds);
   const units = request.frame.units.filter(
@@ -420,6 +423,35 @@ export function planOrderPreview(request: PreviewRequest): PreviewPlan | null {
 
   const paths: PreviewPath[] = [];
   const cones: PreviewCone[] = [];
+  // Ground orders search one route per section, from its centre to the
+  // order's point; each soldier follows it at his offset and ends at his own
+  // place (movement-polish: one search per soldier cost 2 ms for three
+  // sections). A soldier close to his place walks straight in.
+  const sectionRoutes = new Map<number, Vec2[]>();
+  const sectionPath = (unit: UnitSnapshot, destination: Vec2): Vec2[] => {
+    const direct = (destination.x - unit.x) ** 2 + (destination.y - unit.y) ** 2;
+    if (direct < SECTION_ROUTE_MIN ** 2 || !request.to) {
+      return findPath({ x: unit.x, y: unit.y }, destination, request.frame.covers);
+    }
+    const centre = sectionCentres.get(unit.squadId) ?? { x: unit.x, y: unit.y };
+    let route = sectionRoutes.get(unit.squadId);
+    if (!route) {
+      route = findPath(centre, request.to, request.frame.covers);
+      sectionRoutes.set(unit.squadId, route);
+    }
+    if (route.length === 0) return [];
+    const offsetX = unit.x - centre.x;
+    const offsetY = unit.y - centre.y;
+    return [...route.slice(0, -1).map((point) => ({ x: point.x + offsetX, y: point.y + offsetY })), { ...destination }];
+  };
+  const sectionCentres = new Map<number, Vec2>();
+  for (const squadId of new Set(units.map((unit) => unit.squadId))) {
+    const section = units.filter((unit) => unit.squadId === squadId);
+    sectionCentres.set(squadId, {
+      x: section.reduce((sum, unit) => sum + unit.x, 0) / section.length,
+      y: section.reduce((sum, unit) => sum + unit.y, 0) / section.length,
+    });
+  }
   const los: PreviewLos[] = [];
   const plannedSlots = previewCoverSlots(request, units, slots, target, coverFacing, fast);
   const groundFinal = !fast && hasDestination && GROUND_ORDERS.has(request.order);
@@ -459,9 +491,11 @@ export function planOrderPreview(request: PreviewRequest): PreviewPlan | null {
         request.order === 'rescue')
     ) {
       let targetDestination = { x: target.x, y: target.y };
+      const centre = sectionCentres.get(unit.squadId) ?? { x: unit.x, y: unit.y };
       if (request.order === 'flank') {
-        const dx = target.x - unit.x;
-        const dy = target.y - unit.y;
+        // The section flanks as a body: its flank point is taken from its centre.
+        const dx = target.x - centre.x;
+        const dy = target.y - centre.y;
         const length = Math.sqrt(dx * dx + dy * dy) || 1;
         const perpendicular = { x: -dy / length, y: dx / length };
         const candidates = [
@@ -476,13 +510,10 @@ export function planOrderPreview(request: PreviewRequest): PreviewPlan | null {
           break;
         }
       }
-      const targetPath = findPath(
-        { x: unit.x, y: unit.y },
-        targetDestination,
-        request.frame.covers,
-      );
-      const targetPoints =
-        targetPath.length > 0 ? [{ x: unit.x, y: unit.y }, ...targetPath] : [];
+      // A straight approach guide: a targeted order moves by rushes and finds
+      // its way as it goes, so a searched route was not what would happen,
+      // and 33 long searches per frame took 364 ms (movement-polish).
+      const targetPoints = [{ x: unit.x, y: unit.y }, targetDestination];
       paths.push({
         unitId: unit.id,
         points: targetPoints,
@@ -513,7 +544,7 @@ export function planOrderPreview(request: PreviewRequest): PreviewPlan | null {
     const path = hasDestination
       ? fast
         ? [{ ...destination }]
-        : findPath({ x: unit.x, y: unit.y }, destination, request.frame.covers)
+        : sectionPath(unit, destination)
       : [];
     const points = path.length > 0 ? [{ x: unit.x, y: unit.y }, ...path] : [];
     const slotId = coverSlots.get(unit.id)?.id;

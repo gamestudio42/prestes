@@ -1,4 +1,4 @@
-import { cachedCoverSlots, matchDestinations, planCoverSlots } from '@prestes/shared';
+import { SLOT_ROOM, cachedCoverSlots, matchDestinations, planCoverSlots } from '@prestes/shared';
 import type { CoverSlot, CoverSlotPlan, Vec2 } from '@prestes/shared';
 import type { SimContext } from './context';
 import type { MutableUnit } from './model';
@@ -102,11 +102,44 @@ export function matchedDestinations(
   fallback: Vec2,
   place: (anchor: Vec2) => Vec2 = (anchor) => anchor,
 ): Array<{ x: number; y: number; slot: CoverSlot | null }> {
+  const taken: Vec2[] = [...coverSlots.values()].map((slot) => ({ x: slot.x, y: slot.y }));
   const finals = units.map((unit, index) => {
     const slot = coverSlots.get(unit.id);
     if (slot) return { x: slot.x, y: slot.y, slot };
-    const point = place(anchors[index] ?? fallback);
+    // A soldier without a slot takes a place of his own: two anchors can be
+    // placed on one point (the region clamp, the nearest open point).
+    const point = roomOf(place(anchors[index] ?? fallback), taken, place);
+    taken.push(point);
     return { x: point.x, y: point.y, slot: null };
   });
   return matchDestinations(units, finals);
+}
+
+/** Ring offsets tried around a crowded point, nearest first, in a fixed order. */
+const ROOM_RINGS = [1.2, 2.4, 3.6, 4.8];
+const ROOM_DIRECTIONS: readonly Vec2[] = [
+  { x: 1, y: 0 },
+  { x: -1, y: 0 },
+  { x: 0, y: 1 },
+  { x: 0, y: -1 },
+  { x: 0.7071, y: 0.7071 },
+  { x: -0.7071, y: 0.7071 },
+  { x: 0.7071, y: -0.7071 },
+  { x: -0.7071, y: -0.7071 },
+];
+
+function crowded(point: Vec2, taken: readonly Vec2[]): boolean {
+  return taken.some((other) => (other.x - point.x) ** 2 + (other.y - point.y) ** 2 < SLOT_ROOM * SLOT_ROOM);
+}
+
+/** The point, or the nearest ring point around it that keeps a man's width from every taken place. */
+function roomOf(point: Vec2, taken: readonly Vec2[], place: (anchor: Vec2) => Vec2): Vec2 {
+  if (!crowded(point, taken)) return point;
+  for (const ring of ROOM_RINGS) {
+    for (const direction of ROOM_DIRECTIONS) {
+      const candidate = place({ x: point.x + direction.x * ring, y: point.y + direction.y * ring });
+      if (!crowded(candidate, taken)) return candidate;
+    }
+  }
+  return point;
 }

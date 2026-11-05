@@ -11,6 +11,10 @@ import { queueUnitOrder } from './movement';
 export const RUSH_COVER_REACH = 30;
 export const RUSH_MIN = 12;
 export const RUSH_MAX = 20;
+/** Rush cover must bring the soldier at least this much nearer the objective (m). */
+export const RUSH_COVER_GAIN = 6;
+/** Rush cover must lie within 45 degrees of the line to the objective. */
+const COS_45 = 0.7071;
 
 export function updateBounding(ctx: SimContext): void {
   const eligible = ctx.units.filter(
@@ -342,7 +346,16 @@ export function assignBoundingAdvance(
       const destinationDistance = Math.sqrt(
         (cover.x - destination.x) ** 2 + (cover.y - destination.y) ** 2,
       );
-      if (destinationDistance >= currentDistance - 1.5) {
+      // Only cover ahead that gains real ground: inside a 45-degree cone toward
+      // the objective and at least half a rush nearer (movement-polish).
+      if (destinationDistance > currentDistance - RUSH_COVER_GAIN) {
+        continue;
+      }
+      const toCoverX = cover.x - unit.x;
+      const toCoverY = cover.y - unit.y;
+      const toGoalX = destination.x - unit.x;
+      const toGoalY = destination.y - unit.y;
+      if (toCoverX * toGoalX + toCoverY * toGoalY < COS_45 * coverDistance * currentDistance) {
         continue;
       }
       if (

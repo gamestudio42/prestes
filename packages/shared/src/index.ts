@@ -138,6 +138,7 @@ export { nearestTargetGroups, spreadTargetGroups, type TargetableUnit } from './
 export {
   allCoverSlots,
   cachedCoverSlots,
+  SLOT_ROOM,
   coverAtPoint,
   coverSlotView,
   coverSlots,

@@ -114,12 +114,57 @@ export function coverSlots(cover: CoverPoint): CoverSlot[] {
  * movement-blocking footprint.
  */
 export function allCoverSlots(covers: readonly CoverPoint[]): CoverSlot[] {
-  return covers
+  const walkable = covers
     .flatMap((cover) => coverSlots(cover))
     .filter(
       (slot) =>
         isInsidePathGrid(slot.x, slot.y) && !isPointBlockedByCovers(slot.x, slot.y, covers, 0.8),
     );
+  return keepRoom(walkable, covers);
+}
+
+/** Two slots closer than this are one place: a man's width (movement-polish). */
+export const SLOT_ROOM = 1.15;
+
+/**
+ * Overlapping covers (a trench bay and its parapet) offer slots on top of each
+ * other, which stood soldiers in pairs half a metre apart. Keeps the slots of
+ * the better cover first (quality, then cover id, then slot order) and drops
+ * any slot within a man's width of one already kept.
+ */
+function keepRoom(slots: readonly CoverSlot[], covers: readonly CoverPoint[]): CoverSlot[] {
+  const quality = new Map(covers.map((cover) => [cover.id, cover.quality]));
+  const ordered = [...slots].sort(
+    (left, right) =>
+      (quality.get(right.coverId) ?? 0) - (quality.get(left.coverId) ?? 0) ||
+      left.coverId - right.coverId ||
+      left.id - right.id,
+  );
+  const cell = (value: number) => Math.floor(value / SLOT_ROOM);
+  const grid = new Map<string, CoverSlot[]>();
+  const kept: CoverSlot[] = [];
+  for (const slot of ordered) {
+    const cx = cell(slot.x);
+    const cy = cell(slot.y);
+    let crowded = false;
+    for (let dx = -1; dx <= 1 && !crowded; dx += 1) {
+      for (let dy = -1; dy <= 1 && !crowded; dy += 1) {
+        for (const other of grid.get(`${cx + dx}:${cy + dy}`) ?? []) {
+          if ((other.x - slot.x) ** 2 + (other.y - slot.y) ** 2 < SLOT_ROOM * SLOT_ROOM) {
+            crowded = true;
+            break;
+          }
+        }
+      }
+    }
+    if (crowded) continue;
+    kept.push(slot);
+    const key = `${cx}:${cy}`;
+    grid.set(key, [...(grid.get(key) ?? []), slot]);
+  }
+  // Back to the generation order, which the rest of the planner expects.
+  const keep = new Set(kept);
+  return slots.filter((slot) => keep.has(slot));
 }
 
 export interface SlotPickOptions {

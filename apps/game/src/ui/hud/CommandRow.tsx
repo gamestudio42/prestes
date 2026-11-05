@@ -45,7 +45,7 @@ export function CommandRow({
   return (
     <>
     <div className="command-row hud-status-row">
-      <span className="hud-selection">
+      <span className="hud-selection" data-testid="selection-count" data-selected={selectedCount}>
         {t('hud.selection')}: {selectedCount}/{aliveCount}
       </span>
       <span className="hud-order-value" data-testid="order-value">

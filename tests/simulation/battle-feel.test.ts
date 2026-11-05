@@ -14,6 +14,8 @@ describe('3v3 battle feel', () => {
       expect(report.seconds).toBeLessThanOrEqual(600);
       expect(report.maxShotsPerTick).toBeLessThanOrEqual(8);
       expect(report.longestSilence).toBeLessThanOrEqual(75);
+      // movement-polish: sections keep a man's room.
+      expect(report.bunching).toBeLessThan(0.15);
     }, 120_000);
   }
 });

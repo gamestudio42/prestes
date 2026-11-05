@@ -26,4 +26,4 @@
 
 - [x] 5.1 Tune the numbers by the report until `battle-feel.test.ts` passes; watch the battle in the browser at tactical span (screenshots at the approach, the firefight, the assault and the end) and fix what reads wrong, the enemy's clips included; view test pinning a legalist snapshot through walk, run, prone, fire and aim (verify: the feel test passes; screenshots reviewed)
 - [x] 5.2 Re-record the determinism golden with the reason; rerun the bootcamp e2e and adjust station timeouts or targets only where the new fire rate requires it (verify: `pnpm verify`)
-- [ ] 5.3 `docs/status.md` with the final figures; hand check by the user in Chrome: a full 3v3 from the menu to the end panel (verify: the user's notes recorded)
+- [x] 5.3 `docs/status.md` with the final figures; hand check by the user in Chrome: a full 3v3 from the menu to the end panel (verify: the user's notes recorded)
