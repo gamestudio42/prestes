@@ -286,20 +286,20 @@ frames and events, not on button presses alone. The stations SHALL require:
 - station 1: select the section, box-select, move to a zone, change formation,
   change stance and reach the assembly zone with five soldiers;
 - station 2: attack a training target until it is hit, suppress a training troop
-  for the configured duration, hold fire while a target is visible, and face a
-  marked direction;
+  for the configured duration, hold fire (fire control) while a target is
+  visible, and face a marked direction with a drag;
 - station 3: flank a suppressed training troop so that flankers reach its side,
-  advance with alternating movement (bounding) to a marked line, and withdraw out
-  of a marked danger zone;
-- station 4: defend a marked area with soldiers in cover, trigger an ambush when
-  a training troop enters the zone, and hold position under training fire for the
-  configured duration;
-- station 5: obtain a recon report from a marked area, pursue a withdrawing
-  training target, disperse in a marked area, place soldiers in reserve, and
-  regroup the section within the cohesion band;
+  advance by bounds to a marked line, and withdraw out of a marked danger zone;
+- station 4: defend a marked area with soldiers in cover, spring an ambush with
+  fire control on contact when a training troop enters the zone, and halt under
+  training fire for the configured duration;
+- station 5: obtain a recon report from a marked area, attack a withdrawing
+  training target and follow it, open the section to more than 5 m between
+  soldiers in a marked area, keep part of the section defending with fire held,
+  and close the section to under 2 m within the cohesion band;
 - station 6: rescue an incapacitated soldier through carry, treatment and
-  evacuation, keep the section in protect-officer posture near the instructor,
-  and keep cohesion while the instructor is out of action;
+  evacuation, keep the section within 10 m of the instructor while he is under
+  fire, and keep cohesion while the instructor is out of action;
 - station 7: suppress, take and hold the training line with the instructor
   protected, as in the former assault and hold phases.
 
@@ -312,9 +312,10 @@ frames and events, not on button presses alone. The stations SHALL require:
 #### Scenario: Curriculum coverage
 
 - **WHEN** the player completes the exercise
-- **THEN** every order in the order catalogue, every stance, every posture,
-  formation change, Hold Fire, alternating movement, rescue and the officer aura
-  and loss have been required by at least one objective
+- **THEN** every order of the board, every stance, every posture, formation
+  change, the facing and spacing drag, every fire control setting, bounding,
+  rescue and the officer aura and loss have been required by at least one
+  objective
 
 ### Requirement: Instructor accompanies the section
 

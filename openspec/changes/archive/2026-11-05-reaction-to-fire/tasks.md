@@ -8,4 +8,4 @@
 ## 2. Close
 
 - [x] 2.1 E2E budgets adjusted if station timings move; `pnpm verify`
-- [ ] 2.2 Hand check in Chrome on the final station and an open-field ambush in the sandbox; record in `docs/status.md`
+- [x] 2.2 Hand check in Chrome on the final station and an open-field ambush in the sandbox; record in `docs/status.md`

@@ -76,7 +76,7 @@ the selection ring and shadow SHALL stay separate ground marks.
 
 A moving character SHALL play the walk clip (or crouch-walk or crawl for its
 stance) at a rate proportional to its ground speed, and a stationary character
-SHALL play the idle clip of its stance, cross-fading over about 0.15 s.
+SHALL play the idle clip of its stance, cross-fading between them.
 
 #### Scenario: Walking cycle
 

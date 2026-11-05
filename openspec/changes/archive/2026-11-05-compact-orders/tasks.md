@@ -23,4 +23,4 @@
 ## 4. Close
 
 - [x] 4.1 E2E moved to the new buttons; `pnpm verify`
-- [ ] 4.2 Hand check of the seven stations in Chrome; record in `docs/status.md`
+- [x] 4.2 Hand check of the seven stations in Chrome; record in `docs/status.md`

@@ -23,4 +23,4 @@
 ## 4. Close
 
 - [x] 4.1 Bootcamp time limits re-measured; e2e tick budgets adjusted; `pnpm verify`
-- [ ] 4.2 Hand check in Chrome (pace not too slow, legs smooth); record in `docs/status.md`
+- [x] 4.2 Hand check in Chrome (pace not too slow, legs smooth); record in `docs/status.md`

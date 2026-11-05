@@ -80,12 +80,16 @@ pixel sprites from a small effects sheet, drawn with nearest filtering.
 - Blender scripting is a large surface; the first models are deliberately
   simple and can be refined in Blender afterwards.
 - Skinned meshes cost more than the current parts; a soldier count of about 30
-  at tactical span is the target. The e2e performance probe checks the frame
-  time stays within 1.5 times the current value.
+  at tactical span is the target. The e2e performance probe checks the mean
+  frame time stays under an absolute budget (about 16.7 ms); the procedural
+  rig is measured once before its removal, for the record only.
 - Visual baselines and some view tests change; reviewed screen by screen.
 
 ## Migration Plan
 
-The procedural rig and props stay until the models load, behind a fallback
-(the view keeps working if a model fails to load), and are removed in the
-last task once every e2e passes with the models.
+The procedural rig and props stay until the models load everywhere and the
+performance probe has measured both, then they are removed in the last task.
+No second art set is kept: the models ship from the game's own origin, so a
+load failure means a broken build or a lost connection. If a model fails to
+load, the view falls back to the strategic proxy (already kept for the far
+LOD) at every distance and logs the error, so the field stays playable.

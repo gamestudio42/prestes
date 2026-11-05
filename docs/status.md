@@ -370,6 +370,8 @@ him. An ordered Hold stays put; aggressive soldiers only turn. Suppress moves
 on together to the nearest man of the target's squad within 15 m when the
 target falls or runs, and ends when none is left. The determinism golden
 moved from `7d7706bf` to `f8378a18` on purpose (soldiers now react to fire).
+Hand check in Chrome (final station and an open-field ambush in the sandbox)
+done by the user (2026-11-05).
 
 ## Compact orders (`compact-orders`, 2026-11-04)
 
@@ -389,7 +391,8 @@ protect-officer, set_bounding), mapped to the new behaviour. Stations 2 to 6
 teach the new way (texts in both languages). The simulation worker grew to
 91 KB with fire reaction, fire control and officer screening; its budget went
 from 90 to 100 KB. Determinism golden `f8378a18` ->
-`ae3a0a1d`.
+`ae3a0a1d`. Hand check of the seven stations in Chrome done by the user
+(2026-11-05).
    The glTF loaders are a separate chunk fetched on demand; the animation
    system raised the three chunk to 591 KB, so its budget went from 560 to
    610 KB (2026-11-04).
@@ -413,7 +416,9 @@ run clip (rifle at the ready, leaning in) by smoothed ground speed, plays it at
 longer scatters arrived soldiers to nearby cover (it split the body by the
 hamlet trench). Halt now clears every order like Escape; Aim ("Mirar para")
 is back as its own order showing the lines of sight; the Clear button is gone.
-Determinism golden `ae3a0a1d` -> `962153ae`.
+Determinism golden `ae3a0a1d` -> `962153ae`. Hand check in Chrome (pace not
+too slow, legs smooth) done by the user (2026-11-05), after the glide and
+steady-clip fixes.
 
 ## Facing drag (`move-facing-drag`, 2026-11-04)
 
