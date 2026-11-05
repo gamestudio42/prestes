@@ -239,7 +239,7 @@ describe('mechanics: troop orders', () => {
       const center = { x: 0, y: 18 };
       // An advance goes by bounds (half covers while half moves): slower.
       t.send({ type: 'order', order, unitIds: COLUMN, to: center }, order === 'advance' ? 800 : 300);
-      expect(Math.max(...COLUMN.map((id) => distance(t.unit(id), center)))).toBeLessThan(12);
+      expect(Math.max(...COLUMN.map((id) => distance(t.unit(id), center)))).toBeLessThan(12.5);
     });
   }
 
@@ -663,7 +663,7 @@ describe('mechanics: compact orders', () => {
     const t = harness();
     // Both sides hold while the enemy draws off (no one dies before the test).
     t.send({ type: 'hold_fire', unitIds: [...COLUMN, OFFICER, ...ENEMY], hold: true });
-    t.send({ type: 'move', unitIds: ENEMY, to: { x: 0, y: -70 } }, 500);
+    t.send({ type: 'move', unitIds: ENEMY, to: { x: 0, y: -70 } }, 800);
     const before = t.shotsBy(COLUMN);
     t.send({ type: 'fire_control', unitIds: COLUMN, mode: 'contact' }, 60);
     expect(t.shotsBy(COLUMN)).toBe(before);
@@ -742,3 +742,97 @@ describe('mechanics: return fire in training', () => {
   });
 });
 
+
+describe('mechanics: gaits (order-tempo-and-facing)', () => {
+  /** Peak ground speed of a soldier over some ticks, from his positions. */
+  const peakSpeed = (t: ReturnType<typeof harness>, id: number, ticks: number) => {
+    let last = { x: t.unit(id).x, y: t.unit(id).y };
+    let peak = 0;
+    t.run(ticks, (frame) => {
+      const unit = frame.units.find((entry) => entry.id === id)!;
+      peak = Math.max(peak, Math.sqrt((unit.x - last.x) ** 2 + (unit.y - last.y) ** 2) / 0.1);
+      last = { x: unit.x, y: unit.y };
+    });
+    return peak;
+  };
+  const quiet = (t: ReturnType<typeof harness>) =>
+    t.send({ type: 'hold_fire', unitIds: [...COLUMN, OFFICER, ...ENEMY], hold: true });
+
+  it('a move walks at about 1.5 m/s', () => {
+    const t = harness();
+    quiet(t);
+    t.send({ type: 'move', unitIds: [1], to: { x: -40, y: 30 } }, 20);
+    const from = { x: t.unit(1).x, y: t.unit(1).y };
+    t.run(40);
+    expect(t.unit(1).gait).toBe('walk');
+    const speed = distance(t.unit(1), from) / 4;
+    expect(speed).toBeGreaterThan(1.0);
+    expect(speed).toBeLessThan(1.7);
+  });
+
+  it('a withdrawal runs', () => {
+    const t = harness();
+    quiet(t);
+    t.send({ type: 'withdraw', unitIds: [1] });
+    const peak = peakSpeed(t, 1, 40);
+    expect(peak).toBeGreaterThan(2.6);
+  });
+
+  it('recon is slower than a move over the same ground', () => {
+    const arrival = (order: 'move' | 'recon') => {
+      const t = harness();
+      quiet(t);
+      const to = { x: -40, y: 30 };
+      if (order === 'move') t.send({ type: 'move', unitIds: [1], to });
+      else t.send({ type: 'order', order: 'recon', unitIds: [1], to });
+      let ticks = 0;
+      while (distance(t.unit(1), to) > 1.5 && ticks < 2000) {
+        t.run(1);
+        ticks += 1;
+      }
+      return ticks;
+    };
+    expect(arrival('recon')).toBeGreaterThan(arrival('move') * 1.3);
+  });
+
+  it('eases into the gait instead of jumping to it', () => {
+    const t = harness();
+    quiet(t);
+    t.send({ type: 'withdraw', unitIds: [1] });
+    expect(t.engine.units.find((unit) => unit.id === 1)!.moveSpeed ?? 0).toBeLessThan(1);
+  });
+
+  it('a winded soldier walks', () => {
+    const t = harness();
+    quiet(t);
+    const unit = t.engine.units.find((entry) => entry.id === 1)!;
+    unit.fatigue = 80;
+    t.send({ type: 'withdraw', unitIds: [1] }, 10);
+    expect(t.unit(1).gait).toBe('walk');
+  });
+
+  it('defensive posture crouches the section unless the player set a stance', () => {
+    const t = harness();
+    quiet(t);
+    t.send({ type: 'posture', unitIds: [1], posture: 'defensive' }, 2);
+    expect(t.unit(1).stance).toBe('crouched');
+    t.send({ type: 'stance', unitIds: [2], stance: 'standing' });
+    t.send({ type: 'posture', unitIds: [2], posture: 'defensive' }, 2);
+    expect(t.unit(2).stance).toBe('standing');
+    t.send({ type: 'posture', unitIds: [1], posture: 'balanced' }, 2);
+    expect(t.unit(1).stance).toBe('standing');
+  });
+
+  it('scouts sweep their front while halted', () => {
+    const t = harness();
+    quiet(t);
+    t.send({ type: 'order', order: 'recon', unitIds: [1], to: { x: -12, y: 10 } }, 300);
+    const angles: number[] = [];
+    t.run(40, (frame) => {
+      const unit = frame.units.find((entry) => entry.id === 1)!;
+      angles.push(Math.atan2(unit.facingY, unit.facingX));
+    });
+    const spread = Math.max(...angles) - Math.min(...angles);
+    expect(spread).toBeGreaterThan(1.2);
+  });
+});

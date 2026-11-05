@@ -171,6 +171,15 @@ export function applyCommand(
 
   if (command.type === 'posture') {
     for (const unit of actionable) {
+      // Defensive moves and halts crouched; leaving it stands him back up,
+      // unless the player chose a stance himself.
+      if (!unit.stanceLocked && unit.state !== 'pinned') {
+        if (command.posture === 'defensive' && unit.stance === 'standing') {
+          unit.stance = 'crouched';
+        } else if (unit.posture === 'defensive' && command.posture !== 'defensive' && unit.stance === 'crouched') {
+          unit.stance = 'standing';
+        }
+      }
       unit.posture = command.posture;
     }
     return;

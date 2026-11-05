@@ -215,7 +215,7 @@ async function playRecon(page: Page): Promise<void> {
   const all = await section(page);
   const here = (await currentFrame(page)).units.find((unit) => unit.id === all[0])!;
   await command(page, { type: 'order', order: 'disperse', unitIds: all, to: { x: here.x, y: here.y } });
-  await untilObjective(page, 'recon-disperse', 200);
+  await untilObjective(page, 'recon-disperse', 500);
   await command(page, { type: 'order', order: 'reserve', unitIds: all.slice(0, 3), to: entry('recon') });
   await untilObjective(page, 'recon-reserve', 200);
   await command(page, { type: 'order', order: 'advance', unitIds: all.slice(3), to: point('recon', 'bound') });
@@ -302,7 +302,11 @@ test('fails the wounded station when cohesion collapses and retries it', async (
   // instructor falls: rescue and guard first, then spread out.
   await playWoundedUntilCohesion(page);
   const ids = await section(page);
-  ids.forEach((id, index) => void command(page, { type: 'move', unitIds: [id], to: { x: -60 + index * 12, y: index % 2 === 0 ? 40 : -40 } }));
+  // Half north, half south, spread east to west: at a walk (1.5 m/s since
+  // order-tempo-and-facing) they must head apart from the first step.
+  await command(page, { type: 'stance', unitIds: ids, stance: 'standing' });
+  await command(page, { type: 'posture', unitIds: ids, posture: 'aggressive' });
+  ids.forEach((id, index) => void command(page, { type: 'move', unitIds: [id], to: { x: -110 + index * 22, y: index % 2 === 0 ? -10 : 130 } }));
   await until(page, async () => page.getByTestId('training-failure').isVisible(), {
     maxTicks: 1500,
     chunk: 20,

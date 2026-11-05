@@ -6,6 +6,7 @@ export type SoldierClip =
   | 'walk'
   | 'idle-ready'
   | 'walk-ready'
+  | 'run'
   | 'crouch-idle'
   | 'crouch-walk'
   | 'prone'
@@ -34,6 +35,10 @@ export const HELD_CLIPS: ReadonlySet<SoldierClip> = new Set([
 
 export interface ClipState {
   moving: boolean;
+  /** Ground speed (m/s, smoothed): above RUN_SPEED a standing soldier runs. */
+  speed?: number;
+  /** The simulation's gait while moving: a run gait runs from the first step. */
+  gait?: UnitSnapshot['gait'];
   /** The soldier fired in the last few tenths of a second. */
   firing: boolean;
   /** The soldier was struck a moment ago (also just before he falls). */
@@ -92,6 +97,9 @@ export function soldierClip(unit: ClipUnit, state: ClipState): SoldierClip {
     return aiming ? 'aim-crouch' : 'crouch-idle';
   }
   const ready = atTheReady(unit);
+  if (state.moving && ((state.speed ?? 0) > RUN_SPEED || (state.gait === 'run' && (state.speed ?? 0) > 1.6))) {
+    return 'run';
+  }
   if (state.moving) return ready ? 'walk-ready' : 'walk';
   if (state.firing) return 'fire-stand';
   if (aiming) return 'aim-stand';
@@ -104,21 +112,42 @@ export function soldierOutfit(unit: Pick<UnitSnapshot, 'kind' | 'faction'>): Sol
   return unit.faction === 'column' ? 'column' : 'legalist';
 }
 
-/** Ground speed each moving clip is authored at, in metres per second. */
+/** Above this ground speed (m/s) a standing soldier plays the run clip. */
+export const RUN_SPEED = 2.2;
+
+/** Below this ground speed (m/s) a soldier counts as halted. */
+export const MOVING_SPEED = 0.2;
+
+/**
+ * Ground speed each moving clip is authored at, in metres per second at 1x
+ * (real time since order-tempo-and-facing): two steps a second for the walk,
+ * three for the run.
+ */
 export const CLIP_SPEED: Partial<Record<SoldierClip, number>> = {
-  // Stride lengthened by 1.25 in target_soldier.py (STRIDE).
-  walk: 1.75,
-  'walk-ready': 1.75,
+  walk: 1.6,
+  'walk-ready': 1.5,
+  run: 3.5,
   'crouch-walk': 1.0,
   crawl: 0.45,
 };
 
 /**
- * Play a moving clip in step with the ground speed, but never faster than
- * authored: game time runs at twice real time at 1x, and the full cadence
- * there reads as frantic running (the user found even 1.5x too fast). The
- * feet slide instead.
+ * Play a moving clip in step with the ground speed, clamped to 0.75..1.25 of
+ * its authored rate: beyond that the next clip (walk or run) takes over, so
+ * the feet never visibly skate or blur.
  */
-export function walkTimeScale(metresPerSecond: number, authored = 1.75): number {
-  return Math.max(0.4, Math.min(1, metresPerSecond / authored));
+export function walkTimeScale(metresPerSecond: number, authored = 1.6): number {
+  return Math.max(0.75, Math.min(1.25, metresPerSecond / authored));
+}
+
+/** Body turn rate (radians a second): about 270 degrees, not a snap. */
+export const TURN_RATE = (270 * Math.PI) / 180;
+
+/** Turn `from` toward `to` by at most TURN_RATE * seconds, the short way. */
+export function turnToward(from: number, to: number, seconds: number): number {
+  let delta = (to - from + Math.PI) % (Math.PI * 2);
+  if (delta < 0) delta += Math.PI * 2;
+  delta -= Math.PI;
+  const limit = TURN_RATE * seconds;
+  return from + Math.max(-limit, Math.min(limit, delta));
 }

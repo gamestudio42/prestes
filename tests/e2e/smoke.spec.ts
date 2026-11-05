@@ -39,6 +39,10 @@ test('boots, selects a section, gives orders, fights and toggles the post', asyn
 
   await page.getByTestId('speed-2').click();
   await expect(page.getByTestId('speed-2')).toHaveClass(/active/);
+  // 1x is real time; 4x hurries a quiet stretch (order-tempo-and-facing).
+  await expect(page.getByTestId('speed-8')).toHaveAttribute('aria-label', '4x');
+  await page.getByTestId('speed-8').click();
+  await expect(page.getByTestId('speed-8')).toHaveClass(/active/);
   await page.getByTestId('speed-1').click();
 
   await page.getByTestId('stance-crouch').click();

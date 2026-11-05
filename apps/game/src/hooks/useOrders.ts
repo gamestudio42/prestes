@@ -36,7 +36,7 @@ interface OrderOptions {
   frame: Frame | null;
   locale: Locale;
   clientRef: MutableRefObject<GameClient | null>;
-  speed: 0 | 1 | 2 | 4;
+  speed: 0 | 1 | 2 | 4 | 8;
   hudHidden: boolean;
   controlBothSides: boolean;
   setControlBothSides: Dispatch<SetStateAction<boolean>>;

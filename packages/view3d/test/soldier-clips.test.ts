@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { soldierClip, soldierOutfit, walkTimeScale } from '../src/soldier-clips';
+import { CLIP_SPEED, soldierClip, soldierOutfit, turnToward, TURN_RATE, walkTimeScale } from '../src/soldier-clips';
 
 const base = {
   alive: true,
@@ -68,10 +68,36 @@ describe('soldierOutfit', () => {
 });
 
 describe('walkTimeScale', () => {
-  it('keeps the step in time with the ground speed, within limits', () => {
-    expect(walkTimeScale(1.75)).toBeCloseTo(1);
-    expect(walkTimeScale(0)).toBe(0.4);
-    expect(walkTimeScale(10)).toBe(1);
-    expect(walkTimeScale(0.45, 0.45)).toBeCloseTo(1);
+  it('keeps the step in time with the ground speed, within 0.75..1.25', () => {
+    expect(walkTimeScale(1.6)).toBeCloseTo(1);
+    expect(walkTimeScale(0)).toBe(0.75);
+    expect(walkTimeScale(10)).toBe(1.25);
+    expect(walkTimeScale(3.5, CLIP_SPEED.run)).toBeCloseTo(1);
+  });
+});
+
+describe('gaits in the view (order-tempo-and-facing)', () => {
+  const rifleman = { alive: true, incapacitated: false, routed: false, stance: 'standing' as const, targetId: null };
+
+  it('runs above the run speed, walks below it', () => {
+    expect(soldierClip(rifleman, { moving: true, firing: false, speed: 3.4 })).toBe('run');
+    expect(soldierClip(rifleman, { moving: true, firing: false, speed: 1.5 })).toBe('walk');
+  });
+
+  it('a run gait runs once he is under way', () => {
+    expect(soldierClip(rifleman, { moving: true, firing: false, speed: 1.8, gait: 'run' })).toBe('run');
+    expect(soldierClip(rifleman, { moving: true, firing: false, speed: 1.0, gait: 'run' })).toBe('walk');
+  });
+
+  it('crouched and prone keep their own moving clips', () => {
+    expect(soldierClip({ ...rifleman, stance: 'crouched' }, { moving: true, firing: false, speed: 3 })).toBe('crouch-walk');
+    expect(soldierClip({ ...rifleman, stance: 'prone' }, { moving: true, firing: false, speed: 3 })).toBe('crawl');
+  });
+
+  it('turns the body at about 270 degrees a second, the short way', () => {
+    const half = turnToward(0, Math.PI, 1 / 3);
+    expect(Math.abs(half)).toBeCloseTo(TURN_RATE / 3);
+    expect(turnToward(0, 0.1, 1)).toBeCloseTo(0.1);
+    expect(turnToward(3, -3, 0.01)).toBeGreaterThan(3);
   });
 });

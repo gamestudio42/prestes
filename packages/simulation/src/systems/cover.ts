@@ -146,6 +146,8 @@ export function seekCover(ctx: SimContext): void {
       order === 'flank' ||
       order === 'pursue' ||
       order === 'rescue' ||
+      // Regroup closes a compact body: scattering to cover would undo it.
+      order === 'regroup' ||
       order === 'flee'
     ) {
       continue;

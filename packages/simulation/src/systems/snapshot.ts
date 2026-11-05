@@ -50,6 +50,7 @@ export function snapshotUnits(ctx: SimContext): UnitSnapshot[] {
     posture: unit.posture,
     boundTeam: unit.boundTeam,
     boundPhase: unit.boundPhase,
+    gait: unit.path.length > 0 ? unit.gait : undefined,
     role: unit.role,
     nonLethal: unit.nonLethal,
   }));

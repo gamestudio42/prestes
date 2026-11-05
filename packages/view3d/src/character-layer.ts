@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { CLIP_SPEED, soldierClip, soldierOutfit, walkTimeScale } from './soldier-clips';
+import { CLIP_SPEED, MOVING_SPEED, soldierClip, soldierOutfit, turnToward, walkTimeScale } from './soldier-clips';
 import { SoldierInstance, loadSoldierAsset, type SoldierAsset } from './soldier-models';
 import {
   terrainHeightAt,
@@ -49,6 +49,8 @@ interface CharacterView {
   crouch: number;
   prone: number;
   facingAngle: number;
+  /** Ground speed (m/s), smoothed over a few frames. */
+  speed: number;
   idle: number;
   lean: number;
 }
@@ -89,6 +91,17 @@ function createRing(): THREE.Mesh {
   );
   ring.rotation.x = -Math.PI / 2;
   ring.position.y = 0.03;
+  // The front mark: a small arrowhead on the ring's edge where he faces
+  // (ring +Y is the soldier's front once the ring lies flat). It shares the
+  // ring's material, so it takes the faction or selection colour.
+  const mark = new THREE.BufferGeometry();
+  mark.setAttribute(
+    'position',
+    new THREE.Float32BufferAttribute([0, 1.08, 0, -0.24, 0.78, 0, 0.24, 0.78, 0], 3),
+  );
+  const front = new THREE.Mesh(mark, ring.material);
+  front.name = 'front-mark';
+  ring.add(front);
   return ring;
 }
 
@@ -502,6 +515,7 @@ export class CharacterLayer {
           crouch: 0,
           prone: 0,
           facingAngle: Math.atan2(-unit.facingX, -unit.facingY),
+          speed: 0,
           idle: unit.id * 0.7,
           lean: 0,
           fireUntil: 0,
@@ -515,6 +529,10 @@ export class CharacterLayer {
       const dx = unit.x - view.lastX;
       const dy = unit.y - view.lastY;
       const moved = Math.sqrt(dx * dx + dy * dy);
+      if (seconds > 0) {
+        // Smoothed over about a fifth of a second: frame positions jitter.
+        view.speed += (moved / seconds - view.speed) * Math.min(1, seconds * 6);
+      }
       view.lastX = unit.x;
       view.lastY = unit.y;
 
@@ -544,7 +562,8 @@ export class CharacterLayer {
       rig.root.position.set(unit.x, terrainHeightAt(unit.x, unit.y), unit.y);
       rig.root.scale.setScalar(scale);
       const desiredAngle = Math.atan2(-unit.facingX, -unit.facingY);
-      view.facingAngle += shortestAngleDelta(view.facingAngle, desiredAngle) * 0.24;
+      // The body turns at a man's pace, not in a snap (order-tempo-and-facing).
+      view.facingAngle = turnToward(view.facingAngle, desiredAngle, seconds);
       rig.root.rotation.y = view.facingAngle;
       if (useProxy) {
         if (!unit.alive) {
@@ -619,15 +638,16 @@ export class CharacterLayer {
         rig.root.add(view.soldier.root);
       }
       if (view.soldier) {
-        const metresPerSecond = seconds > 0 ? moved / seconds : 0;
         const clip = soldierClip(unit, {
-          moving: moved > 0.0005,
+          moving: view.speed > MOVING_SPEED,
+          speed: view.speed,
+          gait: unit.gait,
           firing: now < view.fireUntil,
           hit: now < view.hitUntil,
           engaged: now < view.engagedUntil,
         });
         const authored = CLIP_SPEED[clip];
-        view.soldier.play(clip, authored ? walkTimeScale(metresPerSecond, authored) : 1);
+        view.soldier.play(clip, authored ? walkTimeScale(view.speed, authored) : 1);
         view.soldier.update(seconds);
         rig.body.visible = false;
         rig.corpse.visible = false;

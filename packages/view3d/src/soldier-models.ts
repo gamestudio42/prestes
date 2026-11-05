@@ -85,7 +85,7 @@ export class SoldierInstance {
     const previous = this.current ? this.actions.get(this.current) : undefined;
     // From the stagger to the ground the blend is the fall itself: slower.
     const falling = this.current === 'hit' && (clip === 'corpse' || clip === 'wounded');
-    const fade = falling ? 0.5 : 0.15;
+    const fade = falling ? 0.5 : 0.3;
     next.reset().setEffectiveWeight(1).fadeIn(fade).play();
     previous?.fadeOut(fade);
     this.current = clip;

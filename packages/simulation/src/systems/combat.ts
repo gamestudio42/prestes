@@ -379,6 +379,12 @@ export function fire(ctx: SimContext, tick: number, events: SimEvent[]): void {
   }
 }
 
+/** Recon sweep: degrees each way and the cycle in ticks (4 s). */
+export const RECON_SWEEP_DEGREES = 50;
+export const RECON_SWEEP_TICKS = 40;
+/** tan(25 deg): the half-angle of the 50-degree swing. */
+const RECON_SWEEP_HALF_TAN = 0.46631;
+
 export function updateFacing(ctx: SimContext): void {
   for (const unit of ctx.units) {
     if (!unit.alive || unit.routed || unit.dummy || unit.incapacitated) {
@@ -434,6 +440,32 @@ export function updateFacing(ctx: SimContext): void {
     } else {
       dx = unit.targetX - unit.x;
       dy = unit.targetY - unit.y;
+    }
+    // Recon: with nothing to shoot at, the scouts sweep their front left and
+    // right (order-tempo-and-facing), each in his own phase.
+    if (unit.recon && unit.targetId === null && !shooterOf(ctx, unit)) {
+      // The front swept is where he walks, or, halted, where he last walked.
+      const walking = unit.path.length > 0 && dx * dx + dy * dy > 0.0001;
+      if (walking) {
+        const length = Math.sqrt(dx * dx + dy * dy);
+        unit.reconFront = { x: dx / length, y: dy / length };
+      } else {
+        unit.reconFront ??= { x: unit.facingX, y: unit.facingY };
+        dx = unit.reconFront.x;
+        dy = unit.reconFront.y;
+      }
+      // Rotation by the half-angle tangent (no trigonometry in the simulation):
+      // t eases between -tan(25 deg) and +tan(25 deg), so the front swings
+      // 50 degrees each way and lingers at each end, like a man looking round.
+      const phase = ((ctx.tickCount + unit.id * 7) % RECON_SWEEP_TICKS) / RECON_SWEEP_TICKS;
+      const wave = phase < 0.5 ? phase * 2 : 2 - phase * 2;
+      const eased = wave * wave * (3 - 2 * wave);
+      const t = RECON_SWEEP_HALF_TAN * (eased * 2 - 1);
+      const cos = (1 - t * t) / (1 + t * t);
+      const sin = (2 * t) / (1 + t * t);
+      const baseX = dx;
+      dx = baseX * cos - dy * sin;
+      dy = baseX * sin + dy * cos;
     }
     const length = Math.sqrt(dx * dx + dy * dy);
     if (length > 0.0001) {

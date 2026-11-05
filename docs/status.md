@@ -394,6 +394,27 @@ from 90 to 100 KB. Determinism golden `f8378a18` ->
    system raised the three chunk to 591 KB, so its budget went from 560 to
    610 KB (2026-11-04).
 
+## Order tempo (`order-tempo-and-facing`, 2026-11-05)
+
+Asked by the user ("as pernas estão muito rápidas... prever a diferença entre
+correr e caminhar... realista mas não tão lento... mais suaves"). 1x is now
+real time (one 0.1 s tick per 100 ms; it was twice real time), with 0.5x, 1x,
+2x and 4x. Soldiers move at a gait chosen by the order and the moment: slow
+1.0 m/s (Recon), walk 1.5 (Move, Defend, Advance between bounds), quick 2.5
+(Flank, Attack closing, Regroup), run 3.5 (Withdraw, the rushing team of a
+bound, Attack on a target getting away, anyone under fire). Posture scales it
+(aggressive 1.1, defensive 0.8 and crouched unless the player chose a stance).
+Running tires twice as fast; above 70 fatigue a soldier walks until 50. Speed
+eases at 3 m/s² and brakes onto the last point. Scouts sweep their front 50°
+each way on a 4 s cycle and report 15% further. The view picks walk or the new
+run clip (rifle at the ready, leaning in) by smoothed ground speed, plays it at
+0.75..1.25 of its authored rate, turns the body at 270°/s and cross-fades in
+0.3 s; a small arrowhead on the ring marks each soldier's front. Regroup no
+longer scatters arrived soldiers to nearby cover (it split the body by the
+hamlet trench). Halt now clears every order like Escape; Aim ("Mirar para")
+is back as its own order showing the lines of sight; the Clear button is gone.
+Determinism golden `ae3a0a1d` -> `962153ae`.
+
 ## Facing drag (`move-facing-drag`, 2026-11-04)
 
 Asked by the user after playing: with a ground order armed (Move, Advance,

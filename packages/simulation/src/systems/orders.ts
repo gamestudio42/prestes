@@ -149,6 +149,7 @@ export function applyTacticalOrder(
       unit.ambush = command.order === 'ambush';
       unit.reserveMode = command.order === 'reserve';
       unit.recon = command.order === 'recon';
+      unit.reconFront = undefined;
       if (path.length === 0) {
         unit.path = [];
         unit.pathIndex = 0;
@@ -382,6 +383,9 @@ export function updatePursuit(ctx: SimContext, tick: number, events: SimEvent[])
   }
 }
 
+/** Recon report reach: 16 m, 15% further for scouts sweeping their front. */
+export const RECON_SIGHT = 16 * 1.15;
+
 export function updateRecon(ctx: SimContext, tick: number, events: SimEvent[]): void {
   for (const unit of ctx.units) {
     if (
@@ -401,7 +405,7 @@ export function updateRecon(ctx: SimContext, tick: number, events: SimEvent[]): 
       }
       const distance = Math.sqrt((other.x - unit.x) ** 2 + (other.y - unit.y) ** 2);
       return (
-        distance <= 16 &&
+        distance <= RECON_SIGHT &&
         !isLineBlocked(unit.x, unit.y, other.x, other.y, ctx.covers, ctx.sightObstacles)
       );
     });

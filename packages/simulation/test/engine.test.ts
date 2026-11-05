@@ -527,7 +527,7 @@ describe('SimulationEngine', () => {
     const first = new SimulationEngine({ seed: 1922, sandbox: true });
     incapacitate(first, 1);
     first.enqueue({ type: 'order', order: 'rescue', unitIds: [2], targetId: 1 });
-    first.runTicks(150);
+    first.runTicks(250);
     const recovering = first.frame().units.find((unit) => unit.id === 1);
     expect(recovering?.soldierState).toBe('recovering');
 
@@ -954,7 +954,7 @@ describe('SimulationEngine', () => {
     engine.enqueue({ type: 'spawn_cover', kind: 'sandbag', to: { x: -12, y: 7 } });
     const blocked = engine.runTicks(1);
     expect(blocked.covers).toHaveLength(10);
-    const frame = engine.runTicks(20);
+    const frame = engine.runTicks(40);
     const unit = frame.units.find((entry) => entry.id === 1);
     expect(unit?.x).toBeLessThan(-9);
     expect(Math.abs((unit?.y ?? 0) - 7)).toBeGreaterThan(0.1);
@@ -1136,7 +1136,7 @@ describe('SimulationEngine', () => {
     const engine = new SimulationEngine({ seed: 1922, sandbox: true });
     incapacitate(engine, 1);
     engine.enqueue({ type: 'order', order: 'rescue', unitIds: [2], targetId: 1 });
-    const frame = engine.runTicks(150);
+    const frame = engine.runTicks(250);
     expect(frame.units.find((unit) => unit.id === 1)?.alive).toBe(false);
     expect(frame.units.find((unit) => unit.id === 1)?.soldierState).toBe('recovering');
 

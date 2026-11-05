@@ -1,4 +1,5 @@
-﻿import type { WeaponId } from './weapons';
+import type { Gait } from './gait';
+import type { WeaponId } from './weapons';
 
 export interface Vec2 {
   x: number;
@@ -154,6 +155,8 @@ export interface UnitSnapshot {
   posture?: Posture;
   boundTeam?: 'a' | 'b' | null;
   boundPhase?: 'cover' | 'advance' | null;
+  /** The gait while moving (order-tempo-and-facing); absent when halted. */
+  gait?: Gait;
 }
 
 export interface RosterRecord {

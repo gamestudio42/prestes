@@ -11,17 +11,19 @@ interface TopBarProps {
   band: CameraBand;
   postStrong: boolean;
   routesVisible: boolean;
-  speed: 0 | 1 | 2 | 4;
+  speed: 0 | 1 | 2 | 4 | 8;
   sandboxOpen: boolean;
   onLocaleChange: (locale: Locale) => void;
   onCameraBand: (band: CameraBand) => void;
-  onSetSpeed: (speed: 0 | 1 | 2 | 4) => void;
+  onSetSpeed: (speed: 0 | 1 | 2 | 4 | 8) => void;
   onTogglePause: () => void;
   onTogglePost: () => void;
   onToggleRoutes: () => void;
   onToggleSandbox: () => void;
   onToggleCodex: () => void;
 }
+
+const SPEED_LABEL = { 1: '0.5x', 2: '1x', 4: '2x', 8: '4x' } as const;
 
 export function TopBar({
   t,
@@ -126,17 +128,17 @@ export function TopBar({
               <Pause aria-hidden="true" size={15} />
             )}
           </IconButton>
-          {([1, 2, 4] as const).map((value) => (
+          {([1, 2, 4, 8] as const).map((value) => (
             <button
               key={value}
               type="button"
               className={`speed-button ${speed === value ? 'active' : ''}`}
               onClick={() => onSetSpeed(value)}
               title={t('hud.tip.speed')}
-              aria-label={value === 1 ? '0.5x' : value === 2 ? '1x' : '2x'}
+              aria-label={SPEED_LABEL[value]}
               data-testid={`speed-${value}`}
             >
-              {value === 1 ? '0.5x' : value === 2 ? '1x' : '2x'}
+              {SPEED_LABEL[value]}
             </button>
           ))}
         </div>

@@ -49,7 +49,7 @@ export interface HudProps {
   selectedSquadId: number;
   controlBothSides: boolean;
   selectedCount: number;
-  speed: 0 | 1 | 2 | 4;
+  speed: 0 | 1 | 2 | 4 | 8;
   pendingOrder: OrderMode | null;
   pendingTactical: TacticalOrder | null;
   aimPending: boolean;
@@ -72,7 +72,7 @@ export interface HudProps {
   onCameraBand: (band: CameraBand) => void;
   onFormation: (formation: FormationKind) => void;
   onStance: (stance: Stance) => void;
-  onSetSpeed: (speed: 0 | 1 | 2 | 4) => void;
+  onSetSpeed: (speed: 0 | 1 | 2 | 4 | 8) => void;
   onTogglePause: () => void;
   onTogglePost: () => void;
   onToggleRoutes: () => void;

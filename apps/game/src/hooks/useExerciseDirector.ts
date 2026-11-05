@@ -35,7 +35,7 @@ interface ExerciseDirectorOptions {
   selectedCountRef: MutableRefObject<number>;
   sessionMode: 'battle' | 'training';
   clientRef: MutableRefObject<GameClient | null>;
-  setSpeed: Dispatch<SetStateAction<0 | 1 | 2 | 4>>;
+  setSpeed: Dispatch<SetStateAction<0 | 1 | 2 | 4 | 8>>;
 }
 
 /** Bootcamp exercise state, the per-frame director, progress, retry and debrief. */

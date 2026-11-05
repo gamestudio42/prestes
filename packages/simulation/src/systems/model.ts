@@ -1,4 +1,5 @@
 // Shared simulation data: unit records, templates and tuning constants.
+import type { Gait } from '@prestes/shared';
 import type {
   Faction,
   FormationKind,
@@ -77,6 +78,14 @@ export interface MutableUnit {
   formation: FormationKind;
   /** Ordered spacing between soldiers; the default when unset. */
   formationSpacing?: number;
+  /** Current ground speed (m/s), eased toward the gait's. */
+  moveSpeed?: number;
+  /** Winded: capped at a walk until fatigue falls below WINDED_RECOVER. */
+  winded?: boolean;
+  /** The gait he moved at last tick (the view picks walk or run from it). */
+  gait?: Gait;
+  /** Recon: the front a scout sweeps, kept once he halts. */
+  reconFront?: Vec2;
   /** Ticks left under fire (a shot at him or a squad mate near him). */
   underFireTicks?: number;
   /** Who fired the last shot that put him under fire. */

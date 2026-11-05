@@ -60,14 +60,17 @@ destination so he stops on it rather than at full speed.
 
 Soldiers on a recon order with no target SHALL sweep their facing left and
 right of their front, about 50 degrees each way on a 4 s cycle, each with
-his own phase, while moving and while halted; their sight range SHALL be 15%
-longer.
+his own phase, while moving and while halted; their recon report SHALL reach
+15% further (18.4 m instead of 16 m).
 
-#### Scenario: A scout sees to the side
-- **WHEN** an enemy stands 60 degrees off a recon section's front within
-  sight range
-- **THEN** a scout's sweep brings him into view within one cycle, where a
-  section on a move order would not see him
+#### Scenario: Scouts look round
+- **WHEN** a recon party halts on its point with no enemy in sight
+- **THEN** each scout's facing swings through about 100 degrees within one
+  cycle, the parties' marks out of step
+
+#### Scenario: A longer report
+- **WHEN** an enemy stands 17 m from a halted scout in clear sight
+- **THEN** the recon report counts him
 
 ### Requirement: Posture stance
 

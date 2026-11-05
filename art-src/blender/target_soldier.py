@@ -267,6 +267,34 @@ def walk_pass_b(p: Poser, arms=None) -> None:
     p.root(z=0.03)
 
 
+def port(p: Poser) -> None:
+    """Running with the rifle held at the ready in both hands (the ready grip,
+    so the hands stay on it), the body leaning into the run."""
+    ready(p)
+    p.swing("chest", 12)
+    p.swing("head", -12)
+
+
+def run_reach(p: Poser, lead: str, trail: str) -> None:
+    """Contact: the lead leg reaching forward, the trailing one pushing off."""
+    port(p)
+    p.swing(f"thigh.{lead}", 42)
+    p.swing(f"shin.{lead}", -18)
+    p.swing(f"thigh.{trail}", -28)
+    p.swing(f"shin.{trail}", -55)
+    p.root(z=-0.02)
+
+
+def run_float(p: Poser, lead: str, trail: str) -> None:
+    """Flight: both feet off the ground, the trailing leg folding through."""
+    port(p)
+    p.swing(f"thigh.{lead}", 12)
+    p.swing(f"shin.{lead}", -30)
+    p.swing(f"thigh.{trail}", 20)
+    p.swing(f"shin.{trail}", -95)
+    p.root(z=0.07)
+
+
 def crouch(p: Poser, aim: bool = False) -> None:
     p.root(z=-0.34)
     p.swing("thigh.L", 75)
@@ -392,6 +420,13 @@ def build():
         (7, lambda p: walk_pass(p, ready)),
         (13, lambda p: walk_b(p, ready)),
         (19, lambda p: walk_pass_b(p, ready)),
+    ])
+    # Run: 16 frames a cycle (three steps a second), about 3.5 m/s.
+    clip(rig, poser, "run", [
+        (1, lambda p: run_reach(p, "L", "R")),
+        (5, lambda p: run_float(p, "L", "R")),
+        (9, lambda p: run_reach(p, "R", "L")),
+        (13, lambda p: run_float(p, "R", "L")),
     ])
     clip(rig, poser, "crouch-idle", [(1, lambda p: crouch(p)), (24, lambda p: crouch(p))], loop=False)
     clip(rig, poser, "crouch-walk", [

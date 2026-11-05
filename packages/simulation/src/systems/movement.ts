@@ -1,5 +1,13 @@
 import { TICK_DT } from '@prestes/kernel';
 import {
+  BASE_UNIT_SPEED,
+  GAIT_ACCELERATION,
+  GAIT_FATIGUE,
+  GAIT_SPEED,
+  ORDER_GAIT,
+  POSTURE_PACE,
+  WINDED_FATIGUE,
+  WINDED_RECOVER,
   MAP_BOUNDS,
   FIRE_RANGE,
   coverAgainst,
@@ -8,7 +16,7 @@ import {
   findPath,
   isPointBlockedByCovers,
 } from '@prestes/shared';
-import type { SimEvent, Vec2 } from '@prestes/shared';
+import type { Gait, SimEvent, Vec2 } from '@prestes/shared';
 import { FATIGUE_MARCH, FATIGUE_MAX, OPEN_POINT_DIRECTIONS, clamp } from './model';
 import type { ActiveOrder, MutableUnit } from './model';
 import type { SimContext } from './context';
@@ -106,6 +114,58 @@ export function separateUnits(ctx: SimContext): void {
   }
 }
 
+/**
+ * The gait a soldier moves at (order-tempo-and-facing): by his order, and by
+ * the moment for the orders that hurry - the rushing team of a bound, an
+ * attacker whose target is getting away, anyone moving under fire.
+ */
+export function unitGait(ctx: SimContext, unit: MutableUnit): Gait {
+  let gait: Gait = ORDER_GAIT[unit.currentOrder ?? ''] ?? 'walk';
+  if (unit.recon) {
+    gait = 'slow';
+  }
+  if (unit.boundTeam !== null && unit.boundPhase === 'advance') {
+    gait = 'run';
+  }
+  if ((unit.currentOrder === 'attack' || unit.currentOrder === 'pursue') && unit.targetId !== null) {
+    const target = ctx.units.find((entry) => entry.id === unit.targetId);
+    if (target && target.path.length > 0) {
+      // Getting away: his heading points away from the attacker.
+      const awayX = target.targetX - target.x;
+      const awayY = target.targetY - target.y;
+      if (awayX * (target.x - unit.x) + awayY * (target.y - unit.y) > 0) {
+        gait = 'run';
+      }
+    }
+  }
+  if (unit.underFireTicks && gait !== 'slow') {
+    gait = 'run';
+  }
+  if (unit.fatigue > WINDED_FATIGUE) {
+    unit.winded = true;
+  } else if (unit.fatigue < WINDED_RECOVER) {
+    unit.winded = false;
+  }
+  if (unit.winded && (gait === 'run' || gait === 'quick')) {
+    gait = 'walk';
+  }
+  return gait;
+}
+
+/** Distance left along the path, from the soldier to its last point. */
+function pathRemaining(unit: MutableUnit): number {
+  let total = 0;
+  let fromX = unit.x;
+  let fromY = unit.y;
+  for (let index = unit.pathIndex; index < unit.path.length; index += 1) {
+    const point = unit.path[index]!;
+    total += Math.sqrt((point.x - fromX) ** 2 + (point.y - fromY) ** 2);
+    fromX = point.x;
+    fromY = point.y;
+  }
+  return total;
+}
+
 export function moveUnit(
   ctx: SimContext,
   unit: MutableUnit,
@@ -120,6 +180,7 @@ export function moveUnit(
     unit.state === 'pinned' ||
     unit.path.length === 0
   ) {
+    unit.moveSpeed = 0;
     return;
   }
 
@@ -146,18 +207,29 @@ export function moveUnit(
     return;
   }
 
+  const gait = unitGait(ctx, unit);
+  unit.gait = gait;
   const stanceFactor = unit.stance === 'prone' ? 0.45 : unit.stance === 'crouched' ? 0.7 : 1;
-  const postureFactor = unit.posture === 'defensive' ? 0.65 : 1;
-  const step =
-    unit.speed *
+  const postureFactor = POSTURE_PACE[unit.posture] ?? 1;
+  const wanted =
+    GAIT_SPEED[gait] *
+    (unit.speed / BASE_UNIT_SPEED) *
     stanceFactor *
     postureFactor *
-    TICK_DT *
     terrainSpeedFactor(unit.x, unit.y) *
     (0.75 + 0.25 * (unit.cohesion / 100)) *
     (1 - (unit.fatigue / FATIGUE_MAX) * 0.25) *
     woundSpeedFactor(ctx, unit) *
     groupSpeedFactor(ctx, unit);
+  // Ease toward the gait, and slow before the last point so he stops on it.
+  const brake = Math.sqrt(2 * GAIT_ACCELERATION * pathRemaining(unit));
+  const target = Math.max(Math.min(wanted, brake), Math.min(wanted, 0.4));
+  const current = unit.moveSpeed ?? 0;
+  const change = GAIT_ACCELERATION * TICK_DT;
+  const speed =
+    target > current ? Math.min(target, current + change) : Math.max(target, current - change);
+  unit.moveSpeed = Math.max(speed, Math.min(wanted, 0.4) * 0.5);
+  const step = unit.moveSpeed * TICK_DT;
   if (distance <= step) {
     unit.x = point.x;
     unit.y = point.y;
@@ -230,7 +302,7 @@ export function moveUnit(
   }
   unit.x = nextX;
   unit.y = nextY;
-  unit.fatigue = Math.min(FATIGUE_MAX, unit.fatigue + FATIGUE_MARCH);
+  unit.fatigue = Math.min(FATIGUE_MAX, unit.fatigue + FATIGUE_MARCH * GAIT_FATIGUE[gait]);
 }
 
 export function queueUnitOrder(

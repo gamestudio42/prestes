@@ -44,7 +44,7 @@ export function App() {
   const [postStrong, setPostStrong] = useState(true);
   const [routesVisible, setRoutesVisible] = useState(() => loadRoutesVisible());
   useEffect(() => saveRoutesVisible(routesVisible), [routesVisible]);
-  const [speed, setSpeed] = useState<0 | 1 | 2 | 4>(DEFAULT_SPEED);
+  const [speed, setSpeed] = useState<0 | 1 | 2 | 4 | 8>(DEFAULT_SPEED);
   const [ordersCollapsed, setOrdersCollapsed] = useState(false);
   const [hudHidden, setHudHidden] = useState(false);
   const [cursor, setCursor] = useState<{ x: number; y: number } | null>(null);
@@ -323,7 +323,7 @@ export function App() {
     setSandboxTool(null);
   };
 
-  const handleSetSpeed = (next: 0 | 1 | 2 | 4): void => {
+  const handleSetSpeed = (next: 0 | 1 | 2 | 4 | 8): void => {
     setSpeed(next);
     clientRef.current?.setSpeed(next);
   };

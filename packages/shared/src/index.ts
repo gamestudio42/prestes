@@ -170,3 +170,14 @@ export type {
   TrainingStation,
   TrainingStationId,
 } from './training-ground';
+export {
+  BASE_UNIT_SPEED,
+  GAIT_ACCELERATION,
+  GAIT_FATIGUE,
+  GAIT_SPEED,
+  ORDER_GAIT,
+  POSTURE_PACE,
+  WINDED_FATIGUE,
+  WINDED_RECOVER,
+} from './gait';
+export type { Gait } from './gait';

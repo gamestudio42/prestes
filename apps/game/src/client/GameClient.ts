@@ -8,7 +8,10 @@ import {
   type WorkerResponse,
 } from '@prestes/shared';
 
-/** Ticks per 100 ms at the speed labelled 1x; 0.5x is 1 tick, 2x is 4. */
+/**
+ * Ticks per 200 ms. 1x (2) is real time, one 0.1 s tick per 100 ms; 0.5x is
+ * 1, 2x is 4 and 4x is 8 (order-tempo-and-facing).
+ */
 export const DEFAULT_SPEED = 2 as const;
 
 export interface GameClientOptions {
@@ -38,7 +41,9 @@ export class GameClient {
   private readonly scenario?: 'bootcamp' | 'battle3v3';
   private bounding?: boolean;
   private timer: number | null = null;
-  private speed: 0 | 1 | 2 | 4 = DEFAULT_SPEED;
+  /** Half ticks owed: the interval runs every 100 ms, the speed is per 200 ms. */
+  private owed = 0;
+  private speed: 0 | 1 | 2 | 4 | 8 = DEFAULT_SPEED;
 
   constructor(options: GameClientOptions) {
     this.onFrame = options.onFrame;
@@ -74,7 +79,12 @@ export class GameClient {
     }
     this.timer = window.setInterval(() => {
       if (this.speed > 0) {
-        this.send({ type: 'step', ticks: this.speed });
+        this.owed += this.speed;
+        const ticks = Math.floor(this.owed / 2);
+        if (ticks > 0) {
+          this.owed -= ticks * 2;
+          this.send({ type: 'step', ticks });
+        }
       }
     }, 100);
   }
@@ -86,7 +96,7 @@ export class GameClient {
     }
   }
 
-  setSpeed(speed: 0 | 1 | 2 | 4): void {
+  setSpeed(speed: 0 | 1 | 2 | 4 | 8): void {
     this.speed = speed;
   }
 

@@ -11,7 +11,7 @@ type PrestesBridge = {
 /** Dev-only `window.__prestes` bridge used by the Playwright suite. */
 export function useTestBridge(
   clientRef: MutableRefObject<GameClient | null>,
-  setSpeed: Dispatch<SetStateAction<0 | 1 | 2 | 4>>,
+  setSpeed: Dispatch<SetStateAction<0 | 1 | 2 | 4 | 8>>,
 ): void {
   useEffect(() => {
     if (!import.meta.env.DEV) {
