@@ -6,7 +6,7 @@ import { toonGradient } from './materials';
  * The Blender-built environment (art-src/blender/target_{buildings,
  * fortifications,vegetation,props}.py): one geometry per named model, all
  * sharing the environment pixel atlas. Layers place them as instanced meshes
- * and keep their procedural shapes until (or unless) the models load.
+ * once the models load; if loading fails, those pieces are not drawn.
  */
 export interface EnvironmentAsset {
   geometry(name: string): THREE.BufferGeometry | undefined;
@@ -91,13 +91,9 @@ export class ModelPlacements {
   }
 }
 
-/**
- * Takes the procedural stand-ins out of a group once the models replace them.
- * Their geometries and materials are the shared unit shapes and the cached
- * palette materials, so nothing is disposed.
- */
-export function detachChildren(group: THREE.Group): void {
-  group.remove(...group.children);
+/** Logs the placed names the loaded models do not provide (they are not drawn). */
+export function warnMissing(where: string, names: readonly string[]): void {
+  if (names.length > 0) console.warn(`${where}: no model for ${names.join(', ')}`);
 }
 
 /** Tree model for the n-th tree of a map: broad-leaved, conifer, araucaria. */

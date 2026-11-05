@@ -1,9 +1,7 @@
 import * as THREE from 'three';
-import { TRAINING_GROUND, terrainHeightAt, type TrainingProp } from '@prestes/shared';
-import { detachChildren, ModelPlacements, type EnvironmentAsset } from './environment-models';
-import { toon } from './materials';
+import { TRAINING_GROUND, terrainHeightAt } from '@prestes/shared';
+import { ModelPlacements, warnMissing, type EnvironmentAsset } from './environment-models';
 import { PALETTE } from './palette';
-import { box, cart, cylinder, haystack, placeBuilding, well } from './world-layer';
 
 export interface TrainingMarker {
   id: string;
@@ -36,7 +34,6 @@ export class TrainingLayer {
 
   constructor() {
     this.group.add(this.props, this.markers);
-    this.buildProps();
   }
 
   setMarkers(entries: readonly TrainingMarker[]): void {
@@ -104,13 +101,13 @@ export class TrainingLayer {
 
   dispose(): void {
     disposeChildren(this.markers);
-    disposeChildren(this.props);
+    this.props.clear();
     this.group.clear();
   }
 
   /**
-   * Swaps the procedural buildings and props for the Blender models, all at
-   * once so the ground never mixes the two styles.
+   * Places the training ground's buildings and small props, from the shared
+   * data, once the Blender models have loaded.
    */
   useModels(asset: EnvironmentAsset): void {
     const placements = new ModelPlacements();
@@ -121,57 +118,9 @@ export class TrainingLayer {
       const rotation = prop.rotation ?? (prop.kind === 'crate' ? prop.x * 0.3 : 0);
       placements.add(prop.kind, prop.x, prop.y, rotation, prop.kind === 'haystack' ? 0.9 : 1);
     }
-    if (placements.missing(asset).length > 0) return;
-    detachChildren(this.props);
+    warnMissing('training ground', placements.missing(asset));
+    // The models' geometry and material are shared: clear, never dispose.
+    this.props.clear();
     this.props.add(placements.build(asset));
-  }
-
-  /** The training ground's buildings and small props, from the shared data. */
-  private buildProps(): void {
-    for (const building of TRAINING_GROUND.buildings) {
-      placeBuilding(this.props, building.model, building.x, building.y, building.rotation);
-    }
-    for (const prop of TRAINING_GROUND.props) {
-      buildProp(this.props, prop);
-    }
-  }
-}
-
-function buildProp(parent: THREE.Group, prop: TrainingProp): void {
-  const base = terrainHeightAt(prop.x, prop.y);
-  switch (prop.kind) {
-    case 'flagpole': {
-      cylinder(parent, PALETTE.wood, prop.x, base + 3.5, prop.y, 0.1, 7);
-      const flag = new THREE.Mesh(new THREE.PlaneGeometry(2.4, 1.4), toon({ color: PALETTE.scarf, side: THREE.DoubleSide }));
-      flag.position.set(prop.x + 1.25, base + 6.2, prop.y);
-      parent.add(flag);
-      break;
-    }
-    case 'target-frame': {
-      // A wooden frame holding a pale paper target at the range butts.
-      for (const side of [-0.6, 0.6]) {
-        box(parent, PALETTE.wood, prop.x + side, base + 0.9, prop.y, 0.1, 1.8, 0.1);
-      }
-      box(parent, PALETTE.whitewash, prop.x, base + 1.35, prop.y, 1.1, 0.9, 0.05);
-      box(parent, PALETTE.window, prop.x, base + 1.35, prop.y + 0.03, 0.3, 0.3, 0.02);
-      break;
-    }
-    case 'haystack':
-      haystack(parent, prop.x, prop.y, 0.9);
-      break;
-    case 'crate':
-      box(parent, PALETTE.wood, prop.x, base + 0.45, prop.y, 0.9, 0.9, 0.9, prop.x * 0.3);
-      break;
-    case 'well':
-      well(parent, prop.x, prop.y);
-      break;
-    case 'cart':
-      cart(parent, prop.x, prop.y, prop.rotation ?? 0);
-      break;
-    case 'signpost': {
-      box(parent, PALETTE.wood, prop.x, base + 0.9, prop.y, 0.12, 1.8, 0.12);
-      box(parent, PALETTE.plaster, prop.x + 0.45, base + 1.55, prop.y, 1.0, 0.36, 0.06);
-      break;
-    }
   }
 }

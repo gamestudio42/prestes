@@ -1,4 +1,5 @@
 import { spawnSync } from 'node:child_process';
+import { constants, setPriority } from 'node:os';
 import { fileURLToPath } from 'node:url';
 
 // Local verification gate. Runs every step in order, stops at the first
@@ -25,6 +26,14 @@ const steps: Step[] = [
   { name: 'openspec validate', command: `${openspec} validate --specs`, requires: openspec },
   { name: 'e2e', command: 'pnpm e2e', slow: true },
 ];
+
+// Run at low priority so the machine stays usable during the gate. The steps
+// are children of this process and inherit its priority (on Windows too).
+try {
+  setPriority(constants.priority.PRIORITY_BELOW_NORMAL);
+} catch {
+  // Not allowed here: run at normal priority.
+}
 
 function run(command: string, quiet = false): number {
   const result = spawnSync(command, { cwd: root, shell: true, stdio: quiet ? 'ignore' : 'inherit' });

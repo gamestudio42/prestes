@@ -9,16 +9,25 @@
 - **Strong post with a clean toggle.** Depth-edge outline, restrained bloom, soft
   shoulder, grade, 24-level Bayer posterize and vignette in the strong mode; the
   clean mode keeps the resolution and grade without outline/dither/vignette.
-- **Original modular 1920s kit.** One body/armature; period hats, bolt-action
-  rifles, gear and faction colours. The current proxy uses the kit proportions;
-  final meshes will replace it without changing camera or path code.
-- **Corpse is its own kit.** A dead soldier is not a rotated prone soldier: it
-  swaps to a separate corpse group with a muted uniform, dropped headgear, splayed
-  limbs and a blood pool, and loses the selection ring. The strategic proxy uses a
-  flat dark corpse instance so death still reads at the widest zoom.
-- **Rural 1920s environment kit.** Adobe and whitewashed houses, tiled or dark roofs,
-  barn, chapel, ruin, windmill, crop rows, rail fences, telegraph wires, layered
-  trees, rocks and grass. Buildings and fields sit outside the tactical combat lane;
+- **Original modular 1920s kit.** One Blender-built soldier (about 400
+  triangles, Mauser included) on one armature with authored clips; the column,
+  the legalists and the officer differ only by texture. The view picks the clip
+  from the unit snapshot and cross-fades. At strategic span an instanced proxy
+  stands in, and it is also the fallback if the model fails to load.
+  (Updated 2026-11-05, `low-poly-art-pass`.)
+- **Low-poly shapes, pixel textures.** Models are built by Blender Python
+  scripts and textured with small pixel-art atlases in the sepia palette,
+  nearest filtering and no mipmaps, under the toon ramp and the pixel post, so
+  the world matches the pixel interface. Shot feedback (muzzle flash, smoke,
+  tracer, impacts by surface, dust) is pixel sprites from one effects sheet.
+- **Corpse is its own pose.** A dead soldier is not a rotated prone soldier: a
+  hard hit plays a stagger, then the model settles into its own corpse clip and
+  loses the selection ring. The strategic proxy uses a flat dark corpse instance
+  so death still reads at the widest zoom.
+- **Rural 1920s environment kit.** Blender models for the barracks, farmhouse,
+  barn, chapel and aid tent, the fortifications, trees, hedges, fences and small
+  props; the sandbox's training house, ruin, windmill, crop rows, telegraph
+  wires, rocks and grass stay procedural until they are modelled. Buildings and fields sit outside the tactical combat lane;
   simulation cover stays readable because the cover layer is built from its exact
   footprint and rotation.
 - **Movement paths.** Dashed route, waypoint crosses and an order ring, drawn from

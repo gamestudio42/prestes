@@ -338,7 +338,30 @@ Four phases, each its own OpenSpec change:
    sprites got a dark outline, longer lives and bigger sizes, and dust shows on
    grass too. Asked next: tracers are now a short streak, bright gold at the
    head fading to red, flying from the muzzle to the target at a readable
-   90 m/s instead of a white line. The close (section 5) remains.
+   90 m/s instead of a white line.
+   Close (2026-11-05): an e2e probe (`tests/e2e/performance.spec.ts`) times
+   the full section at tactical span on the GPU with vsync off (RTX 3050
+   laptop, Direct3D 11): the models average about 7.5 ms a frame (p95 about
+   28 ms), the procedural rig measured before its removal about 16 ms (p95
+   about 39 ms); the probe holds the mean under 16.7 ms and skips without a
+   GPU (software rendering takes about 95 ms a frame for either). The probe
+   found the Tactical control never reached the tactical band (the camera
+   eased toward 80 m from above and stopped a hair short), so the skinned
+   soldiers only showed after a wheel zoom; the span now lands on its target.
+   The part rig, the procedural corpse and the procedural buildings, props,
+   trees, fences and cover boxes are gone; the sandbox farmhouse, barn,
+   chapel, cart, haystacks, well, barrels and crates now use the models,
+   while its training house, ruin, windmill, telegraph poles, rocks, crop
+   rows and grass (no models) stay procedural, as do the target dummies'
+   boards. If the soldier model fails to load the section is drawn as the
+   strategic proxy at every distance; if the environment fails the field
+   is drawn without covers, buildings, trees or props. Both log an error.
+   The asset register and the visual-language decision (0002) describe the
+   models; the visual baselines hide the 3D canvas, so they pass unchanged
+   and were not re-recorded. `pnpm verify` passed (353 unit tests, build,
+   bundle budget, determinism, OpenSpec, e2e 44/44 in 11 min). The e2e
+   browser now renders on the GPU and the gate runs at below-normal priority,
+   so the machine stays usable while it runs. Hand check in Chrome pending.
 
 ## Fixes after the hand check of 2026-11-04 (evening)
 

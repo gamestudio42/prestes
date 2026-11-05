@@ -24,17 +24,12 @@ import { TACTICAL_SPAN, unitScaleForSpan } from './camera-rig';
 import { toon } from './materials';
 import { PALETTE } from './palette';
 
-interface CharacterRig {
+/** A unit's ground marks and, for a target dummy, its board. */
+interface UnitMarks {
   root: THREE.Group;
-  body: THREE.Group;
-  corpse: THREE.Group;
-  chest: THREE.Group;
-  head: THREE.Group;
-  weapon: THREE.Group;
-  leftLeg: THREE.Group;
-  rightLeg: THREE.Group;
-  leftKnee: THREE.Group;
-  rightKnee: THREE.Group;
+  /** The dummy's standing board and its fallen board (soldiers are the model). */
+  board: THREE.Group | null;
+  fallen: THREE.Group | null;
   ring: THREE.Mesh;
   shadow: THREE.Mesh;
 }
@@ -43,7 +38,7 @@ interface CharacterRig {
 const ENGAGED_MS = 4000;
 
 interface CharacterView {
-  rig: CharacterRig;
+  marks: UnitMarks;
   /** The Blender-built soldier, once the model has loaded. */
   soldier?: SoldierInstance;
   /** Until when (performance.now ms) the soldier shows its firing pose. */
@@ -54,11 +49,8 @@ interface CharacterView {
   down: boolean;
   /** Until when he keeps the rifle up after firing. */
   engagedUntil: number;
-  phase: number;
   lastX: number;
   lastY: number;
-  crouch: number;
-  prone: number;
   facingAngle: number;
   /** Ground speed (m/s), smoothed over a few frames. */
   speed: number;
@@ -71,8 +63,6 @@ interface CharacterView {
   /** The clip playing and since when (ms). */
   clip: SoldierClip | null;
   clipSince: number;
-  idle: number;
-  lean: number;
 }
 
 function factionColor(faction: Faction): number {
@@ -144,282 +134,33 @@ function mutedColor(color: number, factor: number): number {
   return new THREE.Color(color).multiplyScalar(factor).getHex();
 }
 
-function createCorpse(kind: UnitKind, faction: Faction): THREE.Group {
-  const group = new THREE.Group();
-  if (kind === 'dummy') {
-    const board = part(new THREE.BoxGeometry(1.1, 0.1, 1.6), PALETTE.sandbag, 0, 0.08, 0.25);
-    board.rotation.x = -0.42;
-    group.add(board);
-    return group;
-  }
-  const uniform = mutedColor(
-    kind === 'officer' ? PALETTE.officer : factionColor(faction),
-    0.52,
-  );
-  const trousers = mutedColor(PALETTE.trousers, 0.56);
-  const skin = mutedColor(PALETTE.skin, 0.72);
-  const leather = mutedColor(PALETTE.leather, 0.55);
-
-  const torso = part(new THREE.BoxGeometry(0.52, 0.28, 0.88), uniform, 0, 0.16, 0.02);
-  torso.rotation.z = 0.12;
-  group.add(torso);
-  group.add(part(new THREE.CylinderGeometry(0.07, 0.08, 0.16, 5), skin, 0.04, 0.17, -0.42));
-  const head = part(new THREE.SphereGeometry(0.16, 6, 4), skin, 0.11, 0.19, -0.55);
-  head.scale.set(0.95, 0.82, 1.04);
-  head.rotation.z = -0.25;
-  group.add(head);
-
-  const leftArm = part(
-    new THREE.CylinderGeometry(0.06, 0.075, 0.5, 5),
-    uniform,
-    -0.36,
-    0.13,
-    -0.12,
-  );
-  leftArm.rotation.z = Math.PI / 2;
-  leftArm.rotation.y = 0.42;
-  group.add(leftArm);
-  group.add(part(new THREE.SphereGeometry(0.055, 5, 4), skin, -0.58, 0.12, -0.18));
-  const rightArm = part(
-    new THREE.CylinderGeometry(0.06, 0.075, 0.5, 5),
-    uniform,
-    0.37,
-    0.12,
-    0.08,
-  );
-  rightArm.rotation.z = Math.PI / 2;
-  rightArm.rotation.y = -0.5;
-  group.add(rightArm);
-  group.add(part(new THREE.SphereGeometry(0.055, 5, 4), skin, 0.59, 0.11, 0.15));
-
-  const leftLeg = part(
-    new THREE.CylinderGeometry(0.08, 0.1, 0.56, 5),
-    trousers,
-    -0.14,
-    0.12,
-    0.66,
-  );
-  leftLeg.rotation.x = Math.PI / 2;
-  leftLeg.rotation.z = 0.18;
-  group.add(leftLeg);
-  const rightLeg = part(
-    new THREE.CylinderGeometry(0.08, 0.1, 0.54, 5),
-    trousers,
-    0.18,
-    0.12,
-    0.58,
-  );
-  rightLeg.rotation.x = Math.PI / 2;
-  rightLeg.rotation.z = -0.28;
-  group.add(rightLeg);
-  group.add(part(new THREE.BoxGeometry(0.16, 0.1, 0.26), PALETTE.boots, -0.08, 0.08, 0.94));
-  group.add(part(new THREE.BoxGeometry(0.16, 0.1, 0.25), PALETTE.boots, 0.16, 0.08, 0.86));
-  group.add(part(new THREE.BoxGeometry(0.2, 0.05, 0.08), leather, 0.02, 0.18, 0.08));
-
-  if (kind === 'officer') {
-    const cap = part(new THREE.CylinderGeometry(0.19, 0.2, 0.06, 6), PALETTE.leather, 0.4, 0.05, -0.74);
-    cap.rotation.x = Math.PI / 2;
-    group.add(cap);
-  } else {
-    const hat = part(new THREE.CylinderGeometry(0.28, 0.28, 0.04, 8), PALETTE.hat, 0.44, 0.04, -0.78);
-    hat.rotation.z = 0.35;
-    group.add(hat);
-  }
-
-  const blood = new THREE.Mesh(
-    new THREE.CircleGeometry(0.78, 10),
-    new THREE.MeshBasicMaterial({
-      color: PALETTE.blood,
-      transparent: true,
-      opacity: 0.5,
-      depthWrite: false,
-    }),
-  );
-  blood.rotation.x = -Math.PI / 2;
-  blood.position.set(0.06, 0.018, 0.18);
-  group.add(blood);
-  return group;
+/** A target dummy's board on its post, and the board knocked flat. */
+function dummyBoards(): { board: THREE.Group; fallen: THREE.Group } {
+  const board = new THREE.Group();
+  board.add(part(new THREE.BoxGeometry(1.2, 1.6, 0.12), PALETTE.sandbag, 0, 1.2, 0));
+  board.add(part(new THREE.CylinderGeometry(0.06, 0.08, 1.2, 5), PALETTE.wood, 0, 0.6, 0));
+  board.add(part(new THREE.CylinderGeometry(0.22, 0.22, 0.04, 8), PALETTE.scarf, 0, 1.35, 0.08));
+  const fallen = new THREE.Group();
+  const flat = part(new THREE.BoxGeometry(1.1, 0.1, 1.6), PALETTE.sandbag, 0, 0.08, 0.25);
+  flat.rotation.x = -0.42;
+  fallen.add(flat);
+  fallen.visible = false;
+  return { board, fallen };
 }
 
-function createDummyRig(): CharacterRig {
+/** Ground marks for a unit; a dummy also gets its boards. */
+function createMarks(kind: UnitKind): UnitMarks {
   const root = new THREE.Group();
-  const body = new THREE.Group();
-  root.add(body);
-  body.add(part(new THREE.BoxGeometry(1.2, 1.6, 0.12), PALETTE.sandbag, 0, 1.2, 0));
-  body.add(part(new THREE.CylinderGeometry(0.06, 0.08, 1.2, 5), PALETTE.wood, 0, 0.6, 0));
-  body.add(part(new THREE.CylinderGeometry(0.22, 0.22, 0.04, 8), PALETTE.scarf, 0, 1.35, 0.08));
   const ring = createRing();
-  root.add(ring);
   const shadow = createShadow();
-  root.add(shadow);
-  const corpse = createCorpse('dummy', 'target');
-  corpse.visible = false;
-  root.add(corpse);
-  return {
-    root,
-    body,
-    corpse,
-    chest: new THREE.Group(),
-    head: new THREE.Group(),
-    weapon: new THREE.Group(),
-    leftLeg: new THREE.Group(),
-    rightLeg: new THREE.Group(),
-    leftKnee: new THREE.Group(),
-    rightKnee: new THREE.Group(),
-    ring,
-    shadow,
-  };
+  root.add(ring, shadow);
+  if (kind !== 'dummy') {
+    return { root, board: null, fallen: null, ring, shadow };
+  }
+  const { board, fallen } = dummyBoards();
+  root.add(board, fallen);
+  return { root, board, fallen, ring, shadow };
 }
-
-function createRig(kind: UnitKind, faction: Faction): CharacterRig {
-  if (kind === 'dummy') {
-    return createDummyRig();
-  }
-
-  const root = new THREE.Group();
-  const body = new THREE.Group();
-  root.add(body);
-
-  const uniform = kind === 'officer' ? PALETTE.officer : factionColor(faction);
-  const trousers = kind === 'officer' ? PALETTE.officerDark : PALETTE.trousers;
-
-  const chest = new THREE.Group();
-  chest.position.y = 0.72;
-  body.add(chest);
-
-  const tunic = part(new THREE.CylinderGeometry(0.29, 0.35, 0.7, 6), uniform, 0, 0.35, 0);
-  chest.add(tunic);
-  chest.add(part(new THREE.CylinderGeometry(0.35, 0.35, 0.07, 6), PALETTE.leather, 0, 0.03, 0));
-  chest.add(part(new THREE.CylinderGeometry(0.24, 0.27, 0.09, 6), PALETTE.bandolier, 0, 0.68, 0));
-  chest.add(part(new THREE.BoxGeometry(0.2, 0.045, 0.1), PALETTE.scarf, 0, 0.65, 0.14));
-  chest.add(part(new THREE.BoxGeometry(0.055, 0.05, 0.02), PALETTE.brass, 0, 0.035, 0.36));
-  chest.add(part(new THREE.SphereGeometry(0.1, 6, 4), uniform, -0.29, 0.59, 0));
-  chest.add(part(new THREE.SphereGeometry(0.1, 6, 4), uniform, 0.29, 0.59, 0));
-
-  const bandolier = part(new THREE.BoxGeometry(0.055, 0.48, 0.035), PALETTE.bandolier, -0.13, 0.36, 0.19);
-  bandolier.rotation.z = 0.48;
-  chest.add(bandolier);
-  chest.add(part(new THREE.BoxGeometry(0.16, 0.2, 0.14), PALETTE.gear, 0.24, 0.08, 0.02));
-  chest.add(part(new THREE.BoxGeometry(0.18, 0.16, 0.07), PALETTE.leather, -0.24, 0.07, 0.18));
-  chest.add(part(new THREE.BoxGeometry(0.32, 0.28, 0.16), PALETTE.gear, 0, 0.4, -0.23));
-
-  const bedroll = part(
-    new THREE.CylinderGeometry(0.08, 0.08, 0.48, 6),
-    PALETTE.bandolier,
-    0,
-    0.54,
-    -0.27,
-  );
-  bedroll.rotation.z = Math.PI / 2;
-  chest.add(bedroll);
-
-  const canteen = part(
-    new THREE.CylinderGeometry(0.09, 0.1, 0.16, 6),
-    PALETTE.leather,
-    -0.29,
-    0.1,
-    -0.03,
-  );
-  canteen.rotation.z = 0.08;
-  chest.add(canteen);
-
-  if (kind === 'officer') {
-    const sash = part(new THREE.BoxGeometry(0.08, 0.62, 0.03), PALETTE.scarf, 0, 0.35, 0.19);
-    sash.rotation.z = -0.54;
-    chest.add(sash);
-    chest.add(part(new THREE.BoxGeometry(0.19, 0.25, 0.07), PALETTE.leather, 0.27, 0.12, -0.04));
-  }
-
-  const head = new THREE.Group();
-  head.position.y = 0.83;
-  chest.add(head);
-  head.add(part(new THREE.CylinderGeometry(0.075, 0.09, 0.12, 6), PALETTE.skin, 0, -0.03, 0));
-  const skull = part(new THREE.SphereGeometry(0.17, 6, 4), PALETTE.skin, 0, 0.1, 0.01);
-  skull.scale.set(0.92, 1.02, 0.9);
-  head.add(skull);
-  head.add(part(new THREE.BoxGeometry(0.05, 0.05, 0.04), PALETTE.skin, 0, 0.095, 0.17));
-  head.add(part(new THREE.BoxGeometry(0.022, 0.022, 0.012), PALETTE.hair, -0.055, 0.115, 0.165));
-  head.add(part(new THREE.BoxGeometry(0.022, 0.022, 0.012), PALETTE.hair, 0.055, 0.115, 0.165));
-  head.add(part(new THREE.BoxGeometry(0.075, 0.018, 0.014), PALETTE.hair, 0, 0.075, 0.168));
-  head.add(part(new THREE.BoxGeometry(0.23, 0.06, 0.19), PALETTE.hair, 0, 0.15, -0.02));
-
-  if (kind === 'officer') {
-    head.add(part(new THREE.CylinderGeometry(0.2, 0.2, 0.035, 6), PALETTE.leather, 0, 0.2, 0));
-    head.add(part(new THREE.CylinderGeometry(0.19, 0.2, 0.17, 6), PALETTE.boots, 0, 0.29, 0));
-    head.add(part(new THREE.CylinderGeometry(0.2, 0.2, 0.035, 6), PALETTE.officer, 0, 0.22, 0));
-    head.add(part(new THREE.BoxGeometry(0.26, 0.04, 0.13), PALETTE.boots, 0, 0.2, 0.18));
-    head.add(part(new THREE.BoxGeometry(0.045, 0.05, 0.025), PALETTE.brass, 0, 0.25, 0.19));
-  } else {
-    head.add(part(new THREE.CylinderGeometry(0.29, 0.29, 0.035, 8), PALETTE.hat, 0, 0.2, 0));
-    head.add(part(new THREE.CylinderGeometry(0.17, 0.19, 0.17, 7), PALETTE.hat, 0, 0.29, 0));
-    head.add(part(new THREE.CylinderGeometry(0.185, 0.185, 0.04, 7), PALETTE.leather, 0, 0.23, 0));
-    head.add(part(new THREE.BoxGeometry(0.05, 0.08, 0.02), PALETTE.scarf, 0, 0.28, 0.19));
-  }
-
-  const leftLeg = new THREE.Group();
-  leftLeg.position.set(-0.15, 0.72, 0);
-  leftLeg.add(part(new THREE.CylinderGeometry(0.1, 0.12, 0.36, 6), trousers, 0, -0.18, 0));
-  body.add(leftLeg);
-  const rightLeg = new THREE.Group();
-  rightLeg.position.set(0.15, 0.72, 0);
-  rightLeg.add(part(new THREE.CylinderGeometry(0.1, 0.12, 0.36, 6), trousers, 0, -0.18, 0));
-  body.add(rightLeg);
-
-  const leftKnee = new THREE.Group();
-  leftKnee.position.y = -0.36;
-  leftLeg.add(leftKnee);
-  leftKnee.add(part(new THREE.CylinderGeometry(0.085, 0.1, 0.3, 6), PALETTE.boots, 0, -0.15, 0));
-  leftKnee.add(part(new THREE.BoxGeometry(0.14, 0.1, 0.25), PALETTE.boots, 0, -0.31, -0.035));
-  const rightKnee = new THREE.Group();
-  rightKnee.position.y = -0.36;
-  rightLeg.add(rightKnee);
-  rightKnee.add(part(new THREE.CylinderGeometry(0.085, 0.1, 0.3, 6), PALETTE.boots, 0, -0.15, 0));
-  rightKnee.add(part(new THREE.BoxGeometry(0.14, 0.1, 0.25), PALETTE.boots, 0, -0.31, -0.035));
-
-  const weapon = new THREE.Group();
-  weapon.position.set(0, 0.62, 0.05);
-  chest.add(weapon);
-
-  const leftArm = part(new THREE.CylinderGeometry(0.065, 0.075, 0.5, 6), uniform, -0.2, 0.02, -0.24);
-  leftArm.rotation.x = Math.PI / 2;
-  weapon.add(leftArm);
-  const rightArm = part(new THREE.CylinderGeometry(0.065, 0.075, 0.5, 6), uniform, 0.2, 0.02, -0.24);
-  rightArm.rotation.x = Math.PI / 2;
-  weapon.add(rightArm);
-  weapon.add(part(new THREE.SphereGeometry(0.06, 5, 4), PALETTE.skin, -0.2, 0.02, -0.47));
-  weapon.add(part(new THREE.SphereGeometry(0.06, 5, 4), PALETTE.skin, 0.2, 0.02, -0.47));
-
-  const rifle = part(new THREE.BoxGeometry(0.07, 0.08, 0.92), PALETTE.weapon, 0.12, 0, -0.55);
-  weapon.add(rifle);
-  weapon.add(part(new THREE.BoxGeometry(0.09, 0.13, 0.27), PALETTE.wood, 0.12, -0.015, -0.03));
-  weapon.add(part(new THREE.CylinderGeometry(0.024, 0.026, 0.48, 6), PALETTE.steel, 0.12, 0, -1.17));
-  weapon.add(part(new THREE.BoxGeometry(0.022, 0.02, 0.27), PALETTE.steel, 0.12, 0.045, -1.27));
-  weapon.add(part(new THREE.BoxGeometry(0.025, 0.16, 0.025), PALETTE.leather, -0.02, 0.02, -0.4));
-
-  const ring = createRing();
-  root.add(ring);
-  const shadow = createShadow();
-  root.add(shadow);
-  const corpse = createCorpse(kind, faction);
-  corpse.visible = false;
-  root.add(corpse);
-
-  return {
-    root,
-    body,
-    corpse,
-    chest,
-    head,
-    weapon,
-    leftLeg,
-    rightLeg,
-    leftKnee,
-    rightKnee,
-    ring,
-    shadow,
-  };
-}
-
 
 export function ringColorFor(unit: {
   incapacitated: boolean;
@@ -491,14 +232,17 @@ export class CharacterLayer {
     return soldier ? { playing: soldier.playing, active: soldier.activeClips() } : null;
   }
 
-  /** Loads the modelled soldier; until it arrives (or if it fails) the part rig draws. */
+  /**
+   * Loads the modelled soldier. Until it arrives, or if it fails, soldiers
+   * are drawn as the strategic proxy at every distance.
+   */
   loadModels(base = './models/'): void {
     loadSoldierAsset(base)
       .then((asset) => {
         this.asset = asset;
       })
       .catch((error: unknown) => {
-        console.warn('soldier model unavailable, keeping the part rig', error);
+        console.error('soldier model unavailable, drawing the strategic proxy', error);
       });
   }
 
@@ -519,21 +263,18 @@ export class CharacterLayer {
     const seen = new Set<number>();
     let proxyIndex = 0;
     let corpseIndex = 0;
-    const useProxy = span > TACTICAL_SPAN;
+    const farBand = span > TACTICAL_SPAN;
     for (const unit of frame.units) {
       seen.add(unit.id);
       let view = this.views.get(unit.id);
       if (!view) {
-        const rig = createRig(unit.kind, unit.faction);
-        rig.root.name = `unit-${unit.id}`;
-        this.group.add(rig.root);
+        const marks = createMarks(unit.kind);
+        marks.root.name = `unit-${unit.id}`;
+        this.group.add(marks.root);
         view = {
-          rig,
-          phase: 0,
+          marks,
           lastX: unit.x,
           lastY: unit.y,
-          crouch: 0,
-          prone: 0,
           facingAngle: Math.atan2(-unit.facingX, -unit.facingY),
           speed: 0,
           moving: false,
@@ -541,8 +282,6 @@ export class CharacterLayer {
           readyUntil: 0,
           clip: null,
           clipSince: 0,
-          idle: unit.id * 0.7,
-          lean: 0,
           fireUntil: 0,
           hitUntil: 0,
           engagedUntil: 0,
@@ -561,13 +300,6 @@ export class CharacterLayer {
       view.lastX = unit.x;
       view.lastY = unit.y;
 
-      const targetCrouch = unit.alive && !unit.routed && unit.stance === 'crouched' ? 1 : 0;
-      const targetProne =
-        unit.routed || unit.incapacitated || unit.stance === 'prone' ? 1 : 0;
-      view.crouch += (targetCrouch - view.crouch) * 0.08;
-      view.prone += (targetProne - view.prone) * 0.08;
-      view.idle += 1 / 60;
-
       const down = !unit.alive || unit.incapacitated;
       if (struck.has(unit.id) || (down && !view.down)) {
         view.hitUntil = now + (down ? 260 : 320);
@@ -582,14 +314,16 @@ export class CharacterLayer {
         );
       }
 
-      const rig = view.rig;
-      rig.root.visible = !useProxy && !unit.routed;
-      rig.root.position.set(unit.x, terrainHeightAt(unit.x, unit.y), unit.y);
-      rig.root.scale.setScalar(scale);
+      // A soldier without the model (still loading, or failed) is a proxy too.
+      const useProxy = farBand || (!this.asset && unit.kind !== 'dummy');
+      const marks = view.marks;
+      marks.root.visible = !useProxy && !unit.routed;
+      marks.root.position.set(unit.x, terrainHeightAt(unit.x, unit.y), unit.y);
+      marks.root.scale.setScalar(scale);
       const desiredAngle = Math.atan2(-unit.facingX, -unit.facingY);
       // The body turns at a man's pace, not in a snap (order-tempo-and-facing).
       view.facingAngle = turnToward(view.facingAngle, desiredAngle, seconds);
-      rig.root.rotation.y = view.facingAngle;
+      marks.root.rotation.y = view.facingAngle;
       if (useProxy) {
         if (!unit.alive) {
           this.proxyQuaternion.setFromAxisAngle(
@@ -660,7 +394,7 @@ export class CharacterLayer {
 
       if (this.asset && !view.soldier && unit.kind !== 'dummy') {
         view.soldier = new SoldierInstance(this.asset, soldierOutfit(unit));
-        rig.root.add(view.soldier.root);
+        marks.root.add(view.soldier.root);
       }
       if (view.soldier) {
         const motion = isMoving(view.speed, view.moving, now, view.stillSince);
@@ -690,74 +424,30 @@ export class CharacterLayer {
         const authored = CLIP_SPEED[clip];
         view.soldier.play(clip, authored ? walkTimeScale(view.speed, authored) : 1);
         view.soldier.update(seconds);
-        rig.body.visible = false;
-        rig.corpse.visible = false;
-        rig.ring.visible = unit.alive && !unit.routed && !unit.incapacitated;
-        rig.shadow.rotation.set(-Math.PI / 2, 0, 0);
-        if (rig.ring.visible) {
-          (rig.ring.material as THREE.MeshBasicMaterial).color.setHex(ringColorFor(unit));
-          rig.ring.rotation.set(-Math.PI / 2, 0, 0);
+        marks.ring.visible = unit.alive && !unit.routed && !unit.incapacitated;
+        marks.shadow.rotation.set(-Math.PI / 2, 0, 0);
+        if (marks.ring.visible) {
+          (marks.ring.material as THREE.MeshBasicMaterial).color.setHex(ringColorFor(unit));
+          marks.ring.rotation.set(-Math.PI / 2, 0, 0);
         }
         continue;
       }
 
-      rig.body.visible = unit.alive;
-      rig.corpse.visible = !unit.alive;
-      rig.ring.visible = unit.alive && !unit.routed;
-      rig.shadow.rotation.set(-Math.PI / 2, 0, 0);
-      if (!unit.alive) {
-        continue;
+      // A target dummy: its board stands until it is knocked down.
+      marks.board!.visible = unit.alive;
+      marks.fallen!.visible = !unit.alive;
+      marks.ring.visible = unit.alive && !unit.routed;
+      marks.shadow.rotation.set(-Math.PI / 2, 0, 0);
+      if (marks.ring.visible) {
+        (marks.ring.material as THREE.MeshBasicMaterial).color.setHex(ringColorFor(unit));
+        marks.ring.rotation.set(-Math.PI / 2, 0, 0);
       }
-
-      const moving = moved > 0.0005;
-      if (moving) {
-        view.phase += (moved / 0.42) * Math.PI;
-      }
-      const swing = moving ? Math.sin(view.phase) * 0.62 : 0;
-      const settle = moving ? 0.3 : 0.14;
-      const legReduction = (1 - 0.68 * view.crouch) * (1 - 0.85 * view.prone);
-      const legBend = 0.85 * view.crouch + 0.35 * view.prone;
-      const bob = moving ? Math.abs(Math.sin(view.phase)) * 0.035 : 0;
-      const breath = moving ? 0 : Math.sin(view.idle * 1.8 + unit.id) * 0.008;
-      const leanTarget = moving ? 0.085 : 0;
-      view.lean += (leanTarget - view.lean) * 0.08;
-
-      rig.body.position.y = -0.32 * view.crouch + 0.25 * view.prone + bob;
-      rig.body.rotation.x = 0.2 * view.crouch - (Math.PI / 2) * view.prone;
-      rig.chest.position.y = 0.72 + breath;
-      rig.chest.rotation.x = view.lean + 0.1 * view.crouch;
-      rig.chest.rotation.z = moving ? Math.sin(view.phase) * 0.025 * legReduction : 0;
-      rig.head.rotation.x = -0.45 * rig.chest.rotation.x;
-      rig.head.rotation.z = -0.5 * rig.chest.rotation.z;
-
-      rig.leftLeg.rotation.x +=
-        (swing * legReduction + legBend - rig.leftLeg.rotation.x) * settle;
-      rig.rightLeg.rotation.x +=
-        (-swing * legReduction + legBend - rig.rightLeg.rotation.x) * settle;
-      rig.leftKnee.rotation.x +=
-        (Math.max(0, swing) * 0.9 * legReduction + legBend * 1.15 - rig.leftKnee.rotation.x) *
-        settle;
-      rig.rightKnee.rotation.x +=
-        (Math.max(0, -swing) * 0.9 * legReduction + legBend * 1.15 - rig.rightKnee.rotation.x) *
-        settle;
-
-      rig.weapon.position.set(0, 0.62 + breath * 0.4, 0.05 + 0.18 * view.prone);
-      rig.weapon.rotation.x =
-        (Math.PI / 2) * view.prone - (moving ? 0.025 : 0) + 0.04 * view.crouch;
-      rig.weapon.rotation.z = -rig.chest.rotation.z * 0.7;
-      rig.weapon.rotation.y = rig.chest.rotation.z * 0.35;
-
-      const ringColor = ringColorFor(unit);
-      rig.ring.visible = unit.alive && !unit.routed;
-      (rig.ring.material as THREE.MeshBasicMaterial).color.setHex(ringColor);
-      rig.ring.rotation.set(-Math.PI / 2, 0, 0);
-      rig.shadow.rotation.set(-Math.PI / 2, 0, 0);
     }
 
-    this.proxyBody.count = useProxy ? proxyIndex : 0;
-    this.proxyHead.count = useProxy ? proxyIndex : 0;
-    this.proxyRing.count = useProxy ? proxyIndex : 0;
-    this.proxyCorpse.count = useProxy ? corpseIndex : 0;
+    this.proxyBody.count = proxyIndex;
+    this.proxyHead.count = proxyIndex;
+    this.proxyRing.count = proxyIndex;
+    this.proxyCorpse.count = corpseIndex;
     this.proxyBody.instanceMatrix.needsUpdate = true;
     this.proxyHead.instanceMatrix.needsUpdate = true;
     this.proxyRing.instanceMatrix.needsUpdate = true;
@@ -769,8 +459,8 @@ export class CharacterLayer {
     for (const [id, view] of this.views) {
       if (!seen.has(id)) {
         view.soldier?.dispose();
-        this.group.remove(view.rig.root);
-        disposeObject(view.rig.root);
+        this.group.remove(view.marks.root);
+        disposeObject(view.marks.root);
         this.views.delete(id);
       }
     }
@@ -779,7 +469,7 @@ export class CharacterLayer {
   dispose(): void {
     for (const view of this.views.values()) {
       view.soldier?.dispose();
-      disposeObject(view.rig.root);
+      disposeObject(view.marks.root);
     }
     this.views.clear();
   }

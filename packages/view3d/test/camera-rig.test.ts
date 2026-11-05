@@ -15,6 +15,16 @@ describe('CameraRig', () => {
     expect(rig.band).toBe('strategic');
   });
 
+  it('lands in the tactical band when eased down to the tactical span', () => {
+    const rig = new CameraRig();
+    rig.targetSpan = 240;
+    rig.update(5);
+    rig.targetSpan = 80;
+    for (let frame = 0; frame < 600; frame += 1) rig.update(1 / 60);
+    expect(rig.span).toBe(80);
+    expect(rig.band).toBe('tactical');
+  });
+
   it('clamps the span and rotates in 45 degree steps', () => {
     const rig = new CameraRig();
     rig.zoom(100);

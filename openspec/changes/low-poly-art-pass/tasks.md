@@ -23,6 +23,6 @@
 
 ## 5. Close
 
-- [ ] 5.1 Performance probe in e2e: mean frame time at tactical span with the full section under an absolute budget (about 16.7 ms); measure once with the procedural rig (model load forced to fail) and once with the models, and record both in `docs/status.md`; then remove the procedural part rig and the procedural buildings, props, trees and fences (and the dual path of `useModels()`); if a model fails to load, the view shows the strategic proxy at every distance and logs the error
-- [ ] 5.2 Asset register and visual-language decision updated; visual baselines re-recorded after review
+- [x] 5.1 Performance probe in e2e: mean frame time at tactical span with the full section under an absolute budget (about 16.7 ms); measure once with the procedural rig (model load forced to fail) and once with the models, and record both in `docs/status.md`; then remove the procedural part rig and the procedural buildings, props, trees and fences (and the dual path of `useModels()`); if a model fails to load, the view shows the strategic proxy at every distance and logs the error
+- [x] 5.2 Asset register and visual-language decision updated; visual baselines re-recorded after review
 - [ ] 5.3 `pnpm verify`; hand check in Chrome of a full station and the sandbox; record in `docs/status.md`

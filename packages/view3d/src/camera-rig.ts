@@ -87,6 +87,9 @@ export class CameraRig {
   update(dt: number): void {
     const k = 1 - Math.exp(-dt / 0.15);
     this.span += (this.targetSpan - this.span) * k;
+    // Land on the target: the ease alone stops a hair above it, so the Tactical
+    // control (target 80) never reached the tactical band (span <= 80).
+    if (Math.abs(this.targetSpan - this.span) < 0.01) this.span = this.targetSpan;
     this.yaw += (this.targetYaw - this.yaw) * k;
 
     const halfH = this.span / 2;

@@ -547,7 +547,11 @@ export class SceneView {
     this.post.setStrong(strong);
   }
 
-  /** Swaps the procedural world for the Blender models when they arrive. */
+  /**
+   * Places the Blender environment when it arrives. If it fails, the field
+   * keeps its terrain and the sandbox's procedural pieces, without covers,
+   * buildings, trees or props.
+   */
   private loadEnvironment(): void {
     loadEnvironmentAsset()
       .then((asset) => {
@@ -557,7 +561,7 @@ export class SceneView {
         this.training.useModels(asset);
       })
       .catch((error: unknown) => {
-        console.warn('environment models unavailable, keeping the procedural world', error);
+        console.error('environment models unavailable, the field is drawn without them', error);
       });
   }
 

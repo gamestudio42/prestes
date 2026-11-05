@@ -6,15 +6,13 @@ import {
   terrainHeightAt,
   terrainSurfaceAt,
 } from '@prestes/shared';
-import type { BuildingModel, TrainingBuildingModel } from '@prestes/shared';
-import { detachChildren, ModelPlacements, treeModel, type EnvironmentAsset } from './environment-models';
+import { ModelPlacements, treeModel, warnMissing, type EnvironmentAsset } from './environment-models';
 import { toon } from './materials';
 import { PALETTE } from './palette';
 
 const unitBox = new THREE.BoxGeometry(1, 1, 1);
 const unitCylinder = new THREE.CylinderGeometry(1, 1, 1, 6);
 const unitBarrel = new THREE.CylinderGeometry(1, 1, 1, 8);
-const unitCone = new THREE.ConeGeometry(1, 1, 6);
 const unitTuft = new THREE.ConeGeometry(0.16, 0.55, 4);
 const unitRock = new THREE.IcosahedronGeometry(0.55, 0);
 const flatPlane = new THREE.PlaneGeometry(1, 1);
@@ -178,160 +176,6 @@ function windowDetail(
   box(parent, PALETTE.wood, x, y, z + 0.1, 0.08, height, 0.04);
 }
 
-function farmhouse(parent: THREE.Object3D, x: number, z: number, rotation: number): void {
-  const group = new THREE.Group();
-  group.position.set(x, terrainHeightAt(x, z), z);
-  group.rotation.y = rotation;
-  parent.add(group);
-  const width = 8;
-  const depth = 5;
-  groundShadow(group, 0, 0, width + 2.4, depth + 2.4);
-  const wall = 2.6;
-  const base = 0.5;
-  box(group, PALETTE.stoneDark, 0, 0.18, 0, width + 0.7, 1.2, depth + 0.7);
-  box(group, PALETTE.plaster, 0, base + wall / 2, 0, width, wall, depth);
-  gableRoof(group, width, depth, base + wall, 1.7, PALETTE.tile, PALETTE.plasterShade, PALETTE.roofDark);
-  box(group, PALETTE.wood, 0, base + 1.05, depth / 2 + 0.03, 1.55, 2.05, 0.12);
-  box(group, PALETTE.roofDark, 0, base + 1.02, depth / 2 + 0.1, 1.18, 1.82, 0.08);
-  windowDetail(group, -2.6, base + 1.8, depth / 2 + 0.04, 0.75, 0.82);
-  windowDetail(group, 2.6, base + 1.8, depth / 2 + 0.04, 0.75, 0.82);
-  windowDetail(group, width / 2 + 0.02, base + 1.8, -1.2, 0.8, 0.85, true);
-  windowDetail(group, width / 2 + 0.02, base + 1.8, 1.2, 0.8, 0.85, true);
-  box(group, PALETTE.stone, 2.6, base + wall + 0.9, 0.7, 0.72, 2.0, 0.72);
-  box(group, PALETTE.stoneDark, 2.6, base + wall + 1.95, 0.7, 0.9, 0.14, 0.9);
-  box(group, PALETTE.tile, 0, base + 2.62, depth / 2 + 0.82, width * 0.64, 0.12, 1.65, 0, -0.1);
-  for (const offset of [-2.15, 2.15]) {
-    box(group, PALETTE.wood, offset, base + 1.35, depth / 2 + 1.38, 0.16, 2.55, 0.16);
-  }
-  box(group, PALETTE.wood, 0, base + 0.08, depth / 2 + 1.35, 4.8, 0.14, 1.5);
-}
-
-function barn(parent: THREE.Object3D, x: number, z: number, rotation: number): void {
-  const group = new THREE.Group();
-  group.position.set(x, terrainHeightAt(x, z), z);
-  group.rotation.y = rotation;
-  parent.add(group);
-  const width = 10.5;
-  const depth = 6.2;
-  groundShadow(group, 0, 0, width + 2.6, depth + 2.6);
-  const wall = 3.4;
-  const base = 0.45;
-  box(group, PALETTE.stoneDark, 0, 0.16, 0, width + 0.8, 1.1, depth + 0.8);
-  box(group, PALETTE.barn, 0, base + wall / 2, 0, width, wall, depth);
-  gableRoof(group, width, depth, base + wall, 2.15, PALETTE.roofDark, PALETTE.barn, PALETTE.wood);
-  box(group, PALETTE.barn, 0, base + wall + 2.15 + 0.5, 0, 1.45, 1.0, 1.45);
-  box(group, PALETTE.roofDark, 0, base + wall + 2.15 + 1.08, 0, 1.85, 0.16, 1.85, Math.PI / 4);
-  box(group, PALETTE.wood, 0, base + wall + 2.15 + 1.62, 0, 0.06, 0.9, 0.06);
-  box(group, PALETTE.wood, 0, base + wall + 2.15 + 1.82, 0, 0.62, 0.06, 0.06);
-  box(group, PALETTE.roofDark, 0, base + 1.35, depth / 2 + 0.06, 3.2, 2.65, 0.16);
-  box(group, PALETTE.wood, 0, base + 1.35, depth / 2 + 0.14, 2.8, 2.25, 0.1);
-  box(group, PALETTE.wood, 0, base + 1.35, depth / 2 + 0.19, 2.92, 0.12, 0.08);
-  box(group, PALETTE.wood, 0, base + 1.35, depth / 2 + 0.19, 0.12, 2.35, 0.08);
-  windowDetail(group, width / 2 + 0.02, base + 2.15, 1.4, 0.86, 0.9, true);
-  windowDetail(group, -width / 2 - 0.02, base + 2.15, -1.4, 0.86, 0.9, true);
-  for (const offset of [-3.1, 3.1]) {
-    box(group, PALETTE.wood, offset, base + 0.02, depth / 2 + 0.85, 0.18, 0.9, 1.8);
-  }
-}
-
-function chapel(parent: THREE.Object3D, x: number, z: number, rotation: number): void {
-  const group = new THREE.Group();
-  group.position.set(x, terrainHeightAt(x, z), z);
-  group.rotation.y = rotation;
-  parent.add(group);
-  const width = 5.8;
-  const depth = 9;
-  groundShadow(group, 0, 0, width + 2.2, depth + 2.2);
-  const wall = 3.1;
-  const base = 0.5;
-  box(group, PALETTE.stoneDark, 0, 0.18, 0, width + 0.6, 1.1, depth + 0.6);
-  box(group, PALETTE.whitewash, 0, base + wall / 2, 0, width, wall, depth);
-  gableRoof(group, width, depth, base + wall, 1.55, PALETTE.roof, PALETTE.whitewash, PALETTE.roofDark);
-  box(group, PALETTE.wood, 0, base + 1.1, depth / 2 + 0.04, 1.45, 2.1, 0.12);
-  box(group, PALETTE.roofDark, 0, base + 1.05, depth / 2 + 0.1, 1.08, 1.85, 0.08);
-  windowDetail(group, -1.7, base + 1.9, depth / 2 + 0.05, 0.52, 1.0);
-  windowDetail(group, 1.7, base + 1.9, depth / 2 + 0.05, 0.52, 1.0);
-  box(group, PALETTE.whitewash, 0, base + wall + 1.25, -2.5, 2.2, 4.7, 2.2);
-  box(group, PALETTE.roofDark, 0, base + wall + 3.75, -2.5, 2.8, 0.18, 2.8);
-  box(group, PALETTE.roofDark, 0, base + wall + 3.45, -2.5, 2.45, 0.18, 2.45, Math.PI / 4);
-  box(group, PALETTE.bell, 0, base + wall + 3.0, -2.5, 0.46, 0.7, 0.28);
-  box(group, PALETTE.wood, 0, base + wall + 4.55, -2.5, 0.12, 1.3, 0.12);
-  box(group, PALETTE.wood, 0, base + wall + 4.78, -2.5, 0.72, 0.12, 0.12);
-}
-
-/** Places a building mesh at its simulation footprint (view turns by -rotation). */
-export function placeBuilding(
-  parent: THREE.Object3D,
-  model: BuildingModel | TrainingBuildingModel,
-  x: number,
-  y: number,
-  rotation: number,
-): void {
-  const builders = {
-    farmhouse,
-    barn,
-    chapel,
-    'training-house': trainingHouse,
-    barracks,
-    'aid-tent': aidTent,
-  };
-  builders[model](parent, x, y, -rotation);
-}
-
-/** A long single-storey army barracks block (11 x 6 m footprint). */
-function barracks(parent: THREE.Object3D, x: number, z: number, rotation: number): void {
-  const group = new THREE.Group();
-  group.position.set(x, terrainHeightAt(x, z), z);
-  group.rotation.y = rotation;
-  parent.add(group);
-  const width = 10.4;
-  const depth = 5.4;
-  const wall = 2.6;
-  const base = 0.35;
-  groundShadow(group, 0, 0, width + 2.2, depth + 2.2);
-  box(group, PALETTE.stoneDark, 0, 0.14, 0, width + 0.5, 0.9, depth + 0.5);
-  box(group, PALETTE.whitewash, 0, base + wall / 2, 0, width, wall, depth);
-  box(group, PALETTE.plasterShade, 0, base + 0.3, 0, width + 0.04, 0.6, depth + 0.04);
-  gableRoof(group, width, depth, base + wall, 1.3, PALETTE.tile, PALETTE.whitewash, PALETTE.roofDark);
-  box(group, PALETTE.wood, 0, base + 1.0, depth / 2 + 0.04, 1.3, 2.0, 0.12);
-  for (const offset of [-3.8, -1.9, 1.9, 3.8]) {
-    windowDetail(group, offset, base + 1.65, depth / 2 + 0.04, 0.7, 0.8);
-    windowDetail(group, offset, base + 1.65, -depth / 2 - 0.04, 0.7, 0.8);
-  }
-  box(group, PALETTE.wood, 0, base + 2.35, depth / 2 + 0.6, 3.4, 0.1, 1.2, 0, -0.12);
-}
-
-/** The aid post: a field tent marked with a red cross. */
-function aidTent(parent: THREE.Object3D, x: number, z: number, rotation: number): void {
-  const group = new THREE.Group();
-  group.position.set(x, terrainHeightAt(x, z), z);
-  group.rotation.y = rotation;
-  parent.add(group);
-  const width = 5.4;
-  const depth = 4.4;
-  const height = 2.7;
-  groundShadow(group, 0, 0, width + 1.4, depth + 1.4);
-  const slope = Math.sqrt((depth / 2) ** 2 + height ** 2);
-  const angle = Math.atan2(height, depth / 2);
-  for (const side of [-1, 1]) {
-    const panel = box(group, PALETTE.whitewash, 0, height / 2, (side * depth) / 4, width, 0.08, slope + 0.1);
-    panel.rotation.x = side * angle;
-  }
-  box(group, PALETTE.wood, 0, height + 0.05, 0, width + 0.3, 0.1, 0.1);
-  for (const side of [-1, 1]) {
-    box(group, PALETTE.wood, (side * width) / 2, height / 2, 0, 0.12, height + 0.3, 0.12);
-  }
-  // Red cross on both roof slopes.
-  for (const side of [-1, 1]) {
-    const cross = new THREE.Group();
-    cross.position.set(0, height / 2 + 0.06, (side * depth) / 4);
-    cross.rotation.x = side * angle;
-    group.add(cross);
-    box(cross, PALETTE.scarf, 0, 0.06, 0, 1.4, 0.04, 0.42);
-    box(cross, PALETTE.scarf, 0, 0.06, 0, 0.42, 0.04, 1.4);
-  }
-}
-
 export function trainingHouse(
   parent: THREE.Object3D,
   x: number,
@@ -384,44 +228,6 @@ function ruin(parent: THREE.Object3D, x: number, z: number, rotation: number): v
     mesh.rotation.set(dx, dz, size);
     group.add(mesh);
   }
-}
-
-export function tree(parent: THREE.Object3D, x: number, z: number, scale: number, dark: boolean): void {
-  const base = terrainHeightAt(x, z);
-  cylinder(parent, PALETTE.bark, x, base + 1.25 * scale, z, 0.22 * scale, 2.5 * scale);
-  const crown = dark ? PALETTE.leafDark : PALETTE.leaf;
-  for (const [height, radius, length] of [
-    [2.1, 1.8, 2.6],
-    [3.35, 1.42, 2.3],
-    [4.35, 0.92, 1.9],
-  ] as const) {
-    const mesh = new THREE.Mesh(unitCone, material(crown));
-    mesh.position.set(x, base + height * scale, z);
-    mesh.scale.set(radius * scale, length * scale, radius * scale);
-    mesh.rotation.y = (x + z) * 0.35;
-    parent.add(mesh);
-  }
-}
-
-export function haystack(parent: THREE.Object3D, x: number, z: number, scale: number): void {
-  const base = terrainHeightAt(x, z);
-  cylinder(parent, PALETTE.hayDark, x, base + 0.55 * scale, z, 1.15 * scale, 1.1 * scale);
-  const top = new THREE.Mesh(unitCone, material(PALETTE.hay));
-  top.position.set(x, base + 1.45 * scale, z);
-  top.scale.set(1.3 * scale, 1.2 * scale, 1.3 * scale);
-  top.rotation.y = x * 0.2;
-  parent.add(top);
-}
-
-export function well(parent: THREE.Object3D, x: number, z: number): void {
-  const base = terrainHeightAt(x, z);
-  cylinder(parent, PALETTE.stone, x, base + 0.42, z, 0.95, 0.85);
-  cylinder(parent, PALETTE.stoneDark, x, base + 0.86, z, 1.02, 0.16);
-  for (const offset of [-0.72, 0.72]) {
-    box(parent, PALETTE.wood, x + offset, base + 1.65, z, 0.14, 1.7, 0.14);
-  }
-  box(parent, PALETTE.roof, x, base + 2.52, z, 2.1, 0.14, 1.3, 0, 0.22);
-  box(parent, PALETTE.wood, x, base + 2.2, z, 1.6, 0.12, 0.12);
 }
 
 function telegraphPoles(parent: THREE.Object3D): void {
@@ -510,24 +316,6 @@ function windmill(parent: THREE.Object3D, x: number, z: number): void {
   }
 }
 
-export function cart(parent: THREE.Object3D, x: number, z: number, rotation: number): void {
-  const base = terrainHeightAt(x, z);
-  const group = new THREE.Group();
-  group.position.set(x, base, z);
-  group.rotation.y = rotation;
-  parent.add(group);
-  groundShadow(group, 0, 0, 4.2, 2.6);
-  box(group, PALETTE.wood, 0, 0.78, 0, 2.5, 0.32, 1.25);
-  box(group, PALETTE.wood, 0, 1.12, -0.55, 2.5, 0.55, 0.12);
-  box(group, PALETTE.wood, 0, 1.12, 0.55, 2.5, 0.55, 0.12);
-  box(group, PALETTE.wood, 1.55, 0.84, -0.38, 1.8, 0.1, 0.1);
-  box(group, PALETTE.wood, 1.55, 0.84, 0.38, 1.8, 0.1, 0.1);
-  for (const side of [-1, 1]) {
-    const wheel = cylinder(group, PALETTE.wood, -0.45, 0.55, side * 0.72, 0.58, 0.2, true);
-    wheel.rotation.x = Math.PI / 2;
-  }
-}
-
 function buildFieldRows(
   parent: THREE.Object3D,
   minX: number,
@@ -568,25 +356,25 @@ export class WorldLayer {
   readonly group = new THREE.Group();
   private readonly postMatrices: THREE.Matrix4[] = [];
   private readonly railMatrices: THREE.Matrix4[] = [];
-  private readonly trees = new THREE.Group();
-  private treeSpots: ReadonlyArray<readonly [number, number, number, boolean]> = [];
-  private fenceMeshes: THREE.InstancedMesh[] = [];
+  /** Where the Blender models go once they load (trees, buildings, props). */
+  private readonly placements = new ModelPlacements();
 
   /**
    * The countryside around a map. On the training ground it is only grass,
    * trees and the boundary fence: the stations' own buildings and props are
-   * the training layer's.
+   * the training layer's. Pieces with a Blender model are drawn when the
+   * models load; the rest (sandbox only) stay procedural.
    */
   constructor(private readonly map: WorldMap = 'sandbox') {
     if (map === 'training') {
       this.buildVegetation();
-      this.buildFences();
+      this.addFences();
       return;
     }
     this.buildBuildings();
     this.buildFields();
     this.buildVegetation();
-    this.buildFences();
+    this.addFences();
     this.buildRocks();
     this.buildProps();
     telegraphPoles(this.group);
@@ -600,37 +388,37 @@ export class WorldLayer {
 
   private buildBuildings(): void {
     for (const building of BUILDINGS) {
-      placeBuilding(this.group, building.model, building.x, building.y, building.rotation);
+      if (building.model === 'training-house') {
+        trainingHouse(this.group, building.x, building.y, -building.rotation);
+      } else {
+        this.placements.add(building.model, building.x, building.y, building.rotation);
+      }
     }
     ruin(this.group, -70, -42, 0.4);
   }
 
   private buildVegetation(): void {
-    const sandboxTrees: Array<readonly [number, number, number, boolean]> = [
-      [-16, 9, 1.0, false],
-      [17, 8, 0.92, true],
-      [-13, -13, 1.08, true],
-      [15, -12, 0.96, false],
-      [-88, 20, 1.3, true],
-      [-80, -12, 1.12, false],
-      [-68, 52, 1.22, false],
-      [-44, 64, 1.05, true],
-      [72, -18, 1.2, false],
-      [86, 30, 1.32, true],
-      [92, -82, 1.18, true],
-      [-94, -70, 1.26, false],
-      [36, 64, 1.1, true],
-      [-30, 72, 1.2, false],
-      [62, 70, 1.15, true],
+    const sandboxTrees: Array<readonly [number, number, number]> = [
+      [-16, 9, 1.0],
+      [17, 8, 0.92],
+      [-13, -13, 1.08],
+      [15, -12, 0.96],
+      [-88, 20, 1.3],
+      [-80, -12, 1.12],
+      [-68, 52, 1.22],
+      [-44, 64, 1.05],
+      [72, -18, 1.2],
+      [86, 30, 1.32],
+      [92, -82, 1.18],
+      [-94, -70, 1.26],
+      [36, 64, 1.1],
+      [-30, 72, 1.2],
+      [62, 70, 1.15],
     ];
-    this.treeSpots =
-      this.map === 'training'
-        ? TRAINING_TREES.map(([x, z, scale], index) => [x, z, scale, index % 2 === 0] as const)
-        : sandboxTrees;
-    for (const [x, z, scale, dark] of this.treeSpots) {
-      tree(this.trees, x, z, scale, dark);
-    }
-    this.group.add(this.trees);
+    const trees = this.map === 'training' ? TRAINING_TREES : sandboxTrees;
+    trees.forEach(([x, z, scale], index) => {
+      this.placements.add(treeModel(index), x, z, (x + z) * 0.35, scale);
+    });
 
     const random = seededRandom(1922);
     const tufts = new THREE.InstancedMesh(unitTuft, toon({ color: 0xffffff }), 380);
@@ -667,7 +455,7 @@ export class WorldLayer {
     this.group.add(tufts);
   }
 
-  private buildFences(): void {
+  private addFences(): void {
     if (this.map === 'training') {
       for (const line of TRAINING_FENCES) {
         this.addFence(line);
@@ -675,7 +463,6 @@ export class WorldLayer {
     } else {
       this.addSandboxFences();
     }
-    this.instanceFences();
   }
 
   private addSandboxFences(): void {
@@ -687,34 +474,22 @@ export class WorldLayer {
     this.addFence([{ x: 18, y: 24 }, { x: 18, y: 44 }]);
   }
 
-  private instanceFences(): void {
-    const posts = new THREE.InstancedMesh(unitBox, material(PALETTE.wood), this.postMatrices.length);
-    const rails = new THREE.InstancedMesh(unitBox, material(PALETTE.wood), this.railMatrices.length);
-    this.postMatrices.forEach((matrix, index) => posts.setMatrixAt(index, matrix));
-    this.railMatrices.forEach((matrix, index) => rails.setMatrixAt(index, matrix));
-    posts.instanceMatrix.needsUpdate = true;
-    rails.instanceMatrix.needsUpdate = true;
-    posts.frustumCulled = false;
-    rails.frustumCulled = false;
-    posts.name = 'fence-post';
-    rails.name = 'fence-rail';
-    this.fenceMeshes = [posts, rails];
-    this.group.add(posts, rails);
-  }
-
-  /** Swaps the procedural trees and fence boxes for the Blender models. */
+  /** Draws the modelled pieces: trees, buildings, props and fence posts and rails. */
   useModels(asset: EnvironmentAsset): void {
-    const placements = new ModelPlacements();
-    this.treeSpots.forEach(([x, z, scale], index) => placements.add(treeModel(index), x, z, (x + z) * 0.35, scale));
-    if (placements.missing(asset).length === 0) {
-      detachChildren(this.trees);
-      this.trees.add(placements.build(asset));
-    }
-    for (const mesh of this.fenceMeshes) {
-      const geometry = asset.geometry(mesh.name);
-      if (!geometry) continue;
-      mesh.geometry = geometry;
-      mesh.material = asset.material;
+    warnMissing('world', this.placements.missing(asset));
+    this.group.add(this.placements.build(asset));
+    for (const [name, matrices] of [
+      ['fence-post', this.postMatrices],
+      ['fence-rail', this.railMatrices],
+    ] as const) {
+      const geometry = asset.geometry(name);
+      if (!geometry || matrices.length === 0) continue;
+      const mesh = new THREE.InstancedMesh(geometry, asset.material, matrices.length);
+      matrices.forEach((matrix, index) => mesh.setMatrixAt(index, matrix));
+      mesh.instanceMatrix.needsUpdate = true;
+      mesh.frustumCulled = false;
+      mesh.name = name;
+      this.group.add(mesh);
     }
   }
 
@@ -798,19 +573,23 @@ export class WorldLayer {
 
   private buildProps(): void {
     windmill(this.group, -84, 6);
-    cart(this.group, 44, 38, 0.25);
-    haystack(this.group, 48, 32, 1.0);
-    haystack(this.group, 52.5, 34.5, 0.82);
-    haystack(this.group, 45, 36, 0.72);
-    well(this.group, -36, 28);
+    // The cart's procedural heading was the view's; the placement takes the simulation's.
+    this.placements.add('cart', 44, 38, -0.25);
+    for (const [x, z, scale] of [
+      [48, 32, 1.0],
+      [52.5, 34.5, 0.82],
+      [45, 36, 0.72],
+    ] as const) {
+      this.placements.add('haystack', x, z, 0, scale);
+    }
+    this.placements.add('well', -36, 28);
     for (const [x, z] of [
       [46, 28],
       [49.5, 29],
       [63, 37],
       [65.5, 38],
     ] as const) {
-      cylinder(this.group, PALETTE.wood, x, terrainHeightAt(x, z) + 0.48, z, 0.6, 0.96, true);
-      cylinder(this.group, PALETTE.metal, x, terrainHeightAt(x, z) + 0.72, z, 0.62, 0.08, true);
+      this.placements.add('barrel', x, z, 0, new THREE.Vector3(0.6, 0.96, 0.6), 0.48);
     }
     for (const [x, z, size] of [
       [61, 40, 1.1],
@@ -818,7 +597,8 @@ export class WorldLayer {
       [-51, 41, 0.9],
       [-49.2, 42.2, 0.7],
     ] as const) {
-      box(this.group, PALETTE.wood, x, terrainHeightAt(x, z) + size / 2, z, size, size, size, z * 0.2);
+      // The crate model is 0.9 m, standing on its base.
+      this.placements.add('crate', x, z, -z * 0.2, size / 0.9);
     }
   }
 }

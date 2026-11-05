@@ -4,11 +4,12 @@
 
 | Asset | Path | Author / source | Licence | Notes |
 | --- | --- | --- | --- | --- |
-| Modular 1920s character proxy (soldier, officer) | `packages/view3d/src/character-layer.ts` | Prestes project | CC-BY-4.0 | Procedural low-poly part rig built from the 1.75 m kit proportions; walk cycle and standing/crouched/prone poses; replaced by exported meshes later |
-| Terrain heightfield, terrain detail, layered covers, environment kit and target dummies | `packages/view3d/src/scene-view.ts`, `packages/view3d/src/world-layer.ts`, `packages/view3d/src/cover-layer.ts`, `packages/view3d/src/training-layer.ts`, `packages/view3d/src/character-layer.ts`, `packages/shared/src/terrain.ts` | Prestes project | CC-BY-4.0 | Procedural low-poly placeholders; ridge, trench, crater and road are fictional sandbox features; dummies are target boards, not soldiers |
-| Fallen-soldier corpse and strategic corpse proxy | `packages/view3d/src/character-layer.ts` | Prestes project | CC-BY-4.0 | Separate body, muted uniform, dropped headgear and blood pool; deliberately distinct from the living prone pose |
-| Farmhouse, barn, chapel, ruin, windmill, fields, fences, telegraph line, crops and ground clutter | `packages/view3d/src/world-layer.ts` | Prestes project | CC-BY-4.0 | Procedural 1920s rural kit; instanced fields, grass, rocks, fence posts and rails; visual only, not simulation cover |
-| Layered sandbag, stone, low-wall, barrel and trench visuals | `packages/view3d/src/cover-layer.ts` | Prestes project | CC-BY-4.0 | Instanced bags, blocks, barrel bands and trench lips matched to the simulation cover footprint and rotation |
+| 1920s infantry soldier (column, legalist, officer) | `art-src/blender/target_soldier.py` (source), `apps/game/public/models/soldier.glb`, `textures/soldier-{column,legalist,officer}.png` | Prestes project | CC-BY-4.0 | Blender-built 1.75 m model, about 400 triangles, Mauser included; one armature with 18 clips (idle and walk, each also at the ready; run; crouch idle and walk; prone; crawl; aim and fire in three stances; hit; wounded; corpse); outfits by texture; uniforms and equipment representative of the period, game art rather than reconstructions. Drawn by `character-layer.ts` at tactical span |
+| Terrain heightfield, terrain detail and target dummies | `packages/view3d/src/scene-view.ts`, `packages/view3d/src/character-layer.ts`, `packages/shared/src/terrain.ts` | Prestes project | CC-BY-4.0 | Procedural; ridge, trench, crater and road are fictional sandbox features; dummies are target boards on a post, not soldiers |
+| Strategic proxies (soldier and corpse) | `packages/view3d/src/character-layer.ts` | Prestes project | CC-BY-4.0 | Instanced capsule, head, ring and flat corpse for the strategic band; also drawn at every distance if the soldier model fails to load |
+| Training house, ruin, windmill, crop rows, telegraph line, rocks and grass (sandbox) | `packages/view3d/src/world-layer.ts` | Prestes project | CC-BY-4.0 | Procedural pieces with no Blender model yet; visual only, not simulation cover |
+| Training-ground and environment models | `art-src/blender/target_{buildings,fortifications,vegetation,props}.py` (source), `apps/game/public/models/{buildings,fortifications,vegetation,props}.glb`, `textures/environment.png` | Prestes project | CC-BY-4.0 | Blender-built: barracks, chapel, farmhouse, barn, aid tent; sandbag, stone block, wall block, barrel, trench floor; three trees, hedge, fence post and rail; flagpole, target frame, crate, haystack, well, cart, signpost. Placed by the world, training and cover layers from the shared footprints |
+| Pixel textures and effects sheet | `art-src/textures/make_textures.py` (source), `apps/game/public/models/textures/` | Prestes project | CC-BY-4.0 | Pixel grids drawn in code into small atlases (soldier 64 x 64 per outfit, environment 128 x 128) and the effects sheet (muzzle flash, smoke, impacts, dust), sepia palette, nearest filtering |
 | Palette and toon materials | `packages/view3d/src/palette.ts`, `materials.ts` | Prestes project | CC-BY-4.0 | Theme colours and three-band toon ramp |
 | Section portrait placeholder | `apps/game/src/ui/Hud.tsx` | Prestes project | AGPL-3.0-or-later | CSS hatch and the pixel `status-soldier` icon; explicitly a placeholder until final portraits |
 | Start menu hero | `apps/game/src/assets/menu/coluna-prestes.webp` | Provided by the project owner | Public domain (verified by the project owner, 2026-11-03) | Historical photograph used as a sepia menu hero; copied from the user's reference folder |
@@ -16,10 +17,14 @@
 
 ## Original model sources
 
-Source `.blend` files live in `art-src/characters/` and are gitignored by default.
-Exported `.gltf`/`.glb` files go through `pnpm models` and land in
-`apps/game/public/models/`. No final character GLB ships in this change; the
-in-game characters are procedural proxies.
+The models are built by Blender Python scripts in `art-src/blender/`
+(`pnpm art`, Blender located like Aseprite or through `BLENDER`), which save
+editable `.blend` sources next to their exports (`art-src/characters/`,
+`art-src/environment/`; the `.blend` files are gitignored and regenerated by
+`pnpm art`). `pnpm models` prunes and deduplicates the exported `.glb` files
+into `apps/game/public/models/`. The exports and textures are committed, so
+building and testing never need Blender. All models and textures are original;
+no third-party model is used.
 
 ## Interface
 

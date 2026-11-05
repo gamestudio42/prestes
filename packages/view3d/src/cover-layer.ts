@@ -1,21 +1,25 @@
 ﻿import * as THREE from 'three';
 import { terrainHeightAt, type CoverPoint } from '@prestes/shared';
-import type { EnvironmentAsset } from './environment-models';
-import { toon } from './materials';
-import { PALETTE } from './palette';
+import { warnMissing, type EnvironmentAsset } from './environment-models';
 
-const unitBox = new THREE.BoxGeometry(1, 1, 1);
-const unitBarrel = new THREE.CylinderGeometry(1, 1, 1, 8);
 const capacity = 512;
 
+/** Placeholder until the fortification models arrive (nothing is drawn before). */
+const empty = new THREE.BufferGeometry();
+const unset = new THREE.MeshBasicMaterial();
+
+/**
+ * Draws each cover with the Blender fortification pieces (sandbags, stone and
+ * wall blocks, barrels, trench floor) along its footprint. Until the models
+ * load, or if they fail, covers are not drawn.
+ */
 export class CoverLayer {
   readonly group = new THREE.Group();
-  private readonly bags = new THREE.InstancedMesh(unitBox, toon({ color: 0xffffff }), capacity);
-  private readonly stones = new THREE.InstancedMesh(unitBox, toon({ color: 0xffffff }), capacity);
-  private readonly blocks = new THREE.InstancedMesh(unitBox, toon({ color: 0xffffff }), capacity);
-  private readonly barrels = new THREE.InstancedMesh(unitBarrel, toon({ color: 0xffffff }), 64);
-  private readonly bands = new THREE.InstancedMesh(unitBarrel, toon({ color: 0xffffff }), 128);
-  private readonly trenchParts = new THREE.InstancedMesh(unitBox, toon({ color: 0xffffff }), 128);
+  private readonly bags = new THREE.InstancedMesh(empty, unset, capacity);
+  private readonly stones = new THREE.InstancedMesh(empty, unset, capacity);
+  private readonly blocks = new THREE.InstancedMesh(empty, unset, capacity);
+  private readonly barrels = new THREE.InstancedMesh(empty, unset, 64);
+  private readonly trenchParts = new THREE.InstancedMesh(empty, unset, 128);
   private signature = '';
   private readonly matrix = new THREE.Matrix4();
   private readonly position = new THREE.Vector3();
@@ -24,7 +28,7 @@ export class CoverLayer {
   private readonly coverQuaternion = new THREE.Quaternion();
   private readonly bagQuaternion = new THREE.Quaternion();
   private readonly color = new THREE.Color();
-  /** The Blender pieces replaced the plain boxes (textured, so tints stay light). */
+  /** The fortification models have loaded. */
   private modelled = false;
 
   constructor() {
@@ -37,10 +41,10 @@ export class CoverLayer {
   }
 
   private meshes(): THREE.InstancedMesh[] {
-    return [this.bags, this.stones, this.blocks, this.barrels, this.bands, this.trenchParts];
+    return [this.bags, this.stones, this.blocks, this.barrels, this.trenchParts];
   }
 
-  /** Swaps the boxes for the unit-sized fortification models. */
+  /** Takes the unit-sized fortification models; covers are drawn from now on. */
   useModels(asset: EnvironmentAsset): void {
     const pieces: Array<[THREE.InstancedMesh, string]> = [
       [this.bags, 'sandbag'],
@@ -49,9 +53,12 @@ export class CoverLayer {
       [this.barrels, 'barrel'],
       [this.trenchParts, 'trench-floor'],
     ];
-    if (pieces.some(([, name]) => !asset.geometry(name))) return;
+    const missing = pieces.filter(([, name]) => !asset.geometry(name)).map(([, name]) => name);
+    if (missing.length > 0) {
+      warnMissing('covers', missing);
+      return;
+    }
     for (const [mesh, name] of pieces) {
-      (mesh.material as THREE.Material).dispose();
       mesh.geometry = asset.geometry(name)!;
       mesh.material = asset.material;
     }
@@ -59,12 +66,9 @@ export class CoverLayer {
     this.signature = '';
   }
 
-  /** Instance colour: the palette for the boxes, a light shade over textures. */
-  private tint(index: number, palette: readonly number[]): THREE.Color {
-    if (this.modelled) {
-      return this.color.setHex([0xffffff, 0xece4d4, 0xdcd3c2][index % 3]!);
-    }
-    return this.color.setHex(palette[index % palette.length]!);
+  /** Instance colour: a light shade over the texture, so pieces vary a little. */
+  private tint(index: number): THREE.Color {
+    return this.color.setHex([0xffffff, 0xece4d4, 0xdcd3c2][index % 3]!);
   }
 
   /** One sandbag at a local point of a cover, `course` bags up. */
@@ -84,10 +88,13 @@ export class CoverLayer {
     this.scale.set(width, 0.38, depth);
     this.matrix.compose(this.position, this.quaternion, this.scale);
     this.bags.setMatrixAt(count, this.matrix);
-    this.bags.setColorAt(count, this.tint(index + course, [PALETTE.adobeDark, PALETTE.sandbag, PALETTE.dust]));
+    this.bags.setColorAt(count, this.tint(index + course));
   }
 
   update(covers: readonly CoverPoint[]): void {
+    if (!this.modelled) {
+      return;
+    }
     const signature = covers
       .map(
         (cover) =>
@@ -102,7 +109,6 @@ export class CoverLayer {
     let stoneCount = 0;
     let blockCount = 0;
     let barrelCount = 0;
-    let bandCount = 0;
     let trenchCount = 0;
     for (const cover of covers) {
       const rotation = -(cover.rotation ?? 0);
@@ -132,8 +138,8 @@ export class CoverLayer {
         continue;
       }
       if (cover.kind === 'stone' || cover.kind === 'low-wall') {
-        // Low walls become plastered blocks of their own once the models load.
-        const stone = cover.kind === 'stone' || !this.modelled;
+        // Stone walls are courses of stone blocks; low walls one plastered block high.
+        const stone = cover.kind === 'stone';
         const mesh = stone ? this.stones : this.blocks;
         const width = cover.halfWidth * 2;
         const count = Math.max(2, Math.round(width / 1.05));
@@ -159,10 +165,7 @@ export class CoverLayer {
             this.scale.set(actualWidth * (block ? 1.0 : 0.96), height, cover.halfDepth * 1.9);
             this.matrix.compose(this.position, this.quaternion, this.scale);
             mesh.setMatrixAt(used, this.matrix);
-            mesh.setColorAt(
-              used,
-              this.tint(index + course, [PALETTE.stoneDark, PALETTE.stone, PALETTE.adobeDark, PALETTE.adobeDark]),
-            );
+            mesh.setColorAt(used, this.tint(index + course));
             if (stone) stoneCount += 1;
             else blockCount += 1;
           }
@@ -175,70 +178,33 @@ export class CoverLayer {
         this.scale.set(cover.halfWidth, cover.height, cover.halfWidth);
         this.matrix.compose(this.position, this.quaternion, this.scale);
         this.barrels.setMatrixAt(barrelCount, this.matrix);
-        this.barrels.setColorAt(barrelCount, this.tint(barrelCount, [PALETTE.wood]));
+        this.barrels.setColorAt(barrelCount, this.tint(barrelCount));
         barrelCount += 1;
-        if (this.modelled) {
-          continue; // the model has its hoops
-        }
-        for (const height of [0.22, 0.72]) {
-          if (bandCount >= 128) {
-            break;
-          }
-          this.position.set(cover.x, terrainHeightAt(cover.x, cover.y) + cover.height * height, cover.y);
-          this.scale.set(cover.halfWidth * 1.02, 0.07, cover.halfWidth * 1.02);
-          this.matrix.compose(this.position, this.quaternion, this.scale);
-          this.bands.setMatrixAt(bandCount, this.matrix);
-          this.bands.setColorAt(bandCount, this.color.setHex(PALETTE.metal));
-          bandCount += 1;
-        }
         continue;
       }
       if (cover.kind === 'trench') {
-        if (this.modelled) {
-          // Earth floor in cells of about two metres, a sandbag lip on each side.
-          const across = Math.max(1, Math.round(cover.halfWidth));
-          const cellWidth = (cover.halfWidth * 2) / across;
-          const floorDepth = cover.halfDepth * 2 - 0.9;
-          for (let index = 0; index < across && trenchCount < 128; index += 1) {
-            const world = toWorld(-cover.halfWidth + cellWidth * (index + 0.5), 0);
-            this.position.set(world.x, terrainHeightAt(world.x, world.y) + 0.02, world.y);
-            this.quaternion.copy(this.coverQuaternion);
-            this.scale.set(cellWidth, 0.06, floorDepth);
-            this.matrix.compose(this.position, this.quaternion, this.scale);
-            this.trenchParts.setMatrixAt(trenchCount, this.matrix);
-            this.trenchParts.setColorAt(trenchCount, this.color.setHex(0xffffff));
-            trenchCount += 1;
-          }
-          const bagsAcross = Math.max(2, Math.round((cover.halfWidth * 2) / 0.82));
-          const bagWidth = (cover.halfWidth * 2) / bagsAcross;
-          for (const side of [-1, 1]) {
-            for (let index = 0; index < bagsAcross && bagCount < capacity; index += 1) {
-              const world = toWorld(-cover.halfWidth + bagWidth * (index + 0.5), side * (cover.halfDepth - 0.25));
-              this.addBag(bagCount, world, 0, index + (side > 0 ? 1 : 0), bagWidth * 0.96, 0.5);
-              bagCount += 1;
-            }
-          }
-          continue;
-        }
-        const world = toWorld(0, 0);
-        this.position.set(world.x, terrainHeightAt(world.x, world.y) + 0.03, world.y);
-        this.quaternion.copy(this.coverQuaternion);
-        this.scale.set(cover.halfWidth * 2, 0.08, cover.halfDepth * 2);
-        this.matrix.compose(this.position, this.quaternion, this.scale);
-        this.trenchParts.setMatrixAt(trenchCount, this.matrix);
-        this.trenchParts.setColorAt(trenchCount, this.color.setHex(PALETTE.trenchDeep));
-        trenchCount += 1;
-        for (const side of [-1, 1]) {
-          if (trenchCount >= 128) {
-            break;
-          }
-          const lip = toWorld(0, side * (cover.halfDepth - 0.16));
-          this.position.set(lip.x, terrainHeightAt(lip.x, lip.y) + 0.28, lip.y);
-          this.scale.set(cover.halfWidth * 2, 0.5, 0.5);
+        // Earth floor in cells of about two metres, a sandbag lip on each side.
+        const across = Math.max(1, Math.round(cover.halfWidth));
+        const cellWidth = (cover.halfWidth * 2) / across;
+        const floorDepth = cover.halfDepth * 2 - 0.9;
+        for (let index = 0; index < across && trenchCount < 128; index += 1) {
+          const world = toWorld(-cover.halfWidth + cellWidth * (index + 0.5), 0);
+          this.position.set(world.x, terrainHeightAt(world.x, world.y) + 0.02, world.y);
+          this.quaternion.copy(this.coverQuaternion);
+          this.scale.set(cellWidth, 0.06, floorDepth);
           this.matrix.compose(this.position, this.quaternion, this.scale);
           this.trenchParts.setMatrixAt(trenchCount, this.matrix);
-          this.trenchParts.setColorAt(trenchCount, this.color.setHex(PALETTE.sandbag));
+          this.trenchParts.setColorAt(trenchCount, this.color.setHex(0xffffff));
           trenchCount += 1;
+        }
+        const bagsAcross = Math.max(2, Math.round((cover.halfWidth * 2) / 0.82));
+        const bagWidth = (cover.halfWidth * 2) / bagsAcross;
+        for (const side of [-1, 1]) {
+          for (let index = 0; index < bagsAcross && bagCount < capacity; index += 1) {
+            const world = toWorld(-cover.halfWidth + bagWidth * (index + 0.5), side * (cover.halfDepth - 0.25));
+            this.addBag(bagCount, world, 0, index + (side > 0 ? 1 : 0), bagWidth * 0.96, 0.5);
+            bagCount += 1;
+          }
         }
       }
     }
@@ -246,7 +212,6 @@ export class CoverLayer {
     this.stones.count = stoneCount;
     this.blocks.count = blockCount;
     this.barrels.count = barrelCount;
-    this.bands.count = bandCount;
     this.trenchParts.count = trenchCount;
     for (const mesh of this.meshes()) {
       mesh.instanceMatrix.needsUpdate = true;
@@ -257,10 +222,7 @@ export class CoverLayer {
   }
 
   dispose(): void {
-    for (const mesh of this.meshes()) {
-      mesh.geometry.dispose();
-      (mesh.material as THREE.Material).dispose();
-    }
+    // The models' geometry and material are shared with the other layers.
     this.group.clear();
   }
 }
