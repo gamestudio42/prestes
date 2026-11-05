@@ -1,5 +1,15 @@
 import { describe, expect, it } from 'vitest';
-import { CLIP_SPEED, soldierClip, soldierOutfit, turnToward, TURN_RATE, walkTimeScale } from '../src/soldier-clips';
+import {
+  CLIP_SPEED,
+  isMoving,
+  MIN_CLIP_MS,
+  soldierClip,
+  soldierOutfit,
+  steadyClip,
+  turnToward,
+  TURN_RATE,
+  walkTimeScale,
+} from '../src/soldier-clips';
 
 const base = {
   alive: true,
@@ -99,5 +109,31 @@ describe('gaits in the view (order-tempo-and-facing)', () => {
     expect(Math.abs(half)).toBeCloseTo(TURN_RATE / 3);
     expect(turnToward(0, 0.1, 1)).toBeCloseTo(0.1);
     expect(turnToward(3, -3, 0.01)).toBeGreaterThan(3);
+  });
+});
+
+describe('steady clips (no flicker)', () => {
+  it('walks only past the start speed and stops only below the stop speed', () => {
+    expect(isMoving(0.25, false)).toBe(false);
+    expect(isMoving(0.4, false)).toBe(true);
+    expect(isMoving(0.25, true)).toBe(true);
+    expect(isMoving(0.1, true)).toBe(false);
+  });
+
+  it('holds an ordinary clip a moment before changing', () => {
+    expect(steadyClip('idle-ready', 1000, 'idle', 1200)).toBe('idle-ready');
+    expect(steadyClip('idle-ready', 1000, 'idle', 1000 + MIN_CLIP_MS)).toBe('idle');
+    expect(steadyClip('walk', 1000, 'idle', 1100)).toBe('walk');
+  });
+
+  it('lets shots, hits and stance changes cut in at once', () => {
+    expect(steadyClip('aim-stand', 1000, 'fire-stand', 1010)).toBe('fire-stand');
+    expect(steadyClip('walk', 1000, 'hit', 1010)).toBe('hit');
+    expect(steadyClip('idle', 1000, 'crouch-idle', 1010)).toBe('crouch-idle');
+  });
+
+  it('a caller-held ready keeps the rifle up', () => {
+    const rifleman = { alive: true, incapacitated: false, routed: false, stance: 'standing' as const, targetId: null };
+    expect(soldierClip(rifleman, { moving: false, firing: false, ready: true })).toBe('idle-ready');
   });
 });

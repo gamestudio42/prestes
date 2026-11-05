@@ -37,6 +37,11 @@ export interface ClipState {
   moving: boolean;
   /** Ground speed (m/s, smoothed): above RUN_SPEED a standing soldier runs. */
   speed?: number;
+  /**
+   * At the ready, decided by the caller with a hold (see READY_HOLD_MS);
+   * when absent, from the snapshot alone.
+   */
+   ready?: boolean;
   /** The simulation's gait while moving: a run gait runs from the first step. */
   gait?: UnitSnapshot['gait'];
   /** The soldier fired in the last few tenths of a second. */
@@ -96,7 +101,7 @@ export function soldierClip(unit: ClipUnit, state: ClipState): SoldierClip {
     if (state.firing) return 'fire-crouch';
     return aiming ? 'aim-crouch' : 'crouch-idle';
   }
-  const ready = atTheReady(unit);
+  const ready = state.ready ?? atTheReady(unit);
   if (state.moving && ((state.speed ?? 0) > RUN_SPEED || (state.gait === 'run' && (state.speed ?? 0) > 1.6))) {
     return 'run';
   }
@@ -115,8 +120,57 @@ export function soldierOutfit(unit: Pick<UnitSnapshot, 'kind' | 'faction'>): Sol
 /** Above this ground speed (m/s) a standing soldier plays the run clip. */
 export const RUN_SPEED = 2.2;
 
-/** Below this ground speed (m/s) a soldier counts as halted. */
-export const MOVING_SPEED = 0.2;
+/**
+ * A halted soldier starts walking above START_SPEED and a walking one stops
+ * below STOP_SPEED (m/s): the gap keeps a nudge from his mates, or a soldier
+ * easing onto his slot, from flicking the legs between walk and stand.
+ */
+export const START_SPEED = 0.35;
+export const STOP_SPEED = 0.12;
+
+export function isMoving(speed: number, wasMoving: boolean): boolean {
+  return speed > (wasMoving ? STOP_SPEED : START_SPEED);
+}
+
+/** Once at the ready, a soldier keeps the rifle up this long (ms). */
+export const READY_HOLD_MS = 3000;
+
+/** A clip plays at least this long (ms) before an ordinary change. */
+export const MIN_CLIP_MS = 600;
+
+/** Clips that cut in at once: a shot, a hit, a fall. */
+const URGENT: ReadonlySet<SoldierClip> = new Set([
+  'hit',
+  'fire-stand',
+  'fire-crouch',
+  'fire-prone',
+  'wounded',
+  'corpse',
+]);
+
+/**
+ * The clip to play now: the wanted one, unless the current one began less
+ * than MIN_CLIP_MS ago and neither is urgent (stance changes still show at
+ * once through the urgent shot and hit clips, and a stance change is a new
+ * clip family the player asked for, so it passes too).
+ */
+export function steadyClip(
+  current: SoldierClip | null,
+  since: number,
+  wanted: SoldierClip,
+  now: number,
+): SoldierClip {
+  if (current === null || current === wanted) return wanted;
+  if (URGENT.has(wanted) || URGENT.has(current)) return wanted;
+  if (stanceOf(current) !== stanceOf(wanted)) return wanted;
+  return now - since < MIN_CLIP_MS ? current : wanted;
+}
+
+function stanceOf(clip: SoldierClip): 'standing' | 'crouched' | 'prone' {
+  if (clip.startsWith('crouch') || clip.endsWith('crouch')) return 'crouched';
+  if (clip === 'prone' || clip === 'crawl' || clip.endsWith('prone')) return 'prone';
+  return 'standing';
+}
 
 /**
  * Ground speed each moving clip is authored at, in metres per second at 1x

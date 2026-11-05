@@ -22,6 +22,9 @@ READY_YAW = -14
 LEFT_REACH = -40
 # Walk leg swings are scaled up for a longer stride (fewer steps per metre).
 STRIDE = 1.25
+# Slung rifle offset from its shoulder pivot (see `slung`).
+SLING_OUT = -0.06
+SLING_BACK = 0.12
 # Prone: how far the chest rises on the elbows, and the upper arms' angle.
 PRONE_RISE = 18
 PRONE_ELBOW = 128
@@ -158,6 +161,11 @@ class Poser:
         bone = self.rig.pose.bones[name]
         bone.rotation_euler.z = self.spread_sign[name] * math.radians(degrees)
 
+    def shift(self, name: str, out: float = 0.0, up: float = 0.0, back: float = 0.0) -> None:
+        """Moves an upright bone (the rifle) in its rest frame: `out` along
+        world X, `up` along its length, `back` behind the body."""
+        self.rig.pose.bones[name].location = (out, up, back)
+
     def side(self, name: str, degrees: float) -> None:
         self.rig.pose.bones[name].rotation_euler.y = math.radians(degrees)
 
@@ -198,7 +206,10 @@ def clip(rig, poser: Poser, name: str, frames: list, loop: bool = True) -> None:
 
 # ----------------------------------------------------------------- poses
 def slung(p: Poser) -> None:
-    """Rifle slung on the right shoulder, muzzle up, the right hand on the sling."""
+    """Rifle slung on the right shoulder, muzzle up, the right hand on the
+    sling: the rifle hangs behind the shoulder, butt at the back of the hip,
+    clear of the arm (it sat inside the upper arm before and looked glued)."""
+    p.shift("rifle", out=SLING_OUT, up=-0.32, back=SLING_BACK)
     p.swing("rifle", -10)
     p.swing("upper_arm.R", -4)
     p.swing("forearm.R", 95)

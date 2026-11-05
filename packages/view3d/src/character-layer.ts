@@ -1,5 +1,16 @@
 import * as THREE from 'three';
-import { CLIP_SPEED, MOVING_SPEED, soldierClip, soldierOutfit, turnToward, walkTimeScale } from './soldier-clips';
+import {
+  atTheReady,
+  CLIP_SPEED,
+  isMoving,
+  READY_HOLD_MS,
+  soldierClip,
+  soldierOutfit,
+  steadyClip,
+  turnToward,
+  walkTimeScale,
+  type SoldierClip,
+} from './soldier-clips';
 import { SoldierInstance, loadSoldierAsset, type SoldierAsset } from './soldier-models';
 import {
   terrainHeightAt,
@@ -51,6 +62,13 @@ interface CharacterView {
   facingAngle: number;
   /** Ground speed (m/s), smoothed over a few frames. */
   speed: number;
+  /** Walking by the start/stop hysteresis. */
+  moving: boolean;
+  /** Until when he keeps the rifle at the ready. */
+  readyUntil: number;
+  /** The clip playing and since when (ms). */
+  clip: SoldierClip | null;
+  clipSince: number;
   idle: number;
   lean: number;
 }
@@ -516,6 +534,10 @@ export class CharacterLayer {
           prone: 0,
           facingAngle: Math.atan2(-unit.facingX, -unit.facingY),
           speed: 0,
+          moving: false,
+          readyUntil: 0,
+          clip: null,
+          clipSince: 0,
           idle: unit.id * 0.7,
           lean: 0,
           fireUntil: 0,
@@ -638,14 +660,23 @@ export class CharacterLayer {
         rig.root.add(view.soldier.root);
       }
       if (view.soldier) {
-        const clip = soldierClip(unit, {
-          moving: view.speed > MOVING_SPEED,
+        view.moving = isMoving(view.speed, view.moving);
+        if (atTheReady(unit)) view.readyUntil = now + READY_HOLD_MS;
+        const wanted = soldierClip(unit, {
+          moving: view.moving,
+          ready: now < view.readyUntil,
           speed: view.speed,
           gait: unit.gait,
           firing: now < view.fireUntil,
           hit: now < view.hitUntil,
           engaged: now < view.engagedUntil,
         });
+        // Hold a clip a moment so the pose does not flick back and forth.
+        const clip = steadyClip(view.clip, view.clipSince, wanted, now);
+        if (clip !== view.clip) {
+          view.clip = clip;
+          view.clipSince = now;
+        }
         const authored = CLIP_SPEED[clip];
         view.soldier.play(clip, authored ? walkTimeScale(view.speed, authored) : 1);
         view.soldier.update(seconds);
