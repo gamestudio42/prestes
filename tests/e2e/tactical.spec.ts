@@ -27,8 +27,8 @@ test('changes formation without clearing the current order', async ({ page }) =>
   await page.waitForFunction(() => Boolean(window.__prestes?.frame()));
   await expect(page.getByTestId('squad-status')).toContainText('Selection: 11/11');
 
-  await page.getByTestId('formation-select').selectOption('wedge');
-  await expect(page.getByTestId('formation-select')).toHaveValue('wedge');
+  await page.getByTestId('formation-wedge').click();
+  await expect(page.getByTestId('formation-select')).toHaveAttribute('data-value', 'wedge');
 
   // Right-click a ground point 12 m east of the section (inside the map).
   const target = await page.evaluate(() => {
@@ -42,7 +42,7 @@ test('changes formation without clearing the current order', async ({ page }) =>
     position: { x: target.x, y: target.y },
   });
   await expect(page.getByTestId('order-value')).toContainText('Move', { timeout: 5000 });
-  await expect(page.getByTestId('formation-select')).toHaveValue('wedge');
+  await expect(page.getByTestId('formation-select')).toHaveAttribute('data-value', 'wedge');
 });
 test('toggles passive posture and hold fire', async ({ page }) => {
   await page.goto('/');

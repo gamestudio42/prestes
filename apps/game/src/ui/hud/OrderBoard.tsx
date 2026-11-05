@@ -39,7 +39,7 @@ const StandIcon = ICONS['stance-standing'];
 const CrouchIcon = ICONS['stance-crouched'];
 const ProneIcon = ICONS['stance-prone'];
 const HoldFireIcon = ICONS['hold-fire'];
-const ContactIcon = orderIcon('ambush') ?? Crosshair;
+const ContactIcon = ICONS['fire-contact'];
 const FreeFireIcon = Crosshair;
 
 const FIRE_CONTROLS: ReadonlyArray<{
@@ -54,6 +54,13 @@ const FIRE_CONTROLS: ReadonlyArray<{
   { mode: 'hold', icon: HoldFireIcon, label: 'hud.holdFire', tip: 'hud.tip.holdFire', testId: 'hold-fire' },
 ];
 const ClearIcon = ICONS.clear;
+
+const FORMATIONS: ReadonlyArray<{ kind: FormationKind; icon: typeof Crosshair }> = [
+  { kind: 'line', icon: ICONS['formation-line'] },
+  { kind: 'column', icon: ICONS['formation-column'] },
+  { kind: 'wedge', icon: ICONS['formation-wedge'] },
+  { kind: 'free', icon: ICONS['formation-free'] },
+];
 
 export function OrderBoard({
   currentOrder,
@@ -206,20 +213,23 @@ export function OrderBoard({
             <ClearIcon aria-hidden="true" size={18} />
           </button>
         </Tooltip>
-        <label className="formation-control">
-          <span>{t('hud.formation')}:</span>
-          <select
-            value={formation}
-            onChange={(event) => onFormation(event.target.value as FormationKind)}
-            title={t('hud.tip.formation')}
-            data-testid="formation-select"
-          >
-            <option value="line">{t('formation.line')}</option>
-            <option value="column">{t('formation.column')}</option>
-            <option value="wedge">{t('formation.wedge')}</option>
-            <option value="free">{t('formation.free')}</option>
-          </select>
-        </label>
+        <section className="passive-group formation-group" data-testid="formation-select" data-value={formation}>
+          <span className="passive-label">{t('hud.formation')}</span>
+          {FORMATIONS.map(({ kind, icon: Icon }) => (
+            <Tooltip key={kind} title={t(`formation.${kind}`)} description={t('hud.tip.formation')}>
+              <button
+                type="button"
+                className={`passive-button square-button ${formation === kind ? 'active' : ''}`}
+                onClick={() => onFormation(kind)}
+                aria-label={t(`formation.${kind}`)}
+                aria-pressed={formation === kind}
+                data-testid={`formation-${kind}`}
+              >
+                <Icon aria-hidden="true" size={18} />
+              </button>
+            </Tooltip>
+          ))}
+        </section>
       </div>
     </div>
   );
