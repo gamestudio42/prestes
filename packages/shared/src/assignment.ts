@@ -69,6 +69,9 @@ export function minCostAssignment(cost: readonly (readonly number[])[]): number[
  * straight routes of an optimal assignment never cross. Extra destinations
  * beyond the number of positions are dropped; missing ones stay as given.
  */
+/** Weight of the squared distance that breaks ties between equal-length layouts. */
+const TIE_BREAK = 1e-4;
+
 export function matchDestinations<T extends Vec2>(
   positions: readonly Vec2[],
   destinations: readonly T[],
@@ -77,10 +80,14 @@ export function matchDestinations<T extends Vec2>(
     return [...destinations];
   }
   const cost = positions.map((position) =>
-    destinations.map((destination) =>
+    destinations.map((destination) => {
+      const squared = (destination.x - position.x) ** 2 + (destination.y - position.y) ** 2;
+      // Soldiers moving along their own line tie on total distance whatever
+      // the order; a small squared term breaks the tie toward keeping the
+      // order, so no one overtakes a mate on the same line and collides.
       // Round so floating noise cannot flip ties between equal layouts.
-      Math.round(Math.sqrt((destination.x - position.x) ** 2 + (destination.y - position.y) ** 2) * 1000) / 1000,
-    ),
+      return Math.round((Math.sqrt(squared) + squared * TIE_BREAK) * 1000) / 1000;
+    }),
   );
   const assignment = minCostAssignment(cost);
   return assignment.map((column) => destinations[column]!);

@@ -1,16 +1,22 @@
-import { DEFAULT_SPACING, averageAim, averageFacing, findPath, isPointBlockedByCovers } from '@prestes/shared';
-import type { Vec2 } from '@prestes/shared';
+import { DEFAULT_SPACING, averageAim, averageFacing, coverAxes, findPath, isPointBlockedByCovers } from '@prestes/shared';
+import type { CoverPoint, Vec2 } from '@prestes/shared';
 import { formationSlots } from '../tactical';
 import { BOUNDING_ORDERS } from './model';
-import type { MutableUnit } from './model';
+import type { BoundingGroup, MutableUnit } from './model';
 import type { SimContext } from './context';
 import { nearestOpenPoint, occupied } from './geometry';
 import { queueUnitOrder } from './movement';
 
+/** A rush makes for cover this far ahead (m), else runs RUSH_MIN to RUSH_MAX in the open. */
+export const RUSH_COVER_REACH = 30;
+export const RUSH_MIN = 12;
+export const RUSH_MAX = 20;
+
 export function updateBounding(ctx: SimContext): void {
   const eligible = ctx.units.filter(
     (unit) =>
-      unit.faction === 'column' &&
+      // Both sides bound: the 3v3 enemy commander attacks by bounds too.
+      (unit.faction === 'column' || unit.faction === 'legalist') &&
       unit.alive &&
       !unit.routed &&
       !unit.dummy &&
@@ -99,6 +105,8 @@ export function updateBounding(ctx: SimContext): void {
       setBoundingCover(ctx, teamA);
       if (group.mode === 'attack') {
         assignBoundingAdvance(ctx, teamB, destination, first.targetId);
+      } else if (farFromSlots(teamB, group)) {
+        assignBoundingAdvance(ctx, teamB, destination, null);
       } else {
         assignBoundingDirect(ctx, teamB, destination, group.targets);
       }
@@ -126,6 +134,26 @@ export function updateBounding(ctx: SimContext): void {
       ctx,
       moving.filter((unit) => unit.path.length === 0),
     );
+    if (group.mode === 'move' && (farFromSlots(teamA, group) || farFromSlots(teamB, group))) {
+      // A long advance goes by rushes too, each team running ahead of the
+      // other's line, until the section is close enough to take its slots.
+      const next = group.phase === 'b' ? teamA : teamB;
+      assignBoundingAdvance(ctx, next, group.destination, null, centroidOf(moving));
+      group.phase = group.phase === 'b' ? 'a' : 'b';
+      for (const unit of units) unit.boundPhase = 'cover';
+      for (const unit of next) unit.boundPhase = unit.path.length > 0 ? 'advance' : 'cover';
+      continue;
+    }
+    if (group.mode === 'move' && group.rushed) {
+      // Close after rushing: the whole section takes its slots at once.
+      assignBoundingDirect(ctx, units, group.destination, group.targets);
+      for (const unit of units) {
+        unit.boundTeam = null;
+        unit.boundPhase = null;
+      }
+      ctx.bounding.delete(squadId);
+      continue;
+    }
     if (group.mode === 'move') {
       if (group.phase === 'b') {
         assignBoundingDirect(ctx, teamA, group.destination, group.targets);
@@ -191,6 +219,51 @@ export function updateBounding(ctx: SimContext): void {
   }
 }
 
+/** Room per soldier along a cover (m). */
+const COVER_FRONTAGE = 1.6;
+
+/** How many rushing soldiers a cover takes. */
+function coverCapacity(cover: CoverPoint): number {
+  return Math.max(1, Math.round((cover.halfWidth * 2) / COVER_FRONTAGE));
+}
+
+/**
+ * The n-th soldier's place at a cover: spread along it, on the side he comes
+ * from when the cover blocks movement (a wall), along its middle otherwise (a
+ * trench, a parapet he can kneel behind).
+ */
+function placeAlongCover(ctx: SimContext, cover: CoverPoint, index: number, unit: MutableUnit): Vec2 {
+  const capacity = coverCapacity(cover);
+  const along = ((index % capacity) + 0.5) * ((cover.halfWidth * 2) / capacity) - cover.halfWidth;
+  const { cos: axisX, sin: axisY } = coverAxes(cover);
+  const side = (unit.x - cover.x) * -axisY + (unit.y - cover.y) * axisX >= 0 ? 1 : -1;
+  const back = cover.blocksMovement ? side * (cover.halfDepth + 0.6) : 0;
+  return nearestOpenPoint(ctx, {
+    x: cover.x + axisX * along - axisY * back,
+    y: cover.y + axisY * along + axisX * back,
+  });
+}
+
+/** An advance whose soldiers are farther than this from their slots goes by rushes. */
+const LONG_ADVANCE = 2 * RUSH_MAX;
+
+function centroidOf(units: readonly MutableUnit[]): Vec2 {
+  return {
+    x: units.reduce((sum, unit) => sum + unit.x / Math.max(1, units.length), 0),
+    y: units.reduce((sum, unit) => sum + unit.y / Math.max(1, units.length), 0),
+  };
+}
+
+/** Whether any soldier of the team still has a long way to his slot (and marks the group as rushing). */
+function farFromSlots(team: readonly MutableUnit[], group: BoundingGroup): boolean {
+  const far = team.some((unit) => {
+    const slot = group.targets.get(unit.id) ?? group.destination;
+    return Math.sqrt((slot.x - unit.x) ** 2 + (slot.y - unit.y) ** 2) > LONG_ADVANCE;
+  });
+  if (far) group.rushed = true;
+  return far;
+}
+
 export function assignBoundingDirect(
   ctx: SimContext,
   units: readonly MutableUnit[],
@@ -243,15 +316,27 @@ export function assignBoundingAdvance(
   targetId: number | null,
   aheadOf?: Vec2,
 ): void {
+  // Soldiers already sent to each cover this rush: a cover takes as many as
+  // fit along it, spread out, so a team does not pile onto one point.
+  const claims = new Map<number, number>();
+  // In the open the team keeps its frontage: every man runs the same heading.
+  const team = centroidOf(units);
+  const headingX = destination.x - team.x;
+  const headingY = destination.y - team.y;
+  const headingLength = Math.sqrt(headingX * headingX + headingY * headingY);
   for (const unit of units) {
     const currentDistance = Math.sqrt(
       (unit.x - destination.x) ** 2 + (unit.y - destination.y) ** 2,
     );
     let best: Vec2 | null = null;
+    let bestCover: CoverPoint | null = null;
     let bestScore = Number.POSITIVE_INFINITY;
     for (const cover of ctx.covers) {
+      if ((claims.get(cover.id) ?? 0) >= coverCapacity(cover)) {
+        continue;
+      }
       const coverDistance = Math.sqrt((cover.x - unit.x) ** 2 + (cover.y - unit.y) ** 2);
-      if (coverDistance > 16 || coverDistance < 0.6) {
+      if (coverDistance > RUSH_COVER_REACH || coverDistance < 0.6) {
         continue;
       }
       const destinationDistance = Math.sqrt(
@@ -280,19 +365,23 @@ export function assignBoundingAdvance(
       const score = destinationDistance + path.length * 0.15 - cover.quality * 3;
       if (score < bestScore) {
         bestScore = score;
-        best = { x: cover.x, y: cover.y };
+        bestCover = cover;
       }
     }
+    if (bestCover) {
+      const claimed = claims.get(bestCover.id) ?? 0;
+      claims.set(bestCover.id, claimed + 1);
+      best = placeAlongCover(ctx, bestCover, claimed, unit);
+    }
     if (!best) {
-      const dx = destination.x - unit.x;
-      const dy = destination.y - unit.y;
-      const length = Math.sqrt(dx * dx + dy * dy);
-      if (length > 0.001) {
-        const distance = Math.min(8, Math.max(2, length * 0.5));
-        best = {
-          x: unit.x + (dx / length) * distance,
-          y: unit.y + (dy / length) * distance,
-        };
+      const length = Math.sqrt((destination.x - unit.x) ** 2 + (destination.y - unit.y) ** 2);
+      if (length > 0.001 && headingLength > 0.001) {
+        // A rush is 3 to 5 s at a run, and never past the objective.
+        const distance = Math.min(length, Math.min(RUSH_MAX, Math.max(RUSH_MIN, length * 0.5)));
+        best = nearestOpenPoint(ctx, {
+          x: unit.x + (headingX / headingLength) * distance,
+          y: unit.y + (headingY / headingLength) * distance,
+        });
       }
     }
     if (!best) {

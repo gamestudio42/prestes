@@ -33,6 +33,7 @@
 export { ClientMirror, type InterpolatedFrame } from './mirror';
 
 export {
+  BATTLE_COVERS,
   BOOTCAMP_COVERS,
   COVER_POINTS,
   FIRE_RANGE,
@@ -48,6 +49,8 @@ export {
   MAP_BOUNDS,
   MAX_HP,
   MAX_MORALE,
+  closeQuartersFactor,
+  coverAxes,
   coverAgainst,
   coverForStance,
   isLineBlocked,

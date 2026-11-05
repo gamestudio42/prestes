@@ -160,3 +160,17 @@ describe('ready through a march', () => {
     expect(until).toBe(1000 + READY_HOLD_MS);
   });
 });
+
+describe('enemy soldiers animate like the player\'s (battle-feel-3v3)', () => {
+  // A legalist through what the 3v3 enemy commander now makes him do.
+  const legalist = { ...base, faction: 'legalist' as const, kind: 'infantry' as const };
+  it('runs to cover, lies down, aims and fires, and aims between shots', () => {
+    expect(soldierClip(legalist, { moving: true, firing: false, gait: 'run' })).toBe('run');
+    expect(soldierClip({ ...legalist, stance: 'crouched' }, { moving: true, firing: false })).toBe('crouch-walk');
+    expect(soldierClip({ ...legalist, stance: 'prone' }, still)).toBe('prone');
+    expect(soldierClip({ ...legalist, stance: 'prone', targetId: 7 }, still)).toBe('aim-prone');
+    expect(soldierClip({ ...legalist, stance: 'prone', targetId: 7 }, { moving: false, firing: true })).toBe('fire-prone');
+    expect(soldierClip({ ...legalist, stance: 'crouched', targetId: 7 }, still)).toBe('aim-crouch');
+    expect(soldierOutfit(legalist)).toBe('legalist');
+  });
+});

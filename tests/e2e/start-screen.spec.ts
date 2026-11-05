@@ -53,7 +53,10 @@ test('the menu shows the marching column and the arrow keys move the cursor', as
 
   await page.getByTestId('start-button').focus();
   await page.keyboard.press('ArrowDown');
+  await expect(page.getByTestId('start-battle-3v3')).toBeFocused();
+  await page.keyboard.press('ArrowDown');
   await expect(page.getByTestId('start-codex')).toBeFocused();
+  await page.keyboard.press('ArrowUp');
   await page.keyboard.press('ArrowUp');
   await expect(page.getByTestId('start-button')).toBeFocused();
   await page.keyboard.press('ArrowUp');

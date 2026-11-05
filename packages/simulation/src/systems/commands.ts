@@ -313,6 +313,28 @@ export function applyCommand(
       unit.orderIssued = true;
       unit.currentOrder = command.type === 'attack' ? 'attack' : suppressing ? 'suppress' : 'flank';
     }
+    // A section suppressing a position spreads its rifles over the men there,
+    // nearest the named man first, rather than all on him (battle-feel-3v3).
+    const suppressing = command.type === 'suppress' ? actionable : suppressors;
+    if (suppressing.length > 1 && !target.dummy) {
+      const position = ctx.units
+        .filter(
+          (unit) =>
+            unit.squadId === target.squadId &&
+            unit.faction === target.faction &&
+            unit.alive &&
+            !unit.routed &&
+            !unit.incapacitated,
+        )
+        .sort(
+          (left, right) =>
+            (left.x - target.x) ** 2 + (left.y - target.y) ** 2 - ((right.x - target.x) ** 2 + (right.y - target.y) ** 2) ||
+            left.id - right.id,
+        );
+      suppressing.forEach((unit, index) => {
+        unit.targetId = position[index % position.length]!.id;
+      });
+    }
     if (command.type === 'flank') {
       assignFlankPaths(ctx, flankers, target);
     }

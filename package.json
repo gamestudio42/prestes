@@ -29,6 +29,7 @@
     "e2e": "playwright test",
     "sim": "tsx tools/headless-sim.ts",
     "bench": "tsx tools/sim-bench.ts",
+    "battle:report": "tsx tools/battle-report.ts",
     "models": "tsx tools/prepare-models.ts",
     "icons": "tsx tools/export-icons.ts",
     "art": "tsx tools/build-art.ts"

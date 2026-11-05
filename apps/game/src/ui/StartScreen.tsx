@@ -1,6 +1,6 @@
 import { useRef, type KeyboardEvent } from 'react';
 import { translate, type Locale, type MessageKey } from '@prestes/content';
-import { Book, Languages, Restart, SoundOff, SoundOn } from './icons';
+import { Book, Languages, Restart, SoundOff, SoundOn, Troop as Users } from './icons';
 import { MarchingScene } from './MarchingScene';
 
 export interface StartScreenProps {
@@ -12,6 +12,8 @@ export interface StartScreenProps {
   onLocaleChange: (locale: Locale) => void;
   onStart: () => void;
   onRestart: () => void;
+  /** Starts the 3 vs 3 battle (battle-feel-3v3). */
+  onStartBattle3v3: () => void;
   onToggleAudio: () => void;
   onToggleCodex: () => void;
 }
@@ -29,6 +31,7 @@ export function StartScreen({
   onLocaleChange,
   onStart,
   onRestart,
+  onStartBattle3v3,
   onToggleAudio,
   onToggleCodex,
 }: StartScreenProps) {
@@ -78,6 +81,12 @@ export function StartScreen({
               </li>
             </>
           )}
+          <li>
+            <button type="button" className="menu-entry" onClick={onStartBattle3v3} data-testid="start-battle-3v3">
+              <Users aria-hidden="true" size={16} />
+              {t('start.battle3v3')}
+            </button>
+          </li>
           <li>
             <button type="button" className="menu-entry" onClick={onToggleCodex} data-testid="start-codex">
               <Book aria-hidden="true" size={16} />

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { OrderPath } from '@prestes/shared';
-import { buildPathVertices } from '../src/path-layer';
+import { buildPathVertices, selectedOrders } from '../src/path-layer';
 
 const order = (points: OrderPath['points']): OrderPath => ({
   id: 1,
@@ -27,5 +27,15 @@ describe('buildPathVertices', () => {
       70,
     );
     expect(twoPoints.length).toBeGreaterThan(onePoint.length);
+  });
+});
+
+describe('routes of the selection only', () => {
+  const order = (id: number, unitIds: number[]) => ({ id, unitIds, points: [{ x: 0, y: 0 }, { x: 5, y: 5 }], kind: 'move' as const });
+  it('draws only the orders of selected soldiers, and none without a selection', () => {
+    const orders = [order(1, [1, 2]), order(2, [12, 13]), order(3, [45])];
+    expect(selectedOrders(orders, [2]).map((entry) => entry.id)).toEqual([1]);
+    expect(selectedOrders(orders, [13, 45]).map((entry) => entry.id)).toEqual([2, 3]);
+    expect(selectedOrders(orders, [])).toEqual([]);
   });
 });

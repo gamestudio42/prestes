@@ -245,34 +245,62 @@ export function fire(ctx: SimContext, tick: number, events: SimEvent[]): void {
       }
       continue;
     }
-    const target =
+    const objective =
       unit.targetId === null ? null : ctx.units.find((entry) => entry.id === unit.targetId);
-    if (!target || !target.alive || target.routed || target.incapacitated) {
+    if (!objective || !objective.alive || objective.routed || objective.incapacitated) {
+      unit.aimedAt = undefined;
       if (unit.currentOrder !== 'pursue') {
         unit.targetId = null;
       }
       continue;
     }
-    if (!visible(ctx, unit, target)) {
-      if (!unit.suppress && unit.currentOrder !== 'pursue' && unit.currentOrder !== 'attack') {
-        unit.targetId = null;
+    let target = objective;
+    if (!visible(ctx, unit, objective)) {
+      if (unit.currentOrder !== 'attack') {
+        if (!unit.suppress && unit.currentOrder !== 'pursue') {
+          unit.targetId = null;
+        }
+        continue;
       }
-      continue;
+      // An attacker keeps his objective but fires at the enemy he can see.
+      const seen = nearestVisibleEnemy(ctx, unit, objective.faction);
+      if (!seen) {
+        unit.cooldown = LOOK_AGAIN_TICKS;
+        continue;
+      }
+      target = seen;
     }
 
     const distance = Math.sqrt((target.x - unit.x) ** 2 + (target.y - unit.y) ** 2);
     if (!withinHoldRange(unit, target)) {
       continue;
     }
+    // Sighting the enemy takes a moment; drawn per soldier, it also keeps a
+    // section that sights him together from firing as one. A man already in
+    // action shifts to the next target within his aimed rhythm.
+    if (unit.aimedAt !== target.id) {
+      unit.aimedAt = target.id;
+      const inAction = unit.lastShotTick !== undefined && tick - unit.lastShotTick <= IN_ACTION_TICKS;
+      if (!inAction) {
+        unit.cooldown = drawTicks(ctx, weapon.reactionTicks);
+        continue;
+      }
+    }
     const rangeFactor = Math.max(0.25, 1 - (distance / ctx.combatRange) * 0.55);
     const targetCover = coverAgainst(target.x, target.y, unit.x, unit.y, target.stance, ctx.covers);
     const moraleFactor = unit.morale < SUPPRESSION_THRESHOLD ? 0.55 : 1;
+    // A man keeping his head down under fire aims worse.
+    const underFireFactor = unit.state === 'suppressed' ? SUPPRESSED_AIM : 1;
     const suppressFactor = unit.suppress ? 0.7 : 1;
+    // A man on the move (a rush, a run for cover) is harder to hit.
+    const movingFactor = target.path.length > 0 && (target.moveSpeed ?? 0) > 1 ? MOVING_TARGET : 1;
     const chance = clamp(
       weapon.accuracy *
         rangeFactor *
+        movingFactor *
         (1 - targetCover) *
         moraleFactor *
+        underFireFactor *
         suppressFactor *
         woundAccuracyFactor(ctx, unit),
       0.05,
@@ -302,22 +330,32 @@ export function fire(ctx: SimContext, tick: number, events: SimEvent[]): void {
       unit.holdPosition = true;
     }
     unit.magazine -= 1;
-    // Suppressive fire is fast until the target is pinned, then eases to the
-    // weapon's normal rate to keep it pinned without emptying the reserve.
-    unit.cooldown =
-      unit.suppress && target.state !== 'pinned'
+    unit.lastShotTick = tick;
+    // Suppressive fire is rapid until the target is pinned, then at the
+    // weapon's rapid rate; aimed fire is bolt, aim, fire at a varied interval.
+    unit.cooldown = unit.suppress
+      ? target.state !== 'pinned'
         ? SUPPRESS_FIRE_INTERVAL
-        : weapon.fireIntervalTicks;
+        : weapon.fireIntervalTicks
+      : drawTicks(ctx, weapon.aimedIntervalTicks);
     if (unit.magazine === 0 && unit.reserve > 0) {
       unit.reload = weapon.reloadTicks;
     }
 
+    // Cover keeps a man from being hit far more than it keeps his head up:
+    // fire at a position suppresses it, and the rounds keep everyone near the
+    // man fired at down too (battle-feel-3v3).
     const suppressionGain =
       (hit ? 20 : 12) *
       weapon.suppression *
-      Math.max(0.2, 1 - targetCover * 0.8) *
+      (1 - targetCover * 0.3) *
       (unit.nonLethal ? 0.05 : 1);
     target.suppression = clamp(target.suppression + suppressionGain, 0, 100);
+    for (const near of ctx.units) {
+      if (near === target || near.faction !== target.faction || !near.alive || near.incapacitated) continue;
+      if ((near.x - target.x) ** 2 + (near.y - target.y) ** 2 > SUPPRESSION_SPREAD ** 2) continue;
+      near.suppression = clamp(near.suppression + suppressionGain * 0.5, 0, 100);
+    }
 
     if (hit) {
       const moraleDamage = Math.round((unit.suppress ? 16 : 10) * weapon.suppression);
@@ -331,8 +369,9 @@ export function fire(ctx: SimContext, tick: number, events: SimEvent[]): void {
         : weapon.damageMin;
       const extra = unit.suppress ? Math.round(spread * 0.5) : spread;
       const damage = base + Math.floor(ctx.rng.nextFloat() * (extra + 1));
-      const wasWounded =
-        target.wound === 'light' || target.wound === 'moderate' || target.wound === 'severe';
+      // Two or three hits put a man down: whether he falls wounded or dead is
+      // drawn when he goes down (a man already severely wounded dies).
+      const severe = target.wound === 'severe';
       target.hp = Math.max(0, target.hp - damage);
       target.morale = Math.max(0, target.morale - moraleDamage);
       events.push({ type: 'unit_hit', tick, unitId: target.id, damage, hp: target.hp });
@@ -343,7 +382,7 @@ export function fire(ctx: SimContext, tick: number, events: SimEvent[]): void {
         if (target.dummy) {
           target.alive = false;
           events.push({ type: 'unit_died', tick, unitId: target.id });
-        } else if (wasWounded) {
+        } else if (severe || ctx.rng.nextFloat() < FATAL_SHARE) {
           target.alive = false;
           target.routed = false;
           target.soldierState = 'dead';
@@ -484,9 +523,50 @@ export function updateFacing(ctx: SimContext): void {
   }
 }
 
+/** A soldier who fired this recently (ticks) is in action: no fresh reaction delay. */
+const IN_ACTION_TICKS = 100;
+
+/** Hit chance of a shooter who is himself suppressed. */
+const SUPPRESSED_AIM = 0.6;
+/** Rounds at a man suppress his mates this close to him (m), at half strength. */
+const SUPPRESSION_SPREAD = 4;
+
+/** Hit chance against a target moving faster than a walk. */
+const MOVING_TARGET = 0.6;
+
+/** Share of the soldiers put down by fire who are killed outright (the rest are incapacitated). */
+const FATAL_SHARE = 0.4;
+
+/** An attacker with his objective out of sight looks for another target this often. */
+const LOOK_AGAIN_TICKS = 5;
+
+/** The nearest fit enemy of the given faction that the unit can see. */
+function nearestVisibleEnemy(ctx: SimContext, unit: MutableUnit, faction: MutableUnit['faction']): MutableUnit | null {
+  let best: MutableUnit | null = null;
+  let bestDistance = Number.POSITIVE_INFINITY;
+  for (const other of ctx.units) {
+    if (other.faction !== faction || !other.alive || other.routed || other.incapacitated) continue;
+    const distance = (other.x - unit.x) ** 2 + (other.y - unit.y) ** 2;
+    if (distance >= bestDistance || !visible(ctx, unit, other)) continue;
+    best = other;
+    bestDistance = distance;
+  }
+  return best;
+}
+
+/** A whole number of ticks within [min, max], from the seeded RNG. */
+function drawTicks(ctx: SimContext, [min, max]: readonly [number, number]): number {
+  return min + Math.floor(ctx.rng.nextFloat() * (max - min + 1));
+}
+
 export function updateOutcome(ctx: SimContext, tick: number, events: SimEvent[]): void {
   const columnAlive = ctx.units.some(
-    (unit) => unit.faction === 'column' && unit.alive && !unit.routed,
+    (unit) =>
+      unit.faction === 'column' &&
+      unit.alive &&
+      !unit.routed &&
+      // In the 3v3 an incapacitated soldier is out of the fight on both sides.
+      !(ctx.scenario === 'battle3v3' && unit.incapacitated),
   );
   const legalistAlive = ctx.units.some(
     (unit) => unit.faction === 'legalist' && unit.alive && !unit.routed && !unit.incapacitated,

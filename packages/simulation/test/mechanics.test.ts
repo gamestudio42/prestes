@@ -645,11 +645,10 @@ describe('mechanics: suppress keeps on the troop', () => {
     const enemies = t.engine.units.filter((unit) => ENEMY.includes(unit.id));
     enemies.find((unit) => unit.id === ENEMY[0])!.alive = false;
     t.run(1);
-    const next = t.unit(COLUMN[0]!).targetId;
-    expect(next).not.toBeNull();
-    expect(ENEMY.slice(1)).toContain(next);
+    // battle-feel-3v3: the rifles are spread over the squad; each whose man
+    // fell moves on to a mate, and every one stays on the order.
     for (const id of COLUMN) {
-      expect(t.unit(id).targetId).toBe(next);
+      expect(ENEMY.slice(1)).toContain(t.unit(id).targetId);
       expect(t.unit(id).order).toBe('suppress');
     }
     for (const unit of enemies) unit.alive = false;
@@ -814,6 +813,8 @@ describe('mechanics: gaits (order-tempo-and-facing)', () => {
   it('defensive posture crouches the section unless the player set a stance', () => {
     const t = harness();
     quiet(t);
+    // Out of any cover slot: a soldier in a slot keeps the slot's stance.
+    t.send({ type: 'move', unitIds: [1, 2], to: { x: -40, y: 30 } }, 300);
     t.send({ type: 'posture', unitIds: [1], posture: 'defensive' }, 2);
     expect(t.unit(1).stance).toBe('crouched');
     t.send({ type: 'stance', unitIds: [2], stance: 'standing' });

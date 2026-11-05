@@ -16,6 +16,7 @@ import { GameCanvas } from './ui/GameCanvas';
 import { Hud } from './ui/Hud';
 import { SandboxPanel } from './ui/SandboxPanel';
 import { StartScreen } from './ui/StartScreen';
+import { BattleEndPanel } from './ui/BattleEndPanel';
 import { TrainingMissionPanel } from './ui/TrainingMissionPanel';
 import { currentPhase, objectivePlaceholders, phaseCommand, startExercise, type ExerciseState } from './training/exercise';
 import {
@@ -289,6 +290,19 @@ export function App() {
   const handleStart = (): void => {
     handleStartBootcamp();
   };
+  /** Leaves the battle for the main menu. */
+  const handleBackToMenu = (): void => {
+    clientRef.current?.dispose();
+    clientRef.current = null;
+    setFrame(null);
+    setSelectedUnitIds([]);
+    setSandboxOpen(false);
+    setSandboxTool(null);
+    setSessionMode('training');
+    setSpeed(DEFAULT_SPEED);
+    setStarted(false);
+  };
+
   const handleStartBattle3v3 = (): void => {
     void audioRef.current?.unlock();
     clientRef.current?.dispose();
@@ -423,6 +437,7 @@ export function App() {
           audioMuted={audioMuted}
           onStart={handleStart}
           onRestart={() => handleStartBootcamp(true)}
+          onStartBattle3v3={handleStartBattle3v3}
           onToggleAudio={handleToggleAudio}
           onToggleCodex={() => setShowCodex((open) => !open)}
         />
@@ -607,6 +622,9 @@ export function App() {
         <div className="overlay">
           <CodexPanel locale={locale} onClose={() => setShowCodex(false)} />
         </div>
+      ) : null}
+      {sessionMode === 'battle' && frame && frame.outcome !== 'playing' ? (
+        <BattleEndPanel locale={locale} frame={frame} onRestart={handleStartBattle3v3} onMenu={handleBackToMenu} />
       ) : null}
     </div>
   );

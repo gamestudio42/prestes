@@ -197,6 +197,25 @@ export const BOOTCAMP_COVERS: readonly CoverPoint[] = [
   { id: 110, kind: 'sandbag', x: 52, y: -15.5, halfWidth: 7, halfDepth: 0.4, height: 0.9, radius: 3.5, quality: 0.3, blocksMovement: false, blocksSight: false },
   ...BUILDINGS.map(buildingCover),
 ] as const;
+
+/**
+ * A defensive line for one section of the 3v3 (battle-feel-3v3): four short
+ * trench bays, each with a sandbag parapet on the enemy's side. Bays are short
+ * because a cover shelters only within its radius of the centre.
+ */
+function battleLine(firstId: number, x: number, y: number, enemySide: 1 | -1): CoverPoint[] {
+  return [-9, -3, 3, 9].flatMap((dx, index): CoverPoint[] => [
+    { id: firstId + index * 2, kind: 'trench', x: x + dx, y, halfWidth: 2.8, halfDepth: 1.6, height: 0.2, radius: 3.2, quality: 0.4, blocksMovement: false, blocksSight: false },
+    { id: firstId + index * 2 + 1, kind: 'sandbag', x: x + dx, y: y + enemySide * 1.9, halfWidth: 2.8, halfDepth: 0.4, height: 0.9, radius: 3.5, quality: 0.3, blocksMovement: false, blocksSight: false },
+  ]);
+}
+
+/** The 3v3 field: the battle kit plus a defensive line in front of each section's start. */
+export const BATTLE_COVERS: readonly CoverPoint[] = [
+  ...BOOTCAMP_COVERS,
+  ...[-44, 0, 44].flatMap((x, index) => battleLine(300 + index * 10, x, -78, 1)),
+  ...[-44, 0, 44].flatMap((x, index) => battleLine(330 + index * 10, x, 78, -1)),
+];
 export const MAP_BOUNDS = { minX: -120, minY: -120, maxX: 120, maxY: 120 } as const;
 
 export const FIRE_RANGE = 26;
@@ -209,7 +228,8 @@ function clamp(value: number, low: number, high: number): number {
 
 const ROTATION_AXES = new WeakMap<object, { rotation: number; cos: number; sin: number }>();
 
-function coverAxes(cover: { rotation?: number }): { cos: number; sin: number } {
+/** A cover's long axis as a unit vector (cos, sin of its rotation), cached. */
+export function coverAxes(cover: { rotation?: number }): { cos: number; sin: number } {
   const rotation = cover.rotation ?? 0;
   const cached = ROTATION_AXES.get(cover);
   if (cached && cached.rotation === rotation) {
@@ -246,21 +266,43 @@ export function isPointBlockedByCovers(
   return covers.some((cover) => cover.blocksMovement && isPointInCover(x, y, cover, margin));
 }
 
+/**
+ * Whether the segment A-B passes through the cover's footprint (a rotated
+ * rectangle), clipped exactly in the cover's frame. It replaced a 32-point
+ * sampling that, over a long line of fire, stepped right over a parapet or a
+ * wall a metre or two from either end (battle-feel-3v3).
+ */
 function segmentCrossesCover(
   ax: number,
   ay: number,
   bx: number,
   by: number,
-  cover: { x: number; y: number; halfWidth: number; halfDepth: number },
+  cover: { x: number; y: number; halfWidth: number; halfDepth: number; rotation?: number },
 ): boolean {
-  const samples = 32;
-  for (let index = 1; index < samples; index += 1) {
-    const t = index / samples;
-    if (isPointInCover(ax + (bx - ax) * t, ay + (by - ay) * t, cover)) {
-      return true;
+  const { cos, sin } = coverAxes(cover);
+  const startX = (ax - cover.x) * cos + (ay - cover.y) * sin;
+  const startY = -(ax - cover.x) * sin + (ay - cover.y) * cos;
+  const endX = (bx - cover.x) * cos + (by - cover.y) * sin;
+  const endY = -(bx - cover.x) * sin + (by - cover.y) * cos;
+  let enter = 0;
+  let leave = 1;
+  for (const [origin, delta, half] of [
+    [startX, endX - startX, cover.halfWidth],
+    [startY, endY - startY, cover.halfDepth],
+  ] as const) {
+    if (Math.abs(delta) < 1e-12) {
+      if (Math.abs(origin) > half) return false;
+      continue;
     }
+    let near = (-half - origin) / delta;
+    let far = (half - origin) / delta;
+    if (near > far) [near, far] = [far, near];
+    enter = Math.max(enter, near);
+    leave = Math.min(leave, far);
+    if (enter > leave) return false;
   }
-  return false;
+  // Touching only at an end point does not count, as with the sampling.
+  return leave > 0 && enter < 1 && leave - enter > 1e-9;
 }
 
 export function isLineBlocked(
@@ -370,6 +412,13 @@ export function coverForStance(stance: Stance): number {
   return 0;
 }
 
+/** Share of a cover's protection left against a shooter this far away (m). */
+export function closeQuartersFactor(distance: number): number {
+  if (distance <= 10) return 1 / 3;
+  if (distance >= 20) return 1;
+  return 1 / 3 + ((distance - 10) / 10) * (2 / 3);
+}
+
 export function coverAgainst(
   x: number,
   y: number,
@@ -388,11 +437,18 @@ export function coverAgainst(
     if (point.height < 1.2 && stance === 'standing') {
       continue;
     }
+    // A shooter inside the same cover (in the same trench) gets no cover from it.
+    if (isPointInCover(threatX, threatY, point) && isPointInCover(x, y, point)) {
+      continue;
+    }
     if (!segmentCrossesCover(x, y, threatX, threatY, point)) {
       continue;
     }
     wall = Math.max(wall, point.quality);
   }
+  // At close quarters a parapet or wall shelters far less: a third of its value
+  // inside 10 m, full value from 20 m (battle-feel-3v3).
+  wall *= closeQuartersFactor(Math.sqrt((threatX - x) ** 2 + (threatY - y) ** 2));
   return clamp(
     coverForStance(stance) + Math.max(wall, terrainCoverAgainst(x, y, threatX, threatY)),
     0,

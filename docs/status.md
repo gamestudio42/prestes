@@ -361,7 +361,8 @@ Four phases, each its own OpenSpec change:
    and were not re-recorded. `pnpm verify` passed (353 unit tests, build,
    bundle budget, determinism, OpenSpec, e2e 44/44 in 11 min). The e2e
    browser now renders on the GPU and the gate runs at below-normal priority,
-   so the machine stays usable while it runs. Hand check in Chrome pending.
+   so the machine stays usable while it runs. Hand check in Chrome by the user
+   (2026-11-05): stations 1 and 2 played, movement fine.
 
 ## Fixes after the hand check of 2026-11-04 (evening)
 
@@ -419,6 +420,54 @@ from 90 to 100 KB. Determinism golden `f8378a18` ->
    The glTF loaders are a separate chunk fetched on demand; the animation
    system raised the three chunk to 591 KB, so its budget went from 560 to
    610 KB (2026-11-04).
+
+## Battle feel (`battle-feel-3v3`, 2026-11-05)
+
+Asked by the user after the low-poly hand check: soldiers all fired at once,
+the attack's rush (lanço) was too short, an enemy took too many hits to fall,
+the enemy's animations looked wrong, and the 3 vs 3 was to be played until it
+plays like a real game. A headless report (`pnpm battle:report [seeds]`)
+measures the battle. On the old code (seed 1922, the player attacking): 53
+shots on one tick, first shot at 0.1 s, the attacker wiped out in 37 s, and
+with seed 7 a 689 s stall with both sides still fit. After the change, a
+player who holds his line and counterattacks wins in 5 to 10 minutes, losing
+9 to 24 men of 33, with at most 5 shots on one tick and no silence over
+47 s (seeds 1922, 7, 42, 5 and 11).
+
+- Fire: an aimed shot every 3 to 5 s with a seeded per-soldier draw, and a
+  reaction delay of 0.5 to 2.5 s on first sighting (none for a man already
+  in action). A hit takes 35 to 55 health, so 2 or 3 hits put a man down,
+  wounded or (0.4) dead. Accuracy is 0.55, and 0.6 of that against a running
+  man or for a suppressed shooter. An attacker whose objective is hidden
+  fires at the enemy he can see.
+- Cover: a third of its value inside 10 m, none against a shooter in the same
+  trench. The line of fire is now clipped exactly against each cover: the old
+  32-point sampling stepped over a parapet 2 m in front of a soldier when the
+  shooter was 160 m away, and let line of sight pass through thin walls.
+- Suppression: cover reduces it far less than it reduces hits, it spreads 4 m
+  at half strength, and Suppress spreads its rifles over the target section.
+  Out of fire, morale recovers on its own up to 60, so a man is no longer
+  pinned for good with nobody shooting.
+- Movement: an attack rushes 12 to 20 m in the open or to cover up to 30 m
+  ahead. An advance more than 40 m from its slots does the same, and a team
+  spreads along a cover instead of piling onto one point. A slot assignment
+  tie could swap two soldiers on the same line so they collided; fixed.
+- The 3v3: both sides deploy 180 m apart behind a line of trench bays, with
+  the training ammunition load. The enemy commander holds, attacks with one
+  more section when 1.4 times stronger, attacks with all but one after 30 s
+  without a shot, and pulls back a broken section, which then rallies. A
+  section that lost contact for 10 s goes after the last known enemy. The
+  battle ends in a panel (result, time, each side's dead, wounded and routed,
+  Fight again, Main menu). "3 vs 3 battle" is on the start menu. Routes are
+  drawn only for the selected soldiers.
+- Playing it showed that an equal frontal attack on the trench line fails
+  whatever the tactic. The 3v3's game loop is therefore: hold, break the
+  enemy's attack, counterattack once ahead.
+
+Determinism golden `962153ae` -> `b849b931` (fire timing, damage, cover and
+the commander). 3v3 headless tick time went from 3.8 to 2.1 ms. The
+simulation worker grew to 100.1 KB with the commander and the combat rules;
+its budget went from 100 to 110 KB.
 
 ## Order tempo (`order-tempo-and-facing`, 2026-11-05)
 

@@ -51,15 +51,20 @@ describe('SimulationEngine', () => {
     const cover = frame.covers.at(-1)!;
     expect(cover.rotation).toBeCloseTo(Math.PI / 2);
   });
-  it('starts a 3v3 battle with three troops per side and acquires targets', () => {
+  it('starts a 3v3 battle with three troops per side, out of contact', () => {
     const engine = new SimulationEngine({ seed: 1922, scenario: 'battle3v3', sandbox: true });
-    const frame = engine.runTicks(10);
+    // battle-feel-3v3: the sides deploy about 180 m apart; nothing fires
+    // in the first 10 s without orders.
+    const frame = engine.runTicks(100);
     expect(frame.units).toHaveLength(66);
     expect(frame.units.filter((unit) => unit.faction === 'column')).toHaveLength(33);
     expect(frame.units.filter((unit) => unit.faction === 'legalist')).toHaveLength(33);
     expect(new Set(frame.units.filter((unit) => unit.faction === 'column').map((unit) => unit.squadId)).size).toBe(3);
     expect(new Set(frame.units.filter((unit) => unit.faction === 'legalist').map((unit) => unit.squadId)).size).toBe(3);
-    expect(frame.units.some((unit) => unit.targetId !== null)).toBe(true);
+    expect(frame.events.some((event) => event.type === 'shot')).toBe(false);
+    const columnY = frame.units.filter((unit) => unit.faction === 'column').reduce((sum, unit) => sum + unit.y, 0) / 33;
+    const legalistY = frame.units.filter((unit) => unit.faction === 'legalist').reduce((sum, unit) => sum + unit.y, 0) / 33;
+    expect(columnY - legalistY).toBeGreaterThan(150);
   });
   it('spawns whole enemy and command troops in the sandbox', () => {
     const engine = new SimulationEngine({ seed: 1922, training: true, opposition: false });
@@ -268,7 +273,8 @@ describe('SimulationEngine', () => {
     const engine = new SimulationEngine({ seed: 1922 });
     approach(engine, [1], 60, { x: -7, y: -11 });
     const before = engine.frame().units.find((unit) => unit.id === 1);
-    engine.runTicks(90);
+    // Five aimed shots at 3 to 5 s each, then the reload.
+    engine.runTicks(300);
     const after = engine.frame().units.find((unit) => unit.id === 1);
     expect(after?.reserve).toBeLessThan(before?.reserve ?? 0);
     expect(after?.magazine).toBeGreaterThan(0);
@@ -382,13 +388,16 @@ describe('SimulationEngine', () => {
       unitIds: Array.from({ length: 12 }, (_, index) => index + 1),
       hold: true,
     });
-    const frame = engine.runTicks(120);
+    const frame = engine.runTicks(300);
     const column = frame.units.filter((unit) => unit.faction === 'column' && unit.alive);
     expect(column).toHaveLength(12);
     expect(column.every((unit) => unit.hp === 100)).toBe(true);
     expect(column.every((unit) => unit.wound === 'none')).toBe(true);
     expect(column.every((unit) => unit.alive && !unit.incapacitated && !unit.routed)).toBe(true);
-    expect(column.some((unit) => unit.suppression > 0)).toBe(true);
+    // The training enemy does fire on the troop (aimed fire lets suppression
+    // decay between shots, so the shots are checked, not the last value).
+    const troopIds = new Set(column.map((unit) => unit.id));
+    expect(frame.events.some((event) => event.type === 'shot' && troopIds.has(event.target))).toBe(true);
     expect(frame.units.some((unit) => unit.role === 'training-enemy' && unit.nonLethal)).toBe(true);
   });
 
@@ -632,8 +641,9 @@ describe('SimulationEngine', () => {
     target.x = -7;
     target.y = 0;
     engine.enqueue({ type: 'order', order: 'ambush', unitIds: [1], to: { x: -7, y: 7 } });
-    const frame = engine.runTicks(1);
-    expect(frame.events.some((event) => event.type === 'shot')).toBe(true);
+    // The first shot waits the reaction delay (0.5 to 2.5 s).
+    const frame = engine.runTicks(30);
+    expect(frame.events.some((event) => event.type === 'shot' && event.source === 1)).toBe(true);
     expect(frame.units.find((unit) => unit.id === 1)?.order).toBe('defend');
   });
 
@@ -960,7 +970,7 @@ describe('SimulationEngine', () => {
     expect(Math.abs((unit?.y ?? 0) - 7)).toBeGreaterThan(0.1);
   });
 
-  it('kills a previously wounded soldier instead of incapacitating him', () => {
+  it('puts a wounded soldier hit again out of action, wounded or dead', () => {
     const engine = new SimulationEngine({ seed: 1922, sandbox: true });
     const internal = engine as unknown as {
       units: Array<{ id: number; x: number; y: number }>;
@@ -972,11 +982,12 @@ describe('SimulationEngine', () => {
     engine.enqueue({ type: 'wound', targetId: 4, hp: 1 });
     engine.runTicks(1);
     engine.enqueue({ type: 'attack', unitIds: [1, 2, 3, 7, 8, 9], targetId: 4 });
-    const frame = engine.runTicks(20);
-    const dead = frame.units.find((unit) => unit.id === 4);
-    expect(dead?.alive).toBe(false);
-    expect(dead?.soldierState).toBe('dead');
-    expect(dead?.wound).toBe('fatal');
+    const frame = engine.runTicks(200);
+    // battle-feel-3v3: going down is drawn, killed (0.4) or incapacitated.
+    const down = frame.units.find((unit) => unit.id === 4)!;
+    expect(!down.alive || down.incapacitated).toBe(true);
+    expect(down.alive ? down.soldierState : 'dead').toBe(down.alive ? 'incapacitated' : 'dead');
+    expect(down.wound).toBe(down.alive ? 'severe' : 'fatal');
   });
 
   it('interrupts protect-officer when the officer is incapacitated', () => {

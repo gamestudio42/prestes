@@ -131,3 +131,13 @@ export class PathLayer {
   }
 }
 
+/**
+ * Only the routes of the selected soldiers' orders are drawn (presentation:
+ * movement path visualization); in a 3 vs 3 every other section's routes,
+ * the enemy's included, covered the field.
+ */
+export function selectedOrders(orders: readonly OrderPath[], selected: readonly number[]): OrderPath[] {
+  if (selected.length === 0) return [];
+  const chosen = new Set(selected);
+  return orders.filter((order) => order.unitIds.some((id) => chosen.has(id)));
+}

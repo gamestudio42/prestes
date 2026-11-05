@@ -11,6 +11,26 @@ const OFFICER_LOSS_RADIUS = 25;
 const OFFICER_LOSS_MORALE = 20;
 const OFFICER_LOSS_COHESION = 15;
 
+/** Out of fire a soldier steadies on his own, up to this morale; an officer lifts him past it. */
+export const SELF_RALLY_CAP = 60;
+/** Morale regained per tick out of fire (0.3 a second). */
+const SELF_RALLY_RATE = 0.03;
+/** Below this suppression a soldier counts as out of fire. */
+const OUT_OF_FIRE = 10;
+
+/**
+ * A soldier no longer under fire slowly regains his nerve (battle-feel-3v3):
+ * without it a man pinned by low morale stayed pinned with no one shooting.
+ */
+export function selfRally(ctx: SimContext): void {
+  for (const unit of ctx.units) {
+    if (!unit.alive || unit.dummy || unit.routed || unit.incapacitated) continue;
+    if (unit.suppression < OUT_OF_FIRE && unit.morale < SELF_RALLY_CAP) {
+      unit.morale = Math.min(SELF_RALLY_CAP, unit.morale + SELF_RALLY_RATE);
+    }
+  }
+}
+
 export function applyOfficerAura(ctx: SimContext): void {
   for (const officer of ctx.units) {
     if (

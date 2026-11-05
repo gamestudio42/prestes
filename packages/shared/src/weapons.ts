@@ -15,7 +15,12 @@ export interface WeaponProfile {
   caliber: string;
   magazine: number;
   reserve: number;
+  /** Rapid (suppressive) fire interval. */
   fireIntervalTicks: number;
+  /** Aimed fire: ticks between shots, drawn per shot within [min, max]. */
+  aimedIntervalTicks: readonly [number, number];
+  /** Ticks from laying on a new target to the first shot, drawn within [min, max]. */
+  reactionTicks: readonly [number, number];
   reloadTicks: number;
   range: number;
   accuracy: number;
@@ -35,11 +40,13 @@ export const WEAPONS: Readonly<Record<WeaponId, WeaponProfile>> = {
     magazine: 5,
     reserve: 15,
     fireIntervalTicks: 12,
+    aimedIntervalTicks: [30, 50],
+    reactionTicks: [5, 25],
     reloadTicks: 30,
     range: 120,
-    accuracy: 0.75,
-    damageMin: 18,
-    damageMax: 30,
+    accuracy: 0.55,
+    damageMin: 35,
+    damageMax: 55,
     suppression: 1,
     historicalIdentity: 'documented',
     historicalStats: 'abstracted',

@@ -8,6 +8,7 @@ import type {
 } from '@prestes/shared';
 import type { OrderManager } from '../order-manager';
 import type { ActiveOrder, BoundingGroup, MutableUnit } from './model';
+import type { BattleMemory } from './enemy-commander';
 
 /**
  * The mutable simulation state every system reads and writes. The engine
@@ -39,4 +40,6 @@ export interface SimContext {
   nextSquadId: number;
   readonly orderManager: OrderManager;
   readonly bounding: Map<number, BoundingGroup>;
+  /** The 3v3 battle's commander plans and each section's last contact. */
+  readonly battle: BattleMemory;
 }

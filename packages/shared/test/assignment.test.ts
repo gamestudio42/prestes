@@ -26,6 +26,26 @@ describe('destination matching', () => {
     }
   });
 
+  it('keeps the order of soldiers moving along their own line', () => {
+    // A file walking south down x = -30 to slots on the same line: every
+    // assignment has the same total distance, and the one that swaps two
+    // soldiers makes the rear man run into the front one.
+    const positions = [
+      { x: -30, y: 24 },
+      { x: -30, y: 39 },
+      { x: -29.41, y: 28.18 },
+      { x: -30, y: 34 },
+      { x: -30, y: 44 },
+    ];
+    const slots = [14.4, 17.2, 20, 22.8, 25.6].map((y) => ({ x: -30, y }));
+    const matched = matchDestinations(positions, slots);
+    const order = positions.map((position, index) => ({ from: position.y, to: matched[index]!.y }));
+    order.sort((left, right) => left.from - right.from);
+    for (let index = 1; index < order.length; index += 1) {
+      expect(order[index]!.to).toBeGreaterThan(order[index - 1]!.to);
+    }
+  });
+
   it('is deterministic and keeps every destination once', () => {
     const soldiers = [{ x: 3, y: 1 }, { x: -2, y: 4 }, { x: 0, y: 0 }, { x: 5, y: -3 }];
     const slots = [{ x: 1, y: 9 }, { x: 4, y: 8 }, { x: -3, y: 7 }, { x: 0, y: 10 }];

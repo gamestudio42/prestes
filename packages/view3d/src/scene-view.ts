@@ -21,7 +21,7 @@ import { EffectsLayer } from './effects-layer';
 import { loadEnvironmentAsset } from './environment-models';
 import { toon } from './materials';
 import { PALETTE } from './palette';
-import { PathLayer } from './path-layer';
+import { PathLayer, selectedOrders } from './path-layer';
 import { PixelPost } from './post';
 import { PreviewLayer } from './preview-layer';
 import { TracerLayer } from './tracer-layer';
@@ -453,7 +453,7 @@ export class SceneView {
     this.lastFrame = frame;
     this.covers.update(frame.covers);
     this.characters.update(frame, this.rig.span);
-    this.paths.update(frame.orders, this.rig.span);
+    this.paths.update(selectedOrders(frame.orders, this.selectedUnits), this.rig.span);
     if (frame.tick !== this.lastEventTick) {
       this.lastEventTick = frame.tick;
       for (const event of frame.events) {
@@ -627,7 +627,7 @@ export class SceneView {
 
     if (this.lastFrame) {
       this.characters.update(this.lastFrame, this.rig.span);
-      this.paths.update(this.lastFrame.orders, this.rig.span);
+      this.paths.update(selectedOrders(this.lastFrame.orders, this.selectedUnits), this.rig.span);
     }
     this.tracers.update(delta);
     const camera = this.rig.camera;
@@ -733,24 +733,4 @@ function surfaceColor(surface: TerrainSurface): number {
   if (surface === 'crater') return PALETTE.terrainCrater;
   return PALETTE.terrain;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

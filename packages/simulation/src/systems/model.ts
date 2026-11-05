@@ -88,6 +88,10 @@ export interface MutableUnit {
   reconFront?: Vec2;
   /** Ticks left under fire (a shot at him or a squad mate near him). */
   underFireTicks?: number;
+  /** The target his rifle is laid on. */
+  aimedAt?: number;
+  /** Tick of his last shot: a man in action shifts targets without a fresh reaction delay. */
+  lastShotTick?: number;
   /** Who fired the last shot that put him under fire. */
   lastShooter?: number | null;
   /** Ticks before he looks for cover under fire again. */
@@ -159,6 +163,8 @@ export interface BoundingGroup {
   targetId: number | null;
   phase: 'a' | 'b';
   mode: 'move' | 'attack';
+  /** A long advance that went by rushes (battle-feel-3v3). */
+  rushed?: boolean;
   targets: Map<number, Vec2>;
 }
 
@@ -337,7 +343,8 @@ export const BATTLE_UNITS = Array.from({ length: 6 }, (_, squadIndex) => {
   const faction: 'column' | 'legalist' = squadIndex < 3 ? 'column' : 'legalist';
   const group = squadIndex % 3;
   const centerX = -44 + group * 44;
-  const centerY = faction === 'column' ? 48 : -48;
+  // About 180 m apart, out of rifle range: contact begins when a side moves.
+  const centerY = faction === 'column' ? 90 : -90;
   const squadId = faction === 'column' ? group + 1 : 11 + group;
   return Array.from({ length: 11 }, (_, index) => {
     const column = index % 6;

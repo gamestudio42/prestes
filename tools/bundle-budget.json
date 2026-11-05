@@ -5,7 +5,7 @@
     { "name": "three JS", "prefix": "three-", "extension": ".js", "maxBytes": 610000 },
     { "name": "model-loaders JS", "prefix": "model-loaders-", "extension": ".js", "maxBytes": 120000 },
     { "name": "react JS", "prefix": "react-", "extension": ".js", "maxBytes": 240000 },
-    { "name": "sim.worker JS", "prefix": "sim.worker-", "extension": ".js", "maxBytes": 100000 },
+    { "name": "sim.worker JS", "prefix": "sim.worker-", "extension": ".js", "maxBytes": 110000 },
     { "name": "index CSS", "prefix": "index-", "extension": ".css", "maxBytes": 85000 }
   ]
 }

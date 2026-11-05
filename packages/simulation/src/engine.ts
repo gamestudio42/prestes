@@ -1,5 +1,6 @@
 ﻿import { RNG, hashString } from '@prestes/kernel';
 import {
+  BATTLE_COVERS,
   BOOTCAMP_COVERS,
   COVER_POINTS,
   DEFAULT_WEAPON_ID,
@@ -52,6 +53,7 @@ import {
   fleePanicked,
   checkRouted,
   applyOfficerAura,
+  selfRally,
   updateCohesion,
   updateSoldierStates,
   updateOfficerLoss,
@@ -65,6 +67,7 @@ import {
   clearArrivedOrders,
 } from './systems/orders';
 import { applyCommand } from './systems/commands';
+import { createBattleMemory, updateBattleFlow } from './systems/enemy-commander';
 import { applyRoster } from './systems/spawning';
 import { reactToFire, screenOfficers } from './systems/fire-reaction';
 import { handoverSuppress } from './systems/orders';
@@ -111,6 +114,7 @@ export class SimulationEngine implements SimContext {
   nextSquadId = 10;
   readonly orderManager = new OrderManager();
   readonly bounding = new Map<number, BoundingGroup>();
+  readonly battle = createBattleMemory();
 
   constructor(options: SimulationOptions) {
     this.rng = new RNG(options.seed);
@@ -129,9 +133,11 @@ export class SimulationEngine implements SimContext {
     this.covers = (
       trainingGround
         ? TRAINING_GROUND.covers
-        : this.training || this.scenario === 'battle3v3'
-          ? BOOTCAMP_COVERS
-          : COVER_POINTS
+        : this.scenario === 'battle3v3'
+          ? BATTLE_COVERS
+          : this.training
+            ? BOOTCAMP_COVERS
+            : COVER_POINTS
     ).map((cover) => ({ ...cover }));
     this.sightObstacles = trainingGround
       ? TRAINING_GROUND.sightObstacles
@@ -158,7 +164,8 @@ export class SimulationEngine implements SimContext {
         targetY: unit.y,
         hp: MAX_HP,
         weaponId: DEFAULT_WEAPON_ID,
-        ...(this.training && unit.faction === 'column'
+        // The 3v3 is a training battle: both sides draw the depot issue.
+        ...((this.training && unit.faction === 'column') || this.scenario === 'battle3v3'
           ? TRAINING_AMMUNITION
           : {
               magazine: WEAPONS[DEFAULT_WEAPON_ID].magazine,
@@ -312,8 +319,10 @@ export class SimulationEngine implements SimContext {
       updateRescue(this, nextTick, events);
       fire(this, nextTick, events);
       updatePursuit(this, nextTick, events);
+      updateBattleFlow(this, nextTick, events);
       updateOfficerLoss(this, nextTick, events);
       applyOfficerAura(this);
+      selfRally(this);
       updateCohesion(this);
       updateMoraleStates(this);
       updateRecovery(this, nextTick, events);

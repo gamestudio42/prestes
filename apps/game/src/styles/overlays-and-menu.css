@@ -760,3 +760,36 @@
   font-size: 12px;
   letter-spacing: 0;
 }
+
+/* The 3 vs 3 battle's end panel (battle-feel-3v3). */
+.battle-end {
+  display: grid;
+  gap: 14px;
+  width: min(440px, 100%);
+}
+
+.battle-end-losses {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  color: #d8c9a8;
+}
+
+.battle-end-losses th,
+.battle-end-losses td {
+  padding: 4px 6px;
+  border-bottom: 1px solid #4a563f;
+  text-align: right;
+}
+
+.battle-end-losses th:first-child {
+  text-align: left;
+  color: #a78e69;
+}
+
+.battle-end-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
