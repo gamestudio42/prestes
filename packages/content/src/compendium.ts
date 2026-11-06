@@ -59,6 +59,10 @@ export const COMPENDIUM: readonly CompendiumEntry[] = [
   { id: 'serra-nova', section: 'places', sourceRefs: [M], cite: 'Macaulay, frontispiece map', confidence: 'medium' },
   { id: 'pantanal', section: 'places', sourceRefs: [M], cite: 'Macaulay, ch. IX, pp. 223–238', confidence: 'medium' },
   { id: 'la-gaiba', section: 'places', sourceRefs: [M], cite: 'Macaulay, ch. IX (page pending)', confidence: 'low' },
+  // Battlefields (add-battle-maps): fictional places in sourced settings.
+  { id: 'map-fazenda', section: 'places', sourceRefs: [M], cite: 'Macaulay, ch. III, pp. 71, 82, 85', confidence: 'high' },
+  { id: 'map-serra-rio', section: 'places', sourceRefs: [M], cite: 'Macaulay, pp. 122–124', confidence: 'high' },
+  { id: 'map-bairro', section: 'places', sourceRefs: [M], cite: 'Macaulay, ch. I, pp. 4–6, 10, 15', confidence: 'high' },
 
   // Weapons (docs/history/WEAPONS.md)
   { id: 'mauser-7mm', section: 'weapons', sourceRefs: [M], cite: 'Macaulay, p. 113', confidence: 'high' },

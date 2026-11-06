@@ -2,10 +2,12 @@ import { useEffect, useRef, useState } from 'react';
 import { Eye } from './ui/icons';
 import { BOOTCAMP_EXERCISE, translate, type Locale, type TrainingAction } from '@prestes/content';
 import {
+  DEFAULT_BATTLE_MAP,
   DEFAULT_WEAPON_ID,
   TRAINING_AMMUNITION,
   WEAPONS,
   trainingStation,
+  type BattleMapId,
   type Frame,
 } from '@prestes/shared';
 import type { CameraBand } from '@prestes/view3d';
@@ -36,6 +38,8 @@ export function App() {
   const [locale, setLocale] = useState<Locale>(loadLocale);
   const [started, setStarted] = useState(false);
   const [sessionMode, setSessionMode] = useState<'battle' | 'training'>('training');
+  // add-battle-maps: the map the next 3v3 starts on.
+  const [battleMapId, setBattleMapId] = useState<BattleMapId>(DEFAULT_BATTLE_MAP);
   const [showCodex, setShowCodex] = useState(false);
   const [frame, setFrame] = useState<Frame | null>(null);
   const [band, setBand] = useState<CameraBand>('tactical');
@@ -185,6 +189,7 @@ export function App() {
     training = false,
     opposition = true,
     scenario: 'bootcamp' | 'battle3v3' = 'bootcamp',
+    map?: BattleMapId,
   ): GameClient => {
     const client = new GameClient({
       seed: 1922,
@@ -192,6 +197,7 @@ export function App() {
       training,
       opposition,
       scenario,
+      ...(scenario === 'battle3v3' && map ? { battleMap: map } : {}),
       onEvent: (event) => audioRef.current?.handleEvent(event),
       onFrame: (next) => {
         setFrame(next);
@@ -327,7 +333,7 @@ export function App() {
     setSessionMode('battle');
     setSpeed(DEFAULT_SPEED);
     setStarted(true);
-    createClient(false, true, 'battle3v3');
+    createClient(false, true, 'battle3v3', battleMapId);
   };
   const handleResetSandbox = (): void => {
     clientRef.current?.reset();
@@ -440,6 +446,8 @@ export function App() {
           onStart={handleStart}
           onRestart={() => handleStartBootcamp(true)}
           onStartBattle3v3={handleStartBattle3v3}
+          battleMap={battleMapId}
+          onBattleMapChange={setBattleMapId}
           onToggleAudio={handleToggleAudio}
         />
       </div>
@@ -604,6 +612,8 @@ export function App() {
           onToggleControlBothSides={handleToggleControlBothSides}
           onToggleFog={() => clientRef.current?.sendCommand({ type: 'fog', enabled: frame?.fog !== true })}
           onStartBattle3v3={handleStartBattle3v3}
+          battleMap={battleMapId}
+          onBattleMapChange={setBattleMapId}
           onClose={() => {
             setSandboxOpen(false);
             setSandboxTool(null);

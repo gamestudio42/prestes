@@ -1,5 +1,6 @@
 // Shared simulation data: unit records, templates and tuning constants.
-import type { Gait } from '@prestes/shared';
+import { VILA_MILITAR } from '@prestes/shared';
+import type { BattleMap, Gait } from '@prestes/shared';
 import type {
   Faction,
   FormationKind,
@@ -82,6 +83,10 @@ export interface MutableUnit {
   moveSpeed?: number;
   /** Winded: capped at a walk until fatigue falls below WINDED_RECOVER. */
   winded?: boolean;
+  /** add-battle-maps: the ferry he is aboard. */
+  ferryId?: number;
+  /** add-battle-maps: concealment is lifted until this tick (he fired). */
+  revealedUntil?: number;
   /** The gait he moved at last tick (the view picks walk or run from it). */
   gait?: Gait;
   /** Recon: the front a scout sweeps, kept once he halts. */
@@ -339,26 +344,33 @@ export const DEFAULT_UNITS: ReadonlyArray<
 export const INFANTRY_TEMPLATE = DEFAULT_UNITS[0]!;
 export const OFFICER_TEMPLATE = DEFAULT_UNITS.find((unit) => unit.kind === 'officer')!;
 
-export const BATTLE_UNITS = Array.from({ length: 6 }, (_, squadIndex) => {
-  const faction: 'column' | 'legalist' = squadIndex < 3 ? 'column' : 'legalist';
-  const group = squadIndex % 3;
-  const centerX = -44 + group * 44;
-  // About 180 m apart, out of rifle range: contact begins when a side moves.
-  const centerY = faction === 'column' ? 90 : -90;
-  const squadId = faction === 'column' ? group + 1 : 11 + group;
-  return Array.from({ length: 11 }, (_, index) => {
-    const column = index % 6;
-    const row = Math.floor(index / 6);
-    return {
-      ...INFANTRY_TEMPLATE,
-      id: squadIndex * 11 + index + 1,
-      x: centerX + (column - 2.5) * 2.8,
-      y: centerY + row * 2.8,
-      faction,
-      squadId,
-    };
-  });
-}).flat() satisfies readonly (typeof DEFAULT_UNITS)[number][];
+/**
+ * The 3v3 troops, placed on a battle map's deployment zones: three sections
+ * of eleven a side, in two ranks 2.8 m apart (add-battle-maps).
+ */
+export function battleUnits(deployment: BattleMap['deployment']) {
+  return Array.from({ length: 6 }, (_, squadIndex) => {
+    const faction: 'column' | 'legalist' = squadIndex < 3 ? 'column' : 'legalist';
+    const group = squadIndex % 3;
+    const centre = deployment[faction].sections[group]!;
+    const squadId = faction === 'column' ? group + 1 : 11 + group;
+    return Array.from({ length: 11 }, (_, index) => {
+      const column = index % 6;
+      const row = Math.floor(index / 6);
+      return {
+        ...INFANTRY_TEMPLATE,
+        id: squadIndex * 11 + index + 1,
+        x: centre.x + (column - 2.5) * 2.8,
+        y: centre.y + row * 2.8,
+        faction,
+        squadId,
+      };
+    });
+  }).flat() satisfies readonly (typeof DEFAULT_UNITS)[number][];
+}
+
+// About 180 m apart, out of rifle range: contact begins when a side moves.
+export const BATTLE_UNITS = battleUnits(VILA_MILITAR.deployment);
 
 export const TRAINING_UNITS = [
   ...Array.from({ length: 11 }, (_, index) => ({

@@ -45,3 +45,23 @@ console.log(JSON.stringify(results, null, 2));
 
 const battle = runBattle3v3();
 console.log(JSON.stringify({ scenario: 'battle3v3', units: 66, ticks: TICKS, ms: Number(battle.ms.toFixed(2)), msPerTick: Number((battle.ms / TICKS).toFixed(4)), hash: battle.hash }, null, 2));
+
+// add-battle-maps: A* across a 400 m map with a river (the test field).
+{
+  const { findPath, setActiveMap, VILA_MILITAR } = await import('../packages/shared/src');
+  const { TEST_MAP } = await import('../packages/shared/test/fixtures/test-map');
+  setActiveMap(TEST_MAP);
+  findPath({ x: -150, y: 150 }, { x: 150, y: -150 }, []);
+  const routes = [
+    [{ x: -190, y: 190 }, { x: 190, y: -190 }],
+    [{ x: 160, y: 30 }, { x: 160, y: -30 }],
+    [{ x: -60, y: 180 }, { x: 60, y: -180 }],
+  ] as const;
+  const start = performance.now();
+  for (let round = 0; round < 5; round += 1) {
+    for (const [from, to] of routes) findPath(from, to, []);
+  }
+  const ms = (performance.now() - start) / (5 * routes.length);
+  setActiveMap(VILA_MILITAR);
+  console.log(JSON.stringify({ scenario: 'path-400m', msPerPath: Number(ms.toFixed(3)) }, null, 2));
+}

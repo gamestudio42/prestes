@@ -1,3 +1,4 @@
+import type { BattleMapId } from './maps/types';
 import type { Gait } from './gait';
 import type { WeaponId } from './weapons';
 
@@ -10,7 +11,11 @@ export type UnitKind = 'infantry' | 'officer' | 'dummy';
 
 export type Faction = 'column' | 'legalist' | 'cangaceiro' | 'civilian' | 'target';
 
-export type CoverKind = 'sandbag' | 'stone' | 'trench' | 'barrel' | 'low-wall' | 'building';
+/**
+ * `fence` (add-battle-maps): a wire or rail fence, a hedge or a row of coffee
+ * bushes. It stops movement and gives no cover.
+ */
+export type CoverKind = 'sandbag' | 'stone' | 'trench' | 'barrel' | 'low-wall' | 'building' | 'fence';
 
 export interface CoverPoint {
   id: number;
@@ -157,6 +162,10 @@ export interface UnitSnapshot {
   boundPhase?: 'cover' | 'advance' | null;
   /** The gait while moving (order-tempo-and-facing); absent when halted. */
   gait?: Gait;
+  /** add-battle-maps: hidden by the vegetation he is in (the view marks it). */
+  concealed?: boolean;
+  /** add-battle-maps: aboard a ferry. */
+  aboardFerry?: boolean;
 }
 
 export interface RosterRecord {
@@ -290,6 +299,8 @@ export interface Frame {
    */
   seen?: { readonly column: readonly number[]; readonly legalist: readonly number[] };
   fog?: boolean;
+  /** add-battle-maps: each ferry raft's position. */
+  ferries?: readonly { id: number; x: number; y: number; moving: boolean }[];
 }
 
 export type WorkerRequest =
@@ -301,6 +312,8 @@ export type WorkerRequest =
       opposition?: boolean;
       bounding?: boolean;
       scenario?: 'bootcamp' | 'battle3v3';
+      /** add-battle-maps: the 3v3's battle map. */
+      battleMap?: BattleMapId;
     }
   | { type: 'command'; command: Command }
   | { type: 'step'; ticks: number };

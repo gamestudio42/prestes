@@ -30,3 +30,4 @@ export { TrainingLayer, type TrainingMarker } from './training-layer';
 
 
 
+export { BattleMapLayer } from './battle-map-layer';

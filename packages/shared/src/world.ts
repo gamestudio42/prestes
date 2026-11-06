@@ -1,5 +1,10 @@
-﻿import type { CoverPoint, Stance } from './protocol';
+import type { CoverPoint, Stance } from './protocol';
 import { terrainCoverAgainst, terrainHeightAt } from './terrain';
+import { activeMapRuntime, isDeepWater, MAP_BOUNDS, waterAt } from './maps/runtime';
+import { cropBlocksLine } from './maps/concealment';
+import { forEachCoverNear, someCoverAlong, someCoverNear } from './maps/cover-index';
+
+export { MAP_BOUNDS };
 
 export const COVER_POINTS: readonly CoverPoint[] = [
   {
@@ -138,7 +143,26 @@ export const TRAINING_SIGHT_OBSTACLES = [
   { id: 8, x: 15, y: -12, halfWidth: 1.1, halfDepth: 1.1, height: 4.2 },
 ];
 
-export type BuildingModel = 'farmhouse' | 'barn' | 'chapel' | 'training-house';
+export type BuildingModel =
+  | 'farmhouse'
+  | 'barn'
+  | 'chapel'
+  | 'training-house'
+  // add-battle-maps: Fazenda, Serra e Rio and Bairro.
+  | 'casa-sede'
+  | 'colonist-house'
+  | 'engenho'
+  | 'ferry-house'
+  | 'terraced-house'
+  | 'terraced-house-wide'
+  | 'sobrado'
+  | 'factory'
+  | 'church'
+  | 'warehouse'
+  | 'casa-terrea'
+  | 'venda'
+  | 'armazem'
+  | 'coreto';
 
 /**
  * Buildings shared by the simulation (as `building` cover) and the view (which
@@ -216,7 +240,6 @@ export const BATTLE_COVERS: readonly CoverPoint[] = [
   ...[-44, 0, 44].flatMap((x, index) => battleLine(300 + index * 10, x, -78, 1)),
   ...[-44, 0, 44].flatMap((x, index) => battleLine(330 + index * 10, x, 78, -1)),
 ];
-export const MAP_BOUNDS = { minX: -120, minY: -120, maxX: 120, maxY: 120 } as const;
 
 export const FIRE_RANGE = 26;
 export const MAX_HP = 100;
@@ -263,7 +286,7 @@ export function isPointBlockedByCovers(
   covers: readonly CoverPoint[] = COVER_POINTS,
   margin = 0,
 ): boolean {
-  return covers.some((cover) => cover.blocksMovement && isPointInCover(x, y, cover, margin));
+  return someCoverNear(covers, x, y, (cover) => cover.blocksMovement && isPointInCover(x, y, cover, margin));
 }
 
 /**
@@ -278,8 +301,21 @@ function segmentCrossesCover(
   bx: number,
   by: number,
   cover: { x: number; y: number; halfWidth: number; halfDepth: number; rotation?: number },
+  margin = 0,
 ): boolean {
+  // A cheap reject first: the segment's box against the cover's reach.
+  const reach = cover.halfWidth + cover.halfDepth + margin;
+  if (
+    cover.x + reach < Math.min(ax, bx) ||
+    cover.x - reach > Math.max(ax, bx) ||
+    cover.y + reach < Math.min(ay, by) ||
+    cover.y - reach > Math.max(ay, by)
+  ) {
+    return false;
+  }
   const { cos, sin } = coverAxes(cover);
+  const halfWidth = cover.halfWidth + margin;
+  const halfDepth = cover.halfDepth + margin;
   const startX = (ax - cover.x) * cos + (ay - cover.y) * sin;
   const startY = -(ax - cover.x) * sin + (ay - cover.y) * cos;
   const endX = (bx - cover.x) * cos + (by - cover.y) * sin;
@@ -287,8 +323,8 @@ function segmentCrossesCover(
   let enter = 0;
   let leave = 1;
   for (const [origin, delta, half] of [
-    [startX, endX - startX, cover.halfWidth],
-    [startY, endY - startY, cover.halfDepth],
+    [startX, endX - startX, halfWidth],
+    [startY, endY - startY, halfDepth],
   ] as const) {
     if (Math.abs(delta) < 1e-12) {
       if (Math.abs(origin) > half) return false;
@@ -319,7 +355,12 @@ export function isLineBlocked(
   const endHeight = terrainHeightAt(bx, by) + targetEyeHeight;
   const lineHeightAt = (t: number): number => startHeight + (endHeight - startHeight) * t;
   if (
-    covers.some(
+    someCoverAlong(
+      covers,
+      ax,
+      ay,
+      bx,
+      by,
       (cover) => cover.height >= eyeHeight && segmentCrossesCover(ax, ay, bx, by, cover),
     )
   ) {
@@ -332,13 +373,20 @@ export function isLineBlocked(
   ) {
     return true;
   }
-  for (let index = 1; index < 32; index += 1) {
-    const t = index / 32;
+  // Battle maps sample the ground every 2 m (its heightfield spacing); the
+  // feature maps keep their 32 samples.
+  const runtime = activeMapRuntime();
+  const samples = runtime ? Math.max(32, Math.ceil(Math.sqrt((bx - ax) ** 2 + (by - ay) ** 2) / 2)) : 32;
+  for (let index = 1; index < samples; index += 1) {
+    const t = index / samples;
     const x = ax + (bx - ax) * t;
     const y = ay + (by - ay) * t;
     if (terrainHeightAt(x, y) > lineHeightAt(t) + 0.05) {
       return true;
     }
+  }
+  if (runtime && cropBlocksLine(runtime, ax, ay, startHeight, bx, by, endHeight)) {
+    return true;
   }
   return false;
 }
@@ -365,9 +413,7 @@ export function firstSightBlocker(
       return { x, y };
     }
     if (
-      covers.some(
-        (entry) => entry.height >= eyeHeight && isPointInCover(x, y, entry),
-      ) ||
+      someCoverNear(covers, x, y, (entry) => entry.height >= eyeHeight && isPointInCover(x, y, entry)) ||
       obstacles.some(
         (entry) =>
           entry.height >= eyeHeight &&
@@ -389,6 +435,22 @@ export function isLineBlockedForMovement(
   covers: readonly CoverPoint[] = COVER_POINTS,
   margin = 0,
 ): boolean {
+  // Battle maps clip the line exactly against each blocking cover, grown by
+  // the margin, and stop at deep water sampled every metre.
+  const runtime = activeMapRuntime();
+  if (runtime) {
+    if (
+      someCoverAlong(covers, ax, ay, bx, by, (cover) => cover.blocksMovement && segmentCrossesCover(ax, ay, bx, by, cover, margin))
+    ) {
+      return true;
+    }
+    const samples = Math.max(2, Math.ceil(Math.sqrt((bx - ax) ** 2 + (by - ay) ** 2)));
+    for (let index = 1; index < samples; index += 1) {
+      const t = index / samples;
+      if (isDeepWater(ax + (bx - ax) * t, ay + (by - ay) * t)) return true;
+    }
+    return false;
+  }
   const samples = 32;
   for (let index = 1; index < samples; index += 1) {
     const t = index / samples;
@@ -427,25 +489,27 @@ export function coverAgainst(
   stance: Stance,
   covers: readonly CoverPoint[] = COVER_POINTS,
 ): number {
+  // A man in a ford has no cover at all (add-battle-maps).
+  if (waterAt(x, y) !== 0) return 0;
   let wall = 0;
-  for (const point of covers) {
+  forEachCoverNear(covers, x, y, (point) => {
     const dx = x - point.x;
     const dy = y - point.y;
     if (dx * dx + dy * dy > point.radius * point.radius) {
-      continue;
+      return;
     }
     if (point.height < 1.2 && stance === 'standing') {
-      continue;
+      return;
     }
     // A shooter inside the same cover (in the same trench) gets no cover from it.
     if (isPointInCover(threatX, threatY, point) && isPointInCover(x, y, point)) {
-      continue;
+      return;
     }
     if (!segmentCrossesCover(x, y, threatX, threatY, point)) {
-      continue;
+      return;
     }
     wall = Math.max(wall, point.quality);
-  }
+  });
   // At close quarters a parapet or wall shelters far less: a third of its value
   // inside 10 m, full value from 20 m (battle-feel-3v3).
   wall *= closeQuartersFactor(Math.sqrt((threatX - x) ** 2 + (threatY - y) ** 2));

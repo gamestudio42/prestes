@@ -874,3 +874,11 @@ select {
   z-index: 10;
   pointer-events: auto;
 }
+
+/* add-battle-maps: the sandbox's battlefield choice. */
+.sandbox-map {
+  display: grid;
+  gap: 4px;
+  margin-bottom: 8px;
+  font-size: 12px;
+}

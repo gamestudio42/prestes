@@ -803,6 +803,25 @@ export const en = {
   'menu.page': 'p. {page}',
   'menu.pagePrev': 'Previous page',
   'menu.pageNext': 'Next page',
+  // add-battle-maps: battlefields, their codex notes and concealment.
+  'start.battleMap': 'Battlefield',
+  'sandbox.battleMap': 'Battlefield',
+  'hud.concealed': 'Concealed',
+  'hud.concealedHint': 'Hidden in the crops or the grass: seen only from close by, and given away by firing.',
+  'map.vilaMilitar.name': 'Vila Militar field',
+  'map.vilaMilitar.description': 'The training kit at Vila Militar: flat ground, sandbags and stone walls.',
+  'map.fazenda.name': 'Fazenda',
+  'map.fazenda.description': 'Open pasture between two trench lines; a canefield on the flank, corn under the casa-sede.',
+  'map.serraRio.name': 'Serra e Rio',
+  'map.serraRio.description': 'Hills over a river crossed only at a ford, a wooden bridge and a ferry.',
+  'map.bairro.name': 'Bairro',
+  'map.bairro.description': 'Cobbled streets, terraced houses, a factory and a church, barricaded.',
+  'compendium.map-fazenda.title': 'Fazenda (battlefield)',
+  'compendium.map-fazenda.body': 'Historical setting, fictional place. A coffee and sugarcane fazenda of the São Paulo and Paraná interior in 1924–1925, when the fighting on the Paraná front was fought from dug-in lines. The farm, its fields and its trenches are original; no real property is shown.',
+  'compendium.map-serra-rio.title': 'Serra e Rio (battlefield)',
+  'compendium.map-serra-rio.body': 'Historical setting, fictional place. Highland river country of Goiás and Minas Gerais, crossed by the column in 1925–1926. At the Verdinho Bridge outside Mineiros, Goiás, in June 1925, the rearguard burned the bridge and waded the river, and its pursuers cut a ford with the bridge’s timbers. This river, its ford, bridge and ferry are original.',
+  'compendium.map-bairro.title': 'Bairro (battlefield)',
+  'compendium.map-bairro.body': 'Historical setting, fictional place. A working-class and factory quarter in the style of São Paulo in July 1924. That revolt was a front separate from the column. Shells from both sides killed civilians, and the government’s bombardment from 12 July drove thousands of refugees out of the city; the game puts no civilians on this map and gives no reward for destruction.',
 } as const;
 
 export type MessageKey = keyof typeof en;

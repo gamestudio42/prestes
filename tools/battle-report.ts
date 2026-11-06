@@ -1,5 +1,5 @@
 import { fileURLToPath } from 'node:url';
-import type { Frame, UnitSnapshot } from '../packages/shared/src';
+import { battleMap, type BattleMap, type BattleMapId, type Frame, type UnitSnapshot } from '../packages/shared/src';
 import { SimulationEngine } from '../packages/simulation/src/engine';
 
 /**
@@ -45,10 +45,19 @@ function centroid(units: readonly UnitSnapshot[]): { x: number; y: number } {
 /** The player counterattacks once he has this many fit soldiers per enemy. */
 const COUNTER_AT = 1.25;
 
-/** The enemy's line, where the player looks for him when he sees no one (a map fact). */
-const ENEMY_LINE = { x: 0, y: -78 };
+/**
+ * The enemy's line, where the player looks for him when he sees no one (a map
+ * fact): 12 m in front of the legalist start (y -78 on the Vila Militar field).
+ */
+function enemyLine(map: BattleMap): { x: number; y: number } {
+  const zone = map.deployment.legalist;
+  const x = zone.sections.reduce((sum, point) => sum + point.x, 0) / zone.sections.length;
+  const y = zone.sections.reduce((sum, point) => sum + point.y, 0) / zone.sections.length;
+  return { x, y: y + zone.facing.y * 12 };
+}
 
 interface ScriptState {
+  map: BattleMap;
   countering: boolean;
   /** Enemy soldiers the player saw fall (fog-of-war: his only count of the enemy's losses). */
   seenDown: Set<number>;
@@ -70,10 +79,18 @@ function orderPlayer(engine: SimulationEngine, frame: Frame, state: ScriptState)
   const enemies = frame.units.filter((unit) => unit.faction === 'legalist' && fit(unit) && seen.has(unit.id));
   const estimate = frame.units.filter((unit) => unit.faction === 'legalist').length - state.seenDown.size;
   if (frame.tick === 0) {
-    for (const [squad, x] of [[1, -44], [2, 0], [3, 44]] as const) {
-      const ids = own.filter((unit) => unit.squadId === squad).map((unit) => unit.id);
-      engine.enqueue({ type: 'order', order: 'defend', unitIds: ids, to: { x, y: 80 }, facing: { x: 0, y: -1 } });
-    }
+    // Each section holds its own line, 10 m in front of its start.
+    const zone = state.map.deployment.column;
+    zone.sections.forEach((start, index) => {
+      const ids = own.filter((unit) => unit.squadId === index + 1).map((unit) => unit.id);
+      engine.enqueue({
+        type: 'order',
+        order: 'defend',
+        unitIds: ids,
+        to: { x: start.x, y: start.y + zone.facing.y * 10 },
+        facing: zone.facing,
+      });
+    });
     return;
   }
   if (!state.countering && own.length >= estimate * COUNTER_AT) state.countering = true;
@@ -89,7 +106,7 @@ function orderPlayer(engine: SimulationEngine, frame: Frame, state: ScriptState)
     if (busy) continue;
     const ids = section.map((unit) => unit.id);
     if (enemies.length === 0) {
-      engine.enqueue({ type: 'order', order: 'advance', unitIds: ids, to: ENEMY_LINE });
+      engine.enqueue({ type: 'order', order: 'advance', unitIds: ids, to: enemyLine(state.map) });
       continue;
     }
     const centre = centroid(section);
@@ -103,8 +120,13 @@ function orderPlayer(engine: SimulationEngine, frame: Frame, state: ScriptState)
 /** Ticks between yields to the event loop (a test worker must keep answering its runner). */
 const YIELD_EVERY = 500;
 
-export async function battleReport(seed = 1922, maxSeconds = 900): Promise<BattleReport> {
-  const engine = new SimulationEngine({ seed, scenario: 'battle3v3', sandbox: true });
+export async function battleReport(
+  seed = 1922,
+  maxSeconds = 900,
+  mapId: BattleMapId = 'vila-militar',
+): Promise<BattleReport> {
+  const map = battleMap(mapId);
+  const engine = new SimulationEngine({ seed, scenario: 'battle3v3', sandbox: true, battleMap: mapId });
   let frame = engine.frame();
   const faction = new Map(frame.units.map((unit) => [unit.id, unit.faction]));
   const casualties = { column: 0, legalist: 0 };
@@ -116,7 +138,7 @@ export async function battleReport(seed = 1922, maxSeconds = 900): Promise<Battl
   let silenceStart = 0;
   let longestSilence = 0;
   let outcome: BattleReport['outcome'] = 'none';
-  const script: ScriptState = { countering: false, seenDown: new Set() };
+  const script: ScriptState = { map, countering: false, seenDown: new Set() };
   let firstSight = -1;
   const maxTicks = maxSeconds * 10;
   for (let tick = 0; tick < maxTicks && outcome === 'none'; tick += 1) {
@@ -190,8 +212,12 @@ function bothSidesFit(frame: Frame): boolean {
 }
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
-  const seeds = process.argv.slice(2).map(Number).filter((value) => Number.isFinite(value));
+  // pnpm battle:report [--map fazenda] [seed ...]
+  const args = process.argv.slice(2);
+  const mapAt = args.indexOf('--map');
+  const map = (mapAt >= 0 ? args[mapAt + 1] : 'vila-militar') as BattleMapId;
+  const seeds = args.filter((_, index) => index !== mapAt && index !== mapAt + 1).map(Number).filter((value) => Number.isFinite(value));
   for (const seed of seeds.length > 0 ? seeds : [1922]) {
-    console.log(JSON.stringify(await battleReport(seed)));
+    console.log(JSON.stringify({ map, ...(await battleReport(seed, 900, map)) }));
   }
 }

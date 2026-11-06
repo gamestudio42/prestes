@@ -144,6 +144,8 @@ export function Hud({
   const squadUnits = frame?.units.filter((unit) => unit.squadId === selectedSquadId) ?? [];
   const aliveUnits = squadUnits.filter((unit) => unit.alive && !unit.routed);
   const stance = aliveUnits[0]?.stance ?? squadUnits[0]?.stance ?? 'standing';
+  // add-battle-maps: how many of the section are hidden in vegetation.
+  const concealedCount = aliveUnits.filter((unit) => unit.concealed).length;
   const formation = aliveUnits[0]?.formation ?? 'line';
   const currentOrder = aliveUnits.find((unit) => unit.order !== null)?.order ?? null;
 
@@ -255,6 +257,7 @@ export function Hud({
             aliveCount={aliveUnits.length}
             currentOrder={currentOrder}
             stance={stance}
+            concealedCount={concealedCount}
             pendingOrder={pendingOrder}
             pendingTactical={pendingTactical}
             aimPending={aimPending}

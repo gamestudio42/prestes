@@ -1,4 +1,13 @@
-import { DEFAULT_SPACING, averageAim, averageFacing, coverAxes, findPath, isPointBlockedByCovers } from '@prestes/shared';
+import {
+  DEFAULT_SPACING,
+  activeMapRuntime,
+  averageAim,
+  averageFacing,
+  coverAxes,
+  crossesDeepWater,
+  findPath,
+  isPointBlockedByCovers,
+} from '@prestes/shared';
 import type { CoverPoint, Vec2 } from '@prestes/shared';
 import { formationSlots } from '../tactical';
 import { BOUNDING_ORDERS } from './model';
@@ -313,10 +322,25 @@ export function setBoundingCover(ctx: SimContext, units: readonly MutableUnit[])
   }
 }
 
+/**
+ * On a battle map, an objective across deep water is reached by a crossing:
+ * the rushes steer for the next corner of the team's path there (the near
+ * end of the ford or bridge, the far landing of a ferry) instead of the
+ * river bank straight ahead (add-battle-maps).
+ */
+function steerPoint(ctx: SimContext, team: Vec2, destination: Vec2): Vec2 {
+  if (!activeMapRuntime() || !crossesDeepWater(team, destination)) return destination;
+  const path = findPath(team, destination, ctx.covers);
+  for (const point of path) {
+    if ((point.x - team.x) ** 2 + (point.y - team.y) ** 2 > 4 * 4) return point;
+  }
+  return path.at(-1) ?? destination;
+}
+
 export function assignBoundingAdvance(
   ctx: SimContext,
   units: readonly MutableUnit[],
-  destination: Vec2,
+  objective: Vec2,
   targetId: number | null,
   aheadOf?: Vec2,
 ): void {
@@ -325,6 +349,7 @@ export function assignBoundingAdvance(
   const claims = new Map<number, number>();
   // In the open the team keeps its frontage: every man runs the same heading.
   const team = centroidOf(units);
+  const destination = steerPoint(ctx, team, objective);
   const headingX = destination.x - team.x;
   const headingY = destination.y - team.y;
   const headingLength = Math.sqrt(headingX * headingX + headingY * headingY);
@@ -335,8 +360,11 @@ export function assignBoundingAdvance(
     let best: Vec2 | null = null;
     let bestCover: CoverPoint | null = null;
     let bestScore = Number.POSITIVE_INFINITY;
+    // Battle maps have hundreds of walls: rank the covers by straight
+    // distance and try paths only until one is reachable (add-battle-maps).
+    const ranked: Array<{ cover: CoverPoint; score: number }> | null = activeMapRuntime() ? [] : null;
     for (const cover of ctx.covers) {
-      if ((claims.get(cover.id) ?? 0) >= coverCapacity(cover)) {
+      if (cover.kind === 'fence' || (claims.get(cover.id) ?? 0) >= coverCapacity(cover)) {
         continue;
       }
       const coverDistance = Math.sqrt((cover.x - unit.x) ** 2 + (cover.y - unit.y) ** 2);
@@ -371,6 +399,10 @@ export function assignBoundingAdvance(
       ) {
         continue;
       }
+      if (ranked) {
+        ranked.push({ cover, score: destinationDistance + coverDistance * 0.15 - cover.quality * 3 });
+        continue;
+      }
       const path = findPath({ x: unit.x, y: unit.y }, cover, ctx.covers);
       if (path.length === 0) {
         continue;
@@ -379,6 +411,15 @@ export function assignBoundingAdvance(
       if (score < bestScore) {
         bestScore = score;
         bestCover = cover;
+      }
+    }
+    if (ranked) {
+      ranked.sort((left, right) => left.score - right.score || left.cover.id - right.cover.id);
+      for (const { cover } of ranked.slice(0, 4)) {
+        if (findPath({ x: unit.x, y: unit.y }, cover, ctx.covers, 2500).length > 0) {
+          bestCover = cover;
+          break;
+        }
       }
     }
     if (bestCover) {
@@ -401,7 +442,14 @@ export function assignBoundingAdvance(
       unit.boundPhase = 'cover';
       continue;
     }
-    const path = findPath({ x: unit.x, y: unit.y }, best, ctx.covers);
+    // A rush is a short hop: on a battle map a walled-in point is given up
+    // quickly instead of searching the whole town for a way in.
+    const path = findPath(
+      { x: unit.x, y: unit.y },
+      best,
+      ctx.covers,
+      activeMapRuntime() ? 6000 : Number.POSITIVE_INFINITY,
+    );
     if (path.length === 0) {
       unit.boundPhase = 'cover';
       return;

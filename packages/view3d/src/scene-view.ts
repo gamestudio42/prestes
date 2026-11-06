@@ -3,6 +3,11 @@ import {
   SANDBOX_TERRAIN,
   TRAINING_TERRAIN,
   setActiveTerrain,
+  setActiveMap,
+  setActiveMapRuntime,
+  battleMap,
+  type BattleMap,
+  type BattleMapId,
   terrainHeightAt,
   terrainSurfaceAt,
   type TerrainSurface,
@@ -29,6 +34,7 @@ import { PreviewLayer } from './preview-layer';
 import { TracerLayer } from './tracer-layer';
 import { TrainingLayer, type TrainingMarker } from './training-layer';
 import { WorldLayer } from './world-layer';
+import { BattleMapLayer } from './battle-map-layer';
 
 
 export interface OrderCallout {
@@ -59,6 +65,8 @@ export interface SceneViewOptions {
   onBandChange?: (band: CameraBand) => void;
   trainingField?: boolean;
   strategicField?: boolean;
+  /** add-battle-maps: the 3v3's map; the Vila Militar field when absent. */
+  battleMap?: BattleMapId;
   onCameraAction?: (kind: 'pan' | 'zoom' | 'rotate') => void;
 }
 
@@ -86,6 +94,8 @@ export class SceneView {
   private readonly effects = new EffectsLayer();
   private readonly markers = new MarkerLayer();
   private readonly preview = new PreviewLayer();
+  private readonly battleMap: BattleMap | null;
+  private readonly mapLayer: BattleMapLayer | null = null;
   private readonly training = new TrainingLayer();
   private readonly world: WorldLayer;
   private disposed = false;
@@ -142,15 +152,30 @@ export class SceneView {
     sun.position.set(40, 70, 30);
     this.scene.add(sun);
 
-    // The training ground has its own terrain and countryside.
-    setActiveTerrain(options.trainingField ? TRAINING_TERRAIN : SANDBOX_TERRAIN);
-    this.world = new WorldLayer(options.trainingField ? 'training' : 'sandbox');
+    // The training ground has its own terrain and countryside; a battle map
+    // (add-battle-maps) its heightfield, water, crops and buildings.
+    const map = options.battleMap && !options.trainingField ? battleMap(options.battleMap) : null;
+    this.battleMap = map && map.height.kind === 'field' ? map : null;
+    if (this.battleMap) {
+      setActiveMap(this.battleMap);
+      this.mapLayer = new BattleMapLayer(this.battleMap);
+    } else {
+      setActiveTerrain(options.trainingField ? TRAINING_TERRAIN : SANDBOX_TERRAIN);
+      setActiveMapRuntime(null);
+    }
+    this.world = new WorldLayer(
+      options.trainingField ? 'training' : this.battleMap ? 'battle' : 'sandbox',
+      this.battleMap?.fences ?? [],
+    );
     this.characters.loadModels();
     this.loadEnvironment();
     this.effects.load();
     this.addWorld();
     if (options.trainingField) {
       this.scene.add(this.training.group);
+    }
+    if (this.mapLayer) {
+      this.scene.add(this.mapLayer.group);
     }
     this.scene.add(
       this.world.group,
@@ -173,6 +198,12 @@ export class SceneView {
     if (options.strategicField) {
       this.rig.span = 240;
       this.rig.targetSpan = 240;
+    }
+    if (this.battleMap) {
+      // Open on the player's deployment.
+      const zone = this.battleMap.deployment.column.sections;
+      this.rig.focusX = zone.reduce((sum, point) => sum + point.x, 0) / zone.length;
+      this.rig.focusY = zone.reduce((sum, point) => sum + point.y, 0) / zone.length - 40;
     }
     this.resize();
     this.rig.update(0);
@@ -460,6 +491,7 @@ export class SceneView {
   }
   update(frame: Frame | InterpolatedFrame): void {
     this.lastFrame = frame;
+    this.mapLayer?.update(frame.ferries);
     this.covers.update(frame.covers);
     this.characters.update(frame, this.rig.span);
     // fog-of-war: the fogged frame carries the ghosts and the "?" markers.
@@ -570,6 +602,7 @@ export class SceneView {
       .then((asset) => {
         if (this.disposed) return;
         this.world.useModels(asset);
+        this.mapLayer?.useModels(asset);
         this.covers.useModels(asset);
         this.training.useModels(asset);
       })
@@ -600,8 +633,14 @@ export class SceneView {
   }
 
   private addWorld(): void {
-    const terrainGeometry = new THREE.PlaneGeometry(240, 240, 120, 120);
+    const bounds = this.battleMap?.bounds;
+    const width = bounds ? bounds.maxX - bounds.minX : 240;
+    const depth = bounds ? bounds.maxY - bounds.minY : 240;
+    // A battle map's ground follows its 2 m heightfield.
+    const terrainGeometry = new THREE.PlaneGeometry(width, depth, width / 2, depth / 2);
     terrainGeometry.rotateX(-Math.PI / 2);
+    if (bounds) terrainGeometry.translate((bounds.minX + bounds.maxX) / 2, 0, (bounds.minY + bounds.maxY) / 2);
+    const palette = this.battleMap?.palette;
     const terrainPositions = terrainGeometry.attributes.position;
     if (terrainPositions) {
       const colors = new Float32Array(terrainPositions.count * 3);
@@ -610,7 +649,7 @@ export class SceneView {
         const x = terrainPositions.getX(index);
         const z = terrainPositions.getZ(index);
         terrainPositions.setY(index, terrainHeightAt(x, z));
-        color.setHex(surfaceColor(terrainSurfaceAt(x, z)));
+        color.setHex(surfaceColor(terrainSurfaceAt(x, z), palette));
         colors[index * 3] = color.r;
         colors[index * 3 + 1] = color.g;
         colors[index * 3 + 2] = color.b;
@@ -740,8 +779,20 @@ function disposeObject(object: THREE.Object3D): void {
 
 
 
-function surfaceColor(surface: TerrainSurface): number {
+function surfaceColor(surface: TerrainSurface, palette?: BattleMap['palette']): number {
   if (surface === 'road') return PALETTE.terrainRoad;
+  if (surface === 'pasture') return palette === 'cerrado' ? PALETTE.cerrado : PALETTE.pasture;
+  if (surface === 'grass') return palette === 'cerrado' ? PALETTE.pastureDry : PALETTE.terrain;
+  if (surface === 'dirt-road') return PALETTE.dirtRoad;
+  if (surface === 'cobbles') return PALETTE.cobbles;
+  if (surface === 'floor') return PALETTE.floor;
+  if (surface === 'mud') return PALETTE.mud;
+  if (surface === 'crop') return PALETTE.hayDark;
+  if (surface === 'tall-grass') return PALETTE.capim;
+  if (surface === 'scrub') return PALETTE.cerrado;
+  if (surface === 'ford' || surface === 'water') return PALETTE.riverbed;
+  if (surface === 'trench-floor') return PALETTE.terrainTrench;
+  if (surface === 'bridge') return PALETTE.riverbed;
   if (surface === 'ridge') return PALETTE.terrainAlt;
   if (surface === 'trench') return PALETTE.terrainTrench;
   if (surface === 'crater') return PALETTE.terrainCrater;

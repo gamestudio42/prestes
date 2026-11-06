@@ -1,14 +1,24 @@
 import type { Vec2 } from './protocol';
 import { COVER_POINTS, isLineBlockedForMovement, isPointBlockedByCovers } from './world';
 import type { CoverPoint } from './protocol';
+import { activeMapGeneration, activeMapRuntime, FERRY_PATH_PENALTY, isDeepWater, PATH_GRID } from './maps/runtime';
+import { sameCovers } from './maps/cover-index';
 
-const MIN = -100;
-const MAX = 100;
-const SIZE = MAX - MIN + 1;
+// The grid follows the active map (add-battle-maps): ±100 m on the feature
+// maps, the map's bounds on the battle maps. Read at the start of each search.
+let MIN = PATH_GRID.min;
+let MAX = PATH_GRID.max;
+let SIZE = MAX - MIN + 1;
+
+function syncGrid(): void {
+  MIN = PATH_GRID.min;
+  MAX = PATH_GRID.max;
+  SIZE = MAX - MIN + 1;
+}
 
 /** True inside the walkable pathfinding grid (one cell in from its edge). */
 export function isInsidePathGrid(x: number, y: number): boolean {
-  return x > MIN + 1 && x < MAX - 1 && y > MIN + 1 && y < MAX - 1;
+  return x > PATH_GRID.min + 1 && x < PATH_GRID.max - 1 && y > PATH_GRID.min + 1 && y < PATH_GRID.max - 1;
 }
 const DIRECTIONS: ReadonlyArray<readonly [number, number]> = [
   [1, 0],
@@ -29,11 +39,136 @@ function world(value: number): number {
   return value + MIN;
 }
 
+/**
+ * Battle maps: each cell's blocked state is worked out once and kept while
+ * the map and its movement-blocking covers stay the same. 0 unknown, 1 open,
+ * 2 blocked.
+ */
+let blockedCache: {
+  covers: readonly CoverPoint[];
+  generation: number;
+  length: number;
+  first: CoverPoint | undefined;
+  last: CoverPoint | undefined;
+  cells: Uint8Array;
+} | null = null;
+
+function prepareBlocked(covers: readonly CoverPoint[]): void {
+  if (!activeMapRuntime()) {
+    blockedCache = null;
+    return;
+  }
+  // The same covers on the same map keep their worked-out cells.
+  if (
+    blockedCache &&
+    blockedCache.covers === covers &&
+    blockedCache.generation === activeMapGeneration() &&
+    sameCovers(blockedCache, covers)
+  ) {
+    return;
+  }
+  blockedCache = {
+    covers,
+    generation: activeMapGeneration(),
+    length: covers.length,
+    first: covers[0],
+    last: covers[covers.length - 1],
+    cells: new Uint8Array(SIZE * SIZE),
+  };
+}
+
+function blockedNow(x: number, y: number, covers: readonly CoverPoint[]): boolean {
+  if (x < MIN || x > MAX || y < MIN || y > MAX) {
+    return true;
+  }
+  if (isDeepWater(x, y) || isDeepWater(x + 0.8, y) || isDeepWater(x - 0.8, y) || isDeepWater(x, y + 0.8) || isDeepWater(x, y - 0.8)) {
+    return true;
+  }
+  return isPointBlockedByCovers(x, y, covers, 0.8);
+}
+
 function blocked(x: number, y: number, covers: readonly CoverPoint[]): boolean {
   if (x < MIN || x > MAX || y < MIN || y > MAX) {
     return true;
   }
-  return isPointBlockedByCovers(x, y, covers, 0.8);
+  const cache = blockedCache;
+  if (cache && Number.isInteger(x) && Number.isInteger(y)) {
+    const index = (y - MIN) * SIZE + (x - MIN);
+    const known = cache.cells[index];
+    if (known === 1) return false;
+    if (known === 2) return true;
+    const result = blockedNow(x, y, covers);
+    cache.cells[index] = result ? 2 : 1;
+    return result;
+  }
+  return blockedNow(x, y, covers);
+}
+
+/**
+ * Search buffers, reused while the grid size stays the same. A cell's
+ * scores count only when its stamp is this search's, so nothing is cleared
+ * between searches.
+ */
+let buffers: {
+  size: number;
+  g: Float32Array;
+  f: Float32Array;
+  parent: Int32Array;
+  touched: Uint32Array;
+  closed: Uint32Array;
+  stamp: number;
+} | null = null;
+
+function searchBuffers(total: number) {
+  if (!buffers || buffers.size !== total || buffers.stamp >= 0xfffffff0) {
+    buffers = {
+      size: total,
+      g: new Float32Array(total),
+      f: new Float32Array(total),
+      parent: new Int32Array(total),
+      touched: new Uint32Array(total),
+      closed: new Uint32Array(total),
+      stamp: 0,
+    };
+  }
+  buffers.stamp += 1;
+  return buffers;
+}
+
+/** Whether a point is walkable for an order or a path on the active map. */
+export function isWalkable(x: number, y: number, covers: readonly CoverPoint[] = COVER_POINTS): boolean {
+  syncGrid();
+  prepareBlocked(covers);
+  return !blockedNow(x, y, covers);
+}
+
+/**
+ * The nearest walkable point to `target` within `reach` m (searched on a 1 m
+ * ring pattern), or null. Used to move an order out of deep water.
+ */
+export function nearestWalkable(target: Vec2, covers: readonly CoverPoint[] = COVER_POINTS, reach = 24): Vec2 | null {
+  syncGrid();
+  prepareBlocked(covers);
+  if (!blockedNow(target.x, target.y, covers)) return { ...target };
+  for (let radius = 1; radius <= reach; radius += 1) {
+    let best: Vec2 | null = null;
+    let bestDistance = Number.POSITIVE_INFINITY;
+    for (let dy = -radius; dy <= radius; dy += 1) {
+      for (let dx = -radius; dx <= radius; dx += 1) {
+        if (Math.max(Math.abs(dx), Math.abs(dy)) !== radius) continue;
+        const x = Math.round(target.x) + dx;
+        const y = Math.round(target.y) + dy;
+        if (blocked(x, y, covers)) continue;
+        const distance = (x - target.x) ** 2 + (y - target.y) ** 2;
+        if (distance < bestDistance) {
+          bestDistance = distance;
+          best = { x, y };
+        }
+      }
+    }
+    if (best) return best;
+  }
+  return null;
 }
 
 class MinHeap {
@@ -124,11 +259,110 @@ function heuristic(ax: number, ay: number, bx: number, by: number): number {
   return dx + dy + (Math.SQRT2 - 2) * Math.min(dx, dy);
 }
 
-/** Deterministic A* on a 1 m grid around the building. */
+/** Paths on the 1 m grid; over deep water, by the nearest crossing. */
 export function findPath(
   start: Vec2,
   target: Vec2,
   covers: readonly CoverPoint[] = COVER_POINTS,
+  /** Give up after this many grid cells (a short hop that must not flood the map). */
+  maxExpansions = Number.POSITIVE_INFINITY,
+): Vec2[] {
+  syncGrid();
+  prepareBlocked(covers);
+  // Battle maps: a route over deep water goes by a crossing. Searching each
+  // bank to its end of each crossing is far cheaper than letting A* flood
+  // the whole bank looking for one.
+  const runtime = activeMapRuntime();
+  if (runtime && crossesDeepWater(start, target)) {
+    let best: Vec2[] | null = null;
+    let bestLength = Number.POSITIVE_INFINITY;
+    for (const [near, far, penalty] of crossingEnds(runtime.map)) {
+      for (const [entry, exit] of [
+        [near, far],
+        [far, near],
+      ] as const) {
+        if (crossesDeepWater(start, entry) || crossesDeepWater(exit, target)) continue;
+        const first = searchPath(start, entry, covers);
+        if (first.length === 0) continue;
+        const second = searchPath(exit, target, covers);
+        if (second.length === 0) continue;
+        const route = [...first, { ...exit }, ...second];
+        const length = routeLength(start, route) + penalty;
+        if (length < bestLength) {
+          bestLength = length;
+          best = route;
+        }
+      }
+    }
+    if (best) return best;
+  }
+  return searchPath(start, target, covers, maxExpansions);
+}
+
+/** Whether the straight line between two points passes over deep water. */
+export function crossesDeepWater(a: Vec2, b: Vec2): boolean {
+  const length = Math.sqrt((b.x - a.x) ** 2 + (b.y - a.y) ** 2);
+  const steps = Math.max(1, Math.ceil(length));
+  for (let index = 1; index < steps; index += 1) {
+    const t = index / steps;
+    if (isDeepWater(a.x + (b.x - a.x) * t, a.y + (b.y - a.y) * t)) return true;
+  }
+  return false;
+}
+
+function routeLength(start: Vec2, route: readonly Vec2[]): number {
+  let length = 0;
+  let previous = start;
+  for (const point of route) {
+    length += Math.sqrt((point.x - previous.x) ** 2 + (point.y - previous.y) ** 2);
+    previous = point;
+  }
+  return length;
+}
+
+type CrossingEnds = readonly [Vec2, Vec2, number];
+const crossingCache = new WeakMap<object, CrossingEnds[]>();
+
+/**
+ * Each crossing's two ends, a little onto each bank, with the extra metres a
+ * path pays for it. A ferry path runs landing to landing; the movement stops
+ * at the near landing and the ferry carries the soldier over.
+ */
+function crossingEnds(map: {
+  bridges: readonly { x: number; y: number; rotation: number; halfDepth: number }[];
+  water: readonly { kind: 'deep' | 'ford'; ends?: readonly [Vec2, Vec2] }[];
+  ferries: readonly { landingA: Vec2; landingB: Vec2 }[];
+}): CrossingEnds[] {
+  const cached = crossingCache.get(map);
+  if (cached) return cached;
+  const ends: CrossingEnds[] = [];
+  for (const bridge of map.bridges) {
+    const reach = bridge.halfDepth + 2;
+    // The deck runs along its local y axis.
+    const dx = -Math.sin(bridge.rotation) * reach;
+    const dy = Math.cos(bridge.rotation) * reach;
+    ends.push([
+      { x: Math.round(bridge.x - dx), y: Math.round(bridge.y - dy) },
+      { x: Math.round(bridge.x + dx), y: Math.round(bridge.y + dy) },
+      0,
+    ]);
+  }
+  for (const area of map.water) {
+    if (area.kind === 'ford' && area.ends) ends.push([area.ends[0], area.ends[1], 0]);
+  }
+  for (const ferry of map.ferries) {
+    ends.push([ferry.landingA, ferry.landingB, FERRY_PATH_PENALTY]);
+  }
+  crossingCache.set(map, ends);
+  return ends;
+}
+
+/** Deterministic A* on the 1 m grid. */
+function searchPath(
+  start: Vec2,
+  target: Vec2,
+  covers: readonly CoverPoint[],
+  maxExpansions = Number.POSITIVE_INFINITY,
 ): Vec2[] {
   if (blocked(target.x, target.y, covers)) {
     return [];
@@ -146,29 +380,32 @@ export function findPath(
   const targetIndex = targetY * SIZE + targetX;
 
   const total = SIZE * SIZE;
-  const gScore = new Float32Array(total);
-  gScore.fill(Number.POSITIVE_INFINITY);
-  const fScore = new Float32Array(total);
-  fScore.fill(Number.POSITIVE_INFINITY);
-  const parent = new Int32Array(total);
-  parent.fill(-1);
-  const closed = new Uint8Array(total);
+  const { g: gScore, f: fScore, parent, touched, closed, stamp } = searchBuffers(total);
   const open = new MinHeap(fScore);
+  const g = (index: number): number => (touched[index] === stamp ? gScore[index]! : Number.POSITIVE_INFINITY);
 
   gScore[startIndex] = 0;
-  fScore[startIndex] = heuristic(startX, startY, targetX, targetY);
+  parent[startIndex] = -1;
+  touched[startIndex] = stamp;
+  // Battle maps search a 400 m grid: a weighted heuristic keeps a detour to a
+  // far crossing fast, and the path is smoothed afterwards anyway.
+  const weight = blockedCache ? 1.6 : 1;
+  fScore[startIndex] = heuristic(startX, startY, targetX, targetY) * weight;
   open.push(startIndex);
 
   let found = false;
+  let expansions = 0;
   while (open.size > 0) {
+    expansions += 1;
+    if (expansions > maxExpansions) break;
     const current = open.pop();
     if (current === null) break;
-    if (closed[current]) continue;
+    if (closed[current] === stamp) continue;
     if (current === targetIndex) {
       found = true;
       break;
     }
-    closed[current] = 1;
+    closed[current] = stamp;
     const cx = current % SIZE;
     const cy = Math.floor(current / SIZE);
 
@@ -183,13 +420,14 @@ export function findPath(
         }
       }
       const neighbour = ny * SIZE + nx;
-      if (closed[neighbour]) continue;
+      if (closed[neighbour] === stamp) continue;
       const step = dx !== 0 && dy !== 0 ? Math.SQRT2 : 1;
-      const tentative = (gScore[current] ?? Infinity) + step;
-      if (tentative >= (gScore[neighbour] ?? Infinity)) continue;
+      const tentative = g(current) + step;
+      if (tentative >= g(neighbour)) continue;
       parent[neighbour] = current;
       gScore[neighbour] = tentative;
-      fScore[neighbour] = tentative + heuristic(nx, ny, targetX, targetY);
+      touched[neighbour] = stamp;
+      fScore[neighbour] = tentative + heuristic(nx, ny, targetX, targetY) * weight;
       open.push(neighbour);
     }
   }

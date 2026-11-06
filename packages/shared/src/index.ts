@@ -1,4 +1,4 @@
-﻿export type {
+export type {
   Command,
   CoverKind,
   CoverPoint,
@@ -59,7 +59,8 @@ export {
   isPointInCover,
 } from './world';
 
-export { findPath } from './pathfinding';
+export { crossesDeepWater, findPath, isWalkable, nearestWalkable } from './pathfinding';
+export * from './maps';
 
 export {
   DEFAULT_WEAPON_ID,
@@ -87,8 +88,10 @@ export {
 } from './morale';
 
 export {
+  RIDGE_COVER,
   SANDBOX_TERRAIN,
   activeTerrainFeatures,
+  surfaceSpeed,
   setActiveTerrain,
   terrainCoverAgainst,
   terrainHeightAt,

@@ -165,9 +165,14 @@ function createMarks(kind: UnitKind): UnitMarks {
 export function ringColorFor(unit: {
   incapacitated: boolean;
   stance: Stance;
+  concealed?: boolean;
 }): number {
   if (unit.incapacitated) {
     return PALETTE.scarf;
+  }
+  // add-battle-maps: hidden in the crops or the grass.
+  if (unit.concealed) {
+    return PALETTE.concealed;
   }
   if (unit.stance === 'prone' || unit.stance === 'crouched') {
     return PALETTE.orderMarker;

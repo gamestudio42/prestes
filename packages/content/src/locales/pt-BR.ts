@@ -805,6 +805,25 @@ export const ptBR: Record<MessageKey, string> = {
   'menu.page': 'p. {page}',
   'menu.pagePrev': 'Página anterior',
   'menu.pageNext': 'Próxima página',
+  // add-battle-maps: battlefields, their codex notes and concealment.
+  'start.battleMap': 'Campo de batalha',
+  'sandbox.battleMap': 'Campo de batalha',
+  'hud.concealed': 'Oculto',
+  'hud.concealedHint': 'Escondido na plantação ou no capim: só é visto de perto, e atirar o denuncia.',
+  'map.vilaMilitar.name': 'Campo da Vila Militar',
+  'map.vilaMilitar.description': 'O campo de treino da Vila Militar: terreno plano, sacos de areia e muros de pedra.',
+  'map.fazenda.name': 'Fazenda',
+  'map.fazenda.description': 'Pasto aberto entre duas linhas de trincheira; um canavial no flanco, milho sob a casa-sede.',
+  'map.serraRio.name': 'Serra e Rio',
+  'map.serraRio.description': 'Morros sobre um rio que só se atravessa por um vau, uma ponte de madeira e uma balsa.',
+  'map.bairro.name': 'Bairro',
+  'map.bairro.description': 'Ruas de paralelepípedo, casas geminadas, uma fábrica e uma igreja, com barricadas.',
+  'compendium.map-fazenda.title': 'Fazenda (campo de batalha)',
+  'compendium.map-fazenda.body': 'Ambientação histórica, lugar fictício. Uma fazenda de café e cana do interior paulista e paranaense em 1924–1925, quando os combates da frente do Paraná foram travados a partir de linhas entrincheiradas. A fazenda, as lavouras e as trincheiras são originais; nenhuma propriedade real é retratada.',
+  'compendium.map-serra-rio.title': 'Serra e Rio (campo de batalha)',
+  'compendium.map-serra-rio.body': 'Ambientação histórica, lugar fictício. A região de serras e rios de Goiás e Minas Gerais, atravessada pela coluna em 1925–1926. Na ponte do Verdinho, perto de Mineiros, Goiás, em junho de 1925, a retaguarda queimou a ponte e vadeou o rio, e os perseguidores abriram um vau com as madeiras da ponte. Este rio, seu vau, sua ponte e sua balsa são originais.',
+  'compendium.map-bairro.title': 'Bairro (campo de batalha)',
+  'compendium.map-bairro.body': 'Ambientação histórica, lugar fictício. Um bairro operário e fabril no estilo de São Paulo em julho de 1924. Aquela revolta foi uma frente separada da coluna. Granadas dos dois lados mataram civis, e o bombardeio do governo a partir de 12 de julho fez milhares de refugiados deixarem a cidade; o jogo não põe civis neste mapa e não recompensa destruição.',
 };
 
 

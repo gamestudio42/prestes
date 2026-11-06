@@ -138,6 +138,8 @@ export function GameCanvas({
       container,
       trainingField,
       strategicField,
+      // add-battle-maps: the client knows which map its battle runs on.
+      battleMap: client?.battleMap,
       onCameraAction,
       onBandChange: (band) => onBandChangeRef.current(band),
     });

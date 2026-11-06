@@ -1,4 +1,6 @@
 import {
+  activeMapRuntime,
+  isDeepWater,
   clampToRegion as clampPointToRegion,
   eyeHeightForStance,
   isLineBlocked,
@@ -14,16 +16,23 @@ export function clampToRegion(ctx: SimContext, point: Vec2, center: Vec2, radius
 }
 
 export function nearestOpenPoint(ctx: SimContext, point: Vec2, maxRadius = 3): Vec2 {
-  if (!isPointBlockedByCovers(point.x, point.y, ctx.covers, 0.8)) {
+  // Battle maps: deep water (with a metre's clearance) is not open either,
+  // and a point in the river looks farther for its bank.
+  const water = activeMapRuntime() !== null;
+  const blocked = (x: number, y: number) =>
+    isPointBlockedByCovers(x, y, ctx.covers, 0.8) ||
+    (water && (isDeepWater(x, y) || isDeepWater(x + 1, y) || isDeepWater(x - 1, y) || isDeepWater(x, y + 1) || isDeepWater(x, y - 1)));
+  if (!blocked(point.x, point.y)) {
     return { ...point };
   }
-  for (let radius = 0.5; radius <= maxRadius; radius += 0.5) {
+  const reach = water ? Math.max(maxRadius, 14) : maxRadius;
+  for (let radius = 0.5; radius <= reach; radius += 0.5) {
     for (const direction of OPEN_POINT_DIRECTIONS) {
       const candidate = {
         x: point.x + direction.x * radius,
         y: point.y + direction.y * radius,
       };
-      if (!isPointBlockedByCovers(candidate.x, candidate.y, ctx.covers, 0.8)) {
+      if (!blocked(candidate.x, candidate.y)) {
         return candidate;
       }
     }

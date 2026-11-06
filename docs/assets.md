@@ -13,6 +13,7 @@
 | Palette and toon materials | `packages/view3d/src/palette.ts`, `materials.ts` | Prestes project | CC-BY-4.0 | Theme colours and three-band toon ramp |
 | Section portrait placeholder | `apps/game/src/ui/Hud.tsx` | Prestes project | AGPL-3.0-or-later | CSS hatch and the pixel `status-soldier` icon; explicitly a placeholder until final portraits |
 | Start menu hero | `apps/game/src/assets/menu/coluna-prestes.webp` | Provided by the project owner | Public domain (verified by the project owner, 2026-11-03) | Historical photograph used as a sepia menu hero; copied from the user's reference folder |
+| Battle map placeholders (add-battle-maps) | `packages/view3d/src/battle-map-layer.ts`, map data in `packages/shared/src/maps/` | Prestes project | CC-BY-4.0 | Named low-poly placeholders (`placeholder:<model>`), not the finished kits: casa-sede, colonist house, engenho, ferry house, terraced house (two widths), sobrado, factory, church, warehouse, wooden bridge, ferry raft, buriti, cerrado tree, rock, gas lamp, tram rail, coffee row; instanced corn, cane, capim and scrub clumps on a seeded jittered grid; water and ford planes. The Blender kits for Fazenda, Serra e Rio and Bairro are still to be built. Layouts are original; no map is traced from a scan, plan or other game |
 | Camera, post and path layers | `packages/view3d/src/camera-rig.ts`, `post.ts`, `path-layer.ts` | Prestes project | AGPL-3.0-or-later | Code; techniques inspired by Vazante with attribution |
 
 ## Original model sources

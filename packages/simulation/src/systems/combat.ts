@@ -15,6 +15,7 @@ import { nearestEnemy } from './geometry';
 import { woundAccuracyFactor } from './casualties';
 import { markUnderFire, shooterOf } from './fire-reaction';
 import { unseenFireMarker } from './vision';
+import { hiddenByVegetation, revealShooter } from './concealment';
 
 /**
  * Ambush and fire on contact hold their fire beyond their radius: the shooter
@@ -217,7 +218,7 @@ export function visible(ctx: SimContext, shooter: MutableUnit, target: MutableUn
     ctx.sightObstacles,
     eyeHeightForStance(shooter.stance),
     eyeHeightForStance(target.stance),
-  );
+  ) && !hiddenByVegetation(ctx, shooter, target);
 }
 
 export function fire(ctx: SimContext, tick: number, events: SimEvent[]): void {
@@ -236,7 +237,8 @@ export function fire(ctx: SimContext, tick: number, events: SimEvent[]): void {
       unit.holdFire ||
       unit.reload > 0 ||
       unit.cooldown > 0 ||
-      unit.targetId === null
+      unit.targetId === null ||
+      unit.ferryId !== undefined
     ) {
       continue;
     }
@@ -322,6 +324,7 @@ export function fire(ctx: SimContext, tick: number, events: SimEvent[]): void {
     });
     const marker = unseenFireMarker(ctx, unit, target, tick);
     if (marker) events.push(marker);
+    revealShooter(ctx, unit, tick);
     markUnderFire(ctx, unit, target);
     if (unit.fireOnContact) {
       openFireOnContact(ctx, unit);

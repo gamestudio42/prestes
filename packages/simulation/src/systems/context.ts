@@ -10,6 +10,7 @@ import type { OrderManager } from '../order-manager';
 import type { ActiveOrder, BoundingGroup, MutableUnit } from './model';
 import type { BattleMemory } from './enemy-commander';
 import type { VisionState } from './vision';
+import type { FerryState } from './ferry';
 
 /**
  * The mutable simulation state every system reads and writes. The engine
@@ -47,4 +48,6 @@ export interface SimContext {
   fog: boolean;
   /** fog-of-war: what each side sees and last saw of the other. */
   readonly vision: VisionState;
+  /** add-battle-maps: the battle map's ferries (none elsewhere). */
+  readonly ferries: FerryState[];
 }

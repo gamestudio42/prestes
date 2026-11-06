@@ -1,6 +1,5 @@
-﻿import { RNG, hashString } from '@prestes/kernel';
+import { RNG, hashString } from '@prestes/kernel';
 import {
-  BATTLE_COVERS,
   BOOTCAMP_COVERS,
   COVER_POINTS,
   DEFAULT_WEAPON_ID,
@@ -12,6 +11,13 @@ import {
   TRAINING_GROUND,
   TRAINING_SIGHT_OBSTACLES,
   setActiveTerrain,
+  setActiveMap,
+  setActiveMapRuntime,
+  waterAt,
+  isDeepWater,
+  sameCovers,
+  battleMap,
+  DEFAULT_BATTLE_MAP,
   coverAgainst,
   coverForStance,
   getWeapon,
@@ -19,6 +25,8 @@ import {
   SUPPRESSION_DECAY,
 } from '@prestes/shared';
 import type {
+  BattleMap,
+  BattleMapId,
   TerrainFeature,
   Command,
   CommandEnvelope,
@@ -30,11 +38,11 @@ import type {
   SightObstacle,
 } from '@prestes/shared';
 import { OrderManager } from './order-manager';
-import { BATTLE_UNITS, DEFAULT_UNITS, FATIGUE_REST, TRAINING_UNITS } from './systems/model';
+import { DEFAULT_UNITS, FATIGUE_REST, TRAINING_UNITS, battleUnits } from './systems/model';
 import type { ActiveOrder, BoundingGroup, MutableUnit } from './systems/model';
 import type { SimContext } from './systems/context';
 import { snapshotUnits } from './systems/snapshot';
-import { nearestEnemy } from './systems/geometry';
+import { nearestEnemy, nearestOpenPoint } from './systems/geometry';
 import {
   moveUnit,
   separateUnits,
@@ -69,6 +77,8 @@ import {
 import { applyCommand } from './systems/commands';
 import { createBattleMemory, updateBattleFlow } from './systems/enemy-commander';
 import { createVisionState, seenSnapshot, updateVision } from './systems/vision';
+import { createFerries, ferrySnapshot, heldByFerry, updateFerries } from './systems/ferry';
+import type { FerryState } from './systems/ferry';
 import { applyRoster } from './systems/spawning';
 import { reactToFire, screenOfficers } from './systems/fire-reaction';
 import { handoverSuppress } from './systems/orders';
@@ -90,6 +100,8 @@ export interface SimulationOptions {
   map?: 'training-ground' | 'training-kit';
   bounding?: boolean;
   roster?: readonly RosterRecord[];
+  /** The 3v3's battle map (add-battle-maps); the Vila Militar field by default. Tests may pass a map. */
+  battleMap?: BattleMapId | BattleMap;
 }
 
 export class SimulationEngine implements SimContext {
@@ -102,6 +114,8 @@ export class SimulationEngine implements SimContext {
   readonly training: boolean;
   readonly opposition: boolean;
   private readonly terrain: readonly TerrainFeature[];
+  /** The battle map, in the 3v3 only; other engines keep their own terrain. */
+  readonly battleMap: BattleMap | null;
   readonly scenario: 'bootcamp' | 'battle3v3';
   readonly combatRange: number;
   boundingEnabled: boolean;
@@ -119,6 +133,7 @@ export class SimulationEngine implements SimContext {
   readonly bounding = new Map<number, BoundingGroup>();
   readonly battle = createBattleMemory();
   readonly vision = createVisionState();
+  readonly ferries: FerryState[];
   fog: boolean;
 
   constructor(options: SimulationOptions) {
@@ -136,25 +151,36 @@ export class SimulationEngine implements SimContext {
     // training kit and the default engine its sandbox map.
     const trainingGround =
       this.training && (options.map ?? 'training-ground') === 'training-ground';
+    this.battleMap =
+      this.scenario === 'battle3v3'
+        ? typeof options.battleMap === 'object'
+          ? options.battleMap
+          : battleMap(options.battleMap ?? DEFAULT_BATTLE_MAP)
+        : null;
     this.covers = (
       trainingGround
         ? TRAINING_GROUND.covers
-        : this.scenario === 'battle3v3'
-          ? BATTLE_COVERS
+        : this.battleMap
+          ? this.battleMap.covers
           : this.training
             ? BOOTCAMP_COVERS
             : COVER_POINTS
     ).map((cover) => ({ ...cover }));
     this.sightObstacles = trainingGround
       ? TRAINING_GROUND.sightObstacles
-      : this.training
-        ? TRAINING_SIGHT_OBSTACLES
-        : [];
+      : this.battleMap
+        ? this.battleMap.id === DEFAULT_BATTLE_MAP && this.training
+          ? TRAINING_SIGHT_OBSTACLES
+          : this.battleMap.sightObstacles
+        : this.training
+          ? TRAINING_SIGHT_OBSTACLES
+          : [];
     this.terrain = trainingGround ? TRAINING_GROUND.terrain : SANDBOX_TERRAIN;
-    setActiveTerrain(this.terrain);
+    this.ferries = createFerries(this.battleMap?.ferries ?? []);
+    this.selectTerrain();
     const source =
-      this.scenario === 'battle3v3'
-        ? BATTLE_UNITS
+      this.battleMap
+        ? battleUnits(this.battleMap.deployment)
         : this.training && !this.opposition
           ? TRAINING_UNITS
           : DEFAULT_UNITS;
@@ -199,8 +225,12 @@ export class SimulationEngine implements SimContext {
         reload: 0,
         path: [],
         pathIndex: 0,
-        facingX: 0,
-        facingY: unit.faction === 'column' ? -1 : 1,
+        facingX: this.battleMap ? this.battleMap.deployment[unit.faction === 'column' ? 'column' : 'legalist'].facing.x : 0,
+        facingY: this.battleMap
+          ? this.battleMap.deployment[unit.faction === 'column' ? 'column' : 'legalist'].facing.y
+          : unit.faction === 'column'
+            ? -1
+            : 1,
         aimX: null,
         aimY: null,
         stanceLocked: false,
@@ -238,6 +268,16 @@ export class SimulationEngine implements SimContext {
     applyRoster(this, options.roster ?? []);
   }
 
+  /** Makes this engine's terrain and map the ones the shared queries read. */
+  selectTerrain(): void {
+    if (this.battleMap) {
+      setActiveMap(this.battleMap);
+    } else {
+      setActiveTerrain(this.terrain);
+      setActiveMapRuntime(null);
+    }
+  }
+
   roster(): RosterRecord[] {
     return this.units
       .filter((unit) => unit.faction === 'column' && !unit.dummy)
@@ -262,7 +302,7 @@ export class SimulationEngine implements SimContext {
 
   tick(): Frame {
     // Engines can share a thread (tests, tools): select this map's terrain.
-    setActiveTerrain(this.terrain);
+    this.selectTerrain();
     const nextTick = this.tickCount + 1;
     const events: SimEvent[] = [];
 
@@ -273,7 +313,12 @@ export class SimulationEngine implements SimContext {
 
       maintainSlots(this);
       for (const unit of this.units) {
-        moveUnit(this, unit, nextTick, events);
+        // A soldier at a ferry landing or aboard is moved by the ferry.
+        if (this.ferries.length > 0 && heldByFerry(this, unit)) {
+          unit.moveSpeed = 0;
+        } else {
+          moveUnit(this, unit, nextTick, events);
+        }
         if (unit.alive) {
           unit.suppression = Math.max(0, unit.suppression - SUPPRESSION_DECAY);
           const target =
@@ -302,7 +347,9 @@ export class SimulationEngine implements SimContext {
         }
       }
 
+      if (this.ferries.length > 0) updateFerries(this);
       separateUnits(this);
+      if (this.battleMap?.height.kind === 'field') keepOutOfDeepWater(this);
       // Vision before targets and fire: a side shoots with what it knows.
       updateVision(this, nextTick);
 
@@ -340,6 +387,7 @@ export class SimulationEngine implements SimContext {
       clearArrivedOrders(this);
       cleanupOrders(this);
       updateFacing(this);
+      if (this.battleMap?.height.kind === 'field') keepOffFordFloor(this);
       updateOutcome(this, nextTick, events);
     } else {
       this.queue.length = 0;
@@ -378,23 +426,85 @@ export class SimulationEngine implements SimContext {
         kind: order.kind,
       })),
       events: this.lastEvents.slice(),
-      covers: this.covers.map((cover) => ({ ...cover })),
+      covers: this.frameCovers(),
       sightObstacles: this.sightObstacles,
       seen: seenSnapshot(this),
       fog: this.fog,
+      ...(this.ferries.length > 0 ? { ferries: ferrySnapshot(this) } : {}),
       outcome: this.outcome,
       hash: this.hashState(),
     };
+  }
+
+  /**
+   * Battle maps carry hundreds of walls and fences that rarely change: their
+   * copy for the frame and their digest for the hash are kept until a cover
+   * is added, removed or moved (add-battle-maps).
+   */
+  private coverCache: {
+    length: number;
+    first: CoverPoint | undefined;
+    last: CoverPoint | undefined;
+    copy: CoverPoint[];
+    digest: string;
+  } | null = null;
+
+  private coverCacheFor(): { copy: CoverPoint[]; digest: string } {
+    if (!this.coverCache || !sameCovers(this.coverCache, this.covers)) {
+      this.coverCache = {
+        length: this.covers.length,
+        first: this.covers[0],
+        last: this.covers[this.covers.length - 1],
+        copy: this.covers.map((cover) => ({ ...cover })),
+        digest: hashString(JSON.stringify(this.covers)),
+      };
+    }
+    return this.coverCache;
+  }
+
+  private frameCovers(): CoverPoint[] {
+    if (this.battleMap?.height.kind !== 'field') return this.covers.map((cover) => ({ ...cover }));
+    return this.coverCacheFor().copy;
+  }
+
+  private coversDigest(): string {
+    return this.coverCacheFor().digest;
   }
 
   hashState(): string {
     return hashString(
       JSON.stringify({
         units: this.units,
-        covers: this.covers,
+        covers: this.battleMap?.height.kind === 'field' ? this.coversDigest() : this.covers,
         rng: this.rng.getState(),
         outcome: this.outcome,
+        ...(this.ferries.length > 0 ? { ferries: this.ferries } : {}),
       }),
     );
+  }
+}
+
+/**
+ * No one stands in deep water (add-battle-maps): a soldier pushed or slotted
+ * into the river steps back onto the nearest bank. Men aboard a ferry ride it.
+ */
+function keepOutOfDeepWater(ctx: SimulationEngine): void {
+  for (const unit of ctx.units) {
+    if (!unit.alive || unit.ferryId !== undefined || !isDeepWater(unit.x, unit.y)) continue;
+    const bank = nearestOpenPoint(ctx, { x: unit.x, y: unit.y }, 14);
+    if (isDeepWater(bank.x, bank.y)) continue;
+    unit.x = bank.x;
+    unit.y = bank.y;
+    if (unit.path.length === 0) {
+      unit.targetX = bank.x;
+      unit.targetY = bank.y;
+    }
+  }
+}
+
+/** No one lies down in a ford (add-battle-maps). */
+function keepOffFordFloor(ctx: SimulationEngine): void {
+  for (const unit of ctx.units) {
+    if (unit.alive && unit.stance === 'prone' && waterAt(unit.x, unit.y) === 1) unit.stance = 'crouched';
   }
 }

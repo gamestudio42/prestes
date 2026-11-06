@@ -1,5 +1,28 @@
-﻿export type TerrainKind = 'ridge' | 'trench' | 'crater' | 'road';
-export type TerrainSurface = 'grass' | 'ridge' | 'trench' | 'crater' | 'road';
+export type TerrainKind = 'ridge' | 'trench' | 'crater' | 'road';
+import { activeMapRuntime, runtimeHeightAt, runtimeSurfaceAt } from './maps/runtime';
+
+/**
+ * Ground surfaces. The first five are the feature maps'; the rest are the
+ * battle maps' (add-battle-maps).
+ */
+export type TerrainSurface =
+  | 'grass'
+  | 'ridge'
+  | 'trench'
+  | 'crater'
+  | 'road'
+  | 'pasture'
+  | 'dirt-road'
+  | 'cobbles'
+  | 'crop'
+  | 'tall-grass'
+  | 'scrub'
+  | 'mud'
+  | 'ford'
+  | 'trench-floor'
+  | 'floor'
+  | 'bridge'
+  | 'water';
 
 export interface TerrainFeature {
   id: string;
@@ -78,6 +101,8 @@ function influence(feature: TerrainFeature, x: number, y: number): number {
 }
 
 export function terrainHeightAt(x: number, y: number): number {
+  const runtime = activeMapRuntime();
+  if (runtime) return runtimeHeightAt(runtime, x, y);
   let height = 0;
   for (const feature of activeTerrain) {
     if (feature.kind === 'ridge') {
@@ -90,6 +115,8 @@ export function terrainHeightAt(x: number, y: number): number {
 }
 
 export function terrainSurfaceAt(x: number, y: number): TerrainSurface {
+  const runtime = activeMapRuntime();
+  if (runtime) return runtimeSurfaceAt(runtime, x, y);
   let surface: TerrainSurface = 'grass';
   for (const feature of activeTerrain) {
     if (influence(feature, x, y) <= 0.05) {
@@ -109,18 +136,40 @@ export function terrainSlopeAt(x: number, y: number): number {
   return Math.sqrt(dx * dx + dy * dy);
 }
 
+/** Cover from a crest between a unit and the threat, on the battle maps. */
+export const RIDGE_COVER = 0.25;
+
 const SURFACE_SPEED: Readonly<Record<TerrainSurface, number>> = {
   grass: 1,
   ridge: 0.85,
   trench: 0.6,
   crater: 0.75,
   road: 1.15,
+  pasture: 1,
+  'dirt-road': 1.15,
+  cobbles: 1.1,
+  crop: 0.7,
+  'tall-grass': 0.9,
+  scrub: 0.8,
+  mud: 0.6,
+  ford: 0.5,
+  'trench-floor': 0.6,
+  floor: 1,
+  bridge: 1,
+  water: 0.4,
 };
+
+/** The surface speed factor alone, before slope. */
+export function surfaceSpeed(surface: TerrainSurface): number {
+  return SURFACE_SPEED[surface];
+}
 
 export function terrainSpeedFactor(x: number, y: number): number {
   const surface = terrainSurfaceAt(x, y);
   const slope = terrainSlopeAt(x, y);
   const factor = (1 - slope * 0.6) * SURFACE_SPEED[surface];
+  // A ford is slow however flat its bed: its floor is its own.
+  if (surface === 'ford') return Math.min(factor, SURFACE_SPEED.ford);
   return Math.max(0.4, Math.min(1.2, factor));
 }
 
@@ -133,6 +182,19 @@ export function terrainCoverAgainst(
   const unitHeight = terrainHeightAt(x, y);
   const threatHeight = terrainHeightAt(threatX, threatY);
   let cover = 0;
+
+  if (activeMapRuntime()) {
+    // Battle maps: a crest between the unit and the threat is ridge cover,
+    // read off the heightfield every 2 m like the sight line.
+    const distance = Math.sqrt((threatX - x) ** 2 + (threatY - y) ** 2);
+    const steps = Math.max(8, Math.ceil(distance / 2));
+    let crest = Number.NEGATIVE_INFINITY;
+    for (let index = 1; index < steps; index += 1) {
+      const t = index / steps;
+      crest = Math.max(crest, terrainHeightAt(x + (threatX - x) * t, y + (threatY - y) * t));
+    }
+    return crest > unitHeight + 0.35 && crest > threatHeight + 0.2 ? RIDGE_COVER : 0;
+  }
 
   for (const feature of activeTerrain) {
     if (feature.kind === 'trench' || feature.kind === 'crater') {

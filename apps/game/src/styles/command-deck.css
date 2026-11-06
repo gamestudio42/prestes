@@ -868,3 +868,19 @@
   top: 70px;
   width: min(310px, calc(100vw - 32px));
 }
+
+/* add-battle-maps: the section's soldiers hidden in the crops or the grass. */
+.hud-concealed-value {
+  color: #8fc46a;
+  font-family: var(--px-font);
+  font-size: 12px;
+  letter-spacing: 0;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.hud-concealed-value::before {
+  content: '·';
+  margin-right: 10px;
+  color: var(--hud-border-soft);
+}

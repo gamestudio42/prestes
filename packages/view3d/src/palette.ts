@@ -1,4 +1,4 @@
-﻿/** Theme palette for the Prestes low-poly art. All scene colours come from here. */
+/** Theme palette for the Prestes low-poly art. All scene colours come from here. */
 export const PALETTE = {
   sky: 0x343a2e,
   fog: 0x4a4d3a,
@@ -69,6 +69,28 @@ export const PALETTE = {
   pathWithdraw: 0xc56a4d,
   selection: 0xf0c97a,
   orderMarker: 0xd0a45c,
+  /** add-battle-maps: the ring of a soldier hidden in vegetation. */
+  concealed: 0x8fc46a,
+  // add-battle-maps: battle map ground, water and crops.
+  pasture: 0x6b6d42,
+  pastureDry: 0x8a7f4e,
+  cerrado: 0x8a7a48,
+  dirtRoad: 0x9a8258,
+  cobbles: 0x7b776b,
+  floor: 0x6f6458,
+  mud: 0x5a4a35,
+  riverbed: 0x4d4632,
+  ford: 0x6f8a86,
+  waterDeep: 0x34545c,
+  corn: 0x8c9446,
+  cornTassel: 0xc6b064,
+  cane: 0x5f7f3a,
+  caneLight: 0x7f9a4a,
+  capim: 0xa69a55,
+  scrub: 0x5a6038,
+  brick: 0x8a4e38,
+  brickDark: 0x6b3b2b,
+  coffee: 0x3f5a2e,
   outline: 0x17140f,
   muzzle: 0xfff0b8,
   postClean: 0.0,

@@ -1,8 +1,11 @@
+import { activeMapRuntime } from '@prestes/shared';
 import type { UnitSnapshot } from '@prestes/shared';
+import { isConcealed } from './concealment';
 import { RESCUE_CARRY_TICKS, TREAT_TICKS } from './model';
 import type { SimContext } from './context';
 
 export function snapshotUnits(ctx: SimContext): UnitSnapshot[] {
+  const battleMap = activeMapRuntime() !== null;
   return ctx.units.map((unit) => ({
     id: unit.id,
     x: unit.x,
@@ -53,5 +56,7 @@ export function snapshotUnits(ctx: SimContext): UnitSnapshot[] {
     gait: unit.path.length > 0 ? unit.gait : undefined,
     role: unit.role,
     nonLethal: unit.nonLethal,
+    ...(battleMap && unit.alive && isConcealed(ctx, unit) ? { concealed: true } : {}),
+    ...(unit.ferryId !== undefined ? { aboardFerry: true } : {}),
   }));
 }

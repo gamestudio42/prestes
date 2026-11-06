@@ -59,6 +59,8 @@ function spread(length: number, spacing: number): number[] {
  * side and a building at its corners and along its walls.
  */
 export function coverSlots(cover: CoverPoint): CoverSlot[] {
+  // A fence stops a man but shelters no one: it has no slots.
+  if (cover.kind === 'fence') return [];
   const low = cover.height < LOW_COVER_HEIGHT;
   const slotStance: Stance = cover.kind === 'trench' || low ? 'crouched' : 'standing';
   const local: Array<{ x: number; y: number; guard: Vec2 | null }> = [];

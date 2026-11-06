@@ -1,13 +1,17 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import {
+  COMPENDIUM,
   FIGURES,
+  LOCALES,
+  messages,
   SOURCE_KEYS,
   validateCodexEntry,
   validateFigures,
   validateMissionCommander,
   type MissionMetadata,
 } from '@prestes/content';
+import { battleMaps, setActiveMap, validateBattleMap, VILA_MILITAR } from '@prestes/shared';
 
 const root = process.cwd();
 const errors: string[] = [];
@@ -81,6 +85,23 @@ for (const correction of corrections) {
   }
 }
 
+// add-battle-maps: every battle map's deployment is sound.
+const maps = battleMaps();
+for (const map of maps) {
+  errors.push(...validateBattleMap(map));
+  // Its name and description in every locale, and a compendium note for its setting.
+  for (const locale of LOCALES) {
+    for (const key of [map.nameKey, map.descriptionKey]) {
+      if (!(key in messages[locale])) errors.push(`${map.id}: ${locale} has no ${key}`);
+    }
+  }
+  if (!COMPENDIUM.some((entry) => entry.id === map.codexKey)) {
+    errors.push(`${map.id}: no compendium entry ${map.codexKey}`);
+  }
+  if (!map.setting.sourceNote) errors.push(`${map.id}: no source note`);
+}
+setActiveMap(VILA_MILITAR);
+
 if (errors.length > 0) {
   for (const error of errors) {
     console.error(error);
@@ -89,5 +110,5 @@ if (errors.length > 0) {
 }
 
 console.log(
-  `Content check passed: ${FIGURES.length} figures, ${missions.length} missions, ${SOURCE_KEYS.length} sources.`,
+  `Content check passed: ${FIGURES.length} figures, ${missions.length} missions, ${SOURCE_KEYS.length} sources, ${maps.length} battle maps.`,
 );

@@ -11,6 +11,8 @@ import {
   lineFacing,
   lineFormationSlots,
   matchDestinations,
+  activeMapRuntime,
+  isDeepWater,
 } from '@prestes/shared';
 import type { Command, CommandEnvelope, RejectionReason, SimEvent, Vec2 } from '@prestes/shared';
 import { formationSlots } from '../tactical';
@@ -26,6 +28,39 @@ import { routeFor, sectionRoutes } from './routes';
 import { incapacitate, wound, releaseCarry } from './casualties';
 import { applyTacticalOrder, assignFlankPaths, beginWithdraw } from './orders';
 import { spawnDummy, spawnTroop, setTrainingPhase, despawnRole, reinforce } from './spawning';
+
+/**
+ * A ground point an order may go to on a battle map: inside the bounds and
+ * walkable, else the nearest walkable point within 24 m; null if none.
+ */
+function walkableTarget(to: Vec2): Vec2 | null {
+  if (to.x < MAP_BOUNDS.minX || to.x > MAP_BOUNDS.maxX || to.y < MAP_BOUNDS.minY || to.y > MAP_BOUNDS.maxY) {
+    return null;
+  }
+  // Covers are left to the order's own slot search, as on every map.
+  const open = (x: number, y: number) =>
+    !isDeepWater(x, y) && !isDeepWater(x + 1, y) && !isDeepWater(x - 1, y) && !isDeepWater(x, y + 1) && !isDeepWater(x, y - 1);
+  if (open(to.x, to.y)) return to;
+  for (let radius = 1; radius <= 24; radius += 1) {
+    let best: Vec2 | null = null;
+    let bestDistance = Number.POSITIVE_INFINITY;
+    for (let dy = -radius; dy <= radius; dy += 1) {
+      for (let dx = -radius; dx <= radius; dx += 1) {
+        if (Math.max(Math.abs(dx), Math.abs(dy)) !== radius) continue;
+        const x = Math.round(to.x) + dx;
+        const y = Math.round(to.y) + dy;
+        if (!open(x, y)) continue;
+        const distance = (x - to.x) ** 2 + (y - to.y) ** 2;
+        if (distance < bestDistance) {
+          bestDistance = distance;
+          best = { x, y };
+        }
+      }
+    }
+    if (best) return best;
+  }
+  return null;
+}
 
 export function applyCommand(
   ctx: SimContext,
@@ -88,6 +123,34 @@ export function applyCommand(
   if (command.type === 'fog') {
     ctx.fog = command.enabled;
     return;
+  }
+
+  // Battle maps (add-battle-maps): a ground order outside the map is refused
+  // and one in deep water moves to the nearest walkable bank.
+  if (
+    activeMapRuntime() &&
+    (command.type === 'move' || command.type === 'order' || command.type === 'move_line') &&
+    command.to
+  ) {
+    const snapped = walkableTarget(command.to);
+    const from = command.type === 'move_line' ? walkableTarget(command.from) : null;
+    if (!snapped || (command.type === 'move_line' && !from)) {
+      reject(ctx, tick, envelope.seq, 'invalid_position', events);
+      return;
+    }
+    const moved =
+      snapped.x !== command.to.x ||
+      snapped.y !== command.to.y ||
+      (command.type === 'move_line' && from && (from.x !== command.from.x || from.y !== command.from.y));
+    if (moved) {
+      applyCommand(
+        ctx,
+        { ...envelope, command: { ...command, to: snapped, ...(from ? { from } : {}) } as Command },
+        tick,
+        events,
+      );
+      return;
+    }
   }
 
   const resolution = ctx.orderManager.resolve(command.unitIds, ctx.units);

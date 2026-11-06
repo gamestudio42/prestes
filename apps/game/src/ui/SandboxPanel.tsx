@@ -1,5 +1,5 @@
 import { Eye, EyeOff, Crate as Box, Crosshair, Restart as RotateCcw, Step as StepForward, Troop as Users, Lab as FlaskConical, Close as X } from './icons';
-import { terrainHeightAt, terrainSpeedFactor, type Frame } from '@prestes/shared';
+import { battleMaps, terrainHeightAt, terrainSpeedFactor, type BattleMapId, type Frame } from '@prestes/shared';
 import { translate, type Locale, type MessageKey } from '@prestes/content';
 
 export type SandboxTool =
@@ -27,6 +27,9 @@ export interface SandboxPanelProps {
   /** fog-of-war: the sandbox's fog toggle. */
   onToggleFog: () => void;
   onStartBattle3v3: () => void;
+  /** add-battle-maps: the map the next 3v3 starts on. */
+  battleMap: BattleMapId;
+  onBattleMapChange: (map: BattleMapId) => void;
   onTool: (tool: SandboxTool | null) => void;
 }
 
@@ -46,6 +49,8 @@ export function SandboxPanel({
   onToggleControlBothSides,
   onToggleFog,
   onStartBattle3v3,
+  battleMap,
+  onBattleMapChange,
   onTool,
 }: SandboxPanelProps) {
   const t = (key: MessageKey, values?: Readonly<Record<string, string | number>>) =>
@@ -259,6 +264,20 @@ export function SandboxPanel({
 
       <section className="sandbox-tools">
         <h3>{t('sandbox.battle')}</h3>
+        <label className="sandbox-map">
+          {t('sandbox.battleMap')}
+          <select
+            value={battleMap}
+            onChange={(event) => onBattleMapChange(event.target.value as BattleMapId)}
+            data-testid="sandbox-battle-map"
+          >
+            {battleMaps().map((map) => (
+              <option key={map.id} value={map.id}>
+                {t(map.nameKey as MessageKey)}
+              </option>
+            ))}
+          </select>
+        </label>
         <button
           type="button"
           className="secondary"

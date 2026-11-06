@@ -1,4 +1,4 @@
-import type { PortLike, WorkerRequest } from '@prestes/shared';
+import type { BattleMapId, PortLike, WorkerRequest } from '@prestes/shared';
 import type { SimulationEngine } from './engine';
 
 export interface SimulationHost {
@@ -17,6 +17,7 @@ export function createSimulationHost(
     opposition?: boolean,
     bounding?: boolean,
     scenario?: 'bootcamp' | 'battle3v3',
+    battleMap?: BattleMapId,
   ) => SimulationEngine,
   port: PortLike,
 ): SimulationHost {
@@ -32,6 +33,7 @@ export function createSimulationHost(
           message.opposition,
           message.bounding,
           message.scenario,
+          message.battleMap,
         );
         port.postMessage({ type: 'ready', frame: engine.frame() });
         return;

@@ -2,6 +2,7 @@ import { eyeHeightForStance, isLineBlocked, isPointInVision } from '@prestes/sha
 import type { SimEvent } from '@prestes/shared';
 import type { SimContext } from './context';
 import type { MutableUnit } from './model';
+import { hiddenByVegetation } from './concealment';
 
 /**
  * Fog of war (fog-of-war): what each side sees of the other. A side sees an
@@ -113,7 +114,7 @@ export function sees(ctx: SimContext, observer: MutableUnit, target: MutableUnit
     ctx.sightObstacles,
     eyeHeightForStance(observer.stance),
     eyeHeightForStance(target.stance),
-  );
+  ) && !hiddenByVegetation(ctx, observer, target);
 }
 
 /** Refreshes both sides' seen sets; runs every VISION_EVERY ticks. */

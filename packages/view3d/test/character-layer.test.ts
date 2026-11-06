@@ -21,3 +21,10 @@ describe('character facing smoothing', () => {
     expect(shortestAngleDelta(0, (Math.PI * 3) / 2)).toBeCloseTo(-Math.PI / 2);
   });
 });
+
+describe('concealed ring', () => {
+  it('marks a soldier hidden in vegetation', () => {
+    expect(ringColorFor({ incapacitated: false, stance: 'crouched', concealed: true })).toBe(PALETTE.concealed);
+    expect(ringColorFor({ incapacitated: true, stance: 'prone', concealed: true })).toBe(PALETTE.scarf);
+  });
+});

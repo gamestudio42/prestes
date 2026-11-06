@@ -11,6 +11,8 @@ interface CommandRowProps {
   aliveCount: number;
   currentOrder: UnitOrder | null;
   stance: Stance;
+  /** Soldiers of the section hidden in vegetation (add-battle-maps). */
+  concealedCount?: number;
   pendingOrder: OrderMode | null;
   pendingTactical: TacticalOrder | null;
   aimPending: boolean;
@@ -25,6 +27,7 @@ export function CommandRow({
   aliveCount,
   currentOrder,
   stance,
+  concealedCount = 0,
   pendingOrder,
   pendingTactical,
   aimPending,
@@ -54,6 +57,13 @@ export function CommandRow({
       <span className="hud-stance-value" data-testid="stance-value">
         {t('hud.body')}: {t(stanceKey)}
       </span>
+      {concealedCount > 0 ? (
+        <Tooltip title={t('hud.concealed')} description={t('hud.concealedHint')}>
+          <span className="hud-concealed-value" data-testid="concealed-value" data-concealed={concealedCount}>
+            {t('hud.concealed')}: {concealedCount}
+          </span>
+        </Tooltip>
+      ) : null}
       <div className="orders-slot">
         <Tooltip title={ordersCollapsed ? t('hud.showOrders') : t('hud.hideOrders')} description={t('hud.tip.orders')}>
           <button

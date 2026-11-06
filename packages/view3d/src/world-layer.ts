@@ -1,4 +1,4 @@
-﻿import * as THREE from 'three';
+import * as THREE from 'three';
 import {
   BUILDINGS,
   TRAINING_FENCES,
@@ -350,7 +350,7 @@ function buildFieldRows(
   parent.add(mesh);
 }
 
-export type WorldMap = 'sandbox' | 'training';
+export type WorldMap = 'sandbox' | 'training' | 'battle';
 
 export class WorldLayer {
   readonly group = new THREE.Group();
@@ -365,7 +365,15 @@ export class WorldLayer {
    * the training layer's. Pieces with a Blender model are drawn when the
    * models load; the rest (sandbox only) stay procedural.
    */
-  constructor(private readonly map: WorldMap = 'sandbox') {
+  constructor(
+    private readonly map: WorldMap = 'sandbox',
+    fences: readonly (readonly { x: number; y: number }[])[] = [],
+  ) {
+    if (map === 'battle') {
+      // A battle map's countryside is the battle map layer's; only its fences are drawn here.
+      for (const line of fences) this.addFence(line);
+      return;
+    }
     if (map === 'training') {
       this.buildVegetation();
       this.addFences();

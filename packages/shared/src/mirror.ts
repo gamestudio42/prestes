@@ -1,4 +1,4 @@
-﻿import type { CoverPoint, Frame, OrderPath, Outcome, SimEvent, UnitSnapshot } from './protocol';
+import type { CoverPoint, Frame, OrderPath, Outcome, SimEvent, UnitSnapshot } from './protocol';
 
 export interface InterpolatedFrame {
   tick: number;
@@ -10,6 +10,7 @@ export interface InterpolatedFrame {
   hash: string;
   seen?: Frame['seen'];
   fog?: boolean;
+  ferries?: Frame['ferries'];
 }
 
 /**
@@ -51,6 +52,7 @@ export class ClientMirror {
         events: current.events,
         seen: current.seen,
         fog: current.fog,
+        ferries: current.ferries,
         units: current.units.map((unit) => ({ ...unit })),
       };
     }
@@ -65,6 +67,7 @@ export class ClientMirror {
       events: current.events,
       seen: current.seen,
       fog: current.fog,
+      ferries: interpolateFerries(previous.ferries, current.ferries, clamped),
       units: current.units.map((unit) => {
         const previousUnit = previousById.get(unit.id);
         if (!previousUnit) {
@@ -84,3 +87,17 @@ export class ClientMirror {
 
 
 
+
+function interpolateFerries(
+  previous: Frame['ferries'],
+  current: Frame['ferries'],
+  alpha: number,
+): Frame['ferries'] {
+  if (!current) return current;
+  return current.map((ferry) => {
+    const before = previous?.find((entry) => entry.id === ferry.id);
+    return before
+      ? { ...ferry, x: before.x + (ferry.x - before.x) * alpha, y: before.y + (ferry.y - before.y) * alpha }
+      : ferry;
+  });
+}

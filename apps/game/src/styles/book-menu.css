@@ -659,3 +659,45 @@
 .book-versus + .menu-list {
   margin-bottom: auto;
 }
+
+/* add-battle-maps: the skirmish page's battlefields, one entry each. */
+.book-subheading {
+  margin: 10px 0 2px;
+  color: var(--book-ink);
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.book-page .menu-maps .menu-map {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0;
+  min-height: 0;
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+.book-page .menu-map-name {
+  font-size: 17px;
+}
+
+.book-page .menu-map-description {
+  color: var(--book-ink-soft);
+  font-size: 13px;
+  line-height: 1.25;
+}
+
+.book-page .menu-map.selected {
+  background: rgba(142, 58, 44, 0.08);
+  color: var(--book-ink);
+  font-weight: 600;
+}
+
+.book-page .menu-map.selected::before {
+  content: '●';
+  position: absolute;
+  left: 11px;
+  top: 7px;
+  color: var(--book-accent);
+  font-size: 11px;
+}

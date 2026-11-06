@@ -8,6 +8,7 @@ import {
   type Locale,
   type MessageKey,
 } from '@prestes/content';
+import { battleMaps, type BattleMapId } from '@prestes/shared';
 import { Book, Languages, Restart, SoundOff, SoundOn, Troop as Users } from './icons';
 import { CodexEntryArticle } from './CodexPanel';
 import { MarchingScene } from './MarchingScene';
@@ -24,8 +25,11 @@ export interface StartScreenProps {
   onLocaleChange: (locale: Locale) => void;
   onStart: () => void;
   onRestart: () => void;
-  /** Starts the 3 vs 3 battle (battle-feel-3v3). */
+  /** Starts the 3 vs 3 battle (battle-feel-3v3) on the chosen map. */
   onStartBattle3v3: () => void;
+  /** add-battle-maps: the 3v3's battlefield. */
+  battleMap: BattleMapId;
+  onBattleMapChange: (map: BattleMapId) => void;
   onToggleAudio: () => void;
 }
 
@@ -63,6 +67,8 @@ export function StartScreen({
   onStart,
   onRestart,
   onStartBattle3v3,
+  battleMap,
+  onBattleMapChange,
   onToggleAudio,
 }: StartScreenProps) {
   const t = (key: MessageKey, values?: Readonly<Record<string, string | number>>) =>
@@ -159,6 +165,24 @@ export function StartScreen({
               <i />
             </span>
           </div>
+          <h3 className="book-subheading">{t('start.battleMap')}</h3>
+          <ul className="menu-list menu-maps" role="radiogroup" aria-label={t('start.battleMap')}>
+            {battleMaps().map((map) => (
+              <li key={map.id}>
+                <button
+                  type="button"
+                  role="radio"
+                  aria-checked={map.id === battleMap}
+                  className={`menu-entry menu-map${map.id === battleMap ? ' selected' : ''}`}
+                  onClick={() => onBattleMapChange(map.id)}
+                  data-testid={`map-option-${map.id}`}
+                >
+                  <span className="menu-map-name">{t(map.nameKey as MessageKey)}</span>
+                  <span className="menu-map-description">{t(map.descriptionKey as MessageKey)}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
           <ul className="menu-list">
             <li>
               <button
