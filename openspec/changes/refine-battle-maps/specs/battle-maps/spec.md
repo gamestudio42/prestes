@@ -48,6 +48,68 @@ and reeds. No real building, brand or shop name SHALL be shown.
 - **WHEN** a soldier stands in a Fazenda trench bay
 - **THEN** he is drawn below the surrounding ground
 
+### Requirement: Roadside ditches
+
+Dirt roads on the battle maps SHALL have drainage ditches (valas) along
+their edges where the map says so: channels 0.8 m deep and 1.5 m wide sunk
+into the heightfield. A soldier in a ditch SHALL receive trench-like cover
+when crouched or prone against a threat outside it, SHALL move at the
+trench-floor speed along it, and SHALL be able to take a cover slot in it.
+The Fazenda's main road SHALL have a ditch on both sides for its whole
+length.
+
+#### Scenario: Cover in the ditch
+- **WHEN** a soldier lies prone in the Fazenda road ditch and an enemy fires from the open field
+- **THEN** he receives the ditch's cover
+
+#### Scenario: Slots along the ditch
+- **WHEN** a section is ordered to defend at the roadside
+- **THEN** its men take slots in the ditch
+
+### Requirement: Cover density on attack axes
+
+Every battle map SHALL offer cover along each attack axis between the
+deployment zones: no straight stretch longer than 60 m on an axis SHALL be
+without a cover slot within 10 m of it. The map review tool SHALL check it.
+
+#### Scenario: Fazenda is no longer open
+- **WHEN** the map review tool measures the Fazenda's attack axes
+- **THEN** no gap longer than 60 m between cover slots is reported
+
+### Requirement: Crops and grass look
+
+Cornfields SHALL be drawn as aligned rows of stalks with leaves and tassels,
+canefields as dense segmented stalks, tall grass (capim) as dense clumps of
+thin blade-shaped cards (never cones) that read as a mass from strategic
+zoom, and scrub as low bushes, each with a field edge and soil colour, and
+swaying gently. The look SHALL not change concealment, which stays a
+simulation rule.
+
+#### Scenario: Capim as blades
+- **WHEN** a capim clump is seen at tactical zoom
+- **THEN** it is drawn as blades fanning from its base, with no conical shape
+
+#### Scenario: Corn in rows
+- **WHEN** the Fazenda cornfield is seen at tactical zoom
+- **THEN** its stalks stand in parallel rows aligned with the field
+
+### Requirement: Terrain shading and water
+
+The heightfield ground SHALL be shaded without banding or faceted stripes on
+slopes: smooth normals, a toon ramp with soft steps on slopes, and a sun
+angle that models hills. Shallow water (fords) SHALL read as a gravel bar
+with stones and lighter, rippling water; deep water darker and calm; banks
+with gravel and reeds. On Serra e Rio the capim SHALL grow along the
+riverbanks and the veredas, with the buriti palms.
+
+#### Scenario: Ford reads as a ford
+- **WHEN** the Serra e Rio ford is seen from strategic zoom
+- **THEN** it is clearly lighter and stonier than the deep river around it
+
+#### Scenario: Grass by the river
+- **WHEN** the Serra e Rio vegetation is loaded
+- **THEN** most capim lies within 30 m of the river's banks
+
 ### Requirement: Battle map performance budget
 
 With the default rosters, the 3 vs 3 SHALL run under 3 ms per tick on every

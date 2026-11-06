@@ -33,6 +33,25 @@
 - [ ] 5.3 Fazenda trench bays dug in: 1 m detail heightfield patch under the lines and `cut` shapes (verify: test that a soldier in a bay stands > 0.8 m below the parapet ground; screenshot)
 - [ ] 5.4 Riverbanks: gravel strips and reed clumps; ford drawn lighter with ripples; ferry raft marker and waiting icon in the HUD (verify: screenshot review on Serra e Rio; e2e reads the ferry state in the HUD)
 
+## 5b. Fazenda feedback (2026-11-05)
+
+- [ ] 5.5 Road ditches: `ditch` strips in map data (side, depth 0.8, width 1.5) baked as `channel` shapes and as trench-like covers with slots; Fazenda main road both sides, branch roads one side; speed along the floor (verify: tests "cover in the ditch" and "slots along the ditch"; golden re-recorded)
+- [ ] 5.6 Roads drawn as rutted earth following the heightfield: two wheel ruts, grass crown, cambered verges; no floating ribbons (verify: screenshot review on Fazenda at tactical zoom)
+- [ ] 5.7 Cover clutter per map: field walls (stone, taipa), hedgerows, bamboo, woodpiles, carts, haystacks, trough, termite mounds, logs (Fazenda); gullies, fallen trees, more outcrops (Serra e Rio); carts, barrels, sacks, tram stop (Bairro); as covers with slots or fences (verify: map review tool reports no axis gap over 60 m; test "Fazenda is no longer open")
+- [ ] 5.8 Crops and grass: corn rows with leaves and tassels aligned to the field, cane stalks, capim blade clumps, scrub bushes, headland paths and soil colour, gentle sway in the vertex shader; instanced; frame budget kept (verify: test "corn in rows" via a view unit test of the row orientation; screenshot review; 30 fps at strategic zoom)
+
+## 5c. Serra e Rio feedback (2026-11-05)
+
+- [ ] 5.9 Terrain shading: smooth normals on the heightfield mesh, toon ramp with soft slope steps, sun angle tuned per map palette; no banding on the hill masses (verify: screenshot review of both hill masses at tactical and strategic zoom)
+- [ ] 5.10 Ford look: gravel bar mesh, stone props, lighter shallow-water material with ripple animation, a clear edge against deep water (verify: test "ford reads as a ford" via a view unit test of the ford material colour against deep water; screenshot review)
+- [ ] 5.11 Capim along the riverbanks and veredas in Serra e Rio data (most within 30 m of the banks), buriti with it; concealment tests re-checked (verify: test "grass by the river"; map scenario tests pass; golden re-recorded)
+- [ ] 5.12 Capim drawn as blade cards (crossed thin quads with a blade texture from the pixel atlas, 8-14 blades per clump) in dense clusters; the massed look at strategic zoom kept (verify: test "capim as blades"; screenshot review at both zooms)
+
+## 5d. Concealment fix (bug 2026-11-05)
+
+- [ ] 5.13 Reveal radius: firing from concealment reveals only to observers within 50 m; farther observers get the unseen-fire marker (verify: tests "long-range shot from the capim" and "close shot gives him away"; the Serra e Rio reproduction of men in the capim by the bridge stays hidden at 117 m)
+- [ ] 5.14 Concealed sections default to fire on contact (60 m) unless the player set their fire control; "Revelado" in ring and HUD (verify: test "concealed section holds its fire"; e2e sees "Revelado" after a close shot; locale check)
+
 ## 6. Start view and previews
 
 - [ ] 6.1 Camera opens at tactical span on squad 1; Home frames the map (verify: e2e "camera on the sections" via the scene bridge; e2e "frame the map")
