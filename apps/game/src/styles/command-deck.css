@@ -303,9 +303,16 @@
 
 .squad-stack {
   display: grid;
+  align-content: start;
   gap: 4px;
   flex: 1;
   min-width: 0;
+  /* Room for the 3v3's three section cards from the first frame, so the
+     Troops window keeps its size and the summary above it stays clear;
+     reinforcements scroll (retire-bootcamp). */
+  min-height: 191px;
+  max-height: 191px;
+  overflow-y: auto;
 }
 
 .squad-card {

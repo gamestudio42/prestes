@@ -9,7 +9,7 @@ import {
   type MessageKey,
 } from '@prestes/content';
 import { battleMaps, type BattleMapId } from '@prestes/shared';
-import { Book, Languages, Restart, SoundOff, SoundOn, Troop as Users } from './icons';
+import { Book, Languages, SoundOff, SoundOn, Troop as Users } from './icons';
 import { CodexEntryArticle } from './CodexPanel';
 import { MarchingScene } from './MarchingScene';
 import { PixelPhoto } from './PixelPhoto';
@@ -18,13 +18,8 @@ import coverImage from '../assets/menu/coluna-prestes.webp';
 
 export interface StartScreenProps {
   locale: Locale;
-  /** Station to resume (1-based) when unfinished bootcamp progress exists. */
-  resumeStation: number | null;
-  totalStations: number;
   audioMuted: boolean;
   onLocaleChange: (locale: Locale) => void;
-  onStart: () => void;
-  onRestart: () => void;
   /** Starts the 3 vs 3 battle (battle-feel-3v3) on the chosen map. */
   onStartBattle3v3: () => void;
   /** add-battle-maps: the 3v3's battlefield. */
@@ -60,12 +55,8 @@ const VIDEO_SRC = `${import.meta.env.BASE_URL}video/menu-book.mp4`;
  */
 export function StartScreen({
   locale,
-  resumeStation,
-  totalStations,
   audioMuted,
   onLocaleChange,
-  onStart,
-  onRestart,
   onStartBattle3v3,
   battleMap,
   onBattleMapChange,
@@ -117,28 +108,19 @@ export function StartScreen({
         <BookPage side="right" folio={2} locale={locale} onKeyDown={moveEntryFocus}>
           <h2 className="book-heading">{t('menu.campaign.heading')}</h2>
           <p className="book-text">{t('menu.campaign.text')}</p>
+          <p className="book-text" data-testid="campaign-preparing">{t('menu.campaign.preparing')}</p>
           <ul className="menu-list">
-            {resumeStation === null ? (
-              <li>
-                <button type="button" className="menu-entry primary" onClick={onStart} data-testid="start-button" autoFocus={firstSpread.current}>
-                  {t('start.bootcamp')}
-                </button>
-              </li>
-            ) : (
-              <>
-                <li>
-                  <button type="button" className="menu-entry primary" onClick={onStart} data-testid="start-continue" autoFocus={firstSpread.current}>
-                    {t('start.continue', { station: resumeStation, total: totalStations })}
-                  </button>
-                </li>
-                <li>
-                  <button type="button" className="menu-entry" onClick={onRestart} data-testid="start-restart">
-                    <Restart aria-hidden="true" size={16} />
-                    {t('start.restart')}
-                  </button>
-                </li>
-              </>
-            )}
+            <li>
+              <button
+                type="button"
+                className="menu-entry primary"
+                onClick={() => setMark('skirmish')}
+                data-testid="start-button"
+                autoFocus={firstSpread.current}
+              >
+                {t('menu.campaign.toSkirmish')}
+              </button>
+            </li>
           </ul>
         </BookPage>
       </>

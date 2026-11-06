@@ -1,6 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
 import type { Command, Frame, Vec2 } from '@prestes/shared';
-import { STATION_OFFSETS, stationPoint } from '../../packages/shared/src/training-ground';
 
 type Bridge = {
   __prestes?: { command: (command: Command) => void; step: (ticks: number) => void; frame: () => Frame | null };
@@ -9,8 +8,8 @@ type Bridge = {
 
 test.setTimeout(120_000);
 
-const TRENCH = stationPoint('defense', STATION_OFFSETS.line);
-const STATIONS = ['formation', 'fire', 'maneuver', 'defense'];
+/** The long trench in the middle of the Vila Militar field (cover 9). */
+const TRENCH = { x: -15, y: -13 };
 
 async function frame(page: Page): Promise<Frame> {
   return page.evaluate(() => (window as unknown as Bridge).__prestes!.frame()!);
@@ -42,19 +41,16 @@ async function screenOf(page: Page, point: Vec2): Promise<Vec2> {
 
 test('hovering the trench shows its slots and a click fills them', async ({ page }) => {
   await page.goto('/');
-  await page.evaluate(
-    (done) =>
-      window.localStorage.setItem(
-        'prestes.bootcamp.stations.v2',
-        JSON.stringify({ phaseIndex: 3, completedPhases: done, completed: false, bestTimeTicks: 0 }),
-      ),
-    STATIONS.slice(0, 3),
-  );
-  await page.reload();
-  await page.getByTestId('start-continue').click();
+  await page.getByTestId('menu-mark-skirmish').click();
+  await page.getByTestId('start-battle-3v3').click();
   await page.waitForFunction(() => Boolean((window as unknown as Bridge).__prestes?.frame()));
-  await expect(page.getByTestId('training-panel')).toHaveAttribute('data-phase', 'defense');
   await stepRendered(page, 2);
+  // The enemy holds its fire: this test is about the slots, not the fight.
+  const legalists = (await frame(page)).units.filter((unit) => unit.faction === 'legalist').map((unit) => unit.id);
+  await page.evaluate(
+    (next) => (window as unknown as Bridge).__prestes!.command(next),
+    { type: 'hold_fire', unitIds: legalists, hold: true } as Command,
+  );
   // Walk the section close to the trench so the camera frames it.
   const ids = (await frame(page)).units
     .filter((unit) => unit.faction === 'column' && unit.squadId === 1 && unit.alive)
@@ -63,7 +59,7 @@ test('hovering the trench shows its slots and a click fills them', async ({ page
     (next) => (window as unknown as Bridge).__prestes!.command(next),
     { type: 'move', unitIds: ids, to: { x: TRENCH.x, y: TRENCH.y + 10 } } as Command,
   );
-  await stepRendered(page, 300);
+  await stepRendered(page, 900);
   await page.waitForTimeout(400);
 
   const point = await screenOf(page, TRENCH);

@@ -12,8 +12,8 @@ describe('locale key sets', () => {
 
   it('names a missing key', () => {
     const candidate: Record<string, string> = { ...messages['pt-BR'] };
-    delete candidate['start.newGame'];
-    expect(validateLocaleKeys(candidate).missing).toContain('start.newGame');
+    delete candidate['start.battle3v3'];
+    expect(validateLocaleKeys(candidate).missing).toContain('start.battle3v3');
   });
 
   it('names an extra key', () => {

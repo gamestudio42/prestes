@@ -8,7 +8,8 @@ type Bridge = {
 test.setTimeout(90_000);
 
 async function start(page: Page): Promise<void> {
-  await page.getByTestId('start-button').click();
+  await page.getByTestId('menu-mark-skirmish').click();
+  await page.getByTestId('start-battle-3v3').click();
   await page.waitForFunction(() => Boolean((window as unknown as Bridge).__prestes?.frame()));
   await expect(page.getByTestId('window-orders')).toBeVisible();
 }

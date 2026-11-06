@@ -1,4 +1,4 @@
-﻿import { expect, test } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
 test('boots, selects a section, gives orders, fights and toggles the post', async ({ page }) => {
   await page.goto('/');
@@ -7,19 +7,22 @@ test('boots, selects a section, gives orders, fights and toggles the post', asyn
   await page.getByTestId('menu-mark-options').click();
   await page.getByTestId('language-select').selectOption('pt-BR');
   await page.getByTestId('menu-mark-campaign').click();
-  await expect(page.getByTestId('start-button')).toHaveText('Iniciar bootcamp');
+  // retire-bootcamp: the campaign page leads to the skirmish.
+  await expect(page.getByTestId('start-button')).toHaveText('Jogar escaramuça');
 
   await page.reload();
-  await expect(page.getByTestId('start-button')).toHaveText('Iniciar bootcamp');
+  await expect(page.getByTestId('start-button')).toHaveText('Jogar escaramuça');
 
   await page.getByTestId('start-button').click();
+  await page.getByTestId('start-battle-3v3').click();
   await expect(page.getByTestId('hud')).toBeVisible();
   await page.evaluate(() => document.fonts.ready);
   expect(await page.evaluate(() => document.fonts.check('400 16px "Pixelify Sans"'))).toBe(true);
   await expect(page.getByTestId('game-canvas')).toBeVisible();
   await expect(page.getByTestId('squad-status')).toBeVisible();
   await expect(page.getByTestId('tutorial-panel')).toHaveCount(0);
-  await expect(page.getByTestId('portrait-placeholder')).toHaveCount(1);
+  // The 3v3: one card per section.
+  await expect(page.getByTestId('portrait-placeholder')).toHaveCount(3);
   await expect(page.getByTestId('weapon-value')).toContainText('Fuzil Mauser 7 mm');
   await expect(page.getByTestId('weapon-card')).toContainText(/\d+\/\d+/);
   await expect(page.getByTestId('morale-state')).toContainText('Estado: Firme');

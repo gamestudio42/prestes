@@ -53,7 +53,22 @@ export function loadLocale(): Locale {
   }
 }
 
-export function trainingStorage(): Storage | null {
+/** Keys the retired bootcamp saved its progress under (retire-bootcamp). */
+export const BOOTCAMP_PROGRESS_KEYS = ['prestes.bootcamp.stations.v2', 'prestes.bootcamp.exercise.v1', 'prestes.bootcamp.steps.v1'];
+
+/** Removes any saved bootcamp progress: the bootcamp is no longer in the game. */
+export function clearBootcampProgress(storage: Storage | null = safeStorage()): void {
+  if (!storage) return;
+  for (const key of BOOTCAMP_PROGRESS_KEYS) {
+    try {
+      storage.removeItem(key);
+    } catch {
+      // Storage can be unavailable; nothing to clear then.
+    }
+  }
+}
+
+function safeStorage(): Storage | null {
   try {
     return window.localStorage;
   } catch {

@@ -54,7 +54,8 @@ async function renderer(page: Page): Promise<string> {
 }
 
 async function openSection(page: Page): Promise<number[]> {
-  await page.getByTestId('start-button').click();
+  await page.getByTestId('menu-mark-skirmish').click();
+  await page.getByTestId('start-battle-3v3').click();
   await expect(page.getByTestId('hud')).toBeVisible();
   await expect
     .poll(() => page.evaluate(() => (window as unknown as Bridge).__prestes?.frame()?.units.length ?? 0))

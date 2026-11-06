@@ -23,9 +23,10 @@ test('start screen matches the baseline', async ({ page }) => {
   await expect(page).toHaveScreenshot('start-screen.png', SCREENSHOT);
 });
 
-test('bootcamp HUD matches the baseline', async ({ page }) => {
+test('3v3 HUD matches the baseline', async ({ page }) => {
   await page.goto('/');
-  await page.getByTestId('start-button').click();
+  await page.getByTestId('menu-mark-skirmish').click();
+  await page.getByTestId('start-battle-3v3').click();
   await expect(page.getByTestId('hud')).toBeVisible();
   await page.waitForFunction(() => Boolean((window as unknown as { __prestes?: unknown }).__prestes));
   // Pause so the panels stop changing, then show the orders panel.
@@ -38,7 +39,7 @@ test('bootcamp HUD matches the baseline', async ({ page }) => {
   // The full-screen 3D canvas sits behind the HUD; hide it rather than mask it.
   await page.addStyleTag({ content: '[data-testid="game-canvas"] { visibility: hidden !important; }' });
   await stableFonts(page);
-  await expect(page).toHaveScreenshot('bootcamp-hud.png', {
+  await expect(page).toHaveScreenshot('battle-hud.png', {
     ...SCREENSHOT,
     mask: [
       page.getByTestId('weapon-card').locator('.status-row'),
@@ -50,7 +51,8 @@ test('bootcamp HUD matches the baseline', async ({ page }) => {
 
 async function openPausedHud(page: Page): Promise<void> {
   await page.goto('/');
-  await page.getByTestId('start-button').click();
+  await page.getByTestId('menu-mark-skirmish').click();
+  await page.getByTestId('start-battle-3v3').click();
   await expect(page.getByTestId('hud')).toBeVisible();
   await page.waitForFunction(() => Boolean((window as unknown as { __prestes?: unknown }).__prestes));
   await page.evaluate(() =>

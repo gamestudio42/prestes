@@ -69,7 +69,14 @@ export function FloatingWindow({
     };
     keepInside();
     window.addEventListener('resize', keepInside);
-    return () => window.removeEventListener('resize', keepInside);
+    // ...and when its content grows: the 3v3's section cards arrive after the
+    // first placement and would push the window past the bottom of the view.
+    const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(keepInside);
+    if (rootRef.current) observer?.observe(rootRef.current);
+    return () => {
+      window.removeEventListener('resize', keepInside);
+      observer?.disconnect();
+    };
   }, [state?.minimized]);
 
   const onPointerDown = (event: PointerEvent<HTMLDivElement>) => {

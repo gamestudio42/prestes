@@ -7,7 +7,7 @@ import {
   type MutableRefObject,
   type SetStateAction,
 } from 'react';
-import { ORDER_CATALOG, translate, type Locale, type TrainingAction } from '@prestes/content';
+import { ORDER_CATALOG, translate, type Locale } from '@prestes/content';
 import {
   nearestTargetGroups,
   spreadTargetGroups,
@@ -45,7 +45,6 @@ interface OrderOptions {
   placementPreview: PlacementPreview | null;
   placementRotation: number;
   setPlacementPoint: Dispatch<SetStateAction<Vec2 | null>>;
-  recordTrainingAction: (action: TrainingAction) => void;
 }
 
 /**
@@ -70,7 +69,6 @@ export function useOrders({
   placementPreview,
   placementRotation,
   setPlacementPoint,
-  recordTrainingAction,
 }: OrderOptions) {
   const [selectedSquadId, setSelectedSquadId] = useState(1);
   const [selectedUnitIds, setSelectedUnitIds] = useState<number[]>([]);
@@ -345,7 +343,6 @@ export function useOrders({
     if (!frame) {
       return;
     }
-    recordTrainingAction('select');
     setSelectedUnitIds(
       frame.units
         .filter(
@@ -394,7 +391,6 @@ export function useOrders({
   };
 
   const handleSelectSquad = (squadId: number): void => {
-    recordTrainingAction('select');
     setSelectedSquadId(squadId);
     selectSquad(squadId);
   };
@@ -416,7 +412,6 @@ export function useOrders({
     if (squadId === undefined) {
       return;
     }
-    recordTrainingAction('box-select');
     setSelectedSquadId(squadId);
     setSelectedUnitIds(
       selected.filter((unit) => unit.squadId === squadId).map((unit) => unit.id),
@@ -426,7 +421,6 @@ export function useOrders({
   const handleSelectUnit = (unitId: number): void => {
     const unit = frame?.units.find((entry) => entry.id === unitId);
     if (unit?.alive && canSelect(unit)) {
-      recordTrainingAction('select');
       setSelectedSquadId(unit.squadId);
       selectSquad(unit.squadId);
     }
@@ -468,7 +462,6 @@ export function useOrders({
         clientRef.current?.sendCommand({ type: kind, unitIds, targetId });
       }
     }
-    recordTrainingAction(kind);
     triggerOrderCallout(kind, selectedIds);
   };
 
@@ -537,7 +530,6 @@ export function useOrders({
           unitIds: selectedIds,
           to: center,
         });
-        recordTrainingAction('face');
       }
       triggerOrderCallout('aim', selectedIds);
       setAimPending(false);
@@ -556,7 +548,6 @@ export function useOrders({
           unitIds: selectedIds,
           targetId: target.id,
         });
-        recordTrainingAction('rescue');
         triggerOrderCallout('rescue', selectedIds);
         setPendingTactical(null);
       }
@@ -583,7 +574,6 @@ export function useOrders({
       if (selectedIds.length > 0) {
         clientRef.current?.sendCommand({ type: 'face', unitIds: selectedIds, to: point });
       }
-      recordTrainingAction('face');
       triggerOrderCallout('aim', selectedIds);
       setAimPending(false);
       return;
@@ -601,7 +591,6 @@ export function useOrders({
           ...dragOrder(facing),
         });
       }
-      recordTrainingAction(pendingTactical as TrainingAction);
       triggerOrderCallout(pendingTactical, selectedIds);
       setPendingTactical(null);
       return;
@@ -625,7 +614,6 @@ export function useOrders({
       return;
     }
     if (pendingOrder === 'move' && selectedIds.length > 0) {
-      recordTrainingAction('move');
       clientRef.current?.sendCommand({ type: 'move', unitIds: selectedIds, to: point, ...dragOrder(facing) });
       triggerOrderCallout('move', selectedIds);
       setPendingOrder(null);
@@ -641,7 +629,6 @@ export function useOrders({
     if (selectedIds.length === 0) {
       return;
     }
-    recordTrainingAction('move');
     clientRef.current?.sendCommand({ type: 'move', unitIds: selectedIds, to: point, ...dragOrder(facing) });
     triggerOrderCallout('move', selectedIds);
   };
@@ -683,7 +670,6 @@ export function useOrders({
     if (selectedIds.length === 0) {
       return;
     }
-    recordTrainingAction('move');
     clientRef.current?.sendCommand({ type: 'move_line', unitIds: selectedIds, from, to });
     triggerOrderCallout('move', selectedIds);
   };
@@ -701,7 +687,6 @@ export function useOrders({
     // A wounded comrade: the casualty drill (rescue) starts from him.
     if (target.faction === selectedFaction && target.incapacitated && selectedIds.length > 0) {
       clientRef.current?.sendCommand({ type: 'order', order: 'rescue', unitIds: selectedIds, targetId: target.id });
-      recordTrainingAction('rescue');
       triggerOrderCallout('rescue', selectedIds);
       return;
     }
@@ -763,9 +748,6 @@ export function useOrders({
   };
 
   const handlePosture = (next: Posture): void => {
-    if (next === 'protect-officer') {
-      recordTrainingAction('protect-officer');
-    }
     if (selectedIds.length === 0) {
       return;
     }
@@ -779,7 +761,6 @@ export function useOrders({
       return;
     }
     clientRef.current?.sendCommand({ type: 'order', order: 'regroup', unitIds: selectedIds });
-    recordTrainingAction('regroup' as TrainingAction);
     triggerOrderCallout('regroup', selectedIds);
   };
 
@@ -789,7 +770,6 @@ export function useOrders({
       return;
     }
     clientRef.current?.sendCommand({ type: 'fire_control', unitIds: selectedIds, mode });
-    if (mode === 'hold') recordTrainingAction('hold-fire');
     triggerHoldFireCallout(mode !== 'free');
   };
   const handleFormation = (formation: FormationKind): void => {
@@ -800,7 +780,6 @@ export function useOrders({
 
   const handleStance = (stance: Stance): void => {
     if (selectedIds.length > 0) {
-      recordTrainingAction(`stance-${stance}` as TrainingAction);
       clientRef.current?.sendCommand({ type: 'stance', unitIds: selectedIds, stance });
       setPendingOrder(null);
       setPendingTactical(null);
@@ -820,7 +799,6 @@ export function useOrders({
 
   const handleHold = (): void => {
     if (selectedIds.length > 0) {
-      recordTrainingAction('hold');
       clientRef.current?.sendCommand({ type: 'hold', unitIds: selectedIds });
       triggerOrderCallout('hold', selectedIds);
       setPendingOrder(null);

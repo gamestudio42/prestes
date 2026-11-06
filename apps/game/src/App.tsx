@@ -1,12 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import { Eye } from './ui/icons';
-import { BOOTCAMP_EXERCISE, translate, type Locale, type TrainingAction } from '@prestes/content';
+import { translate, type Locale } from '@prestes/content';
 import {
   DEFAULT_BATTLE_MAP,
-  DEFAULT_WEAPON_ID,
   TRAINING_AMMUNITION,
-  WEAPONS,
-  trainingStation,
   type BattleMapId,
   type Frame,
 } from '@prestes/shared';
@@ -19,16 +16,8 @@ import { Hud } from './ui/Hud';
 import { SandboxPanel } from './ui/SandboxPanel';
 import { StartScreen } from './ui/StartScreen';
 import { BattleEndPanel } from './ui/BattleEndPanel';
-import { TrainingMissionPanel } from './ui/TrainingMissionPanel';
-import { currentPhase, objectivePlaceholders, phaseCommand, startExercise, type ExerciseState } from './training/exercise';
-import {
-  defaultExerciseProgress,
-  saveExerciseProgress,
-  type ExerciseProgress,
-} from './training/exercise-progress';
-import { loadLocale, loadRoutesVisible, saveLocale, saveRoutesVisible, trainingStorage } from './storage';
+import { clearBootcampProgress, loadLocale, loadRoutesVisible, saveLocale, saveRoutesVisible } from './storage';
 import { useAudio } from './hooks/useAudio';
-import { useExerciseDirector } from './hooks/useExerciseDirector';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { useOrders } from './hooks/useOrders';
 import { useSandbox } from './hooks/useSandbox';
@@ -37,7 +26,8 @@ import { useTestBridge } from './hooks/useTestBridge';
 export function App() {
   const [locale, setLocale] = useState<Locale>(loadLocale);
   const [started, setStarted] = useState(false);
-  const [sessionMode, setSessionMode] = useState<'battle' | 'training'>('training');
+  // retire-bootcamp: old saved bootcamp progress is cleared once.
+  useEffect(() => clearBootcampProgress(), []);
   // add-battle-maps: the map the next 3v3 starts on.
   const [battleMapId, setBattleMapId] = useState<BattleMapId>(DEFAULT_BATTLE_MAP);
   const [showCodex, setShowCodex] = useState(false);
@@ -77,23 +67,6 @@ export function App() {
     setControlBothSides,
     placementPreview,
   } = useSandbox(frame);
-  const {
-    exerciseProgress,
-    setExerciseProgress,
-    exerciseState,
-    setExerciseState,
-    exerciseObjectives,
-    setExerciseObjectives,
-    exerciseFeedback,
-    setExerciseFeedback,
-    setTrainingActions,
-    recordTrainingAction,
-    handleRetryPhase,
-    exercisePhase,
-    debrief,
-    exerciseMarkers,
-    instructorCallout,
-  } = useExerciseDirector({ frame, locale, selectedCountRef, sessionMode, clientRef, setSpeed });
   const {
     selectedSquadId,
     setSelectedSquadId,
@@ -150,7 +123,6 @@ export function App() {
     placementPreview,
     placementRotation,
     setPlacementPoint,
-    recordTrainingAction,
   });
   selectedCountRef.current = selectedIds.length;
   useKeyboardShortcuts({
@@ -167,7 +139,7 @@ export function App() {
   });
   useTestBridge(clientRef, setSpeed);
 
-  // The newest callout wins: the instructor's line or the player's last order.
+  // The player's last order, shown over his officer.
   const [callout, setCallout] = useState<typeof orderCallout>(null);
   useEffect(() => setCallout(orderCallout), [orderCallout]);
   // fog-of-war: controlling both sides shows both sides.
@@ -185,19 +157,14 @@ export function App() {
     saveLocale(next);
   };
 
-  const createClient = (
-    training = false,
-    opposition = true,
-    scenario: 'bootcamp' | 'battle3v3' = 'bootcamp',
-    map?: BattleMapId,
-  ): GameClient => {
+  const createClient = (map: BattleMapId): GameClient => {
     const client = new GameClient({
       seed: 1922,
       sandbox: true,
-      training,
-      opposition,
-      scenario,
-      ...(scenario === 'battle3v3' && map ? { battleMap: map } : {}),
+      training: false,
+      opposition: true,
+      scenario: 'battle3v3',
+      battleMap: map,
       onEvent: (event) => audioRef.current?.handleEvent(event),
       onFrame: (next) => {
         setFrame(next);
@@ -224,80 +191,6 @@ export function App() {
     return client;
   };
 
-  const handleStartBootcamp = (restart = false): void => {
-    void audioRef.current?.unlock();
-    clientRef.current?.dispose();
-    clientRef.current = null;
-    setFrame(null);
-    selectionInitialized.current = false;
-    setSelectedUnitIds([]);
-    setSelectedSquadId(1);
-    setControlBothSides(false);
-    setSandboxOpen(false);
-    setSandboxTool(null);
-    setPendingOrder(null);
-    setPendingTactical(null);
-    setAimPending(false);
-    setPreviewEnabled(false);
-    setOrdersCollapsed(false);
-    setSessionMode('training');
-    const progress = restart ? defaultExerciseProgress() : exerciseProgress;
-    if (restart) {
-      setExerciseProgress(progress);
-      saveExerciseProgress(trainingStorage(), progress);
-    }
-    const initial = startExercise();
-    const resumed: ExerciseState = progress.completed
-      ? initial
-      : {
-          ...initial,
-          phaseIndex: progress.phaseIndex,
-          completedPhases: progress.completedPhases,
-        };
-    setExerciseState(resumed);
-    setExerciseObjectives(objectivePlaceholders(currentPhase(resumed)));
-    setExerciseFeedback(null);
-    setTrainingActions(new Set());
-    setSpeed(DEFAULT_SPEED);
-    setStarted(true);
-    const client = createClient(true, false, 'bootcamp');
-    client.sendCommand(phaseCommand(currentPhase(resumed)));
-  };
-
-  const handleMissionContinue = (): void => {
-    if (exerciseState?.completed) {
-      const bestTimeTicks =
-        frame && exerciseState.phaseStartedTick > 0
-          ? Math.max(600, frame.tick - exerciseState.phaseStartedTick)
-          : Math.max(600, exerciseProgress.bestTimeTicks);
-      const nextProgress: ExerciseProgress = {
-        phaseIndex: exerciseState.phaseIndex,
-        completedPhases: exerciseState.completedPhases,
-        completed: true,
-        bestTimeTicks,
-      };
-      setExerciseProgress(nextProgress);
-      saveExerciseProgress(trainingStorage(), nextProgress);
-    }
-    clientRef.current?.dispose();
-    clientRef.current = null;
-    setFrame(null);
-    setStarted(false);
-    setExerciseState(null);
-    setExerciseObjectives([]);
-    setExerciseFeedback(null);
-    setTrainingActions(new Set());
-    setSelectedUnitIds([]);
-    setSpeed(DEFAULT_SPEED);
-  };
-
-  const handleMissionReplay = (): void => {
-    handleStartBootcamp(true);
-  };
-
-  const handleStart = (): void => {
-    handleStartBootcamp();
-  };
   /** Leaves the battle for the main menu. */
   const handleBackToMenu = (): void => {
     clientRef.current?.dispose();
@@ -306,7 +199,6 @@ export function App() {
     setSelectedUnitIds([]);
     setSandboxOpen(false);
     setSandboxTool(null);
-    setSessionMode('training');
     setSpeed(DEFAULT_SPEED);
     setStarted(false);
   };
@@ -326,14 +218,9 @@ export function App() {
     setAimPending(false);
     setPreviewEnabled(false);
     setOrdersCollapsed(false);
-    setExerciseState(null);
-    setExerciseObjectives([]);
-    setExerciseFeedback(null);
-    setTrainingActions(new Set());
-    setSessionMode('battle');
     setSpeed(DEFAULT_SPEED);
     setStarted(true);
-    createClient(false, true, 'battle3v3', battleMapId);
+    createClient(battleMapId);
   };
   const handleResetSandbox = (): void => {
     clientRef.current?.reset();
@@ -435,16 +322,7 @@ export function App() {
         <StartScreen
           locale={locale}
           onLocaleChange={handleLocaleChange}
-          resumeStation={
-            !exerciseProgress.completed &&
-            (exerciseProgress.phaseIndex > 0 || exerciseProgress.completedPhases.length > 0)
-              ? exerciseProgress.phaseIndex + 1
-              : null
-          }
-          totalStations={BOOTCAMP_EXERCISE.phases.length}
           audioMuted={audioMuted}
-          onStart={handleStart}
-          onRestart={() => handleStartBootcamp(true)}
           onStartBattle3v3={handleStartBattle3v3}
           battleMap={battleMapId}
           onBattleMapChange={setBattleMapId}
@@ -466,12 +344,6 @@ export function App() {
         routesVisible={routesVisible}
         onAudioView={(listener) => audioRef.current?.setListener(listener)}
         cameraRequest={cameraRequest}
-        commanderBalloon={sessionMode === 'training' ? instructorCallout : null}
-        cameraFocus={
-          sessionMode === 'training' && exercisePhase
-            ? { ...trainingStation(exercisePhase.id).center, key: exercisePhase.id }
-            : null
-        }
         preview={previewPlan}
         slotMarkers={slotView?.markers}
         aimPending={aimPending}
@@ -487,10 +359,7 @@ export function App() {
         placementPreview={placementPreview}
         targetUnitIds={targetUnitIds}
         selectedUnitIds={selectedUnitIds}
-        trainingField={sessionMode === 'training'}
-        strategicField={sessionMode === 'battle'}
-        trainingMarkers={exerciseMarkers}
-        onCameraAction={(kind) => recordTrainingAction(`camera-${kind}` as TrainingAction)}
+        strategicField
         onBandChange={(next) => {
           setBand(next);
         }}
@@ -522,18 +391,15 @@ export function App() {
         previewEnabled={previewEnabled}
         selectedCount={selectedIds.length}
         selectedUnitIds={selectedIds}
-        ammoFull={
-          sessionMode === 'training'
-            ? TRAINING_AMMUNITION.magazine + TRAINING_AMMUNITION.reserve
-            : WEAPONS[DEFAULT_WEAPON_ID].magazine + WEAPONS[DEFAULT_WEAPON_ID].reserve
-        }
+        // The 3v3 is a training battle: both sides carry the depot issue.
+        ammoFull={TRAINING_AMMUNITION.magazine + TRAINING_AMMUNITION.reserve}
         speed={speed}
         pendingOrder={pendingOrder}
         pendingTactical={pendingTactical}
         aimPending={aimPending}
         posture={posture}
         fireControl={fireControl}
-        battleMode={sessionMode === 'battle'}
+        battleMode
         sandboxOpen={sandboxOpen}
         onCancelOrder={handleClearOrder}
         onLocaleChange={handleLocaleChange}
@@ -570,26 +436,6 @@ export function App() {
           <Eye aria-hidden="true" size={16} />
           {translate(locale, 'hud.showHud')}
         </button>
-      ) : null}
-      {!hudHidden &&
-      sessionMode === 'training' &&
-      exerciseState !== null &&
-      exercisePhase !== null ? (
-        <TrainingMissionPanel
-          locale={locale}
-          phase={exercisePhase}
-          phaseIndex={exerciseState.phaseIndex}
-          totalPhases={BOOTCAMP_EXERCISE.phases.length}
-          objectives={exerciseObjectives}
-          completed={exerciseState.completed}
-          failed={exerciseState.failed}
-          failureReason={exerciseState.failureReason}
-          feedbackKey={exerciseFeedback}
-          debrief={debrief}
-          onContinue={handleMissionContinue}
-          onReplay={handleMissionReplay}
-          onRetry={handleRetryPhase}
-        />
       ) : null}
       <FieldOverlays
         locale={locale}
@@ -630,7 +476,7 @@ export function App() {
           <CodexPanel locale={locale} onClose={() => setShowCodex(false)} />
         </div>
       ) : null}
-      {sessionMode === 'battle' && frame && frame.outcome !== 'playing' ? (
+      {frame && frame.outcome !== 'playing' ? (
         <BattleEndPanel locale={locale} frame={frame} onRestart={handleStartBattle3v3} onMenu={handleBackToMenu} />
       ) : null}
     </div>

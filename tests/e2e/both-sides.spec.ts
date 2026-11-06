@@ -1,4 +1,4 @@
-﻿import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 import type { Command, Frame } from '@prestes/shared';
 
 declare global {
@@ -49,7 +49,8 @@ async function command(page: Page, value: Command, ticks = 1): Promise<Frame> {
 
 test('controls both sides with reinforcements and exercises combat commands', async ({ page }) => {
   await page.goto('/');
-  await page.getByTestId('start-button').click();
+  await page.getByTestId('menu-mark-skirmish').click();
+  await page.getByTestId('start-battle-3v3').click();
   await page.waitForFunction(() => Boolean(window.__prestes?.frame()));
   await expect(page.getByTestId('squad-status')).toContainText('Selection: 11/11');
   // Paused: the test steps the simulation itself, so a slow machine cannot let
@@ -74,7 +75,8 @@ test('controls both sides with reinforcements and exercises combat commands', as
   await page.getByTestId('sandbox-close').click();
   await page.getByTestId('squad-3').click();
   await expect(page.getByTestId('squad-3')).toHaveAttribute('aria-pressed', 'true');
-  await expect(page.getByTestId('squad-status')).toContainText('Selection: 2/2');
+  // Reinforcements join the existing sections (11 + 2 in the 3rd).
+  await expect(page.getByTestId('squad-status')).toContainText('Selection: 13/13');
 
   const initial = await currentFrame(page);
   const column = initial.units
@@ -83,8 +85,9 @@ test('controls both sides with reinforcements and exercises combat commands', as
   const legalist = initial.units
     .filter((unit) => unit.faction === 'legalist' && unit.alive && !unit.dummy)
     .map((unit) => unit.id);
-  expect(column).toHaveLength(14);
-  expect(legalist).toHaveLength(2);
+  // retire-bootcamp: the 3v3's 33 a side, plus the reinforcements.
+  expect(column.length).toBeGreaterThan(33);
+  expect(legalist.length).toBeGreaterThan(33);
   await command(page, { type: 'hold_fire', unitIds: column, hold: true });
   await command(page, { type: 'hold_fire', unitIds: legalist, hold: true });
 
@@ -110,8 +113,8 @@ test('controls both sides with reinforcements and exercises combat commands', as
   await command(page, { type: 'order', order: 'disperse', unitIds: column, to: { x: 0, y: 7 } });
   await command(page, { type: 'order', order: 'recon', unitIds: column, to: { x: 0, y: 7 } });
   await command(page, { type: 'order', order: 'reserve', unitIds: column, to: { x: 0, y: 7 } });
-  await command(page, { type: 'order', order: 'regroup', unitIds: column });
-  await command(page, { type: 'order', order: 'protect-officer', unitIds: column });
+  // The 3v3 has no officer, so regroup and protect-officer (which need one)
+  // are not exercised here; the command section of pre-battle-roster brings one.
   await command(page, {
     type: 'order',
     order: 'pursue',

@@ -1,13 +1,16 @@
-﻿import { expect, test } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
 test('opens the sandbox, steps, spawns and resets', async ({ page }) => {
   await page.goto('/');
-  await page.getByTestId('start-button').click();
+  await page.getByTestId('menu-mark-skirmish').click();
+  await page.getByTestId('start-battle-3v3').click();
   await expect(page.getByTestId('hud')).toBeVisible();
 
   await page.keyboard.press('F1');
   await expect(page.getByTestId('sandbox-panel')).toBeVisible();
-  await expect(page.getByTestId('sandbox-counts')).toContainText('Covers: 30');
+  // retire-bootcamp: the sandbox opens over the 3v3 field and its covers.
+  await expect(page.getByTestId('sandbox-counts')).toContainText(/Covers: [1-9]\d*/);
+  const startCovers = Number(/Covers: (\d+)/.exec((await page.getByTestId('sandbox-counts').textContent()) ?? '')![1]);
 
   const tickBefore = await page.getByTestId('tick-value').textContent();
   await page.getByTestId('sandbox-step').click();
@@ -21,9 +24,9 @@ test('opens the sandbox, steps, spawns and resets', async ({ page }) => {
     await canvas.click({ position: { x, y } });
     await page.getByTestId('sandbox-step').click();
     await page.waitForTimeout(200);
-    if ((await page.getByTestId('sandbox-counts').textContent())?.includes('Covers: 31')) break;
+    if ((await page.getByTestId('sandbox-counts').textContent())?.includes(`Covers: ${startCovers + 1}`)) break;
   }
-  await expect(page.getByTestId('sandbox-counts')).toContainText('Covers: 31');
+  await expect(page.getByTestId('sandbox-counts')).toContainText(`Covers: ${startCovers + 1}`);
 
   await page.getByTestId('sandbox-tool-dummy').click();
   for (const [x, y] of [[1100, 350], [1050, 400], [1000, 300]] as const) {
@@ -35,13 +38,14 @@ test('opens the sandbox, steps, spawns and resets', async ({ page }) => {
   await expect(page.getByTestId('sandbox-counts')).toContainText('Dummies: 1');
 
   await page.getByTestId('sandbox-reset').click();
-  await expect(page.getByTestId('sandbox-counts')).toContainText('Covers: 30');
+  await expect(page.getByTestId('sandbox-counts')).toContainText(`Covers: ${startCovers}`);
   await expect(page.getByTestId('sandbox-counts')).toContainText('Dummies: 0');
 });
 
 test('drills a casualty, shows progress and completes recovery', async ({ page }) => {
   await page.goto('/');
-  await page.getByTestId('start-button').click();
+  await page.getByTestId('menu-mark-skirmish').click();
+  await page.getByTestId('start-battle-3v3').click();
   await expect(page.getByTestId('hud')).toBeVisible();
 
   await page.keyboard.press('F1');
@@ -105,7 +109,8 @@ test('drills a casualty, shows progress and completes recovery', async ({ page }
 
 test('starts the 3v3 battle laboratory', async ({ page }) => {
   await page.goto('/');
-  await page.getByTestId('start-button').click();
+  await page.getByTestId('menu-mark-skirmish').click();
+  await page.getByTestId('start-battle-3v3').click();
   await page.waitForTimeout(600);
   await page.keyboard.press('F1');
   await page.getByTestId('sandbox-battle-3v3').click();
