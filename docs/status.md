@@ -1,4 +1,21 @@
-﻿# Status
+# Status
+
+## Plan (2026-11-05)
+
+The OpenSpec changes in flight, in the order they should land:
+
+| Order | Change | State | Lands |
+| --- | --- | --- | --- |
+| 1 | `fog-of-war` | implemented; hand check pending | archive after the user's check |
+| 2 | `add-battle-maps` | implemented; Blender kits and hand check open | archive; open items move to `docs/maps/REVIEW.md` |
+| 3 | `retire-bootcamp` | complete | archive |
+| 4 | `refine-battle-maps` | planned (22 tasks) | battles that end, 3 ms on all maps, period placeholders, start view, previews, per-map review |
+| 5 | `pre-battle-roster` | planned (25 tasks) | section types, five period weapons, the roster spread, enemy presets |
+| 6 | `video-tutorial-manual` | planned (18 tasks) | the Manual bookmark, ten lessons recorded from the game, training-ground removal |
+
+`refine-battle-maps` and `pre-battle-roster` are independent; whichever lands
+second re-records its goldens. `video-tutorial-manual` comes last so its
+videos show the refined maps and, in lessons 5 and 10, the Comando.
 
 ## Implemented
 

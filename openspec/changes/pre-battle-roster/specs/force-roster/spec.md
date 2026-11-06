@@ -60,3 +60,23 @@ so the same seed fields the same enemy.
 #### Scenario: Enemy roster is deterministic
 - **WHEN** two battles start with the same seed and map
 - **THEN** the enemy fields the same sections in the same places
+
+### Requirement: Section speed and command
+
+The machine-gun crew SHALL march at 0.85 of a rifle section's pace and the
+irregulars at 1.1. The officer of a Comando SHALL be an officer for every
+rule that needs one: the officer aura within 12 m and the regroup and
+protect-officer orders, which SHALL be refused while no fit officer of the
+side is on the field.
+
+#### Scenario: Gun crew is slower
+- **WHEN** a Metralhadora crew and a rifle section march 100 m on pasture
+- **THEN** the crew arrives about 18 % later
+
+#### Scenario: Regroup needs the Comando
+- **WHEN** the player orders regroup with no Comando in his roster
+- **THEN** the order is refused and a localized reason is shown
+
+#### Scenario: Regroup with the Comando
+- **WHEN** the player's roster has a fit Comando officer and he orders a section to regroup
+- **THEN** the section regroups on the officer
