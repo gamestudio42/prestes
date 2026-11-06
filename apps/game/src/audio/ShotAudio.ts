@@ -1,4 +1,5 @@
 ﻿import type { SimEvent } from '@prestes/shared';
+import { openAudioContext } from './context';
 
 export interface GunshotOutput {
   unlock(): Promise<boolean>;
@@ -141,24 +142,6 @@ export class ShotAudio {
   }
 }
 
-interface AudioContextConstructor {
-  new (): AudioContext;
-}
-
-async function openContext(existing: AudioContext | null): Promise<AudioContext | null> {
-  const Constructor =
-    window.AudioContext ??
-    (window as unknown as { webkitAudioContext?: AudioContextConstructor }).webkitAudioContext;
-  if (!Constructor) {
-    return null;
-  }
-  const context = existing ?? new Constructor();
-  if (context.state === 'suspended') {
-    await context.resume();
-  }
-  return context;
-}
-
 function playBuffer(context: AudioContext, buffer: AudioBuffer, volume: number, rate = 1, delay = 0): void {
   const source = context.createBufferSource();
   const gain = context.createGain();
@@ -182,7 +165,7 @@ export class RecordedGunshotOutput implements GunshotOutput {
   constructor(private readonly base = './audio/') {}
 
   async unlock(): Promise<boolean> {
-    this.context = await openContext(this.context);
+    this.context = await openAudioContext(this.context);
     if (!this.context) {
       return false;
     }
@@ -229,7 +212,7 @@ export class SynthesizedGunshotOutput implements GunshotOutput {
   private buffer: AudioBuffer | null = null;
 
   async unlock(): Promise<boolean> {
-    this.context = await openContext(this.context);
+    this.context = await openAudioContext(this.context);
     if (!this.context) {
       return false;
     }

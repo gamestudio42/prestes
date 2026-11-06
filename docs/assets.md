@@ -35,6 +35,44 @@ no third-party model is used.
 | Pixel icon set | `assets/icons/prestes-icons.aseprite` (source), `apps/game/src/assets/icons.png` and `icons.json` (export) | Prestes project | AGPL-3.0-or-later | 61 original 16 x 16 icons, one named slice each; first drawn from `assets/icons/icons.txt` by `tools/icons/icon_grids.py` and `build-icons.lua`, edited in Aseprite and exported with `pnpm icons` |
 | Mauser shot and bolt | `apps/game/public/audio/mauser-shot.wav`, `mauser-bolt.wav` | Project owner's own recording (video `sons referencia/mouser shot.mp4`, kept out of git) | Owner's own work, given for the game (2026-11-04) | Cut with Blender's audio library: one shot (0.9 s, the recording's saturation kept, -1 dBFS) and the bolt cycle (0.53 s, -6 dBFS). Played by `ShotAudio`, the bolt 1.3 s after each shot at 30% |
 | Fallback gunshot | `apps/game/src/audio/ShotAudio.ts` | Prestes project | CC-BY-4.0 | Procedural gunshot synthesized at runtime, used only when the recording does not load |
+| Menu gramophone art | `apps/game/src/ui/Gramophone.tsx` | Prestes project | AGPL-3.0-or-later | Inline pixel SVG: cabinet, horn, record and crank. The record turns only while a track plays and stops under reduced motion |
+
+## Menu gramophone recordings
+
+The 17 recordings below are public domain; Discografia Brasileira marks each
+recording with the year it entered the public domain. The project owner
+supplied the files and verified the set on 2026-11-06. The source pages are
+the Discografia Brasileira post
+[Novidade na Discografia Brasileira](https://discografiabrasileira.com.br/posts/248200/novidade-na-discografia-brasileira-mais-de-5-mil-gravacoes-em-dominio-publico-podem-ser-baixadas-aqui-no-site)
+and the per-recording page linked from each title. Titles, composers,
+performers, labels, catalog numbers and source URLs are also recorded in
+`apps/game/src/audio/gramophone-tracks.ts`.
+
+The source files stay in the gitignored `gramofone/` folder; the committed
+copies in `apps/game/public/music/` are mono 24 kbps MP3 at 22.05 kHz,
+high-passed at 120 Hz, low-passed at 3.5 kHz, normalized to -20 LUFS with a
+-2 dB true peak, and stripped of tags. `pnpm optimize:music` rebuilds them
+from the source folder.
+
+| File | Title | Composer | Performer | Year | Label / catalog | Public domain | Source |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| `plangente.mp3` | [Plangente](https://discografiabrasileira.com.br/fonograma/22749/plangente-odeon-10137) | Ernesto Nazareth | Orquestra Rio Artists | 1928 | Odeon / OR10137a | 2005 | Discografia Brasileira |
+| `escovado.mp3` | [Escovado](https://discografiabrasileira.com.br/fonograma/8224/escovado-odeon-r-10149) | Ernesto Nazareth | Banda do 1º Regimento da Força Policial | 1905 | Odeon R / OR10149 | 2005 | Discografia Brasileira |
+| `argentina.mp3` | [Argentina](https://discografiabrasileira.com.br/fonograma/185751/argentina-popular-r-4000) | Chiquinha Gonzaga | Chiquinha Gonzaga | 1920 | Popular R / PoR4000 | 2006 | Discografia Brasileira |
+| `menino-de-ouro.mp3` | [Menino de Ouro](https://discografiabrasileira.com.br/fonograma/13624/menino-de-ouro-odeon-r-121712) | Ernesto Nazareth | Banda do Corpo de Bombeiros | 1920 | Odeon R / OR121712 | 2005 | Discografia Brasileira |
+| `aristides-sai-da-toca.mp3` | [Aristides Sai da Toca](https://discografiabrasileira.com.br/fonograma/15657/aristides-sai-da-toca-odeon-r-121920-121921) | José Napolitano | Bahiano; Manuel Pedro dos Santos | 1921 | Odeon R / OR121920 | 1992 | Discografia Brasileira |
+| `o-protocolo.mp3` | [O Protocolo](https://discografiabrasileira.com.br/fonograma/15660/o-protocolo-odeon-r-121920-121921) | B. Silvestre | Bahiano; Manuel Pedro dos Santos | 1921 | Odeon R / OR121921 | 1992 | Discografia Brasileira |
+| `pegue-na-cartilha.mp3` | [Pegue na Cartilha](https://discografiabrasileira.com.br/fonograma/16328/pegue-na-cartilha-odeon-r-122422) | Sinhô | Bahiano; Manuel Pedro dos Santos | 1923 | Odeon R / OR122422 | 2001 | Discografia Brasileira |
+| `lua-branca-lua-de-fulgores.mp3` | [Lua Branca (Lua de Fulgores)](https://discografiabrasileira.com.br/fonograma/17779/lua-branca-lua-de-fulgores-odeon-r-122938) | Chiquinha Gonzaga | Paraguassu; Américo Jacomino “Canhoto” | 1926 | Odeon R / OR122938 | 2006 | Discografia Brasileira |
+| `quem-fala-de-mim-tem-paixao.mp3` | [Quem Fala de Mim Tem Paixão](https://discografiabrasileira.com.br/fonograma/13177/quem-fala-de-mim-tem-paixao-odeon-r-123026-123027) | Sinhô | Pedro Celestino; American Jazz Band | 1926 | Odeon R / OR123027 | 2001 | Discografia Brasileira |
+| `proeminente.mp3` | [Proeminente](https://discografiabrasileira.com.br/fonograma/9696/proeminente-odeon-10087) | Ernesto Nazareth | Orquestra Pan American do Cassino Copacabana | 1927 | Odeon / O10087a | 2005 | Discografia Brasileira |
+| `a-favela-vai-abaixo.mp3` | [A Favela Vai Abaixo](https://discografiabrasileira.com.br/fonograma/21817/a-favela-vai-abaixo-odeon-10096) | Sinhô | Francisco Alves | 1928 | Odeon / O10096a | 2001 | Discografia Brasileira |
+| `tesourinha.mp3` | [Tesourinha](https://discografiabrasileira.com.br/fonograma/24159/tesourinha-odeon-10147) | Sinhô | Francisco Alves | 1928 | Odeon / O10147a | 2001 | Discografia Brasileira |
+| `vadiagem.mp3` | [Vadiagem](https://discografiabrasileira.com.br/fonograma/26836/vadiagem-odeon-10307) | Francisco Alves | Mário Reis | 1929 | Odeon / O10307a | 2023 | Discografia Brasileira |
+| `carga-de-burro.mp3` | [Carga de Burro](https://discografiabrasileira.com.br/fonograma/17017/carga-de-burro-odeon-10387) | Sinhô | Mário Reis | 1929 | Odeon / O10387b | 2001 | Discografia Brasileira |
+| `golpe-errado.mp3` | [Golpe Errado](https://discografiabrasileira.com.br/fonograma/28551/golpe-errado-odeon-10484) | Francisco Alves | Francisco Alves | 1929 | Odeon / O10484b | 2023 | Discografia Brasileira |
+| `malandro-medroso.mp3` | [Malandro Medroso](https://discografiabrasileira.com.br/fonograma/49975/malandro-medroso-parlophon-13245) | Noel Rosa | Noel Rosa; Bando Regional | 1930 | Parlophon / P13245b | 2008 | Discografia Brasileira |
+| `tenho-um-segredo.mp3` | [Tenho um Segredo](https://discografiabrasileira.com.br/fonograma/39291/tenho-um-segredo-victor-33588) | Custódio Mesquita | Silvio Caldas; Grupo dos Piratas | 1932 | Victor / V33588b | 2016 | Discografia Brasileira |
 
 ## Rules
 

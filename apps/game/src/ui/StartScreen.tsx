@@ -11,9 +11,11 @@ import {
 import { battleMaps, type BattleMapId } from '@prestes/shared';
 import { Book, Languages, SoundOff, SoundOn, Troop as Users } from './icons';
 import { CodexEntryArticle } from './CodexPanel';
+import { Gramophone } from './Gramophone';
 import { MarchingScene } from './MarchingScene';
 import { PixelPhoto } from './PixelPhoto';
 import { PixelVideo } from './PixelVideo';
+import { useGramophone } from '../hooks/useGramophone';
 import coverImage from '../assets/menu/coluna-prestes.webp';
 
 export interface StartScreenProps {
@@ -64,6 +66,7 @@ export function StartScreen({
 }: StartScreenProps) {
   const t = (key: MessageKey, values?: Readonly<Record<string, string | number>>) =>
     translate(locale, key, values);
+  const gramophone = useGramophone({ muted: audioMuted, onEnableSound: onToggleAudio });
   const [mark, setMark] = useState<Mark>('campaign');
   const [videoFailed, setVideoFailed] = useState(false);
   const marksRef = useRef<HTMLDivElement | null>(null);
@@ -196,6 +199,7 @@ export function StartScreen({
                 onClick={onToggleAudio}
                 aria-pressed={!audioMuted}
                 data-testid="start-audio"
+                data-no-autoplay
               >
                 {audioMuted ? <SoundOff aria-hidden="true" size={16} /> : <SoundOn aria-hidden="true" size={16} />}
                 {audioMuted ? t('start.audioOff') : t('start.audioOn')}
@@ -260,6 +264,17 @@ export function StartScreen({
           ))}
         </div>
       </div>
+
+      <Gramophone
+        locale={locale}
+        track={gramophone.track}
+        total={gramophone.total}
+        state={gramophone.state}
+        muted={audioMuted}
+        onPlayPause={gramophone.handlePlayPause}
+        onNext={gramophone.handleNext}
+        onPrevious={gramophone.handlePrevious}
+      />
     </main>
   );
 }

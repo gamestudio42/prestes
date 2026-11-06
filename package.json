@@ -31,6 +31,7 @@
     "bench": "tsx tools/sim-bench.ts",
     "battle:report": "tsx tools/battle-report.ts",
     "models": "tsx tools/prepare-models.ts",
+    "optimize:music": "tsx tools/optimize-gramophone.ts",
     "icons": "tsx tools/export-icons.ts",
     "art": "tsx tools/build-art.ts"
   },

@@ -3,6 +3,7 @@ import { resolveLocale, type Locale } from '@prestes/content';
 const LOCALE_STORAGE_KEY = 'prestes.locale';
 const AUDIO_STORAGE_KEY = 'prestes.audio.v1';
 const ROUTES_STORAGE_KEY = 'prestes.routes.v1';
+const GRAMOPHONE_STORAGE_KEY = 'prestes.gramophone.v1';
 
 /** Whether the movement routes of orders are drawn (default: shown). */
 export function loadRoutesVisible(): boolean {
@@ -42,6 +43,33 @@ export function saveAudioSettings(settings: { muted: boolean; volume: number }):
     window.localStorage.setItem(AUDIO_STORAGE_KEY, JSON.stringify(settings));
   } catch {
     // Storage can be unavailable; the session keeps the current settings.
+  }
+}
+
+/** The menu gramophone's selected track; the engine clamps it to the program. */
+export function loadGramophoneTrack(): number {
+  try {
+    const raw = window.localStorage.getItem(GRAMOPHONE_STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw) as { track?: unknown };
+      if (typeof parsed.track === 'number' && Number.isFinite(parsed.track)) {
+        return Math.max(0, Math.trunc(parsed.track));
+      }
+    }
+  } catch {
+    // Storage can be unavailable; the first track is still a safe start.
+  }
+  return 0;
+}
+
+export function saveGramophoneTrack(track: number): void {
+  try {
+    window.localStorage.setItem(
+      GRAMOPHONE_STORAGE_KEY,
+      JSON.stringify({ track: Math.max(0, Math.trunc(track)) }),
+    );
+  } catch {
+    // Storage can be unavailable; the session keeps the current track.
   }
 }
 

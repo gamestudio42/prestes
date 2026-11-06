@@ -9,6 +9,9 @@ const SCREENSHOT = { animations: 'disabled', caret: 'hide', maxDiffPixelRatio: 0
 // when the video finishes loading, so the screenshots hide it. A mask would cover the
 // book too: the video canvas fills the screen.
 const HIDE_MENU_VIDEO = '[data-testid="menu-video"] { visibility: hidden; }';
+// The gramophone has its own baselines; the full-screen menu baselines stay
+// focused on the book and do not depend on whether the music has started.
+const HIDE_GRAMOPHONE = '[data-testid="gramophone"], [data-testid="gramophone-card"] { visibility: hidden; }';
 test.use({ contextOptions: { reducedMotion: 'reduce' } });
 
 async function stableFonts(page: Page): Promise<void> {
@@ -18,9 +21,29 @@ async function stableFonts(page: Page): Promise<void> {
 test('start screen matches the baseline', async ({ page }) => {
   await page.goto('/');
   await expect(page.getByTestId('start-screen')).toBeVisible();
-  await page.addStyleTag({ content: HIDE_MENU_VIDEO });
+  await page.addStyleTag({ content: `${HIDE_MENU_VIDEO}\n${HIDE_GRAMOPHONE}` });
   await stableFonts(page);
   await expect(page).toHaveScreenshot('start-screen.png', SCREENSHOT);
+});
+
+test('gramophone matches the baseline', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.getByTestId('gramophone')).toBeVisible();
+  await page.addStyleTag({ content: HIDE_MENU_VIDEO });
+  await stableFonts(page);
+  await expect(page.getByTestId('gramophone')).toHaveScreenshot('gramophone.png', SCREENSHOT);
+});
+
+test('gramophone card matches the baseline', async ({ page }) => {
+  await page.goto('/');
+  await page.getByTestId('gramophone-next').click();
+  await expect(page.getByTestId('gramophone-card')).toBeVisible();
+  await page.addStyleTag({ content: HIDE_MENU_VIDEO });
+  await stableFonts(page);
+  await expect(page.getByTestId('gramophone-card')).toHaveScreenshot(
+    'gramophone-card.png',
+    SCREENSHOT,
+  );
 });
 
 test('3v3 HUD matches the baseline', async ({ page }) => {
@@ -90,7 +113,7 @@ test('codex matches the baseline', async ({ page }) => {
   await page.goto('/');
   await page.getByTestId('start-codex').click();
   await expect(page.getByTestId('codex')).toBeVisible();
-  await page.addStyleTag({ content: HIDE_MENU_VIDEO });
+  await page.addStyleTag({ content: `${HIDE_MENU_VIDEO}\n${HIDE_GRAMOPHONE}` });
   await stableFonts(page);
   await expect(page).toHaveScreenshot('codex.png', SCREENSHOT);
 });

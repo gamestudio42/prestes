@@ -13,6 +13,8 @@ art-src/**/*.blend
 art-src/**/*.blend1
 fotos dos personages/
 sons referencia/
+# Local source for the menu gramophone; the optimized set is committed.
+gramofone/
 .obsidian/
 # WSL symlinks to .gs42/standards/skills (unreadable by Git for Windows)
 .hermes/skills/feature-design/
