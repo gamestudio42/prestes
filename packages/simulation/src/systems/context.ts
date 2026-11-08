@@ -53,4 +53,6 @@ export interface SimContext {
   readonly ferries: FerryState[];
   /** The battle map, or null on the training ground. */
   readonly battleMap: BattleMap | null;
+  /** pre-battle-roster 4.3: each machine-gun squad's belts beyond the one in the gun (rostered battles). */
+  gunPools?: Record<number, number>;
 }

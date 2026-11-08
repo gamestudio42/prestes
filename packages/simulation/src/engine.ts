@@ -5,6 +5,7 @@ import {
   DEFAULT_WEAPON_ID,
   WEAPONS,
   TRAINING_AMMUNITION,
+  trainingLoad,
   MAX_HP,
   MAX_MORALE,
   SANDBOX_TERRAIN,
@@ -27,6 +28,9 @@ import {
 import type {
   BattleMap,
   BattleMapId,
+  BattleRosters,
+  Roster,
+  WeaponId,
   TerrainFeature,
   Command,
   CommandEnvelope,
@@ -38,6 +42,7 @@ import type {
   SightObstacle,
 } from '@prestes/shared';
 import { OrderManager } from './order-manager';
+import { initialGunPools, updateMachineGuns } from './systems/machine-gun';
 import { DEFAULT_UNITS, FATIGUE_REST, TRAINING_UNITS, battleUnits } from './systems/model';
 import type { ActiveOrder, BoundingGroup, MutableUnit } from './systems/model';
 import type { SimContext } from './systems/context';
@@ -112,6 +117,28 @@ export interface SimulationOptions {
   roster?: readonly RosterRecord[];
   /** The 3v3's battle map (add-battle-maps); the Vila Militar field by default. Tests may pass a map. */
   battleMap?: BattleMapId | BattleMap;
+  /** pre-battle-roster 3.1: the 3v3's forces; absent, the default roster on both sides. */
+  rosters?: BattleRosters;
+}
+
+/** pre-battle-roster 3.2: the weapon a rostered battle names for a soldier (others carry the default). */
+function rosteredWeapon(unit: object): WeaponId | undefined {
+  return (unit as { weaponId?: WeaponId }).weaponId;
+}
+
+/**
+ * pre-battle-roster 3.3: the forces a 3v3 fields. A `legalist` roster is used
+ * as is. With only the player's, the enemy draws one of the map's presets with
+ * the engine RNG (the default on a map without presets, with no draw). With
+ * none, both sides field the default and the RNG is not drawn.
+ */
+export function resolveRosters(map: BattleMap, rosters: BattleRosters | undefined, rng: RNG): BattleRosters | undefined {
+  if (!rosters) return undefined;
+  if (rosters.legalist) return { column: rosters.column, legalist: rosters.legalist };
+  const presets = map.enemyForces ?? [];
+  if (presets.length === 0) return { column: rosters.column };
+  const legalist: Roster = presets[Math.min(presets.length - 1, Math.floor(rng.nextFloat() * presets.length))]!;
+  return { column: rosters.column, legalist: { sections: [...legalist.sections] } };
 }
 
 export class SimulationEngine implements SimContext {
@@ -127,6 +154,8 @@ export class SimulationEngine implements SimContext {
   /** The battle map, in the 3v3 only; other engines keep their own terrain. */
   readonly battleMap: BattleMap | null;
   readonly scenario: 'bootcamp' | 'battle3v3';
+  /** The forces fielded, after the enemy's draw (rostered 3v3 only). */
+  readonly rosters: BattleRosters | undefined;
   readonly combatRange: number;
   boundingEnabled: boolean;
   instructorPinned = false;
@@ -144,6 +173,8 @@ export class SimulationEngine implements SimContext {
   readonly battle = createBattleMemory();
   readonly vision = createVisionState();
   readonly ferries: FerryState[];
+  /** pre-battle-roster 4.3: the machine-gun squads' belt pools (rostered battles with a gun only). */
+  gunPools?: Record<number, number>;
   fog: boolean;
 
   constructor(options: SimulationOptions) {
@@ -188,9 +219,10 @@ export class SimulationEngine implements SimContext {
     this.terrain = trainingGround ? TRAINING_GROUND.terrain : SANDBOX_TERRAIN;
     this.ferries = createFerries(this.battleMap?.ferries ?? []);
     this.selectTerrain();
+    this.rosters = this.battleMap ? resolveRosters(this.battleMap, options.rosters, this.rng) : undefined;
     const source =
       this.battleMap
-        ? battleUnits(this.battleMap.deployment)
+        ? battleUnits(this.battleMap, this.rosters)
         : this.training && !this.opposition
           ? TRAINING_UNITS
           : DEFAULT_UNITS;
@@ -205,9 +237,12 @@ export class SimulationEngine implements SimContext {
         targetX: unit.x,
         targetY: unit.y,
         hp: MAX_HP,
-        weaponId: DEFAULT_WEAPON_ID,
-        // The 3v3 is a training battle: both sides draw the depot issue.
-        ...((this.training && unit.faction === 'column') || this.scenario === 'battle3v3'
+        weaponId: rosteredWeapon(unit) ?? DEFAULT_WEAPON_ID,
+        // The 3v3 is a training battle: both sides draw the depot issue
+        // (pre-battle-roster 1.2: each weapon its own).
+        ...(rosteredWeapon(unit)
+          ? { magazine: trainingLoad(rosteredWeapon(unit)!).magazine, reserve: trainingLoad(rosteredWeapon(unit)!).reserve }
+          : (this.training && unit.faction === 'column') || this.scenario === 'battle3v3'
           ? TRAINING_AMMUNITION
           : {
               magazine: WEAPONS[DEFAULT_WEAPON_ID].magazine,
@@ -276,6 +311,10 @@ export class SimulationEngine implements SimContext {
         recoveryTicks: 0,
       }));
     applyRoster(this, options.roster ?? []);
+    if (this.rosters) {
+      const pools = initialGunPools(this.units);
+      if (Object.keys(pools).length > 0) this.gunPools = pools;
+    }
   }
 
   /** Makes this engine's terrain and map the ones the shared queries read. */
@@ -395,6 +434,7 @@ export class SimulationEngine implements SimContext {
       }
       updateRecon(this, nextTick, events);
       updateRescue(this, nextTick, events);
+      updateMachineGuns(this);
       fire(this, nextTick, events);
       updatePursuit(this, nextTick, events);
       updateBattleFlow(this, nextTick, events);
@@ -502,6 +542,7 @@ export class SimulationEngine implements SimContext {
         rng: this.rng.getState(),
         outcome: this.outcome,
         ...(this.ferries.length > 0 ? { ferries: this.ferries } : {}),
+        ...(this.gunPools ? { gunPools: this.gunPools } : {}),
       }),
     );
   }

@@ -231,4 +231,10 @@ export const SERRA_RIO: BattleMap = {
   ],
   fences: [[{ x: -176, y: 140 }, { x: -140, y: 140 }, { x: -140, y: 160 }]],
   palette: 'cerrado',
+  // pre-battle-roster 2.3: the enemy's forces, one drawn per battle when the player brings a roster.
+  enemyForces: [
+    { sections: ['metralhadora', 'fuzil-metralhador', 'fuzileiros', 'fuzileiros', 'esquadra-4'] },
+    { sections: ['irregulares', 'irregulares', 'irregulares', 'fuzileiros', 'esquadra-4'] },
+    { sections: ['fuzileiros', 'fuzileiros', 'fuzileiros'] },
+  ],
 };

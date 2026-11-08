@@ -267,4 +267,10 @@ export const BAIRRO: BattleMap = {
   lines: wallLines(COVERS.filter((cover) => cover.kind === 'low-wall'), 'brick-wall'),
   yards: QUINTAIS,
   palette: 'urban',
+  // pre-battle-roster 2.3: the enemy's forces, one drawn per battle when the player brings a roster.
+  enemyForces: [
+    { sections: ['comando', 'esquadra-5', 'esquadra-5', 'esquadra-4', 'esquadra-4', 'esquadra-4'] },
+    { sections: ['fuzileiros', 'metralhadora', 'esquadra-4', 'esquadra-4', 'irregulares'] },
+    { sections: ['fuzileiros', 'fuzileiros', 'fuzileiros'] },
+  ],
 };

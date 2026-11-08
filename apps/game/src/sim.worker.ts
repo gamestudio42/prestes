@@ -8,8 +8,8 @@ const port: PortLike = {
 };
 
 const host = createSimulationHost(
-  (seed, sandbox, training, opposition, bounding, scenario, battleMap) =>
-    new SimulationEngine({ seed, sandbox, training, opposition, bounding, scenario, battleMap }),
+  (seed, sandbox, training, opposition, bounding, scenario, battleMap, rosters) =>
+    new SimulationEngine({ seed, sandbox, training, opposition, bounding, scenario, battleMap, rosters }),
   port,
 );
 

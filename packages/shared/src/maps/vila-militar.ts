@@ -35,4 +35,9 @@ export const VILA_MILITAR: BattleMap = {
   props: [],
   fences: [],
   palette: 'temperate',
+  // pre-battle-roster 2.3: the enemy's forces, one drawn per battle when the player brings a roster.
+  enemyForces: [
+    { sections: ['fuzileiros', 'fuzileiros', 'fuzileiros'] },
+    { sections: ['comando', 'fuzileiros', 'fuzileiros', 'esquadra-4'] },
+  ],
 };

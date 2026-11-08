@@ -18,10 +18,10 @@ present an inferred model, calibre detail or statistic as a documented fact.
 | Weapon or equipment | Historical context | Evidence | Game status |
 | --- | --- | --- | --- |
 | Fuzil Mauser 7 mm | Brazil's standard military rifle and the main arm of the revolutionary troops. The source does **not** name the model. | Macaulay, p. 113 | Documented identity; abstracted statistics |
-| Metralhadoras 7 mm | The column had four 7 mm machine guns. | Macaulay, p. 113 | Future weapon; not equipable in this slice |
-| Fuzis automáticos 7 mm | About four serviceable automatic rifles of the same calibre. | Macaulay, p. 113 | Future weapon; not equipable in this slice |
-| Winchester .44 | Civilian hunting rifle used by landowners and irregulars; .44 ammunition was common in the backlands when 7 mm military ammunition was scarce. | Macaulay, p. 152 | Future weapon; historical reference only |
-| Revólveres, carabinas, pistolas e lanças | Irregular gaucho forces carried a mixture; only about one thousand of three thousand men were well armed, while a regular contingent of about two hundred had Mauser rifles. | Macaulay, p. 54 | Future equipment; not implemented |
+| Metralhadoras 7 mm | The column had four 7 mm machine guns. | Macaulay, p. 113 | Equipable in the skirmish (pre-battle-roster): the Metralhadora 7 mm section, one per roster; documented identity, abstracted statistics, model not named |
+| Fuzis automáticos 7 mm | About four serviceable automatic rifles of the same calibre. | Macaulay, p. 113 | Equipable in the skirmish (pre-battle-roster): Esquadra de 5 and Fuzil-metralhador, at most two per roster; documented identity, abstracted statistics, model not named |
+| Winchester .44 | Civilian hunting rifle used by landowners and irregulars; .44 ammunition was common in the backlands when 7 mm military ammunition was scarce. | Macaulay, p. 152 | Equipable in the skirmish (pre-battle-roster): the Irregulares section; documented identity, abstracted statistics, model not named |
+| Revólveres, carabinas, pistolas e lanças | Irregular gaucho forces carried a mixture; only about one thousand of three thousand men were well armed, while a regular contingent of about two hundred had Mauser rifles. | Macaulay, p. 54 | Revolvers equipable in the skirmish (pre-battle-roster): the Comando's officer and the Irregulares' leader; carbines, pistols and lances not implemented |
 | Canhão 75 mm | A battery of three 75 mm field guns crossed the Paraná with the division in April 1925. | Macaulay, p. 93 | Future artillery; not implemented |
 | Obus 105 mm | Government artillery used against the Catanduvas stronghold. | Macaulay, p. 85 | Future artillery; not implemented |
 | 20 mil cartuchos | The column had about twenty thousand cartridges for its rifles, machine guns and automatic rifles, roughly sixteen per man before other stocks are counted. | Macaulay, p. 113 | Design constraint: ammunition scarcity |

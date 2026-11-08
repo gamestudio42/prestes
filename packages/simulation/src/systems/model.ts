@@ -1,6 +1,6 @@
 // Shared simulation data: unit records, templates and tuning constants.
-import { VILA_MILITAR } from '@prestes/shared';
-import type { BattleMap, Gait } from '@prestes/shared';
+import { DEFAULT_ROSTER, deployRoster, SECTION_TYPES } from '@prestes/shared';
+import type { BattleMap, BattleRosters, Gait, SectionTypeId } from '@prestes/shared';
 import type {
   Faction,
   FormationKind,
@@ -74,6 +74,14 @@ export interface MutableUnit {
   squadId: number;
   hp: number;
   weaponId: WeaponId;
+  /** pre-battle-roster: a second weapon (the Comando's officer has only his revolver; an irregular leader carries one). */
+  sidearmId?: WeaponId;
+  /** pre-battle-roster: the section type he was fielded in (rostered battles only). */
+  sectionType?: SectionTypeId;
+  /** pre-battle-roster 4.2: rounds left in the burst he is firing (automatic weapons only). */
+  burstLeft?: number;
+  /** pre-battle-roster 4.3: ticks a gunner has stood still, up to his gun's set-up time. */
+  gunStill?: number;
   magazine: number;
   reserve: number;
   morale: number;
@@ -360,33 +368,54 @@ export const DEFAULT_UNITS: ReadonlyArray<
 export const INFANTRY_TEMPLATE = DEFAULT_UNITS[0]!;
 export const OFFICER_TEMPLATE = DEFAULT_UNITS.find((unit) => unit.kind === 'officer')!;
 
-/**
- * The 3v3 troops, placed on a battle map's deployment zones: three sections
- * of eleven a side, in two ranks 2.8 m apart (add-battle-maps).
- */
-export function battleUnits(deployment: BattleMap['deployment']) {
-  return Array.from({ length: 6 }, (_, squadIndex) => {
-    const faction: 'column' | 'legalist' = squadIndex < 3 ? 'column' : 'legalist';
-    const group = squadIndex % 3;
-    const centre = deployment[faction].sections[group]!;
-    const squadId = faction === 'column' ? group + 1 : 11 + group;
-    return Array.from({ length: 11 }, (_, index) => {
-      const column = index % 6;
-      const row = Math.floor(index / 6);
-      return {
-        ...INFANTRY_TEMPLATE,
-        id: squadIndex * 11 + index + 1,
-        x: centre.x + (column - 2.5) * 2.8,
-        y: centre.y + row * 2.8,
-        faction,
-        squadId,
-      };
-    });
-  }).flat() satisfies readonly (typeof DEFAULT_UNITS)[number][];
-}
+/** A 3v3 soldier before the engine fills in his state; rostered battles name his weapon and section. */
+export type BattleUnitSeed = (typeof DEFAULT_UNITS)[number] & {
+  weaponId?: WeaponId;
+  sidearmId?: WeaponId;
+  sectionType?: SectionTypeId;
+};
 
-// About 180 m apart, out of rifle range: contact begins when a side moves.
-export const BATTLE_UNITS = battleUnits(VILA_MILITAR.deployment);
+/**
+ * The 3v3 troops, placed on a battle map's deployment zones (add-battle-maps;
+ * pre-battle-roster 3.2). Without rosters each side fields the default three
+ * sections of eleven, exactly as before (`default-roster.test.ts` pins them).
+ * With rosters, each side's sections stand in its six slots in roster order
+ * (`deployRoster`), each man with his section's weapon; the Comando's officer
+ * is an `officer`, and a type's speed factor scales his speed. Unit ids run
+ * from 1, column then legalist; squads are 1-6 and 11-16.
+ */
+export function battleUnits(map: BattleMap, rosters?: BattleRosters): BattleUnitSeed[] {
+  const units: BattleUnitSeed[] = [];
+  for (const faction of ['column', 'legalist'] as const) {
+    const roster = rosters ? (faction === 'column' ? rosters.column : (rosters.legalist ?? DEFAULT_ROSTER)) : DEFAULT_ROSTER;
+    for (const section of deployRoster(map, faction, roster).sections) {
+      const type = SECTION_TYPES[section.type];
+      for (const man of section.men) {
+        const base = {
+          ...INFANTRY_TEMPLATE,
+          id: units.length + 1,
+          x: man.x,
+          y: man.y,
+          faction,
+          squadId: section.squadId,
+        };
+        if (!rosters) {
+          units.push(base);
+          continue;
+        }
+        units.push({
+          ...base,
+          speed: INFANTRY_TEMPLATE.speed * (type.speedFactor ?? 1),
+          kind: man.role === 'officer' ? 'officer' : 'infantry',
+          weaponId: man.weapon,
+          ...(man.sidearm ? { sidearmId: man.sidearm } : {}),
+          sectionType: section.type,
+        });
+      }
+    }
+  }
+  return units;
+}
 
 export const TRAINING_UNITS = [
   ...Array.from({ length: 11 }, (_, index) => ({

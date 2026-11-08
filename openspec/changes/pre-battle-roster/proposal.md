@@ -28,15 +28,23 @@ ford, a street corner) all play with the same tool.
   .44 and revólver. Identities follow `docs/history/WEAPONS.md`; models are
   not named where the source does not name them, and statistics stay
   labelled abstracted.
-- **Pre-battle roster screen**: after choosing the map, the player fills his
-  force within a budget of 33 men and at most 6 sections, with limits (one
-  machine gun, one command section, two automatic-rifle teams). A default
-  roster (three rifle sections) is one click. The roster is saved locally.
-  Each section is placed on the map's deployment zone in the order chosen;
-  `add-deployment-phase` then lets the player rearrange them before the
-  battle starts.
-- **The enemy's force**: the legalists draw a roster of the same budget from
-  a few preset forces per map, deterministic by seed.
+- **Skirmish setup screen** (user, 2026-11-08): the desk no longer shows the
+  fan of skirmish maps; one generic map, "Escaramuça", lies on it, and
+  clicking it opens a setup screen where the player chooses, in one place:
+  - the map (a list with each map's preview and description);
+  - the enemy: "Sorteado" (one of the map's preset forces, drawn by seed),
+    one preset chosen by name, or "Montar" (built with the same builder and
+    rules as his own);
+  - his own force, within a budget of 33 men and at most 6 sections, with
+    limits (one machine gun, one command section, two automatic rifles). A
+    default roster (three rifle sections) is one click.
+  "Combater" starts the battle and "Voltar" returns to the desk. The
+  choices are saved locally. Each section is placed on the map's
+  deployment zone in the order chosen; `add-deployment-phase` then lets the
+  player rearrange them in his deployment area before the battle starts.
+- **The enemy's force**: the legalists field the roster the player chose
+  for them; left at "Sorteado", they draw one of a few preset forces per
+  map, deterministic by seed.
 - **Battle report** and goldens: the default roster keeps today's 3 x 11
   force, so the existing goldens and feel bands hold; new tests cover the
   mixed forces.
@@ -46,8 +54,8 @@ ford, a street corner) all play with the same tool.
 
 ### New Capabilities
 
-- `force-roster`: section types, the roster screen and its rules, the
-  enemy's roster and deployment of mixed forces.
+- `force-roster`: section types, the skirmish setup screen and the roster
+  rules, the enemy's roster and deployment of mixed forces.
 
 ### Modified Capabilities
 
@@ -63,8 +71,8 @@ ford, a street corner) all play with the same tool.
   creation from rosters, machine-gun set-up and crew, automatic fire,
   revolver range, officer aura on the command section, enemy roster),
   `packages/view3d` (weapon models or placeholders per kind, machine gun on
-  its tripod), `apps/game` (roster screen in the book menu, HUD weapon card
-  per weapon), `packages/content` (locales, compendium weapon entries
+  its tripod), `apps/game` (the desk's generic skirmish map and the setup
+  screen it opens, replacing the fan of maps; HUD weapon card per weapon), `packages/content` (locales, compendium weapon entries
   updated), tests, asset register.
 - Depends on `add-battle-maps` (archive it first): the roster deploys into
   each map's zones.
@@ -82,9 +90,14 @@ ford, a street corner) all play with the same tool.
   command section's officer is a fictional tenente.
 - **Legal and ethical note**: none beyond the standing rules; weapons are
   shown as period equipment, not glorified, and no brand is used.
-- **MVP**: five weapons, seven section types, the roster screen with its
-  budget and limits, the enemy's presets, the machine-gun set-up, locales,
-  tests.
-- **Non-goals**: artillery (75 mm, 105 mm), cavalry and horses, grenades,
-  promotions and experience, a campaign roster that carries losses between
-  battles, weapon pick-up from the fallen.
+- **MVP**: five weapons, seven section types, the setup screen with its
+  budget and limits, the enemy's presets and the three enemy choices, the
+  machine-gun set-up, locales, tests.
+- **Non-goals**:
+  - artillery (75 mm, 105 mm), cavalry and horses, grenades, promotions and
+    experience, weapon pick-up from the fallen;
+  - the campaign roster: it works differently (it accumulates from phase 02)
+    and is defined with the campaign;
+  - choosing the player's faction: a separate change, which also adds the
+    Northeastern militia (its name to be settled from the sources); the
+    player is the column here.

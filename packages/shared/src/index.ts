@@ -27,6 +27,7 @@ export type {
   TrainingPhaseSetup,
   WoundSeverity,
   Vec2,
+  BattleRosters,
   WorkerRequest,
   WorkerResponse,
 } from './protocol';
@@ -69,8 +70,12 @@ export {
   reloadMagazine,
   totalRounds,
   TRAINING_AMMUNITION,
+  trainingLoad,
   validateWeapons,
+  type BurstProfile,
+  type FireMode,
   type HistoricalStatus,
+  type TrainingLoad,
   type WeaponId,
   type WeaponKind,
   type WeaponProfile,
@@ -192,3 +197,6 @@ export {
 export type { Gait } from './gait';
 export { FogView, GHOST_TICKS, MARKER_SHOW_TICKS } from './fog-view';
 export type { FogExtras, FogGhost, FogMarker } from './fog-view';
+
+export * from './sections';
+export * from './deploy-roster';

@@ -16,7 +16,7 @@ import {
   validateMissionCommander,
   type MissionMetadata,
 } from '@prestes/content';
-import { battleMaps, setActiveMap, validateBattleMap, VILA_MILITAR } from '@prestes/shared';
+import { BATTLE_MAP_IDS, battleMaps, SECTION_TYPES, setActiveMap, validateBattleMap, validateMapRosters, validateSectionTypes, validateWeapons, VILA_MILITAR, WEAPONS } from '@prestes/shared';
 
 const root = process.cwd();
 const errors: string[] = [];
@@ -103,9 +103,31 @@ for (const image of COMPENDIUM_IMAGE_REGISTER) {
 errors.push(...validateChapters());
 
 // add-battle-maps: every battle map's deployment is sound.
+// pre-battle-roster 1.1 and 1.3: every weapon is complete and named in every locale.
+errors.push(...validateWeapons());
+for (const weapon of Object.values(WEAPONS)) {
+  for (const locale of LOCALES) {
+    for (const key of [weapon.nameKey, weapon.shortNameKey, weapon.descriptionKey, `weapon.${weapon.id}.action`, `weapon.${weapon.id}.note`]) {
+      if (!(key in messages[locale])) errors.push(`${weapon.id}: ${locale} has no ${key}`);
+    }
+  }
+}
+
+// pre-battle-roster 2.1: every section type is sound and named in every locale.
+errors.push(...validateSectionTypes(SECTION_TYPES, Object.keys(WEAPONS)));
+for (const type of Object.values(SECTION_TYPES)) {
+  for (const locale of LOCALES) {
+    for (const key of [type.nameKey, type.descriptionKey]) {
+      if (!(key in messages[locale])) errors.push(`${type.id}: ${locale} has no ${key}`);
+    }
+  }
+}
+
 const maps = battleMaps();
 for (const map of maps) {
   errors.push(...validateBattleMap(map));
+  // pre-battle-roster 2.3: enemy presets are valid and any roster deploys on walkable ground.
+  errors.push(...validateMapRosters(map, { requirePresets: (BATTLE_MAP_IDS as readonly string[]).includes(map.id) }));
   // refine-battle-maps 6.3: its pixel preview for the skirmish page (`pnpm maps:previews`).
   if (!existsSync(resolve(root, `apps/game/public/maps/${map.id}.png`))) {
     errors.push(`${map.id}: no preview apps/game/public/maps/${map.id}.png; run pnpm maps:previews`);

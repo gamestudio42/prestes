@@ -2,6 +2,7 @@ import type { BattleMapId } from './maps/types';
 import type { MapDocument } from './maps/document';
 import type { Gait } from './gait';
 import type { WeaponId } from './weapons';
+import type { Roster } from './sections';
 
 export interface Vec2 {
   x: number;
@@ -318,6 +319,12 @@ export interface Frame {
   ferries?: readonly { id: number; x: number; y: number; moving: boolean }[];
 }
 
+/** pre-battle-roster 3.1: the forces of a 3v3. */
+export interface BattleRosters {
+  column: Roster;
+  legalist?: Roster;
+}
+
 export type WorkerRequest =
   | {
       type: 'start';
@@ -335,6 +342,12 @@ export type WorkerRequest =
        * then names.
        */
       mapDocument?: MapDocument;
+      /**
+       * pre-battle-roster 3.1: the 3v3's forces. Absent: the default roster on
+       * both sides. A `legalist` roster is fielded as is; without one the
+       * engine draws one of the map's presets.
+       */
+      rosters?: BattleRosters;
     }
   | { type: 'command'; command: Command }
   | { type: 'step'; ticks: number };

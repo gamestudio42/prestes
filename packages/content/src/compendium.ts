@@ -109,6 +109,8 @@ const BASE: readonly CompendiumEntry[] = [
   { id: 'field-gun-75mm', section: 'weapons', sourceRefs: [M], cite: 'Macaulay, p. 93', confidence: 'high' },
   { id: 'howitzer-105mm', section: 'weapons', sourceRefs: [M], cite: 'Macaulay, p. 85', confidence: 'high' },
   { id: 'cartridges', section: 'weapons', sourceRefs: [M], cite: 'Macaulay, p. 113', confidence: 'high' },
+  // pre-battle-roster 2.1: the skirmish's section types are a game organization.
+  { id: 'skirmish-forces', section: 'weapons', sourceRefs: [M], cite: 'Macaulay, pp. 54, 113, 152; the section types are a game organization', confidence: 'high', label: 'fictional' },
 
   // Known corrections (docs/history/TIMELINE.md)
   { id: 'prestes-not-at-fort', section: 'corrections', sourceRefs: [M], cite: 'Macaulay, ch. II, pp. 37–38', confidence: 'high' },

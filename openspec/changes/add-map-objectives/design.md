@@ -114,8 +114,12 @@ Adds goals to `commandLegalists`:
 - Top bar: `ObjectiveStrip` with an icon per objective (initial letter of
   its name in a period badge), owner colour, value pips, contested pulse;
   hover tooltip with the localized name and value; the clock (mm:ss left).
-- Skirmish page: time-limit choice (15 / 20 / 30 min) under the map list;
-  each map entry lists its objectives' names.
+- Skirmish setup screen (`pre-battle-roster`), map column: the time-limit
+  choice (15 / 20 / 30 min, saved with the other choices); over the chosen
+  map's preview, each objective's flag in its initial owner's colour, and
+  a list of the objectives (name, value, initial owner), so the player
+  builds his force knowing what he must take and hold (user, 2026-11-08:
+  the objectives drive the choice of troops).
 - End panel: decided-by line, a table of objectives (name, owner, value)
   and total value per side.
 
@@ -153,4 +157,4 @@ latest. Goldens re-recorded. No saved data.
 ## Open Questions
 
 - Whether the player may choose "annihilation only" (no objectives) on the
-  skirmish page; deferrable, a flag in the start request.
+  skirmish setup screen; deferrable, a flag in the start request.

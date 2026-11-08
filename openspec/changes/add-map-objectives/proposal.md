@@ -16,7 +16,7 @@ the praça) mean nothing to either side.
   and the enemy has none for 10 s; with men of both sides inside, it is
   contested and does not change hands. Ownership stays until the enemy takes
   it (no need to stay in it).
-- **Victory**: the battle has a time limit chosen on the skirmish page (15,
+- **Victory**: the battle has a time limit chosen on the skirmish setup screen (15,
   20 or 30 minutes; default 20). It ends at the limit, or earlier when a
   side holds every objective for 2 minutes, or when a side breaks (the
   decided-battle rule). The winner is the side with more objective value at
@@ -48,7 +48,8 @@ the praça) mean nothing to either side.
   state and clock in the frame; time limit in the start request),
   `packages/simulation` (capture system, clock, outcome, commander goals),
   `packages/view3d` (flagpoles, capture ring), `apps/game` (time limit on
-  the skirmish page, objective strip, end panel), `packages/content`
+  the skirmish setup screen's time limit and objectives, objective strip,
+  end panel), `packages/content`
   (names, labels), tests, battle report (objectives held, decided by), new
   goldens.
 - Depends on `add-battle-maps` (archived) and, for "a side breaks", on the

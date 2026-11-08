@@ -21,7 +21,7 @@
 
 - [ ] 3.1 `ObjectiveLayer`: flagpole placeholder with owner colour, area outline, capture ring (verify: screenshot review on each map; asset register entry `placeholder:flag`)
 - [ ] 3.2 Top bar `ObjectiveStrip` and clock; tooltips; contested pulse; PT-BR and EN (verify: e2e reads owner changes through the strip; locale check)
-- [ ] 3.3 Skirmish page: time limit choice and objective names per map (verify: e2e chooses 15 min and the clock shows 15:00)
+- [ ] 3.3 Skirmish setup screen: time limit choice (saved with the other choices) and the chosen map's objectives listed and flagged over its preview (verify: e2e chooses 15 min and the clock shows 15:00; e2e "objectives shown before the battle" on the Fazenda)
 - [ ] 3.4 End panel: decided-by line and objectives table (verify: e2e "decided on objectives" with a short limit through the bridge)
 
 ## 4. Close

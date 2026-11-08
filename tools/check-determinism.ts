@@ -1,7 +1,7 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
-import { authoredMapIds, BATTLE_MAP_IDS, loadAuthoredMap, type BattleMapId } from '@prestes/shared';
+import { authoredMapIds, BATTLE_MAP_IDS, loadAuthoredMap, type BattleMapId, type SectionTypeId } from '@prestes/shared';
 import { SimulationEngine } from '@prestes/simulation';
 
 interface Golden {
@@ -10,6 +10,8 @@ interface Golden {
   hash: string;
   /** add-battle-maps: a 1,000-tick 3v3 on each battle map. */
   battleMaps?: Partial<Record<BattleMapId, string>>;
+  /** pre-battle-roster 4.5: the same 3v3 with a fixed mixed roster against a drawn enemy. */
+  mixedRosters?: Partial<Record<BattleMapId, string>>;
 }
 
 const BATTLE_TICKS = 1000;
@@ -20,6 +22,14 @@ function runBattle(map: BattleMapId): string {
 }
 
 const SEED = 1922;
+
+/** pre-battle-roster 4.5: every section type with a weapon of its own; the enemy is drawn from the map's presets. */
+const MIXED_ROSTER: SectionTypeId[] = ['comando', 'metralhadora', 'esquadra-5', 'fuzil-metralhador', 'esquadra-4', 'irregulares'];
+
+function runMixedBattle(map: BattleMapId): string {
+  const engine = new SimulationEngine({ seed: SEED, scenario: 'battle3v3', sandbox: true, battleMap: map, rosters: { column: { sections: MIXED_ROSTER } } });
+  return engine.runTicks(BATTLE_TICKS).hash;
+}
 const TICKS = 600;
 const GOLDEN_PATH = fileURLToPath(new URL('./determinism-golden.json', import.meta.url));
 
@@ -83,11 +93,22 @@ for (const map of [...BATTLE_MAP_IDS, ...authoredMapIds()]) {
   console.log(`3v3 on ${map}, ${BATTLE_TICKS} ticks: ${hash}`);
 }
 
+const mixed: Partial<Record<BattleMapId, string>> = {};
+for (const map of BATTLE_MAP_IDS) {
+  const hash = runMixedBattle(map);
+  if (hash !== runMixedBattle(map)) {
+    console.error(`FAIL nondeterminism: two mixed-roster 3v3 runs on ${map} produced different hashes`);
+    process.exit(1);
+  }
+  mixed[map] = hash;
+  console.log(`mixed-roster 3v3 on ${map}, ${BATTLE_TICKS} ticks: ${hash}`);
+}
+
 const golden = readGolden();
 if (update) {
   writeFileSync(
     GOLDEN_PATH,
-    `${JSON.stringify({ seed: SEED, ticks: TICKS, hash: first, battleMaps: battles }, null, 2)}\n`,
+    `${JSON.stringify({ seed: SEED, ticks: TICKS, hash: first, battleMaps: battles, mixedRosters: mixed }, null, 2)}\n`,
   );
   console.log(`golden updated: ${golden?.hash ?? '(none)'} -> ${first}`);
   process.exit(0);
@@ -100,6 +121,14 @@ for (const [map, hash] of Object.entries(battles)) {
   }
   if (expected !== hash) {
     console.error(`FAIL 3v3 golden mismatch on ${map}: expected ${expected}, actual ${hash}`);
+    console.error('If the simulation change is intended, run pnpm check:determinism --update');
+    process.exit(1);
+  }
+}
+for (const [map, hash] of Object.entries(mixed)) {
+  const expected = golden?.mixedRosters?.[map as BattleMapId];
+  if (expected !== hash) {
+    console.error(`FAIL mixed-roster 3v3 golden ${expected === undefined ? 'missing' : 'mismatch'} on ${map}: expected ${expected}, actual ${hash}`);
     console.error('If the simulation change is intended, run pnpm check:determinism --update');
     process.exit(1);
   }

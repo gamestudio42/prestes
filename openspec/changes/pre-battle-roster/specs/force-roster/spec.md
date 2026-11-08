@@ -22,43 +22,68 @@ note; the weapons follow `docs/history/WEAPONS.md` (`macaulay-1974`, pp. 54,
 - **WHEN** a section stands within the officer's aura of a fit command section
 - **THEN** it receives the officer aura as the sandbox officer gives it
 
-### Requirement: Pre-battle roster
+### Requirement: Skirmish setup screen
 
-After choosing the map, the player SHALL build his force on a roster page of
-the book menu before the 3 vs 3 starts: adding and removing sections and
-ordering them. The roster SHALL hold at most 33 men and 6 sections, at most
-one command section, one machine-gun crew and two automatic-rifle teams; the
-page SHALL show the men used, the sections used and why an addition is
-refused. A default roster of three rifle sections SHALL be one action away.
-The last roster SHALL be saved in local storage and offered again.
+The desk menu SHALL show one generic skirmish map; activating it SHALL open
+a setup screen where the player chooses, before the 3 vs 3 starts, the map,
+the enemy and his own force, and then starts the battle ("Combater") or
+returns to the desk ("Voltar"). The map choice SHALL list every battle map
+with its preview and description. The player builds his force by adding,
+removing and ordering sections. A roster SHALL hold at most 33 men and 6
+sections, at most one command section, one machine-gun crew and two
+automatic rifles (Esquadra de 5 and Fuzil-metralhador together); the screen
+SHALL show the men used, the sections used and why an addition is refused.
+A default roster of three rifle sections SHALL be one action away. The
+enemy SHALL be one of: "Sorteado" (a preset of the map drawn by seed, the
+default), a preset of the map chosen by name, or a roster the player builds
+under the same rules. The last map, roster and enemy choice SHALL be saved
+in local storage and offered again. Every label SHALL be localized in PT-BR
+and EN.
+
+#### Scenario: Setup opens from the desk
+- **WHEN** the player activates the skirmish map on the desk
+- **THEN** the setup screen opens with the last map, roster and enemy choice
+
+#### Scenario: Back to the desk
+- **WHEN** the player chooses "Voltar" on the setup screen
+- **THEN** the desk is shown and no battle starts
 
 #### Scenario: Budget refuses an addition
 - **WHEN** the roster holds 30 men and the player adds a rifle section of eleven
-- **THEN** the addition is refused and the page says the 33-man limit is reached
+- **THEN** the addition is refused and the screen says the 33-man limit is reached
 
 #### Scenario: Default roster
 - **WHEN** the player chooses the default roster and starts the battle
 - **THEN** the battle starts with three rifle sections of eleven, as before
 
 #### Scenario: Roster remembered
-- **WHEN** the player builds a roster, fights and returns to the roster page
+- **WHEN** the player builds a roster, fights and returns to the setup screen
 - **THEN** the same roster is offered
+
+#### Scenario: Enemy chosen
+- **WHEN** the player chooses one of the map's presets for the enemy and starts the battle
+- **THEN** the legalists field that preset and no preset is drawn
+
+#### Scenario: Enemy built
+- **WHEN** the player builds the enemy's roster and adds a second machine gun
+- **THEN** the addition is refused with the same reason as for his own roster
 
 ### Requirement: Mixed-force deployment
 
 Each side's sections SHALL deploy across its map's deployment zone in roster
 order: the zone's three section starts first, further sections between and
-behind them, every soldier on walkable ground. Each section SHALL be one
-selectable troop with its own card. The enemy SHALL field a roster of the
-same budget drawn from preset forces for the map, chosen by the battle seed,
-so the same seed fields the same enemy.
+behind them, every soldier on walkable ground. These are the starting
+places; a deployment phase may rearrange them. Each section SHALL be one
+selectable troop with its own card. When the enemy is left at "Sorteado",
+it SHALL field a roster drawn from preset forces for the map, chosen by the
+battle seed, so the same seed fields the same enemy.
 
 #### Scenario: Six small sections deploy
 - **WHEN** a roster of six sections starts on Bairro
 - **THEN** every soldier stands on walkable ground in the column's zone and six troop cards are shown
 
 #### Scenario: Enemy roster is deterministic
-- **WHEN** two battles start with the same seed and map
+- **WHEN** two battles start with the same seed and map, the enemy left at "Sorteado"
 - **THEN** the enemy fields the same sections in the same places
 
 ### Requirement: Section speed and command

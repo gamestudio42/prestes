@@ -16,6 +16,7 @@ import { woundAccuracyFactor } from './casualties';
 import { markUnderFire, shooterOf } from './fire-reaction';
 import { unseenFireMarker } from './vision';
 import { hiddenByVegetation, revealShooter } from './concealment';
+import { drawBelt, feedingGun, gunReady } from './machine-gun';
 
 /**
  * Ambush and fire on contact hold their fire beyond their radius: the shooter
@@ -201,8 +202,18 @@ export function acquireTargets(ctx: SimContext): void {
   }
 }
 
+/**
+ * pre-battle-roster 4.1: how far a man can engage, his weapon's range within
+ * the battle's combat range (seeing is not shooting: vision keeps its own).
+ * The Mauser's range is the 3v3's combat range, so riflemen are unchanged.
+ */
+export function engageRange(ctx: SimContext, shooter: MutableUnit): number {
+  const weapon = getWeapon(shooter.weaponId);
+  return weapon ? Math.min(ctx.combatRange, weapon.range) : ctx.combatRange;
+}
+
 export function visible(ctx: SimContext, shooter: MutableUnit, target: MutableUnit): boolean {
-  const range = ctx.combatRange;
+  const range = engageRange(ctx, shooter);
   const dx = target.x - shooter.x;
   const dy = target.y - shooter.y;
   if (dx * dx + dy * dy > range * range) {
@@ -240,11 +251,16 @@ export function fire(ctx: SimContext, tick: number, events: SimEvent[]): void {
       unit.reload > 0 ||
       unit.cooldown > 0 ||
       unit.targetId === null ||
-      unit.ferryId !== undefined
+      unit.ferryId !== undefined ||
+      // pre-battle-roster 4.3: a gun not yet set does not fire; its loaders feed it.
+      !gunReady(unit) ||
+      feedingGun(ctx, unit, tick)
     ) {
       continue;
     }
     if (unit.magazine <= 0) {
+      if (unit.burstLeft !== undefined) unit.burstLeft = 0;
+      drawBelt(ctx, unit);
       if (unit.reserve > 0) {
         unit.reload = weapon.reloadTicks;
       }
@@ -293,7 +309,13 @@ export function fire(ctx: SimContext, tick: number, events: SimEvent[]): void {
         continue;
       }
     }
-    const rangeFactor = Math.max(0.25, 1 - (distance / ctx.combatRange) * 0.55);
+    const rangeFactor = Math.max(0.25, 1 - (distance / engageRange(ctx, unit)) * 0.55);
+    // pre-battle-roster 4.2: an automatic weapon fires bursts. Its length is
+    // drawn when it starts; each round is its own, less accurate, hit roll.
+    const burst = weapon.fire !== 'aimed' ? weapon.burst : undefined;
+    if (burst && (unit.burstLeft ?? 0) <= 0) {
+      unit.burstLeft = burst.rounds[0] + Math.floor(ctx.rng.nextFloat() * (burst.rounds[1] - burst.rounds[0] + 1));
+    }
     const targetCover = coverAgainst(target.x, target.y, unit.x, unit.y, target.stance, ctx.covers);
     const moraleFactor = unit.morale < SUPPRESSION_THRESHOLD ? 0.55 : 1;
     // A man keeping his head down under fire aims worse.
@@ -309,7 +331,8 @@ export function fire(ctx: SimContext, tick: number, events: SimEvent[]): void {
         moraleFactor *
         underFireFactor *
         suppressFactor *
-        woundAccuracyFactor(ctx, unit),
+        woundAccuracyFactor(ctx, unit) *
+        (burst ? burst.hitFactor : 1),
       0.05,
       0.95,
     );
@@ -348,6 +371,13 @@ export function fire(ctx: SimContext, tick: number, events: SimEvent[]): void {
         ? SUPPRESS_FIRE_INTERVAL
         : weapon.fireIntervalTicks
       : drawTicks(ctx, weapon.aimedIntervalTicks);
+    if (burst) {
+      unit.burstLeft = (unit.burstLeft ?? 1) - 1;
+      if (unit.magazine === 0) unit.burstLeft = 0;
+      // The next round of the burst follows at once; after it, the weapon's rhythm.
+      if (unit.burstLeft > 0) unit.cooldown = burst.gapTicks;
+    }
+    if (unit.magazine === 0) drawBelt(ctx, unit);
     if (unit.magazine === 0 && unit.reserve > 0) {
       unit.reload = weapon.reloadTicks;
     }

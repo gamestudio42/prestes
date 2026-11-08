@@ -221,4 +221,10 @@ export const FAZENDA: BattleMap = {
     ...wallLines(LINES.filter((cover) => cover.id === 672), 'brick-wall'),
   ],
   palette: 'temperate',
+  // pre-battle-roster 2.3: the enemy's forces, one drawn per battle when the player brings a roster.
+  enemyForces: [
+    { sections: ['comando', 'metralhadora', 'fuzileiros', 'fuzileiros'] },
+    { sections: ['fuzileiros', 'fuzileiros', 'fuzileiros'] },
+    { sections: ['irregulares', 'irregulares', 'fuzileiros', 'esquadra-5', 'esquadra-4'] },
+  ],
 };

@@ -1,4 +1,4 @@
-import { compileMapDocument, registerBattleMap, type BattleMapId, type PortLike, type WorkerRequest } from '@prestes/shared';
+import { compileMapDocument, registerBattleMap, validateRoster, type BattleMapId, type BattleRosters, type PortLike, type WorkerRequest } from '@prestes/shared';
 import type { SimulationEngine } from './engine';
 
 const GAME_FRAME = { hash: false } as const;
@@ -20,6 +20,7 @@ export function createSimulationHost(
     bounding?: boolean,
     scenario?: 'bootcamp' | 'battle3v3',
     battleMap?: BattleMapId,
+    rosters?: BattleRosters,
   ) => SimulationEngine,
   port: PortLike,
 ): SimulationHost {
@@ -36,6 +37,12 @@ export function createSimulationHost(
             return;
           }
         }
+        // pre-battle-roster 3.1: a roster the rules refuse never reaches the engine.
+        const rosters = message.rosters;
+        if (rosters && [rosters.column, rosters.legalist].some((roster) => roster && !validateRoster(roster).ok)) {
+          port.postMessage({ type: 'error', message: 'roster_invalid' });
+          return;
+        }
         engine = factory(
           message.seed,
           message.sandbox,
@@ -44,6 +51,7 @@ export function createSimulationHost(
           message.bounding,
           message.scenario,
           message.battleMap,
+          rosters,
         );
         // The game never reads the state hash: frames to it go without one.
         port.postMessage({ type: 'ready', frame: engine.frame(GAME_FRAME) });

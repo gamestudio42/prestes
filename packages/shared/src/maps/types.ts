@@ -1,6 +1,7 @@
 import type { CoverPoint, Vec2 } from '../protocol';
 import type { TerrainFeature, TerrainSurface } from '../terrain';
 import type { Building } from '../world';
+import type { Roster } from '../sections';
 
 /** The hand-written maps. */
 export type BuiltinBattleMapId = 'vila-militar' | 'fazenda' | 'serra-rio' | 'bairro';
@@ -163,4 +164,9 @@ export interface BattleMap {
   paint?: Uint8Array;
   /** The view's ground colour family. */
   palette: 'temperate' | 'cerrado' | 'caatinga' | 'urban';
+  /**
+   * pre-battle-roster 2.3: the legalist forces the engine draws from when the
+   * player brings a roster (built-in maps). Absent: the default roster.
+   */
+  enemyForces?: readonly Roster[];
 }

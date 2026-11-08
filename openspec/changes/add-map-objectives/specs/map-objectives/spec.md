@@ -41,14 +41,20 @@ NOT count. Capture SHALL be deterministic.
 
 ### Requirement: Battle clock and victory
 
-The skirmish page SHALL let the player choose a time limit of 15, 20 or 30
-minutes (default 20), localized. The battle SHALL end at the time limit,
+The skirmish setup screen SHALL let the player choose a time limit of 15,
+20 or 30 minutes (default 20), localized, and SHALL show the chosen map's
+objectives (name, value and initial owner, and their flags over the map's
+preview) while the player builds his force. The battle SHALL end at the time limit,
 or earlier when a side holds every objective for 2 continuous minutes, or
 when a side breaks or has no fit soldier. The winner SHALL be: the side
 that is not broken when the other breaks; otherwise the side holding more
 objective value at the end; equal value SHALL be a draw. The end panel
 SHALL show each objective's owner and each side's value, and how the battle
 was decided.
+
+#### Scenario: Objectives shown before the battle
+- **WHEN** the player chooses the Fazenda on the setup screen
+- **THEN** the screen lists its objectives with their values and initial owners and marks them on the preview
 
 #### Scenario: Time runs out
 - **WHEN** the clock reaches the limit with the column holding value 4 and the legalists value 3

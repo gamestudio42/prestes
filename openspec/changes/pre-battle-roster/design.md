@@ -17,7 +17,8 @@
   of the same faction within 12 m of a fit `officer`. `regroup` and
   `protect-officer` orders are refused without an officer (`no_officer`).
 - The start request carries `seed, scenario, battleMap`; the menu is the
-  book (`StartScreen`), with a skirmish spread listing the maps.
+  desk (`MenuDesk`), where the skirmish maps lie as a fan of sheets
+  (`SkirmishMaps`) whose active sheet starts the battle.
 - The HUD (`apps/game/src/ui/hud/`) shows section cards (`SquadCards`), a
   troop summary and a weapon card that assumes one weapon per section.
 
@@ -155,10 +156,14 @@ together (at most 2 automatic rifles in a roster).
 
 ### 8. The enemy's roster
 
-Each map gains `enemyForces: Roster[]`. The engine picks
-`enemyForces[floor(rng.nextFloat() x n)]` only when the player passed a
-roster; with no roster (tests, tools, the default battle), the enemy is the
-default and the RNG is not drawn, so goldens hold. Presets:
+Each map gains `enemyForces: Roster[]`. The setup screen offers three
+enemy choices: "Sorteado", a preset by name, or a built roster. A chosen
+or built roster is sent as `rosters.legalist` and used as is. The engine
+picks `enemyForces[floor(rng.nextFloat() x n)]` only when the player passed
+his roster and no `legalist` one ("Sorteado"); with no roster at all (tests,
+tools, the default battle), the enemy is the default and the RNG is not
+drawn, so goldens hold. Maps without presets (authored maps) field the
+default roster when drawn. Presets:
 
 | Map | Preset A | Preset B | Preset C |
 | --- | --- | --- | --- |
@@ -172,21 +177,47 @@ most 33 men). The enemy commander already plans per section; with more,
 smaller sections it keeps "one more section attacks" and "all but one
 attack when quiet".
 
-### 9. Roster spread in the book menu
+### 9. Skirmish setup screen
 
-Flow: skirmish page (map list) → "Montar a tropa" → roster spread →
-"Combater". Layout at 1440 x 900 and 1280 x 720:
+The book menu is gone; the desk replaced it. The user asked (2026-11-08)
+for one generic map on the desk that opens a screen where the whole
+skirmish is set up, instead of the fan of map sheets.
 
-- Left page: the section types as entries (name, men, weapons as small
-  icons, one-line description); Enter or click adds; a refused type shows
-  its reason inline ("limite de 33 homens", "só uma metralhadora").
-- Right page: the roster in order (up to 6 rows: type, men, ▲ ▼ ✕),
-  counters "Homens 29/33 · Seções 5/6", buttons "Tropa padrão" and
-  "Combater" (disabled when empty), the map's name as a reminder.
-- Keyboard: arrows move between entries, Enter adds or activates, Delete
-  removes the focused roster row.
-- Saved in `localStorage` under `prestes.roster.v1`; invalid saved data
-  falls back to the default.
+Flow: desk → the generic "Escaramuça" map (a desk object in place of the
+fan) → setup screen → "Combater" → battle (or, after
+`add-deployment-phase`, the deployment phase). "Voltar" returns to the
+desk. Layout at 1440 x 900 and 1280 x 720, a planning board in the desk's
+art:
+
+- Left column, the map: the battle maps as a list (preview from
+  `public/maps/<id>.png`, name), the chosen map's larger preview and
+  description. Later changes add to this column (`add-map-objectives`: the
+  time limit and the objectives over the preview).
+- Centre, your force: the section types as entries (name, men, weapons as
+  small icons, one-line description); Enter or click adds; a refused type
+  shows its reason inline ("limite de 33 homens", "só uma metralhadora").
+  Below, the roster in order (up to 6 rows: type, men, ▲ ▼ ✕), counters
+  "Homens 29/33 · Seções 5/6" and "Tropa padrão".
+- Right column, the enemy: a three-way choice "Sorteado" / a preset (a list
+  of the map's presets, each with its sections and men) / "Montar" (the
+  same builder as the centre, for the legalists). Changing the map resets a
+  chosen preset to "Sorteado"; a built roster is kept.
+- Footer: "Voltar" and "Combater" (disabled while either roster is
+  refused or empty).
+- Keyboard: Tab moves between the three columns; arrows move between
+  entries; Enter adds or activates; Delete removes the focused roster row;
+  Escape is "Voltar".
+- Saved in `localStorage` under `prestes.roster.v1` as
+  `{ map, roster, enemy: { kind: 'drawn' } | { kind: 'preset', index } |
+  { kind: 'built', roster } }`; invalid saved data falls back to the
+  default (Vila Militar, default roster, "Sorteado").
+- The player is the column. A faction choice is a separate change (with
+  the Northeastern militia); the screen leaves room for it at the top of
+  the centre column and shows nothing for it now.
+
+The six slots of section 7 are where the sections start; once
+`add-deployment-phase` is in, the player moves them inside his side's
+deployment area before pressing "Iniciar batalha".
 
 ### 10. HUD
 
