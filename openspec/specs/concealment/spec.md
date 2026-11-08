@@ -1,7 +1,7 @@
 # concealment Specification
 
 ## Purpose
-TBD - created by archiving change add-battle-maps. Update Purpose after archive.
+Defines how vegetation on a battle map hides soldiers: which crops and grasses conceal, at what range a man in them is seen by stance, how crops cut sight lines, how concealment differs from cover, how a shot gives the shooter away, and how crops slow movement.
 
 ## Requirements
 
