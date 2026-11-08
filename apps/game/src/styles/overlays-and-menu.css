@@ -793,3 +793,24 @@
   gap: 8px;
   justify-content: flex-end;
 }
+
+/* refine-battle-maps 6.2: the opening deployment marks' labels. */
+.deployment-label {
+  padding: 4px 9px 5px;
+  border: 2px solid currentColor;
+  background: rgba(23, 20, 15, 0.82);
+  font: 600 13px/1.2 var(--px-font);
+  letter-spacing: 0;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transform: translate(-50%, calc(-100% - 56px));
+  pointer-events: none;
+}
+
+.deployment-label-own {
+  color: #e0cf8a;
+}
+
+.deployment-label-enemy {
+  color: #9fb4d0;
+}

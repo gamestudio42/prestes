@@ -166,9 +166,14 @@ export function ringColorFor(unit: {
   incapacitated: boolean;
   stance: Stance;
   concealed?: boolean;
+  revealed?: boolean;
 }): number {
   if (unit.incapacitated) {
     return PALETTE.scarf;
+  }
+  // refine-battle-maps 5.14: "Revelado", given away by his own shot.
+  if (unit.revealed) {
+    return PALETTE.revealed;
   }
   // add-battle-maps: hidden in the crops or the grass.
   if (unit.concealed) {

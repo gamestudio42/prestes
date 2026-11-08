@@ -21,11 +21,41 @@ role, not a moral judgement.
   column's most visible leader, while Miguel Costa was the formal commander.
 - **Playable:** yes — “O Anel de Ferro” commander.
 - **Labels:** historical.
-- **Sources:** `macaulay-1974`, `blanc-2024`, `amado-1942`, `anita-1991`.
+- **Sources:** `macaulay-1974`, `blanc-2024`, `amado-1942`, `anita-1991`,
+  `cpdoc-prestes`.
 - **Game note:** do not erase Miguel Costa's command or reduce the column to one
   man. Amado supplies tone, not chronology.
+
+## Miguel Costa
+
+- **Id:** `miguel-costa`
+- **Role:** Major in the São Paulo state militia; formal commander of the First
+  Revolutionary Division from April 1925; the column’s political-military
+  counterpart to Prestes.
+- **Playable:** proposed — mission 03, “A Divisão”.
+- **Labels:** historical.
+- **Sources:** `macaulay-1974`, ch. III, pp. 86–89; `castro-2016`;
+  `tavora-1928` (citation-only).
+- **Game note:** he is the formal commander; Prestes is chief of staff. He was
+  not present at Ramada; the mission keeps him off-stage until the division.
+
+## Isidoro Dias Lopes
+
+- **Id:** `isidoro-dias-lopes`
+- **Role:** Retired colonel, promoted general by the São Paulo rebels in 1924;
+  overall commander of the São Paulo revolt and the Paraná front, based at Foz
+  do Iguaçu.
+- **Playable:** proposed — mission 04, “A Frente do Paraná”, as the command voice.
+- **Labels:** historical.
+- **Sources:** `macaulay-1974`, ch. I, pp. 4–6; ch. III, pp. 80–89;
+  `castro-2022`.
+- **Game note:** he was at Foz, not in the Catanduvas trenches. Estilac Leal’s
+  brigade held Catanduvas; the mission must not put Isidoro in the front line.
 
 ## Adding figures
 
 Add the entry here, add the id to `packages/content/src/figures.ts`, and make
 sure every `sourceRef` exists in `SOURCES.md` and `packages/content/src/sources.ts`.
+Miguel Costa and Isidoro Dias Lopes are in the runtime registry with
+`playable: false`: they command campaign chapters 3 and 4, which have no mission
+yet.

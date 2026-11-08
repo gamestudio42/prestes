@@ -23,6 +23,7 @@ const steps: Step[] = [
   { name: 'build', command: 'pnpm build' },
   { name: 'bundle budget', command: 'pnpm check:bundle' },
   { name: 'determinism', command: 'pnpm check:determinism' },
+  { name: 'tick budget', command: 'pnpm check:budget' },
   { name: 'openspec validate', command: `${openspec} validate --specs`, requires: openspec },
   { name: 'e2e', command: 'pnpm e2e', slow: true },
 ];

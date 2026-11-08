@@ -1,5 +1,7 @@
-import type { BattleMapId, PortLike, WorkerRequest } from '@prestes/shared';
+import { compileMapDocument, registerBattleMap, type BattleMapId, type PortLike, type WorkerRequest } from '@prestes/shared';
 import type { SimulationEngine } from './engine';
+
+const GAME_FRAME = { hash: false } as const;
 
 export interface SimulationHost {
   handle(message: WorkerRequest): void;
@@ -26,6 +28,14 @@ export function createSimulationHost(
   return {
     handle(message: WorkerRequest): void {
       if (message.type === 'start') {
+        if (message.mapDocument) {
+          try {
+            registerBattleMap(compileMapDocument(message.mapDocument));
+          } catch {
+            port.postMessage({ type: 'error', message: 'map_document_invalid' });
+            return;
+          }
+        }
         engine = factory(
           message.seed,
           message.sandbox,
@@ -35,7 +45,8 @@ export function createSimulationHost(
           message.scenario,
           message.battleMap,
         );
-        port.postMessage({ type: 'ready', frame: engine.frame() });
+        // The game never reads the state hash: frames to it go without one.
+        port.postMessage({ type: 'ready', frame: engine.frame(GAME_FRAME) });
         return;
       }
 
@@ -50,7 +61,7 @@ export function createSimulationHost(
       }
 
       if (message.type === 'step') {
-        const frame = engine.runTicks(message.ticks);
+        const frame = engine.runTicks(message.ticks, GAME_FRAME);
         port.postMessage({ type: 'frame', frame });
       }
     },

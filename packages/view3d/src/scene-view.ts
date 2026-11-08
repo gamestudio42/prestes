@@ -20,13 +20,14 @@ import {
   type FogExtras,
   troopFormationOffsets,
 } from '@prestes/shared';
-import { CameraRig, type CameraBand } from './camera-rig';
+import { CameraRig, STRATEGIC_TILT, TACTICAL_SPAN, type CameraBand } from './camera-rig';
 import { CharacterLayer } from './character-layer';
 import { CoverLayer } from './cover-layer';
 import { EffectsLayer } from './effects-layer';
 import { MarkerLayer } from './marker-layer';
-import { loadEnvironmentAsset } from './environment-models';
-import { toon } from './materials';
+import { loadEnvironmentAsset, type EnvironmentAsset } from './environment-models';
+import { PaintedGround, type GroundOverlay } from './painted-ground';
+import { terrainGradient, toon, toonGradient } from './materials';
 import { PALETTE } from './palette';
 import { PathLayer, selectedOrders } from './path-layer';
 import { PixelPost } from './post';
@@ -35,6 +36,7 @@ import { TracerLayer } from './tracer-layer';
 import { TrainingLayer, type TrainingMarker } from './training-layer';
 import { WorldLayer } from './world-layer';
 import { BattleMapLayer } from './battle-map-layer';
+import { DeploymentLayer, type DeploymentLabels } from './deployment-layer';
 
 
 export interface OrderCallout {
@@ -65,8 +67,8 @@ export interface SceneViewOptions {
   onBandChange?: (band: CameraBand) => void;
   trainingField?: boolean;
   strategicField?: boolean;
-  /** add-battle-maps: the 3v3's map; the Vila Militar field when absent. */
-  battleMap?: BattleMapId;
+  /** add-battle-maps: the 3v3's map; the Vila Militar field when absent. The editor passes the map itself. */
+  battleMap?: BattleMapId | BattleMap;
   onCameraAction?: (kind: 'pan' | 'zoom' | 'rotate') => void;
 }
 
@@ -78,6 +80,11 @@ export interface CommanderBalloon {
   text: string;
 }
 
+/** A battle map's fences the world layer draws as posts and wire; board fences are the map layer's. */
+function wireFences(map: BattleMap): BattleMap['fences'] {
+  return map.fenceStyle === 'boards' ? [] : map.fences;
+}
+
 export class SceneView {
   private readonly container: HTMLElement;
   private readonly onBandChange?: (band: CameraBand) => void;
@@ -85,7 +92,10 @@ export class SceneView {
   private readonly renderer: THREE.WebGLRenderer;
   private readonly scene: THREE.Scene;
   private readonly rig = new CameraRig(0, 4);
-  private terrainMesh: THREE.Mesh | null = null;
+  private terrainMesh: THREE.Object3D | null = null;
+  private sun: THREE.DirectionalLight | null = null;
+  /** add-map-editor: the painted ground of an authored map. */
+  private paintedGround: PaintedGround | null = null;
   private readonly post = new PixelPost();
   private readonly covers = new CoverLayer();
   private readonly characters = new CharacterLayer();
@@ -94,10 +104,13 @@ export class SceneView {
   private readonly effects = new EffectsLayer();
   private readonly markers = new MarkerLayer();
   private readonly preview = new PreviewLayer();
-  private readonly battleMap: BattleMap | null;
-  private readonly mapLayer: BattleMapLayer | null = null;
+  private battleMap: BattleMap | null;
+  private mapLayer: BattleMapLayer | null = null;
+  /** refine-battle-maps 6.2: the opening deployment marks (a battle only, never the editor). */
+  private deployment: DeploymentLayer | null = null;
+  private environment: EnvironmentAsset | null = null;
   private readonly training = new TrainingLayer();
-  private readonly world: WorldLayer;
+  private world: WorldLayer;
   private disposed = false;
   private selectedUnits: readonly number[] = [];
   private readonly placementRoot = new THREE.Group();
@@ -151,10 +164,16 @@ export class SceneView {
     const sun = new THREE.DirectionalLight(PALETTE.sun, 1.7);
     sun.position.set(40, 70, 30);
     this.scene.add(sun);
+    this.sun = sun;
 
     // The training ground has its own terrain and countryside; a battle map
     // (add-battle-maps) its heightfield, water, crops and buildings.
-    const map = options.battleMap && !options.trainingField ? battleMap(options.battleMap) : null;
+    const map =
+      options.battleMap && !options.trainingField
+        ? typeof options.battleMap === 'object'
+          ? options.battleMap
+          : battleMap(options.battleMap)
+        : null;
     this.battleMap = map && map.height.kind === 'field' ? map : null;
     if (this.battleMap) {
       setActiveMap(this.battleMap);
@@ -165,7 +184,7 @@ export class SceneView {
     }
     this.world = new WorldLayer(
       options.trainingField ? 'training' : this.battleMap ? 'battle' : 'sandbox',
-      this.battleMap?.fences ?? [],
+      this.battleMap ? wireFences(this.battleMap) : [],
     );
     this.characters.loadModels();
     this.loadEnvironment();
@@ -200,10 +219,15 @@ export class SceneView {
       this.rig.targetSpan = 240;
     }
     if (this.battleMap) {
-      // Open on the player's deployment.
-      const zone = this.battleMap.deployment.column.sections;
-      this.rig.focusX = zone.reduce((sum, point) => sum + point.x, 0) / zone.length;
-      this.rig.focusY = zone.reduce((sum, point) => sum + point.y, 0) / zone.length - 40;
+      // refine-battle-maps 6.1: open at tactical span on the first section;
+      // Home frames the whole map.
+      const first = this.battleMap.deployment.column.sections[0];
+      if (first) {
+        this.rig.focusX = first.x;
+        this.rig.focusY = first.y;
+      }
+      this.rig.span = TACTICAL_SPAN;
+      this.rig.targetSpan = TACTICAL_SPAN;
     }
     this.resize();
     this.rig.update(0);
@@ -577,7 +601,7 @@ export class SceneView {
     );
     const hit = new THREE.Vector3();
     if (this.terrainMesh) {
-      const intersections = this.raycaster.intersectObject(this.terrainMesh);
+      const intersections = this.raycaster.intersectObject(this.terrainMesh, true);
       const terrainHit = intersections[0];
       if (terrainHit) {
         return { x: terrainHit.point.x, y: terrainHit.point.z };
@@ -601,6 +625,7 @@ export class SceneView {
     loadEnvironmentAsset()
       .then((asset) => {
         if (this.disposed) return;
+        this.environment = asset;
         this.world.useModels(asset);
         this.mapLayer?.useModels(asset);
         this.covers.useModels(asset);
@@ -611,13 +636,121 @@ export class SceneView {
       });
   }
 
+  // --- add-map-editor: what the editor drives -------------------------------
+
+  /** The 3D scene, for the editor's own layer (cursor, gizmos, labels). */
+  get editorScene(): THREE.Scene {
+    return this.scene;
+  }
+
+  get camera(): CameraRig {
+    return this.rig;
+  }
+
+  /**
+   * Replaces the battle map: its ground, countryside and fences. The camera
+   * stays where it is. The map must be the active one (setActiveMap).
+   */
+  replaceBattleMap(map: BattleMap): void {
+    if (this.mapLayer) {
+      this.scene.remove(this.mapLayer.group);
+      disposeObject(this.mapLayer.group);
+    }
+    this.battleMap = map;
+    this.mapLayer = new BattleMapLayer(map);
+    if (this.environment) this.mapLayer.useModels(this.environment);
+    this.scene.add(this.mapLayer.group);
+    this.scene.remove(this.world.group);
+    disposeObject(this.world.group);
+    this.world = new WorldLayer('battle', wireFences(map));
+    if (this.environment) this.world.useModels(this.environment);
+    this.scene.add(this.world.group);
+    if (this.paintedGround && map.paint && this.paintedGround.side === Math.round(map.bounds.maxX - map.bounds.minX)) {
+      this.paintedGround.setPaint(map.paint);
+      this.paintedGround.updateHeights(terrainHeightAt);
+    } else {
+      if (this.terrainMesh) {
+        this.scene.remove(this.terrainMesh);
+        disposeObject(this.terrainMesh);
+      }
+      this.paintedGround?.dispose();
+      this.paintedGround = null;
+      this.terrainMesh = null;
+      this.addWorld();
+    }
+  }
+
+  /** Re-reads ground heights in `box` from `height` (the editor's live stroke). */
+  updateGroundHeights(height: (x: number, z: number) => number, box?: { minX: number; minY: number; maxX: number; maxY: number }): void {
+    this.paintedGround?.updateHeights(height, box);
+  }
+
+  setGroundPaint(paint: Uint8Array): void {
+    this.paintedGround?.setPaint(paint);
+  }
+
+  setGroundOverlay(overlay: GroundOverlay): void {
+    this.paintedGround?.setOverlay(overlay);
+  }
+
+  setGroundGrid(spacing: number): void {
+    this.paintedGround?.setGrid(spacing);
+  }
+
+  /** refine-battle-maps 6.3: the camera square to the map's edges (no 45 degree turn), for a preview. */
+  squareOn(): void {
+    this.rig.yaw = 0;
+    this.rig.targetYaw = 0;
+  }
+
+  /** The editor's top-down mode: the camera looks straight down at every zoom. */
+  setTopDown(topDown: boolean): void {
+    this.rig.tiltOverride = topDown ? STRATEGIC_TILT : null;
+  }
+
+  /**
+   * refine-battle-maps 6.2: marks the two deployment zones for the first 10 s,
+   * with these (localized) labels; a later call only renames them.
+   */
+  setDeploymentLabels(labels: DeploymentLabels): void {
+    if (!this.battleMap) return;
+    if (!this.deployment) {
+      this.deployment = new DeploymentLayer(this.battleMap, this.calloutRoot, terrainHeightAt);
+      this.scene.add(this.deployment.group);
+    }
+    this.deployment.setLabels(labels);
+  }
+
+  /** Whether the opening deployment marks are up. */
+  deploymentMarksShown(): boolean {
+    return this.deployment?.shown ?? false;
+  }
+
+  /** Frames the whole battle map. */
+  frameMap(): void {
+    if (!this.battleMap) return;
+    const { minX, minY, maxX, maxY } = this.battleMap.bounds;
+    this.rig.focusX = (minX + maxX) / 2;
+    this.rig.focusY = (minY + maxY) / 2;
+    this.rig.maxSpan = Math.max(this.rig.maxSpan, (maxY - minY) * 1.1);
+    this.rig.targetSpan = Math.min(this.rig.maxSpan, (maxY - minY) * 1.05);
+  }
+
+  /** Centres the camera on a point (the editor's problem list). */
+  centreOn(x: number, y: number): void {
+    this.rig.focusX = x;
+    this.rig.focusY = y;
+  }
+
   dispose(): void {
     this.disposed = true;
+    this.paintedGround?.dispose();
     cancelAnimationFrame(this.frameHandle);
     window.removeEventListener('resize', this.resize);
     window.removeEventListener('keydown', this.onKeyDown);
     window.removeEventListener('keyup', this.onKeyUp);
     this.renderer.domElement.removeEventListener('wheel', this.onWheel);
+    this.deployment?.dispose();
     this.covers.dispose();
     this.characters.dispose();
     this.paths.dispose();
@@ -634,6 +767,13 @@ export class SceneView {
 
   private addWorld(): void {
     const bounds = this.battleMap?.bounds;
+    if (this.battleMap?.paint && bounds) {
+      // add-map-editor: an authored map's painted ground.
+      this.paintedGround = new PaintedGround(bounds, this.battleMap.paint, terrainHeightAt, './models/textures/ground-atlas.png');
+      this.terrainMesh = this.paintedGround.group;
+      this.scene.add(this.paintedGround.group);
+      return;
+    }
     const width = bounds ? bounds.maxX - bounds.minX : 240;
     const depth = bounds ? bounds.maxY - bounds.minY : 240;
     // A battle map's ground follows its 2 m heightfield.
@@ -657,14 +797,25 @@ export class SceneView {
       terrainPositions.needsUpdate = true;
       terrainGeometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
       terrainGeometry.computeVertexNormals();
+      if (bounds && palette) hillshade(terrainGeometry, SUN_BY_PALETTE[palette].position);
     }
     const ground = new THREE.Mesh(
       terrainGeometry,
-      toon({ color: 0xffffff, vertexColors: true }),
+      // refine-battle-maps 5.9: smooth normals (shared vertices) under a soft, six-step ramp.
+      toon({ color: 0xffffff, vertexColors: true, gradientMap: bounds ? terrainGradient() : toonGradient() }),
     );
+    if (bounds && palette) this.aimSun(palette);
     ground.name = 'sandbox-terrain';
     this.terrainMesh = ground;
     this.scene.add(ground);
+  }
+
+  /** refine-battle-maps 5.9: the sun's angle and strength for the map's palette. */
+  private aimSun(palette: BattleMap['palette']): void {
+    if (!this.sun) return;
+    const look = SUN_BY_PALETTE[palette];
+    this.sun.position.set(...look.position);
+    this.sun.intensity = look.intensity;
   }
 
   private animate = (time: number): void => {
@@ -683,6 +834,8 @@ export class SceneView {
       this.paths.update(selectedOrders(this.lastFrame.orders, this.selectedUnits), this.rig.span);
     }
     this.tracers.update(delta);
+    // The marks' 10 s run from the battle's first frame.
+    if (this.deployment && this.lastFrame) this.deployment.update(time, (x, y) => this.groundToScreen(x, y));
     const camera = this.rig.camera;
     const metresHigh = (camera.top - camera.bottom) / camera.zoom;
     this.effects.update(this.lastFrame, delta, this.post.target.height / Math.max(1, metresHigh));
@@ -725,6 +878,10 @@ export class SceneView {
     this.keys.add(event.code);
     if (['KeyW', 'KeyA', 'KeyS', 'KeyD', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.code)) {
       this.onCameraAction?.('pan');
+    }
+    if (event.code === 'Home' && this.battleMap) {
+      this.frameMap();
+      this.onCameraAction?.('zoom');
     }
     if (event.code === 'KeyQ') {
       this.rig.rotate(-1);
@@ -779,6 +936,41 @@ function disposeObject(object: THREE.Object3D): void {
 
 
 
+/**
+ * refine-battle-maps 5.9: the sun per map palette (direction from the
+ * ground, intensity). The cerrado's sun is strong and low enough from the
+ * east that its hill masses read; the town's is low from the west so the
+ * streets fall in shade; the farmland's is in between.
+ */
+export const SUN_BY_PALETTE: Readonly<Record<BattleMap['palette'], { position: [number, number, number]; intensity: number }>> = {
+  temperate: { position: [50, 62, 34], intensity: 1.6 },
+  cerrado: { position: [60, 58, 34], intensity: 1.8 },
+  caatinga: { position: [52, 66, 30], intensity: 1.9 },
+  urban: { position: [-60, 52, 26], intensity: 1.5 },
+};
+
+/**
+ * refine-battle-maps 5.9: a hillshade baked into the ground's colours. The
+ * scene's ambient and sky light are strong, so on a 10 to 15 degree slope the
+ * sun alone barely changes the toon step and a hill mass reads flat. Each
+ * vertex is lightened toward the sun and darkened away from it, against
+ * level ground, in soft steps of 6 %.
+ */
+export function hillshade(geometry: THREE.BufferGeometry, sun: readonly [number, number, number]): void {
+  const normals = geometry.attributes.normal;
+  const colors = geometry.attributes.color;
+  if (!normals || !colors) return;
+  const light = new THREE.Vector3(...sun).normalize();
+  const level = light.y;
+  for (let index = 0; index < normals.count; index += 1) {
+    const facing = normals.getX(index) * light.x + normals.getY(index) * light.y + normals.getZ(index) * light.z;
+    const raw = Math.min(1.16, Math.max(0.7, 1 + 2.4 * (facing - level)));
+    const shade = Math.round(raw / 0.06) * 0.06;
+    colors.setXYZ(index, colors.getX(index) * shade, colors.getY(index) * shade, colors.getZ(index) * shade);
+  }
+  colors.needsUpdate = true;
+}
+
 function surfaceColor(surface: TerrainSurface, palette?: BattleMap['palette']): number {
   if (surface === 'road') return PALETTE.terrainRoad;
   if (surface === 'pasture') return palette === 'cerrado' ? PALETTE.cerrado : PALETTE.pasture;
@@ -787,7 +979,7 @@ function surfaceColor(surface: TerrainSurface, palette?: BattleMap['palette']): 
   if (surface === 'cobbles') return PALETTE.cobbles;
   if (surface === 'floor') return PALETTE.floor;
   if (surface === 'mud') return PALETTE.mud;
-  if (surface === 'crop') return PALETTE.hayDark;
+  if (surface === 'crop') return PALETTE.fieldSoil;
   if (surface === 'tall-grass') return PALETTE.capim;
   if (surface === 'scrub') return PALETTE.cerrado;
   if (surface === 'ford' || surface === 'water') return PALETTE.riverbed;

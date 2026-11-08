@@ -21,6 +21,12 @@ export const VEGETATION: Readonly<
 export const CROP_SIGHT_DEPTH = 6;
 /** A concealed soldier who fires is given away for this long (ticks, 4 s). */
 export const REVEAL_TICKS = 40;
+/**
+ * His shot gives a concealed soldier away only to observers this near (m,
+ * refine-battle-maps 5.13); farther off it is a shot from somewhere in the
+ * grass (the unseen-fire marker).
+ */
+export const REVEAL_RADIUS = 50;
 /** A man running inside vegetation is detected this many times farther. */
 export const RUNNING_FACTOR = 2;
 

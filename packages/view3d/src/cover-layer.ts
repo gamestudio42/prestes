@@ -111,6 +111,7 @@ export class CoverLayer {
     let barrelCount = 0;
     let trenchCount = 0;
     for (const cover of covers) {
+      if (cover.drawnBy === 'map') continue;
       const rotation = -(cover.rotation ?? 0);
       this.coverQuaternion.setFromAxisAngle(new THREE.Vector3(0, 1, 0), rotation);
       const cos = Math.cos(cover.rotation ?? 0);

@@ -146,6 +146,11 @@ export function Hud({
   const stance = aliveUnits[0]?.stance ?? squadUnits[0]?.stance ?? 'standing';
   // add-battle-maps: how many of the section are hidden in vegetation.
   const concealedCount = aliveUnits.filter((unit) => unit.concealed).length;
+  // refine-battle-maps 5.14: how many gave themselves away by firing.
+  const revealedCount = aliveUnits.filter((unit) => unit.revealed).length;
+  // refine-battle-maps 5.4: the section at the ferry, aboard or waiting at a landing.
+  const aboardCount = aliveUnits.filter((unit) => unit.aboardFerry).length;
+  const waitingCount = aliveUnits.filter((unit) => unit.waitingFerry).length;
   const formation = aliveUnits[0]?.formation ?? 'line';
   const currentOrder = aliveUnits.find((unit) => unit.order !== null)?.order ?? null;
 
@@ -258,6 +263,9 @@ export function Hud({
             currentOrder={currentOrder}
             stance={stance}
             concealedCount={concealedCount}
+            revealedCount={revealedCount}
+            ferryAboard={aboardCount}
+            ferryWaiting={waitingCount}
             pendingOrder={pendingOrder}
             pendingTactical={pendingTactical}
             aimPending={aimPending}

@@ -13,6 +13,7 @@
 - [ ] 2.1 Engine `scenario: 'lesson'`: battle map, no starting units, no enemy commander, fog off by default, sandbox on; dev bridge `startLesson(map)` (verify: unit test that a lesson engine starts empty and accepts spawns; determinism test of a 300-tick scripted lesson)
 - [ ] 2.2 `lessons.ts` types and the step resolver (`{ squad: n }` → ids after spawns); a pure function `stepsDue(lesson, tick)` (verify: unit tests for resolution and ordering)
 - [ ] 2.3 The ten lessons: scripts, cues, texts (PT-BR and EN, cues ≤ 90 characters), map and topics; content check of completeness (verify: `pnpm check:content`; `pnpm check:locales`)
+- [ ] 2.4 Lessons 11-13 (deployment with trench lines, objectives, entering and assaulting positions), recorded once `add-deployment-phase`, `add-map-objectives` and `garrison-and-assault` are archived (verify: `pnpm check:content`; the recorder produces the three videos)
 
 ## 3. Recording tool
 

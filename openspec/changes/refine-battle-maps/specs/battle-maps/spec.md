@@ -37,16 +37,11 @@ as 1920s Brazil: the Bairro's quintal walls as plastered brick with a coping
 and its fences as wooden boards; Fazenda fences as wire on posts; one-storey
 houses with a door on the street and tiled roofs; vendas with a wide door
 and an awning; the matriz with a façade and a tower; the coreto with a roof
-on posts; Fazenda trench bays sunk into the ground; riverbanks with gravel
-and reeds. No real building, brand or shop name SHALL be shown.
+on posts; riverbanks with gravel and reeds. No real building, brand or shop name SHALL be shown.
 
 #### Scenario: Walls read as walls
 - **WHEN** the Bairro is seen at tactical zoom
 - **THEN** quintal walls are drawn as plastered walls and fences as board fences, not as stone blocks
-
-#### Scenario: Trenches are dug in
-- **WHEN** a soldier stands in a Fazenda trench bay
-- **THEN** he is drawn below the surrounding ground
 
 ### Requirement: Roadside ditches
 
@@ -75,23 +70,6 @@ without a cover slot within 10 m of it. The map review tool SHALL check it.
 #### Scenario: Fazenda is no longer open
 - **WHEN** the map review tool measures the Fazenda's attack axes
 - **THEN** no gap longer than 60 m between cover slots is reported
-
-### Requirement: Crops and grass look
-
-Cornfields SHALL be drawn as aligned rows of stalks with leaves and tassels,
-canefields as dense segmented stalks, tall grass (capim) as dense clumps of
-thin blade-shaped cards (never cones) that read as a mass from strategic
-zoom, and scrub as low bushes, each with a field edge and soil colour, and
-swaying gently. The look SHALL not change concealment, which stays a
-simulation rule.
-
-#### Scenario: Capim as blades
-- **WHEN** a capim clump is seen at tactical zoom
-- **THEN** it is drawn as blades fanning from its base, with no conical shape
-
-#### Scenario: Corn in rows
-- **WHEN** the Fazenda cornfield is seen at tactical zoom
-- **THEN** its stalks stand in parallel rows aligned with the field
 
 ### Requirement: Terrain shading and water
 

@@ -217,8 +217,13 @@ a body compacted to 5 m, then spreading to its own destination near the end.
   five seconds. Left-click confirms a selected action; right-click quick-moves or
   attacks. A borderless translucent world callout shows the officer giving the order
   and the section confirming it.
-- The start menu uses the supplied Coluna photograph as a full-bleed hero, with a
-  slow Ken Burns drift, film grain, light sweep, vignette and reduced-motion fallback.
+- The start menu is a desk of draggable pixel-art objects over the marching column
+  scene: named campaign and compendium books that open into centered full-screen
+  spreads, an options compass that opens a centered settings screen, a four-map fan
+  whose active sheet carries a printed legend with the deploy action, and a closed
+  gramophone that opens a centered screen with the record rack, metadata and
+  transport. The old book menu was removed once the desk was accepted
+  (add-menu-desk 8.3).
 - The main experience is the bootcamp: a 240 x 240 m training map with 11 player
   soldiers, a non-controllable officer instructor and a three-phase playable
   exercise. The panel shows mission objectives rather than a permanent checklist.
@@ -253,6 +258,44 @@ a body compacted to 5 m, then spreading to its own destination near the end.
 - The view builds a low-poly height mesh at 2 m resolution, colors it by surface,
   raycasts it for ground orders, and places characters, paths and tracers at
   terrain height. Terrain height participates in LOS; terrain is not destructible yet.
+
+## Map documents and the editor (add-map-editor)
+
+Battle maps can also be authored as **map documents** (`*.map.json`,
+format `prestes-map` v1, `packages/shared/src/maps/document.ts`): an Int16
+height grid in centimetres every 2 m, 1 m paint (ground material) and
+vegetation rasters (RLE + base64), and vectors for roads, rivers, ponds,
+bridges, ferries, walls and fences, catalog objects and the deployment
+zones. `compileMapDocument` is pure and deterministic: it carves river and
+pond beds, flattens roads with camber, shoulders and ditches, turns walls,
+fences and catalog objects into cover with the battle's rules (every object
+has an effect: cover by height, sight blocked at 1.75 m, thin posts see
+through, foliage conceals, decals paint the surface) and returns an ordinary
+`BattleMap` with a height `grid`, `raster` surfaces and vegetation, `paint`
+and `lines`. Both the worker and the view read that one result.
+
+- **Catalog**: `packages/shared/src/maps/authored/*.map.json` are listed by
+  the generated `authored/index.ts` (`pnpm check:maps` validates them and
+  rewrites the index) and compiled on first use. Skirmish maps are imported
+  with the bundle and appear on the menu after the hand-written ones;
+  campaign maps are separate chunks that `loadAuthoredMap(id)` fetches when a
+  mission asks, so they weigh nothing in the game and worker bundles.
+  `fazenda-doc` is the proof map (the Fazenda re-created with editor pieces,
+  `pnpm map:fazenda-doc`), filed as campaign so the menu keeps the
+  hand-written Fazenda.
+- **Playtest**: the editor stores the document in IndexedDB and opens
+  `index.html?playtest=1`; the game registers the compiled map
+  (`registerBattleMap`) and the `start` request carries the document so the
+  worker compiles the same map.
+- **View**: maps with `paint` are drawn by `PaintedGround` (40 m chunks,
+  world-space nearest sampling of the 5 x 6 ground atlas, Bayer-dithered
+  material edges, editor overlays: relief, contours, slope, metre grid).
+- **Editor page**: `apps/game/editor.html` (second Vite input), React panels
+  around the game's own `SceneView`; state, history and tools live in
+  `apps/game/src/editor/` outside React. The dev server's
+  `apps/game/vite-map-save.ts` plugin serves "Save to project"
+  (`POST /__editor/save-map`, validated, fixed folder); the built game has no
+  such endpoint. User notes: `docs/map-editor.md`.
 
 ## Troop control
 

@@ -1,7 +1,7 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
-import { BATTLE_MAP_IDS, type BattleMapId } from '@prestes/shared';
+import { authoredMapIds, BATTLE_MAP_IDS, loadAuthoredMap, type BattleMapId } from '@prestes/shared';
 import { SimulationEngine } from '@prestes/simulation';
 
 interface Golden {
@@ -64,7 +64,9 @@ if (first !== second) {
 }
 
 const battles: Partial<Record<BattleMapId, string>> = {};
-for (const map of BATTLE_MAP_IDS) {
+// add-map-editor: the authored maps (the proof Fazenda) have goldens too.
+for (const id of authoredMapIds()) await loadAuthoredMap(id);
+for (const map of [...BATTLE_MAP_IDS, ...authoredMapIds()]) {
   let hash: string;
   try {
     hash = runBattle(map);

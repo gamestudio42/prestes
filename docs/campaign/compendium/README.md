@@ -4,10 +4,16 @@ This folder is the campaign-bible draft of the in-game compendium. It is richer
 than the current locale strings: each entry has a short in-game text, an
 extended note, source lines and image slots.
 
-The entries already exist as ids in `packages/content/src/compendium.ts`. The
-drafts are **not** runtime content yet. Apply them to
-`packages/content/src/locales/{en,pt-BR}.ts` only in the campaign change, and
-register every image in `docs/assets.md` before it ships.
+Every entry here is applied to the runtime (`status: applied`, `runtimeId`):
+
+- The short body is in `packages/content/src/locales/{en,pt-BR}.ts`.
+- The extended note, place and image captions are in
+  `packages/content/src/compendium-notes/{en,pt-BR}.ts`.
+- The label, confidence, sources and images are in
+  `packages/content/src/compendium-docs.ts`.
+
+Edit an entry here and in the runtime together. Register every image in
+`docs/assets.md` before it ships; `pnpm check:content` fails otherwise.
 
 ## Entry format
 
@@ -20,7 +26,8 @@ section: events | figures | places | weapons | corrections
 label: historical | dramatized | fictional
 confidence: high | medium | low
 sourceRefs: [<source key>]
-status: draft | reviewed | locked
+status: draft | reviewed | locked | applied
+runtimeId: <compendium id, once applied>
 ---
 ```
 
@@ -28,11 +35,15 @@ Then:
 
 - `Short body` - the in-game text, EN source and PT-BR translation, 2-4
   sentences.
-- `Extended note` - the robust background for the campaign book and future
-  codex pages, 2-4 paragraphs. English is enough here; it is design material,
-  not the final player string.
+- `Extended note` - the player-facing background shown in the compendium book,
+  2-4 paragraphs in English.
+- `Nota estendida (PT-BR)` - the same note in Portuguese.
+- `Design notes` - designer material kept from the draft; not shown to the
+  player.
 - `Image slots` - one or more slots, each with a type, status, rights, path,
   alt text, caption and a research brief or generation prompt.
+- `Player captions` - caption and credit, in both languages, for each shipped
+  image slot.
 - `Sources` - source keys, page or chapter, confidence.
 - `Open questions` - what is still unverified.
 
@@ -94,7 +105,9 @@ Every slot goes in the manifest at [`images.md`](images.md).
 
 ## Applying an entry
 
-1. Check the id exists in `packages/content/src/compendium.ts`.
+1. Check the id exists in `packages/content/src/compendium.ts`. For a proposed
+   entry, first add the id there and in the locale catalogs in the campaign
+   change.
 2. Copy the short body into the EN and PT-BR locale catalogs.
 3. Add or update the entry's title, if needed.
 4. Add the image to `apps/game/public/assets/compendium/<entry-id>/` and to
@@ -107,11 +120,33 @@ Every slot goes in the manifest at [`images.md`](images.md).
 | Entry                                                   | Section     | Label      | Image slots |
 | ------------------------------------------------------- | ----------- | ---------- | ----------- |
 | [`revolt-1922`](entries/revolt-1922.md)                 | events      | historical | 3           |
+| [`rs-revolt-1924`](entries/rs-revolt-1924.md)           | events      | historical | 1           |
+| [`sao-luiz-1924`](entries/sao-luiz-1924.md)             | events      | historical | 1           |
+| [`ramada-1925`](entries/ramada-1925.md)                 | events      | historical | 1           |
+| [`sao-paulo-1924`](entries/sao-paulo-1924.md)           | events      | historical | 1           |
 | [`forte-copacabana`](entries/forte-copacabana.md)       | places      | historical | 4           |
+| [`sao-luiz-gonzaga`](entries/sao-luiz-gonzaga.md)       | places      | historical | 1           |
+| [`foz-do-iguacu`](entries/foz-do-iguacu.md)             | places      | historical | 2           |
+| [`porto-mendes`](entries/porto-mendes.md)               | places      | historical | 1           |
+| [`map-serra-rio`](entries/map-serra-rio.md)             | places      | historical | 1           |
+| [`map-fazenda`](entries/map-fazenda.md)                 | places      | historical | 2           |
+| [`serra-nova`](entries/serra-nova.md)                   | places      | historical | 1           |
+| [`pantanal`](entries/pantanal.md)                       | places      | historical | 1           |
+| [`la-gaiba`](entries/la-gaiba.md)                       | places      | historical | 2           |
 | [`siqueira-campos`](entries/siqueira-campos.md)         | figures     | historical | 3           |
 | [`luis-carlos-prestes`](entries/luis-carlos-prestes.md) | figures     | historical | 4           |
 | [`prestes-not-at-fort`](entries/prestes-not-at-fort.md) | corrections | historical | 2           |
 | [`mauser-7mm`](entries/mauser-7mm.md)                   | weapons     | historical | 3           |
+
+## Proposed new entries
+
+These entries do not have a runtime id yet. Keep them out of `packages/content`
+until the id is registered and validated.
+
+| Entry                                                 | Section | Label      | Image slots | Note                                                          |
+| ----------------------------------------------------- | ------- | ---------- | ----------- | ------------------------------------------------------------- |
+| [`miguel-costa`](entries/miguel-costa.md)             | figures | historical | 1           | New id; add to `FIGURES.md`, `compendium.ts` and the locales. |
+| [`isidoro-dias-lopes`](entries/isidoro-dias-lopes.md) | figures | historical | 1           | New id; add to `FIGURES.md`, `compendium.ts` and the locales. |
 
 ## What not to do
 
@@ -119,4 +154,5 @@ Every slot goes in the manifest at [`images.md`](images.md).
 - Do not use a copyrighted photo without a licence.
 - Do not present a generated illustration as a historical photograph.
 - Do not reproduce book text.
-- Do not add an entry id that the runtime does not validate.
+- Do not apply a proposed entry to the runtime before its id is registered and
+  validated.

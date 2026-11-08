@@ -8,7 +8,8 @@ off the field toward their own map edge as routed, and the battle SHALL end
 with the other side's victory once they are routed. Fallen and
 incapacitated men stay as casualties. The end panel SHALL count the men who
 fell back as routed. With the default rosters, every battle map's battle
-report SHALL end in 3 to 12 minutes on three seeds.
+report SHALL end with an outcome on three seeds. A battle's length is not
+fixed here: map objectives (add-map-objectives) will shape it.
 
 #### Scenario: Last survivors fall back
 - **WHEN** the enemy has 5 of 33 fit soldiers left and no contact for 60 s
@@ -16,7 +17,7 @@ report SHALL end in 3 to 12 minutes on three seeds.
 
 #### Scenario: Battles end on every map
 - **WHEN** the battle report runs on Fazenda, Serra e Rio and Bairro with seeds 1922, 7 and 42
-- **THEN** every run ends with an outcome within 12 minutes
+- **THEN** every run ends with an outcome within the report's 15 minutes
 
 ### Requirement: Concealed fire at range
 

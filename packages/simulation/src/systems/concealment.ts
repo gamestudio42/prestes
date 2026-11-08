@@ -1,29 +1,32 @@
-import { activeMapRuntime, concealmentDistance, REVEAL_TICKS } from '@prestes/shared';
+import { activeMapRuntime, concealmentDistance, REVEAL_RADIUS, REVEAL_TICKS } from '@prestes/shared';
 import type { SimContext } from './context';
 import type { MutableUnit } from './model';
 
 /**
  * Concealment (add-battle-maps): a soldier in corn, cane, scrub or tall grass
  * is seen only from within his kind and stance's distance, doubled while he
- * runs, and not at all hidden for REVEAL_TICKS after he fires. It gates
- * sight only; hit chance never reads it.
+ * runs. For REVEAL_TICKS after he fires he is seen from within REVEAL_RADIUS
+ * (refine-battle-maps 5.13: a shot gives him away to the near, not to a
+ * line 117 m off). It gates sight only; hit chance never reads it.
  */
 function running(unit: MutableUnit): boolean {
   return unit.path.length > 0 && unit.gait === 'run';
 }
 
-function revealed(ctx: SimContext, unit: MutableUnit): boolean {
+export function revealed(ctx: SimContext, unit: MutableUnit): boolean {
   return unit.revealedUntil !== undefined && unit.revealedUntil > ctx.tickCount;
 }
 
 /** The distance inside which `unit` is seen, or null when he is not concealed. */
 export function concealedWithin(ctx: SimContext, unit: MutableUnit): number | null {
-  if (revealed(ctx, unit)) return null;
-  return concealmentDistance(activeMapRuntime(), unit.x, unit.y, unit.stance, running(unit));
+  const within = concealmentDistance(activeMapRuntime(), unit.x, unit.y, unit.stance, running(unit));
+  if (within === null) return null;
+  return revealed(ctx, unit) ? Math.max(within, REVEAL_RADIUS) : within;
 }
 
+/** Hidden by the vegetation and not given away by his own fire. */
 export function isConcealed(ctx: SimContext, unit: MutableUnit): boolean {
-  return concealedWithin(ctx, unit) !== null;
+  return !revealed(ctx, unit) && concealedWithin(ctx, unit) !== null;
 }
 
 /** Whether the vegetation hides `target` from `observer` at their distance. */
@@ -31,6 +34,48 @@ export function hiddenByVegetation(ctx: SimContext, observer: MutableUnit, targe
   const within = concealedWithin(ctx, target);
   if (within === null) return false;
   return (target.x - observer.x) ** 2 + (target.y - observer.y) ** 2 > within * within;
+}
+
+/**
+ * refine-battle-maps 5.14: a section the player has left on its default fire
+ * control that settles in concealing vegetation (every fit man halted, most
+ * of them in it) holds its fire until an enemy is within 60 m (fire on
+ * contact), so a long shot does not give it away. Once it has opened fire it
+ * fires freely while it stays there; leaving the vegetation lifts the rule.
+ */
+export function defaultConcealedFire(ctx: SimContext): void {
+  if (!activeMapRuntime()) return;
+  const sections = new Map<string, MutableUnit[]>();
+  for (const unit of ctx.units) {
+    if (!unit.alive || unit.incapacitated || unit.routed || unit.dummy) continue;
+    if (unit.faction !== 'column' && unit.faction !== 'legalist') continue;
+    const key = `${unit.faction}:${unit.squadId}`;
+    const list = sections.get(key);
+    if (list) list.push(unit);
+    else sections.set(key, [unit]);
+  }
+  for (const section of sections.values()) {
+    const moving = section.some((unit) => unit.path.length > 0);
+    const hidden = section.filter(
+      (unit) => concealmentDistance(activeMapRuntime(), unit.x, unit.y, unit.stance, false) !== null,
+    ).length;
+    const inside = hidden * 2 > section.length;
+    for (const unit of section) {
+      if (!inside) {
+        // Out of the vegetation: the rule is lifted.
+        if (unit.autoContact === 'armed') unit.fireOnContact = false;
+        unit.autoContact = undefined;
+      } else if (!moving && unit.autoContact === undefined && !unit.fireControlSet && !unit.holdFire && !unit.fireOnContact) {
+        unit.fireOnContact = true;
+        unit.autoContact = 'armed';
+      }
+    }
+  }
+}
+
+/** Whether his own shot has given him away (the view marks him "Revelado"). */
+export function isRevealed(ctx: SimContext, unit: MutableUnit): boolean {
+  return activeMapRuntime() !== null && revealed(ctx, unit) && concealmentDistance(activeMapRuntime(), unit.x, unit.y, unit.stance, false) !== null;
 }
 
 /** A shot gives the shooter away (battle maps only, where there is vegetation). */

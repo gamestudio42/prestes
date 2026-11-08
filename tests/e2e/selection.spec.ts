@@ -3,7 +3,6 @@ import { expect, test } from '@playwright/test';
 test('click and directional drag select the whole troop or soldiers only', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto('/');
-  await page.getByTestId('menu-mark-skirmish').click();
   await page.getByTestId('start-battle-3v3').click();
   await page.waitForTimeout(800);
   await expect(page.getByTestId('squad-status')).toContainText('Selection: 11/11');

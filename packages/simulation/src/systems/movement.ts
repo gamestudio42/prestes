@@ -152,6 +152,34 @@ export function unitGait(ctx: SimContext, unit: MutableUnit): Gait {
   return gait;
 }
 
+/** A man whose path has not taken him this far (m) ... */
+const STUCK_DISTANCE = 0.3;
+/** ... in this long (ticks, 10 s) cannot get on, and stops where he is. */
+const STUCK_TICKS = 100;
+
+/**
+ * refine-battle-maps: a man wedged in a crowd at a bridge mouth, or caught
+ * on a rock's edge, re-plans the same path every tick and never arrives, and
+ * a section bounding forward waits for him for ever. After 10 s without
+ * headway he stops where he is, as if he had arrived.
+ */
+function giveUpStuck(unit: MutableUnit, tick: number, events: SimEvent[]): boolean {
+  const from = unit.stuckFrom;
+  if (!from || (unit.x - from.x) ** 2 + (unit.y - from.y) ** 2 > STUCK_DISTANCE * STUCK_DISTANCE) {
+    unit.stuckFrom = { x: unit.x, y: unit.y, tick };
+    return false;
+  }
+  if (tick - from.tick < STUCK_TICKS) return false;
+  unit.stuckFrom = undefined;
+  unit.path = [];
+  unit.pathIndex = 0;
+  unit.targetX = unit.x;
+  unit.targetY = unit.y;
+  unit.moveSpeed = 0;
+  events.push({ type: 'unit_arrived', tick, unitId: unit.id });
+  return true;
+}
+
 /** Distance left along the path, from the soldier to its last point. */
 function pathRemaining(unit: MutableUnit): number {
   let total = 0;
@@ -181,8 +209,10 @@ export function moveUnit(
     unit.path.length === 0
   ) {
     unit.moveSpeed = 0;
+    unit.stuckFrom = undefined;
     return;
   }
+  if (giveUpStuck(unit, tick, events)) return;
 
   const point = unit.path[unit.pathIndex];
   if (!point) {

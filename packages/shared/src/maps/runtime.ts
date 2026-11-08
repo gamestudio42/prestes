@@ -48,6 +48,7 @@ export const SURFACES: readonly TerrainSurface[] = [
   'floor',
   'bridge',
   'water',
+  'sand',
 ];
 
 export const VEGETATION_KINDS: readonly VegetationKind[] = ['cane', 'corn', 'scrub', 'tall-grass'];
@@ -58,9 +59,11 @@ export const MAP_BOUNDS = { minX: -120, minY: -120, maxX: 120, maxY: 120 };
 /** The pathfinding grid's extent (square, 1 m cells): ±100 m on the feature maps. */
 export const PATH_GRID = { min: -100, max: 100 };
 
-const cache = new Map<string, MapRuntime>();
+// Keyed by the map object, not its id: an edited authored map is a new
+// object under the same id (add-map-editor).
+const cache = new WeakMap<BattleMap, MapRuntime>();
 let active: MapRuntime | null = null;
-let activeId: string | null = null;
+let activeMap: BattleMap | null = null;
 /** Bumped on every map change, for caches keyed on the active map. */
 let generation = 0;
 
@@ -77,9 +80,9 @@ export function activeMapGeneration(): number {
  * queries read. Null, or a feature map, restores the default extents.
  */
 export function setActiveMapRuntime(map: BattleMap | null): void {
-  const id = map && map.height.kind === 'field' ? map.id : null;
-  if (id === activeId) return;
-  activeId = id;
+  const next = map && map.height.kind === 'field' ? map : null;
+  if (next === activeMap) return;
+  activeMap = next;
   generation += 1;
   if (!map || map.height.kind !== 'field') {
     active = null;
@@ -87,10 +90,10 @@ export function setActiveMapRuntime(map: BattleMap | null): void {
     Object.assign(PATH_GRID, { min: -100, max: 100 });
     return;
   }
-  let runtime = cache.get(map.id);
+  let runtime = cache.get(map);
   if (!runtime) {
     runtime = bakeMap(map);
-    cache.set(map.id, runtime);
+    cache.set(map, runtime);
   }
   active = runtime;
   Object.assign(MAP_BOUNDS, map.bounds);
@@ -203,6 +206,14 @@ export function bakeMap(map: BattleMap): MapRuntime {
   const heightColumns = Math.round(width / HEIGHT_SPACING) + 1;
   const heightRows = Math.round(depth / HEIGHT_SPACING) + 1;
   const heights = new Float32Array(heightColumns * heightRows);
+  const grid0 = map.height.grid;
+  if (grid0) {
+    // add-map-editor: a stored heightfield, in whole centimetres.
+    if (grid0.columns !== heightColumns || grid0.rows !== heightRows) {
+      throw new Error(`map ${map.id}: height grid is ${grid0.columns}x${grid0.rows}, expected ${heightColumns}x${heightRows}`);
+    }
+    for (let index = 0; index < heights.length; index += 1) heights[index] = grid0.centimetres[index]! / 100;
+  }
   for (const shape of map.height.shapes) {
     const box = shapeBox(shape);
     if (!box) continue;
@@ -219,7 +230,11 @@ export function bakeMap(map: BattleMap): MapRuntime {
   }
 
   const grid = { minX, minY, width, depth };
-  const surfaces = new Uint8Array(width * depth).fill(SURFACES.indexOf(map.baseSurface));
+  const raster = map.raster;
+  if (raster && (raster.surfaces.length !== width * depth || raster.vegetation.length !== width * depth)) {
+    throw new Error(`map ${map.id}: raster layers do not match its bounds`);
+  }
+  const surfaces = raster ? raster.surfaces.slice() : new Uint8Array(width * depth).fill(SURFACES.indexOf(map.baseSurface));
   for (const area of map.surfaces) {
     const code = SURFACES.indexOf(area.surface);
     fillCells(grid, area, (index) => {
@@ -261,10 +276,21 @@ export function bakeMap(map: BattleMap): MapRuntime {
     }
   }
   const vegetation = new Uint8Array(width * depth);
+  if (raster) {
+    for (let index = 0; index < vegetation.length; index += 1) {
+      if (water[index] === 0) vegetation[index] = raster.vegetation[index]!;
+    }
+  }
   for (const area of map.vegetation) {
     const code = VEGETATION_KINDS.indexOf(area.kind) + 1;
     fillCells(grid, area, (index) => {
       if (water[index] === 0) vegetation[index] = code;
+    });
+  }
+  // Nothing grows on a bridge deck (refine-battle-maps 5.11).
+  for (const bridge of map.bridges) {
+    fillCells(grid, { polygon: bridgePolygon(bridge) }, (index) => {
+      vegetation[index] = 0;
     });
   }
 

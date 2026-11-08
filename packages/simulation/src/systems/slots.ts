@@ -1,4 +1,4 @@
-import { SLOT_ROOM, cachedCoverSlots, matchDestinations, planCoverSlots } from '@prestes/shared';
+import { SLOT_ROOM, coverSlotById, matchDestinations, planCoverSlots } from '@prestes/shared';
 import type { CoverSlot, CoverSlotPlan, Vec2 } from '@prestes/shared';
 import type { SimContext } from './context';
 import type { MutableUnit } from './model';
@@ -7,7 +7,7 @@ import type { MutableUnit } from './model';
 const SLOT_KEEP_DISTANCE = 0.5;
 
 function slotById(ctx: SimContext, id: number): CoverSlot | undefined {
-  return cachedCoverSlots(ctx.covers).find((slot) => slot.id === id);
+  return coverSlotById(ctx.covers, id);
 }
 
 /** Slot id -> unit id for every reserved slot. */

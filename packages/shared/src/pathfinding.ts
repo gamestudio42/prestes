@@ -40,13 +40,16 @@ function world(value: number): number {
 }
 
 /**
- * Battle maps: each cell's blocked state is worked out once and kept while
- * the map and its movement-blocking covers stay the same. 0 unknown, 1 open,
- * 2 blocked.
+ * Each cell's blocked state is worked out once and kept while the map and its
+ * movement-blocking covers stay the same. 0 unknown, 1 open, 2 blocked.
+ * refine-battle-maps: on every map; the feature maps (the training ground)
+ * re-tested every cover for each cell A* visited.
  */
 let blockedCache: {
   covers: readonly CoverPoint[];
   generation: number;
+  size: number;
+  min: number;
   length: number;
   first: CoverPoint | undefined;
   last: CoverPoint | undefined;
@@ -54,15 +57,13 @@ let blockedCache: {
 } | null = null;
 
 function prepareBlocked(covers: readonly CoverPoint[]): void {
-  if (!activeMapRuntime()) {
-    blockedCache = null;
-    return;
-  }
   // The same covers on the same map keep their worked-out cells.
   if (
     blockedCache &&
     blockedCache.covers === covers &&
     blockedCache.generation === activeMapGeneration() &&
+    blockedCache.size === SIZE &&
+    blockedCache.min === MIN &&
     sameCovers(blockedCache, covers)
   ) {
     return;
@@ -70,6 +71,8 @@ function prepareBlocked(covers: readonly CoverPoint[]): void {
   blockedCache = {
     covers,
     generation: activeMapGeneration(),
+    size: SIZE,
+    min: MIN,
     length: covers.length,
     first: covers[0],
     last: covers[covers.length - 1],
@@ -389,7 +392,7 @@ function searchPath(
   touched[startIndex] = stamp;
   // Battle maps search a 400 m grid: a weighted heuristic keeps a detour to a
   // far crossing fast, and the path is smoothed afterwards anyway.
-  const weight = blockedCache ? 1.6 : 1;
+  const weight = activeMapRuntime() ? 1.6 : 1;
   fScore[startIndex] = heuristic(startX, startY, targetX, targetY) * weight;
   open.push(startIndex);
 

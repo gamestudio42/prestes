@@ -22,7 +22,9 @@ export type TerrainSurface =
   | 'trench-floor'
   | 'floor'
   | 'bridge'
-  | 'water';
+  | 'water'
+  // add-map-editor: painted sand.
+  | 'sand';
 
 export interface TerrainFeature {
   id: string;
@@ -157,6 +159,7 @@ const SURFACE_SPEED: Readonly<Record<TerrainSurface, number>> = {
   floor: 1,
   bridge: 1,
   water: 0.4,
+  sand: 0.85,
 };
 
 /** The surface speed factor alone, before slope. */

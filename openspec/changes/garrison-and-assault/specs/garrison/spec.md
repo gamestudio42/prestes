@@ -6,8 +6,8 @@ Buildings and fortified works on the battle maps SHALL be positions with a
 capacity, one or more entrances and firing ports, as data shared by the
 simulation and the view. Capacities SHALL follow the building model (one-
 storey house 4, venda 5, armazém 6, sobrado 8, casa-sede 8, engenho 8,
-church 10, factory 12) and the works (a section's trench line 12, a
-communication trench 6). The content check SHALL verify that every
+church 10, factory 12) and the works (a fire trench line one man per 1.2 m
+of its fire step, a communication trench one man per 2 m). The content check SHALL verify that every
 entrance is reachable.
 
 #### Scenario: Positions on the Bairro

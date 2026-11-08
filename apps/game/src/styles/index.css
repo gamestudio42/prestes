@@ -6,3 +6,13 @@
 @import './pixel.css';
 @import './book-menu.css';
 @import './gramophone.css';
+@import './menu-desk.css';
+
+/* add-map-editor: back to the editor during a playtest. */
+.playtest-back {
+  position: fixed;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 5;
+}

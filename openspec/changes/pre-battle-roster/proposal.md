@@ -32,7 +32,9 @@ ford, a street corner) all play with the same tool.
   force within a budget of 33 men and at most 6 sections, with limits (one
   machine gun, one command section, two automatic-rifle teams). A default
   roster (three rifle sections) is one click. The roster is saved locally.
-  Each section is placed on the map's deployment zone in the order chosen.
+  Each section is placed on the map's deployment zone in the order chosen;
+  `add-deployment-phase` then lets the player rearrange them before the
+  battle starts.
 - **The enemy's force**: the legalists draw a roster of the same budget from
   a few preset forces per map, deterministic by seed.
 - **Battle report** and goldens: the default roster keeps today's 3 x 11

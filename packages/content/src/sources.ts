@@ -12,6 +12,7 @@ export const SOURCE_KEYS = [
   'brum-1994',
   'castro-2016',
   'castro-2022',
+  'cohen-2007',
   'campoi-2001',
   'carvalho-2001',
   'tecchio-2021',
@@ -23,6 +24,12 @@ export const SOURCE_KEYS = [
   'ferreira-1980',
   'otaviano-1979',
   'bandeira-2013',
+  'nascimento-2026',
+  'almg-2026',
+  'fapesp-2007',
+  'revolucao-cultural-2025',
+  'cpdoc-coluna',
+  'cpdoc-prestes',
   'mvcp-portal',
 ] as const;
 

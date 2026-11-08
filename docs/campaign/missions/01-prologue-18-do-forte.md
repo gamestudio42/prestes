@@ -1,8 +1,10 @@
 ---
 id: prologue-18-do-forte
 status: draft
+playerText: applied
+runtimeId: prologue-18-do-forte
 commanderId: siqueira-campos
-perspective: Siqueira Campos, commanding the 18 on the beach; the player knows the end is certain.
+perspective: Siqueira Campos, commanding the legend of the 18 on the beach; the player knows the end is certain.
 historicalDate: 1922-07-05/06
 label: dramatized
 sourceRefs:
@@ -16,62 +18,116 @@ sourceRefs:
 
 ## Pitch
 
-The rising has failed. At the Forte de Copacabana, Siqueira Campos has eighteen
-men and one decision: surrender the fort, or march out and make the government
-pay for every meter of beach. He divides the men into four groups — five, five,
-four, four — and takes them out through the gate. There is no relief and no
-victory. The player commands the four groups through a fighting retreat on the
-sand, from the gate to the rocks to the last stretch of beach, until the last
-soldier falls. Prestes is absent with typhoid. The prologue is Siqueira's; the
-column will be Prestes's.
+The rising has failed. At the Forte de Copacabana, Siqueira Campos has the
+legend of the eighteen and one decision: surrender the fort, or march out and
+make the government pay for every meter of beach. The mission compresses the
+sortie to the legendary eighteen, divided into four groups — five, five, four,
+four. Historically the fort held twenty-nine, twenty-eight marched out, and
+sixteen reached the government line; the reduction to eighteen is the legend,
+not the head count. There is no relief and no victory. The player commands the
+four groups through a fighting retreat on the sand, from the gate to the rocks to
+the last stretch of beach. Prestes is absent with typhoid. The prologue is
+Siqueira's; the column will be Prestes's.
 
 Target length: 15-20 minutes at 1x, in one sitting. The mission is a certain
 defeat, not a survival challenge.
+
+## Player text
+
+Shown in the campaign book. Keep it in step with the sections above.
+
+### English
+
+**Place:** Copacabana beach, Rio de Janeiro
+
+**Perspective:** Siqueira Campos, commanding the 18 on the beach; the end is certain.
+
+**Briefing:**
+
+The fort at night. The rising has failed elsewhere; the government is closing
+in. Siqueira Campos tells the 18 that there will be no surrender: they will
+march out along the beach and make the government pay for every metre. Prestes
+is absent with fever. There is no relief and no victory; the task is to hold
+each position long enough for the next group to fall back.
+
+**Objectives:**
+
+- Hold the first beach position until the government commits its second section.
+- Withdraw the four groups to the rocks in order.
+- Make the last stand.
+
+### Português (BR)
+
+**Lugar:** Praia de Copacabana, Rio de Janeiro
+
+**Perspectiva:** Siqueira Campos, no comando dos 18 na praia; o fim é certo.
+
+**Briefing:**
+
+O forte à noite. O levante fracassou nos outros pontos; o governo está
+fechando o cerco. Siqueira Campos diz aos 18 que não haverá rendição: eles
+sairão marchando pela praia e farão o governo pagar por cada metro. Prestes está
+ausente, com febre. Não há reforço nem vitória; a tarefa é manter cada posição o
+bastante para o grupo seguinte recuar.
+
+**Objetivos:**
+
+- Manter a primeira posição na praia até o governo empenhar sua segunda seção.
+- Recuar os quatro grupos para as pedras, em ordem.
+- Resistir até o fim.
 
 ## Historical frame
 
 On 5 July 1922 the Rio rising against the federal government began, and the
 Forte de Copacabana was one of its centers. The plan included the Realengo
 cadets and other garrisons; the cadets were fired on at Vila Militar and the
-rising failed elsewhere. The rebels marched out along the beach rather than
-surrender; the fort was overcome on 6 July. The group entered the legend as the
-18 do Forte. Siqueira Campos survived; the legend says the eighteen died there.
-Prestes, then a young engineering officer, was bedridden with typhoid and did
-not take part. The Prologue is played as Siqueira Campos and the 18, not as
-Prestes.
+rising failed elsewhere. The fort held twenty-nine revolutionaries after its
+commander was taken prisoner while negotiating; leadership passed to First
+Lieutenant Siqueira Campos. On the afternoon of 6 July the rebels marched out
+along the beach rather than surrender: twenty-eight left the fort, four deserted
+on the avenue, sixteen reached the government line, eleven held the sidewalk and
+four took cover in construction pipes. Seven rebels were killed or died of
+wounds; Siqueira Campos, one other officer and one enlisted man survived.
+Government losses were thirty-five killed or wounded. The group entered the
+legend as the 18 do Forte. Prestes, then a young engineering officer, was
+bedridden with typhoid and did not take part. The Prologue is played as Siqueira
+Campos and the legend of the 18, not as Prestes.
 
 ### Sources
 
 | Role       | Source key      | Reference         | Confidence |
 | ---------- | --------------- | ----------------- | ---------- |
-| Chronology | `macaulay-1974` | ch. II, pp. 37-38 | high       |
+| Chronology | `macaulay-1974` | ch. I, pp. 26-29  | high       |
+| Prestes    | `macaulay-1974` | ch. II, pp. 37-38 | high       |
 | Context    | `helio-1922`    | citation-only     | low        |
 | Tenentismo | `castro-2022`   | context only      | medium     |
 | Tone       | `amado-1942`    | citation-only     | n/a        |
 
 Working note: `docs/history/MACAULAY_NOTES.md`, "1922 - the revolt Prestes
-missed". The hour-by-hour sequence of 5-6 July, the beach route and the fort's
-internal layout are still source gaps in `docs/history/CHAPTER_SOURCES.md`.
-`castro-2022` covers tenentismo and the 1924 São Paulo revolt; it is context,
-not a Forte narrative.
+missed". The hour-by-hour sequence of 5-6 July and the fort's internal layout are
+still source gaps in `docs/history/CHAPTER_SOURCES.md`. `castro-2022` covers
+tenentismo and the 1924 São Paulo revolt; it is context, not a Forte narrative.
 
 ### Historical, dramatized, fictional
 
 - **Historical:** the 1922 Rio rising; the Forte de Copacabana as a rebel
   center; the failure of the Realengo/Vila Militar plan; the fort's fall on 6
-  July; the rebels marching out along the beach; the 18; Siqueira Campos's
-  survival; Prestes's typhoid absence; the cadets fired on at Vila Militar.
-- **Dramatized:** the four groups of five, five, four and four; the beach
-  positions; the timing of the government assaults; the dialogue; the fort
-  interior; the certain-defeat framing. The hour-by-hour sequence is a known
-  gap, so the mission is a dramatization, not a reconstruction.
+  July; the rebels marching out along the beach; the 29/28/16 record; Siqueira
+  Campos's survival; Prestes's typhoid absence; the cadets fired on at Vila
+  Militar.
+- **Dramatized:** the four groups of five, five, four and four; the reduction of
+  the sortie to the legendary eighteen; the beach positions; the timing of the
+  government assaults; the dialogue; the fort interior; the certain-defeat
+  framing. The hour-by-hour sequence is a known gap, so the mission is a
+  dramatization, not a reconstruction.
 - **Fictional:** the identity of the individual soldiers in the four groups and
-  the exact patrol schedule. The historical 18 are not represented
-  one-to-one in personality or biography; the four groups are the 18 as a
+  the exact patrol schedule. The historical rebels are not represented
+  one-to-one in personality or biography; the four groups are the legend as a
   fighting body.
 - **Legend versus record:** the defeat screen states the legend ("the 18 are
-  dead"). The epilogue states the record (Siqueira Campos survived). The
-  contradiction is deliberate and must stay readable.
+  dead"). The epilogue states the record (Siqueira Campos and two others
+  survived; seven rebels died). The contradiction is deliberate and must stay
+  readable.
 
 ## Perspective
 
@@ -84,8 +140,9 @@ column.
 
 ## Player fantasy and pillar
 
-- **Fantasy:** Command the 18 through a fighting retreat on the beach, knowing
-  the end is certain, and make the stand cost the government time and blood.
+- **Fantasy:** Command the legendary 18 through a fighting retreat on the beach,
+  knowing the end is certain, and make the stand cost the government time and
+  blood.
 - **Pillar:** 1, command the section, not the hero; 3, the march costs more
   than the battle; 4, history with receipts. The mission also teaches pillar 2
   by making the rocks the only cover and the sand the worst ground.
@@ -110,17 +167,18 @@ column.
 
 ### Failure
 
-- There is no victory. The historical failure is the outcome: the 18 are
-  destroyed as a fighting force.
+- There is no victory. The historical failure is the outcome: the sortie is
+  destroyed as a fighting force. The legend says the 18 died there; the record
+  says Siqueira Campos and two others survived.
 - A collapse before the final line ends the mission earlier and lowers the
   delay measure; it does not change the ending.
 - The mission cannot be "won" by leaving the beach or saving the groups.
 
 ## Map and terrain
 
-- Copacabana beach, Rio de Janeiro, night of 5-6 July 1922, into dawn. The map
-  starts at the fort gate and runs along the beach to the rocks and the last
-  stretch of sand.
+- Copacabana beach, Rio de Janeiro, afternoon of 6 July 1922, with the fort and
+  the approach in the hours before. The map starts at the fort gate and runs
+  along the beach to the rocks and the last stretch of sand.
 - The sea is a hard boundary on one side; the government comes from the city
   and the fort side. The beach road, the rocks and the sand are the only
   ground.
@@ -130,6 +188,18 @@ column.
 - The map teaches open-ground danger, rock cover, withdrawal under fire and the
   cost of holding a line that cannot be held. The real fort and beach plan is
   not in the repository; this layout is a game abstraction.
+
+## Images
+
+![The 18 do Forte on the Copacabana beachfront, 1922. Pixel-treated historical photograph.](../../../apps/game/public/assets/compendium/revolt-1922/beach-illustration.png)
+
+_The 18 do Forte on the Copacabana beachfront, 1922. Pixel-treated historical
+photograph. Public domain; specific archive credit pending._
+
+![Soldiers of the rebel garrison of the Forte de Copacabana, 1922. Pixel-treated historical photograph.](../../../apps/game/public/assets/compendium/revolt-1922/hero-photo.png)
+
+_Soldiers of the rebel garrison of the Forte de Copacabana, 1922. Pixel-treated
+historical photograph. Credit: Zenóbio Couto._
 
 ## Forces
 
@@ -270,18 +340,30 @@ screen.
 
 ## Open questions
 
-- Which source records the beach route and the final positions of the 18?
-- How many of the 18 survived, and which source records it? The legend says all
-  died; the record says Siqueira Campos survived.
+- The beach route and final positions are now sourced to Macaulay, ch. I,
+  pp. 26–29: the avenue, the Londres Hotel, the government line at Atlântica and
+  Barroso, the sidewalk and the construction pipes. The exact house numbers and
+  the minute-by-minute timing remain open.
+- The supplied top-down map lists a larger band (a captain, lieutenants,
+  sergeants, corporals and soldiers) than the legendary 18. Macaulay gives 29 in
+  the fort, 28 marching, 16 at contact; the map may depict that larger band. Do
+  not change the four groups without a design decision.
+- The survival question is answered: Siqueira Campos, one other officer and one
+  enlisted man survived; seven rebels were killed or died of wounds. The legend
+  says all eighteen died; the record does not.
 - Can four player groups with independent orders be represented without a
   multi-section command capability?
 - Can the withdrawal phases, the certain-defeat end and the delay measure be
   represented without campaign mission scripting?
-- What were the government's numbers and composition on the beach?
-- What was the fort's layout, garrison size and armament, and did government
-  forces use artillery or naval fire?
-- Which source supports the fort's ammunition supply? The 5 + 45 load is a
-  playability abstraction.
+- What were the government's exact numbers and composition on the beach?
+  Macaulay gives two platoons, reinforcements and thirty-five killed or wounded;
+  the full order of battle is still open.
+- What was the fort's exact layout and armament, and did government forces use
+  artillery or naval fire? Macaulay mentions the fort's long-range coast
+  artillery firing before the sortie; the detailed fort plan is still open.
+- The ammunition issue is answered at the level of the sortie: Macaulay says
+  each rebel received a shoulder arm and at least two hundred rounds. The
+  5 + 45 load is a playability abstraction.
 - Does Siqueira exist as a command voice only, or as a unit? The record says he
   survives; the legend says the 18 died.
 - The `check:content` fixture still uses the placeholder mission id `prologue`;

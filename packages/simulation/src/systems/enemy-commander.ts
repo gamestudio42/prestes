@@ -1,4 +1,5 @@
-import type { Command, SimEvent, Vec2 } from '@prestes/shared';
+import { MAP_BOUNDS, bridgePolygon, findPath, vegetationAt } from '@prestes/shared';
+import type { Command, SimEvent, Vec2, VegetationKind } from '@prestes/shared';
 import type { SimContext } from './context';
 import type { MutableUnit } from './model';
 import { applyCommand } from './commands';
@@ -25,6 +26,21 @@ export interface BattleMemory {
   /** Where each section last knew an enemy to be, and when (tick). */
   readonly contacts: Map<number, { x: number; y: number; tick: number }>;
   lastShotTick: number;
+  /** refine-battle-maps: the last tick each side shot, was shot at or saw an enemy. */
+  readonly lastContact: Record<'column' | 'legalist', number>;
+  /** Sides that have fallen back off the field. */
+  readonly fellBack: Set<'column' | 'legalist'>;
+  /**
+   * Search clues: where each side heard unseen fire, was fired on from, or
+   * fired at, by 8 m cell; kept after the marker fades.
+   */
+  readonly clues: Record<'column' | 'legalist', Map<string, Vec2>>;
+  /** Search areas each side has swept, by id. */
+  readonly swept: Record<'column' | 'legalist', Set<string>>;
+  /** The search area each searching section is heading for. */
+  readonly searching: Map<number, string>;
+  /** Where the lost-contact rule last sent each section (it goes on from there). */
+  readonly led: Map<number, Vec2>;
 }
 
 export function createBattleMemory(): BattleMemory {
@@ -35,6 +51,12 @@ export function createBattleMemory(): BattleMemory {
     deployment: new Map(),
     strength: new Map(),
     seenDown: { column: new Set(), legalist: new Set() },
+    lastContact: { column: 0, legalist: 0 },
+    fellBack: new Set(),
+    clues: { column: new Map(), legalist: new Map() },
+    swept: { column: new Set(), legalist: new Set() },
+    searching: new Map(),
+    led: new Map(),
   };
 }
 
@@ -103,11 +125,258 @@ function objectiveFor(
     if (tick - mark.tick <= MARKER_TICKS * 3) places.push({ x: mark.x, y: mark.y });
   }
   const contact = ctx.battle.contacts.get(squadId);
-  if (contact) places.push({ x: contact.x, y: contact.y });
+  if (contact && distance(contact) > REACHED * REACHED) places.push({ x: contact.x, y: contact.y });
   places.sort((a, b) => distance(a) - distance(b));
   if (places[0]) return { to: places[0] };
+  // refine-battle-maps: nothing left to go on; search where he might be.
+  const area = nextSearchArea(ctx, side, from, squadId, tick);
+  if (area) return { to: { x: area.x, y: area.y } };
   const deployment = ctx.battle.deployment.get(otherSide(side));
   return deployment ? { to: deployment } : null;
+}
+
+/** A section within this distance (m) of a place has reached it. */
+const REACHED = 10;
+
+// refine-battle-maps: the winning side searches, using only what it knows.
+
+/** An area is swept when a fit soldier of the side passed this close to its centre (m). */
+const SWEEP_RADIUS = 8;
+/** Vegetation is searched by cells this size (m). */
+const SEARCH_CELL = 20;
+/** Vegetation, yards and crossings this close to a clue (m) are searched. */
+const NEAR_CLUE = 60;
+/** Clues kept per side; the oldest go first. */
+const MAX_CLUES = 200;
+
+interface SearchArea {
+  id: string;
+  x: number;
+  y: number;
+  /** 1 a clue, 2 cover near a clue, 3 the enemy's deployment zone. */
+  tier: 1 | 2 | 3;
+  /** A vegetation cell's kind. */
+  kind?: VegetationKind;
+}
+
+/** Records a search clue at a place, by 8 m cell. */
+function addClue(ctx: SimContext, side: Side, point: Vec2): void {
+  const clues = ctx.battle.clues[side];
+  const key = `c:${Math.round(point.x / 8)},${Math.round(point.y / 8)}`;
+  if (clues.has(key)) return;
+  clues.set(key, { x: point.x, y: point.y });
+  if (clues.size > MAX_CLUES) clues.delete(clues.keys().next().value!);
+}
+
+/** Every clue of a side: its kept clues and where it last saw each enemy it did not see fall. */
+function cluePoints(ctx: SimContext, side: Side): SearchArea[] {
+  const points = new Map<string, SearchArea>();
+  const add = (point: Vec2) => {
+    const id = `c:${Math.round(point.x / 8)},${Math.round(point.y / 8)}`;
+    if (!points.has(id)) points.set(id, { id, x: point.x, y: point.y, tier: 1 });
+  };
+  for (const [unitId, sighting] of ctx.vision.lastSeen[side]) {
+    if (!ctx.battle.seenDown[side].has(unitId)) add(sighting);
+  }
+  for (const point of ctx.battle.clues[side].values()) add(point);
+  return [...points.values()];
+}
+
+/** Vegetation sampled across a cell of this half-size: the first kind a man could hide in. */
+function vegetationNear(x: number, y: number, half = SEARCH_CELL / 2 - 2): VegetationKind | null {
+  for (const [dx, dy] of [[0, 0], [-half, -half], [half, -half], [-half, half], [half, half]] as const) {
+    const kind = vegetationAt(x + dx, y + dy);
+    if (kind !== null) return kind;
+  }
+  return null;
+}
+
+/** The ends of every crossing on the map: bridge ends, ferry landings, ford ends. */
+function crossingEnds(ctx: SimContext): Array<{ id: string; x: number; y: number }> {
+  const map = ctx.battleMap;
+  if (!map) return [];
+  const ends: Array<{ id: string; x: number; y: number }> = [];
+  for (const bridge of map.bridges) {
+    // The deck's corners run (-w,-d), (w,-d), (w,d), (-w,d): its ends are the short sides.
+    const [a, b, c, d] = bridgePolygon(bridge) as [Vec2, Vec2, Vec2, Vec2];
+    ends.push(
+      { id: `x:b${bridge.id}:-1`, x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 },
+      { id: `x:b${bridge.id}:1`, x: (c.x + d.x) / 2, y: (c.y + d.y) / 2 },
+    );
+  }
+  for (const ferry of map.ferries) {
+    ends.push({ id: `x:f${ferry.id}:a`, ...ferry.landingA }, { id: `x:f${ferry.id}:b`, ...ferry.landingB });
+  }
+  map.water.forEach((water, index) => {
+    water.ends?.forEach((end, side) => ends.push({ id: `x:w${index}:${side}`, x: end.x, y: end.y }));
+  });
+  return ends;
+}
+
+/**
+ * The places a side would search, unswept: its clues; then the vegetation
+ * cells, enclosed yards and crossing ends within 60 m of a clue; then the
+ * enemy's deployment zone. Nothing the side never saw or heard near is added.
+ */
+export function searchAreas(ctx: SimContext, side: Side): SearchArea[] {
+  const swept = ctx.battle.swept[side];
+  const clues = cluePoints(ctx, side);
+  const areas: SearchArea[] = [...clues];
+  const near = (point: Vec2) => clues.some((clue) => (clue.x - point.x) ** 2 + (clue.y - point.y) ** 2 <= NEAR_CLUE ** 2);
+  const map = ctx.battleMap;
+  if (map && clues.length > 0) {
+    const cells = new Set<string>();
+    for (const clue of clues) {
+      const reach = Math.ceil(NEAR_CLUE / SEARCH_CELL);
+      const cx = Math.floor(clue.x / SEARCH_CELL);
+      const cy = Math.floor(clue.y / SEARCH_CELL);
+      for (let i = cx - reach; i <= cx + reach; i += 1) {
+        for (let j = cy - reach; j <= cy + reach; j += 1) cells.add(`${i},${j}`);
+      }
+    }
+    for (const cell of [...cells].sort()) {
+      const [i, j] = cell.split(',').map(Number) as [number, number];
+      const x = (i + 0.5) * SEARCH_CELL;
+      const y = (j + 0.5) * SEARCH_CELL;
+      if (x < map.bounds.minX || x > map.bounds.maxX || y < map.bounds.minY || y > map.bounds.maxY) continue;
+      const kind = near({ x, y }) ? vegetationNear(x, y) : null;
+      if (kind) areas.push({ id: `v:${cell}`, x, y, tier: 2, kind });
+    }
+    map.yards?.forEach((yard, index) => {
+      const centre = centroid(yard);
+      if (near(centre)) areas.push({ id: `y:${index}`, ...centre, tier: 2 });
+    });
+    for (const end of crossingEnds(ctx)) {
+      if (near(end)) areas.push({ ...end, tier: 2 });
+    }
+  }
+  const zone = map?.deployment[otherSide(side)];
+  if (zone) {
+    zone.sections.forEach((point, index) => areas.push({ id: `d:${index}`, x: point.x, y: point.y, tier: 3 }));
+  }
+  return areas.filter((area) => !swept.has(area.id));
+}
+
+/** Marks swept every area a fit soldier of the side stands within SWEEP_RADIUS of. */
+function sweep(ctx: SimContext, side: Side): void {
+  const men = ctx.units.filter((unit) => unit.faction === side && fit(unit));
+  for (const area of searchAreas(ctx, side)) {
+    if (men.some((unit) => (unit.x - area.x) ** 2 + (unit.y - area.y) ** 2 <= SWEEP_RADIUS ** 2)) {
+      ctx.battle.swept[side].add(area.id);
+    }
+  }
+}
+
+/**
+ * The next area a section searches: the first tier first; within it, one no
+ * other section of the side is heading for, then the nearest, ties by id.
+ */
+function nextSearchArea(ctx: SimContext, side: Side, from: Vec2, squadId: number, _tick: number): SearchArea | null {
+  const areas = searchAreas(ctx, side);
+  if (areas.length === 0) return null;
+  const own = new Set(sections(ctx, side).keys());
+  const claimed = new Set<string>();
+  for (const [other, id] of ctx.battle.searching) {
+    if (other !== squadId && own.has(other)) claimed.add(id);
+  }
+  const distance = (area: SearchArea) => (area.x - from.x) ** 2 + (area.y - from.y) ** 2;
+  // The search spirals out from the clues: the ring nearest a clue first.
+  const clues = cluePoints(ctx, side);
+  const ring = (area: SearchArea) =>
+    clues.length === 0
+      ? 0
+      : Math.floor(Math.sqrt(Math.min(...clues.map((clue) => (clue.x - area.x) ** 2 + (clue.y - area.y) ** 2))) / SEARCH_CELL);
+  const rings = new Map(areas.map((area) => [area.id, area.tier === 2 ? ring(area) : 0]));
+  // He went into the vegetation by the clue: that patch's kind is searched first.
+  const entered = new Set(clues.map((clue) => vegetationNear(clue.x, clue.y, 6)).filter((kind) => kind !== null));
+  const other = (area: SearchArea) => Number(area.kind !== undefined && !entered.has(area.kind));
+  areas.sort(
+    (a, b) =>
+      a.tier - b.tier ||
+      Number(claimed.has(a.id)) - Number(claimed.has(b.id)) ||
+      other(a) - other(b) ||
+      rings.get(a.id)! - rings.get(b.id)! ||
+      distance(a) - distance(b) ||
+      (a.id < b.id ? -1 : a.id > b.id ? 1 : 0),
+  );
+  const next = areas[0]!;
+  ctx.battle.searching.set(squadId, next.id);
+  return next;
+}
+
+// refine-battle-maps: a decided battle ends.
+
+/** A side under this share of its starting strength is broken. */
+const BROKEN_SHARE = 0.2;
+/** A broken side with no contact this long (ticks, 60 s) falls back. */
+const FALL_BACK_TICKS = 600;
+
+/** The point on a side's own map edge behind a soldier: beyond its deployment zone. */
+function ownEdge(ctx: SimContext, unit: MutableUnit, side: Side): Vec2 {
+  const facing = ctx.battleMap?.deployment[side].facing ?? { x: 0, y: side === 'column' ? -1 : 1 };
+  const inset = 0.5;
+  if (Math.abs(facing.y) >= Math.abs(facing.x)) {
+    return {
+      x: Math.min(MAP_BOUNDS.maxX - inset, Math.max(MAP_BOUNDS.minX + inset, unit.x)),
+      y: facing.y > 0 ? MAP_BOUNDS.minY + inset : MAP_BOUNDS.maxY - inset,
+    };
+  }
+  return {
+    x: facing.x > 0 ? MAP_BOUNDS.minX + inset : MAP_BOUNDS.maxX - inset,
+    y: Math.min(MAP_BOUNDS.maxY - inset, Math.max(MAP_BOUNDS.minY + inset, unit.y)),
+  };
+}
+
+/** Each side's last contact: a shot by or at one of its men, or an enemy in sight. */
+function recordSideContact(ctx: SimContext, tick: number, events: readonly SimEvent[]): void {
+  const factionOf = new Map(ctx.units.map((unit) => [unit.id, unit.faction]));
+  for (const event of events) {
+    if (event.type !== 'shot') continue;
+    for (const id of [event.source, event.target]) {
+      const faction = factionOf.get(id);
+      if (faction === 'column' || faction === 'legalist') ctx.battle.lastContact[faction] = tick;
+    }
+  }
+  for (const side of SIDES) {
+    for (const id of ctx.vision.seen[side]) {
+      const unit = ctx.units.find((entry) => entry.id === id);
+      if (unit && fit(unit)) {
+        ctx.battle.lastContact[side] = tick;
+        break;
+      }
+    }
+  }
+}
+
+/**
+ * A side under a fifth of its strength, with no contact for 60 s, falls back
+ * off the field: its fit men rout toward its own edge, and the battle ends.
+ */
+function fallBack(ctx: SimContext, tick: number, events: SimEvent[]): void {
+  for (const side of SIDES) {
+    if (ctx.battle.fellBack.has(side)) continue;
+    const start = ctx.battle.strength.get(side) ?? 0;
+    const men = ctx.units.filter((unit) => unit.faction === side && fit(unit));
+    if (start === 0 || men.length === 0 || men.length >= start * BROKEN_SHARE) continue;
+    if (tick - ctx.battle.lastContact[side] < FALL_BACK_TICKS) continue;
+    ctx.battle.fellBack.add(side);
+    events.push({ type: 'side_fell_back', tick, side });
+    for (const unit of men) {
+      const edge = ownEdge(ctx, unit, side);
+      unit.routed = true;
+      unit.state = 'routed';
+      unit.suppressed = false;
+      unit.holdPosition = false;
+      unit.targetId = null;
+      unit.currentOrder = 'flee';
+      unit.stance = 'standing';
+      unit.path = findPath({ x: unit.x, y: unit.y }, edge, ctx.covers);
+      unit.pathIndex = 0;
+      unit.targetX = edge.x;
+      unit.targetY = edge.y;
+      events.push({ type: 'unit_routed', tick, unitId: unit.id });
+    }
+  }
 }
 
 function goFor(ctx: SimContext, side: Side, ids: number[], from: Vec2, squadId: number, tick: number, events: SimEvent[]): boolean {
@@ -158,19 +427,38 @@ function sections(ctx: SimContext, faction: (typeof SIDES)[number]): Map<number,
 function recordContacts(ctx: SimContext, tick: number, events: readonly SimEvent[]): void {
   const memory = ctx.battle;
   const squadOf = new Map(ctx.units.map((unit) => [unit.id, unit.squadId]));
+  const factionOf = new Map(ctx.units.map((unit) => [unit.id, unit.faction]));
   for (const event of events) {
     if (event.type !== 'shot') continue;
     memory.lastShotTick = tick;
     const shooterSquad = squadOf.get(event.source);
     const targetSquad = squadOf.get(event.target);
     if (shooterSquad !== undefined) memory.contacts.set(shooterSquad, { x: event.x2, y: event.y2, tick });
+    // refine-battle-maps: the shooter's side knows where it fired.
+    const shooter = factionOf.get(event.source);
+    if (shooter === 'column' || shooter === 'legalist') addClue(ctx, shooter, { x: event.x2, y: event.y2 });
     if (targetSquad !== undefined) memory.contacts.set(targetSquad, { x: event.x, y: event.y, tick });
   }
   for (const unit of ctx.units) {
     if (!fit(unit) || unit.targetId === null) continue;
+    // refine-battle-maps 5.13: only a target his side sees keeps the contact
+    // fresh (an attacker keeps his objective when he loses sight of him).
+    if (!seenBySide(ctx, unit, unit.targetId)) continue;
     const target = ctx.units.find((entry) => entry.id === unit.targetId);
     if (target && fit(target)) memory.contacts.set(unit.squadId, { x: target.x, y: target.y, tick });
   }
+  for (const side of SIDES) {
+    // Unseen fire heard: the marker (never the shooter) is a clue.
+    for (const mark of ctx.vision.heard[side]) {
+      if (mark.tick === tick) addClue(ctx, side, mark);
+    }
+    // Enemy soldiers each side saw fall.
+    const enemy = otherSide(side);
+    for (const unit of ctx.units) {
+      if (unit.faction === enemy && !fit(unit) && ctx.vision.seen[side].has(unit.id)) memory.seenDown[side].add(unit.id);
+    }
+  }
+  recordSideContact(ctx, tick, events);
 }
 
 /**
@@ -178,18 +466,31 @@ function recordContacts(ctx: SimContext, tick: number, events: readonly SimEvent
  * holding an ordered position, advances on where it last knew him; at that
  * spot, on the enemy's main body.
  */
+/** Whether `unit`'s side sees the enemy `targetId` now. */
+function seenBySide(ctx: SimContext, unit: MutableUnit, targetId: number): boolean {
+  return (unit.faction !== 'column' && unit.faction !== 'legalist') || ctx.vision.seen[unit.faction].has(targetId);
+}
+
 function closeOnLostContact(ctx: SimContext, tick: number, events: SimEvent[]): void {
   for (const side of SIDES) {
     const enemy = side === 'column' ? 'legalist' : 'column';
     const enemies = ctx.units.filter((unit) => unit.faction === enemy && fit(unit));
     if (enemies.length === 0) continue;
     for (const [squadId, section] of sections(ctx, side)) {
+      // refine-battle-maps: a section this rule sent on, halted where it was
+      // sent, goes on searching; one moved elsewhere since is left alone.
+      const led = ctx.battle.led.get(squadId);
+      const centre = centroid(section);
+      const ledHere = led !== undefined && (led.x - centre.x) ** 2 + (led.y - centre.y) ** 2 < (REACHED * 1.5) ** 2;
+      // An attack that has come to a halt with its objective out of sight
+      // (refine-battle-maps 5.13: a concealed enemy no longer shows himself
+      // by firing from afar) is idle too: it goes on to the last contact.
       const idle = section.every(
         (unit) =>
-          unit.targetId === null &&
+          (unit.targetId === null || (unit.currentOrder === 'attack' && !seenBySide(ctx, unit, unit.targetId))) &&
           unit.path.length === 0 &&
           unit.boundTeam === null &&
-          !unit.holdPosition &&
+          (!unit.holdPosition || (ledHere && unit.currentOrder === 'advance') || unit.currentOrder === 'attack') &&
           !HOLDING.has(unit.currentOrder ?? ''),
       );
       if (!idle) continue;
@@ -198,11 +499,15 @@ function closeOnLostContact(ctx: SimContext, tick: number, events: SimEvent[]): 
       const contact = ctx.battle.contacts.get(squadId);
       if (!contact || tick - contact.tick < LOST_CONTACT_TICKS) continue;
       const here = centroid(section);
-      const reached = contact && Math.sqrt((contact.x - here.x) ** 2 + (contact.y - here.y) ** 2) < 10;
+      const reached = Math.sqrt((contact.x - here.x) ** 2 + (contact.y - here.y) ** 2) < REACHED;
+      // refine-battle-maps: at the reached spot, search on: the next area the
+      // side has a clue for, else the enemy's main body as the side knows it.
+      const area = reached ? nextSearchArea(ctx, side, here, squadId, tick) : null;
       const mainBody = ctx.fog ? (ctx.battle.deployment.get(enemy) ?? centroid(enemies)) : centroid(enemies);
-      const to = contact && !reached ? { x: contact.x, y: contact.y } : mainBody;
-      // At the reached spot, keep the contact (fresh) but aim at the main body.
+      const to = !reached ? { x: contact.x, y: contact.y } : area ? { x: area.x, y: area.y } : mainBody;
+      // At the reached spot, keep the contact (fresh) on the next place.
       if (reached) ctx.battle.contacts.set(squadId, { ...to, tick });
+      ctx.battle.led.set(squadId, to);
       issue(ctx, { type: 'order', order: 'advance', unitIds: section.map((unit) => unit.id), to }, tick, events);
     }
   }
@@ -217,9 +522,6 @@ function commandLegalists(ctx: SimContext, tick: number, events: SimEvent[]): vo
   // fog-of-war: he cannot count men he does not see, nor assume they are not
   // there: he takes the player's starting strength less the losses he saw,
   // and never less than the soldiers he knows of.
-  for (const unit of ctx.units) {
-    if (unit.faction === 'column' && !fit(unit) && ctx.vision.seen.legalist.has(unit.id)) ctx.battle.seenDown.legalist.add(unit.id);
-  }
   const theirFit = ctx.fog
     ? Math.max(
         knownEnemies(ctx, 'legalist', tick).length,
@@ -299,6 +601,8 @@ export function updateBattleFlow(ctx: SimContext, tick: number, events: SimEvent
   }
   recordContacts(ctx, tick, events);
   if (tick % THINK_EVERY !== 0) return;
+  for (const side of SIDES) sweep(ctx, side);
+  fallBack(ctx, tick, events);
   commandLegalists(ctx, tick, events);
   closeOnLostContact(ctx, tick, events);
 }

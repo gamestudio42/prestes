@@ -37,6 +37,23 @@ export const FIGURES: readonly HistoricalFigure[] = [
     labels: ['historical'],
     sourceRefs: ['macaulay-1974', 'blanc-2024', 'amado-1942', 'anita-1991'],
   },
+  // polish-menu-desk: chapter commanders, not playable until their missions exist.
+  {
+    id: 'miguel-costa',
+    displayName: 'Miguel Costa',
+    roleKey: 'figure.miguel-costa.role',
+    playable: false,
+    labels: ['historical'],
+    sourceRefs: ['macaulay-1974', 'castro-2016', 'tavora-1928'],
+  },
+  {
+    id: 'isidoro-dias-lopes',
+    displayName: 'Isidoro Dias Lopes',
+    roleKey: 'figure.isidoro.role',
+    playable: false,
+    labels: ['historical'],
+    sourceRefs: ['macaulay-1974', 'castro-2022'],
+  },
 ];
 
 export function validateFigures(

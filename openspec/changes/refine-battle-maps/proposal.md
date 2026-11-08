@@ -46,17 +46,16 @@ trees, while keeping the massed look it has from afar.
   logs on the Fazenda; rock outcrops, gullies and fallen trees on Serra e
   Rio; carts, barrels, sacks and a tram stop in the Bairro. Target: no
   stretch of more than 60 m on an attack axis without a cover slot.
-- **Crops and grass that read right.** Corn as rows of stalks with leaves
-  and tassels (rows 0.9 m apart, aligned with the field), cane as dense
-  segmented stalks with a ragged top, capim as soft clumps of blades that
-  sway, all as instanced low-poly cards; fields get a visible edge (a
-  headland path) and their soil colour.
+- **Crops and grass that read right.** Moved (2026-11-08) to
+  `refine-map-editor`, which draws the plants of every map, hand-written and
+  authored, in one way. This change keeps the fields' soil colour and
+  headland paths on the hand-written maps.
 - **Serra e Rio look.** Terrain shading without banding: smooth vertex
   normals on the heightfield, a softer toon ramp for slopes and a sun angle
   that models the hills; the ford as a gravel bar with stones, lighter
   shallow water and ripples, readable from above; capim moved to the
-  riverbanks and the veredas (with buriti), drawn as blade cards in dense
-  clumps.
+  riverbanks and the veredas (with buriti); the capim's blade look comes
+  from `refine-map-editor`.
 - **Concealed fire at range (bug found 2026-11-05).** Men lying in the capim
   near the bridge were "discovered": a headless reproduction showed they
   were not seen, they opened fire (free fire, the default) at enemies about
@@ -108,7 +107,7 @@ None. (`battle-maps` arrives with `add-battle-maps`.)
 - **Multi-perspective**: unchanged.
 - **Legal and ethical note**: none beyond the standing rules; previews are
   rendered from the game's own scenes.
-- **MVP**: battles end on all maps within the bands; 3 ms on all maps;
+- **MVP**: battles end on all maps with an outcome (no length band); 3 ms on all maps;
   improved placeholders; start view and marks; previews; review fixes.
 - **Non-goals**: the Blender kits, new maps, weather and night, a minimap,
   destructible scenery.

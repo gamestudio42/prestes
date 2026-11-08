@@ -14,7 +14,17 @@ const baseFigure = FIGURES[0]!;
 describe('historical figures', () => {
   it('accepts the vertical-slice roster', () => {
     expect(validateFigures(FIGURES, SOURCE_KEYS)).toEqual([]);
-    expect(FIGURES.map((figure) => figure.id)).toEqual(['siqueira-campos', 'luis-carlos-prestes']);
+    expect(FIGURES.map((figure) => figure.id)).toEqual([
+      'siqueira-campos',
+      'luis-carlos-prestes',
+      'miguel-costa',
+      'isidoro-dias-lopes',
+    ]);
+    // Chapter commanders, not playable until their missions exist.
+    expect(FIGURES.filter((figure) => !figure.playable).map((figure) => figure.id)).toEqual([
+      'miguel-costa',
+      'isidoro-dias-lopes',
+    ]);
   });
 
   it('rejects a figure without a source', () => {

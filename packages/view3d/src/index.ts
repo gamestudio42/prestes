@@ -31,3 +31,6 @@ export { TrainingLayer, type TrainingMarker } from './training-layer';
 
 
 export { BattleMapLayer } from './battle-map-layer';
+export { DEPLOYMENT_MARK_SECONDS, type DeploymentLabels } from './deployment-layer';
+export { PaintedGround, GROUND_CHUNK, type GroundOverlay } from './painted-ground';
+export { groundAtlasPixels } from './ground-atlas';

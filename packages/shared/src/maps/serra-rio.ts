@@ -1,7 +1,7 @@
 import type { CoverPoint, Vec2 } from '../protocol';
 import { buildingCover, type Building } from '../world';
-import { box, fenceCovers, rock, zone } from './kit';
-import type { BattleMap, PropPlacement } from './types';
+import { box, clutter, fenceCovers, rock, stripPolygon, trenchRun, zone } from './kit';
+import type { BattleMap, PropPlacement, Strip } from './types';
 
 /**
  * Serra e Rio (add-battle-maps): highland river country of Goiás and Minas
@@ -30,6 +30,28 @@ const BUILDINGS: Building[] = [
   { id: 702, model: 'farmhouse', x: -160, y: 150, rotation: -0.3, halfWidth: 4.35, halfDepth: 2.85, height: 4.8 },
   { id: 703, model: 'colonist-house', x: 70, y: -150, rotation: 0.2, halfWidth: 3.6, halfDepth: 3, height: 4.2 },
 ];
+
+/**
+ * refine-battle-maps 5.7: the slopes down to the river were open for up to
+ * 190 m. Fallen trees and boulders on both banks, a matacão on the legalist
+ * knoll's flank, and a gully cut down the north slope toward the river
+ * (a channel in the ground, with a trench's cover along its floor).
+ */
+const GULLY: Vec2[] = [
+  { x: -62, y: -72 },
+  { x: -50, y: -46 },
+  { x: -44, y: -22 },
+];
+const BANKS = clutter(900, [
+  { model: 'fallen-log', x: -42, y: 30, rotation: 0.3 },
+  { model: 'boulder', x: -17, y: 27 },
+  { model: 'fallen-log', x: -2, y: 33, rotation: -0.25 },
+  { model: 'boulder', x: 13, y: 36 },
+  { model: 'fallen-log', x: -22, y: -27, rotation: 0.2 },
+  { model: 'matacao', x: 3, y: -38 },
+  { model: 'fallen-log', x: 26, y: -28, rotation: 0.15 },
+  { model: 'boulder', x: 42, y: -34 },
+]);
 
 /** Rocks on the slopes and on each side's bank line. */
 const ROCKS: CoverPoint[] = [
@@ -67,6 +89,29 @@ for (let x = -196; x <= 196; x += 22) {
   const y = riverY(x);
   BURITI.push({ model: 'buriti', x, y: y - 16 - (Math.abs(x) % 7), scale: 0.9 + (Math.abs(x) % 5) * 0.06 });
   BURITI.push({ model: 'buriti', x: x + 9, y: y + 16 + (Math.abs(x) % 5), scale: 0.85 + (Math.abs(x) % 3) * 0.08 });
+}
+
+/**
+ * refine-battle-maps 5.11: veredas, wet grassy hollows running down to the
+ * river with buriti in them: one on the column's bank west of the bridge
+ * road, one on the legalist bank toward the ferry.
+ */
+const VEREDAS: Strip[] = [
+  { points: [{ x: -26, y: 8 }, { x: -22, y: 40 }, { x: -34, y: 78 }], width: 20 },
+  { points: [{ x: 108, y: -2 }, { x: 118, y: -50 }, { x: 146, y: -96 }], width: 20 },
+];
+/** How far the capim reaches from each bank's water edge (m). */
+const BANK_CAPIM = 24;
+
+for (const vereda of VEREDAS) {
+  for (let index = 1; index < vereda.points.length; index += 1) {
+    const a = vereda.points[index - 1]!;
+    const b = vereda.points[index]!;
+    for (const t of [0.35, 0.8]) {
+      const side = index % 2 === 0 ? 1 : -1;
+      BURITI.push({ model: 'buriti', x: a.x + (b.x - a.x) * t + side * 5, y: a.y + (b.y - a.y) * t, scale: 0.9 + t * 0.1 });
+    }
+  }
 }
 
 function riverY(x: number): number {
@@ -116,6 +161,8 @@ export const SERRA_RIO: BattleMap = {
       { kind: 'hill', x: -10, y: -55, radiusX: 26, radiusY: 18, height: 5 },
       { kind: 'hill', x: 70, y: 60, radiusX: 28, radiusY: 18, height: 5 },
       { kind: 'hill', x: -110, y: 70, radiusX: 30, radiusY: 22, height: 4 },
+      // refine-battle-maps 5.7: a gully down the north slope.
+      { kind: 'channel', points: GULLY, width: 2.5, bank: 4, depth: 1.1 },
       // The river valley.
       { kind: 'channel', points: RIVER, width: RIVER_WIDTH, bank: 10, depth: 3 },
     ],
@@ -144,12 +191,10 @@ export const SERRA_RIO: BattleMap = {
   bridges: [{ id: 1, x: 20, y: 10, rotation: 0, halfWidth: 2.2, halfDepth: 15, deckHeight: 2.4 }],
   ferries: [{ id: 1, landingA: { x: 130, y: 17 }, landingB: { x: 130, y: -15 } }],
   vegetation: [
-    // Capim: wide patches on both banks.
-    { kind: 'tall-grass', polygon: box(-200, 30, -130, 120) },
-    { kind: 'tall-grass', polygon: box(-60, 36, 10, 76) },
-    { kind: 'tall-grass', polygon: box(-40, -170, 40, -110) },
-    { kind: 'tall-grass', polygon: box(60, -120, 180, -40) },
-    { kind: 'tall-grass', polygon: box(150, 20, 200, 60) },
+    // Capim (5.11): along both banks for the river's length (it does not
+    // grow in the water or on the bridge) and up the two veredas.
+    { kind: 'tall-grass', polygon: stripPolygon({ points: RIVER, width: RIVER_WIDTH + 2 * BANK_CAPIM }) },
+    ...VEREDAS.map((strip) => ({ kind: 'tall-grass' as const, polygon: stripPolygon(strip) })),
     // Cerrado scrub.
     { kind: 'scrub', polygon: box(100, 30, 150, 88) },
     { kind: 'scrub', polygon: box(-200, -80, -120, -26) },
@@ -159,6 +204,9 @@ export const SERRA_RIO: BattleMap = {
   buildings: BUILDINGS,
   covers: [
     ...ROCKS,
+    ...BANKS.covers,
+    // Its floor, in pieces that each shelter their length (ids 910 to 919).
+    ...trenchRun(910, GULLY, 1.25),
     // The outcrops drawn as props are hard obstacles too.
     rock(780, -60, -110, 2.6, 2.2, 2),
     rock(781, 150, 110, 2.4, 2, 2),
@@ -174,6 +222,7 @@ export const SERRA_RIO: BattleMap = {
   },
   props: [
     ...BURITI,
+    ...BANKS.props,
     ...CERRADO_TREES,
     { model: 'rock', x: -60, y: -110, scale: 1.2 },
     { model: 'rock', x: 150, y: 110, scale: 1.1 },

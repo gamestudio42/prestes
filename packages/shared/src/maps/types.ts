@@ -2,9 +2,13 @@ import type { CoverPoint, Vec2 } from '../protocol';
 import type { TerrainFeature, TerrainSurface } from '../terrain';
 import type { Building } from '../world';
 
-export type BattleMapId = 'vila-militar' | 'fazenda' | 'serra-rio' | 'bairro';
+/** The hand-written maps. */
+export type BuiltinBattleMapId = 'vila-militar' | 'fazenda' | 'serra-rio' | 'bairro';
 
-export const BATTLE_MAP_IDS: readonly BattleMapId[] = ['vila-militar', 'fazenda', 'serra-rio', 'bairro'];
+/** A battle map id: a hand-written map's, or an authored map document's (add-map-editor). */
+export type BattleMapId = string;
+
+export const BATTLE_MAP_IDS: readonly BuiltinBattleMapId[] = ['vila-militar', 'fazenda', 'serra-rio', 'bairro'];
 
 export type VegetationKind = 'cane' | 'corn' | 'scrub' | 'tall-grass';
 
@@ -82,19 +86,53 @@ export interface DeploymentZone {
   facing: Vec2;
 }
 
+/** Text in both shipped languages (authored maps carry their own names). */
+export interface LocalizedText {
+  en: string;
+  'pt-BR': string;
+}
+
+/**
+ * A stored heightfield (add-map-editor): whole centimetres every 2 m, row by
+ * row from the map's north-west corner. The bake starts from it, then adds
+ * the shapes.
+ */
+export interface HeightGrid {
+  columns: number;
+  rows: number;
+  centimetres: Int16Array;
+}
+
+/** View data for an authored wall or fence (the covers carry the gameplay). */
+export interface MapLine {
+  kind: string;
+  points: readonly Vec2[];
+  height: number;
+}
+
 export interface BattleMap {
   id: BattleMapId;
   nameKey: string;
   descriptionKey: string;
+  /** Authored maps: the name and description themselves, instead of locale keys. */
+  text?: { name: LocalizedText; description: LocalizedText };
   /** The compendium entry that describes the map's setting. */
   codexKey: string;
   setting: {
-    label: 'training-ground' | 'historical-setting-fictional-place';
+    label: 'training-ground' | 'historical-setting-fictional-place' | 'reconstructed-historical-place';
     sourceNote: string;
   };
   bounds: { minX: number; minY: number; maxX: number; maxY: number };
   /** Features keep the ellipse terrain; a field is baked to a 2 m heightfield. */
-  height: { kind: 'features'; features: readonly TerrainFeature[] } | { kind: 'field'; shapes: readonly HeightShape[] };
+  height:
+    | { kind: 'features'; features: readonly TerrainFeature[] }
+    | { kind: 'field'; shapes: readonly HeightShape[]; grid?: HeightGrid };
+  /**
+   * Authored maps: 1 m grids of surface (SURFACES index) and vegetation
+   * (0 none, else VEGETATION_KINDS index + 1), used instead of the
+   * `surfaces` and `vegetation` areas. Water and bridges still apply over them.
+   */
+  raster?: { surfaces: Uint8Array; vegetation: Uint8Array };
   /** Ground under everything else (field maps). */
   baseSurface: TerrainSurface;
   /** Later areas win. */
@@ -112,6 +150,17 @@ export interface BattleMap {
   props: readonly PropPlacement[];
   /** View only: wire and post fences, as polylines. */
   fences: readonly (readonly Vec2[])[];
+  /** refine-battle-maps 5.1: how `fences` are drawn: posts and wire (default) or boards. */
+  fenceStyle?: 'wire' | 'boards';
+  /**
+   * refine-battle-maps: enclosed yards (the Bairro's quintais), places a
+   * searching side looks into when it knows an enemy went near them.
+   */
+  yards?: readonly Polygon[];
+  /** Authored maps: walls and fences by kind, for the view. */
+  lines?: readonly MapLine[];
+  /** Authored maps: the painted ground (GROUND_MATERIALS index per 1 m cell), for the view. */
+  paint?: Uint8Array;
   /** The view's ground colour family. */
-  palette: 'temperate' | 'cerrado' | 'urban';
+  palette: 'temperate' | 'cerrado' | 'caatinga' | 'urban';
 }

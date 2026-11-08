@@ -2,11 +2,15 @@ import { useEffect, useRef, useState } from 'react';
 import { Eye } from './ui/icons';
 import { translate, type Locale } from '@prestes/content';
 import {
+  compileMapDocument,
   DEFAULT_BATTLE_MAP,
+  registerBattleMap,
   TRAINING_AMMUNITION,
   type BattleMapId,
   type Frame,
+  type MapDocument,
 } from '@prestes/shared';
+import { loadPlaytest } from './editor/persistence';
 import type { CameraBand } from '@prestes/view3d';
 import { DEFAULT_SPEED, GameClient } from './client/GameClient';
 import { CodexPanel } from './ui/CodexPanel';
@@ -14,7 +18,7 @@ import { FieldOverlays } from './ui/FieldOverlays';
 import { GameCanvas } from './ui/GameCanvas';
 import { Hud } from './ui/Hud';
 import { SandboxPanel } from './ui/SandboxPanel';
-import { StartScreen } from './ui/StartScreen';
+import { StartScreenDesk } from './ui/menu/StartScreenDesk';
 import { BattleEndPanel } from './ui/BattleEndPanel';
 import { clearBootcampProgress, loadLocale, loadRoutesVisible, saveLocale, saveRoutesVisible } from './storage';
 import { useAudio } from './hooks/useAudio';
@@ -50,6 +54,9 @@ export function App() {
   } | null>(null);
 
   const clientRef = useRef<GameClient | null>(null);
+  // add-map-editor: the editor's map when the game was opened to playtest it.
+  const playtestRef = useRef<MapDocument | null>(null);
+  const [playtest, setPlaytest] = useState(false);
   const resumeSpeed = useRef<1 | 2 | 4>(DEFAULT_SPEED);
   const cameraNonce = useRef(0);
   const selectionInitialized = useRef(false);
@@ -165,6 +172,7 @@ export function App() {
       opposition: true,
       scenario: 'battle3v3',
       battleMap: map,
+      ...(playtestRef.current?.id === map ? { mapDocument: playtestRef.current } : {}),
       onEvent: (event) => audioRef.current?.handleEvent(event),
       onFrame: (next) => {
         setFrame(next);
@@ -203,7 +211,9 @@ export function App() {
     setStarted(false);
   };
 
-  const handleStartBattle3v3 = (): void => {
+  const handleStartBattle3v3 = (): void => startBattle(battleMapId);
+
+  const startBattle = (map: BattleMapId): void => {
     void audioRef.current?.unlock();
     clientRef.current?.dispose();
     clientRef.current = null;
@@ -220,7 +230,34 @@ export function App() {
     setOrdersCollapsed(false);
     setSpeed(DEFAULT_SPEED);
     setStarted(true);
-    createClient(battleMapId);
+    createClient(map);
+  };
+
+  // add-map-editor: `?playtest` starts the editor's map straight away.
+  useEffect(() => {
+    if (!new URLSearchParams(window.location.search).has('playtest')) return;
+    let cancelled = false;
+    void loadPlaytest().then((document) => {
+      if (cancelled || !document) return;
+      try {
+        registerBattleMap(compileMapDocument(document));
+      } catch (error) {
+        console.error('playtest map could not be compiled', error);
+        return;
+      }
+      playtestRef.current = document;
+      setPlaytest(true);
+      setBattleMapId(document.id);
+      startBattle(document.id);
+    });
+    return () => {
+      cancelled = true;
+    };
+    // Once, on load.
+  }, []);
+
+  const handleBackToEditor = (): void => {
+    window.location.href = './editor.html';
   };
   const handleResetSandbox = (): void => {
     clientRef.current?.reset();
@@ -319,7 +356,7 @@ export function App() {
   if (!started) {
     return (
       <div className="app" data-testid="app">
-        <StartScreen
+        <StartScreenDesk
           locale={locale}
           onLocaleChange={handleLocaleChange}
           audioMuted={audioMuted}
@@ -477,7 +514,18 @@ export function App() {
         </div>
       ) : null}
       {frame && frame.outcome !== 'playing' ? (
-        <BattleEndPanel locale={locale} frame={frame} onRestart={handleStartBattle3v3} onMenu={handleBackToMenu} />
+        <BattleEndPanel
+          locale={locale}
+          frame={frame}
+          onRestart={handleStartBattle3v3}
+          onMenu={handleBackToMenu}
+          {...(playtest ? { onBackToEditor: handleBackToEditor } : {})}
+        />
+      ) : null}
+      {playtest && !hudHidden ? (
+        <button type="button" className="secondary playtest-back" onClick={handleBackToEditor} data-testid="playtest-back">
+          {translate(locale, 'battle.end.backToEditor')}
+        </button>
       ) : null}
     </div>
   );

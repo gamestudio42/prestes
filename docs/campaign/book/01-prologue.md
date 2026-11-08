@@ -1,6 +1,7 @@
 ---
 mission: prologue-18-do-forte
-status: draft
+status: applied
+runtimeId: prologue-18-do-forte
 label: dramatized
 sourceRefs:
   - macaulay-1974
@@ -11,10 +12,12 @@ sourceRefs:
 
 # Prologue - The Beach at Copacabana
 
-> **Label:** dramatized. The 1922 rising, the fort, the 18 and Prestes's typhoid
-> are historical; the prose, the four groups and the beach sequence are a
-> dramatization. **Tone reference:** Jorge Amado, _O Cavaleiro da Esperança_.
-> No text is reproduced; the prose is original.
+> **Label:** dramatized. The 1922 rising, the fort, the beach sortie and
+> Prestes's typhoid are historical; the prose, the four groups and the beach
+> sequence are a dramatization. The “18” is the legend: the fort held 29,
+> 28 marched out, and 16 reached the government line. **Tone reference:** Jorge
+> Amado, _O Cavaleiro da Esperança_. No text is reproduced; the prose is
+> original.
 
 ## English
 
@@ -31,16 +34,18 @@ Siqueira Campos's. The column will be Prestes's.
 
 ### The Eighteen
 
-At the fort, Siqueira Campos had eighteen men and a decision. The rising had
-failed elsewhere; the government was closing in; surrender would end it without
-a story. He divided the men into four groups — five, five, four, four — and took
-them out through the gate and onto the beach. The sea was on one side, the
-government on the other, and the sand offered nothing. They fought from the gate
-to the rocks, from the rocks to the last stretch of beach, and the line grew
-shorter with every position. The four groups were not a victory waiting to
-happen. They were a delay, measured in minutes and in blood. The legend says the
-eighteen died there. The record says Siqueira Campos survived. Both are part of
-the story.
+At the fort, the legend gives Siqueira Campos eighteen men and a decision. The
+record gives twenty-nine in the fort after the commander was taken prisoner, and
+twenty-eight marching out on the afternoon of 6 July. The rising had failed
+elsewhere; the government was closing in; surrender would end it without a
+story. In the legend he divides the men into four groups — five, five, four,
+four — and takes them out through the gate and onto the beach. The sea was on
+one side, the government on the other, and the sand offered nothing. They fought
+from the gate to the rocks, from the rocks to the last stretch of beach, and the
+line grew shorter with every position. The four groups were not a victory waiting
+to happen. They were a delay, measured in minutes and in blood. The legend says
+the eighteen died there. The record says Siqueira Campos and two others survived,
+and seven rebels died. Both are part of the story.
 
 ### The Record
 
@@ -67,15 +72,18 @@ Prestes.
 
 ### Os Dezoito
 
-No forte, Siqueira Campos tinha dezoito homens e uma decisão. O levante
-fracassara em outros pontos; o governo fechava o cerco; a rendição acabaria com
-tudo sem deixar história. Ele dividiu os homens em quatro grupos — cinco, cinco,
-quatro, quatro — e os levou pelo portão até a praia. O mar ficava de um lado, o
-governo do outro, e a areia não oferecia nada. Lutaram do portão às pedras, das
-pedras ao último trecho de praia, e a linha encurtava a cada posição. Os quatro
-grupos não eram uma vitória à espera de acontecer. Eram uma demora, medida em
-minutos e em sangue. A lenda diz que os dezoito morreram ali. O registro diz que
-Siqueira Campos sobreviveu. As duas coisas fazem parte da história.
+No forte, a lenda dá a Siqueira Campos dezoito homens e uma decisão. O registro
+dá vinte e nove no forte depois que o comandante foi preso, e vinte e oito
+saindo na tarde de 6 de julho. O levante fracassara em outros pontos; o governo
+fechava o cerco; a rendição acabaria com tudo sem deixar história. Na lenda, ele
+divide os homens em quatro grupos — cinco, cinco, quatro, quatro — e os leva pelo
+portão até a praia. O mar ficava de um lado, o governo do outro, e a areia não
+oferecia nada. Lutaram do portão às pedras, das pedras ao último trecho de
+praia, e a linha encurtava a cada posição. Os quatro grupos não eram uma vitória
+à espera de acontecer. Eram uma demora, medida em minutos e em sangue. A lenda
+diz que os dezoito morreram ali. O registro diz que Siqueira Campos e outros dois
+sobreviveram, e que sete rebeldes morreram. As duas coisas fazem parte da
+história.
 
 ### O Registro
 
@@ -90,15 +98,17 @@ derrota certa.
 ## Sources and labels
 
 - **Historical:** the 1922 Rio rising; the Forte de Copacabana; the failure of
-  the Realengo/Vila Militar plan; the fort's fall on 6 July; the 18 marching out
-  along the beach; Siqueira Campos's survival; Prestes's typhoid absence.
-- **Dramatized:** the four groups of five, five, four and four; the beach
-  positions; the timing; the prose; the interior of the fort.
+  the Realengo/Vila Militar plan; the fort's fall on 6 July; the 29 in the fort,
+  28 marching, 16 at contact; Siqueira Campos's survival and the seven rebel
+  dead; Prestes's typhoid absence.
+- **Dramatized:** the four groups of five, five, four and four; the reduction to
+  the legendary eighteen; the beach positions; the timing; the prose; the
+  interior of the fort.
 - **Fictional:** the individual soldiers' personalities and the exact sequence
   of the beach fight.
-- **Sources:** `macaulay-1974`, ch. II, pp. 37-38; `helio-1922` (citation-only);
-  `castro-2022` (tenentismo context, not a Forte narrative); `amado-1942`
-  (tone only).
+- **Sources:** `macaulay-1974`, ch. I, pp. 26-29 and ch. II, pp. 37-38;
+  `helio-1922` (citation-only); `castro-2022` (tenentismo context, not a Forte
+  narrative); `amado-1942` (tone only).
 - **Rights:** no Amado text is reproduced. The historical photographs supplied
   for the compendium are period newspaper or document images over 100 years
   old; the project owner determined them public domain on 2026-11-06. See
@@ -111,3 +121,11 @@ derrota certa.
   long-form chapter.
 - The column begins in mission 02, in the south. The prologue's dead do not
   carry into the column.
+
+## Images
+
+![The 18 do Forte on the Copacabana beachfront, 1922. Pixel-treated historical photograph.](../../../apps/game/public/assets/compendium/revolt-1922/beach-illustration.png)
+
+_EN: The 18 do Forte on the Copacabana beachfront, 1922. Pixel-treated
+historical photograph. PT-BR: Os 18 do Forte na orla de Copacabana, 1922. Foto
+histórica com tratamento pixel._

@@ -49,7 +49,6 @@ async function command(page: Page, value: Command, ticks = 1): Promise<Frame> {
 
 test('controls both sides with reinforcements and exercises combat commands', async ({ page }) => {
   await page.goto('/');
-  await page.getByTestId('menu-mark-skirmish').click();
   await page.getByTestId('start-battle-3v3').click();
   await page.waitForFunction(() => Boolean(window.__prestes?.frame()));
   await expect(page.getByTestId('squad-status')).toContainText('Selection: 11/11');

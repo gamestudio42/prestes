@@ -1,27 +1,115 @@
 # Status
 
-## Plan (2026-11-05)
+## Plan (2026-11-08)
 
-The OpenSpec changes in flight, in the order they should land:
+The OpenSpec changes in flight, in the order they should land. Revised after
+the user's editor test of 2026-11-08 (plants drawn as pines, bridges, water,
+jagged edges, trees, trench lines, cover preview, roads that leave the
+relief alone) and the request for a deployment phase.
 
 | Order | Change | State | Lands |
 | --- | --- | --- | --- |
-| 1 | `fog-of-war` | implemented; hand check pending | archive after the user's check |
-| 2 | `add-battle-maps` | implemented; Blender kits and hand check open | archive; open items move to `docs/maps/REVIEW.md` |
-| 3 | `retire-bootcamp` | complete | archive |
-| 4 | `refine-battle-maps` | planned (32 tasks) | battles that end, 3 ms on all maps, period placeholders, start view, previews, per-map review |
-| 5 | `pre-battle-roster` | planned (25 tasks) | section types, five period weapons, the roster spread, enemy presets |
-| 6 | `add-map-objectives` | planned (15 tasks) | capture-and-hold objectives with flags, battle clock, victory by value |
-| 7 | `garrison-and-assault` | planned (21 tasks) | enter and leave buildings and trench lines, fire from ports and from towers, upper floors and roofs, close assault with bars |
-| 8 | `video-tutorial-manual` | planned (18 tasks) | the Manual bookmark, ten lessons recorded from the game, training-ground removal |
+| 0 | `fog-of-war`, `add-battle-maps` | implemented; hand checks open | the user's hand checks, then archive; the Blender kits move to `docs/maps/REVIEW.md` |
+| 0 | `add-menu-desk`, `polish-menu-desk` | the owner's menu work; sprite redraws open | finish and archive on the owner's schedule; independent of the rest |
+| 1 | `refine-map-editor` | planned (21 tasks) | plants as plants on every map, vegetation only on land, bridges on their abutments, smooth edges (smoothed rivers, dithered borders, MSAA option), roads that paint without touching the relief, trees tool and tree models, trench lines drawn like roads (any length, fire or communication), the cover overlay; map document v2 |
+| 2 | `refine-battle-maps` | planned (30 tasks; 5.3 and 5.12 moved to 1, 5.8 narrowed) | battles that end, 3 ms on all maps, period placeholders, start view, previews, per-map review |
+| 3 | `pre-battle-roster` | planned (25 tasks) | section types, five period weapons, the roster spread, enemy presets |
+| 4 | `add-deployment-phase` | planned (14 tasks) | a deployment round before the clock: orders take effect at once, defend fills trench lines, deployment areas (map document v3), the enemy deploys, a placement preview of cover |
+| 5 | `add-map-objectives` | planned (17 tasks) | capture-and-hold objectives with flags, battle clock from "Start battle", victory by value; objectives in the editor (map document v4) |
+| 6 | `garrison-and-assault` | planned (23 tasks) | enter and leave buildings and trench lines (capacity by trench length), fire from ports and from towers, upper floors and roofs, close assault with bars; enter at once during deployment |
+| 7 | `video-tutorial-manual` | planned (19 tasks) | the Manual, thirteen lessons recorded from the game (deployment, objectives and garrisons included), training-ground removal |
 
-`refine-battle-maps` (now with the Fazenda feedback: road ditches, more
-cover, corn and capim look) and `pre-battle-roster` are independent;
-whichever lands second re-records its goldens. Objectives come before
-garrisons so garrisoned men can hold objectives from the start.
-`video-tutorial-manual` comes last so its videos show the refined maps,
-the Comando, the flags and the assault; it gains lessons for objectives and
-for entering and assaulting positions when it is applied.
+Why this order:
+
+- The editor round comes first: trench lines and the cover overlay are what
+  the deployment phase and the garrisons build on. Its plant look covers
+  the hand-written maps too, so `refine-battle-maps` no longer draws
+  plants.
+- `refine-battle-maps` and `pre-battle-roster` do not depend on each other.
+  Whichever lands second re-records its goldens.
+- Deployment needs the roster (sections by type) and the trench lines.
+  Objectives start their clock at "Start battle".
+- Garrisons come last among the systems, so garrisoned men can hold
+  objectives and be deployed into houses and trenches from the start.
+- The videos come last, so they show all of it.
+- Map document versions follow the same order (v2 editor round, v3
+  deployment areas, v4 objectives). Each loads the older files.
+
+## Map editor (add-map-editor, 2026-11-08)
+
+`editor.html` builds battle maps in the browser: small, medium and large
+sizes (240, 400, 640 m), a pixel-art texture brush with basic colours and
+detailed textures (cerrado and caatinga included), elevation brushes with a
+relief view (height colours, shading, 1 m and 5 m contours), roads with
+ditches, rivers, ponds, bridges and ferries, walls and fences, a catalog of
+buildings, stones, trees, posts, covers and props that all count in battle,
+vegetation, deployment, a problem list, undo, autosave, import/export,
+playtest and (dev server) save to project. Proof map: `fazenda-doc`.
+The menu desk carries a theodolite, under the map fan, that opens the editor.
+Campaign maps load on demand, so `fazenda-doc` weighs nothing in the game
+and worker bundles. Bundle budgets raised to the measured sizes: game JS
+400 -> 510 KB, worker 110 -> 155 KB, menu CSS 85 -> 100 KB (the editor's map
+compiler is about 20 KB of it; the rest is the gramophone, compendium and desk
+menu work). Open: decimated Refloreste trees for the catalog.
+
+## Menu desk (default, 2026-11-06)
+
+The start screen is a desk of draggable period objects: the campaign and
+compendium as independent rasterized books, a reference pile, an options compass,
+a fan of the four rasterized folded battle maps and the gramophone. Every closed
+object carries one localized label below the art, with the same font and gap; the
+campaign reads "Campanha"/"Campaign" and the compendium "A Coluna
+Prestes"/"The Prestes Column". Opening a book, the reference pile, the compass or
+the gramophone lays out a centered screen. The reference dossier carries the
+owner's preface and linked entries for Macaulay, Amado, Erico Verissimo's
+"O Tempo e o Vento" series and Blanc. The gramophone screen shows the larger
+machine, the current record's metadata, a rack of recordings and the transport;
+its record never rotates, only the groove highlights shimmer while a track plays,
+and it has no "Da sala ao lado" subtitle. The active map carries its name,
+description and deploy action in an HTML legend over the blank parchment strip at
+the bottom of the sheet; the map art has baked folds and the fan is tilted in
+perspective. The desk stores its positions under `prestes.menu.desk.v1` and
+offers a localized "Tidy desk" reset; it does not read or write the audio,
+locale, gramophone or route keys.
+
+The owner accepted the desk on 2026-11-08, and the book screen, its
+route (`?menu=book`), its styles and its tests were removed (add-menu-desk 8.3);
+the e2e specs now start every battle from the desk. The shared page and cover
+styles the desk books use stay in `book-menu.css`.
+
+### Desk polish (`polish-menu-desk`, 2026-11-07)
+
+- Open objects are centred overlays; a closed object keeps its spot across
+  open and close and across a reload while open. Drag grid 2 px, keys 6/24 px.
+- Closed objects are drawn from `DESK_ART` at 2x on every screen (the owner
+  chose one smaller scale after 3x crowded 1280 x 720), with shared shadow
+  tokens and a held lift while dragging. Every closed object's label sits 8 px
+  below its lowest opaque art row (e2e). The default arrangement fits and keeps
+  every object apart at 1440 x 900 and 1280 x 720 (e2e). The closed map sheet's
+  legend shows the title and the deploy stamp; the description is its tooltip
+  (and shown in full in the narrow drawer).
+- Both open books are two-page spreads built by `ui/menu/bookPages.ts`: no
+  scrolling (overflow e2e at 1440 x 900 and 1280 x 720, EN and PT-BR), page
+  numbers, ribbons, corner turns and arrow keys. The compendium has a contents
+  spread, 40 entries (Miguel Costa and Isidoro Dias Lopes added), 14 public-domain
+  plates with caption and credit, labels, confidence, sources and related-entry
+  links. The campaign book has a title, contents and eight chapters (opening,
+  prose and briefing) with compendium links; "Play chapter" is disabled
+  ("in preparation") and every chapter has `playable: false`.
+- Docs are the authoring source: entries, chapters and mission player text are
+  marked `applied` with their runtime ids; `pnpm check:content` validates them.
+- Live-video check (Playwright, video playing, PT-BR): at 1440 x 900 the
+  outlined labels and shadows read over the moving scene and the open
+  compendium reads comfortably. At the 820 px narrow layout the open book was
+  still a fixed, centred overlay and was cut off at the top and left; it now
+  sits in the column at full width (e2e guard in `desk-books.spec.ts`).
+- Not done: the Aseprite cleanups and redraws (block 3: both closed books,
+  reference pile, gramophone, compass, the tinted 9-slice frame and the section
+  emblem). Until then the old compass and pile sprites are shown at 2x.
+
+The desk replaces the bookmark shell. `video-tutorial-manual` (Manual bookmark)
+and `pre-battle-roster` (roster spread) should add a desk object instead of a
+bookmark when they are applied.
 
 ## Implemented
 

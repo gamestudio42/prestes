@@ -8,7 +8,7 @@ import {
 } from '@prestes/shared';
 import type { Outcome, SimEvent } from '@prestes/shared';
 import { TARGET_HYSTERESIS, targetScore } from '../tactical';
-import { CONTACT_RADIUS, AMBUSH_RADIUS, AWARENESS_RANGE, SUPPRESS_FIRE_INTERVAL, clamp } from './model';
+import { CONCEALED_CONTACT_RADIUS, CONTACT_RADIUS, AMBUSH_RADIUS, AWARENESS_RANGE, SUPPRESS_FIRE_INTERVAL, clamp } from './model';
 import type { MutableUnit } from './model';
 import type { SimContext } from './context';
 import { nearestEnemy } from './geometry';
@@ -22,7 +22,8 @@ import { hiddenByVegetation, revealShooter } from './concealment';
  * only takes targets this close.
  */
 function withinHoldRange(unit: MutableUnit, target: MutableUnit): boolean {
-  const radius = unit.fireOnContact ? CONTACT_RADIUS : unit.ambush ? AMBUSH_RADIUS : Infinity;
+  const contact = unit.autoContact === 'armed' ? CONCEALED_CONTACT_RADIUS : CONTACT_RADIUS;
+  const radius = unit.fireOnContact ? contact : unit.ambush ? AMBUSH_RADIUS : Infinity;
   return (target.x - unit.x) ** 2 + (target.y - unit.y) ** 2 <= radius * radius;
 }
 
@@ -31,6 +32,7 @@ export function openFireOnContact(ctx: SimContext, unit: MutableUnit): void {
   for (const other of ctx.units) {
     if (other.fireOnContact && other.faction === unit.faction && other.squadId === unit.squadId) {
       other.fireOnContact = false;
+      if (other.autoContact === 'armed') other.autoContact = 'spent';
     }
   }
 }
@@ -279,11 +281,13 @@ export function fire(ctx: SimContext, tick: number, events: SimEvent[]): void {
       continue;
     }
     // Sighting the enemy takes a moment; drawn per soldier, it also keeps a
-    // section that sights him together from firing as one. A man already in
-    // action shifts to the next target within his aimed rhythm.
+    // section that sights him together from firing as one. A man still in his
+    // aimed rhythm shifts to the next target at once; one who has waited
+    // longer (a pursuit that lost its man) sights afresh, or a whole section
+    // waiting on the same enemy would fire as one when he shows.
     if (unit.aimedAt !== target.id) {
       unit.aimedAt = target.id;
-      const inAction = unit.lastShotTick !== undefined && tick - unit.lastShotTick <= IN_ACTION_TICKS;
+      const inAction = unit.lastShotTick !== undefined && tick - unit.lastShotTick <= weapon.aimedIntervalTicks[1];
       if (!inAction) {
         unit.cooldown = drawTicks(ctx, weapon.reactionTicks);
         continue;
@@ -528,9 +532,6 @@ export function updateFacing(ctx: SimContext): void {
     }
   }
 }
-
-/** A soldier who fired this recently (ticks) is in action: no fresh reaction delay. */
-const IN_ACTION_TICKS = 100;
 
 /** Hit chance of a shooter who is himself suppressed. */
 const SUPPRESSED_AIM = 0.6;

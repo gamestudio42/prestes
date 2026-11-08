@@ -7,6 +7,8 @@ export interface BattleEndPanelProps {
   frame: Frame;
   onRestart: () => void;
   onMenu: () => void;
+  /** add-map-editor: a playtest returns to the editor. */
+  onBackToEditor?: () => void;
 }
 
 function formatTicks(ticks: number): string {
@@ -30,7 +32,7 @@ function losses(units: readonly UnitSnapshot[], faction: 'column' | 'legalist'):
 }
 
 /** The 3 vs 3 battle's end (battle-feel-3v3): result, time, each side's losses. */
-export function BattleEndPanel({ locale, frame, onRestart, onMenu }: BattleEndPanelProps) {
+export function BattleEndPanel({ locale, frame, onRestart, onMenu, onBackToEditor }: BattleEndPanelProps) {
   const t = (key: MessageKey, values?: Readonly<Record<string, string | number>>) =>
     translate(locale, key, values);
   const victory = frame.outcome === 'victory';
@@ -79,6 +81,11 @@ export function BattleEndPanel({ locale, frame, onRestart, onMenu }: BattleEndPa
           <button type="button" onClick={onMenu} data-testid="battle-end-menu">
             {t('battle.end.menu')}
           </button>
+          {onBackToEditor ? (
+            <button type="button" onClick={onBackToEditor} data-testid="battle-end-editor">
+              {t('battle.end.backToEditor')}
+            </button>
+          ) : null}
         </div>
       </section>
     </div>

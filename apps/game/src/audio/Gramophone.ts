@@ -132,6 +132,28 @@ export class Gramophone {
     this.move(-1, this.playing || !this.started);
   }
 
+  /** Jumps to a track from the record rack and plays it when appropriate. */
+  select(index: number): void {
+    if (this.disposed) return;
+    const target = clampTrackIndex(index, this.tracks.length);
+    if (target === this.index) {
+      if (!this.playing && !this.loading) void this.play();
+      return;
+    }
+    this.index = target;
+    this.changeNonce += 1;
+    this.error = false;
+    if (this.playing || !this.started) {
+      void this.playTrack(this.started ? CHANGE_FADE_SECONDS : FIRST_FADE_SECONDS);
+      return;
+    }
+    this.playGeneration += 1;
+    this.loading = false;
+    this.playing = false;
+    this.output.load(this.srcFor(this.track));
+    this.emit();
+  }
+
   setMuted(muted: boolean): void {
     if (this.muted === muted) return;
     this.muted = muted;

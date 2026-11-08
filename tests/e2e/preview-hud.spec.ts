@@ -2,7 +2,6 @@ import { expect, test } from '@playwright/test';
 
 test('toggles the opt-in preview and hides/restores the HUD', async ({ page }) => {
   await page.goto('/');
-  await page.getByTestId('menu-mark-skirmish').click();
   await page.getByTestId('start-battle-3v3').click();
   await page.waitForFunction(() => Boolean((window as unknown as { __prestes?: { frame?: () => unknown } }).__prestes?.frame?.()));
   await expect(page.getByTestId('squad-status')).toContainText('Selection: 11/11');

@@ -92,6 +92,10 @@ export function useGramophone({ muted, onEnableSound }: UseGramophoneOptions) {
     engineRef.current?.previous();
   }, []);
 
+  const handleSelect = useCallback((index: number) => {
+    engineRef.current?.select(index);
+  }, []);
+
   return {
     track: GRAMOPHONE_TRACKS[state.trackIndex] ?? GRAMOPHONE_TRACKS[0]!,
     total: GRAMOPHONE_TRACKS.length,
@@ -99,5 +103,6 @@ export function useGramophone({ muted, onEnableSound }: UseGramophoneOptions) {
     handlePlayPause,
     handleNext,
     handlePrevious,
+    handleSelect,
   };
 }

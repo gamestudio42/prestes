@@ -1,11 +1,12 @@
 ## 0. Prerequisites
 
-- [ ] 0.1 Archive `add-battle-maps` (verify: `openspec validate --specs`)
+- [ ] 0.1 Archive `add-battle-maps` and `add-deployment-phase` (verify: `openspec validate --specs`)
 
 ## 1. Data
 
 - [ ] 1.1 `Objective` type and `objectives` on `BattleMap`; the table's objectives on the four maps; EN and PT-BR names (verify: typecheck; locale check)
 - [ ] 1.2 Content check: reachable from both zones, no overlap, not in deep water or inside a footprint (except the flag), 3-5 per battle map (verify: unit test with a broken map; `pnpm check:content`)
+- [ ] 1.3 Objectives in authored maps: map document version 4 with `objectives` (area polygon, flag point, value, initial owner, EN and PT-BR names); the editor's objective tool in the gameplay layers; the map check applies 1.2's rules (verify: editor e2e places an objective and the playtest shows its flag; migration unit test; locale check)
 
 ## 2. Simulation
 
@@ -14,6 +15,7 @@
 - [ ] 2.3 Clock and outcome order with `decidedBy` and the objective summary in the end event (verify: tests "time runs out", "all objectives held", "draw")
 - [ ] 2.4 Commander goals: garrison value ≥ 2, attack by value, retake within 60 s, last-minutes push (verify: tests "retake" and "last minutes"; fog test that the commander does not target unseen men)
 - [ ] 2.5 Goldens re-recorded with the reason (verify: `pnpm check:determinism`)
+- [ ] 2.6 The clock and capture start at `battle_started` (after the deployment phase); the commander's deployment anchors include its objectives (verify: test "clock waits for the deployment"; test "enemy deploys on its objectives")
 
 ## 3. Presentation
 

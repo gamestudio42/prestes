@@ -1,0 +1,832 @@
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore, type CSSProperties, type ReactNode } from 'react';
+import {
+  CATALOG_OBJECTS,
+  catalogObject,
+  createEditableMap,
+  fromMapDocument,
+  GROUND_ATLAS,
+  GROUND_MATERIAL_IDS,
+  groundMaterial,
+  groundMaterialIndex,
+  isValidMapId,
+  LINE_KINDS,
+  lineKind as lineKindEntry,
+  MAP_SIZES,
+  resizeEditableMap,
+  ROAD_TYPES,
+  roadType,
+  solidBlocksSight,
+  solidQuality,
+  surfaceSpeed,
+  toMapDocument,
+  validateEditableMap,
+  VEGETATION_KINDS,
+  type CatalogObject,
+  type EditableMap,
+  type GroundMaterialId,
+  type LineKind,
+  type MapPalette,
+  type MapProblem,
+  type MapSize,
+  type MapUse,
+  type RoadType,
+  type SettingLabel,
+} from '@prestes/shared';
+import { LOCALES, translate, type Locale, type MessageKey } from '@prestes/content';
+import { loadLocale, saveLocale } from '../storage';
+import { autosave, exportDocument, loadLast, readDocumentFile, saveToProject, storePlaytest } from './persistence';
+import { EditorStore, replaceCommand, type SelectionItem, type ToolId } from './store';
+import { editorBridge, type EditorBridge } from './test-bridge';
+import { EditorViewport, type CursorInfo } from './viewport';
+
+/**
+ * The map editor page (add-map-editor): toolbar, tool palette, properties,
+ * problems and status bar around the 3D viewport. Every string goes through
+ * the locale catalog.
+ */
+
+type T = (key: string, values?: Readonly<Record<string, string | number>>) => string;
+
+const TOOL_GROUPS: readonly { layer: string; tools: readonly ToolId[] }[] = [
+  { layer: 'editor.layers', tools: ['select'] },
+  { layer: 'editor.layer.paint', tools: ['paint', 'fill', 'erase'] },
+  { layer: 'editor.layer.terrain', tools: ['raise', 'lower', 'smooth', 'flatten', 'setHeight', 'noise'] },
+  { layer: 'editor.layer.roads', tools: ['road'] },
+  { layer: 'editor.layer.water', tools: ['river', 'pond', 'bridge', 'ferry'] },
+  { layer: 'editor.layer.structures', tools: ['line'] },
+  { layer: 'editor.layer.objects', tools: ['place'] },
+  { layer: 'editor.layer.vegetation', tools: ['vegetation'] },
+  { layer: 'editor.layer.gameplay', tools: ['deployment'] },
+];
+
+const TOOL_KEYS: Record<ToolId, string> = {
+  select: 'V',
+  paint: 'B',
+  fill: 'G',
+  erase: 'E',
+  raise: 'H',
+  lower: '',
+  smooth: 'S',
+  flatten: 'F',
+  setHeight: '',
+  noise: '',
+  road: 'R',
+  river: '',
+  pond: '',
+  bridge: '',
+  ferry: '',
+  line: 'W',
+  place: 'O',
+  vegetation: 'P',
+  deployment: 'D',
+};
+
+const OBJECT_GROUPS = ['building', 'stone', 'tree', 'post', 'cover', 'prop', 'decal'] as const;
+const PALETTES: readonly MapPalette[] = ['temperate', 'cerrado', 'caatinga', 'urban'];
+const SETTINGS: readonly SettingLabel[] = ['historical-setting-fictional-place', 'reconstructed-historical-place', 'training-ground'];
+const AUTOSAVE_DELAY = 1500;
+
+function hintKey(tool: ToolId): string {
+  if (tool === 'paint' || tool === 'erase' || tool === 'fill' || tool === 'vegetation') return 'editor.tool.hint.paint';
+  if (['raise', 'lower', 'smooth', 'flatten', 'setHeight', 'noise'].includes(tool)) return 'editor.tool.hint.height';
+  if (['road', 'river', 'pond', 'line', 'bridge', 'ferry'].includes(tool)) return 'editor.tool.hint.polyline';
+  if (tool === 'place') return 'editor.tool.hint.place';
+  if (tool === 'deployment') return 'editor.tool.hint.deployment';
+  return 'editor.tool.hint.select';
+}
+
+/** What an object does in battle, as the properties panel shows it. */
+export function footprintFacts(entry: CatalogObject, t: T): string[] {
+  const facts: string[] = [];
+  const footprint = entry.footprint;
+  switch (footprint.kind) {
+    case 'building':
+      facts.push(t('editor.prop.blocksMovement'), t('editor.prop.blocksSight'), t('editor.prop.cover', { quality: '0.80' }));
+      break;
+    case 'solid':
+      facts.push(t('editor.prop.blocksMovement'), t('editor.prop.cover', { quality: solidQuality(entry.height).toFixed(2) }));
+      facts.push(solidBlocksSight(entry.height, entry.halfWidth, entry.halfDepth) ? t('editor.prop.blocksSight') : t('editor.prop.seeThrough'));
+      break;
+    case 'thin':
+      facts.push(t('editor.prop.blocksMovement'), t('editor.prop.noCover'), t('editor.prop.seeThrough'));
+      break;
+    case 'foliage':
+      facts.push(t('editor.prop.conceals'), t('editor.prop.noCover'));
+      break;
+    case 'decal':
+      facts.push(t('editor.prop.flat'), t('editor.prop.surface', { speed: surfaceSpeed(groundMaterial(groundMaterialIndex(footprint.material)).surface).toFixed(2) }));
+      break;
+    case 'trench-line':
+      facts.push(t('editor.prop.cover', { quality: '0.40' }), t('editor.prop.seeThrough'));
+      break;
+  }
+  if (entry.concealRadius) facts.push(t('editor.prop.conceals'));
+  return facts;
+}
+
+function problemText(problem: MapProblem, t: T): string {
+  const params: Record<string, string | number> = { ...problem.params };
+  if (typeof params.side === 'string') params.side = t(`editor.side.${params.side}`);
+  for (const key of ['type', 'a', 'b'] as const) {
+    if (typeof params[key] === 'string' && catalogObject(params[key] as string)) params[key] = t(`editor.object.${params[key] as string}`);
+  }
+  if (params.language === 'en') params.language = 'English';
+  if (params.language === 'pt-BR') params.language = 'Português';
+  return t(`editor.problem.${problem.code}`, params);
+}
+
+function problemSelection(problem: MapProblem): SelectionItem[] {
+  const target = problem.target;
+  if (!target) return [];
+  if (target.kind === 'section') {
+    const [side, index] = String(target.id).split(':');
+    if (side === 'column' || side === 'legalist') return [{ kind: 'section', side, index: Number(index) }];
+    return [];
+  }
+  if (typeof target.id !== 'number') return [];
+  return [{ kind: target.kind, id: target.id }];
+}
+
+export function EditorApp(): ReactNode {
+  const [locale, setLocale] = useState<Locale>(loadLocale);
+  const t: T = useMemo(() => (key, values) => translate(locale, key as MessageKey, values), [locale]);
+  const store = useMemo(() => new EditorStore(), []);
+  useSyncExternalStore(
+    (listener) => store.subscribe(listener),
+    () => store.version,
+  );
+  const container = useRef<HTMLDivElement | null>(null);
+  const viewport = useRef<EditorViewport | null>(null);
+  const fileInput = useRef<HTMLInputElement | null>(null);
+  const [cursor, setCursor] = useState<CursorInfo | null>(null);
+  const [dialog, setDialog] = useState<'new' | 'properties' | null>(null);
+  const [ready, setReady] = useState(false);
+  const tRef = useRef(t);
+  tRef.current = t;
+
+  // The viewport lives outside React.
+  useEffect(() => {
+    if (!container.current) return undefined;
+    const view = new EditorViewport(container.current, store, (side, index) => `${tRef.current(`editor.side.${side}`)} · ${tRef.current('editor.section', { n: index + 1 })}`);
+    view.onCursor = setCursor;
+    viewport.current = view;
+    let cancelled = false;
+    void loadLast().then((document) => {
+      if (cancelled) return;
+      if (document) {
+        store.load(fromMapDocument(document));
+        view.frameMap();
+      }
+      setReady(true);
+    });
+    return () => {
+      cancelled = true;
+      view.dispose();
+      viewport.current = null;
+    };
+  }, [store]);
+
+  // Dev-only `window.__prestesEditor` bridge for the Playwright suite.
+  useEffect(() => {
+    if (!import.meta.env.DEV) return undefined;
+    const host = window as unknown as { __prestesEditor?: EditorBridge };
+    host.__prestesEditor = editorBridge(store, () => viewport.current);
+    return () => {
+      delete host.__prestesEditor;
+    };
+  }, [store]);
+
+  // Autosave a moment after the last edit.
+  useEffect(() => {
+    let timer = 0;
+    store.onEdited = () => {
+      window.clearTimeout(timer);
+      timer = window.setTimeout(() => {
+        void autosave(toMapDocument(store.map)).then((saved) => {
+          if (saved && store.saveState === 'unsaved') {
+            store.saveState = 'autosaved';
+            store.emit();
+          }
+        });
+      }, AUTOSAVE_DELAY);
+    };
+    return () => {
+      window.clearTimeout(timer);
+      store.onEdited = null;
+    };
+  }, [store]);
+
+  // Tool shortcuts.
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent): void => {
+      const target = event.target as HTMLElement | null;
+      if (target && ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName)) return;
+      if (event.ctrlKey || event.altKey || event.metaKey) return;
+      if (store.tool === 'place' && event.code === 'KeyR') return;
+      const letter = event.key.toUpperCase();
+      const tool = (Object.keys(TOOL_KEYS) as ToolId[]).find((id) => TOOL_KEYS[id] === letter);
+      if (tool) store.setTool(tool);
+      if (event.key === '[') store.updateSettings({ size: Math.max(1, store.settings.size - 1) });
+      if (event.key === ']') store.updateSettings({ size: Math.min(64, store.settings.size + 1) });
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [store]);
+
+  const changeLocale = (next: Locale): void => {
+    setLocale(next);
+    saveLocale(next);
+  };
+
+  const runValidation = (): MapProblem[] => {
+    store.problems = validateEditableMap(store.map);
+    store.emit();
+    return store.problems;
+  };
+
+  const onImport = async (file: File): Promise<void> => {
+    const result = await readDocumentFile(file);
+    if (!result.ok) {
+      store.setMessage(t(`editor.import.error.${result.error}`, { detail: result.detail ?? '' }), true);
+      return;
+    }
+    store.execute(replaceCommand(store.map, fromMapDocument(result.document)));
+    viewport.current?.frameMap();
+    store.setMessage(null);
+  };
+
+  const onSaveToProject = async (): Promise<void> => {
+    const problems = runValidation();
+    if (problems.some((problem) => problem.severity === 'error')) {
+      store.setMessage(t('editor.save.refused'), true);
+      return;
+    }
+    const result = await saveToProject(toMapDocument(store.map));
+    if (result.ok) {
+      store.saveState = 'saved';
+      store.setMessage(t('editor.save.ok', { file: result.file }));
+    } else {
+      store.setMessage(t('editor.save.failed', { reason: result.reason }), true);
+    }
+  };
+
+  const onPlaytest = async (): Promise<void> => {
+    const problems = runValidation();
+    if (problems.some((problem) => problem.severity === 'error')) return;
+    const document = toMapDocument(store.map);
+    // Saved first: "back to the editor" reopens this map, not an older autosave.
+    await autosave(document);
+    await storePlaytest(document);
+    window.location.href = './index.html?playtest=1';
+  };
+
+  const chooseProblem = (problem: MapProblem): void => {
+    if (problem.at) viewport.current?.centreOn(problem.at);
+    const selection = problemSelection(problem);
+    if (selection.length > 0) {
+      store.setTool(selection[0]!.kind === 'section' ? 'deployment' : 'select');
+      store.setSelection(selection);
+    }
+  };
+
+  const { map, settings, tool, view } = store;
+  return (
+    <div className="editor">
+      <header className="editor-toolbar">
+        <span className="editor-title">{t('editor.title')}</span>
+        <button type="button" data-testid="editor-new" onClick={() => setDialog('new')}>{t('editor.file.new')}</button>
+        <button type="button" data-testid="editor-properties" onClick={() => setDialog('properties')}>{t('editor.file.properties')}</button>
+        <button type="button" onClick={() => fileInput.current?.click()}>{t('editor.file.import')}</button>
+        <input
+          ref={fileInput}
+          type="file"
+          data-testid="editor-import-input"
+          accept=".json,application/json"
+          hidden
+          onChange={(event) => {
+            const file = event.target.files?.[0];
+            event.target.value = '';
+            if (file) void onImport(file);
+          }}
+        />
+        <button type="button" data-testid="editor-export" onClick={() => exportDocument(toMapDocument(store.map))}>{t('editor.file.export')}</button>
+        {import.meta.env.DEV ? (
+          <button type="button" data-testid="editor-save-project" onClick={() => void onSaveToProject()}>{t('editor.file.saveProject')}</button>
+        ) : null}
+        <span className="editor-separator" />
+        <button type="button" data-testid="editor-undo" disabled={!store.canUndo} onClick={() => store.undo()}>{t('editor.file.undo')}</button>
+        <button type="button" data-testid="editor-redo" disabled={!store.canRedo} onClick={() => store.redo()}>{t('editor.file.redo')}</button>
+        <span className="editor-separator" />
+        <button type="button" aria-pressed={!view.topDown} onClick={() => store.updateView({ topDown: false })}>{t('editor.view.3d')}</button>
+        <button type="button" aria-pressed={view.topDown} onClick={() => store.updateView({ topDown: true })}>{t('editor.view.2d')}</button>
+        <button type="button" aria-pressed={view.grid} onClick={() => store.updateView({ grid: !view.grid })}>{t('editor.view.grid')}</button>
+        <select data-testid="editor-overlay" value={view.overlay} onChange={(event) => store.updateView({ overlay: event.target.value as typeof view.overlay })}>
+          {(['none', 'relief', 'contours', 'slope'] as const).map((overlay) => (
+            <option key={overlay} value={overlay}>{t(`editor.overlay.${overlay}`)}</option>
+          ))}
+        </select>
+        <span className="editor-separator" />
+        <button type="button" data-testid="editor-validate" onClick={() => runValidation()}>{t('editor.file.validate')}</button>
+        <button type="button" className="editor-primary" data-testid="editor-playtest" onClick={() => void onPlaytest()}>{t('editor.file.playtest')}</button>
+        <span className="editor-spacer" />
+        <select value={locale} onChange={(event) => changeLocale(event.target.value as Locale)}>
+          {LOCALES.map((entry) => (
+            <option key={entry} value={entry}>{entry}</option>
+          ))}
+        </select>
+        <a className="editor-link" href="./index.html">{t('editor.file.back')}</a>
+      </header>
+
+      <nav className="editor-tools" aria-label={t('editor.tools')}>
+        {TOOL_GROUPS.map((group) => (
+          <section key={group.layer}>
+            <h3>{t(group.layer)}</h3>
+            {group.tools.map((id) => (
+              <button
+                key={id}
+                type="button"
+                data-tool={id}
+                aria-pressed={tool === id}
+                title={TOOL_KEYS[id] ? `${t(`editor.tool.${id}`)} (${TOOL_KEYS[id]})` : t(`editor.tool.${id}`)}
+                onClick={() => store.setTool(id)}
+              >
+                {t(`editor.tool.${id}`)}
+              </button>
+            ))}
+          </section>
+        ))}
+      </nav>
+
+      <main className="editor-viewport" data-testid="editor-viewport" data-ready={ready} ref={container}>
+        {!ready ? <div className="editor-loading">{t('editor.loading')}</div> : null}
+      </main>
+
+      <aside className="editor-properties">
+        <h2>{t(`editor.tool.${tool}`)}</h2>
+        <p className="editor-hint">{t(hintKey(tool))}</p>
+        <ToolProperties store={store} t={t} />
+        {tool === 'select' ? <SelectionPanel store={store} viewport={viewport.current} t={t} /> : null}
+        {settings.snap !== undefined && ['road', 'river', 'pond', 'line', 'bridge', 'ferry', 'place', 'select', 'deployment'].includes(tool) ? (
+          <label>
+            {t('editor.prop.snap')}
+            <select value={String(settings.snap)} onChange={(event) => store.updateSettings({ snap: Number(event.target.value) as 0 | 0.5 | 1 })}>
+              <option value="0">{t('editor.prop.snapFree')}</option>
+              <option value="0.5">{t('editor.prop.snap05')}</option>
+              <option value="1">{t('editor.prop.snap1')}</option>
+            </select>
+          </label>
+        ) : null}
+      </aside>
+
+      {store.problems ? (
+        <section className="editor-problems" data-testid="editor-problems">
+          <h3>
+            {t('editor.problems.title')}
+            <button type="button" onClick={() => { store.problems = null; store.emit(); }}>{t('editor.map.close')}</button>
+          </h3>
+          {store.problems.length === 0 ? <p>{t('editor.problems.none')}</p> : null}
+          <ul>
+            {store.problems.map((problem, index) => (
+              <li key={index} data-severity={problem.severity} data-code={problem.code}>
+                <button type="button" onClick={() => chooseProblem(problem)}>
+                  <strong>{t(problem.severity === 'error' ? 'editor.problems.error' : 'editor.problems.warning')}</strong> {problemText(problem, t)}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
+
+      <footer className="editor-status">
+        <span>{map.id} · {t(`editor.map.size.${map.size}`)}</span>
+        <span>{cursor ? t('editor.status.position', { x: cursor.x.toFixed(1), y: cursor.y.toFixed(1), h: cursor.height.toFixed(2) }) : ''}</span>
+        {view.overlay === 'relief' || view.overlay === 'contours' ? (
+          <span className="editor-legend" data-overlay={view.overlay}>
+            {t('editor.relief.legend', { low: heightRange(map).low.toFixed(1), high: heightRange(map).high.toFixed(1) })}
+          </span>
+        ) : null}
+        <span data-state={store.saveState}>{t(`editor.status.${store.saveState}`)}</span>
+        {store.message ? <span data-testid="editor-message" className={store.message.error ? 'editor-error' : 'editor-ok'}>{store.message.text}</span> : null}
+      </footer>
+
+      {dialog ? (
+        <MapDialog
+          mode={dialog}
+          map={map}
+          t={t}
+          onClose={() => setDialog(null)}
+          onCreate={(next) => {
+            store.load(next);
+            viewport.current?.frameMap();
+            setDialog(null);
+          }}
+          onApply={(next) => {
+            store.execute(replaceCommand(store.map, next));
+            if (next.size !== map.size) viewport.current?.frameMap();
+            setDialog(null);
+          }}
+        />
+      ) : null}
+    </div>
+  );
+}
+
+function NumberField(props: { label: string; value: number; min: number; max: number; step: number; onChange: (value: number) => void }): ReactNode {
+  return (
+    <label>
+      {props.label}
+      <span className="editor-range">
+        <input type="range" min={props.min} max={props.max} step={props.step} value={props.value} onChange={(event) => props.onChange(Number(event.target.value))} />
+        <input type="number" min={props.min} max={props.max} step={props.step} value={props.value} onChange={(event) => props.onChange(Math.max(props.min, Math.min(props.max, Number(event.target.value))))} />
+      </span>
+    </label>
+  );
+}
+
+function Check(props: { label: string; checked: boolean; onChange: (checked: boolean) => void }): ReactNode {
+  return (
+    <label className="editor-check">
+      <input type="checkbox" checked={props.checked} onChange={(event) => props.onChange(event.target.checked)} />
+      {props.label}
+    </label>
+  );
+}
+
+/** A material's own pixel-art tile from the ground atlas (5 x 4 tiles). */
+function swatchStyle(index: number, color: number): CSSProperties {
+  const column = index % GROUND_ATLAS.columns;
+  const row = Math.floor(index / GROUND_ATLAS.columns);
+  return {
+    backgroundColor: `#${color.toString(16).padStart(6, '0')}`,
+    backgroundImage: 'url(./models/textures/ground-atlas.png)',
+    backgroundSize: `${GROUND_ATLAS.columns * 100}% ${GROUND_ATLAS.rows * 100}%`,
+    backgroundPosition: `${(column / (GROUND_ATLAS.columns - 1)) * 100}% ${(row / (GROUND_ATLAS.rows - 1)) * 100}%`,
+  };
+}
+
+function MaterialSwatches(props: { value: GroundMaterialId; t: T; onChange: (id: GroundMaterialId) => void }): ReactNode {
+  const group = (kind: 'basic' | 'detailed') => (
+    <>
+      <span className="editor-swatch-group">{props.t(`editor.materials.${kind}`)}</span>
+      {GROUND_MATERIAL_IDS.filter((id) => groundMaterial(groundMaterialIndex(id)).kind === kind).map((id) => {
+        const material = groundMaterial(groundMaterialIndex(id));
+        return (
+          <button
+            key={id}
+            type="button"
+            role="option"
+            aria-selected={props.value === id}
+            title={`${props.t(material.nameKey)} · ${props.t('editor.prop.surface', { speed: surfaceSpeed(material.surface).toFixed(2) })}`}
+            data-material={id}
+            style={swatchStyle(groundMaterialIndex(id), material.color)}
+            onClick={() => props.onChange(id)}
+          />
+        );
+      })}
+    </>
+  );
+  return (
+    <div className="editor-swatches" role="listbox" aria-label={props.t('editor.prop.material')}>
+      {group('basic')}
+      {group('detailed')}
+      <span className="editor-swatch-name">{props.t(`editor.material.${props.value}`)}</span>
+    </div>
+  );
+}
+
+/** Lowest and highest stored ground (m) of the open map, for the relief legend. */
+function heightRange(map: EditableMap): { low: number; high: number } {
+  let low = Infinity;
+  let high = -Infinity;
+  for (const value of map.heights) {
+    if (value < low) low = value;
+    if (value > high) high = value;
+  }
+  return { low: low / 100, high: high / 100 };
+}
+
+function ToolProperties({ store, t }: { store: EditorStore; t: T }): ReactNode {
+  const { tool, settings } = store;
+  const set = store.updateSettings.bind(store);
+  const brush = ['paint', 'erase', 'vegetation', 'raise', 'lower', 'smooth', 'flatten', 'setHeight', 'noise'].includes(tool);
+  const fields: ReactNode[] = [];
+  if (brush) {
+    fields.push(
+      <NumberField key="size" label={t('editor.prop.size')} value={settings.size} min={1} max={64} step={1} onChange={(size) => set({ size })} />,
+      <NumberField key="strength" label={t('editor.prop.strength')} value={settings.strength} min={0.05} max={1} step={0.05} onChange={(strength) => set({ strength })} />,
+      <label key="shape">
+        {t('editor.prop.shape')}
+        <select value={settings.shape} onChange={(event) => set({ shape: event.target.value as 'round' | 'square' })}>
+          <option value="round">{t('editor.prop.round')}</option>
+          <option value="square">{t('editor.prop.square')}</option>
+        </select>
+      </label>,
+    );
+  }
+  if (tool === 'paint' || tool === 'fill') fields.push(<MaterialSwatches key="material" value={settings.material} t={t} onChange={(material) => set({ material })} />);
+  if (tool === 'setHeight') fields.push(<NumberField key="height" label={t('editor.prop.height')} value={settings.heightValue} min={-12} max={40} step={0.1} onChange={(heightValue) => set({ heightValue })} />);
+  if (tool === 'noise') fields.push(<NumberField key="seed" label={t('editor.prop.seed')} value={settings.seed} min={0} max={99999} step={1} onChange={(seed) => set({ seed })} />);
+  if (tool === 'vegetation') {
+    fields.push(
+      <label key="vegetation">
+        {t('editor.prop.vegetation')}
+        <select data-testid="prop-vegetation" value={settings.vegetation} onChange={(event) => set({ vegetation: Number(event.target.value) })}>
+          <option value={0}>{t('editor.vegetation.none')}</option>
+          {VEGETATION_KINDS.map((kind, index) => (
+            <option key={kind} value={index + 1}>{t(`editor.vegetation.${kind}`)}</option>
+          ))}
+        </select>
+      </label>,
+    );
+  }
+  if (tool === 'road' || tool === 'bridge') {
+    if (tool === 'road') {
+      fields.push(
+        <label key="roadType">
+          {t('editor.prop.roadType')}
+          <select data-testid="prop-road-type"
+            value={settings.roadType}
+            onChange={(event) => {
+              const nextType = event.target.value as RoadType;
+              set({ roadType: nextType, roadWidth: roadType(nextType).defaultWidth });
+            }}
+          >
+            {ROAD_TYPES.map(({ type: id }) => (
+              <option key={id} value={id}>{t(`editor.road.${id}`)}</option>
+            ))}
+          </select>
+        </label>,
+      );
+    }
+    fields.push(<NumberField key="width" label={t('editor.prop.width')} value={settings.roadWidth} min={1.5} max={12} step={0.5} onChange={(roadWidth) => set({ roadWidth })} />);
+    if (tool === 'road') {
+      fields.push(
+        <NumberField key="camber" label={t('editor.prop.camber')} value={settings.camber} min={0} max={0.3} step={0.05} onChange={(camber) => set({ camber })} />,
+        <Check key="dl" label={t('editor.prop.ditchLeft')} checked={settings.ditchLeft} onChange={(ditchLeft) => set({ ditchLeft })} />,
+        <Check key="dr" label={t('editor.prop.ditchRight')} checked={settings.ditchRight} onChange={(ditchRight) => set({ ditchRight })} />,
+      );
+    }
+  }
+  if (tool === 'river' || tool === 'pond') {
+    if (tool === 'river') fields.push(<NumberField key="riverWidth" label={t('editor.prop.width')} value={settings.riverWidth} min={3} max={60} step={1} onChange={(riverWidth) => set({ riverWidth })} />);
+    fields.push(
+      <label key="water">
+        {t('editor.prop.waterKind')}
+        <select data-testid="prop-water" value={settings.waterKind} onChange={(event) => set({ waterKind: event.target.value as 'deep' | 'ford' })}>
+          <option value="deep">{t('editor.prop.deep')}</option>
+          <option value="ford">{t('editor.prop.ford')}</option>
+        </select>
+      </label>,
+    );
+  }
+  if (tool === 'line') {
+    fields.push(
+      <label key="lineKind">
+        {t('editor.prop.lineKind')}
+        <select data-testid="prop-line-kind"
+          value={settings.lineKind}
+          onChange={(event) => {
+            const lineKind = event.target.value as LineKind;
+            set({ lineKind, lineHeight: lineKindEntry(lineKind).defaultHeight });
+          }}
+        >
+          {LINE_KINDS.map(({ kind: id }) => (
+            <option key={id} value={id}>{t(`editor.line.${id}`)}</option>
+          ))}
+        </select>
+      </label>,
+      <NumberField key="lineHeight" label={t('editor.prop.height')} value={settings.lineHeight} min={0.5} max={3} step={0.1} onChange={(lineHeight) => set({ lineHeight })} />,
+    );
+  }
+  if (tool === 'place') {
+    const entry = catalogObject(settings.objectType);
+    fields.push(
+      <div key="catalog" className="editor-catalog">
+        {OBJECT_GROUPS.map((group) => (
+          <details key={group} open={entry?.group === group}>
+            <summary>{t(`editor.group.${group}`)}</summary>
+            {CATALOG_OBJECTS.filter((object) => object.group === group).map((object) => (
+              <button key={object.id} type="button" data-object={object.id} aria-pressed={settings.objectType === object.id} onClick={() => set({ objectType: object.id })}>
+                {t(object.nameKey)}
+              </button>
+            ))}
+          </details>
+        ))}
+      </div>,
+      <NumberField key="rotation" label={t('editor.prop.rotation')} value={settings.rotation} min={0} max={359} step={settings.rotateStep ? 15 : 1} onChange={(rotation) => set({ rotation })} />,
+      <NumberField key="scale" label={t('editor.prop.scale')} value={settings.scale} min={0.5} max={2} step={0.1} onChange={(scale) => set({ scale })} />,
+      <Check key="step" label={t('editor.prop.rotateStep')} checked={settings.rotateStep} onChange={(rotateStep) => set({ rotateStep })} />,
+    );
+    if (entry) {
+      fields.push(
+        <div key="footprint" className="editor-footprint">
+          <h4>{t('editor.prop.footprint')}</h4>
+          <ul>
+            {footprintFacts(entry, t).map((fact) => (
+              <li key={fact}>{fact}</li>
+            ))}
+          </ul>
+        </div>,
+      );
+    }
+  }
+  return <div className="editor-fields">{fields}</div>;
+}
+
+function SelectionPanel({ store, viewport, t }: { store: EditorStore; viewport: EditorViewport | null; t: T }): ReactNode {
+  const selection = store.selection;
+  if (selection.length === 0) return <p className="editor-hint">{t('editor.prop.nothing')}</p>;
+  const first = selection[0]!;
+  const object = first.kind === 'object' && selection.length === 1 ? store.map.objects.find((entry) => entry.id === first.id) : undefined;
+  const entry = object ? catalogObject(object.type) : undefined;
+  const road = first.kind === 'road' && selection.length === 1 ? store.map.roads.find((item) => item.id === first.id) : undefined;
+  const line = first.kind === 'line' && selection.length === 1 ? store.map.lines.find((item) => item.id === first.id) : undefined;
+  return (
+    <div className="editor-fields">
+      <p>{t('editor.prop.selected', { count: selection.length })}</p>
+      {object && entry ? (
+        <>
+          <p>{t(entry.nameKey)}</p>
+          <NumberField
+            label={t('editor.prop.rotation')}
+            value={Math.round(((object.rotation * 180) / Math.PI + 360) % 360)}
+            min={0}
+            max={359}
+            step={1}
+            onChange={(degrees) => store.editVector((draft) => { const target = draft.objects.find((item) => item.id === object.id); if (target) target.rotation = (degrees * Math.PI) / 180; })}
+          />
+          <NumberField
+            label={t('editor.prop.scale')}
+            value={object.scale ?? 1}
+            min={0.5}
+            max={2}
+            step={0.1}
+            onChange={(scale) => store.editVector((draft) => { const target = draft.objects.find((item) => item.id === object.id); if (target) target.scale = scale; })}
+          />
+          <div className="editor-footprint">
+            <h4>{t('editor.prop.footprint')}</h4>
+            <ul>
+              {footprintFacts(entry, t).map((fact) => (
+                <li key={fact}>{fact}</li>
+              ))}
+            </ul>
+          </div>
+        </>
+      ) : null}
+      {road ? (
+        <>
+          <p>{t(`editor.road.${road.type}`)}</p>
+          <NumberField label={t('editor.prop.width')} value={road.width} min={1.5} max={12} step={0.5} onChange={(width) => store.editVector((draft) => { const target = draft.roads.find((item) => item.id === road.id); if (target) target.width = width; })} />
+        </>
+      ) : null}
+      {line ? (
+        <>
+          <p>{t(`editor.line.${line.kind}`)}</p>
+          <NumberField label={t('editor.prop.height')} value={line.height} min={0.5} max={3} step={0.1} onChange={(height) => store.editVector((draft) => { const target = draft.lines.find((item) => item.id === line.id); if (target) target.height = height; })} />
+        </>
+      ) : null}
+      <div className="editor-row">
+        {selection.some((item) => item.kind === 'object') ? <button type="button" onClick={() => viewport?.duplicateSelection()}>{t('editor.prop.duplicate')}</button> : null}
+        <button type="button" onClick={() => viewport?.deleteSelection()}>{t('editor.prop.delete')}</button>
+      </div>
+    </div>
+  );
+}
+
+function MapDialog(props: {
+  mode: 'new' | 'properties';
+  map: EditableMap;
+  t: T;
+  onClose: () => void;
+  onCreate: (map: EditableMap) => void;
+  onApply: (map: EditableMap) => void;
+}): ReactNode {
+  const { mode, map, t } = props;
+  const [id, setId] = useState(mode === 'new' ? 'novo-mapa' : map.id);
+  const [size, setSize] = useState<MapSize>(mode === 'new' ? 'medium' : map.size);
+  const [nameEn, setNameEn] = useState(mode === 'new' ? '' : map.name.en);
+  const [namePt, setNamePt] = useState(mode === 'new' ? '' : map.name['pt-BR']);
+  const [descriptionEn, setDescriptionEn] = useState(mode === 'new' ? '' : map.description.en);
+  const [descriptionPt, setDescriptionPt] = useState(mode === 'new' ? '' : map.description['pt-BR']);
+  const [use, setUse] = useState<MapUse>(mode === 'new' ? 'skirmish' : map.use);
+  const [setting, setSetting] = useState<SettingLabel>(mode === 'new' ? 'historical-setting-fictional-place' : map.setting.label);
+  const [sourceNote, setSourceNote] = useState(mode === 'new' ? '' : map.setting.sourceNote);
+  const [palette, setPalette] = useState<MapPalette>(mode === 'new' ? 'temperate' : map.palette);
+  const [baseMaterial, setBaseMaterial] = useState<GroundMaterialId>(mode === 'new' ? 'grass' : map.baseMaterial);
+  const [waterLevel, setWaterLevel] = useState(mode === 'new' ? 0 : map.waterLevel);
+  const valid = isValidMapId(id);
+  const outside = mode === 'properties' && size !== map.size ? resizeEditableMap(map, size).outside : [];
+
+  const submit = (): void => {
+    if (!valid) return;
+    const fields = {
+      id,
+      name: { en: nameEn, 'pt-BR': namePt },
+      description: { en: descriptionEn, 'pt-BR': descriptionPt },
+      use,
+      setting: { label: setting, sourceNote },
+      palette,
+      baseMaterial,
+      waterLevel,
+    };
+    if (mode === 'new') {
+      const created = createEditableMap({ id, size, baseMaterial, palette, use });
+      props.onCreate({ ...created, ...fields });
+      return;
+    }
+    if (outside.length > 0) {
+      const names = outside.map((objectId) => {
+        const type = map.objects.find((object) => object.id === objectId)?.type ?? '';
+        return catalogObject(type) ? t(`editor.object.${type}`) : type;
+      });
+      if (!window.confirm(t('editor.map.resizeWarn', { list: names.join(', ') }))) return;
+    }
+    const resized = resizeEditableMap(map, size).map;
+    props.onApply({ ...resized, ...fields });
+  };
+
+  return (
+    <div className="editor-dialog" role="dialog" aria-modal="true" aria-label={t(mode === 'new' ? 'editor.file.new' : 'editor.file.properties')}>
+      <form
+        onSubmit={(event) => {
+          event.preventDefault();
+          submit();
+        }}
+      >
+        <h2>{t(mode === 'new' ? 'editor.file.new' : 'editor.file.properties')}</h2>
+        {mode === 'new' ? <p className="editor-hint">{t('editor.map.discardWarn')}</p> : null}
+        <label>
+          {t('editor.map.id')}
+          <input data-testid="map-id" value={id} aria-invalid={!valid} onChange={(event) => setId(event.target.value.trim())} />
+        </label>
+        <label>
+          {t('editor.map.size')}
+          <select data-testid="map-size" value={size} onChange={(event) => setSize(event.target.value as MapSize)}>
+            {MAP_SIZES.map((entry) => (
+              <option key={entry} value={entry}>{t(`editor.map.size.${entry}`)}</option>
+            ))}
+          </select>
+        </label>
+        <label>
+          {t('editor.map.nameEn')}
+          <input data-testid="map-name-en" value={nameEn} onChange={(event) => setNameEn(event.target.value)} />
+        </label>
+        <label>
+          {t('editor.map.namePt')}
+          <input data-testid="map-name-pt" value={namePt} onChange={(event) => setNamePt(event.target.value)} />
+        </label>
+        <label>
+          {t('editor.map.descriptionEn')}
+          <textarea value={descriptionEn} rows={2} onChange={(event) => setDescriptionEn(event.target.value)} />
+        </label>
+        <label>
+          {t('editor.map.descriptionPt')}
+          <textarea value={descriptionPt} rows={2} onChange={(event) => setDescriptionPt(event.target.value)} />
+        </label>
+        <label>
+          {t('editor.map.use')}
+          <select data-testid="map-use" value={use} onChange={(event) => setUse(event.target.value as MapUse)}>
+            <option value="skirmish">{t('editor.map.use.skirmish')}</option>
+            <option value="campaign">{t('editor.map.use.campaign')}</option>
+          </select>
+        </label>
+        <label>
+          {t('editor.map.setting')}
+          <select value={setting} onChange={(event) => setSetting(event.target.value as SettingLabel)}>
+            {SETTINGS.map((entry) => (
+              <option key={entry} value={entry}>{t(`editor.map.setting.${entry}`)}</option>
+            ))}
+          </select>
+        </label>
+        <label>
+          {t('editor.map.sourceNote')}
+          <textarea data-testid="map-source" value={sourceNote} rows={2} onChange={(event) => setSourceNote(event.target.value)} />
+        </label>
+        <label>
+          {t('editor.map.palette')}
+          <select value={palette} onChange={(event) => setPalette(event.target.value as MapPalette)}>
+            {PALETTES.map((entry) => (
+              <option key={entry} value={entry}>{t(`editor.map.palette.${entry}`)}</option>
+            ))}
+          </select>
+        </label>
+        <label>
+          {t('editor.map.baseMaterial')}
+          <select value={baseMaterial} onChange={(event) => setBaseMaterial(event.target.value as GroundMaterialId)}>
+            {GROUND_MATERIAL_IDS.map((entry) => (
+              <option key={entry} value={entry}>{t(`editor.material.${entry}`)}</option>
+            ))}
+          </select>
+        </label>
+        <label>
+          {t('editor.prop.waterLevel')}
+          <input type="number" step={0.1} min={-12} max={40} value={waterLevel} onChange={(event) => setWaterLevel(Number(event.target.value))} />
+        </label>
+        <div className="editor-row">
+          <button type="button" onClick={props.onClose}>{t('editor.map.close')}</button>
+          <button type="submit" className="editor-primary" data-testid="map-submit" disabled={!valid}>{t(mode === 'new' ? 'editor.map.create' : 'editor.map.apply')}</button>
+        </div>
+      </form>
+    </div>
+  );
+}

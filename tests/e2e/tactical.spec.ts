@@ -2,7 +2,6 @@ import { expect, test } from '@playwright/test';
 
 test('issues an area order and an immediate group order', async ({ page }) => {
   await page.goto('/');
-  await page.getByTestId('menu-mark-skirmish').click();
   await page.getByTestId('start-battle-3v3').click();
   await expect(page.getByTestId('hud')).toBeVisible();
   await page.waitForFunction(() => Boolean(window.__prestes?.frame()));
@@ -23,7 +22,6 @@ test('issues an area order and an immediate group order', async ({ page }) => {
 
 test('changes formation without clearing the current order', async ({ page }) => {
   await page.goto('/');
-  await page.getByTestId('menu-mark-skirmish').click();
   await page.getByTestId('start-battle-3v3').click();
   await expect(page.getByTestId('hud')).toBeVisible();
   await page.waitForFunction(() => Boolean(window.__prestes?.frame()));
@@ -48,7 +46,6 @@ test('changes formation without clearing the current order', async ({ page }) =>
 });
 test('toggles passive posture and hold fire', async ({ page }) => {
   await page.goto('/');
-  await page.getByTestId('menu-mark-skirmish').click();
   await page.getByTestId('start-battle-3v3').click();
   await expect(page.getByTestId('hud')).toBeVisible();
   await page.waitForFunction(() => Boolean((window as unknown as { __prestes?: unknown }).__prestes));
@@ -92,7 +89,6 @@ test('toggles passive posture and hold fire', async ({ page }) => {
 });
 test('shows action names immediately and descriptions after five seconds', async ({ page }) => {
   await page.goto('/');
-  await page.getByTestId('menu-mark-skirmish').click();
   await page.getByTestId('start-battle-3v3').click();
   await expect(page.getByTestId('hud')).toBeVisible();
 
@@ -105,7 +101,6 @@ test('shows action names immediately and descriptions after five seconds', async
 });
 test('draws a line formation with Shift held when Move is pending', async ({ page }) => {
   await page.goto('/');
-  await page.getByTestId('menu-mark-skirmish').click();
   await page.getByTestId('start-battle-3v3').click();
   await expect(page.getByTestId('hud')).toBeVisible();
 
@@ -133,7 +128,6 @@ test('draws a line formation with Shift held when Move is pending', async ({ pag
 
 test('a drag from the destination turns the section to face that way', async ({ page }) => {
   await page.goto('/');
-  await page.getByTestId('menu-mark-skirmish').click();
   await page.getByTestId('start-battle-3v3').click();
   await expect(page.getByTestId('hud')).toBeVisible();
   await page.waitForFunction(() => Boolean(window.__prestes?.frame()));
@@ -167,7 +161,6 @@ test('a drag from the destination turns the section to face that way', async ({ 
 
 test('the drag closes or opens the spacing, shown beside the cursor', async ({ page }) => {
   await page.goto('/');
-  await page.getByTestId('menu-mark-skirmish').click();
   await page.getByTestId('start-battle-3v3').click();
   await expect(page.getByTestId('hud')).toBeVisible();
   await page.waitForFunction(() => Boolean(window.__prestes?.frame()));
@@ -190,7 +183,6 @@ test('the drag closes or opens the spacing, shown beside the cursor', async ({ p
 
 test('a move marches and an advance goes by bounds', async ({ page }) => {
   await page.goto('/');
-  await page.getByTestId('menu-mark-skirmish').click();
   await page.getByTestId('start-battle-3v3').click();
   await expect(page.getByTestId('hud')).toBeVisible();
   await page.waitForFunction(() =>
@@ -243,7 +235,6 @@ test('a move marches and an advance goes by bounds', async ({ page }) => {
 });
 test('splits a UI advance into bounds and clears the order', async ({ page }) => {
   await page.goto('/');
-  await page.getByTestId('menu-mark-skirmish').click();
   await page.getByTestId('start-battle-3v3').click();
   await page.waitForFunction(() => Boolean(window.__prestes?.frame()));
   await page.getByTestId('order-tab-movement').click();
@@ -269,7 +260,6 @@ test('splits a UI advance into bounds and clears the order', async ({ page }) =>
 
 test('Halt also drops an order still waiting for its click', async ({ page }) => {
   await page.goto('/');
-  await page.getByTestId('menu-mark-skirmish').click();
   await page.getByTestId('start-battle-3v3').click();
   await page.waitForFunction(() => Boolean(window.__prestes?.frame()));
   await page.getByTestId('order-move').click();
@@ -281,14 +271,12 @@ test('Halt also drops an order still waiting for its click', async ({ page }) =>
 
 test('hides the movement routes and remembers the choice', async ({ page }) => {
   await page.goto('/');
-  await page.getByTestId('menu-mark-skirmish').click();
   await page.getByTestId('start-battle-3v3').click();
   await expect(page.getByTestId('hud')).toBeVisible();
   await expect(page.getByTestId('routes-toggle')).toHaveAttribute('aria-pressed', 'true');
   await page.getByTestId('routes-toggle').click();
   await expect(page.getByTestId('routes-toggle')).toHaveAttribute('aria-pressed', 'false');
   await page.reload();
-  await page.getByTestId('menu-mark-skirmish').click();
   await page.getByTestId('start-battle-3v3').click();
   await expect(page.getByTestId('routes-toggle')).toHaveAttribute('aria-pressed', 'false');
 });

@@ -28,14 +28,33 @@ export {
   type OrderDefinition,
 } from './order-catalog';
 
-
 export {
   COMPENDIUM,
+  COMPENDIUM_IMAGE_REGISTER,
   COMPENDIUM_SECTIONS,
+  COMPENDIUM_TEXT,
   compendiumBodyKey,
+  compendiumText,
   compendiumTitleKey,
   validateCompendium,
+  validateCompendiumMedia,
   type CompendiumEntry,
+  type CompendiumText,
+  type ImageRef,
+  type NoteSection,
+  type RegisteredImage,
   type CompendiumSection,
   type Confidence,
 } from './compendium';
+
+export {
+  CAMPAIGN_CHAPTERS,
+  CHAPTER_PAGE_WORD_BUDGET,
+  CHAPTER_TEXT,
+  chapterText,
+  validateChapters,
+  type CampaignChapter,
+  type ChapterImage,
+  type ChapterPage,
+  type ChapterText,
+} from './campaign/chapters';

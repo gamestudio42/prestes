@@ -1,0 +1,205 @@
+import type { Vec2 } from '../protocol';
+import { findPath } from '../pathfinding';
+import { isPointBlockedByCovers } from '../world';
+import { setActiveMap } from './catalog';
+import { catalogObject } from './catalog-objects';
+import { compileMapDocument, isValidMapId, mapSide, type EditableMap } from './document';
+import { pointInPolygon, pointInStrip } from './geometry';
+import { isDeepWater, vegetationAt } from './runtime';
+import type { BattleMap } from './types';
+import { MIN_DEPLOYMENT_GAP } from './validate';
+
+/**
+ * The editor's map checks (add-map-editor): the battle map rules plus the
+ * document's own (names, source note, objects in bounds, overlapping
+ * buildings, bridges over water) and a cover-gap warning. Each problem has a
+ * locale code (`editor.problem.<code>`), parameters and the spot to jump to.
+ */
+export type ProblemCode =
+  | 'invalid-id'
+  | 'name-missing'
+  | 'description-missing'
+  | 'source-note-missing'
+  | 'section-count'
+  | 'section-out-of-bounds'
+  | 'section-not-walkable'
+  | 'zones-too-close'
+  | 'no-path'
+  | 'object-out-of-bounds'
+  | 'unknown-object'
+  | 'buildings-overlap'
+  | 'bridge-not-over-water'
+  | 'cover-gap';
+
+export interface MapProblem {
+  code: ProblemCode;
+  severity: 'error' | 'warning';
+  params: Record<string, string | number>;
+  at?: Vec2;
+  /** What to select when the problem is chosen. */
+  target?: { kind: 'object' | 'section' | 'bridge'; id: number | string };
+}
+
+/** Longest stretch without cover on the line between the zones (m) before a warning. */
+export const MAX_COVER_GAP = 60;
+
+function centroid(points: readonly Vec2[]): Vec2 {
+  let x = 0;
+  let y = 0;
+  for (const point of points) {
+    x += point.x;
+    y += point.y;
+  }
+  return { x: x / Math.max(1, points.length), y: y / Math.max(1, points.length) };
+}
+
+function corners(x: number, y: number, halfWidth: number, halfDepth: number, rotation: number): Vec2[] {
+  const cos = Math.cos(rotation);
+  const sin = Math.sin(rotation);
+  return [
+    [-halfWidth, -halfDepth],
+    [halfWidth, -halfDepth],
+    [halfWidth, halfDepth],
+    [-halfWidth, halfDepth],
+  ].map(([lx, ly]) => ({ x: x + lx! * cos - ly! * sin, y: y + lx! * sin + ly! * cos }));
+}
+
+/** Separating-axis test for two rotated rectangles. */
+function rectanglesOverlap(a: Vec2[], b: Vec2[]): boolean {
+  for (const shape of [a, b]) {
+    for (let index = 0; index < 4; index += 1) {
+      const p = shape[index]!;
+      const q = shape[(index + 1) % 4]!;
+      const nx = -(q.y - p.y);
+      const ny = q.x - p.x;
+      const project = (points: Vec2[]) => points.map((point) => point.x * nx + point.y * ny);
+      const pa = project(a);
+      const pb = project(b);
+      if (Math.max(...pa) <= Math.min(...pb) + 1e-6 || Math.max(...pb) <= Math.min(...pa) + 1e-6) return false;
+    }
+  }
+  return true;
+}
+
+/** Longest run (m) along the segment with no cover, ditch or concealing vegetation within 4 m. */
+export function longestCoverGap(map: BattleMap, from: Vec2, to: Vec2): { length: number; at: Vec2 } {
+  const length = Math.hypot(to.x - from.x, to.y - from.y);
+  const steps = Math.max(1, Math.ceil(length / 2));
+  let run = 0;
+  let best = { length: 0, at: from };
+  let runStart = from;
+  for (let step = 0; step <= steps; step += 1) {
+    const t = step / steps;
+    const point = { x: from.x + (to.x - from.x) * t, y: from.y + (to.y - from.y) * t };
+    const covered =
+      vegetationAt(point.x, point.y) !== null ||
+      map.covers.some((cover) => cover.quality > 0 && Math.hypot(cover.x - point.x, cover.y - point.y) <= Math.max(cover.halfWidth, cover.halfDepth) + 4);
+    if (covered) {
+      run = 0;
+      runStart = point;
+    } else {
+      run = (step === 0 ? 0 : run + length / steps);
+      if (run > best.length) best = { length: run, at: { x: (runStart.x + point.x) / 2, y: (runStart.y + point.y) / 2 } };
+    }
+  }
+  return best;
+}
+
+/** Runs every check. Leaves the compiled map active; callers restore their own. */
+export function validateEditableMap(map: EditableMap): MapProblem[] {
+  const problems: MapProblem[] = [];
+  const add = (problem: MapProblem): void => {
+    problems.push(problem);
+  };
+  if (!isValidMapId(map.id)) add({ code: 'invalid-id', severity: 'error', params: { id: map.id } });
+  for (const language of ['en', 'pt-BR'] as const) {
+    if (!map.name[language].trim()) add({ code: 'name-missing', severity: 'error', params: { language } });
+    if (!map.description[language].trim()) add({ code: 'description-missing', severity: 'warning', params: { language } });
+  }
+  if (!map.setting.sourceNote.trim()) {
+    add({ code: 'source-note-missing', severity: map.use === 'campaign' ? 'error' : 'warning', params: {} });
+  }
+
+  const compiled = compileMapDocument(map);
+  setActiveMap(compiled);
+  const half = mapSide(map.size) / 2;
+
+  for (const object of map.objects) {
+    const entry = catalogObject(object.type);
+    if (!entry) {
+      add({ code: 'unknown-object', severity: 'error', params: { type: object.type }, at: { x: object.x, y: object.y }, target: { kind: 'object', id: object.id } });
+    } else if (Math.abs(object.x) > half || Math.abs(object.y) > half) {
+      add({ code: 'object-out-of-bounds', severity: 'error', params: { type: object.type }, at: { x: object.x, y: object.y }, target: { kind: 'object', id: object.id } });
+    }
+  }
+
+  const buildings = map.objects
+    .map((object) => ({ object, entry: catalogObject(object.type) }))
+    .filter(({ entry }) => entry?.footprint.kind === 'building');
+  for (let i = 0; i < buildings.length; i += 1) {
+    for (let j = i + 1; j < buildings.length; j += 1) {
+      const a = buildings[i]!;
+      const b = buildings[j]!;
+      const sa = a.object.scale ?? 1;
+      const sb = b.object.scale ?? 1;
+      if (
+        rectanglesOverlap(
+          corners(a.object.x, a.object.y, a.entry!.halfWidth * sa, a.entry!.halfDepth * sa, a.object.rotation),
+          corners(b.object.x, b.object.y, b.entry!.halfWidth * sb, b.entry!.halfDepth * sb, b.object.rotation),
+        )
+      ) {
+        add({ code: 'buildings-overlap', severity: 'error', params: { a: a.object.type, b: b.object.type }, at: { x: a.object.x, y: a.object.y }, target: { kind: 'object', id: a.object.id } });
+      }
+    }
+  }
+
+  for (const bridge of map.bridges) {
+    const overWater = compiled.water.some((area) =>
+      area.kind === 'deep' && (area.polygon ? pointInPolygon(bridge.x, bridge.y, area.polygon) : area.strip ? pointInStrip(bridge.x, bridge.y, area.strip) : false),
+    );
+    if (!overWater) add({ code: 'bridge-not-over-water', severity: 'error', params: {}, at: { x: bridge.x, y: bridge.y }, target: { kind: 'bridge', id: bridge.id } });
+  }
+
+  for (const side of ['column', 'legalist'] as const) {
+    const zone = map.deployment[side];
+    if (zone.sections.length !== 3) add({ code: 'section-count', severity: 'error', params: { side, count: zone.sections.length } });
+    zone.sections.forEach((start, index) => {
+      const target = { kind: 'section' as const, id: `${side}:${index}` };
+      let reported = false;
+      for (const [dx, dy] of [
+        [0, 0],
+        [-7, 0],
+        [7, 0],
+        [-7, 2.8],
+        [7, 2.8],
+      ] as const) {
+        if (reported) break;
+        const x = start.x + dx;
+        const y = start.y + dy;
+        if (Math.abs(x) > half || Math.abs(y) > half) {
+          add({ code: 'section-out-of-bounds', severity: 'error', params: { side, section: index + 1 }, at: start, target });
+          reported = true;
+        } else if (isDeepWater(x, y) || isPointBlockedByCovers(x, y, compiled.covers, 0)) {
+          add({ code: 'section-not-walkable', severity: 'error', params: { side, section: index + 1 }, at: start, target });
+          reported = true;
+        }
+      }
+    });
+  }
+  const column = centroid(map.deployment.column.sections);
+  const legalist = centroid(map.deployment.legalist.sections);
+  const gap = Math.hypot(column.x - legalist.x, column.y - legalist.y);
+  if (gap < MIN_DEPLOYMENT_GAP) add({ code: 'zones-too-close', severity: 'error', params: { metres: Math.round(gap), minimum: MIN_DEPLOYMENT_GAP }, at: column });
+  for (let index = 0; index < 3; index += 1) {
+    const from = map.deployment.column.sections[index];
+    const to = map.deployment.legalist.sections[index];
+    if (from && to && findPath(from, to, compiled.covers).length === 0) {
+      add({ code: 'no-path', severity: 'error', params: { section: index + 1 }, at: from, target: { kind: 'section', id: `column:${index}` } });
+    }
+  }
+  const coverGap = longestCoverGap(compiled, column, legalist);
+  if (coverGap.length > MAX_COVER_GAP) {
+    add({ code: 'cover-gap', severity: 'warning', params: { metres: Math.round(coverGap.length), maximum: MAX_COVER_GAP }, at: coverGap.at });
+  }
+  return problems;
+}

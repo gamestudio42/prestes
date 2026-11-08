@@ -25,6 +25,11 @@ simulation's training-ground course that nothing uses any more.
   8. Travessias: vau, ponte e balsa (Serra e Rio)
   9. Neblina de guerra e o "?" (Serra e Rio)
   10. Feridos, moral e retirada (Bairro)
+
+  Lessons added by the plan of 2026-11-08, for what lands before this
+  change: 11. Desdobramento: posicionar antes da batalha (Fazenda, trench
+  lines); 12. Objetivos: tomar e segurar (Fazenda); 13. Ocupar e assaltar
+  posições (Bairro).
 - **Videos recorded from the game itself** by a deterministic tool: each
   lesson is a script (map, units, camera moves, orders at given ticks, an
   on-screen cursor and highlights) played by the real simulation and view

@@ -5,7 +5,8 @@ label: historical
 confidence: high
 sourceRefs:
   - macaulay-1974
-status: draft
+status: applied
+runtimeId: mauser-7mm
 ---
 
 # Fuzil Mauser 7 mm
@@ -19,6 +20,38 @@ troops. The source does not name the model.
 revolucionárias. A fonte não diz o modelo.
 
 ## Extended note
+
+The sources support the 7 mm Mauser as the standard military rifle of the period
+and the main arm of the revolutionary troops; they do not support a specific
+model designation. The entry names the rifle by its calibre and role, not by a
+model number, and the exact model used at the fort in 1922 is still a gap in the
+sources.
+
+In the game, the Fuzil Mauser 7 mm is the first weapon. Its magazine, reserve,
+rate of fire, reload, range, accuracy and damage are playability values, not
+historical claims.
+
+On the beach in 1922 the rifle meant five-round clips, slow reloads and
+ammunition that ran out.
+
+## Nota estendida (PT-BR)
+
+As fontes sustentam o Mauser 7 mm como o fuzil militar padrão da época e a arma
+principal das tropas revolucionárias; não sustentam uma designação de modelo
+específica. O verbete nomeia o fuzil pelo calibre e pela função, não por um
+número de modelo, e o modelo exato usado no forte em 1922 ainda é uma lacuna nas
+fontes.
+
+No jogo, o Fuzil Mauser 7 mm é a primeira arma. Carregador, reserva, cadência,
+recarga, alcance, precisão e dano são valores de jogabilidade, não afirmações
+históricas.
+
+Na praia, em 1922, o fuzil significava pentes de cinco tiros, recargas lentas e
+munição que acabava.
+
+## Design notes
+
+Designer notes kept from the draft; not shown to the player.
 
 The source supports the 7 mm Mauser identity and its role as the standard
 military rifle; it does not support a specific model designation. The game must

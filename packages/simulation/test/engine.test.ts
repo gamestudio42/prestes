@@ -1406,7 +1406,17 @@ describe('worker host protocol', () => {
     if (frameMessage?.type === 'frame') {
       expect(frameMessage.frame.tick).toBe(5);
       expect(frameMessage.frame.units).toHaveLength(9);
+      // refine-battle-maps: the game never reads the state hash; its frames go without one.
+      expect(frameMessage.frame.hash).toBe('');
     }
+  });
+
+  it('frames outside the host keep their state hash', () => {
+    const engine = new SimulationEngine({ seed: 1922 });
+    const hashed = engine.runTicks(5);
+    expect(hashed.hash).toHaveLength(8);
+    expect(engine.frame({ hash: false }).hash).toBe('');
+    expect(engine.frame().hash).toBe(hashed.hash);
   });
 
   it('surfaces a rejected command', () => {

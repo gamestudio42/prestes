@@ -1,4 +1,4 @@
-import { MAP_BOUNDS, cachedCoverSlots, findPath, isPointBlockedByCovers, slotGuards } from '@prestes/shared';
+import { MAP_BOUNDS, coverSlotsNear, findPath, isPointBlockedByCovers, slotGuards } from '@prestes/shared';
 import type { CoverKind, CoverSlot, SimEvent, Vec2 } from '@prestes/shared';
 import { slotHolders, takeSlot } from './slots';
 
@@ -178,7 +178,7 @@ export function seekCover(ctx: SimContext): void {
     const center = squadCentroid(ctx, unit);
     let best: CoverSlot | null = null;
     let bestDistance = Number.POSITIVE_INFINITY;
-    for (const slot of cachedCoverSlots(ctx.covers)) {
+    for (const slot of coverSlotsNear(ctx.covers, unit.x, unit.y, AUTO_COVER_RADIUS)) {
       const holder = holders.get(slot.id);
       if (holder !== undefined && holder !== unit.id) {
         continue;

@@ -77,11 +77,21 @@ import {
 import { applyCommand } from './systems/commands';
 import { createBattleMemory, updateBattleFlow } from './systems/enemy-commander';
 import { createVisionState, seenSnapshot, updateVision } from './systems/vision';
-import { createFerries, ferrySnapshot, heldByFerry, updateFerries } from './systems/ferry';
+import { createFerries, ferrySnapshot, headingForLanding, heldByFerry, updateFerries } from './systems/ferry';
+import { defaultConcealedFire } from './systems/concealment';
 import type { FerryState } from './systems/ferry';
 import { applyRoster } from './systems/spawning';
 import { reactToFire, screenOfficers } from './systems/fire-reaction';
 import { handoverSuppress } from './systems/orders';
+
+/**
+ * refine-battle-maps: `hash: false` leaves the frame's state hash empty. The
+ * game never reads it (tests and tools do), and on a town map it was about a
+ * fifth of a tick's time.
+ */
+export interface FrameOptions {
+  hash?: boolean;
+}
 
 export interface SimulationOptions {
   seed: number;
@@ -301,6 +311,16 @@ export class SimulationEngine implements SimContext {
   }
 
   tick(): Frame {
+    this.step();
+    return this.frame();
+  }
+
+  /**
+   * Advances the state one tick; `tick` adds the frame. refine-battle-maps:
+   * `runTicks` steps and builds one frame at the end, instead of a frame (and
+   * its state hash) on every tick it then dropped.
+   */
+  private step(): void {
     // Engines can share a thread (tests, tools): select this map's terrain.
     this.selectTerrain();
     const nextTick = this.tickCount + 1;
@@ -316,7 +336,10 @@ export class SimulationEngine implements SimContext {
         // A soldier at a ferry landing or aboard is moved by the ferry.
         if (this.ferries.length > 0 && heldByFerry(this, unit)) {
           unit.moveSpeed = 0;
+          unit.stuckFrom = undefined;
         } else {
+          // A man queuing for a landing waits his turn without giving up.
+          if (this.ferries.length > 0 && headingForLanding(this, unit)) unit.stuckFrom = undefined;
           moveUnit(this, unit, nextTick, events);
         }
         if (unit.alive) {
@@ -375,6 +398,7 @@ export class SimulationEngine implements SimContext {
       fire(this, nextTick, events);
       updatePursuit(this, nextTick, events);
       updateBattleFlow(this, nextTick, events);
+      defaultConcealedFire(this);
       updateOfficerLoss(this, nextTick, events);
       applyOfficerAura(this);
       selfRally(this);
@@ -395,7 +419,6 @@ export class SimulationEngine implements SimContext {
 
     this.tickCount = nextTick;
     this.lastEvents = events;
-    return this.frame();
   }
 
   /**
@@ -404,18 +427,18 @@ export class SimulationEngine implements SimContext {
    * ticks' events lost whole volleys (a section fires on the same tick), so
    * their shots had no sound, tracer or effect.
    */
-  runTicks(count: number): Frame {
-    let frame = this.frame();
+  runTicks(count: number, options?: FrameOptions): Frame {
     const safeCount = Math.max(0, Math.floor(count));
     const events: SimEvent[] = [];
     for (let index = 0; index < safeCount; index += 1) {
-      frame = this.tick();
-      events.push(...frame.events);
+      this.step();
+      events.push(...this.lastEvents);
     }
+    const frame = this.frame(options);
     return safeCount > 1 ? { ...frame, events } : frame;
   }
 
-  frame(): Frame {
+  frame(options?: FrameOptions): Frame {
     return {
       tick: this.tickCount,
       units: snapshotUnits(this),
@@ -432,7 +455,7 @@ export class SimulationEngine implements SimContext {
       fog: this.fog,
       ...(this.ferries.length > 0 ? { ferries: ferrySnapshot(this) } : {}),
       outcome: this.outcome,
-      hash: this.hashState(),
+      hash: options?.hash === false ? '' : this.hashState(),
     };
   }
 

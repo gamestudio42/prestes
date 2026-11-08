@@ -9,46 +9,71 @@ const SCREENSHOT = { animations: 'disabled', caret: 'hide', maxDiffPixelRatio: 0
 // when the video finishes loading, so the screenshots hide it. A mask would cover the
 // book too: the video canvas fills the screen.
 const HIDE_MENU_VIDEO = '[data-testid="menu-video"] { visibility: hidden; }';
-// The gramophone has its own baselines; the full-screen menu baselines stay
-// focused on the book and do not depend on whether the music has started.
-const HIDE_GRAMOPHONE = '[data-testid="gramophone"], [data-testid="gramophone-card"] { visibility: hidden; }';
 test.use({ contextOptions: { reducedMotion: 'reduce' } });
 
 async function stableFonts(page: Page): Promise<void> {
   await page.evaluate(() => document.fonts.ready);
 }
 
-test('start screen matches the baseline', async ({ page }) => {
+test('desk start screen matches the baseline', async ({ page }) => {
+  await page.addInitScript(() => {
+    window.localStorage.setItem('prestes.locale', 'en');
+    window.localStorage.removeItem('prestes.menu.desk.v1');
+  });
   await page.goto('/');
-  await expect(page.getByTestId('start-screen')).toBeVisible();
-  await page.addStyleTag({ content: `${HIDE_MENU_VIDEO}\n${HIDE_GRAMOPHONE}` });
-  await stableFonts(page);
-  await expect(page).toHaveScreenshot('start-screen.png', SCREENSHOT);
-});
-
-test('gramophone matches the baseline', async ({ page }) => {
-  await page.goto('/');
-  await expect(page.getByTestId('gramophone')).toBeVisible();
+  await expect(page.getByTestId('menu-desk')).toBeVisible();
   await page.addStyleTag({ content: HIDE_MENU_VIDEO });
   await stableFonts(page);
-  await expect(page.getByTestId('gramophone')).toHaveScreenshot('gramophone.png', SCREENSHOT);
+  await expect(page).toHaveScreenshot('desk-start-screen.png', SCREENSHOT);
 });
 
-test('gramophone card matches the baseline', async ({ page }) => {
+test('desk compendium matches the baseline', async ({ page }) => {
+  await page.addInitScript(() => {
+    window.localStorage.setItem('prestes.locale', 'en');
+    window.localStorage.removeItem('prestes.menu.desk.v1');
+  });
   await page.goto('/');
-  await page.getByTestId('gramophone-next').click();
-  await expect(page.getByTestId('gramophone-card')).toBeVisible();
+  await page.getByTestId('start-codex').click();
+  await expect(page.getByTestId('codex')).toBeVisible();
   await page.addStyleTag({ content: HIDE_MENU_VIDEO });
   await stableFonts(page);
-  await expect(page.getByTestId('gramophone-card')).toHaveScreenshot(
-    'gramophone-card.png',
-    SCREENSHOT,
-  );
+  await expect(page).toHaveScreenshot('desk-compendium.png', SCREENSHOT);
+});
+
+test('desk campaign chapter opening matches the baseline', async ({ page }) => {
+  await page.addInitScript(() => {
+    window.localStorage.setItem('prestes.locale', 'en');
+    window.localStorage.removeItem('prestes.menu.desk.v1');
+  });
+  await page.goto('/');
+  await page.getByTestId('menu-mark-campaign').click();
+  await page.getByTestId('book-ribbon-a-divisao').click();
+  await expect(page.getByTestId('chapter-commander')).toHaveText('Miguel Costa');
+  await expect
+    .poll(() => page.getByTestId('book-plate-image').evaluate((node: HTMLImageElement) => node.naturalWidth))
+    .toBeGreaterThan(0);
+  await page.mouse.move(0, 0);
+  await page.addStyleTag({ content: HIDE_MENU_VIDEO });
+  await stableFonts(page);
+  await expect(page).toHaveScreenshot('desk-campaign-chapter.png', SCREENSHOT);
+});
+
+test('desk gramophone screen matches the baseline', async ({ page }) => {
+  await page.addInitScript(() => {
+    window.localStorage.setItem('prestes.locale', 'en');
+    window.localStorage.removeItem('prestes.menu.desk.v1');
+  });
+  await page.goto('/');
+  await page.getByTestId('desk-gramophone-object').click();
+  await expect(page.getByTestId('gramophone-title')).toBeVisible();
+  await page.mouse.move(0, 0);
+  await page.addStyleTag({ content: HIDE_MENU_VIDEO });
+  await stableFonts(page);
+  await expect(page).toHaveScreenshot('desk-gramophone.png', SCREENSHOT);
 });
 
 test('3v3 HUD matches the baseline', async ({ page }) => {
   await page.goto('/');
-  await page.getByTestId('menu-mark-skirmish').click();
   await page.getByTestId('start-battle-3v3').click();
   await expect(page.getByTestId('hud')).toBeVisible();
   await page.waitForFunction(() => Boolean((window as unknown as { __prestes?: unknown }).__prestes));
@@ -74,7 +99,6 @@ test('3v3 HUD matches the baseline', async ({ page }) => {
 
 async function openPausedHud(page: Page): Promise<void> {
   await page.goto('/');
-  await page.getByTestId('menu-mark-skirmish').click();
   await page.getByTestId('start-battle-3v3').click();
   await expect(page.getByTestId('hud')).toBeVisible();
   await page.waitForFunction(() => Boolean((window as unknown as { __prestes?: unknown }).__prestes));
@@ -107,13 +131,4 @@ test('sandbox panel matches the baseline', async ({ page }) => {
     ...SCREENSHOT,
     mask: [...liveNumbers(page), page.getByTestId('sandbox-panel').locator('dl, .sandbox-inspector')],
   });
-});
-
-test('codex matches the baseline', async ({ page }) => {
-  await page.goto('/');
-  await page.getByTestId('start-codex').click();
-  await expect(page.getByTestId('codex')).toBeVisible();
-  await page.addStyleTag({ content: `${HIDE_MENU_VIDEO}\n${HIDE_GRAMOPHONE}` });
-  await stableFonts(page);
-  await expect(page).toHaveScreenshot('codex.png', SCREENSHOT);
 });

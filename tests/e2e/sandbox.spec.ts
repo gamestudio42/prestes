@@ -2,7 +2,6 @@ import { expect, test } from '@playwright/test';
 
 test('opens the sandbox, steps, spawns and resets', async ({ page }) => {
   await page.goto('/');
-  await page.getByTestId('menu-mark-skirmish').click();
   await page.getByTestId('start-battle-3v3').click();
   await expect(page.getByTestId('hud')).toBeVisible();
 
@@ -44,7 +43,6 @@ test('opens the sandbox, steps, spawns and resets', async ({ page }) => {
 
 test('drills a casualty, shows progress and completes recovery', async ({ page }) => {
   await page.goto('/');
-  await page.getByTestId('menu-mark-skirmish').click();
   await page.getByTestId('start-battle-3v3').click();
   await expect(page.getByTestId('hud')).toBeVisible();
 
@@ -109,7 +107,6 @@ test('drills a casualty, shows progress and completes recovery', async ({ page }
 
 test('starts the 3v3 battle laboratory', async ({ page }) => {
   await page.goto('/');
-  await page.getByTestId('menu-mark-skirmish').click();
   await page.getByTestId('start-battle-3v3').click();
   await page.waitForTimeout(600);
   await page.keyboard.press('F1');

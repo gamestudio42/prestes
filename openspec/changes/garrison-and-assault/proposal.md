@@ -12,8 +12,10 @@ streets cannot be fought house by house.
 ## What Changes
 
 - **Enterable positions**: buildings (by footprint, with a capacity and
-  firing ports on their walls) and fortified works (a trench line's bays as
-  one position, the Fazenda's communication trenches, the factory yard)
+  firing ports on their walls) and fortified works (each trench line as
+  drawn with `refine-map-editor`'s trench tool, holding one man per 1.2 m of
+  fire step with its slots as ports; communication trenches; the factory
+  yard)
   are positions a section can occupy.
 - **Ocupar (enter)**: an order on a position; the section walks to its
   entrances and goes in, up to the capacity; the rest stay in slots outside.

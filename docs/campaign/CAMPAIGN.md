@@ -81,37 +81,54 @@ and crosses the Uruguay River. This act is the breakout, not the long march.
 
 ### Act III - The Column (1925-1926)
 
-The southern and São Paulo rebels join at Foz do Iguaçu; the First
-Revolutionary Division forms and crosses into Paraguay. The column re-enters
-Brazil and marches north through the interior, fighting rearguard actions in
-Goiás and Minas Gerais and living off the land.
+The southern and São Paulo rebels combine in western Paraná; Prestes and Miguel
+Costa meet at Benjamin Constant on 3 April 1925, the First Revolutionary Division
+forms at Porto Santa Helena on 14 April, and the crossing runs from Porto Mendes
+to Puerto Adela. Foz do Iguaçu is Isidoro’s political headquarters. The column
+re-enters Brazil and marches north through the interior, fighting rearguard
+actions in Goiás and Minas Gerais and living off the land.
 
 ### Act IV - Exile (1927)
 
-The column crosses the Pantanal and enters Paraguay and Bolivia. The march
-dissolves into exile. The campaign ends with memory, not victory.
+The column crosses the Pantanal. The main body enters Bolivia at San Matias on 3
+February 1927; Siqueira’s group enters Paraguay in March. The march dissolves
+into exile. The campaign ends with memory, not victory.
 
 ## Mission list
 
 | #   | ID                     | Title                                                      | Date and place                                                                  | Commander              | Teaches                                                                      | Status  |
 | --- | ---------------------- | ---------------------------------------------------------- | ------------------------------------------------------------------------------- | ---------------------- | ---------------------------------------------------------------------------- | ------- |
 | 01  | `prologue-18-do-forte` | [Os Dezoito do Forte](missions/01-prologue-18-do-forte.md) | 1922-07-05/06 - Copacabana beach, Rio de Janeiro                                | Siqueira Campos        | Four-section beach retreat; fire discipline; delaying action; certain defeat | `draft` |
-| 02  | `anel-de-ferro`        | O Anel de Ferro                                            | 1924-10 to 1925-01 - Santo Ângelo, São Borja, Uruguaiana; Ramada; Uruguay River | Luís Carlos Prestes    | Breakout from encirclement; march and rear guard; river crossing             | `idea`  |
-| 03  | `a-divisao`            | A Divisão                                                  | 1925-04 - Foz do Iguaçu; Porto Mendes to Puerto Adela                           | Miguel Costa           | Joining forces; command structure; river crossing under pressure             | `idea`  |
-| 04  | `frente-do-parana`     | A Frente do Paraná                                         | 1924-1925 - Paraná plateau                                                      | pending                | Trench lines, artillery pressure, fighting withdrawal                        | `idea`  |
-| 05  | `ponte-de-verdinho`    | A Ponte de Verdinho                                        | 1925-06-27/28 - Mineiros, Goiás                                                 | pending                | Rear guard, bridge denial, ford crossing, pursuit                            | `idea`  |
-| 06  | `serra-nova`           | Serra Nova                                                 | 1926-04 - Serra Nova, Minas Gerais                                              | Luís Carlos Prestes    | Long march, supply, terrain and fatigue                                      | `idea`  |
-| 07  | `pantanal`             | O Pantanal                                                 | 1927-02/03 - Pantanal to Paraguay and Bolivia                                   | Luís Carlos Prestes    | Attrition, survival, crossing                                                | `idea`  |
-| 08  | `la-gaiba`             | La Gaiba                                                   | 1927-07-05 - La Gaiba, Bolivia                                                  | Prestes and the exiles | Aftermath, memory, non-combat epilogue                                       | `idea`  |
+| 02  | `anel-de-ferro`        | [O Anel de Ferro](missions/02-anel-de-ferro.md)            | 1924-10 to 1925-01 - Santo Ângelo, São Borja, Uruguaiana; Ramada; Uruguay River | Luís Carlos Prestes    | Breakout from encirclement; march and rear guard; river crossing             | `draft` |
+| 03  | `a-divisao`            | [A Divisão](missions/03-a-divisao.md)                      | 1925-04 - Benjamin Constant, Porto Santa Helena, Porto Mendes to Puerto Adela   | Miguel Costa           | Joining forces; command structure; river crossing under pressure             | `draft` |
+| 04  | `frente-do-parana`     | [A Frente do Paraná](missions/04-frente-do-parana.md)      | 1924-1925 - Catanduvas and the Paraná plateau                                   | Isidoro Dias Lopes     | Catanduvas trenches, artillery pressure, fighting withdrawal                 | `draft` |
+| 05  | `ponte-de-verdinho`    | [A Ponte de Verdinho](missions/05-ponte-de-verdinho.md)    | 1925-06-27/28 - Mineiros, Goiás                                                 | Luís Carlos Prestes    | Rear guard, bridge denial, ford crossing, pursuit                            | `draft` |
+| 06  | `serra-nova`           | [Serra Nova](missions/06-serra-nova.md)                    | 1926-04-22/26 - Serra Nova and Taiobeiras, Minas Gerais                         | Luís Carlos Prestes    | Rearguard ambush; break contact; encirclement escape                         | `draft` |
+| 07  | `pantanal`             | [O Pantanal](missions/07-pantanal.md)                      | 1927-01/03 - Pantanal; Bolivia and Paraguay                                     | Luís Carlos Prestes    | Attrition, survival, crossing; the exile split                               | `draft` |
+| 08  | `la-gaiba`             | [La Gaiba](missions/08-la-gaiba.md)                        | 1927-07-05 - La Gaiba, Bolivia                                                  | Prestes and the exiles | Aftermath, memory, non-combat epilogue                                       | `draft` |
 
 Mission 01 is the prologue. The column begins in mission 02, in the south. The
-prologue's 18 are destroyed; they do not carry into the column.
+prologue's legendary 18 are destroyed as a fighting force; the historical record
+has survivors, and they do not carry into the column.
+
+Mission 04, "A Frente do Paraná", is a flashback or parallel front dated
+1924-1925; mission 05 follows mission 03 chronologically. Isidoro Dias Lopes
+commands from Foz do Iguaçu; Estilac Leal’s brigade holds Catanduvas, so the
+mission’s tactical section is fictional and the command voice is Isidoro’s.
+Mission 05 uses Prestes as the command voice; Cordeiro commanded the rearguard
+detachment at the Verdinho bridge.
 
 A row with `pending` cannot move to `locked`. Name a figure already registered
 in [`docs/history/FIGURES.md`](../history/FIGURES.md), or add the figure
 through the proper source and registry work first. Do not invent a commander to
-fill the row. Miguel Costa is named as the formal commander, but he still needs
-a `FIGURES.md` entry before any mission that plays him can lock.
+fill the row. Miguel Costa and Isidoro Dias Lopes are in `FIGURES.md` and in the runtime
+registry with `playable: false`.
+
+The campaign book reads its chapters from
+`packages/content/src/campaign/chapters.ts` and
+`packages/content/src/campaign/text/{en,pt-BR}.ts`, imported from `book/` and
+the missions' `Player text` sections. Edit the doc and the runtime text
+together.
 
 ## Out of scope
 
@@ -130,9 +147,13 @@ a `FIGURES.md` entry before any mission that plays him can lock.
   military operations.
 - **Amado, _O Cavaleiro da Esperança_** is Tier 1 for tone and arc, not facts.
   The campaign book is original prose in that register; no text is reproduced.
-- **Blanc (2024)** is Tier 1 for social and interior history.
-- **Regional studies** are Tier 3. **Portal Anticolonialismo / Memorial Virtual
-  Coluna Prestes** is a Tier 4 finding aid.
+- **Blanc (2024)** is Tier 1 for social and interior history; ch. 7 and fig. 7.5
+  are the authority for the La Gaiba monument and inscription.
+- **Cohen (2007)** is Tier 3 for the July 1924 bombardment and the districts hit.
+- **Nascimento (2026)** is Tier 3 for the Serra Nova encirclement and the “laço
+  húngaro”; the ALMG note is a Tier 4 finding aid.
+- **Regional studies** are Tier 3. **CPDOC/FGV** and **Portal Anticolonialismo /
+  Memorial Virtual Coluna Prestes** are finding aids, not page-level authorities.
 - At least two independent sources per mission. Record contradictions in
   [`docs/history/TIMELINE.md`](../history/TIMELINE.md); never resolve them
   silently.

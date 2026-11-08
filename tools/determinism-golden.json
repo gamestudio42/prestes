@@ -1,11 +1,12 @@
 {
   "seed": 1922,
   "ticks": 600,
-  "hash": "5b81a45d",
+  "hash": "eaeae59f",
   "battleMaps": {
-    "vila-militar": "5df42cfe",
-    "fazenda": "07de103c",
-    "serra-rio": "39cb45df",
-    "bairro": "4448ed9d"
+    "vila-militar": "efd540ac",
+    "fazenda": "838a031d",
+    "serra-rio": "18128bc3",
+    "bairro": "8da934b4",
+    "fazenda-doc": "8d624f22"
   }
 }

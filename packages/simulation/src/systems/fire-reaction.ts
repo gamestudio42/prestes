@@ -1,4 +1,4 @@
-import { cachedCoverSlots, findPath, slotGuards } from '@prestes/shared';
+import { coverSlotsNear, findPath, slotGuards } from '@prestes/shared';
 import type { CoverSlot, UnitOrder } from '@prestes/shared';
 import type { MutableUnit } from './model';
 import type { SimContext } from './context';
@@ -128,7 +128,7 @@ function coverInReach(ctx: SimContext, unit: MutableUnit, shooter: MutableUnit):
   const fromShooter = Math.sqrt((unit.x - shooter.x) ** 2 + (unit.y - shooter.y) ** 2);
   let best: CoverSlot | null = null;
   let bestDistance = Number.POSITIVE_INFINITY;
-  for (const slot of cachedCoverSlots(ctx.covers)) {
+  for (const slot of coverSlotsNear(ctx.covers, unit.x, unit.y, FIRE_COVER_RADIUS)) {
     const holder = holders.get(slot.id);
     if (holder !== undefined && holder !== unit.id) {
       continue;
@@ -198,7 +198,8 @@ export function screenOfficers(ctx: SimContext): void {
     for (const guard of guards) {
       let best: CoverSlot | null = null;
       let bestDistance = Number.POSITIVE_INFINITY;
-      for (const slot of cachedCoverSlots(ctx.covers)) {
+      // Within 5 m of the officer (fromOfficer <= 25 below).
+      for (const slot of coverSlotsNear(ctx.covers, officer.x, officer.y, 5)) {
         const holder = holders.get(slot.id);
         if (holder !== undefined && holder !== guard.id) {
           continue;

@@ -1,5 +1,6 @@
 import type { RNG } from '@prestes/kernel';
 import type {
+  BattleMap,
   CommandEnvelope,
   CoverPoint,
   Outcome,
@@ -50,4 +51,6 @@ export interface SimContext {
   readonly vision: VisionState;
   /** add-battle-maps: the battle map's ferries (none elsewhere). */
   readonly ferries: FerryState[];
+  /** The battle map, or null on the training ground. */
+  readonly battleMap: BattleMap | null;
 }

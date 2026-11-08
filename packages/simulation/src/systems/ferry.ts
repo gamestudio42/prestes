@@ -64,6 +64,13 @@ export function heldByFerry(ctx: SimContext, unit: MutableUnit): boolean {
   return ctx.ferries.some((ferry) => waitingSide(ferry, unit) !== null);
 }
 
+/** Whether the soldier's next waypoint is a ferry landing: he is queuing for it, not stuck. */
+export function headingForLanding(ctx: SimContext, unit: MutableUnit): boolean {
+  const next = unit.path[unit.pathIndex];
+  if (!next) return false;
+  return ctx.ferries.some((ferry) => same(next, ferry.a) || same(next, ferry.b));
+}
+
 /** A place on the deck (2 x 3 m) for the n-th man aboard. */
 function deckOffset(index: number): Vec2 {
   return { x: (index % 2) * 1.2 - 0.6, y: Math.floor(index / 2) * 1.2 - 1.2 };

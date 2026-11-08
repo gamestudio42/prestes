@@ -1,10 +1,10 @@
 ## 0. Prerequisites
 
-- [ ] 0.1 Archive `add-battle-maps` (verify: `openspec validate --specs`)
+- [ ] 0.1 Archive `add-battle-maps`, `refine-map-editor` (trench lines) and `add-deployment-phase` (verify: `openspec validate --specs`)
 
 ## 1. Position data
 
-- [ ] 1.1 `PositionDef` and `positionsFor(map)`: buildings (capacity by model, entrances on the street face and back door, ports every 3 m), trench lines (capacity 12, ends and communication trench, parapet ports), the factory yard (verify: unit tests of capacities, entrance and port counts for each model)
+- [ ] 1.1 `PositionDef` and `positionsFor(map)`: buildings (capacity by model, entrances on the street face and back door, ports every 3 m), trench lines from the shared trench builder (capacity one man per 1.2 m of fire step, entrances at the ends and every 10 m on the rear side, ports = fire-step slots; communication trenches one man per 2 m), the factory yard (verify: unit tests of capacities, entrance and port counts for each model)
 - [ ] 1.2 Content check: every entrance reachable from both deployment zones; ports outside footprints (verify: unit test with a broken entrance; `pnpm check:content`)
 
 - [ ] 1.3 Elevated ports and roofs: `eye`/`level` on ports, `RoofDef` for the factory and armazéns, elevation in sight and fire at both ends (verify: tests "over the walls from the tower", "over the corn from the loft", "exposed on the roof")
@@ -30,6 +30,8 @@
 - [ ] 4.2 `GarrisonLayer`: markers with side colour, count or "?", strength bar; port flashes; entrance arrows when ordering (verify: screenshot review on Bairro; e2e reads the marker count through the scene bridge)
 - [ ] 4.3 Assault bars for the fight's length (verify: e2e starts an assault through the bridge and sees the bars, then their removal)
 - [ ] 4.4 Section cards show "Dentro: <position>"; troop summary lists garrisoned men (verify: e2e)
+- [ ] 4.5 Enter in the deployment phase: an Ocupar order during deployment puts the men inside at once, up to capacity; the enemy commander's deployment garrisons buildings and trench lines (verify: e2e deploys a section into a house and sees the garrison marker at tick 0; test "enemy deploys into the engenho")
+- [ ] 4.6 Editor: the properties panel shows each building's and trench line's capacity, entrances and ports; the cover overlay draws ports (verify: editor e2e reads a farmhouse's capacity)
 
 ## 5. Close
 

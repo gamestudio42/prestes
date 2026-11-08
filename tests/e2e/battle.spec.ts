@@ -11,7 +11,6 @@ interface Bridge {
 
 async function startFromMenu(page: Page): Promise<void> {
   await page.goto('/');
-  await page.getByTestId('menu-mark-skirmish').click();
   await page.getByTestId('start-battle-3v3').click();
   await expect(page.getByTestId('hud')).toBeVisible();
   await expect
@@ -28,6 +27,26 @@ async function breakTheEnemy(page: Page): Promise<void> {
     }
   });
 }
+
+// refine-battle-maps: a broken side out of contact falls back; the end panel
+// counts the men who fell back as routed.
+test('the last survivors fall back and the end panel counts them as routed', async ({ page }) => {
+  await startFromMenu(page);
+  await page.evaluate(() => {
+    const bridge = (window as unknown as Bridge).__prestes!;
+    const units = bridge.frame()!.units;
+    const legalists = units.filter((unit) => unit.faction === 'legalist');
+    for (const unit of legalists.slice(3)) bridge.command({ type: 'incapacitate', targetId: unit.id });
+    // The column pulls back out of sight and holds its fire: no contact.
+    const column = units.filter((unit) => unit.faction === 'column').map((unit) => unit.id);
+    bridge.command({ type: 'fire_control', unitIds: column, mode: 'hold' });
+    bridge.command({ type: 'withdraw', unitIds: column });
+    (bridge as unknown as { step: (ticks: number) => void }).step(1500);
+  });
+  await expect(page.getByTestId('battle-end')).toBeVisible({ timeout: 60_000 });
+  await expect(page.getByTestId('battle-end-result')).toHaveText('Victory');
+  await expect(page.getByTestId('battle-end-legalist').locator('td').nth(2)).toHaveText('3');
+});
 
 test('starts the 3 vs 3 from the menu and ends it in victory', async ({ page }) => {
   await startFromMenu(page);

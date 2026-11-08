@@ -178,6 +178,8 @@ export interface Building {
   halfWidth: number;
   halfDepth: number;
   height: number;
+  /** View (refine-battle-maps 5.2): the long face toward the street, local +y (1) or -y (-1). */
+  front?: 1 | -1;
 }
 
 export const BUILDINGS: readonly Building[] = [

@@ -1,12 +1,17 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import {
+  CAMPAIGN_CHAPTERS,
   COMPENDIUM,
+  COMPENDIUM_IMAGE_REGISTER,
   FIGURES,
   LOCALES,
   messages,
   SOURCE_KEYS,
+  validateChapters,
   validateCodexEntry,
+  validateCompendium,
+  validateCompendiumMedia,
   validateFigures,
   validateMissionCommander,
   type MissionMetadata,
@@ -85,17 +90,34 @@ for (const correction of corrections) {
   }
 }
 
+// polish-menu-desk: compendium images and long text, and the campaign chapters.
+errors.push(...validateCompendium());
+errors.push(...validateCompendiumMedia());
+const assetsText = readFileSync(resolve(root, 'docs/assets.md'), 'utf8');
+for (const image of COMPENDIUM_IMAGE_REGISTER) {
+  if (!existsSync(resolve(root, image.path))) errors.push(`missing compendium image: ${image.path}`);
+  if (!assetsText.includes(`\`${image.path}\``)) {
+    errors.push(`compendium image not in docs/assets.md: ${image.path}`);
+  }
+}
+errors.push(...validateChapters());
+
 // add-battle-maps: every battle map's deployment is sound.
 const maps = battleMaps();
 for (const map of maps) {
   errors.push(...validateBattleMap(map));
+  // refine-battle-maps 6.3: its pixel preview for the skirmish page (`pnpm maps:previews`).
+  if (!existsSync(resolve(root, `apps/game/public/maps/${map.id}.png`))) {
+    errors.push(`${map.id}: no preview apps/game/public/maps/${map.id}.png; run pnpm maps:previews`);
+  }
   // Its name and description in every locale, and a compendium note for its setting.
-  for (const locale of LOCALES) {
+  // Authored maps (add-map-editor) carry their own text; tools/check-maps.ts checks them.
+  for (const locale of map.text ? [] : LOCALES) {
     for (const key of [map.nameKey, map.descriptionKey]) {
       if (!(key in messages[locale])) errors.push(`${map.id}: ${locale} has no ${key}`);
     }
   }
-  if (!COMPENDIUM.some((entry) => entry.id === map.codexKey)) {
+  if ((!map.text || map.codexKey) && !COMPENDIUM.some((entry) => entry.id === map.codexKey)) {
     errors.push(`${map.id}: no compendium entry ${map.codexKey}`);
   }
   if (!map.setting.sourceNote) errors.push(`${map.id}: no source note`);
@@ -110,5 +132,5 @@ if (errors.length > 0) {
 }
 
 console.log(
-  `Content check passed: ${FIGURES.length} figures, ${missions.length} missions, ${SOURCE_KEYS.length} sources, ${maps.length} battle maps.`,
+  `Content check passed: ${FIGURES.length} figures, ${missions.length} missions, ${CAMPAIGN_CHAPTERS.length} chapters, ${COMPENDIUM.length} compendium entries, ${COMPENDIUM_IMAGE_REGISTER.length} images, ${SOURCE_KEYS.length} sources, ${maps.length} battle maps.`,
 );

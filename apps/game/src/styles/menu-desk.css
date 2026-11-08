@@ -1,0 +1,1767 @@
+/*
+ * The menu desk: draggable period objects over the pixel scene. Pixel-kit
+ * rules apply: hard steps, 2 px borders, stepped corners, no blur and no
+ * rounded corners. Shared page and cover styles live in book-menu.css.
+ */
+.desk-screen {
+  --desk-book-width: min(1152px, calc(100vw - 48px), calc((100vh - 32px) * 1.5));
+  --desk-label-gap: 8px;
+  /* One art pixel is --desk-scale screen pixels on every closed object. */
+  --desk-scale: 2;
+  /*
+   * One hard shadow for every closed object, two art pixels long, and a longer
+   * one while the player holds it.
+   */
+  --desk-shadow: drop-shadow(calc(var(--desk-scale) * 2px) calc(var(--desk-scale) * 2px) 0 rgba(8, 5, 2, 0.75));
+  --desk-shadow-held: drop-shadow(calc(var(--desk-scale) * 3px) calc(var(--desk-scale) * 3px) 0 rgba(8, 5, 2, 0.7));
+
+  overflow: hidden;
+}
+
+.menu-desk {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* --- One desk object ------------------------------------------------------ */
+.desk-object {
+  position: absolute;
+  pointer-events: auto;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  will-change: left, top;
+}
+
+/*
+ * An open object is a centred overlay. It is not part of the desk layout, so
+ * its closed position stays where the player left it.
+ */
+.desk-object.is-overlay {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  will-change: auto;
+}
+
+/* No text selection anywhere on a desk object: a drag is always a drag. */
+.desk-object,
+.desk-object * {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.desk-object[data-dragging='true'],
+.desk-object[data-dragging='true'] * {
+  cursor: grabbing;
+}
+
+.desk-object:has(.desk-object-handle:focus-visible) {
+  outline: 2px solid var(--px-gold);
+  outline-offset: 4px;
+}
+
+/* A small brass clasp closes an open book, compass or gramophone. */
+.desk-object-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 6;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 2px solid var(--book-leather-dark, #2e140c);
+  background: var(--book-leather, #4a2216);
+  color: var(--px-gold);
+  box-shadow:
+    inset 0 0 0 1px var(--book-leather-light, #6b3420),
+    2px 2px 0 rgba(8, 5, 2, 0.75);
+  clip-path: var(--px-corner);
+  cursor: pointer;
+}
+
+.desk-object-close:hover,
+.desk-object-close:focus-visible {
+  border-color: var(--px-gold);
+  background: var(--book-leather-light, #6b3420);
+  color: var(--px-parchment);
+  outline: 2px solid var(--px-gold);
+  outline-offset: 2px;
+}
+
+.desk-object-content {
+  position: relative;
+  pointer-events: auto;
+}
+
+.desk-object-art {
+  display: block;
+  image-rendering: pixelated;
+  filter: var(--desk-shadow);
+}
+
+.desk-object-art-closed {
+  cursor: pointer;
+}
+
+.desk-object-cover-hit {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  cursor: pointer;
+}
+
+/*
+ * A closed object's box comes from its sprite's source size (--art-w, --art-h,
+ * set from deskArt.ts) times the desk scale, so the box and the PNG cannot
+ * drift apart. --art-ratio is 1 except for sprites still waiting for a redraw.
+ */
+.desk-art-box {
+  --art-px: calc(var(--desk-scale) * var(--art-ratio, 1));
+  --art-box-w: calc(var(--art-w) * var(--art-px) * 1px);
+  --art-box-h: calc(var(--art-h) * var(--art-px) * 1px);
+}
+
+.desk-art-box > .desk-object-art-closed {
+  flex: none;
+  width: var(--art-box-w);
+  height: var(--art-box-h);
+}
+
+.desk-compass-cover {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--desk-label-gap);
+  width: var(--art-box-w);
+}
+
+/* add-map-editor: the theodolite; its name may be wider than the instrument. */
+.desk-theodolite-cover {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--desk-label-gap);
+  min-width: var(--art-box-w);
+}
+
+.desk-theodolite-cover .desk-object-label {
+  max-width: none;
+  white-space: nowrap;
+}
+
+/* A closed book is an icon: the rasterized cover, then its name below. */
+.desk-book-cover {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--desk-label-gap);
+  width: var(--art-box-w);
+}
+
+.desk-object-label {
+  /* Empty rows under a sprite (--art-trim) do not count toward the gap. */
+  margin-top: calc(var(--art-trim, 0) * var(--desk-scale) * var(--art-ratio, 1) * -1px);
+  display: block;
+  max-width: 100%;
+  color: var(--px-parchment, #f0e0bd);
+  font: 600 18px/1.15 var(--px-font);
+  letter-spacing: 0.06em;
+  text-align: center;
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-shadow:
+    2px 2px 0 #15100c,
+    -1px -1px 0 #15100c,
+    1px -1px 0 #15100c,
+    -1px 1px 0 #15100c;
+  pointer-events: none;
+}
+
+/* The reference pile is a third book object, smaller than the two main books. */
+.desk-references-cover {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--desk-label-gap);
+  width: var(--art-box-w);
+}
+
+/* --- Reference dossier ---------------------------------------------------- */
+.desk-references-screen {
+  width: min(880px, calc(100vw - 48px));
+  max-height: calc(100vh - 96px);
+  overflow: auto;
+  padding: 36px 46px 28px;
+  border: 2px solid var(--book-ink);
+  background: var(--book-paper);
+  box-shadow: 6px 6px 0 rgba(8, 5, 2, 0.75);
+  clip-path: var(--px-corner);
+  color: var(--book-ink);
+}
+
+.desk-references-header {
+  margin-bottom: 16px;
+}
+
+.desk-references-preface {
+  margin: 0 0 14px;
+  padding-left: 16px;
+  border-left: 4px solid var(--px-gold);
+  font-size: 18px;
+  font-style: italic;
+  line-height: 1.45;
+}
+
+.desk-references-note {
+  margin: 0;
+  color: var(--book-ink-soft);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.desk-references-list {
+  display: grid;
+  gap: 14px;
+  margin: 20px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.desk-references-list li {
+  padding-top: 12px;
+  border-top: 1px solid rgba(74, 34, 22, 0.28);
+}
+
+.desk-reference-link {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 2px 14px;
+  color: var(--book-ink);
+  text-decoration: none;
+}
+
+.desk-reference-link:focus-visible {
+  outline: 2px solid var(--px-gold);
+  outline-offset: 3px;
+}
+
+.desk-reference-author {
+  grid-column: 1;
+  color: var(--book-accent);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.desk-reference-title {
+  grid-column: 1;
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.desk-reference-year {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  align-self: center;
+  color: var(--book-ink-soft);
+  font-size: 13px;
+}
+
+.desk-reference-note {
+  margin: 5px 0 0;
+  color: var(--book-ink-soft);
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.desk-reference-link:hover .desk-reference-title,
+.desk-reference-link:focus-visible .desk-reference-title {
+  text-decoration: underline;
+}
+
+/* --- Open books ----------------------------------------------------------- */
+/*
+ * A two-page spread over the open-book sprite (polish-menu-desk, D10-D11). The
+ * pages never scroll: text is flowed onto pages by bookPages.ts, and an e2e
+ * check fails the build when a page overflows at 1280 x 720 or 1440 x 900.
+ */
+.desk-book-frame {
+  position: relative;
+  width: var(--desk-book-width);
+  aspect-ratio: 3 / 2;
+  max-width: none;
+  font-family: var(--px-font);
+}
+
+/* The opened book holds the focus for the arrow keys; it draws no ring. */
+.desk-book-frame:focus {
+  outline: none;
+}
+
+/*
+ * The frame (design D11) is a 2x 9-slice of light, shade and gilt over the
+ * cover leather, so one sprite serves both books: --book-cover tints it, navy
+ * for the campaign and green for the compendium. The pages are parchment drawn
+ * here, darkening in hard steps toward the gutter.
+ */
+.desk-book-cover-navy {
+  --book-cover: #2c3a52;
+}
+
+.desk-book-cover-green {
+  --book-cover: #2e6150;
+}
+
+.desk-book-board {
+  position: absolute;
+  inset: 0;
+  border: 32px solid transparent;
+  border-image: url('../assets/menu/desk/book-frame.png') 16 fill / 32px stretch;
+  background: var(--book-cover) border-box;
+  image-rendering: pixelated;
+  filter: drop-shadow(8px 8px 0 rgba(8, 5, 2, 0.8));
+}
+
+.desk-book-page-left,
+.desk-book-page-right {
+  --page-edge: var(--book-paper-deep);
+}
+
+.desk-book-page-left {
+  background: linear-gradient(
+    90deg,
+    var(--book-paper) 0 92%,
+    var(--book-paper-shade) 92% 97%,
+    var(--page-edge) 97% 100%
+  );
+  box-shadow:
+    -2px 2px 0 var(--book-edge),
+    -4px 4px 0 var(--book-paper-shade),
+    -6px 6px 0 var(--book-edge);
+}
+
+.desk-book-page-right {
+  background: linear-gradient(
+    270deg,
+    var(--book-paper) 0 92%,
+    var(--book-paper-shade) 92% 97%,
+    var(--page-edge) 97% 100%
+  );
+  box-shadow:
+    2px 2px 0 var(--book-edge),
+    4px 4px 0 var(--book-paper-shade),
+    6px 6px 0 var(--book-edge);
+}
+
+/* The page boxes sit exactly over the blank parchment of the open frame. */
+.desk-book-pages {
+  position: absolute;
+  left: 6.25%;
+  right: 6.25%;
+  top: 9.375%;
+  bottom: 9.375%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4.1667%;
+  color: var(--book-ink);
+}
+
+.desk-book-page {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  padding: 22px 26px 30px;
+}
+
+.desk-book-page-left {
+  padding-right: 34px;
+}
+
+.desk-book-page-right {
+  padding-left: 34px;
+}
+
+.desk-book-page-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.desk-book-folio {
+  position: absolute;
+  right: 0;
+  bottom: 6px;
+  left: 0;
+  margin: 0;
+  color: var(--book-ink-soft);
+  font-size: 13px;
+  text-align: center;
+}
+
+/* Ribbons hang from the top edge of the frame. */
+.desk-book-ribbons {
+  position: absolute;
+  top: 0;
+  right: 12%;
+  left: 8%;
+  display: flex;
+  gap: 4px;
+  height: 9.375%;
+}
+
+.desk-book-ribbon {
+  display: grid;
+  align-items: end;
+  justify-items: center;
+  min-width: 30px;
+  height: 70%;
+  padding: 0 6px 6px;
+  border: 0;
+  background: var(--book-accent);
+  color: var(--px-parchment);
+  font: 600 13px/1 var(--px-font);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 82%, 0 100%);
+  cursor: pointer;
+}
+
+.desk-book-ribbon:nth-child(odd) {
+  background: var(--book-blue);
+}
+
+.desk-book-ribbon.active,
+.desk-book-ribbon:hover,
+.desk-book-ribbon:focus-visible {
+  height: 92%;
+  background: var(--px-gold);
+  color: var(--book-ink);
+  outline: none;
+}
+
+/* Corner controls on the bottom corners of the parchment. */
+.desk-book-turn {
+  position: absolute;
+  bottom: calc(9.375% + 4px);
+  width: 36px;
+  height: 26px;
+  border: 2px solid var(--book-ink-soft);
+  background: var(--book-paper-shade);
+  color: var(--book-ink);
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.desk-book-turn-prev {
+  left: calc(6.25% + 8px);
+}
+
+.desk-book-turn-next {
+  right: calc(6.25% + 8px);
+}
+
+.desk-book-turn:hover:not(:disabled),
+.desk-book-turn:focus-visible {
+  border-color: var(--book-accent);
+  background: var(--book-accent);
+  color: var(--px-parchment);
+  outline: none;
+}
+
+.desk-book-turn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.desk-turn-next,
+.desk-turn-prev {
+  animation: desk-page-turn 200ms steps(3) both;
+}
+
+/* --- Page type ----------------------------------------------------------- */
+.desk-book-heading {
+  margin: 0 0 10px;
+  padding-bottom: 6px;
+  border-bottom: 2px dashed var(--book-edge);
+  color: var(--book-ink);
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.1;
+}
+
+.desk-text {
+  margin: 0 0 8px;
+  color: var(--book-ink);
+  font-size: 16px;
+  line-height: 1.4;
+}
+
+.desk-text-soft {
+  color: var(--book-ink-soft);
+}
+
+.desk-text-heading {
+  margin: 4px 0 6px;
+  color: var(--book-accent);
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.15;
+}
+
+.desk-text-list {
+  margin: 0 0 8px;
+  padding-left: 18px;
+  font-size: 16px;
+  line-height: 1.35;
+}
+
+.desk-text-list li {
+  margin-bottom: 4px;
+}
+
+.desk-entry-head {
+  margin-bottom: 8px;
+}
+
+.desk-entry-title,
+.desk-chapter-title {
+  margin: 0 0 6px;
+  color: var(--book-ink);
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.1;
+}
+
+.desk-entry-meta {
+  margin: 4px 0 0;
+  color: var(--book-ink-soft);
+  font-size: 13px;
+}
+
+.desk-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+}
+
+.desk-chip {
+  display: inline-block;
+  padding: 2px 6px;
+  border: 2px solid var(--book-accent);
+  color: var(--book-accent);
+  font-size: 13px;
+  text-transform: uppercase;
+}
+
+.desk-chip-soft {
+  border-color: var(--book-edge);
+  color: var(--book-ink-soft);
+  text-transform: none;
+}
+
+.desk-sources {
+  margin: 8px 0 0;
+  color: var(--book-ink-soft);
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.desk-related {
+  margin: 6px 0 0;
+  color: var(--book-ink-soft);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.desk-link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--book-blue);
+  font: inherit;
+  text-decoration: underline dotted;
+  cursor: pointer;
+}
+
+.desk-link:hover,
+.desk-link:focus-visible {
+  color: var(--book-accent);
+  outline: none;
+}
+
+.desk-link-list {
+  display: grid;
+  gap: 4px;
+  margin: 0 0 12px;
+  padding: 0;
+  font-size: 16px;
+  list-style: none;
+}
+
+/* --- Title, contents, plates --------------------------------------------- */
+.desk-title-page {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 0;
+}
+
+.desk-book-title {
+  text-align: center;
+}
+
+.desk-book-eyebrow {
+  margin: 0 0 4px;
+  color: var(--book-accent);
+  font-size: 13px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.desk-book-title h1 {
+  margin: 0;
+  color: var(--book-ink);
+  font-size: clamp(36px, 3.6vw, 56px);
+  font-weight: 600;
+  line-height: 0.9;
+  letter-spacing: 2px;
+  overflow-wrap: anywhere;
+}
+
+.desk-book-plate {
+  width: 72%;
+  min-height: 0;
+  max-height: 55%;
+  object-fit: contain;
+  border: 2px solid var(--book-ink);
+  image-rendering: pixelated;
+  box-shadow: 4px 4px 0 var(--book-paper-deep);
+}
+
+.desk-book-epigraph {
+  margin: 0;
+  color: var(--book-accent);
+  font-size: 16px;
+  font-style: italic;
+  text-align: center;
+}
+
+.desk-campaign-body,
+.desk-briefing,
+.desk-contents,
+.desk-text-page,
+.desk-chapter-plate {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.desk-book-actions {
+  display: grid;
+  gap: 6px;
+  margin: auto 0 8px;
+}
+
+.desk-contents-kicker {
+  margin: 0 0 6px;
+  color: var(--book-accent);
+  font-size: 13px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.desk-contents-list,
+.desk-index,
+.desk-chapter-list {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.desk-contents-row,
+.desk-index-entry,
+.desk-chapter-row {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  width: 100%;
+  padding: 3px 4px;
+  border: 0;
+  background: transparent;
+  color: var(--book-ink);
+  font: 400 16px/1.25 var(--px-font);
+  text-align: left;
+  cursor: pointer;
+}
+
+.desk-contents-row {
+  padding: 8px 4px;
+  font-size: 18px;
+}
+
+.desk-chapter-row {
+  flex-direction: column;
+  align-items: stretch;
+  gap: 2px;
+  padding: 6px 4px 8px;
+  border-bottom: 1px dotted var(--book-edge);
+}
+
+.desk-chapter-row-top {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+
+.desk-chapter-row-top .desk-contents-kicker {
+  margin: 0;
+}
+
+.desk-chapter-row-title {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.desk-chapter-row-meta {
+  color: var(--book-ink-soft);
+  font-size: 13px;
+}
+
+.desk-contents-row:hover,
+.desk-contents-row:focus-visible,
+.desk-index-entry:hover,
+.desk-index-entry:focus-visible,
+.desk-chapter-row:hover,
+.desk-chapter-row:focus-visible {
+  background: rgba(59, 74, 107, 0.1);
+  color: var(--book-accent);
+  outline: none;
+}
+
+.desk-contents-row.active {
+  color: var(--book-accent);
+  font-weight: 600;
+}
+
+.desk-contents-count,
+.desk-index-folio {
+  color: var(--book-ink-soft);
+  font-size: 14px;
+}
+
+.desk-index-dots {
+  flex: 1;
+  min-width: 8px;
+  border-bottom: 1px dotted var(--book-edge);
+  transform: translateY(-3px);
+}
+
+.desk-plate {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  min-height: 0;
+  margin: 0;
+}
+
+.desk-plate-image {
+  display: block;
+  flex: 0 1 auto;
+  min-height: 0;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border: 2px solid var(--book-ink);
+  background: var(--book-paper-deep);
+  image-rendering: pixelated;
+  box-shadow: 4px 4px 0 var(--book-paper-deep);
+}
+
+.desk-plate-caption {
+  display: grid;
+  gap: 4px;
+  margin-top: 10px;
+  color: var(--book-ink);
+  font-size: 14px;
+  line-height: 1.35;
+  text-align: center;
+}
+
+.desk-plate-credit {
+  color: var(--book-ink-soft);
+  font-size: 13px;
+}
+
+.desk-plate-small {
+  flex: 0 1 auto;
+  max-height: 42%;
+  margin-bottom: 8px;
+}
+
+.desk-plate-small .desk-plate-credit {
+  margin-top: 4px;
+  font-size: 12px;
+  text-align: center;
+}
+
+.desk-facts {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 3px 10px;
+  margin: 0 0 8px;
+  font-size: 14px;
+  line-height: 1.3;
+}
+
+.desk-facts dt {
+  color: var(--book-accent);
+}
+
+.desk-facts dd {
+  margin: 0;
+  color: var(--book-ink);
+}
+
+/* Placeholder section emblem (design D14): a drawn star in a ring of dots
+   (section-emblem.png, 48 x 48), not a period image. Shown at 3x, or 2x small. */
+.desk-emblem {
+  width: 144px;
+  height: 144px;
+  margin: auto;
+  background: url('../assets/menu/desk/section-emblem.png') center / 100% 100% no-repeat;
+  image-rendering: pixelated;
+}
+
+.desk-emblem-small {
+  width: 96px;
+  height: 96px;
+  margin: 8px auto;
+}
+
+.desk-book-end {
+  width: 72px;
+  height: 18px;
+  margin: auto;
+  border-top: 3px double var(--book-edge);
+  border-bottom: 3px double var(--book-edge);
+}
+
+.desk-entry {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 36px;
+  padding: 5px 10px 5px 28px;
+  border: 0;
+  background: transparent;
+  color: var(--book-ink-soft);
+  font: 500 16px/1.25 var(--px-font);
+  text-align: left;
+  cursor: pointer;
+}
+
+.desk-entry.primary {
+  color: var(--book-ink);
+  font-weight: 600;
+}
+
+.desk-entry:hover:not(:disabled),
+.desk-entry:focus-visible {
+  background: rgba(142, 58, 44, 0.12);
+  color: var(--book-accent);
+  outline: none;
+}
+
+.desk-entry:hover:not(:disabled)::before,
+.desk-entry:focus-visible::before {
+  content: '▶';
+  position: absolute;
+  left: 9px;
+  color: var(--book-accent);
+  font-size: 11px;
+}
+
+.desk-entry:disabled {
+  border: 2px dashed var(--book-edge);
+  color: var(--book-ink-soft);
+  cursor: not-allowed;
+}
+
+.desk-language {
+  padding-right: 4px;
+}
+
+.desk-language select {
+  margin-left: auto;
+  padding: 2px 5px;
+  border: 2px solid var(--book-ink-soft);
+  background: var(--book-paper);
+  color: var(--book-ink);
+  font: 13px var(--px-font);
+}
+
+.desk-compendium,
+.desk-campaign {
+  width: var(--desk-book-width);
+  max-width: none;
+}
+
+/* --- Options compass ------------------------------------------------------ */
+.desk-options-screen {
+  width: min(760px, calc(100vw - 48px));
+  padding: 38px 46px 26px 26px;
+  border: 2px solid var(--book-ink);
+  background: var(--book-paper);
+  box-shadow: 6px 6px 0 rgba(8, 5, 2, 0.75);
+  clip-path: var(--px-corner);
+  color: var(--book-ink);
+}
+
+.desk-options-header {
+  margin-bottom: 14px;
+}
+
+.desk-options-body {
+  display: flex;
+  align-items: center;
+  gap: 26px;
+}
+
+.desk-options-art {
+  flex: none;
+  width: 192px;
+  height: 192px;
+  image-rendering: pixelated;
+}
+
+.desk-options-controls {
+  flex: 1;
+  min-width: 0;
+}
+
+/* --- Skirmish map fan ----------------------------------------------------- */
+.desk-maps {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--desk-label-gap);
+  width: calc(var(--art-box-w) + 36px);
+}
+
+/* The fan leaves room for the three sheets offset behind the active one. */
+.desk-map-fan {
+  position: relative;
+  width: calc(var(--art-box-w) + 36px);
+  /* The tilted back sheets paint below the active one; the box includes them. */
+  height: calc(var(--art-box-h) + 21px);
+  perspective: 1000px;
+  perspective-origin: 50% 30%;
+}
+
+.desk-map-sheet {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: calc(var(--i) + 1);
+  width: var(--art-box-w);
+  height: var(--art-box-h);
+  transform:
+    translate(calc(var(--i) * 10px), calc(var(--i) * 8px))
+    rotateX(30deg)
+    rotateZ(-8deg)
+    rotate(calc(var(--i) * 1.4deg));
+  transform-origin: center top;
+}
+
+.desk-map-art {
+  display: block;
+  width: 100%;
+  height: 100%;
+  image-rendering: pixelated;
+  filter: var(--desk-shadow);
+}
+
+.desk-map-select {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 70%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.desk-map-select:focus-visible {
+  outline: 3px solid var(--px-gold);
+  outline-offset: -6px;
+}
+
+.desk-map-sheet:hover .desk-map-art {
+  filter: brightness(1.08) var(--desk-shadow);
+}
+
+.desk-map-sheet.active {
+  z-index: 10;
+  transform: translateY(-14px) rotateX(16deg) rotateZ(-4deg);
+}
+
+.desk-map-sheet.active .desk-map-art {
+  filter: var(--desk-shadow);
+}
+
+.desk-map-sheet.active .desk-map-select {
+  box-shadow: inset 0 0 0 3px var(--px-gold);
+}
+
+/*
+ * refine-battle-maps 6.3: the active map's rendered preview, a small plate
+ * laid beside the drawn sheet. Only the active sheet shows its plate.
+ */
+.desk-map-preview {
+  position: absolute;
+  top: 8%;
+  left: calc(100% + 8px);
+  display: none;
+  width: 46%;
+  height: auto;
+  aspect-ratio: 1;
+  border: 3px solid #e9dcb8;
+  background: #17140f;
+  image-rendering: pixelated;
+  transform: rotateZ(6deg);
+  filter: var(--desk-shadow);
+  pointer-events: none;
+}
+
+.desk-map-sheet.active .desk-map-preview {
+  display: block;
+}
+
+/* The legend is printed on the parchment strip that is part of the map art. */
+.desk-map-legend {
+  position: absolute;
+  top: 74.2%;
+  right: 8.5%;
+  bottom: 2%;
+  left: 8.5%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  color: var(--px-ink);
+  pointer-events: auto;
+}
+
+.desk-map-title {
+  width: 100%;
+  margin: 0;
+  color: var(--px-ink);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.1;
+}
+
+/*
+ * At the 2x desk scale the parchment strip holds the title and the deploy
+ * stamp; the description stays in the accessibility tree and the legend's
+ * tooltip, and the narrow drawer shows it in full.
+ */
+.desk-map-description {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  color: var(--book-ink-soft);
+  font-size: 12px;
+  line-height: 1.3;
+}
+
+.desk-map-legend .desk-stamp {
+  margin-top: 6px;
+  padding: 4px 8px;
+  font-size: 11px;
+}
+
+.desk-stamp {
+  padding: 4px 8px;
+  font-size: 11px;
+}
+
+/* The deploy stamp and, beside it, the link to the map editor (add-map-editor). */
+.desk-map-actions {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  max-width: 100%;
+  margin-top: 6px;
+}
+
+.desk-map-actions .desk-stamp {
+  flex: none;
+  white-space: nowrap;
+}
+
+.desk-map-editor {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--px-ink);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font: 600 10px/1 var(--px-font);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.desk-map-editor:hover,
+.desk-map-editor:focus-visible {
+  color: var(--px-red);
+  outline: 2px solid var(--px-gold);
+  outline-offset: 2px;
+}
+
+.desk-stamp {
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 3px;
+  padding: 6px 10px;
+  border: 2px solid var(--px-gold);
+  background: var(--px-red);
+  color: var(--px-parchment);
+  clip-path: var(--px-corner);
+  box-shadow: var(--px-shadow);
+  font: 600 13px/1 var(--px-font);
+  text-shadow: 1px 1px 0 rgba(8, 5, 2, 0.6);
+  cursor: pointer;
+}
+
+.desk-stamp:hover,
+.desk-stamp:focus-visible {
+  background: #b95642;
+  color: var(--px-paper-bright, #fff4da);
+  outline: 2px solid var(--px-gold);
+  outline-offset: 2px;
+}
+
+.desk-stamp:active {
+  transform: translate(1px, 1px);
+  box-shadow: none;
+}
+
+/* --- Gramophone object ---------------------------------------------------- */
+.desk-gramophone-closed {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--desk-label-gap);
+  width: var(--art-box-w);
+  cursor: pointer;
+}
+
+.desk-gramophone-art {
+  position: relative;
+  flex: none;
+}
+
+.desk-gramophone-body,
+.desk-gramophone-body-open {
+  display: block;
+  image-rendering: pixelated;
+}
+
+.desk-gramophone-closed .desk-gramophone-art-closed,
+.desk-gramophone-closed .desk-gramophone-body {
+  width: var(--art-box-w);
+  height: var(--art-box-h);
+}
+
+/* The shadow falls from the machine, not from its label. */
+.desk-gramophone-closed .desk-gramophone-art-closed {
+  filter: var(--desk-shadow);
+}
+
+/* In the open screen the machine is a smaller illustration; the catalogue
+   gets the room. The closed desk object keeps its larger size. */
+.desk-gramophone-art-open {
+  width: 240px;
+  height: 320px;
+}
+
+.desk-gramophone-body-open {
+  width: 240px;
+  height: 320px;
+}
+
+/* The record itself stays still; only its groove highlights shimmer. */
+.desk-gramophone-grooves {
+  position: absolute;
+  top: 53.3%;
+  left: 33%;
+  width: 34%;
+  height: 18.2%;
+  image-rendering: pixelated;
+  pointer-events: none;
+  animation: desk-grooves 2.8s ease-in-out infinite;
+  animation-play-state: paused;
+}
+
+.desk-gramophone-closed[data-playing='true'] .desk-gramophone-grooves,
+.desk-gramophone-screen[data-playing='true'] .desk-gramophone-grooves {
+  animation-play-state: running;
+}
+
+.desk-gramophone-screen {
+  display: grid;
+  grid-template-columns: minmax(0, 400px) minmax(0, 1fr);
+  gap: 18px;
+  width: min(1220px, calc(100vw - 48px));
+  max-height: calc(100vh - 96px);
+  overflow: auto;
+  padding: 28px 46px 14px 22px;
+  border: 2px solid var(--book-ink);
+  background: var(--book-paper);
+  box-shadow: 6px 6px 0 rgba(8, 5, 2, 0.75);
+  clip-path: var(--px-corner);
+  color: var(--book-ink);
+}
+
+.desk-gramophone-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  min-width: 0;
+}
+
+.desk-gramophone-now {
+  width: 100%;
+  min-width: 0;
+  text-align: center;
+}
+
+.desk-gramophone-screen .gramophone-kicker {
+  color: var(--book-accent);
+  font-size: 12px;
+}
+
+.desk-gramophone-screen .gramophone-track {
+  overflow: visible;
+  color: var(--book-ink);
+  font-size: 28px;
+  text-overflow: clip;
+  white-space: normal;
+}
+
+.desk-gramophone-screen .gramophone-meta {
+  color: var(--book-ink-soft);
+  font-size: 13px;
+}
+
+.desk-gramophone-screen .gramophone-controls {
+  width: 100%;
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 2px dashed var(--book-edge);
+  justify-content: center;
+  gap: 20px;
+}
+
+.desk-gramophone-screen .gramophone-button {
+  width: 48px;
+  height: 42px;
+}
+
+.desk-gramophone-screen .gramophone-button-play {
+  width: 60px;
+  height: 46px;
+}
+
+.desk-gramophone-screen .gramophone-button svg {
+  width: 24px;
+  height: 24px;
+}
+
+.desk-gramophone-screen .gramophone-hint {
+  color: var(--book-accent);
+  font-size: 12px;
+}
+
+.desk-gramophone-facts {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px 10px;
+  margin: 6px 0 3px;
+  text-align: left;
+}
+
+.desk-gramophone-facts div {
+  min-width: 0;
+}
+
+.desk-gramophone-facts dt {
+  margin: 0;
+  color: var(--book-ink-soft);
+  font-size: 10px;
+  letter-spacing: 0.05em;
+  line-height: 1.1;
+  text-transform: uppercase;
+}
+
+.desk-gramophone-facts dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+  color: var(--book-ink);
+  font-size: 12px;
+  line-height: 1.2;
+}
+
+.desk-gramophone-dp {
+  display: inline-block;
+  margin: 2px 6px 2px 0;
+  padding: 1px 4px;
+  border: 1px solid var(--book-ink-soft);
+  color: var(--book-ink-soft);
+  font-size: 10px;
+}
+
+.desk-gramophone-source {
+  color: var(--book-accent);
+  font-size: 12px;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.desk-gramophone-rack {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 0;
+  padding-left: 18px;
+  border-left: 2px dashed var(--book-edge);
+}
+
+.desk-gramophone-rack-title {
+  margin: 0;
+  color: var(--book-accent);
+  font-size: 15px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.desk-gramophone-tracks {
+  display: block;
+  max-height: none;
+  margin: 0;
+  padding: 4px 0 0;
+  overflow: visible;
+  border-top: 2px dashed var(--book-edge);
+  list-style: none;
+}
+
+.desk-gramophone-track {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  min-height: 36px;
+  padding: 3px 8px;
+  border: 2px solid transparent;
+  border-bottom-color: rgba(90, 74, 48, 0.22);
+  background: transparent;
+  color: var(--book-ink-soft);
+  text-align: left;
+  cursor: pointer;
+}
+
+.desk-gramophone-track:hover,
+.desk-gramophone-track:focus-visible {
+  border-color: var(--book-edge);
+  background: rgba(142, 58, 44, 0.08);
+  outline: none;
+}
+
+.desk-gramophone-track.active {
+  border-color: var(--book-accent);
+  background: rgba(142, 58, 44, 0.12);
+  color: var(--book-ink);
+}
+
+.desk-gramophone-disc {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  image-rendering: pixelated;
+}
+
+.desk-gramophone-track-text {
+  display: flex;
+  flex: 1;
+  flex-direction: row;
+  align-items: baseline;
+  gap: 12px;
+  min-width: 0;
+}
+
+.desk-gramophone-track-title {
+  flex: 1;
+  overflow: hidden;
+  color: var(--book-ink);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.15;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.desk-gramophone-track-meta {
+  flex: none;
+  overflow: hidden;
+  color: var(--book-ink-soft);
+  font-size: 12px;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* --- Desk chrome ---------------------------------------------------------- */
+.desk-hint {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  margin: 0;
+  transform: translateX(-50%);
+  color: var(--px-parchment-dim);
+  font: 500 11px/1.3 var(--px-font);
+  text-shadow: 1px 1px 0 rgba(8, 5, 2, 0.8);
+  pointer-events: none;
+}
+
+.desk-reset {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 50;
+  pointer-events: auto;
+  padding: 5px 10px;
+  border: 2px solid var(--px-border);
+  background: var(--px-panel);
+  color: var(--px-parchment);
+  clip-path: var(--px-corner);
+  box-shadow: var(--px-shadow);
+  font: 600 12px/1 var(--px-font);
+  cursor: pointer;
+}
+
+.desk-reset:hover,
+.desk-reset:focus-visible {
+  border-color: var(--px-gold);
+  color: var(--px-gold);
+  outline: 2px solid var(--px-gold);
+  outline-offset: 2px;
+}
+
+@keyframes desk-page-turn {
+  from {
+    opacity: 0.2;
+    transform: scaleX(0.18);
+  }
+
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes desk-grooves {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: translateY(0);
+  }
+
+  50% {
+    opacity: 0.9;
+    transform: translateY(1px);
+  }
+}
+
+/* --- Narrow screens: a drawer of objects --------------------------------- */
+@media (max-width: 900px) {
+  /* The drawer keeps the 2x desk scale and scrolls. */
+  .desk-screen {
+    overflow: auto;
+  }
+
+  .menu-desk {
+    position: relative;
+    inset: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    min-height: 100%;
+    padding: 16px;
+    pointer-events: auto;
+  }
+
+  .desk-object {
+    position: relative;
+    left: auto !important;
+    top: auto !important;
+    visibility: visible !important;
+    touch-action: auto;
+  }
+
+  /* An open object stays in the column, full width, instead of a centred overlay. */
+  .desk-object.is-overlay {
+    position: relative;
+    top: auto;
+    left: auto;
+    width: 100%;
+    transform: none;
+  }
+
+  .desk-book-cover,
+  .desk-references-cover,
+  .desk-compass-cover,
+  .desk-theodolite-cover {
+    touch-action: auto;
+  }
+
+  .desk-object-label {
+    font-size: 12px;
+  }
+
+  /* The frame is hidden; the pages become a readable parchment stack. */
+  .desk-book-board {
+    display: none;
+  }
+
+  .desk-book-frame,
+  .desk-compendium,
+  .desk-campaign {
+    width: 100%;
+  }
+
+  .desk-book-frame {
+    aspect-ratio: auto;
+  }
+
+  .desk-book-page-left,
+  .desk-book-page-right {
+    background: none;
+    box-shadow: none;
+  }
+
+  /* The drawer stacks the pages, so they may grow; ribbons and corners follow. */
+  .desk-book-page-body {
+    overflow: visible;
+  }
+
+  .desk-book-ribbons {
+    position: static;
+    flex-wrap: wrap;
+    height: auto;
+    margin-bottom: 4px;
+  }
+
+  .desk-book-ribbon {
+    height: 28px;
+  }
+
+  .desk-book-turn {
+    position: static;
+    margin: 6px 6px 0 0;
+  }
+
+  .desk-book-pages {
+    position: static;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 38px 8px 8px;
+    border: 2px solid var(--book-leather);
+    background: var(--book-paper);
+    box-shadow: 4px 4px 0 rgba(8, 5, 2, 0.75);
+  }
+
+  .desk-book-page,
+  .desk-book-page-left,
+  .desk-book-page-right {
+    padding: 8px;
+    overflow: visible;
+  }
+
+  .desk-book-folio {
+    position: static;
+    margin-top: 4px;
+    text-align: right;
+  }
+
+  .desk-options-screen {
+    width: 100%;
+    padding: 32px 40px 18px 16px;
+  }
+
+  .desk-options-body {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .desk-options-art {
+    width: 144px;
+    height: 144px;
+  }
+
+  .desk-options-controls {
+    width: 100%;
+  }
+
+  .desk-maps {
+    width: 100%;
+  }
+
+  .desk-map-fan {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 128 / 120;
+  }
+
+  .desk-map-sheet {
+    width: 100%;
+    height: 100%;
+    transform: translate(calc(var(--i) * 4px), calc(var(--i) * 3px));
+  }
+
+  .desk-map-preview {
+    top: 8px;
+    right: 8px;
+    left: auto;
+    width: 30%;
+  }
+
+  .desk-map-legend {
+    right: 8px;
+    bottom: 8px;
+    left: 8px;
+    padding: 7px 9px 8px;
+  }
+
+  .desk-map-title {
+    font-size: 15px;
+  }
+
+  .desk-map-description {
+    position: static;
+    width: 100%;
+    height: auto;
+    margin: 3px 0 4px;
+    overflow: visible;
+    clip-path: none;
+    white-space: normal;
+  }
+
+  .desk-gramophone-art-open,
+  .desk-gramophone-body-open {
+    width: 240px;
+    height: 320px;
+  }
+
+  .desk-gramophone-closed {
+    touch-action: auto;
+  }
+
+  .desk-gramophone-screen {
+    grid-template-columns: 1fr;
+    width: 100%;
+    max-height: none;
+    padding: 34px 44px 16px 16px;
+  }
+
+  .desk-gramophone-stage {
+    align-items: flex-start;
+  }
+
+  .desk-gramophone-now {
+    text-align: left;
+  }
+
+  .desk-gramophone-screen .gramophone-track {
+    font-size: 20px;
+  }
+
+  .desk-gramophone-tracks {
+    max-height: none;
+  }
+
+  .desk-hint {
+    position: static;
+    order: 99;
+  }
+
+  .desk-reset {
+    position: fixed;
+    top: 8px;
+    right: 8px;
+  }
+}
+
+/*
+ * Held: while the player drags an object, its art lifts one art pixel and its
+ * shadow lengthens. Letting go drops it back in one dry step, with no easing.
+ * Declared after the map-sheet rules so it wins over their hover shadow.
+ */
+.desk-object :is(.desk-object-art-closed, .desk-gramophone-art-closed, .desk-map-art) {
+  transition:
+    translate 60ms steps(1, end),
+    filter 60ms steps(1, end);
+}
+
+.desk-object[data-dragging='true']
+  :is(.desk-object-art-closed, .desk-gramophone-art-closed, .desk-map-art) {
+  translate: 0 calc(var(--desk-scale) * -1px);
+  filter: var(--desk-shadow-held);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .desk-turn-next,
+  .desk-turn-prev,
+  .desk-gramophone-grooves {
+    animation: none;
+  }
+
+  /* Held objects do not move; only their shadow changes. */
+  .desk-object[data-dragging='true']
+    :is(.desk-object-art-closed, .desk-gramophone-art-closed, .desk-map-art) {
+    translate: none;
+  }
+}

@@ -27,4 +27,9 @@ describe('concealed ring', () => {
     expect(ringColorFor({ incapacitated: false, stance: 'crouched', concealed: true })).toBe(PALETTE.concealed);
     expect(ringColorFor({ incapacitated: true, stance: 'prone', concealed: true })).toBe(PALETTE.scarf);
   });
+
+  it('marks a soldier given away by his own shot (Revelado)', () => {
+    expect(ringColorFor({ incapacitated: false, stance: 'prone', revealed: true })).toBe(PALETTE.revealed);
+    expect(PALETTE.revealed).not.toBe(PALETTE.concealed);
+  });
 });

@@ -74,6 +74,34 @@ Measured hot spots and the fix for each, in order, re-profiling after each:
    which covers block sight above 1.0 m, and test only those.
 4. Hash: the cover digest is already cached; the unit JSON stays.
 
+Apply findings (2026-11-08):
+
+- Before: 500-tick windows of a 3v3 (a frame every tick) peaked at 3.8 ms
+  on Bairro and 3.3 ms on Vila Militar; the profile on Bairro was the frame
+  and its state hash 26 %, `maintainSlots` 21 % (`cachedCoverSlots` 14 %,
+  rebuilding a string key from every cover on each call), sight 9 %.
+- Changes, none of which moves a golden:
+  - `runTicks` steps the state and builds one frame at the end, instead of
+    a frame and hash per tick it dropped (the client steps two ticks).
+  - Slots: a numeric cover digest replaces the string key; slots indexed
+    by id and by 8 m cell (`coverSlotById`, `coverSlotsNear`, which keep
+    the slots' order so ties fall as before). `maintainSlots` 21 % → 3.5 %.
+  - Pathfinding: the per-cell blocked cache now runs on the feature maps
+    too (the training ground re-tested every cover per A* cell); the A*
+    weight reads the map runtime instead of the cache's presence.
+- Item 3 (sight blockers above 1.0 m per cell) dropped: the cover index
+  already files covers per 8 m cell, and the extra filter would drop no
+  cover on Bairro or Serra e Rio (none under 1.0 m); low covers still block
+  a prone eye (0.4 m).
+- After, stepped as the client at 1x, best of three runs per window: peaks
+  Vila Militar 2.24, Fazenda 2.37, Serra e Rio 2.87, Bairro 2.91 ms. Budget
+  check (`pnpm check:budget`, 3,000 ticks, mean of two runs, process CPU
+  time; also a `pnpm verify` step): 1.7 to 2.3 ms on a busy machine.
+- The frame hash (about 19 % on Bairro) is no longer computed for the
+  frames the worker posts to the game, which never read it (owner's call,
+  2026-11-08); `frame()` and `runTicks()` keep it for tests and tools, and
+  the budget check steps as the worker does.
+
 The bench gains per-map lines; the budget test fails above 3 ms (mean of
 two runs).
 
@@ -93,9 +121,9 @@ In `battle-map-layer.ts` and `cover-layer.ts`, battle maps only:
   text); `sobrado`: two rows of windows and a balcony strip.
 - `church`: a façade wider than the nave, a tower with a pyramid cap;
   `coreto`: an octagonal platform, posts and a roof.
-- Fazenda trench bays: `cut` height shapes under each bay (1.1 m deep) so
-  soldiers stand below ground; the heightfield gains a 1 m resolution patch
-  under the trench lines only (a `detail` box in the map with its own grid).
+- Fazenda trench bays: moved (2026-11-08) to `refine-map-editor`, whose
+  shared trench builder digs the Fazenda's trench lines as it digs the
+  editor's.
 - Riverbanks: gravel strip and instanced reed clumps along the deep water's
   edge, view only.
 
@@ -152,7 +180,7 @@ change re-records the map's golden with the reason.
 ## Risks / Trade-offs
 
 - [Rout ends battles too early] → the 20 % threshold and the 60 s of no
-  contact; the report's bands decide.
+  contact; the battle report shows whether battles end too soon.
 - [Search looks omniscient] → only known areas; a test proves no cheating.
 - [A 1 m heightfield patch for trenches costs memory] → only under trench
   lines (two 140 x 10 m patches).
@@ -164,6 +192,10 @@ change re-records the map's golden with the reason.
 Goldens of the three battle maps are re-recorded (decided battles, search,
 data fixes); the Vila Militar golden changes only if the search or rout rule
 fires there within 1,000 ticks (it does not: first contact is later).
+Apply finding (2026-11-08): it does change. The commander's quiet-field
+attack at about 310 ticks now heads for search areas instead of the enemy's
+deployment centroid, so every golden, Vila Militar's included, was
+re-recorded for the search.
 
 ## Open Questions
 

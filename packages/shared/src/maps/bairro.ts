@@ -1,6 +1,6 @@
 import type { CoverPoint, Vec2 } from '../protocol';
 import { buildingCover, type Building } from '../world';
-import { barricade, box, fenceCovers, lowWall, propRow, railLine, zone } from './kit';
+import { barricade, box, clutter, wallLines, fenceCovers, lowWall, propRow, railLine, zone } from './kit';
 import type { BattleMap, PropPlacement, SurfaceArea, VegetationArea } from './types';
 
 /**
@@ -29,6 +29,14 @@ const SQUARE = { minX: -40, maxX: 40, minY: -30, maxY: 30 };
 const LOT = 8;
 const HOUSE_WIDTH = 6;
 const HOUSE_DEPTH = 7;
+/**
+ * refine-battle-maps: the walls between quintais start this far (m) behind
+ * the houses. Two neighbours' side passages meet in one gap between their
+ * houses; a wall flush with the houses split that gap and, with the
+ * pathfinder's clearance, shut both passages. Behind the houses the passage
+ * opens on a strip from which both quintais are entered.
+ */
+const YARD_GATE = 2.5;
 
 let nextId = 801;
 const id = () => nextId++;
@@ -37,6 +45,8 @@ const BUILDINGS: Building[] = [];
 const COVERS: CoverPoint[] = [];
 const FENCES: Vec2[][] = [];
 const YARDS: VegetationArea[] = [];
+/** Every quintal, for the searching side (refine-battle-maps). */
+const QUINTAIS: Vec2[][] = [];
 
 /**
  * One face of a block: lots side by side along a street at `streetY`, each
@@ -49,7 +59,8 @@ function houseRow(fromX: number, toX: number, streetY: number, depth: number, in
   const start = fromX + (toX - fromX - count * LOT) / 2;
   const backY = streetY + inward * depth;
   const wallFrom = streetY + inward * (HOUSE_DEPTH + 0.4);
-  const wallLength = Math.abs(backY - wallFrom);
+  const dividerFrom = wallFrom + inward * YARD_GATE;
+  const dividerLength = Math.abs(backY - dividerFrom);
   for (let lot = 0; lot < count; lot += 1) {
     const left = start + lot * LOT;
     // The house on the street line, its 2 m side passage alternating sides.
@@ -63,13 +74,15 @@ function houseRow(fromX: number, toX: number, streetY: number, depth: number, in
       halfWidth: HOUSE_WIDTH / 2,
       halfDepth: HOUSE_DEPTH / 2,
       height: 4 + ((lot * 7 + seed) % 3) * 0.3,
+      front: inward === 1 ? -1 : 1,
     });
+    QUINTAIS.push([...box(left, Math.min(wallFrom, backY), left + LOT, Math.max(wallFrom, backY))]);
     // The wall or fence between this quintal and the last.
     if (lot > 0) {
       if ((lot + seed) % 3 === 0) {
-        FENCES.push([{ x: left, y: wallFrom }, { x: left, y: backY }]);
+        FENCES.push([{ x: left, y: dividerFrom }, { x: left, y: backY }]);
       } else {
-        COVERS.push(lowWall(id(), left, (wallFrom + backY) / 2, wallLength / 2, Math.PI / 2, 1.8));
+        COVERS.push(lowWall(id(), left, (dividerFrom + backY) / 2, dividerLength / 2, Math.PI / 2, 1.8));
       }
     }
     // Some quintais are let go to tall grass, or planted with corn.
@@ -85,7 +98,7 @@ function houseRow(fromX: number, toX: number, streetY: number, depth: number, in
   }
   // The row's end walls and the back wall where the quintais meet.
   for (const x of [start, start + count * LOT]) {
-    COVERS.push(lowWall(id(), x, (wallFrom + backY) / 2, wallLength / 2, Math.PI / 2, 1.8));
+    COVERS.push(lowWall(id(), x, (dividerFrom + backY) / 2, dividerLength / 2, Math.PI / 2, 1.8));
   }
   for (let x = start; x < start + count * LOT - 0.1; x += 12) {
     const to = Math.min(x + 12, start + count * LOT);
@@ -111,6 +124,7 @@ function shopRow(streetEdge: number, fromY: number, toY: number, outward: 1 | -1
       halfWidth: frontage / 2 - 0.4,
       halfDepth: depth / 2,
       height: kind === 3 ? 7.5 : 5,
+      front: outward,
     });
   }
   const backX = streetEdge + outward * (depth + 7);
@@ -184,7 +198,21 @@ const SURFACES: SurfaceArea[] = [
   { surface: 'dirt-road', strip: { points: [{ x: -EDGE, y: -118 }, { x: EDGE, y: -118 }], width: 8 } },
 ];
 
+/**
+ * refine-battle-maps 5.7: the praça was 70 m of open cobbles astride the
+ * lanes either side of the main street. A cart on its west side; on the
+ * east, a venda's delivery of barrels and crates.
+ */
+const PRACA = clutter(5000, [
+  { model: 'cart', x: -21, y: 2, rotation: 0.2 },
+  { model: 'barrel', x: 18.6, y: -3 },
+  { model: 'barrel', x: 19.5, y: -2.2 },
+  { model: 'crate', x: 20.6, y: -3.6 },
+  { model: 'crate', x: 21.3, y: -2.4, rotation: 0.3 },
+]);
+
 const PROPS: PropPlacement[] = [
+  ...PRACA.props,
   ...propRow('lamp', [{ x: 8, y: -150 }, { x: 8, y: 150 }], 24),
   ...propRow('lamp', [{ x: -8, y: -150 }, { x: -8, y: 150 }], 24),
   // The tram up the main street, the railway on its embankment.
@@ -226,7 +254,8 @@ export const BAIRRO: BattleMap = {
     { kind: 'tall-grass', polygon: box(110, 100, EDGE, EDGE) },
   ],
   buildings: BUILDINGS,
-  covers: [...COVERS, ...fenceCovers(4000, FENCES), ...BUILDINGS.map(buildingCover)],
+  // refine-battle-maps 5.1: the walls are plastered, drawn by the map layer.
+  covers: [...COVERS.map((cover) => (cover.kind === 'low-wall' ? { ...cover, drawnBy: 'map' as const } : cover)), ...PRACA.covers, ...fenceCovers(4000, FENCES), ...BUILDINGS.map(buildingCover)],
   sightObstacles: [],
   deployment: {
     column: zone([-60, 0, 60], 90, -1),
@@ -234,5 +263,8 @@ export const BAIRRO: BattleMap = {
   },
   props: PROPS,
   fences: FENCES,
+  fenceStyle: 'boards',
+  lines: wallLines(COVERS.filter((cover) => cover.kind === 'low-wall'), 'brick-wall'),
+  yards: QUINTAIS,
   palette: 'urban',
 };

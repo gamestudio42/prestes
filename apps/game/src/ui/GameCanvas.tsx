@@ -7,6 +7,7 @@ import { type CommanderBalloon,
   type TrainingMarker,
 } from '@prestes/view3d';
 import { coverAgainst, dragSpacing, type PreviewPlan, type SlotMarker, type Vec2 } from '@prestes/shared';
+import { translate, type Locale } from '@prestes/content';
 import type { GameClient } from '../client/GameClient';
 import type { AudioListener } from '../audio/ShotAudio';
 
@@ -151,6 +152,8 @@ export function GameCanvas({
       (window as unknown as { __prestesScene?: unknown }).__prestesScene = {
         groundToScreen: (x: number, y: number) => scene.groundToScreen(x, y),
         focusOn: (x: number, y: number) => scene.focusOn(x, y),
+        view: () => scene.view(),
+        deploymentMarks: () => scene.deploymentMarksShown(),
         setBand: (band: 'tactical' | 'strategic') => scene.setBand(band),
         effects: () => scene.effectsState(),
         clips: (unitId: number) => scene.clipState(unitId),
@@ -231,6 +234,16 @@ export function GameCanvas({
   useEffect(() => {
     sceneRef.current?.setCommanderBalloon(commanderBalloon);
   }, [balloonKey, client]);
+
+  // refine-battle-maps 6.2: the opening deployment marks, labelled in the player's language.
+  useEffect(() => {
+    if (trainingField) return;
+    const language: Locale = locale === 'pt-BR' ? 'pt-BR' : 'en';
+    sceneRef.current?.setDeploymentLabels({
+      own: translate(language, 'battle.deploymentOwn'),
+      enemy: translate(language, 'battle.deploymentEnemy'),
+    });
+  }, [locale, client, trainingField]);
 
   const focusKey = cameraFocus?.key ?? null;
   useEffect(() => {

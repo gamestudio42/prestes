@@ -2,18 +2,15 @@ import { expect, test } from '@playwright/test';
 
 test('boots, selects a section, gives orders, fights and toggles the post', async ({ page }) => {
   await page.goto('/');
-  await expect(page.getByTestId('start-screen')).toBeVisible();
+  await expect(page.getByTestId('menu-desk')).toBeVisible();
 
   await page.getByTestId('menu-mark-options').click();
   await page.getByTestId('language-select').selectOption('pt-BR');
-  await page.getByTestId('menu-mark-campaign').click();
-  // retire-bootcamp: the campaign page leads to the skirmish.
-  await expect(page.getByTestId('start-button')).toHaveText('Jogar escaramuça');
+  await expect(page.getByTestId('menu-mark-campaign')).toContainText('Campanha');
 
   await page.reload();
-  await expect(page.getByTestId('start-button')).toHaveText('Jogar escaramuça');
+  await expect(page.getByTestId('menu-mark-campaign')).toContainText('Campanha');
 
-  await page.getByTestId('start-button').click();
   await page.getByTestId('start-battle-3v3').click();
   await expect(page.getByTestId('hud')).toBeVisible();
   await page.evaluate(() => document.fonts.ready);

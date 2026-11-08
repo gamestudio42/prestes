@@ -69,6 +69,17 @@ async function tick(): Promise<void> {
 }
 
 describe('Gramophone', () => {
+  it('selects a track from the record rack and starts it', async () => {
+    const output = new FakeOutput();
+    const gramophone = engineWith(output);
+
+    gramophone.select(2);
+    await tick();
+
+    expect(gramophone.track.title).toBe('Argentina');
+    expect(output.plays.at(-1)).toEqual({ src: './music/argentina.mp3', fade: 3 });
+  });
+
   it('starts on Plangente with the long first fade', async () => {
     const output = new FakeOutput();
     const gramophone = engineWith(output);

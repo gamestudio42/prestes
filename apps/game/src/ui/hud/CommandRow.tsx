@@ -13,6 +13,11 @@ interface CommandRowProps {
   stance: Stance;
   /** Soldiers of the section hidden in vegetation (add-battle-maps). */
   concealedCount?: number;
+  /** Soldiers given away by their own fire, "Revelado" (refine-battle-maps 5.14). */
+  revealedCount?: number;
+  /** Soldiers aboard the ferry and waiting at a landing for it (refine-battle-maps 5.4). */
+  ferryAboard?: number;
+  ferryWaiting?: number;
   pendingOrder: OrderMode | null;
   pendingTactical: TacticalOrder | null;
   aimPending: boolean;
@@ -28,6 +33,9 @@ export function CommandRow({
   currentOrder,
   stance,
   concealedCount = 0,
+  revealedCount = 0,
+  ferryAboard = 0,
+  ferryWaiting = 0,
   pendingOrder,
   pendingTactical,
   aimPending,
@@ -61,6 +69,28 @@ export function CommandRow({
         <Tooltip title={t('hud.concealed')} description={t('hud.concealedHint')}>
           <span className="hud-concealed-value" data-testid="concealed-value" data-concealed={concealedCount}>
             {t('hud.concealed')}: {concealedCount}
+          </span>
+        </Tooltip>
+      ) : null}
+      {revealedCount > 0 ? (
+        <Tooltip title={t('hud.revealed')} description={t('hud.revealedHint')}>
+          <span className="hud-concealed-value hud-revealed-value" data-testid="revealed-value" data-revealed={revealedCount}>
+            {t('hud.revealed')}: {revealedCount}
+          </span>
+        </Tooltip>
+      ) : null}
+      {ferryAboard + ferryWaiting > 0 ? (
+        <Tooltip title={t('hud.ferry')} description={t('hud.ferryHint')}>
+          <span
+            className="hud-ferry-value"
+            data-testid="ferry-value"
+            data-aboard={ferryAboard}
+            data-waiting={ferryWaiting}
+          >
+            <span className="hud-ferry-icon" aria-hidden="true">{ferryWaiting > 0 ? '⧖' : '≈'}</span>
+            {t('hud.ferry')}: {ferryWaiting > 0 ? t('hud.ferryWaiting', { count: ferryWaiting }) : ''}
+            {ferryWaiting > 0 && ferryAboard > 0 ? ' · ' : ''}
+            {ferryAboard > 0 ? t('hud.ferryAboard', { count: ferryAboard }) : ''}
           </span>
         </Tooltip>
       ) : null}

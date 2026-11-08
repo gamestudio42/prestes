@@ -1,4 +1,5 @@
 import type { BattleMapId } from './maps/types';
+import type { MapDocument } from './maps/document';
 import type { Gait } from './gait';
 import type { WeaponId } from './weapons';
 
@@ -30,6 +31,11 @@ export interface CoverPoint {
   quality: number;
   blocksMovement: boolean;
   blocksSight: boolean;
+  /**
+   * add-map-editor: the map layer draws this cover as its object (a boulder,
+   * a cart, a wall); the cover layer leaves it alone.
+   */
+  drawnBy?: 'map';
 }
 
 export interface SightObstacle {
@@ -164,8 +170,12 @@ export interface UnitSnapshot {
   gait?: Gait;
   /** add-battle-maps: hidden by the vegetation he is in (the view marks it). */
   concealed?: boolean;
+  /** refine-battle-maps 5.14: in the vegetation but given away by his own shot ("Revelado"). */
+  revealed?: boolean;
   /** add-battle-maps: aboard a ferry. */
   aboardFerry?: boolean;
+  /** refine-battle-maps 5.4: at a landing, waiting for the ferry. */
+  waitingFerry?: boolean;
 }
 
 export interface RosterRecord {
@@ -279,6 +289,11 @@ export type SimEvent =
   | { type: 'order_interrupted'; tick: number; unitId: number; order: UnitOrder }
   | { type: 'outcome'; tick: number; outcome: Outcome }
   /**
+   * refine-battle-maps: a broken side (under a fifth of its strength, no
+   * contact for 60 s) falls back off the field; its fit men rout.
+   */
+  | { type: 'side_fell_back'; tick: number; side: Faction }
+  /**
    * fog-of-war: a shot by a soldier the target's side does not see. The marker
    * lies near the shooter, off by up to `radius` metres; it never names him.
    */
@@ -314,6 +329,12 @@ export type WorkerRequest =
       scenario?: 'bootcamp' | 'battle3v3';
       /** add-battle-maps: the 3v3's battle map. */
       battleMap?: BattleMapId;
+      /**
+       * add-map-editor: an unsaved map (the editor's playtest). The worker
+       * compiles it itself and registers it under its id, which `battleMap`
+       * then names.
+       */
+      mapDocument?: MapDocument;
     }
   | { type: 'command'; command: Command }
   | { type: 'step'; ticks: number };

@@ -6,7 +6,8 @@ confidence: high
 sourceRefs:
   - macaulay-1974
   - helio-1922
-status: draft
+status: applied
+runtimeId: forte-copacabana
 ---
 
 # Forte de Copacabana
@@ -21,6 +22,39 @@ the fort. The beach is the prologue's battlefield.
 tomaram o forte. A praia é o campo de batalha do prólogo.
 
 ## Extended note
+
+The Forte de Copacabana was one of the centres of the 1922 Rio rising. The plan
+depended on a coordinated movement that did not happen: the Realengo cadets were
+fired on at Vila Militar, and the government closed in on the fort. The garrison
+did not wait to be taken. The rebels marched out along the beach and fought
+there.
+
+The fort is a place of memory; the beach is where the fighting happened. The
+legend of the 18 do Forte belongs to both. The fort's exact plan, garrison and
+armament are still gaps in the sources, and the game's beach is not a survey.
+
+Prestes was not there. The fort is Siqueira Campos's ground; the column will be
+Prestes's.
+
+## Nota estendida (PT-BR)
+
+O Forte de Copacabana foi um dos centros do levante de 1922 no Rio. O plano
+dependia de um movimento coordenado que não aconteceu: os cadetes do Realengo
+foram recebidos a tiros na Vila Militar, e o governo cercou o forte. A guarnição
+não esperou ser tomada. Os rebeldes saíram marchando pela praia e combateram
+ali.
+
+O forte é um lugar de memória; a praia é onde o combate aconteceu. A lenda dos
+18 do Forte pertence aos dois. A planta exata do forte, a guarnição e o
+armamento ainda são lacunas nas fontes, e a praia do jogo não é um
+levantamento.
+
+Prestes não estava lá. O forte é o terreno de Siqueira Campos; a coluna será de
+Prestes.
+
+## Design notes
+
+Designer notes kept from the draft; not shown to the player.
 
 The Forte de Copacabana was one of the centers of the 1922 Rio rising. The plan
 depended on a coordinated movement that did not happen: the Realengo cadets were
@@ -77,9 +111,35 @@ labels.
 **Negative:** satellite imagery, modern city, online map style, traced
 historical plan, text, watermark.
 
+## Images
+
+![Garrison of the Forte de Copacabana, 1922. Pixel-treated historical photograph.](../../../../apps/game/public/assets/compendium/forte-copacabana/hero-photo.png)
+
+_Garrison of the Forte de Copacabana, 1922. Pixel-treated historical photograph.
+Credit: CPDOC/RCL foto 001._
+
+![The main gate of the Forte de Copacabana occupied by legalist forces, 1922.](../../../../apps/game/public/assets/compendium/forte-copacabana/gate-photo.png)
+
+_The main gate of the Forte de Copacabana occupied by legalist forces, *O
+Jornal*, 9 July 1922. Pixel-treated historical photograph._
+
+![Map of Copacabana and the fort, 1922.](../../../../apps/game/public/assets/compendium/forte-copacabana/fort-plan.png)
+
+_Map of Copacabana and the fort, 1922. Historical map, Serviço Geográfico
+Militar. Kept in RGB so the labels stay readable._
+
+## Player captions
+
+| Slot | Caption (EN) | Legenda (PT-BR) | Credit (EN) | Crédito (PT-BR) |
+| --- | --- | --- | --- | --- |
+| `hero-photo` | Garrison of the Forte de Copacabana, 1922. | Guarnição do Forte de Copacabana, 1922. | CPDOC, via Wikimedia Commons | CPDOC, via Wikimedia Commons |
+| `fort-plan` | Map of Copacabana and the fort, 1922. | Mapa de Copacabana e do forte, 1922. | Serviço Geográfico Militar, via Wikimedia Commons | Serviço Geográfico Militar, via Wikimedia Commons |
+| `gate-photo` | The main gate of the fort occupied by legalist forces, O Jornal, 9 July 1922. | O portão principal do forte ocupado pelas forças legalistas, O Jornal, 9 de julho de 1922. | O Jornal, via Wikimedia Commons | O Jornal, via Wikimedia Commons |
+
 ## Sources
 
-- `macaulay-1974`, ch. II, pp. 37-38: the fort and the 1922 rising.
+- `macaulay-1974`, ch. I, pp. 26-29: the fort, the sortie and the 1922 rising.
+- `macaulay-1974`, ch. II, pp. 37-38: Prestes's typhoid absence.
 - `helio-1922`: citation-only; the fort's plan and garrison still need
   page-level notes.
 - `castro-2022`: tenentismo context, not a Forte narrative.

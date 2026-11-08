@@ -1,36 +1,24 @@
 import { expect, test } from '@playwright/test';
 
-test('the compendium opens on a section, reads an entry and follows the language', async ({ page }) => {
+// The desk compendium in Portuguese: a section, an entry with its sources and
+// confidence, and the corrections. Page turning, ribbons and the locale switch
+// are covered in desk-books.spec.ts.
+test('the compendium opens on a section and reads an entry with its sources', async ({ page }) => {
+  await page.addInitScript(() => window.localStorage.setItem('prestes.locale', 'pt-BR'));
   await page.goto('/');
-  await page.evaluate(() => window.localStorage.setItem('prestes.locale', 'pt-BR'));
-  await page.reload();
   await page.getByTestId('start-codex').click();
   await expect(page.getByTestId('codex')).toBeVisible();
   await page.getByTestId('codex-tab-events').click();
   await page.getByTestId('codex-entry-revolt-1922').click();
   await expect(page.getByTestId('codex-page')).toContainText('1922-07-05');
   await expect(page.getByTestId('codex-page')).toContainText('Revolta dos 18 do Forte');
-  await expect(page.getByTestId('codex-source')).toContainText('Macaulay, ch. II, pp. 37–38');
-  await expect(page.getByTestId('codex-confidence')).toContainText('alta');
+  await expect(page.getByTestId('book-confidence')).toContainText('alta');
+  // A long entry continues on the next spread; its sources close it.
+  for (let i = 0; i < 4 && (await page.getByTestId('book-sources').count()) === 0; i++) {
+    await page.keyboard.press('ArrowRight');
+  }
+  await expect(page.getByTestId('book-sources').first()).toContainText('Macaulay');
 
-  await page.getByTestId('codex-tab-corrections').click();
+  await page.getByTestId('book-ribbon-corrections').click();
   await expect(page.getByTestId('codex-page')).toContainText('Prestes não estava no Forte');
-
-  // In English the tabs, the entry and its confidence change too.
-  // The page corners turn through the entries, one per page.
-  await page.getByTestId('codex-tab-events').click();
-  await page.getByTestId('book-page-next').click();
-  await expect(page.getByTestId('codex-page')).not.toContainText('Revolta dos 18 do Forte');
-  await page.getByTestId('book-page-prev').click();
-  await expect(page.getByTestId('codex-page')).toContainText('Revolta dos 18 do Forte');
-
-  await page.getByTestId('menu-mark-options').click();
-  await page.getByTestId('language-select').selectOption('en');
-  await page.getByTestId('start-codex').click();
-  await page.getByTestId('codex-tab-events').click();
-  await page.getByTestId('codex-entry-revolt-1922').click();
-  await expect(page.getByTestId('codex-tab-events')).toHaveText('Events');
-  await expect(page.getByTestId('codex-page')).toContainText('Revolt of the 18 of the Fort');
-  await expect(page.getByTestId('codex-confidence')).toContainText('high');
-  await page.evaluate(() => window.localStorage.setItem('prestes.locale', 'pt-BR'));
 });

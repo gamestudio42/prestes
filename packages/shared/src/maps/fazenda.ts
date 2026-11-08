@@ -1,8 +1,8 @@
 import type { CoverPoint } from '../protocol';
 import { buildingCover, type Building } from '../world';
-import { box, communicationTrench, fenceCovers, lowWall, propRow, trenchLine, zone } from './kit';
+import { box, clutter, communicationTrench, wallLines, fenceCovers, lowWall, propRow, roadDitches, trenchLine, zone } from './kit';
 import type { Vec2 } from '../protocol';
-import type { BattleMap, PropPlacement } from './types';
+import type { BattleMap, PropPlacement, Strip } from './types';
 
 /**
  * Fazenda (add-battle-maps): a coffee and sugarcane fazenda of the São Paulo
@@ -37,6 +37,23 @@ const BUILDINGS: Building[] = [
   { id: 412, model: 'farmhouse', x: -60, y: -150, rotation: 0.2, halfWidth: 4.35, halfDepth: 2.85, height: 4.8 },
 ];
 
+/** The farm road north to south between the lines, and its branches to the casa-sede and west. */
+const MAIN_ROAD: Strip = { points: [{ x: 22, y: 200 }, { x: 18, y: 100 }, { x: 24, y: 0 }, { x: 18, y: -100 }, { x: 22, y: -200 }], width: 4 };
+const SEDE_ROAD: Strip = { points: [{ x: 24, y: 0 }, { x: 80, y: 6 }, { x: 132, y: 4 }], width: 3.5 };
+const WEST_ROAD: Strip = { points: [{ x: 18, y: 100 }, { x: -60, y: 92 }, { x: -140, y: 84 }], width: 3.5 };
+
+/**
+ * refine-battle-maps 5.5: drainage ditches (valas) on both sides of the main
+ * road for its whole length and on the north side of each branch (left on
+ * the casa-sede road as it runs east, right on the west road as it runs
+ * west), where a man finds a trench's cover and a slot.
+ */
+const DITCHES = [
+  roadDitches(2000, MAIN_ROAD, 'both'),
+  roadDitches(2200, SEDE_ROAD, 'left'),
+  roadDitches(2300, WEST_ROAD, 'right'),
+];
+
 const LINES: CoverPoint[] = [
   ...[-44, 0, 44].flatMap((x, index) => trenchLine(600 + index * 10, x, -80, 1)),
   ...[-44, 0, 44].flatMap((x, index) => trenchLine(630 + index * 10, x, 80, -1)),
@@ -50,6 +67,29 @@ const LINES: CoverPoint[] = [
   lowWall(671, 160, -56, 10),
   lowWall(672, 120, 14, 8, Math.PI / 2, 1.1),
 ];
+
+/**
+ * refine-battle-maps 5.7: the pasture between the lines was open for 130 to
+ * 150 m. On the column's side an old stone field wall, broken in places and
+ * gapped at the road (a cart stands by the gap); on the legalist side the
+ * farm's clutter: a haystack, a woodpile, a fallen tree, a cart by the road,
+ * a trough and a heap of field stones.
+ */
+const FIELD_WALL: CoverPoint[] = [
+  lowWall(940, -46, 31, 6, 0.05, 1.1),
+  lowWall(941, -24, 29, 5, -0.04, 1.1),
+  lowWall(942, -1, 30, 6, 0.03, 1.1),
+  lowWall(943, 38, 32, 7, -0.06, 1.1),
+];
+const FIELD = clutter(950, [
+  { model: 'cart', x: 29.5, y: 33, rotation: 0.15 },
+  { model: 'haystack', x: -41, y: -27 },
+  { model: 'woodpile', x: -19, y: -33, rotation: 0.4 },
+  { model: 'fallen-log', x: -2, y: -29, rotation: -0.2 },
+  { model: 'cart', x: 14, y: -31, rotation: -0.1 },
+  { model: 'water-trough', x: 39, y: -26, rotation: 0.3 },
+  { model: 'stone-pile', x: 46, y: -34 },
+]);
 
 /** Coffee rows 4 m apart, each broken by a carreador (a cart track) across the grove. */
 const COFFEE_ROWS: Vec2[][] = [];
@@ -123,15 +163,16 @@ export const FAZENDA: BattleMap = {
       { kind: 'hill', x: 0, y: -170, radiusX: 120, radiusY: 40, height: 3 },
       // A shallow swale between the lines.
       { kind: 'channel', points: [{ x: -200, y: 6 }, { x: -60, y: -4 }, { x: 60, y: 8 }, { x: 200, y: -2 }], width: 6, bank: 24, depth: 1.2 },
+      ...DITCHES.flatMap((ditch) => ditch.shapes),
     ],
   },
   baseSurface: 'pasture',
   surfaces: [
     { surface: 'crop', polygon: box(-120, -62, -56, 50) },
     { surface: 'crop', polygon: box(64, -40, 124, 28) },
-    { surface: 'dirt-road', strip: { points: [{ x: 22, y: 200 }, { x: 18, y: 100 }, { x: 24, y: 0 }, { x: 18, y: -100 }, { x: 22, y: -200 }], width: 4 } },
-    { surface: 'dirt-road', strip: { points: [{ x: 24, y: 0 }, { x: 80, y: 6 }, { x: 132, y: 4 }], width: 3.5 } },
-    { surface: 'dirt-road', strip: { points: [{ x: 18, y: 100 }, { x: -60, y: 92 }, { x: -140, y: 84 }], width: 3.5 } },
+    { surface: 'dirt-road', strip: MAIN_ROAD },
+    { surface: 'dirt-road', strip: SEDE_ROAD },
+    { surface: 'dirt-road', strip: WEST_ROAD },
     { surface: 'mud', polygon: box(152, -54, 168, -38) },
   ],
   water: [],
@@ -149,10 +190,14 @@ export const FAZENDA: BattleMap = {
   ],
   buildings: BUILDINGS,
   covers: [
-    ...LINES,
+    ...LINES.map((cover) => (cover.kind === 'low-wall' ? { ...cover, drawnBy: 'map' as const } : cover)),
+    ...FIELD_WALL.map((cover) => ({ ...cover, drawnBy: 'map' as const })),
+    ...FIELD.covers,
     ...BUILDINGS.map(buildingCover),
     ...fenceCovers(680, FENCES),
-    ...fenceCovers(720, COFFEE_ROWS, 1.6),
+    // refine-battle-maps: from 1000; at 720 they shared ids with the fences (680 on).
+    ...fenceCovers(1000, COFFEE_ROWS, 1.6),
+    ...DITCHES.flatMap((ditch) => ditch.covers),
   ],
   sightObstacles: [],
   deployment: {
@@ -162,11 +207,18 @@ export const FAZENDA: BattleMap = {
   props: [
     ...COFFEE,
     ...TREES,
+    ...FIELD.props,
     { model: 'cart', x: -136, y: 88, rotation: 0.4 },
     { model: 'haystack', x: 100, y: 64 },
     { model: 'haystack', x: 104, y: 68, scale: 0.8 },
     { model: 'well', x: 168, y: 80 },
   ],
   fences: FENCES,
+  fenceStyle: 'wire',
+  // refine-battle-maps 5.1: dry-stone field and corral walls, the casa-sede's plastered yard wall.
+  lines: [
+    ...wallLines([...FIELD_WALL, ...LINES.filter((cover) => cover.id === 670 || cover.id === 671)], 'stone-wall'),
+    ...wallLines(LINES.filter((cover) => cover.id === 672), 'brick-wall'),
+  ],
   palette: 'temperate',
 };

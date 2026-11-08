@@ -886,8 +886,32 @@
   white-space: nowrap;
 }
 
+.hud-revealed-value {
+  color: #e08a4a;
+}
+
 .hud-concealed-value::before {
   content: '·';
   margin-right: 10px;
   color: var(--hud-border-soft);
+}
+
+/* refine-battle-maps 5.4: the section at the ferry. */
+.hud-ferry-value {
+  color: #9fc3c4;
+  font-family: var(--px-font);
+  font-size: 12px;
+  letter-spacing: 0;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.hud-ferry-value::before {
+  content: '·';
+  margin-right: 10px;
+  color: var(--hud-border-soft);
+}
+
+.hud-ferry-icon {
+  margin-right: 6px;
 }

@@ -265,18 +265,89 @@ export function pickSlots(
   return assigned;
 }
 
-const slotCache = new WeakMap<readonly CoverPoint[], { key: string; slots: CoverSlot[] }>();
+/** Slot index cell size (m). */
+const SLOT_CELL = 8;
+
+interface SlotIndex {
+  key: number;
+  length: number;
+  slots: CoverSlot[];
+  byId: Map<number, CoverSlot>;
+  /** Slot positions in `slots` by 8 m cell. */
+  cells: Map<number, number[]>;
+}
+
+const slotCache = new WeakMap<readonly CoverPoint[], SlotIndex>();
+
+/**
+ * A numeric digest of every cover's id, position and rotation: the cache key.
+ * refine-battle-maps: it was a joined string of the same fields, rebuilt on
+ * every call (each soldier, each tick).
+ */
+function coversKey(covers: readonly CoverPoint[]): number {
+  let hash = 2166136261;
+  const mix = (value: number) => {
+    hash = Math.imul(hash ^ Math.round(value * 1000), 16777619);
+  };
+  for (const cover of covers) {
+    mix(cover.id);
+    mix(cover.x);
+    mix(cover.y);
+    mix(cover.rotation ?? 0);
+  }
+  return hash >>> 0;
+}
+
+const cellKey = (cx: number, cy: number) => cx * 100003 + cy;
+
+function slotIndex(covers: readonly CoverPoint[]): SlotIndex {
+  const key = coversKey(covers);
+  const cached = slotCache.get(covers);
+  if (cached && cached.key === key && cached.length === covers.length) {
+    return cached;
+  }
+  const slots = allCoverSlots(covers);
+  const byId = new Map<number, CoverSlot>();
+  const cells = new Map<number, number[]>();
+  slots.forEach((slot, index) => {
+    // The first slot of an id wins, as a search through `slots` finds it.
+    if (!byId.has(slot.id)) byId.set(slot.id, slot);
+    const cell = cellKey(Math.floor(slot.x / SLOT_CELL), Math.floor(slot.y / SLOT_CELL));
+    const list = cells.get(cell);
+    if (list) list.push(index);
+    else cells.set(cell, [index]);
+  });
+  const index: SlotIndex = { key, length: covers.length, slots, byId, cells };
+  slotCache.set(covers, index);
+  return index;
+}
 
 /** `allCoverSlots`, cached per cover array until the cover set changes. */
 export function cachedCoverSlots(covers: readonly CoverPoint[]): CoverSlot[] {
-  const key = covers.map((cover) => `${cover.id}:${cover.x}:${cover.y}:${cover.rotation ?? 0}`).join('|');
-  const cached = slotCache.get(covers);
-  if (cached && cached.key === key) {
-    return cached.slots;
+  return slotIndex(covers).slots;
+}
+
+/** One cover slot by id (cached). */
+export function coverSlotById(covers: readonly CoverPoint[], id: number): CoverSlot | undefined {
+  return slotIndex(covers).byId.get(id);
+}
+
+/**
+ * Every cached slot that may lie within `radius` of a point (the slots of the
+ * 8 m cells the circle touches), in `cachedCoverSlots` order, so a search
+ * over them breaks ties as a search over all slots does.
+ */
+export function coverSlotsNear(covers: readonly CoverPoint[], x: number, y: number, radius: number): CoverSlot[] {
+  const index = slotIndex(covers);
+  const found: number[] = [];
+  for (let cx = Math.floor((x - radius) / SLOT_CELL); cx <= Math.floor((x + radius) / SLOT_CELL); cx += 1) {
+    for (let cy = Math.floor((y - radius) / SLOT_CELL); cy <= Math.floor((y + radius) / SLOT_CELL); cy += 1) {
+      const list = index.cells.get(cellKey(cx, cy));
+      if (list) found.push(...list);
+    }
   }
-  const slots = allCoverSlots(covers);
-  slotCache.set(covers, { key, slots });
-  return slots;
+  found.sort((left, right) => left - right);
+  return found.map((position) => index.slots[position]!);
 }
 
 export interface CoverSlotPlan {

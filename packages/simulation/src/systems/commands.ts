@@ -191,6 +191,8 @@ export function applyCommand(
       for (const unit of actionable) {
         unit.fireOnContact = command.order === 'ambush';
         unit.holdFire = command.order === 'reserve';
+        unit.fireControlSet = true;
+        unit.autoContact = undefined;
       }
       return;
     }
@@ -226,6 +228,8 @@ export function applyCommand(
     for (const unit of actionable) {
       unit.holdFire = command.hold;
       unit.fireOnContact = false;
+      unit.fireControlSet = true;
+      unit.autoContact = undefined;
     }
     return;
   }
@@ -234,6 +238,8 @@ export function applyCommand(
     for (const unit of actionable) {
       unit.holdFire = command.mode === 'hold';
       unit.fireOnContact = command.mode === 'contact';
+      unit.fireControlSet = true;
+      unit.autoContact = undefined;
     }
     return;
   }

@@ -31,6 +31,10 @@ export class CameraRig {
   yaw = Math.PI / 4;
   targetYaw = Math.PI / 4;
   pixelsHigh = 300;
+  /** The widest zoom (the editor widens it to frame a large map). */
+  maxSpan = MAX_SPAN;
+  /** A fixed tilt instead of the zoom's (the editor's top-down mode). */
+  tiltOverride: number | null = null;
 
   private aspect = 16 / 9;
   private readonly right = new THREE.Vector3();
@@ -61,6 +65,7 @@ export class CameraRig {
   }
 
   get tilt(): number {
+    if (this.tiltOverride !== null) return this.tiltOverride;
     return TACTICAL_TILT + (STRATEGIC_TILT - TACTICAL_TILT) * this.strategicBlend;
   }
 
@@ -70,7 +75,7 @@ export class CameraRig {
 
   zoom(notches: number): void {
     const factor = notches > 0 ? Math.pow(1.18, notches) : Math.pow(0.85, -notches);
-    this.targetSpan = clamp(this.targetSpan * factor, MIN_SPAN, MAX_SPAN);
+    this.targetSpan = clamp(this.targetSpan * factor, MIN_SPAN, this.maxSpan);
   }
 
   rotate(steps: number): void {

@@ -5,6 +5,7 @@ import {
   type Command,
   type Frame,
   type InterpolatedFrame,
+  type MapDocument,
   type SimEvent,
   type WorkerRequest,
   type WorkerResponse,
@@ -25,6 +26,8 @@ export interface GameClientOptions {
   scenario?: 'bootcamp' | 'battle3v3';
   /** add-battle-maps: the 3v3's battle map. */
   battleMap?: BattleMapId;
+  /** add-map-editor: an unsaved map to play (the editor's playtest); `battleMap` is its id. */
+  mapDocument?: MapDocument;
   onFrame?: (frame: Frame) => void;
   onEvent?: (event: SimEvent) => void;
 }
@@ -46,6 +49,7 @@ export class GameClient {
   private readonly opposition?: boolean;
   private readonly scenario?: 'bootcamp' | 'battle3v3';
   readonly battleMap?: BattleMapId;
+  private readonly mapDocument?: MapDocument;
   private bounding?: boolean;
   private timer: number | null = null;
   /** Half ticks owed: the interval runs every 100 ms, the speed is per 200 ms. */
@@ -65,6 +69,7 @@ export class GameClient {
     this.bounding = options.bounding;
     this.scenario = options.scenario;
     this.battleMap = options.battleMap;
+    this.mapDocument = options.mapDocument;
     this.worker = new Worker(new URL('../sim.worker.ts', import.meta.url), { type: 'module' });
     this.worker.onmessage = (event: MessageEvent<WorkerResponse>) => {
       const message = event.data;
@@ -88,7 +93,7 @@ export class GameClient {
       }
     };
 
-    this.send({ type: 'start', seed: options.seed, sandbox: options.sandbox, training: options.training, opposition: options.opposition, bounding: options.bounding, scenario: options.scenario, battleMap: options.battleMap });
+    this.send({ type: 'start', seed: options.seed, sandbox: options.sandbox, training: options.training, opposition: options.opposition, bounding: options.bounding, scenario: options.scenario, battleMap: options.battleMap, ...(options.mapDocument ? { mapDocument: options.mapDocument } : {}) });
   }
 
   start(): void {
@@ -128,7 +133,7 @@ export class GameClient {
       outcome: 'playing',
       hash: '',
     });
-    this.send({ type: 'start', seed: this.seed, sandbox: this.sandbox, training: this.training, opposition: this.opposition, bounding: this.bounding, scenario: this.scenario, battleMap: this.battleMap });
+    this.send({ type: 'start', seed: this.seed, sandbox: this.sandbox, training: this.training, opposition: this.opposition, bounding: this.bounding, scenario: this.scenario, battleMap: this.battleMap, ...(this.mapDocument ? { mapDocument: this.mapDocument } : {}) });
   }
 
   step(ticks = 1): void {

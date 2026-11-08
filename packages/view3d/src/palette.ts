@@ -25,6 +25,12 @@ export const PALETTE = {
   stoneDark: 0x6e6a5c,
   barn: 0x6b4b34,
   window: 0x25241d,
+  /** refine-battle-maps 5.2: doors, shutters, faded shop awnings, a blank sign board. */
+  door: 0x4a3526,
+  shutter: 0x4f6a5a,
+  awning: 0x9a5a44,
+  awningAlt: 0x6f7a55,
+  sign: 0x8a6a48,
   wire: 0x2a2720,
   hay: 0xb79b58,
   hayDark: 0x8f783f,
@@ -71,6 +77,8 @@ export const PALETTE = {
   orderMarker: 0xd0a45c,
   /** add-battle-maps: the ring of a soldier hidden in vegetation. */
   concealed: 0x8fc46a,
+  /** refine-battle-maps 5.14: "Revelado": in the vegetation but given away by his shot. */
+  revealed: 0xe08a4a,
   // add-battle-maps: battle map ground, water and crops.
   pasture: 0x6b6d42,
   pastureDry: 0x8a7f4e,
@@ -81,6 +89,20 @@ export const PALETTE = {
   mud: 0x5a4a35,
   riverbed: 0x4d4632,
   ford: 0x6f8a86,
+  /** refine-battle-maps 5.4 and 5.10: shallow ford water, its broken edge, the gravel bar and banks, reeds. */
+  fordShallow: 0xa3c2b6,
+  fordEdge: 0xe2ead8,
+  gravel: 0xa0957a,
+  gravelDark: 0x7d7461,
+  reed: 0x7c8b44,
+  reedDark: 0x5b6a33,
+  pennant: 0xd0563f,
+  /** refine-battle-maps 5.6 and 5.8: rutted roads, tilled field soil and the headland paths round it. */
+  rut: 0x6c583c,
+  roadCrown: 0x807a4a,
+  roadVerge: 0x8c7a54,
+  fieldSoil: 0x6e4f35,
+  headland: 0xa89266,
   waterDeep: 0x34545c,
   corn: 0x8c9446,
   cornTassel: 0xc6b064,

@@ -7,7 +7,8 @@ sourceRefs:
   - macaulay-1974
   - helio-1922
   - castro-2022
-status: draft
+status: applied
+runtimeId: siqueira-campos
 ---
 
 # Antônio de Siqueira Campos
@@ -22,6 +23,38 @@ Prestes's.
 líderes da coluna. Sobreviveu à praia. O Prólogo do jogo é dele, não de Prestes.
 
 ## Extended note
+
+Siqueira Campos led the 18 out of the fort and onto the beach. The game makes
+him the Prologue's commander because Prestes was absent with typhoid and because
+the beach is the moment that entered the legend. The 18 are the subject;
+Siqueira is the voice that holds them together.
+
+The legend says the eighteen died on the beach. The record says Siqueira Campos
+survived. Both belong here: he is the exception the legend remembers, and the man
+who later carried the 1922 story into the column. The exact command structure
+inside the fort is still an open question in the sources.
+
+He is not a superhero. The 1922 failure is the beginning of his story, not a
+victory.
+
+## Nota estendida (PT-BR)
+
+Siqueira Campos levou os 18 para fora do forte e para a praia. O jogo faz dele o
+comandante do Prólogo porque Prestes estava ausente com tifo e porque a praia é
+o momento que entrou para a lenda. Os 18 são o assunto; Siqueira é a voz que os
+mantém juntos.
+
+A lenda diz que os dezoito morreram na praia. O registro diz que Siqueira Campos
+sobreviveu. As duas coisas cabem aqui: ele é a exceção que a lenda lembra e o
+homem que depois levou a história de 1922 para a coluna. A estrutura de comando
+exata dentro do forte ainda é uma questão aberta nas fontes.
+
+Ele não é um super-herói. O fracasso de 1922 é o começo da sua história, não uma
+vitória.
+
+## Design notes
+
+Designer notes kept from the draft; not shown to the player.
 
 Siqueira Campos is the figure who takes the 18 out of the fort and onto the
 beach. The game makes him the Prologue commander because Prestes was absent
@@ -71,7 +104,8 @@ verified image is found, the slot stays `research-needed`.
 
 ## Sources
 
-- `macaulay-1974`, ch. II, pp. 37-38, and the column chapters.
+- `macaulay-1974`, ch. I, pp. 26-29 (the Forte and the beach), and the column
+  chapters.
 - `helio-1922`: citation-only; the fort narrative still needs page-level notes.
 - `castro-2022`: tenentismo context, not a Forte narrative.
 - `docs/history/FIGURES.md`: the registry entry and the Prologue role.

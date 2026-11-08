@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { activeMapRuntime, coverAgainst, cropBlocksLine, isLineBlocked, EYE_HEIGHTS } from '@prestes/shared';
 import { TEST_MAP } from '../../shared/test/fixtures/test-map';
 import { SimulationEngine } from '../src/engine';
-import { updateVision } from '../src/systems/vision';
+import { unseenFireMarker, updateVision } from '../src/systems/vision';
 import { revealShooter } from '../src/systems/concealment';
 import { FERRY_BOARDING_TICKS } from '../src/systems/ferry';
 
@@ -70,6 +70,93 @@ describe('concealment', () => {
     expect(t.look()).toBe(true);
     t.engine.tickCount += 41;
     expect(t.look()).toBe(false);
+  });
+
+  // refine-battle-maps 5.13: a shot gives him away only within 50 m.
+  it('long-range shot from the capim: not shown, a "?" near him', () => {
+    const t = field();
+    // Off to the north-east, clear of the canefield: 117 m.
+    t.place(t.enemy, -42, 125, -1);
+    t.place(t.observer, -42 + 117 * 0.6, 125 - 117 * 0.8, 1);
+    t.observer.facingX = -0.6;
+    t.observer.facingY = 0.8;
+    t.enemy.stance = 'standing';
+    expect(t.look()).toBe(true);
+    t.enemy.stance = 'prone';
+    expect(t.look()).toBe(false);
+    revealShooter(t.engine, t.enemy, t.engine.tickCount);
+    expect(t.look()).toBe(false);
+    const marker = unseenFireMarker(t.engine, t.enemy, t.observer, t.engine.tickCount);
+    expect(marker?.type).toBe('unseen_fire');
+  });
+
+  it('close shot gives him away: seen for 4 s from 30 m', () => {
+    const t = field();
+    t.place(t.enemy, -60, 124, -1);
+    t.place(t.observer, -60, 94, 1);
+    t.enemy.stance = 'prone';
+    expect(t.look()).toBe(false);
+    revealShooter(t.engine, t.enemy, t.engine.tickCount);
+    expect(t.look()).toBe(true);
+    expect(unseenFireMarker(t.engine, t.enemy, t.observer, t.engine.tickCount)).toBeNull();
+    t.engine.tickCount += 41;
+    expect(t.look()).toBe(false);
+  });
+
+  // refine-battle-maps 5.14.
+  it('concealed section holds its fire: on contact (60 m) once settled in the cane', () => {
+    const t = field();
+    t.engine.runTicks(1);
+    const section = t.engine.units.filter((unit) => unit.faction === 'column' && unit.squadId === 1 && unit.alive);
+    section.forEach((unit, index) => {
+      t.place(unit, -76 + index * 3, 42, -1);
+      unit.stance = 'prone';
+      unit.stanceLocked = true;
+      unit.path = [];
+    });
+    // One enemy rifleman standing in the open to the north, 82 m off, holding his own fire.
+    t.place(t.enemy, -60, -40, 1);
+    t.enemy.holdFire = true;
+    t.enemy.fireControlSet = true;
+    const shots = (ticks: number) =>
+      t.engine.runTicks(ticks).events.filter((event) => event.type === 'shot' && section.some((unit) => unit.id === event.source)).length;
+    const pin = () => {
+      t.enemy.targetX = t.enemy.x;
+      t.enemy.targetY = t.enemy.y;
+      t.enemy.path = [];
+    };
+    pin();
+    let fired = 0;
+    for (let step = 0; step < 10; step += 1) {
+      pin();
+      fired += shots(20);
+    }
+    expect(section.every((unit) => unit.fireOnContact)).toBe(true);
+    expect(t.engine.frame().units.find((unit) => unit.id === section[0]!.id)?.fireControl).toBe('contact');
+    expect(t.engine.vision.seen.column.has(t.enemy.id)).toBe(true);
+    expect(fired).toBe(0);
+    // Within 60 m (on the near bank) the section opens fire.
+    t.place(t.enemy, -60, 16, 1);
+    for (let step = 0; step < 10 && fired === 0; step += 1) {
+      pin();
+      fired += shots(20);
+    }
+    expect(fired).toBeGreaterThan(0);
+  });
+
+  it('a fire control the player set is kept in the vegetation', () => {
+    const t = field();
+    t.engine.runTicks(1);
+    const section = t.engine.units.filter((unit) => unit.faction === 'column' && unit.squadId === 1 && unit.alive);
+    t.engine.enqueue({ type: 'fire_control', unitIds: section.map((unit) => unit.id), mode: 'free' });
+    t.engine.runTicks(1);
+    section.forEach((unit, index) => {
+      t.place(unit, -76 + index * 3, 42, -1);
+      unit.stance = 'prone';
+      unit.path = [];
+    });
+    t.engine.runTicks(30);
+    expect(section.some((unit) => unit.fireOnContact)).toBe(false);
   });
 
   it('running in the corn: seen at 14 m', () => {

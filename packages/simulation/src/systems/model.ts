@@ -48,6 +48,12 @@ export const FATIGUE_REST = 0.1;
 export const AMBUSH_RADIUS = 14;
 /** Fire control on contact opens when an enemy is this close (metres). */
 export const CONTACT_RADIUS = 25;
+/**
+ * refine-battle-maps 5.14: a concealed section on its default fire control
+ * holds its fire until an enemy is this near (m); the player's own "fire on
+ * contact" keeps CONTACT_RADIUS.
+ */
+export const CONCEALED_CONTACT_RADIUS = 60;
 export const AWARENESS_RANGE = 120;
 export const RESCUE_CONTACT_DISTANCE = 1.4;
 export const RESCUE_CARRY_TICKS = 30;
@@ -87,6 +93,16 @@ export interface MutableUnit {
   ferryId?: number;
   /** add-battle-maps: concealment is lifted until this tick (he fired). */
   revealedUntil?: number;
+  /** refine-battle-maps 5.14: the player (or a commander) set his fire control. */
+  fireControlSet?: boolean;
+  /**
+   * refine-battle-maps 5.14: fire on contact set by concealment, not by an
+   * order: armed while his section is settled in the vegetation, spent once
+   * the section has opened fire (until it leaves the vegetation).
+   */
+  autoContact?: 'armed' | 'spent';
+  /** Where and when his path last made headway (refine-battle-maps: a man who cannot get on stops). */
+  stuckFrom?: { x: number; y: number; tick: number };
   /** The gait he moved at last tick (the view picks walk or run from it). */
   gait?: Gait;
   /** Recon: the front a scout sweeps, kept once he halts. */
