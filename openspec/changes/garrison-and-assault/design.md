@@ -196,7 +196,6 @@ New fields optional; no saved data. Goldens re-recorded with the reason.
 
 ## Open Questions
 
-- Whether trench lines should show their men (they are open works) rather
-  than a marker; proposed: trench lines keep drawing their men (they are
-  visible), use the position only for capacity, cover and assault. To be
-  confirmed in the hand check; the data supports both.
+- Resolved (user, 2026-11-09): trench lines keep drawing their men (they
+  are open works); the position serves only for capacity, cover and
+  assault. Buildings keep the garrison marker.

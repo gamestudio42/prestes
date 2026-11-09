@@ -24,8 +24,7 @@ export type Footprint =
   | { kind: 'solid'; cover: CoverKind }
   | { kind: 'thin' }
   | { kind: 'foliage' }
-  | { kind: 'decal'; material: GroundMaterialId }
-  | { kind: 'trench-line' };
+  | { kind: 'decal'; material: GroundMaterialId };
 
 export interface CatalogObject {
   id: string;
@@ -97,7 +96,8 @@ export const CATALOG_OBJECTS: readonly CatalogObject[] = [
   item('tree-broad', 'tree', 0.35, 0.35, 8, { kind: 'solid', cover: 'stone' }, { concealRadius: 0 }),
   item('tree-araucaria', 'tree', 0.3, 0.3, 14, THIN),
   item('tree-pine', 'tree', 0.25, 0.25, 9, THIN),
-  item('cerrado-tree', 'tree', 0.2, 0.2, 4, THIN, { concealRadius: 1.6 }),
+  // 6 m, an adult pequi's lower range (hand check 2026-11-09: 4 m looked small by the houses).
+  item('cerrado-tree', 'tree', 0.2, 0.2, 6, THIN, { concealRadius: 1.6 }),
   item('buriti', 'tree', 0.3, 0.3, 12, THIN),
   item('juazeiro', 'tree', 0.35, 0.35, 6, { kind: 'solid', cover: 'stone' }, { concealRadius: 2.5 }),
   item('mandacaru', 'tree', 0.3, 0.3, 4, THIN),
@@ -111,7 +111,6 @@ export const CATALOG_OBJECTS: readonly CatalogObject[] = [
   item('hitching-post', 'post', 1.2, 0.1, 1, THIN),
   // Covers.
   item('sandbags', 'cover', 2.8, 0.4, 0.9, { kind: 'solid', cover: 'sandbag' }),
-  item('trench-line', 'cover', 12, 2.4, 0.2, { kind: 'trench-line' }),
   item('barricade', 'cover', 3, 0.6, 1.2, { kind: 'solid', cover: 'low-wall' }),
   // Props.
   item('cart', 'prop', 1.1, 2, 1.4, { kind: 'solid', cover: 'barrel' }),

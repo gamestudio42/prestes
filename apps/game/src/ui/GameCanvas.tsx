@@ -9,6 +9,7 @@ import { type CommanderBalloon,
 import { coverAgainst, dragSpacing, type PreviewPlan, type SlotMarker, type Vec2 } from '@prestes/shared';
 import { translate, type Locale } from '@prestes/content';
 import type { GameClient } from '../client/GameClient';
+import { loadGraphicsSettings } from '../storage';
 import type { AudioListener } from '../audio/ShotAudio';
 
 export type SelectionMode = 'all' | 'troops';
@@ -143,6 +144,7 @@ export function GameCanvas({
       battleMap: client?.battleMap,
       onCameraAction,
       onBandChange: (band) => onBandChangeRef.current(band),
+      antialias: loadGraphicsSettings().smoothEdges,
     });
     scene.setTrainingMarkers(trainingMarkers);
     sceneRef.current = scene;
@@ -157,7 +159,9 @@ export function GameCanvas({
         setBand: (band: 'tactical' | 'strategic') => scene.setBand(band),
         effects: () => scene.effectsState(),
         clips: (unitId: number) => scene.clipState(unitId),
+        weapons: (unitId: number) => scene.weaponState(unitId),
         shown: () => scene.shownUnitIds(),
+        smoothEdges: () => scene.smoothEdges(),
         pick: (x: number, y: number) => {
           const screen = scene.groundToScreen(x, y);
           return screen ? scene.pickUnit(screen.x, screen.y) : null;

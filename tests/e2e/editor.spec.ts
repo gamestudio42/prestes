@@ -17,7 +17,9 @@ interface EditorState {
   roads: number;
   lines: number;
   ponds: number;
+  trenches: { id: number; kind: string; facing: string; length: number }[];
   sections: { column: Point[]; legalist: Point[] };
+  areas: { column: Point[]; legalist: Point[] };
   selection: { kind: string; side?: string; index?: number }[];
   problems: { code: string; severity: string }[] | null;
   canUndo: boolean;
@@ -33,6 +35,9 @@ interface Bridge {
     coverKinds: () => Record<string, number>;
     document: () => unknown;
     topDown: () => void;
+    look: (x: number, y: number, span: number) => void;
+    trenchSlots: (id: number) => { x: number; y: number; guard: { x: number; y: number } | null }[];
+    coverPreview: () => { zones: { column: number; legalist: number }; pieces: Record<string, number> };
   };
   __prestes?: { frame: () => { units: unknown[] } | null };
 }
@@ -86,6 +91,20 @@ async function dragGround(page: Page, from: Point, to: Point, hold = 0): Promise
 }
 
 const tool = (page: Page, id: string) => page.locator(`[data-tool="${id}"]`).click();
+
+/** Points the camera at a ground point with this span, once it settles. */
+async function look(page: Page, x: number, y: number, span: number): Promise<void> {
+  await page.evaluate(([px, py, s]) => (window as unknown as Bridge).__prestesEditor!.look(px!, py!, s!), [x, y, span]);
+  let last = '';
+  await expect
+    .poll(async () => {
+      const now = JSON.stringify(await screen(page, x, y));
+      const still = now === last;
+      last = now;
+      return still;
+    }, { intervals: [250] })
+    .toBe(true);
+}
 
 async function newMap(page: Page, id: string, size: 'small' | 'medium' | 'large'): Promise<void> {
   await page.getByTestId('editor-new').click();
@@ -155,6 +174,9 @@ test('a dirt road with a ditch reaches the game, a point moves, undo puts it bac
   await page.keyboard.press('Enter');
   expect((await state(page)).roads).toBe(1);
   expect(await surfaceAt(page, 0, 10)).toBe('dirt-road');
+  // refine-map-editor D1: the road leaves the relief alone (no sink, no camber); its ditch still digs.
+  expect(await heightAt(page, 0, 10)).toBeCloseTo(0, 3);
+  await expect(page.getByLabel(/camber|abaulamento/i)).toHaveCount(0);
   expect((await page.evaluate(() => (window as unknown as Bridge).__prestesEditor!.coverKinds())).trench ?? 0).toBeGreaterThan(0);
 
   await tool(page, 'select');
@@ -163,6 +185,34 @@ test('a dirt road with a ditch reaches the game, a point moves, undo puts it bac
   await page.getByTestId('editor-undo').click();
   expect(await surfaceAt(page, 0, 40)).not.toBe('dirt-road');
   expect(await surfaceAt(page, 0, 10)).toBe('dirt-road');
+});
+
+test('a 60 m fire trench faces north, flips with X, and its slots are the game\'s', async ({ page }) => {
+  // refine-map-editor 2.5.
+  await openEditor(page);
+  await tool(page, 'trench');
+  await clickGround(page, -30, 0);
+  await clickGround(page, 30, 0);
+  await page.keyboard.press('Enter');
+  const [trench] = (await state(page)).trenches;
+  expect(trench).toMatchObject({ kind: 'fire', facing: 'left' });
+  expect(trench!.length).toBeCloseTo(60, 0);
+  type Slot = { x: number; y: number; guard: { x: number; y: number } | null };
+  const slots = () => page.evaluate((id) => (window as unknown as { __prestesEditor: { trenchSlots: (id: number) => Slot[] } }).__prestesEditor.trenchSlots(id), trench!.id);
+  // Travelling east, left is north: one slot per 1.2 m on the fire step, facing north.
+  const north = await slots();
+  expect(north).toHaveLength(50);
+  expect(north.every((slot) => slot.guard!.y < -0.99 && slot.y < 0)).toBe(true);
+
+  await tool(page, 'select');
+  await clickGround(page, 10, 0);
+  await expect(page.getByTestId('trench-slots')).toContainText('50');
+  await expect(page.getByTestId('trench-length')).toContainText('60');
+  await page.keyboard.press('KeyX');
+  expect((await state(page)).trenches[0]!.facing).toBe('right');
+  const south = await slots();
+  expect(south).toHaveLength(50);
+  expect(south.every((slot) => slot.guard!.y > 0.99 && slot.y > 0)).toBe(true);
 });
 
 test('a placed farmhouse and a drawn stone wall become cover', async ({ page }) => {
@@ -183,12 +233,156 @@ test('a placed farmhouse and a drawn stone wall become cover', async ({ page }) 
   expect(kinds['low-wall'] ?? 0).toBeGreaterThan(0);
 });
 
+test("count the slots of a trench: its badge and hover show the game's slots on the fire step", async ({ page }) => {
+  // refine-map-editor 6.1.
+  await openEditor(page);
+  await tool(page, 'trench');
+  await clickGround(page, -15, 0);
+  await clickGround(page, 15, 0);
+  await page.keyboard.press('Enter');
+  const [trench] = (await state(page)).trenches;
+  const slots = await page.evaluate((id) => (window as unknown as Bridge).__prestesEditor!.trenchSlots(id), trench!.id);
+  expect(slots).toHaveLength(25);
+  // The dots line the fire step: 0.45 m forward of the centreline, toward the parapet (north).
+  expect(slots.every((slot) => Math.abs(slot.y + 0.45) < 0.01)).toBe(true);
+
+  await page.getByTestId('editor-cover').click();
+  await look(page, 0, 0, 80);
+  const badge = page.locator(`.editor-badge[data-piece="trench:${trench!.id}"]`);
+  await expect(badge).toBeVisible();
+  await expect(badge).toHaveText(String(slots.length));
+  const at = await screen(page, slots[3]!.x, slots[3]!.y);
+  await page.mouse.move(at.x, at.y);
+  await expect(page.getByTestId('cover-hover')).toHaveAttribute('data-count', String(slots.length));
+  await expect(badge).toHaveAttribute('data-hover', 'true');
+
+  // At strategic span the badges cluster per 50 m cell.
+  await look(page, 0, 0, 240);
+  await expect(badge).toBeHidden();
+  await expect(page.locator('.editor-badge[data-cluster]').first()).toHaveText(String(slots.length));
+});
+
+test('zone totals: a stone wall inside the column zone adds its slots there', async ({ page }) => {
+  // refine-map-editor 6.1.
+  await openEditor(page);
+  await page.getByTestId('editor-cover').click();
+  const section = (await state(page)).sections.column[0]!;
+  const total = page.getByTestId('zone-total-column');
+  const before = Number(await total.getAttribute('data-total'));
+  const legalist = await page.getByTestId('zone-total-legalist').getAttribute('data-total');
+  await tool(page, 'line');
+  await clickGround(page, section.x - 10, section.y + 15);
+  await clickGround(page, section.x + 10, section.y + 15);
+  await page.keyboard.press('Enter');
+  const { pieces } = await page.evaluate(() => (window as unknown as Bridge).__prestesEditor!.coverPreview());
+  const wall = pieces['line:1'];
+  expect(wall).toBeGreaterThan(20);
+  await expect(total).toHaveAttribute('data-total', String(before + wall!));
+  await expect(page.getByTestId('zone-total-legalist')).toHaveAttribute('data-total', legalist!);
+  await expect(page.getByTestId('cover-panel')).toContainText(String(before + wall!));
+});
+
+test('W A S D move the camera and pick no tool; Q and E turn it', async ({ page }) => {
+  // Hand check 2026-11-09: the battle's camera keys are not tool shortcuts.
+  await openEditor(page);
+  await tool(page, 'paint');
+  const before = await screen(page, 0, 0);
+  for (const key of ['KeyW', 'KeyA', 'KeyS', 'KeyD', 'KeyQ', 'KeyE']) {
+    await page.keyboard.down(key);
+    await page.waitForTimeout(150);
+    await page.keyboard.up(key);
+    expect((await state(page)).tool).toBe('paint');
+  }
+  await page.keyboard.down('KeyD');
+  await page.waitForTimeout(400);
+  await page.keyboard.up('KeyD');
+  const after = await screen(page, 0, 0);
+  expect(Math.hypot(after.x - before.x, after.y - before.y)).toBeGreaterThan(20);
+  // The tools that had those letters moved: wall L, trees Y, deployment K, eraser C, smooth M.
+  for (const [key, id] of [['l', 'line'], ['y', 'trees'], ['k', 'deployment'], ['c', 'erase'], ['m', 'smooth']] as const) {
+    await page.keyboard.press(key);
+    expect((await state(page)).tool).toBe(id);
+  }
+});
+
 test('the vegetation brush plants corn', async ({ page }) => {
   await openEditor(page);
   await tool(page, 'vegetation');
   await page.getByTestId('prop-vegetation').selectOption({ label: 'Corn' });
   await dragGround(page, { x: -3, y: -40 }, { x: 3, y: -40 });
   expect(await page.evaluate(() => (window as unknown as Bridge).__prestesEditor!.vegetationAt(0, -40))).toBe('corn');
+});
+
+test('capim painted across a river grows on both banks, not in the water', async ({ page }) => {
+  // refine-map-editor 3.1: the brush skips cells where nothing grows.
+  await openEditor(page);
+  await tool(page, 'river');
+  await clickGround(page, -80, 0);
+  await clickGround(page, 80, 0);
+  await page.keyboard.press('Enter');
+  await tool(page, 'vegetation');
+  await page.getByTestId('prop-vegetation').selectOption({ label: 'Capim' });
+  await dragGround(page, { x: 0, y: -16 }, { x: 0, y: 16 });
+  const plant = (x: number, y: number) => page.evaluate(([px, py]) => (window as unknown as Bridge).__prestesEditor!.vegetationAt(px!, py!), [x, y]);
+  expect(await plant(0.5, 0.5)).toBeNull();
+  expect(await plant(0.5, -14.5)).toBe('tall-grass');
+  expect(await plant(0.5, 14.5)).toBe('tall-grass');
+});
+
+// refine-map-editor 5.1: the trees tool.
+async function cerradoGrove(page: Page): Promise<{ id: number; type: string; x: number; y: number }[]> {
+  await openEditor(page);
+  await tool(page, 'river');
+  await clickGround(page, -80, 0);
+  await clickGround(page, 80, 0);
+  await page.keyboard.press('Enter');
+  await tool(page, 'trees');
+  await page.getByTestId('tree-mode-scatter').click();
+  await page.getByTestId('tree-biome').selectOption('cerrado');
+  await page.getByTestId('tree-density').selectOption('medium');
+  // A 20 m brush.
+  for (let press = 0; press < 16; press += 1) await page.keyboard.press(']');
+  const before = (await state(page)).objects.length;
+  await dragGround(page, { x: -10, y: 10 }, { x: 10, y: 10 });
+  const objects = (await state(page)).objects;
+  expect(objects.length).toBeGreaterThan(before);
+  return objects.filter((object) => ['cerrado-tree', 'buriti', 'bush'].includes(object.type));
+}
+
+test('scatter a cerrado grove: cerrado trees inside the stroke, 2 m apart, none in the water', async ({ page }) => {
+  const trees = await cerradoGrove(page);
+  expect(trees.length).toBeGreaterThan(5);
+  for (const tree of trees) {
+    // Inside the stroke: within the brush's 10 m of the line from (-10, 10) to (10, 10).
+    const dx = Math.max(0, Math.abs(tree.x) - 10);
+    expect(Math.hypot(dx, tree.y - 10)).toBeLessThanOrEqual(10.2);
+    // The river is 14 m wide along y = 0.
+    expect(Math.abs(tree.y)).toBeGreaterThan(7);
+  }
+  for (let a = 0; a < trees.length; a += 1) {
+    for (let b = a + 1; b < trees.length; b += 1) expect(Math.hypot(trees[a]!.x - trees[b]!.x, trees[a]!.y - trees[b]!.y)).toBeGreaterThanOrEqual(2);
+  }
+  // The thumbnails show the species.
+  await expect(page.locator('[data-thumbnail="cerrado-tree"]')).toBeVisible();
+  // One stroke is one undo step.
+  await page.keyboard.press('Control+z');
+  expect((await state(page)).objects.filter((object) => object.type === 'cerrado-tree' || object.type === 'buriti' || object.type === 'bush')).toHaveLength(0);
+});
+
+test('erase trees: the trees under the brush go, and undo brings them back', async ({ page }) => {
+  const grove = await cerradoGrove(page);
+  await page.getByTestId('tree-mode-erase').click();
+  // A 6 m brush across the western half.
+  for (let press = 0; press < 14; press += 1) await page.keyboard.press('[');
+  await dragGround(page, { x: -12, y: 12 }, { x: -2, y: 12 });
+  const left = (await state(page)).objects;
+  const gone = grove.filter((tree) => !left.some((object) => object.id === tree.id));
+  expect(gone.length).toBeGreaterThan(0);
+  expect(gone.length).toBeLessThan(grove.length);
+  for (const tree of gone) expect(tree.x).toBeLessThan(2);
+  await page.keyboard.press('Control+z');
+  const back = (await state(page)).objects;
+  for (const tree of grove) expect(back.some((object) => object.id === tree.id)).toBe(true);
 });
 
 test('a section point drags to a new place', async ({ page }) => {
@@ -199,6 +393,38 @@ test('a section point drags to a new place', async ({ page }) => {
   const after = (await state(page)).sections.column[0]!;
   expect(after.x).toBe(before.x);
   expect(after.y).toBe(before.y - 20);
+});
+
+test('shape a deployment area', async ({ page }) => {
+  await openEditor(page);
+  await tool(page, 'deployment');
+  const area = (await state(page)).areas.legalist;
+  const corner = area[0]!;
+  // Drag a corner: the area follows.
+  const moved = { x: corner.x + 10, y: corner.y - 10 };
+  await dragGround(page, corner, moved);
+  const dragged = (await state(page)).areas.legalist[0]!;
+  expect(Math.hypot(dragged.x - moved.x, dragged.y - moved.y)).toBeLessThan(1);
+  // Double-click an edge: a corner is added there.
+  const [a, b] = [(await state(page)).areas.legalist[1]!, (await state(page)).areas.legalist[2]!];
+  const mid = await screen(page, (a.x + b.x) / 2, (a.y + b.y) / 2);
+  await page.mouse.dblclick(mid.x, mid.y);
+  expect((await state(page)).areas.legalist).toHaveLength(area.length + 1);
+  // Select that corner and Delete it.
+  const added = (await state(page)).areas.legalist[2]!;
+  await clickGround(page, added.x, added.y);
+  expect((await state(page)).selection).toEqual([{ kind: 'area', side: 'legalist', point: 2 }]);
+  await page.keyboard.press('Delete');
+  expect((await state(page)).areas.legalist).toHaveLength(area.length);
+  // Drag the whole legalist area onto the column's: its sections fall outside it and the areas overlap.
+  const { column, legalist } = (await state(page)).sections;
+  const centre = (points: Point[]) => ({ x: points.reduce((sum, p) => sum + p.x, 0) / points.length, y: points.reduce((sum, p) => sum + p.y, 0) / points.length });
+  const shift = { x: centre(column).x - centre(legalist).x, y: centre(column).y - centre(legalist).y };
+  const grab = { x: (legalist[0]!.x + legalist[1]!.x) / 2, y: (legalist[0]!.y + legalist[1]!.y) / 2 };
+  await dragGround(page, grab, { x: grab.x + shift.x, y: grab.y + shift.y });
+  await page.getByTestId('editor-validate').click();
+  await expect(page.locator('[data-code="areas-overlap"]')).toBeVisible();
+  await expect(page.locator('[data-code="section-outside-area"]')).toHaveCount(3);
 });
 
 test('a section in a pond is a problem; choosing it selects the section', async ({ page }) => {

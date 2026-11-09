@@ -12,6 +12,7 @@ import {
   type SoldierClip,
 } from './soldier-clips';
 import { SoldierInstance, loadSoldierAsset, type SoldierAsset } from './soldier-models';
+import { WeaponProps } from './weapon-placeholders';
 import {
   terrainHeightAt,
   type Faction,
@@ -41,6 +42,8 @@ interface CharacterView {
   marks: UnitMarks;
   /** The Blender-built soldier, once the model has loaded. */
   soldier?: SoldierInstance;
+  /** pre-battle-roster 5.4: the weapon placeholders on that soldier. */
+  weapons?: WeaponProps;
   /** Until when (performance.now ms) the soldier shows its firing pose. */
   fireUntil: number;
   /** Until when the soldier staggers from a hit (also just before falling). */
@@ -249,6 +252,11 @@ export class CharacterLayer {
     return soldier ? { playing: soldier.playing, active: soldier.activeClips() } : null;
   }
 
+  /** pre-battle-roster 5.4: the weapon a soldier model shows and its visible placeholders (dev checks). */
+  weaponState(unitId: number): { look: string; shown: string[] } | null {
+    return this.views.get(unitId)?.weapons?.state() ?? null;
+  }
+
   /**
    * Loads the modelled soldier. Until it arrives, or if it fails, soldiers
    * are drawn as the strategic proxy at every distance.
@@ -411,6 +419,7 @@ export class CharacterLayer {
 
       if (this.asset && !view.soldier && unit.kind !== 'dummy') {
         view.soldier = new SoldierInstance(this.asset, soldierOutfit(unit));
+        view.weapons = new WeaponProps(view.soldier.root);
         marks.root.add(view.soldier.root);
       }
       if (view.soldier) {
@@ -441,6 +450,7 @@ export class CharacterLayer {
         const authored = CLIP_SPEED[clip];
         view.soldier.play(clip, authored ? walkTimeScale(view.speed, authored) : 1);
         view.soldier.update(seconds);
+        view.weapons?.apply(unit.weaponId, unit.gunSet === true, unit.alive && !unit.incapacitated && !unit.routed);
         marks.ring.visible = unit.alive && !unit.routed && !unit.incapacitated;
         marks.shadow.rotation.set(-Math.PI / 2, 0, 0);
         if (marks.ring.visible) {

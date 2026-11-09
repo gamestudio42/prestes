@@ -90,6 +90,8 @@ export function checkAuthoredMaps(dir = AUTHORED_DIR): string[] {
     if (['vila-militar', 'fazenda', 'serra-rio', 'bairro'].includes(document.id)) errors.push(`${file}: id ${document.id} is a hand-written map's`);
     for (const problem of validateEditableMap(fromMapDocument(document))) {
       if (problem.severity === 'error') errors.push(`${file}: ${problem.code} ${JSON.stringify(problem.params)}`);
+      // Warnings (masked vegetation, a cover gap) are shown and do not fail the check.
+      else console.warn(`warning ${file}: ${problem.code} ${JSON.stringify(problem.params)}`);
     }
   }
   setActiveMap(VILA_MILITAR);

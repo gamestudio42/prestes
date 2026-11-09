@@ -7,18 +7,18 @@ Defines the large-battle sandbox: 3v3 troops of eleven, 120 m rifle and vision r
 
 ### Requirement: Large battle laboratory
 
-The game SHALL start a 3v3 battle with three player troops and three enemy troops of 11 soldiers each, for 66 units total, from the start menu (beside the bootcamp) and from the sandbox panel, on the battle map the player chose (the Vila Militar field when none is chosen). Each troop SHALL be selectable by clicking any of its soldiers. The two sides SHALL deploy in their map's deployment zones, about 180 m apart, out of rifle range, so that contact begins when one side moves. On every map, as it is still a training battle, both sides SHALL carry the training ammunition load (5 + 45 rounds). The menu entry SHALL be localized in PT-BR and EN.
+The game SHALL start a 3v3 battle between the player's roster and the enemy's roster, on the battle map the player chose (the Vila Militar field when none is chosen), from the skirmish setup screen and from the sandbox panel. With the default roster each side fields three rifle sections of 11 soldiers, 66 units in all, as before. Each section SHALL be selectable by clicking any of its soldiers. The two sides SHALL deploy in their map's deployment zones, about 180 m apart, out of rifle range, so that contact begins when one side moves. As a training battle, riflemen SHALL carry the training load (5 + 45 rounds) and the other weapons their own training loads. The menu entry SHALL be localized in PT-BR and EN.
 
 #### Scenario: Start 3v3
-- **WHEN** the player starts the 3v3 battle in the sandbox
+- **WHEN** the player starts the 3v3 battle in the sandbox with the default roster
 - **THEN** 66 units are created in six squads and each side has three troops
 
 #### Scenario: Start from the menu
-- **WHEN** the player chooses the 3 vs 3 battle on the start menu
-- **THEN** the battle starts with the same 66 units on the chosen map, without opening the sandbox
+- **WHEN** the player builds a roster and starts the 3 vs 3 from the skirmish setup screen
+- **THEN** the battle starts with the player's roster against the enemy's on the chosen map, without opening the sandbox
 
 #### Scenario: No contact at deployment
-- **WHEN** the battle starts on any map and no order is given for 10 s
+- **WHEN** the battle starts on any map with any rosters and no order is given for 10 s
 - **THEN** no shot is fired
 
 ### Requirement: Long-range vision and rifle
@@ -43,7 +43,7 @@ Vision rendering SHALL use batched line geometry. Large unit counts SHALL use in
 
 ### Requirement: AI, cover and obstacles
 
-The 3v3 enemy troops SHALL acquire targets, use formation movement, seek cover and path around obstacles. Each side SHALL have a defensive line of short trench bays with sandbag parapets in front of its start. The enemy commander SHALL hold its line at the start; SHALL send one more troop to attack by bounds whenever its side has 1.4 times the player's fit soldiers; when no shot has been fired for 30 s SHALL attack with all but one troop, keeping one in its line; SHALL withdraw a troop that falls under 4 fit soldiers or is mostly pinned; and SHALL have a withdrawn troop that has stopped defend where it stands. A section of either side that has met the enemy and has had no contact for 10 s, while not holding an ordered position, SHALL advance on the last known enemy position, so that a battle does not stall. Before first contact no section is moved by this rule.
+The 3v3 enemy troops SHALL acquire targets, use formation movement, seek cover and path around obstacles. Each side SHALL have a defensive line of short trench bays with sandbag parapets in front of its start. The enemy commander SHALL hold its line at the start; SHALL send one more troop to attack by bounds whenever its side has 1.4 times the player's fit soldiers it knows of (seen in the last 30 s, each counted once); when no shot has been fired for 30 s SHALL attack with all but one troop, keeping one in its line, toward the nearest known enemy, unseen-fire marker or last contact, and with none toward the player's deployment side; SHALL withdraw a troop that falls under 4 fit soldiers or is mostly pinned; and SHALL have a withdrawn troop that has stopped defend where it stands. A section of either side that has met the enemy and has had no contact for 10 s, while not holding an ordered position, SHALL advance on the last known enemy position, so that a battle does not stall. Before first contact no section is moved by this rule.
 
 #### Scenario: Engagement
 - **WHEN** the battle runs for several minutes
@@ -54,7 +54,7 @@ The 3v3 enemy troops SHALL acquire targets, use formation movement, seek cover a
 - **THEN** the enemy troops move into cover facing the player's side before contact
 
 #### Scenario: Counterattack
-- **WHEN** the enemy has 1.4 times the player's fit soldiers
+- **WHEN** the enemy knows of fewer than one player soldier for every 1.4 of its own
 - **THEN** at least one enemy troop advances by bounds on the player
 
 #### Scenario: The enemy goes looking

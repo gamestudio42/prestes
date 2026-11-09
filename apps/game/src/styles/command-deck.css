@@ -524,6 +524,49 @@
   height: 24px;
 }
 
+/* pre-battle-roster 5.2: a mixed section or a gun crew lists each weapon with its rounds. */
+.weapon-lines {
+  display: grid;
+  gap: 1px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 10px;
+  font-variant-numeric: tabular-nums;
+}
+
+.weapon-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 6px;
+  color: var(--hud-paper-bright);
+}
+
+.weapon-line-rounds {
+  margin-left: auto;
+  color: var(--hud-gold);
+}
+
+.weapon-line-pool {
+  flex-basis: 100%;
+  color: var(--hud-dim);
+}
+
+.weapon-gun-state {
+  padding: 0 3px;
+  border: 1px solid currentColor;
+  text-transform: uppercase;
+}
+
+.weapon-gun-state.setting {
+  color: var(--hud-gold);
+}
+
+.weapon-gun-state.ready {
+  color: var(--hud-paper-bright);
+}
+
 .status-row {
   display: flex;
   align-items: center;

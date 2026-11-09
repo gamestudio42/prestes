@@ -21,6 +21,7 @@ export function createSimulationHost(
     scenario?: 'bootcamp' | 'battle3v3',
     battleMap?: BattleMapId,
     rosters?: BattleRosters,
+    deployment?: boolean,
   ) => SimulationEngine,
   port: PortLike,
 ): SimulationHost {
@@ -52,6 +53,7 @@ export function createSimulationHost(
           message.scenario,
           message.battleMap,
           rosters,
+          message.deployment,
         );
         // The game never reads the state hash: frames to it go without one.
         port.postMessage({ type: 'ready', frame: engine.frame(GAME_FRAME) });
@@ -65,6 +67,8 @@ export function createSimulationHost(
 
       if (message.type === 'command') {
         engine.enqueue(message.command);
+        // add-deployment-phase D1: in deployment a command takes effect at once, answered by one frame.
+        if (engine.phase === 'deployment') port.postMessage({ type: 'frame', frame: engine.runTicks(1, GAME_FRAME) });
         return;
       }
 

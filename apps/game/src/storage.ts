@@ -4,6 +4,33 @@ const LOCALE_STORAGE_KEY = 'prestes.locale';
 const AUDIO_STORAGE_KEY = 'prestes.audio.v1';
 const ROUTES_STORAGE_KEY = 'prestes.routes.v1';
 const GRAMOPHONE_STORAGE_KEY = 'prestes.gramophone.v1';
+const GRAPHICS_STORAGE_KEY = 'prestes.graphics.v1';
+
+/** refine-map-editor D4: graphics options; smooth edges (MSAA) default on. */
+export interface GraphicsSettings {
+  smoothEdges: boolean;
+}
+
+export function loadGraphicsSettings(): GraphicsSettings {
+  try {
+    const raw = window.localStorage.getItem(GRAPHICS_STORAGE_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw) as { smoothEdges?: unknown };
+      return { smoothEdges: parsed.smoothEdges !== false };
+    }
+  } catch {
+    // Storage can be unavailable; the defaults still draw.
+  }
+  return { smoothEdges: true };
+}
+
+export function saveGraphicsSettings(settings: GraphicsSettings): void {
+  try {
+    window.localStorage.setItem(GRAPHICS_STORAGE_KEY, JSON.stringify(settings));
+  } catch {
+    // Storage can be unavailable; the session keeps the current choice.
+  }
+}
 
 /** Whether the movement routes of orders are drawn (default: shown). */
 export function loadRoutesVisible(): boolean {

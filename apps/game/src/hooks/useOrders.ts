@@ -22,6 +22,7 @@ import {
   type Frame,
   type Posture,
   type PreviewPlan,
+  type SectionTypeId,
   type Stance,
   type TacticalOrder,
   type Vec2,
@@ -42,6 +43,8 @@ interface OrderOptions {
   controlBothSides: boolean;
   setControlBothSides: Dispatch<SetStateAction<boolean>>;
   sandboxTool: SandboxTool | null;
+  /** pre-battle-roster 5.3: the section type a placed troop is made of. */
+  troopSection: SectionTypeId | null;
   placementPreview: PlacementPreview | null;
   placementRotation: number;
   setPlacementPoint: Dispatch<SetStateAction<Vec2 | null>>;
@@ -66,6 +69,7 @@ export function useOrders({
   controlBothSides,
   setControlBothSides,
   sandboxTool,
+  troopSection,
   placementPreview,
   placementRotation,
   setPlacementPoint,
@@ -599,11 +603,12 @@ export function useOrders({
       if (!placementPreview?.valid) {
         return;
       }
+      const section = troopSection ? { section: troopSection } : {};
       const command =
         sandboxTool === 'enemy-troop'
-          ? { type: 'spawn_troop' as const, to: point, faction: 'legalist' as const, count: 11, rotation: placementRotation }
+          ? { type: 'spawn_troop' as const, to: point, faction: 'legalist' as const, count: 11, rotation: placementRotation, ...section }
           : sandboxTool === 'command-troop'
-            ? { type: 'spawn_troop' as const, to: point, faction: 'column' as const, count: 3, rotation: placementRotation }
+            ? { type: 'spawn_troop' as const, to: point, faction: 'column' as const, count: 3, rotation: placementRotation, ...section }
             : sandboxTool === 'dummy'
               ? { type: 'spawn_dummy' as const, to: point, rotation: placementRotation }
               : { type: 'spawn_cover' as const, kind: sandboxTool, to: point, rotation: placementRotation };

@@ -2,6 +2,7 @@ import { expect, test } from '@playwright/test';
 
 test('opens the sandbox, steps, spawns and resets', async ({ page }) => {
   await page.goto('/');
+  await page.getByTestId('open-skirmish').click();
   await page.getByTestId('start-battle-3v3').click();
   await expect(page.getByTestId('hud')).toBeVisible();
 
@@ -43,6 +44,7 @@ test('opens the sandbox, steps, spawns and resets', async ({ page }) => {
 
 test('drills a casualty, shows progress and completes recovery', async ({ page }) => {
   await page.goto('/');
+  await page.getByTestId('open-skirmish').click();
   await page.getByTestId('start-battle-3v3').click();
   await expect(page.getByTestId('hud')).toBeVisible();
 
@@ -107,6 +109,7 @@ test('drills a casualty, shows progress and completes recovery', async ({ page }
 
 test('starts the 3v3 battle laboratory', async ({ page }) => {
   await page.goto('/');
+  await page.getByTestId('open-skirmish').click();
   await page.getByTestId('start-battle-3v3').click();
   await page.waitForTimeout(600);
   await page.keyboard.press('F1');
@@ -122,3 +125,38 @@ test('starts the 3v3 battle laboratory', async ({ page }) => {
   await expect(page.getByTestId('squad-status')).toContainText('Selection: 11/11');
 });
 
+
+// pre-battle-roster 5.3: the sandbox places a troop of a chosen section type.
+test('spawns a machine-gun crew and sees its card', async ({ page }) => {
+  await page.goto('/');
+  await page.getByTestId('open-skirmish').click();
+  await page.getByTestId('start-battle-3v3').click();
+  await expect(page.getByTestId('hud')).toBeVisible();
+  await page.keyboard.press('F1');
+  await expect(page.getByTestId('sandbox-panel')).toBeVisible();
+
+  await page.getByTestId('sandbox-troop-section').selectOption('metralhadora');
+  await page.getByTestId('sandbox-tool-command-troop').click();
+  const canvas = page.getByTestId('game-canvas');
+  const crew = () =>
+    page.evaluate(() => {
+      type Unit = { squadId: number; sectionType?: string; weaponId: string };
+      const bridge = (window as unknown as { __prestes?: { frame: () => { units: Unit[] } | null } }).__prestes;
+      return (bridge?.frame()?.units ?? []).filter((unit) => unit.sectionType === 'metralhadora');
+    });
+  for (const [x, y] of [[1100, 350], [1050, 400], [1000, 300], [900, 420]] as const) {
+    await canvas.click({ position: { x, y } });
+    await page.getByTestId('sandbox-step').click();
+    await page.waitForTimeout(200);
+    if ((await crew()).length > 0) break;
+  }
+  const men = await crew();
+  expect(men).toHaveLength(4);
+  expect(men.filter((unit) => unit.weaponId === 'metralhadora-7mm')).toHaveLength(1);
+
+  const squadId = men[0]!.squadId;
+  await page.getByTestId(`squad-${squadId}`).click();
+  await expect(page.getByTestId(`squad-name-${squadId}`)).toContainText('Machine gun');
+  await expect(page.getByTestId('gun-state')).toBeVisible();
+  await expect(page.getByTestId('gun-pool')).toContainText('750');
+});

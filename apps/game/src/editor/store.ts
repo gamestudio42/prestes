@@ -1,13 +1,21 @@
 import {
   compileMapDocument,
+  coverPreview,
   createEditableMap,
   setActiveMap,
   type BattleMap,
+  type CoverPreview,
   type EditableMap,
   type GroundMaterialId,
   type LineKind,
   type MapProblem,
   type RoadType,
+  type TrenchDepth,
+  type TrenchFacing,
+  type TrenchKind,
+  type TrenchParapet,
+  type TreeBiome,
+  type TreeDensity,
 } from '@prestes/shared';
 
 /**
@@ -33,7 +41,9 @@ export type ToolId =
   | 'bridge'
   | 'ferry'
   | 'line'
+  | 'trench'
   | 'place'
+  | 'trees'
   | 'vegetation'
   | 'deployment';
 
@@ -48,13 +58,23 @@ export interface ToolSettings {
   seed: number;
   roadType: RoadType;
   roadWidth: number;
-  camber: number;
   ditchLeft: boolean;
   ditchRight: boolean;
   riverWidth: number;
   waterKind: 'deep' | 'ford';
   lineKind: LineKind;
   lineHeight: number;
+  /** refine-map-editor 2.5: the next trench line drawn. */
+  trenchKind: TrenchKind;
+  trenchDepth: TrenchDepth;
+  trenchFacing: TrenchFacing;
+  trenchBays: boolean;
+  trenchParapet: TrenchParapet;
+  /** refine-map-editor 5.1: the trees tool. */
+  treeMode: 'scatter' | 'single' | 'erase';
+  treeBiome: TreeBiome;
+  treeDensity: TreeDensity;
+  treeSpecies: string;
   objectType: string;
   rotation: number;
   scale: number;
@@ -66,14 +86,18 @@ export interface ViewSettings {
   overlay: 'none' | 'slope' | 'contours' | 'relief';
   grid: boolean;
   topDown: boolean;
+  /** refine-map-editor 6.1: the cover overlay (slots, badges, concealment, zone totals). */
+  cover: boolean;
 }
 
 /** What a selection points at. */
 export type SelectionItem =
   | { kind: 'object'; id: number }
-  | { kind: 'road' | 'river' | 'pond' | 'line'; id: number; point?: number }
+  | { kind: 'road' | 'river' | 'pond' | 'line' | 'trench'; id: number; point?: number }
   | { kind: 'bridge' | 'ferry'; id: number; end?: 0 | 1 }
-  | { kind: 'section'; side: 'column' | 'legalist'; index: number };
+  | { kind: 'section'; side: 'column' | 'legalist'; index: number }
+  /** add-deployment-phase 1.2: a side's deployment area, or one of its corners. */
+  | { kind: 'area'; side: 'column' | 'legalist'; point?: number };
 
 /** A dirty region of the map after an edit (metres); null is the whole map. */
 export type DirtyBox = { minX: number; minY: number; maxX: number; maxY: number } | null;
@@ -161,25 +185,38 @@ export class EditorStore {
     seed: 1924,
     roadType: 'dirt-road',
     roadWidth: 5,
-    camber: 0.1,
     ditchLeft: false,
     ditchRight: true,
     riverWidth: 14,
     waterKind: 'deep',
     lineKind: 'stone-wall',
     lineHeight: 1.2,
+    trenchKind: 'fire',
+    trenchDepth: 1.2,
+    trenchFacing: 'left',
+    trenchBays: true,
+    trenchParapet: 'earth',
+    treeMode: 'scatter',
+    treeBiome: 'cerrado',
+    treeDensity: 'medium',
+    treeSpecies: 'cerrado-tree',
     objectType: 'boulder',
     rotation: 0,
     scale: 1,
     snap: 1,
     rotateStep: true,
   };
-  view: ViewSettings = { overlay: 'none', grid: false, topDown: false };
+  view: ViewSettings = { overlay: 'none', grid: false, topDown: false, cover: false };
+  /** The cover piece under the pointer while the cover overlay is on (its preview key). */
+  coverHover: string | null = null;
+  private preview: { map: BattleMap; preview: CoverPreview } | null = null;
   selection: SelectionItem[] = [];
   problems: MapProblem[] | null = null;
   saveState: SaveState = 'saved';
   message: { text: string; error: boolean } | null = null;
   version = 0;
+  /** Scatter strokes since the map was opened: with the map id, a stroke's seed (D7). */
+  treeStrokes = 0;
   private readonly undoStack: Command[] = [];
   private readonly redoStack: Command[] = [];
   private readonly listeners = new Set<() => void>();
@@ -198,6 +235,18 @@ export class EditorStore {
     return this.compiled;
   }
 
+  /** The game's cover slots on the open map, counted per piece and per deployment zone (D9). */
+  coverPreview(): CoverPreview {
+    if (this.preview?.map !== this.compiled) this.preview = { map: this.compiled, preview: coverPreview(this.compiled) };
+    return this.preview.preview;
+  }
+
+  setCoverHover(key: string | null): void {
+    if (this.coverHover === key) return;
+    this.coverHover = key;
+    this.emit();
+  }
+
   subscribe(listener: () => void): () => void {
     this.listeners.add(listener);
     return () => this.listeners.delete(listener);
@@ -211,6 +260,7 @@ export class EditorStore {
   /** Replaces the open map without history (load, new map). */
   load(map: EditableMap): void {
     this.map = map;
+    this.treeStrokes = 0;
     this.undoStack.length = 0;
     this.redoStack.length = 0;
     this.selection = [];
@@ -284,12 +334,16 @@ export class EditorStore {
         return this.map.ponds.some((pond) => pond.id === item.id);
       case 'line':
         return this.map.lines.some((line) => line.id === item.id);
+      case 'trench':
+        return this.map.trenches.some((line) => line.id === item.id);
       case 'bridge':
         return this.map.bridges.some((bridge) => bridge.id === item.id);
       case 'ferry':
         return this.map.ferries.some((ferry) => ferry.id === item.id);
       case 'section':
         return item.index < this.map.deployment[item.side].sections.length;
+      case 'area':
+        return item.point === undefined || item.point < this.map.deployment[item.side].area.length;
     }
   }
 

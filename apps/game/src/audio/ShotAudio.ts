@@ -1,4 +1,4 @@
-﻿import type { SimEvent } from '@prestes/shared';
+﻿import { shotShown, type SimEvent } from '@prestes/shared';
 import { openAudioContext } from './context';
 
 export interface GunshotOutput {
@@ -91,7 +91,7 @@ export class ShotAudio {
   }
 
   handleEvent(event: SimEvent): void {
-    if (event.type !== 'shot' || this.muted || !this.ready) {
+    if (event.type !== 'shot' || !shotShown(event) || this.muted || !this.ready) {
       return;
     }
     const key = `${event.tick}:${event.source}:${event.target}`;

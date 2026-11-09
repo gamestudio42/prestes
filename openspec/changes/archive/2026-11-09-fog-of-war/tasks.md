@@ -18,4 +18,5 @@
 ## 4. Close
 
 - [x] 4.1 Determinism golden re-recorded with the reason; `pnpm verify` (verify: gate passes)
-- [ ] 4.2 Hand check by the user in Chrome: a 3v3 under fog; record in `docs/status.md`
+- [x] 4.2 Hand check by the user in Chrome: a 3v3 under fog; record in `docs/status.md`
+  - Apply note (2026-11-09): The user played a 3v3 under fog: it works very well. Recorded in docs/status.md.

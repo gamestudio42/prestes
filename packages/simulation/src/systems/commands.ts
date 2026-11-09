@@ -72,6 +72,10 @@ export function applyCommand(
   if (command.type === 'noop') {
     return;
   }
+  // add-deployment-phase: the phase's own commands mean nothing once the battle runs.
+  if (command.type === 'start_battle' || command.type === 'reset_deployment') {
+    return;
+  }
 
   // Bounding is part of Advance and Attack now; the old switch is accepted
   // (replays, tests) and has no effect.

@@ -5,9 +5,11 @@ import { setActiveMap } from './catalog';
 import { catalogObject } from './catalog-objects';
 import { compileMapDocument, isValidMapId, mapSide, type EditableMap } from './document';
 import { pointInPolygon, pointInStrip } from './geometry';
+import { maskedVegetation } from './growth-mask';
 import { isDeepWater, vegetationAt } from './runtime';
 import type { BattleMap } from './types';
-import { MIN_DEPLOYMENT_GAP } from './validate';
+import { insideDeploymentArea, polygonsOverlap } from './deployment-areas';
+import { MIN_DEPLOYMENT_GAP, MIN_WALKABLE_AREA_SHARE, walkableShare } from './validate';
 
 /**
  * The editor's map checks (add-map-editor): the battle map rules plus the
@@ -24,12 +26,16 @@ export type ProblemCode =
   | 'section-out-of-bounds'
   | 'section-not-walkable'
   | 'zones-too-close'
+  | 'section-outside-area'
+  | 'areas-overlap'
+  | 'area-not-walkable'
   | 'no-path'
   | 'object-out-of-bounds'
   | 'unknown-object'
   | 'buildings-overlap'
   | 'bridge-not-over-water'
-  | 'cover-gap';
+  | 'cover-gap'
+  | 'masked-vegetation';
 
 export interface MapProblem {
   code: ProblemCode;
@@ -37,7 +43,7 @@ export interface MapProblem {
   params: Record<string, string | number>;
   at?: Vec2;
   /** What to select when the problem is chosen. */
-  target?: { kind: 'object' | 'section' | 'bridge'; id: number | string };
+  target?: { kind: 'object' | 'section' | 'area' | 'bridge'; id: number | string };
 }
 
 /** Longest stretch without cover on the line between the zones (m) before a warning. */
@@ -186,6 +192,22 @@ export function validateEditableMap(map: EditableMap): MapProblem[] {
       }
     });
   }
+  // add-deployment-phase 1.2: each section point inside its side's area, the areas apart and half walkable.
+  for (const side of ['column', 'legalist'] as const) {
+    const zone = map.deployment[side];
+    zone.sections.forEach((start, index) => {
+      if (!insideDeploymentArea(zone.area, start.x, start.y)) {
+        add({ code: 'section-outside-area', severity: 'error', params: { side, section: index + 1 }, at: start, target: { kind: 'section', id: `${side}:${index}` } });
+      }
+    });
+    const share = zone.area.length >= 3 ? walkableShare(zone.area, compiled.covers) : 0;
+    if (share < MIN_WALKABLE_AREA_SHARE) {
+      add({ code: 'area-not-walkable', severity: 'error', params: { side, percent: Math.round(share * 100) }, at: centroid(zone.area), target: { kind: 'area', id: side } });
+    }
+  }
+  if (polygonsOverlap(map.deployment.column.area, map.deployment.legalist.area)) {
+    add({ code: 'areas-overlap', severity: 'error', params: {}, at: centroid(map.deployment.column.area), target: { kind: 'area', id: 'column' } });
+  }
   const column = centroid(map.deployment.column.sections);
   const legalist = centroid(map.deployment.legalist.sections);
   const gap = Math.hypot(column.x - legalist.x, column.y - legalist.y);
@@ -201,5 +223,8 @@ export function validateEditableMap(map: EditableMap): MapProblem[] {
   if (coverGap.length > MAX_COVER_GAP) {
     add({ code: 'cover-gap', severity: 'warning', params: { metres: Math.round(coverGap.length), maximum: MAX_COVER_GAP }, at: coverGap.at });
   }
+  // refine-map-editor D2: plants painted where nothing grows (the compiler clears them).
+  const masked = maskedVegetation(map);
+  if (masked.count > 0) add({ code: 'masked-vegetation', severity: 'warning', params: { count: masked.count }, ...(masked.at ? { at: masked.at } : {}) });
   return problems;
 }

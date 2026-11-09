@@ -1,45 +1,12 @@
 import type { CoverPoint, Vec2 } from '../protocol';
 import type { Building } from '../world';
-import type { DeploymentZone, HeightShape, MapLine, PropPlacement, Strip } from './types';
+import type { DeploymentZone, HeightShape, MapLine, Polygon, PropPlacement, Strip } from './types';
 import { catalogObject, solidBlocksSight, solidQuality } from './catalog-objects';
 
 /**
- * Shared pieces for building battle maps (add-battle-maps): trench lines,
+ * Shared pieces for building battle maps (add-battle-maps):
  * rock and barricade covers, deployment zones and prop rows.
  */
-
-/**
- * A section's trench line: four short bays with a sandbag parapet on the
- * enemy's side (`enemySide` -1 north, 1 south), as on the Vila Militar field.
- */
-export function trenchLine(firstId: number, x: number, y: number, enemySide: 1 | -1): CoverPoint[] {
-  return [-9, -3, 3, 9].flatMap((dx, index): CoverPoint[] => [
-    { id: firstId + index * 2, kind: 'trench', x: x + dx, y, halfWidth: 2.8, halfDepth: 1.6, height: 0.2, radius: 3.2, quality: 0.4, blocksMovement: false, blocksSight: false },
-    { id: firstId + index * 2 + 1, kind: 'sandbag', x: x + dx, y: y + enemySide * 1.9, halfWidth: 2.8, halfDepth: 0.4, height: 0.9, radius: 3.5, quality: 0.3, blocksMovement: false, blocksSight: false },
-  ]);
-}
-
-/** A communication trench from a line back to the rear: a long narrow trench. */
-export function communicationTrench(id: number, from: Vec2, to: Vec2): CoverPoint {
-  const dx = to.x - from.x;
-  const dy = to.y - from.y;
-  const length = Math.hypot(dx, dy);
-  return {
-    id,
-    kind: 'trench',
-    x: (from.x + to.x) / 2,
-    y: (from.y + to.y) / 2,
-    // The trench's long axis is its local x; rotate it onto the line.
-    rotation: Math.atan2(dy, dx),
-    halfWidth: length / 2,
-    halfDepth: 0.9,
-    height: 0.2,
-    radius: 2.2,
-    quality: 0.35,
-    blocksMovement: false,
-    blocksSight: false,
-  };
-}
 
 /** How a hand-written map's walls look (refine-battle-maps 5.1): the editor's wall kinds. */
 export type WallLook = 'brick-wall' | 'stone-wall' | 'taipa-wall';
@@ -212,8 +179,21 @@ export function lowWall(id: number, x: number, y: number, halfWidth: number, rot
 }
 
 /** Three sections abreast at `y`, facing `facingY`. */
-export function zone(xs: readonly [number, number, number], y: number, facingY: 1 | -1): DeploymentZone {
-  return { sections: xs.map((x) => ({ x, y })), facing: { x: 0, y: facingY } };
+export function zone(xs: readonly [number, number, number], y: number, facingY: 1 | -1, area: Polygon): DeploymentZone {
+  return { sections: xs.map((x) => ({ x, y })), facing: { x: 0, y: facingY }, area };
+}
+
+/**
+ * add-deployment-phase 1.1: a hand-drawn area from x0 to x1 across, from the
+ * front line `front` back to `back` (the side's rear).
+ */
+export function band(x0: number, x1: number, front: number, back: number): Polygon {
+  return [
+    { x: x0, y: front },
+    { x: x1, y: front },
+    { x: x1, y: back },
+    { x: x0, y: back },
+  ];
 }
 
 /**

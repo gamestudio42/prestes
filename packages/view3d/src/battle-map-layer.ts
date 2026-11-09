@@ -1,21 +1,30 @@
 import * as THREE from 'three';
 import {
+  activeMapRuntime,
+  bridgeDeckHeight,
+  buildTrenchLine,
   catalogObject,
+  outlineShapes,
+  runtimeBridgeLandings,
+  traceWaterOutlines,
   FORD_DEPTH,
-  VEGETATION_KINDS,
   pointInPolygon,
   terrainHeightAt,
+  TRENCH,
   type BattleMap,
   type Building,
   type MapLine,
   type Polygon,
   type Strip,
-  type VegetationKind,
   type Vec2,
 } from '@prestes/shared';
 import { ModelPlacements, warnMissing, type EnvironmentAsset } from './environment-models';
 import { toon } from './materials';
 import { PALETTE } from './palette';
+import { clumpGeometry, PLANT_LOOK, PLANT_SWAY, plantGeometry, plantSpots, STRATEGIC_CLUMP_CAP, swayingMaterial } from './plant-meshes';
+
+/** Past this span (m) the plants give way to their clumps. */
+export const STRATEGIC_PLANT_SPAN = 110;
 
 /**
  * A battle map's countryside (add-battle-maps): water, bridges, the ferry,
@@ -265,6 +274,29 @@ function polygonMesh(polygon: Polygon, height: number, color: number, opacity: n
   return mesh;
 }
 
+/**
+ * Water inside traced outlines (refine-map-editor D4): one flat mesh for the
+ * union of the areas, its edge following the water's line rather than the
+ * strips' joints or 1 m cells, and overlaps drawn once.
+ */
+function outlineMesh(loops: readonly Vec2[][], height: number, color: number, opacity: number, name: string): THREE.Mesh | null {
+  const shapes = outlineShapes(loops).map(({ outer, holes }) => {
+    const shape = new THREE.Shape(outer.map((point) => new THREE.Vector2(point.x, -point.y)));
+    for (const hole of holes) shape.holes.push(new THREE.Path(hole.map((point) => new THREE.Vector2(point.x, -point.y))));
+    return shape;
+  });
+  if (shapes.length === 0) return null;
+  const geometry = new THREE.ShapeGeometry(shapes);
+  geometry.rotateX(-Math.PI / 2);
+  const mesh = new THREE.Mesh(
+    geometry,
+    new THREE.MeshBasicMaterial({ color, transparent: opacity < 1, opacity, depthWrite: opacity >= 1, side: THREE.DoubleSide }),
+  );
+  mesh.name = name;
+  mesh.position.y = height;
+  return mesh;
+}
+
 /** A ribbon along a strip, at a fixed height. */
 function stripMesh(strip: Strip, height: number, color: number, opacity: number): THREE.Mesh {
   const positions: number[] = [];
@@ -300,99 +332,102 @@ function stripMesh(strip: Strip, height: number, color: number, opacity: number)
   );
 }
 
-/** Each crop's clump: geometry, size, colours and grid spacing. */
-const CLUMP: Readonly<
-  Record<VegetationKind, { geometry: THREE.BufferGeometry; height: number; width: number; spacing: number; colors: number[] }>
-> = {
-  corn: { geometry: unitCone, height: 2.0, width: 0.32, spacing: 0.9, colors: [PALETTE.corn, PALETTE.cornTassel, PALETTE.corn] },
-  cane: { geometry: unitCone, height: 2.5, width: 0.28, spacing: 0.8, colors: [PALETTE.cane, PALETTE.caneLight] },
-  'tall-grass': { geometry: unitCone, height: 1.0, width: 0.35, spacing: 1.0, colors: [PALETTE.capim, PALETTE.grassLight, PALETTE.hay] },
-  scrub: { geometry: unitRock, height: 1.4, width: 1.0, spacing: 2.6, colors: [PALETTE.scrub, PALETTE.leafDark, PALETTE.leaf] },
-};
-
-/** Jittered points on the cells of an authored map's vegetation raster that hold `kind` (add-map-editor). */
-function rasterPoints(map: BattleMap, kind: VegetationKind, spacing: number, random: () => number): Vec2[] {
-  const raster = map.raster!;
-  const code = VEGETATION_KINDS.indexOf(kind) + 1;
-  const side = Math.round(map.bounds.maxX - map.bounds.minX);
-  const points: Vec2[] = [];
-  for (let y = map.bounds.minY; y < map.bounds.maxY; y += spacing) {
-    for (let x = map.bounds.minX; x < map.bounds.maxX; x += spacing) {
-      const px = x + (random() - 0.5) * spacing * 0.7;
-      const py = y + (random() - 0.5) * spacing * 0.7;
-      const cx = Math.floor(px - map.bounds.minX);
-      const cy = Math.floor(py - map.bounds.minY);
-      if (cx < 0 || cy < 0 || cx >= side || cy >= side) continue;
-      if (raster.vegetation[cy * side + cx] === code) points.push({ x: px, y: py });
-    }
-  }
-  return points;
-}
-
-/** One instanced mesh per vegetation kind: clumps on a jittered grid inside each area. */
-function vegetation(map: BattleMap): THREE.Group {
+/** One instanced mesh per vegetation kind, and its capped clump mesh for strategic span (refine-map-editor D1). */
+function vegetation(map: BattleMap): { group: THREE.Group; plants: THREE.InstancedMesh[]; clumps: THREE.InstancedMesh[] } {
   const group = new THREE.Group();
   group.name = 'battle-map-vegetation';
-  const random = seededRandom(seedOf(map.id));
+  const seed = seedOf(map.id);
   const matrix = new THREE.Matrix4();
   const quaternion = new THREE.Quaternion();
   const up = new THREE.Vector3(0, 1, 0);
   const position = new THREE.Vector3();
   const scale = new THREE.Vector3();
   const color = new THREE.Color();
+  const plants: THREE.InstancedMesh[] = [];
+  const clumps: THREE.InstancedMesh[] = [];
   for (const kind of ['corn', 'cane', 'tall-grass', 'scrub'] as const) {
-    const areas = map.vegetation.filter((area) => area.kind === kind);
-    const look = CLUMP[kind];
-    const points: Vec2[] = map.raster ? rasterPoints(map, kind, look.spacing, random) : [];
-    if (areas.length === 0 && points.length === 0) continue;
-    for (const area of areas) {
-      const xs = area.polygon.map((point) => point.x);
-      const ys = area.polygon.map((point) => point.y);
-      for (let y = Math.min(...ys); y <= Math.max(...ys); y += look.spacing) {
-        for (let x = Math.min(...xs); x <= Math.max(...xs); x += look.spacing) {
-          const px = x + (random() - 0.5) * look.spacing * 0.7;
-          const py = y + (random() - 0.5) * look.spacing * 0.7;
-          if (pointInPolygon(px, py, area.polygon)) points.push({ x: px, y: py });
-        }
-      }
-    }
-    const mesh = new THREE.InstancedMesh(look.geometry, toon({ color: 0xffffff }), points.length);
+    const spots = plantSpots(map, kind, seed);
+    if (spots.length === 0) continue;
+    const look = PLANT_LOOK[kind];
+    const material = swayingMaterial(look.sway);
+    const mesh = new THREE.InstancedMesh(plantGeometry(kind), material, spots.length);
     mesh.name = `vegetation:${kind}`;
-    points.forEach((point, index) => {
-      const height = look.height * (0.85 + random() * 0.3);
-      const width = look.width * (0.8 + random() * 0.4);
-      position.set(point.x, terrainHeightAt(point.x, point.y) + height / 2, point.y);
-      quaternion.setFromAxisAngle(up, random() * Math.PI * 2);
-      scale.set(width, kind === 'scrub' ? height / 2 : height, width);
+    // Every fourth spot carries a clump, up to the cap; each stands for four plants.
+    const stride = Math.max(4, Math.ceil(spots.length / STRATEGIC_CLUMP_CAP));
+    const clump = new THREE.InstancedMesh(clumpGeometry(kind), material, Math.ceil(spots.length / stride));
+    clump.name = `vegetation-clumps:${kind}`;
+    clump.visible = false;
+    let clumpCount = 0;
+    spots.forEach((spot, index) => {
+      const size = 0.85 + spot.size * 0.3;
+      position.set(spot.x, terrainHeightAt(spot.x, spot.y), spot.y);
+      quaternion.setFromAxisAngle(up, spot.turn);
+      scale.set(size, size * (0.9 + spot.stretch * 0.2), size);
       matrix.compose(position, quaternion, scale);
       mesh.setMatrixAt(index, matrix);
-      color.setHex(look.colors[Math.floor(random() * look.colors.length)]!);
+      color.setHex(look.colors[Math.floor(spot.shade * look.colors.length)]!);
       mesh.setColorAt(index, color);
+      if (index % stride === 0) {
+        clump.setMatrixAt(clumpCount, matrix);
+        clump.setColorAt(clumpCount, color);
+        clumpCount += 1;
+      }
     });
-    mesh.instanceMatrix.needsUpdate = true;
-    if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
-    group.add(mesh);
+    clump.count = clumpCount;
+    for (const instanced of [mesh, clump]) {
+      instanced.instanceMatrix.needsUpdate = true;
+      if (instanced.instanceColor) instanced.instanceColor.needsUpdate = true;
+      instanced.computeBoundingSphere();
+      group.add(instanced);
+    }
+    plants.push(mesh);
+    clumps.push(clump);
   }
-  return group;
+  return { group, plants, clumps };
 }
 
-/** A wooden bridge: deck, rails on posts, piers. */
+/** Deck pieces along a bridge: short enough to follow its ramps. */
+const DECK_PIECE = 1;
+
+/**
+ * A bridge on its abutments (refine-map-editor D3): the deck follows the
+ * shared profile, meeting each bank at its landing and clearing the water in
+ * between, so no ground shows through it.
+ */
 function bridge(map: BattleMap, entry: BattleMap['bridges'][number]): THREE.Group {
   const group = new THREE.Group();
   group.name = 'placeholder:bridge';
-  const deck = map.waterLevel + entry.deckHeight;
-  const length = entry.halfDepth * 2;
+  const runtime = activeMapRuntime();
+  const flat = map.waterLevel + entry.deckHeight;
+  const ends: [number, number] = runtime && runtime.map === map ? runtimeBridgeLandings(runtime, entry) : [flat, flat];
+  const deckAt = (along: number): number => bridgeDeckHeight(entry, map.waterLevel, ends, along);
   const width = entry.halfWidth * 2;
-  placed(group, unitBox, PALETTE.wood, 0, deck - 0.12, 0, [width, 0.24, length]);
+  const pieces = Math.max(1, Math.ceil((entry.halfDepth * 2) / DECK_PIECE));
+  const step = (entry.halfDepth * 2) / pieces;
+  for (let piece = 0; piece < pieces; piece += 1) {
+    const z0 = -entry.halfDepth + piece * step;
+    const z1 = z0 + step;
+    const h0 = deckAt(z0);
+    const h1 = deckAt(z1);
+    const tilt = -Math.atan2(h1 - h0, step);
+    const length = Math.hypot(step, h1 - h0) + 0.02;
+    const middle = (h0 + h1) / 2;
+    placed(group, unitBox, PALETTE.wood, 0, middle - 0.12, (z0 + z1) / 2, [width, 0.24, length]).rotation.x = tilt;
+    for (const side of [-1, 1]) {
+      placed(group, unitBox, PALETTE.bark, side * (entry.halfWidth - 0.1), middle + 0.85, (z0 + z1) / 2, [0.12, 0.1, length]).rotation.x = tilt;
+    }
+  }
   for (const side of [-1, 1]) {
-    placed(group, unitBox, PALETTE.bark, side * (entry.halfWidth - 0.1), deck + 0.85, 0, [0.12, 0.1, length]);
     for (let z = -entry.halfDepth; z <= entry.halfDepth + 0.01; z += 2.4) {
-      placed(group, unitBox, PALETTE.bark, side * (entry.halfWidth - 0.1), deck + 0.45, z, [0.14, 0.9, 0.14]);
+      placed(group, unitBox, PALETTE.bark, side * (entry.halfWidth - 0.1), deckAt(z) + 0.45, z, [0.14, 0.9, 0.14]);
     }
   }
   for (let z = -entry.halfDepth + 3; z < entry.halfDepth - 2; z += 5) {
+    const top = deckAt(z);
+    const foot = map.waterLevel - 1.6;
+    if (top - foot < 0.5) continue;
     for (const side of [-1, 1]) {
-      placed(group, unitCylinder, PALETTE.bark, side * (entry.halfWidth - 0.3), deck - 2, z, [0.22, 4, 0.22]);
+      placed(group, unitCylinder, PALETTE.bark, side * (entry.halfWidth - 0.3), (top + foot) / 2, z, [0.22, top - foot, 0.22]);
     }
   }
   group.position.set(entry.x, 0, entry.y);
@@ -952,22 +987,110 @@ export function lines(map: BattleMap): THREE.Group {
   return group;
 }
 
+/**
+ * refine-map-editor 2.4: trench lines, dressed on the simulation's cut (a man
+ * on the floor is drawn where he stands, below the ground): a dark floor with
+ * duckboards, revetted walls up to the lip, the parapet (an earth berm or
+ * sandbag courses) on the fire side, and the traverses of its bays.
+ */
+export function trenchWorks(map: BattleMap): THREE.Group {
+  const group = new THREE.Group();
+  group.name = 'battle-map-trenches';
+  const pieces = new Instancer();
+  const half = TRENCH.floor / 2;
+  for (const line of map.trenches ?? []) {
+    const built = buildTrenchLine(line, 0);
+    const fire = line.kind === 'fire';
+    // Right of travel is +normal; the fire side is +1 for a right-facing line.
+    const front = line.facing === 'right' ? 1 : -1;
+    const floor = drapedRibbon(map, line.points, -half, half, 1, PALETTE.trenchDeep, 'trench-floor');
+    group.add(floor);
+    group.add(revetment(line.points, half, 1));
+    group.add(revetment(line.points, half, -1));
+    // Duckboards: slats across the floor every half metre, on two runners.
+    for (const point of walk(line.points, 0.5)) {
+      const ground = terrainHeightAt(point.x, point.y);
+      const rotation = -Math.atan2(-point.nx, point.ny);
+      const frame = { x: point.x, ground, y: point.y, rotation };
+      pieces.add(unitBox, PALETTE.duckboard, frame, [0, 0.1, 0], [0.32, 0.04, TRENCH.floor * 0.7]);
+    }
+    if (fire && line.parapet === 'sandbag') {
+      const offset = half + 0.4;
+      for (const point of walk(line.points, 0.8)) {
+        const x = point.x + point.nx * offset * front;
+        const y = point.y + point.ny * offset * front;
+        const frame = { x, ground: terrainHeightAt(x, y), y, rotation: -Math.atan2(-point.nx, point.ny) };
+        for (let course = 0; course < 2; course += 1) pieces.add(unitBox, PALETTE.sandbag, frame, [course * 0.2, 0.15 + course * 0.3, 0], [0.76, 0.3, 0.46]);
+      }
+    } else if (built.parapet) {
+      group.add(drapedRibbon(map, built.parapet, -TRENCH.parapetWidth / 2, TRENCH.parapetWidth / 2, 1, PALETTE.trenchEarth, 'trench-parapet'));
+    }
+    for (const traverse of built.traverses) {
+      const frame = { x: traverse.x, ground: terrainHeightAt(traverse.x, traverse.y), y: traverse.y, rotation: -traverse.rotation };
+      pieces.add(unitBox, PALETTE.trenchEarth, frame, [0, 0.35, 0], [1.0, 0.9, TRENCH.floor * 0.5]);
+    }
+  }
+  pieces.build(group);
+  return group;
+}
+
+/** A trench wall: a vertical strip from the floor's edge up to the ground just past it. */
+function revetment(points: readonly Vec2[], half: number, side: 1 | -1): THREE.Mesh {
+  const positions: number[] = [];
+  const indices: number[] = [];
+  walk(points, 1).forEach((point, index) => {
+    const x = point.x + point.nx * half * side;
+    const y = point.y + point.ny * half * side;
+    const lipX = point.x + point.nx * (half + TRENCH.wall + 0.3) * side;
+    const lipY = point.y + point.ny * (half + TRENCH.wall + 0.3) * side;
+    positions.push(x, terrainHeightAt(x, y) + 0.02, y, x, Math.max(terrainHeightAt(x, y), terrainHeightAt(lipX, lipY)) + 0.08, y);
+    if (index > 0) {
+      const base = (index - 1) * 2;
+      indices.push(base, base + 1, base + 2, base + 1, base + 3, base + 2);
+    }
+  });
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+  geometry.setIndex(indices);
+  geometry.computeVertexNormals();
+  const mesh = new THREE.Mesh(geometry, toon({ color: PALETTE.revetment, side: THREE.DoubleSide }));
+  mesh.name = 'trench-revetment';
+  return mesh;
+}
+
+/**
+ * One prop as the battle layer draws it, for previews (the editor's tree
+ * thumbnails): its model when the environment has one, else its placeholder.
+ */
+export function propPreview(model: string, asset: EnvironmentAsset | null): THREE.Object3D | null {
+  const geometry = MODELLED_PROPS.has(model) ? asset?.geometry(model) : undefined;
+  if (geometry && asset) return new THREE.Mesh(geometry, asset.materialOf(model));
+  return placeholderProp(model);
+}
+
 /** Props the Blender environment already has. */
-const MODELLED_PROPS = new Set(['tree-broad', 'tree-pine', 'tree-araucaria', 'cart', 'well', 'haystack', 'barrel', 'crate']);
+const MODELLED_PROPS = new Set(['tree-broad', 'tree-pine', 'tree-araucaria', 'buriti', 'cerrado-tree', 'bush', 'cart', 'well', 'haystack', 'barrel', 'crate']);
 
 export class BattleMapLayer {
   readonly group = new THREE.Group();
   private readonly placements = new ModelPlacements();
   private readonly rafts = new Map<number, THREE.Group>();
   private readonly ripples: Ripple[] = [];
+  private readonly plants: THREE.InstancedMesh[];
+  private readonly clumps: THREE.InstancedMesh[];
+  private strategicPlants = false;
 
   constructor(private readonly map: BattleMap) {
     this.group.name = `battle-map:${map.id}`;
     this.buildWater();
     // An editor map's painted ground draws its own roads.
     if (!map.paint) this.group.add(roadsAndHeadlands(map));
-    this.group.add(vegetation(map));
+    const plants = vegetation(map);
+    this.plants = plants.plants;
+    this.clumps = plants.clumps;
+    this.group.add(plants.group);
     this.group.add(lines(map));
+    this.group.add(trenchWorks(map));
     // Placeholder buildings as instanced pieces (the Bairro has over a hundred).
     const placeholders = new Instancer();
     for (const building of map.buildings) {
@@ -1018,15 +1141,15 @@ export class BattleMapLayer {
 
   private buildWater(): void {
     for (const area of this.map.water) {
-      if (area.kind === 'ford') {
-        if (area.polygon) this.group.add(ford(this.map, area.polygon, this.ripples));
-        if (area.strip) this.group.add(stripMesh(area.strip, this.map.waterLevel + 0.03, WATER_LOOK.ford.color, WATER_LOOK.ford.opacity));
-        continue;
-      }
-      const { color, opacity } = WATER_LOOK.deep;
-      if (area.polygon) this.group.add(polygonMesh(area.polygon, this.map.waterLevel, color, opacity));
-      if (area.strip) this.group.add(stripMesh(area.strip, this.map.waterLevel, color, opacity));
+      if (area.kind === 'ford' && area.polygon) this.group.add(ford(this.map, area.polygon, this.ripples));
     }
+    // Deep water, and the fords' river reaches, inside traced outlines.
+    const deep = this.map.water.filter((area) => area.kind === 'deep');
+    const fordReaches = this.map.water.filter((area) => area.kind === 'ford' && area.strip).map((area) => ({ kind: area.kind, strip: area.strip! }));
+    const deepMesh = outlineMesh(traceWaterOutlines(this.map, deep), this.map.waterLevel, WATER_LOOK.deep.color, WATER_LOOK.deep.opacity, 'water:deep');
+    if (deepMesh) this.group.add(deepMesh);
+    const fordMesh = outlineMesh(traceWaterOutlines(this.map, fordReaches, deep), this.map.waterLevel + 0.03, WATER_LOOK.ford.color, WATER_LOOK.ford.opacity, 'water:ford');
+    if (fordMesh) this.group.add(fordMesh);
     if (this.map.water.some((area) => area.kind === 'deep' && area.strip)) this.group.add(riverbanks(this.map));
   }
 
@@ -1048,6 +1171,19 @@ export class BattleMapLayer {
       ripple.mesh.scale.setScalar(ripple.size * (0.3 + t));
       (ripple.mesh.material as THREE.MeshBasicMaterial).opacity = 0.55 * (1 - t);
     }
+  }
+
+  /**
+   * Each frame: the plants' sway clock, and at strategic span the capped
+   * clumps instead of every plant (refine-map-editor D1).
+   */
+  tick(seconds: number, span: number): void {
+    PLANT_SWAY.value = seconds;
+    const strategic = span > STRATEGIC_PLANT_SPAN;
+    if (strategic === this.strategicPlants) return;
+    this.strategicPlants = strategic;
+    for (const mesh of this.plants) mesh.visible = !strategic;
+    for (const mesh of this.clumps) mesh.visible = strategic;
   }
 
   useModels(asset: EnvironmentAsset): void {

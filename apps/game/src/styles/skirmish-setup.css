@@ -1,0 +1,413 @@
+/*
+ * pre-battle-roster 5.1, 5.5, 5.6: the skirmish setup screen. A planning
+ * board over the desk: a leather frame, three parchment columns (the map,
+ * your force, the enemy) and a footer with "Voltar" and "Combater". The
+ * board fits 1280 x 720 without scrolling the page; a long column scrolls
+ * inside itself.
+ */
+.skirmish-setup {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(12, 8, 4, 0.72);
+}
+
+.setup-board {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.8fr) minmax(300px, 1.2fr) minmax(280px, 1fr);
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  grid-template-areas:
+    'header header header'
+    'map force enemy'
+    'footer footer footer';
+  gap: 12px;
+  width: min(1240px, 100%);
+  /* The viewport's height, not the grid area's: a long column scrolls inside. */
+  height: min(860px, calc(100dvh - 32px));
+  padding: 16px 18px;
+  border: 2px solid var(--book-leather-dark);
+  background: var(--book-leather);
+  box-shadow:
+    inset 0 0 0 2px var(--book-leather-dark),
+    inset 0 0 0 4px var(--book-leather-light),
+    inset 0 0 0 6px var(--book-leather-dark),
+    var(--px-shadow-deep);
+  color: var(--book-ink);
+  font-family: var(--px-font);
+}
+
+.setup-header {
+  grid-area: header;
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  padding: 0 4px;
+  color: var(--px-parchment);
+}
+
+.setup-header h2 {
+  margin: 0;
+  color: var(--px-gold);
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.setup-header h2:focus {
+  outline: none;
+}
+
+.setup-header p {
+  margin: 0;
+  color: var(--px-parchment-dim);
+  font-size: 13px;
+}
+
+.setup-column {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 0;
+  padding: 10px 12px;
+  overflow-y: auto;
+  border: 2px solid var(--book-edge);
+  background: var(--book-paper);
+  box-shadow: inset -2px -2px 0 var(--book-paper-deep);
+  scrollbar-color: var(--book-edge) var(--book-paper-shade);
+  scrollbar-width: thin;
+}
+
+.setup-map {
+  grid-area: map;
+}
+
+.setup-force {
+  grid-area: force;
+}
+
+.setup-enemy {
+  grid-area: enemy;
+}
+
+.setup-column h3 {
+  margin: 0;
+  color: var(--book-accent);
+  font-size: 15px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* --- The map column ------------------------------------------------------ */
+.setup-map-list {
+  display: grid;
+  gap: 4px;
+}
+
+.setup-map-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 6px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.setup-map-option:hover {
+  background: var(--book-paper-shade);
+}
+
+.setup-map-option.active {
+  border-color: var(--book-accent);
+  background: var(--book-paper-shade);
+  font-weight: 600;
+}
+
+.setup-map-thumb {
+  flex: none;
+  width: 48px;
+  height: 48px;
+  border: 2px solid var(--book-edge);
+  background: #17140f;
+}
+
+.setup-map-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 4px 0 0;
+}
+
+.setup-map-preview {
+  align-self: center;
+  width: min(192px, 100%);
+  height: auto;
+  aspect-ratio: 1;
+  border: 3px solid var(--book-edge);
+  background: #17140f;
+}
+
+.setup-map-detail figcaption {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.setup-map-detail strong {
+  font-size: 15px;
+}
+
+/* --- The roster builder -------------------------------------------------- */
+.roster-builder {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.roster-types {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.roster-type {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: 3px;
+  width: 100%;
+  height: 100%;
+  padding: 6px 8px;
+  border: 2px solid var(--book-edge);
+  background: var(--book-paper-shade);
+  color: var(--book-ink);
+  text-align: left;
+  cursor: pointer;
+}
+
+.roster-type:hover:not([aria-disabled='true']) {
+  border-color: var(--book-accent);
+  background: #f6ead0;
+}
+
+.roster-type[aria-disabled='true'] {
+  cursor: not-allowed;
+  opacity: 0.72;
+}
+
+.roster-type-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.roster-type-name {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.roster-type-men {
+  flex: none;
+  color: var(--book-ink-soft);
+  font-size: 12px;
+}
+
+.roster-weapons {
+  display: flex;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  gap: 2px 8px;
+  color: var(--book-blue);
+  font-size: 12px;
+}
+
+.roster-weapon {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.roster-type-desc {
+  color: var(--book-ink-soft);
+  font-size: 12px;
+  line-height: 1.3;
+}
+
+.roster-refusal {
+  color: var(--book-accent);
+  font-weight: 600;
+}
+
+.roster-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-top: 8px;
+  border-top: 2px dashed var(--book-edge);
+}
+
+.roster-counters {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.roster-empty {
+  margin: 0;
+  color: var(--book-ink-soft);
+  font-size: 13px;
+}
+
+.roster-rows {
+  display: grid;
+  gap: 3px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.roster-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto repeat(3, 28px);
+  align-items: center;
+  gap: 4px;
+  padding: 2px 4px;
+  background: var(--book-paper-shade);
+  font-size: 14px;
+}
+
+.roster-row-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.roster-row-men {
+  color: var(--book-ink-soft);
+  font-size: 12px;
+}
+
+.roster-row-action {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 26px;
+  padding: 0;
+  border: 2px solid var(--book-edge);
+  background: var(--book-paper);
+  color: var(--book-ink);
+  cursor: pointer;
+}
+
+.roster-row-action:disabled {
+  color: var(--book-edge);
+  cursor: default;
+}
+
+.roster-default {
+  align-self: flex-start;
+}
+
+/* --- The enemy column ---------------------------------------------------- */
+.setup-enemy-choice {
+  display: grid;
+  gap: 4px;
+}
+
+.setup-enemy-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 4px 6px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.setup-enemy-option:hover {
+  background: var(--book-paper-shade);
+}
+
+.setup-enemy-option input {
+  flex: none;
+  margin-top: 3px;
+  accent-color: var(--book-accent);
+}
+
+.setup-enemy-option span {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.setup-enemy-option small {
+  color: var(--book-ink-soft);
+  font-size: 12px;
+  line-height: 1.3;
+}
+
+/* The enemy's builder sits in a narrower column: one type per row. */
+.setup-enemy .roster-types {
+  grid-template-columns: 1fr;
+}
+
+/* --- Footer ------------------------------------------------------------- */
+.setup-footer {
+  grid-area: footer;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.setup-footer button {
+  padding: 8px 16px;
+  font-size: 15px;
+}
+
+.setup-start:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Narrow screens: one column, the board scrolls. */
+@media (max-width: 900px) {
+  .setup-board {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+    grid-template-areas: 'header' 'map' 'force' 'enemy' 'footer';
+    height: 100%;
+    overflow-y: auto;
+  }
+
+  .setup-column {
+    overflow: visible;
+  }
+}
+
+/*
+ * pre-battle-roster 5.1: the desk keeps one folded map instead of the fan. It
+ * lies flat like the other objects, so its label sits the standard gap below.
+ */
+.desk-map-fan.desk-map-single {
+  width: var(--art-box-w);
+  height: var(--art-box-h);
+  perspective: none;
+}
+
+.desk-map-single .desk-map-sheet,
+.desk-map-single .desk-map-sheet.active {
+  transform: none;
+}
+
+.desk-maps:has(.desk-map-single) {
+  width: var(--art-box-w);
+}

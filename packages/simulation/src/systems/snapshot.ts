@@ -2,6 +2,7 @@ import { activeMapRuntime } from '@prestes/shared';
 import type { UnitSnapshot } from '@prestes/shared';
 import { isConcealed, isRevealed } from './concealment';
 import { waitingSide } from './ferry';
+import { gunReady, isBelt } from './machine-gun';
 import { RESCUE_CARRY_TICKS, TREAT_TICKS } from './model';
 import type { SimContext } from './context';
 
@@ -61,5 +62,7 @@ export function snapshotUnits(ctx: SimContext): UnitSnapshot[] {
     ...(battleMap && unit.alive && isRevealed(ctx, unit) ? { revealed: true } : {}),
     ...(unit.ferryId !== undefined ? { aboardFerry: true } : {}),
     ...(ctx.ferries.some((ferry) => waitingSide(ferry, unit) !== null) ? { waitingFerry: true } : {}),
+    ...(unit.sectionType !== undefined ? { sectionType: unit.sectionType } : {}),
+    ...(ctx.gunPools && isBelt(unit) ? { gunSet: gunReady(unit) } : {}),
   }));
 }

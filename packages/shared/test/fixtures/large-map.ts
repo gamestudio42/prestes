@@ -1,3 +1,4 @@
+import { band } from '../../src/maps/kit';
 import type { BattleMap } from '../../src/maps/types';
 import { boundsForSize } from '../../src/maps/sizes';
 
@@ -31,8 +32,8 @@ export const LARGE_TEST_MAP: BattleMap = {
   covers: [],
   sightObstacles: [],
   deployment: {
-    column: { sections: [{ x: -44, y: 95 }, { x: 0, y: 95 }, { x: 44, y: 95 }], facing: { x: 0, y: -1 } },
-    legalist: { sections: [{ x: -44, y: -95 }, { x: 0, y: -95 }, { x: 44, y: -95 }], facing: { x: 0, y: 1 } },
+    column: { sections: [{ x: -44, y: 95 }, { x: 0, y: 95 }, { x: 44, y: 95 }], facing: { x: 0, y: -1 }, area: band(-300, 300, 65, 300) },
+    legalist: { sections: [{ x: -44, y: -95 }, { x: 0, y: -95 }, { x: 44, y: -95 }], facing: { x: 0, y: 1 }, area: band(-300, 300, -65, -300) },
   },
   props: [],
   fences: [],

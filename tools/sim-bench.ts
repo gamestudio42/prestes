@@ -74,8 +74,27 @@ const BATTLE_TICKS = 3000;
     if (msPerTick > BUDGET_MS) over.push(`${map} ${msPerTick.toFixed(2)} ms`);
     console.log(JSON.stringify({ scenario: 'battle3v3', map, ticks: BATTLE_TICKS, msPerTick: Number(msPerTick.toFixed(4)), hashStable: runs[0]!.hash === runs[1]!.hash }));
   }
+  // pre-battle-roster 6.2: the heaviest mixed rosters on both sides (six
+  // sections, the machine gun and both automatic rifles, 32 men a side).
+  const { battleMap } = await import('../packages/shared/src');
+  const HEAVY = { sections: ['comando', 'metralhadora', 'esquadra-5', 'fuzil-metralhador', 'fuzileiros', 'irregulares'] } as const;
+  const ROSTER_BUDGET_MS: Readonly<Record<string, number>> = { fazenda: 3, bairro: 4.5 };
+  for (const [map, budget] of Object.entries(ROSTER_BUDGET_MS)) {
+    const runs = [0, 1].map(() => {
+      const rosters = { column: { sections: [...HEAVY.sections] }, legalist: { sections: [...HEAVY.sections] } };
+      const engine = new SimulationEngine({ seed: 1922, scenario: 'battle3v3', sandbox: true, battleMap: battleMap(map as never).id, rosters });
+      const start = process.cpuUsage();
+      let frame = engine.frame();
+      for (let tick = 0; tick < BATTLE_TICKS; tick += 2) frame = engine.runTicks(2, { hash: false });
+      const used = process.cpuUsage(start);
+      return { ms: (used.user + used.system) / 1000, hash: frame.hash || engine.frame().hash, units: engine.units.length };
+    });
+    const msPerTick = (runs[0]!.ms + runs[1]!.ms) / 2 / BATTLE_TICKS;
+    if (msPerTick > budget) over.push(`${map} (rostered) ${msPerTick.toFixed(2)} ms over ${budget}`);
+    console.log(JSON.stringify({ scenario: 'battle3v3-heavy-rosters', map, units: runs[0]!.units, ticks: BATTLE_TICKS, msPerTick: Number(msPerTick.toFixed(4)), budget, hashStable: runs[0]!.hash === runs[1]!.hash }));
+  }
   if (budgetOnly && over.length > 0) {
-    console.error(`FAIL over the ${BUDGET_MS} ms a tick budget: ${over.join(', ')}`);
+    console.error(`FAIL over the tick budget: ${over.join(', ')}`);
     process.exitCode = 1;
   }
 }

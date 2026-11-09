@@ -111,3 +111,40 @@ describe('rostered 3v3 (pre-battle-roster 3.1-3.4)', () => {
     expect(irregulars / rifles).toBeLessThan(0.97);
   });
 });
+
+describe('sandbox troops of a section type (pre-battle-roster 5.3)', () => {
+  it('spawns a machine-gun crew with its weapons, speed and belt pool', () => {
+    const engine = new SimulationEngine({ seed: 7, scenario: 'battle3v3', sandbox: true, battleMap: 'fazenda' });
+    const before = engine.units.length;
+    const anchor = engine.units[0]!;
+    for (const dy of [12, -12, 24, -24]) {
+      engine.enqueue({ type: 'spawn_troop', faction: 'column', to: { x: anchor.x, y: anchor.y + dy }, count: 11, section: 'metralhadora' });
+      engine.tick();
+      if (engine.units.length > before) break;
+    }
+    const crew = engine.units.slice(before);
+    expect(crew).toHaveLength(4);
+    expect(crew.map((unit) => unit.weaponId)).toEqual(['metralhadora-7mm', 'mauser-7mm', 'mauser-7mm', 'mauser-7mm']);
+    expect(crew.every((unit) => unit.sectionType === 'metralhadora')).toBe(true);
+    expect(crew[0]).toMatchObject({ magazine: 250, reserve: 0 });
+    expect(crew[0]!.speed).toBeCloseTo(anchor.speed * 0.85);
+    const frame = engine.frame({ hash: false });
+    expect(frame.gunPools?.[crew[0]!.squadId]).toBe(750);
+    expect(frame.units.find((unit) => unit.id === crew[0]!.id)?.gunSet).toBe(false);
+  });
+
+  it('a plain spawned troop is unchanged: no section type, no pool', () => {
+    const engine = new SimulationEngine({ seed: 7, scenario: 'battle3v3', sandbox: true, battleMap: 'fazenda' });
+    const before = engine.units.length;
+    const anchor = engine.units[0]!;
+    for (const dy of [12, -12, 24, -24]) {
+      engine.enqueue({ type: 'spawn_troop', faction: 'column', to: { x: anchor.x, y: anchor.y + dy }, count: 3 });
+      engine.tick();
+      if (engine.units.length > before) break;
+    }
+    const added = engine.units.slice(before);
+    expect(added.length).toBeGreaterThan(0);
+    expect(added.every((unit) => unit.sectionType === undefined && unit.weaponId === 'mauser-7mm')).toBe(true);
+    expect(engine.frame({ hash: false }).gunPools).toBeUndefined();
+  });
+});

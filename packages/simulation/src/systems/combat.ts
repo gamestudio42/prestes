@@ -313,7 +313,8 @@ export function fire(ctx: SimContext, tick: number, events: SimEvent[]): void {
     // pre-battle-roster 4.2: an automatic weapon fires bursts. Its length is
     // drawn when it starts; each round is its own, less accurate, hit roll.
     const burst = weapon.fire !== 'aimed' ? weapon.burst : undefined;
-    if (burst && (unit.burstLeft ?? 0) <= 0) {
+    const burstStart = burst !== undefined && (unit.burstLeft ?? 0) <= 0;
+    if (burstStart) {
       unit.burstLeft = burst.rounds[0] + Math.floor(ctx.rng.nextFloat() * (burst.rounds[1] - burst.rounds[0] + 1));
     }
     const targetCover = coverAgainst(target.x, target.y, unit.x, unit.y, target.stance, ctx.covers);
@@ -348,6 +349,7 @@ export function fire(ctx: SimContext, tick: number, events: SimEvent[]): void {
       x2: target.x,
       y2: target.y,
       hit,
+      ...(burst ? { burstStart } : {}),
     });
     const marker = unseenFireMarker(ctx, unit, target, tick);
     if (marker) events.push(marker);

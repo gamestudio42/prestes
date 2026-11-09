@@ -41,6 +41,7 @@ async function screenOf(page: Page, point: Vec2): Promise<Vec2> {
 
 test('hovering the trench shows its slots and a click fills them', async ({ page }) => {
   await page.goto('/');
+  await page.getByTestId('open-skirmish').click();
   await page.getByTestId('start-battle-3v3').click();
   await page.waitForFunction(() => Boolean((window as unknown as Bridge).__prestes?.frame()));
   await stepRendered(page, 2);

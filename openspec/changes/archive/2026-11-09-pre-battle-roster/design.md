@@ -274,6 +274,60 @@ figure commands; the Comando's officer is a fictional tenente.
 No saved data to migrate. The default roster reproduces today's battle.
 `prestes.roster.v1` is new; absent or invalid means the default.
 
+## Apply findings
+
+### 6.1 Battle report: enemy presets (2026-11-08)
+
+`pnpm battle:report --presets` runs every enemy preset against the default
+roster (3 x Fuzileiros) and against a mixed roster of 33 (Comando,
+Metralhadora, Esquadra de 5, Fuzileiros, Irregulares, Esquadra de 4), seeds
+1922, 1924 and 1925, 900 s cap, with the report's scripted player: each
+section defends 10 m in front of where it deployed and counterattacks once it
+outnumbers its estimate of the enemy 1.25 to 1. V victory, D defeat, — no
+outcome by 900 s.
+
+| Map | Enemy | Player | Outcomes (1922/1924/1925) | Time (s) | Cas. col/leg | Max shots/tick |
+| --- | --- | --- | --- | --- | --- | --- |
+| vila-militar | A | default | V V D | 255.1 / 219 / 424.3 | 9/33 · 2/33 · 33/24 | 4 |
+| vila-militar | A | mixed | — V V | 900 / 287.6 / 286.1 | 32/28 · 11/33 · 11/33 | 4 |
+| vila-militar | B | default | V V V | 176.1 / 241.5 / 232.9 | 1/30 · 2/30 · 1/30 | 6 |
+| vila-militar | B | mixed | V V V | 214.2 / 288.4 / 184.8 | 2/30 · 5/30 · 2/30 | 5 |
+| fazenda | A | default | V V V | 285 / 277 / 213.9 | 7/26 · 2/28 · 4/30 | 5 |
+| fazenda | A | mixed | V V V | 322 / 358 / 308 | 7/24 · 5/24 · 3/28 | 6 |
+| fazenda | B | default | V V V | 360 / 311 / 339 | 17/29 · 8/30 · 13/29 | 4 |
+| fazenda | B | mixed | V V V | 381 / 307 / 317 | 2/21 · 3/24 · 3/24 | 5 |
+| fazenda | C | default | V V V | 241 / 247 / 252 | 2/29 · 2/29 · 3/29 | 5 |
+| fazenda | C | mixed | V V V | 328 / 298 / 318 | 2/26 · 3/24 · 5/26 | 5 |
+| serra-rio | A | default | V V D | 630 / 743 / 726.4 | 5/30 · 14/28 · 28/13 | 5 |
+| serra-rio | A | mixed | — — — | 900 / 900 / 900 | 16/18 · 20/21 · 17/18 | 4 |
+| serra-rio | B | default | V V V | 351.8 / 434 / 513 | 3/28 · 10/29 · 6/29 | 7 |
+| serra-rio | B | mixed | V V V | 492 / 497.9 / 379 | 9/28 · 9/30 · 3/29 | 8 |
+| serra-rio | C | default | V V V | 614.5 / 716.9 / 506 | 10/33 · 25/33 · 4/31 | 5 |
+| serra-rio | C | mixed | D — — | 795 / 900 / 900 | 27/7 · 19/9 · 20/12 | 4 |
+| bairro | A | default | V V V | 519 / 519 / 568 | 16/25 · 25/23 · 21/25 | 3 |
+| bairro | A | mixed | V V D | 600 / 430 / 635 | 23/23 · 14/21 · 25/23 | 4 |
+| bairro | B | default | V V D | 380 / 464.2 / 634 | 9/26 · 10/26 · 23/22 | 4 |
+| bairro | B | mixed | — — V | 900 / 900 / 486 | 5/12 · 4/12 · 10/26 | 4 |
+| bairro | C | default | V D V | 410.2 / 434.2 / 431.7 | 9/33 · 33/19 · 10/33 | 4 |
+| bairro | C | mixed | V — V | 725 / 900 / 769 | 8/21 · 4/11 · 10/22 | 4 |
+
+- The bands that hold on every map (battle-lab "A decided battle ends"):
+  no run exceeds 8 shots a tick, and every default-roster run ends with an
+  outcome, against every preset. The full feel bands (3-10 min, silence,
+  bunching) are kept on Vila Militar only, as before this change.
+- No preset is retuned. Against the default roster no preset is
+  one-sided beyond the defender's advantage the scripted battles already
+  show with the default enemy (the scripted enemy attacks into a defended
+  line: Fazenda is a player win with every preset, as with 3 x 11).
+- 9 of 36 mixed-roster runs end without an outcome. The cause is the
+  report's player, not the presets: on Bairro with preset C (the default
+  enemy, 3 x 11) the enemy's attack at 90 s costs it 11 men to the column's
+  4 and stops, and the column, short of long-range rifles (the officer's
+  revolver, loaders feeding the gun, the irregulars' short range), reaches
+  its 1.25 counterattack ratio only at 780 s. Left to `add-map-objectives`,
+  whose objectives and time limit force the engagement; the report script
+  is not changed here (decided with the user).
+
 ## Open Questions
 
 - Should the enemy sometimes field a smaller force (fewer than 33) on

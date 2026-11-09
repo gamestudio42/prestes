@@ -21,7 +21,7 @@ test('retire-bootcamp: old bootcamp progress is cleared and no bootcamp is offer
   await expect(page.getByTestId('start-continue')).toHaveCount(0);
   await expect(page.getByTestId('start-restart')).toHaveCount(0);
   await expect.poll(() => page.evaluate((key) => window.localStorage.getItem(key), PROGRESS_KEY)).toBeNull();
-  await expect(page.getByTestId('start-battle-3v3')).toBeVisible();
+  await expect(page.getByTestId('open-skirmish')).toBeVisible();
 });
 
 test('toggles sound from the start screen', async ({ page }) => {

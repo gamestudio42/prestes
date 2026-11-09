@@ -13,8 +13,10 @@ export class PixelPost {
   private readonly scene = new THREE.Scene();
   private readonly camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
 
-  constructor() {
+  /** `samples` above 0 multisamples the scene's target (the "Smooth edges" option). */
+  constructor(samples = 0) {
     this.target = new THREE.WebGLRenderTarget(1, 1, {
+      samples,
       minFilter: THREE.NearestFilter,
       magFilter: THREE.NearestFilter,
       type: THREE.HalfFloatType,

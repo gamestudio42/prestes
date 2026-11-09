@@ -262,17 +262,47 @@ a body compacted to 5 m, then spreading to its own destination near the end.
 ## Map documents and the editor (add-map-editor)
 
 Battle maps can also be authored as **map documents** (`*.map.json`,
-format `prestes-map` v1, `packages/shared/src/maps/document.ts`): an Int16
+format `prestes-map` v2, `packages/shared/src/maps/document.ts`): an Int16
 height grid in centimetres every 2 m, 1 m paint (ground material) and
 vegetation rasters (RLE + base64), and vectors for roads, rivers, ponds,
-bridges, ferries, walls and fences, catalog objects and the deployment
-zones. `compileMapDocument` is pure and deterministic: it carves river and
-pond beds, flattens roads with camber, shoulders and ditches, turns walls,
+bridges, ferries, walls and fences, trench lines, catalog objects and the
+deployment zones. `migrate()` opens version 1 files (each `trench-line`
+object becomes a 12 m fire trench, road cambers are dropped); writers write
+version 2. `compileMapDocument` is pure and deterministic: it carves river
+and pond beds along the river centrelines smoothed every 2 m, paints roads
+without touching the relief (only their ditches dig), lowers the ground
+under bridge spans, builds trench lines, turns walls,
 fences and catalog objects into cover with the battle's rules (every object
 has an effect: cover by height, sight blocked at 1.75 m, thin posts see
 through, foliage conceals, decals paint the surface) and returns an ordinary
 `BattleMap` with a height `grid`, `raster` surfaces and vegetation, `paint`
 and `lines`. Both the worker and the view read that one result.
+
+- **Trench lines** (`trench-lines.ts`, refine-map-editor): `buildTrenchLine`
+  turns a polyline into a height channel (a shallow cut in the simulation,
+  0.5 m for a 1.2 m trench, so a crouched man on the fire step sees over the
+  0.4 m parapet; the view draws the full depth), a parapet berm or sandbags,
+  forward-facing trench covers whose slots stand on the fire step every
+  1.2 m, and traverses. Communication trenches shelter from both sides and
+  have no slots. The Fazenda's hand-written trenches go through the same
+  builder.
+- **Growth mask** (`growth-mask.ts`): `growableCell` and `growthMask` clear
+  water, fords, bridge decks, paved and cobbled roads, buildings and trench
+  channels. The vegetation brush skips those cells, the compiler zeroes them,
+  the map check warns about them, and the view clips hand-written plant
+  areas with `plantableAt`.
+- **Bridges**: `bridgeDeckHeight` ramps the deck from each landing's ground
+  to its span height; `runtimeHeightAt` walks on the deck, so men and view
+  use the same heights.
+- **Water outlines** (`water-outline.ts`): marching squares at 0.5 m over a
+  signed-distance grid, simplified, so banks and fords have no 1 m steps.
+- **Trees** (`tree-scatter.ts`): a seeded Poisson-disc scatter (seed from the
+  map id and stroke number) by biome mix and density.
+- **Cover preview** (`cover-preview.ts`): the compiler records which piece
+  each cover came from; `coverPreview` runs `allCoverSlots` on the compiled
+  covers, classes each slot by the stances its cover hides, and counts them
+  per piece and inside each side's deployment area. The editor's Cover view
+  draws it.
 
 - **Catalog**: `packages/shared/src/maps/authored/*.map.json` are listed by
   the generated `authored/index.ts` (`pnpm check:maps` validates them and
@@ -288,8 +318,12 @@ and `lines`. Both the worker and the view read that one result.
   (`registerBattleMap`) and the `start` request carries the document so the
   worker compiles the same map.
 - **View**: maps with `paint` are drawn by `PaintedGround` (40 m chunks,
-  world-space nearest sampling of the 5 x 6 ground atlas, Bayer-dithered
-  material edges, editor overlays: relief, contours, slope, metre grid).
+  world-space nearest sampling of the 5 x 6 ground atlas, material borders
+  dithered with a 4 x 4 Bayer offset of half a cell, editor overlays:
+  relief, contours, slope, metre grid). Plants are code-built meshes
+  (`plant-meshes.ts`: corn in rows, cane, capim blade fans, scrub) with a
+  vertex sway and capped clumps past 110 m span. "Smooth edges" (MSAA x4,
+  `prestes.graphics.v1`) is on by default.
 - **Editor page**: `apps/game/editor.html` (second Vite input), React panels
   around the game's own `SceneView`; state, history and tools live in
   `apps/game/src/editor/` outside React. The dev server's

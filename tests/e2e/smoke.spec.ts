@@ -11,6 +11,7 @@ test('boots, selects a section, gives orders, fights and toggles the post', asyn
   await page.reload();
   await expect(page.getByTestId('menu-mark-campaign')).toContainText('Campanha');
 
+  await page.getByTestId('open-skirmish').click();
   await page.getByTestId('start-battle-3v3').click();
   await expect(page.getByTestId('hud')).toBeVisible();
   await page.evaluate(() => document.fonts.ready);

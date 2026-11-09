@@ -1,4 +1,5 @@
 export type {
+  BattlePhase,
   Command,
   CoverKind,
   CoverPoint,
@@ -31,6 +32,7 @@ export type {
   WorkerRequest,
   WorkerResponse,
 } from './protocol';
+export { shotShown } from './protocol';
 export { ClientMirror, type InterpolatedFrame } from './mirror';
 
 export {

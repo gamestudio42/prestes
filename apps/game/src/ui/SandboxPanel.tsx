@@ -1,5 +1,5 @@
 import { Eye, EyeOff, Crate as Box, Crosshair, Restart as RotateCcw, Step as StepForward, Troop as Users, Lab as FlaskConical, Close as X } from './icons';
-import { battleMaps, terrainHeightAt, terrainSpeedFactor, type BattleMapId, type Frame } from '@prestes/shared';
+import { SECTION_TYPE_IDS, SECTION_TYPES, battleMaps, terrainHeightAt, terrainSpeedFactor, type BattleMapId, type Frame, type SectionTypeId } from '@prestes/shared';
 import { translate, type Locale, type MessageKey } from '@prestes/content';
 
 export type SandboxTool =
@@ -31,6 +31,9 @@ export interface SandboxPanelProps {
   battleMap: BattleMapId;
   onBattleMapChange: (map: BattleMapId) => void;
   onTool: (tool: SandboxTool | null) => void;
+  /** pre-battle-roster 5.3: the section type a placed troop is made of; null is the plain troop. */
+  troopSection: SectionTypeId | null;
+  onTroopSection: (section: SectionTypeId | null) => void;
 }
 
 export function SandboxPanel({
@@ -52,6 +55,8 @@ export function SandboxPanel({
   battleMap,
   onBattleMapChange,
   onTool,
+  troopSection,
+  onTroopSection,
 }: SandboxPanelProps) {
   const t = (key: MessageKey, values?: Readonly<Record<string, string | number>>) =>
     translate(locale, key, values);
@@ -213,6 +218,21 @@ export function SandboxPanel({
             </button>
           ))}
         </div>
+        <label className="sandbox-map">
+          {t('sandbox.troopSection')}
+          <select
+            value={troopSection ?? ''}
+            onChange={(event) => onTroopSection(event.target.value === '' ? null : (event.target.value as SectionTypeId))}
+            data-testid="sandbox-troop-section"
+          >
+            <option value="">{t('sandbox.troopDefault')}</option>
+            {SECTION_TYPE_IDS.map((id) => (
+              <option key={id} value={id}>
+                {t(SECTION_TYPES[id].nameKey as MessageKey)}
+              </option>
+            ))}
+          </select>
+        </label>
         <p className="sandbox-hint">
           {tool ? t('sandbox.place') : t('sandbox.toolHint')}
         </p>

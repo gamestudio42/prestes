@@ -27,14 +27,17 @@ interface Bridge {
   };
 }
 
-/** The desk's map fan shows one sheet on top; clicking it brings the next. */
+/** pre-battle-roster 5.1: the desk's map opens the setup screen, where the map is chosen. */
 async function chooseMap(page: Page, map: string): Promise<void> {
-  const active = page.locator('[role="radio"][aria-checked="true"]');
-  for (let i = 0; i < 4 && (await active.getAttribute('data-testid')) !== `map-option-${map}`; i++) {
-    await active.click();
-  }
+  await page.getByTestId('open-skirmish').click();
+  await page.getByTestId(`map-option-${map}`).click();
   await expect(page.getByTestId(`map-option-${map}`)).toHaveAttribute('aria-checked', 'true');
+  // These scenarios were set against three rifle sections: each map's 3 x 11 preset.
+  await page.getByTestId(`enemy-preset-${THREE_RIFLE_SECTIONS[map]}`).check();
 }
+
+/** The preset of each map that is three rifle sections (pre-battle-roster's table). */
+const THREE_RIFLE_SECTIONS: Record<string, number> = { 'vila-militar': 0, fazenda: 1, 'serra-rio': 2, bairro: 2 };
 
 async function startOn(page: Page, map: string): Promise<void> {
   await page.goto('/');
@@ -57,8 +60,9 @@ async function stepAndWait(page: Page, ticks: number): Promise<void> {
   await expect.poll(() => tick(page), { timeout: 60_000 }).toBeGreaterThanOrEqual(before + ticks);
 }
 
-test('the menu lists the four battlefields, Vila Militar first and chosen', async ({ page }) => {
+test('the setup screen lists the four battlefields, Vila Militar first and chosen', async ({ page }) => {
   await page.goto('/');
+  await page.getByTestId('open-skirmish').click();
   for (const map of ['vila-militar', 'fazenda', 'serra-rio', 'bairro']) {
     await expect(page.getByTestId(`map-option-${map}`)).toBeAttached();
   }
@@ -66,15 +70,15 @@ test('the menu lists the four battlefields, Vila Militar first and chosen', asyn
 });
 
 // refine-battle-maps 6.3: each map on the skirmish page has its rendered preview.
-test('the skirmish page shows a preview of each map', async ({ page }) => {
+test('the skirmish setup shows a preview of each map', async ({ page }) => {
   await page.goto('/');
+  await page.getByTestId('open-skirmish').click();
   for (const map of ['vila-militar', 'fazenda', 'serra-rio', 'bairro']) {
+    await page.getByTestId(`map-option-${map}`).click();
     const preview = page.getByTestId(`map-preview-${map}`);
-    await expect(preview).toBeAttached();
+    await expect(preview).toBeVisible();
     await expect.poll(() => preview.evaluate((image: HTMLImageElement) => image.complete && image.naturalWidth)).toBeGreaterThan(0);
   }
-  // The active sheet shows its own.
-  await expect(page.getByTestId('map-preview-vila-militar')).toBeVisible();
 });
 
 for (const map of ['fazenda', 'serra-rio', 'bairro']) {

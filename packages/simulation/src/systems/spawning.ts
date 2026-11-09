@@ -8,6 +8,10 @@ import {
   troopFormationOffsets,
   rotateOffset,
   isPointBlockedByCovers,
+  SECTION_TYPES,
+  getWeapon,
+  isSectionTypeId,
+  trainingLoad,
 } from '@prestes/shared';
 import type {
   Command,
@@ -157,7 +161,9 @@ export function spawnTroop(
     reject(ctx, tick, seq, 'sandbox_only', events);
     return;
   }
-  const count = Math.max(1, Math.min(16, command.count ?? 11));
+  // pre-battle-roster 5.3: a section type gives the troop its men, weapons and speed.
+  const section = command.section !== undefined && isSectionTypeId(command.section) ? SECTION_TYPES[command.section] : undefined;
+  const count = section ? section.men.length : Math.max(1, Math.min(16, command.count ?? 11));
   const squadId = ctx.nextSquadId;
   const spacing = 2.4;
   const rotation = command.rotation ?? 0;
@@ -178,21 +184,26 @@ export function spawnTroop(
     ) {
       continue;
     }
+    const man = section?.men[index];
+    const weaponId = man?.weapon ?? DEFAULT_WEAPON_ID;
+    const load = man ? trainingLoad(weaponId) : WEAPONS[DEFAULT_WEAPON_ID];
     ctx.units.push({
       id: ctx.nextUnitId,
       x: to.x,
       y: to.y,
       targetX: to.x,
       targetY: to.y,
-      speed: 2,
-      kind: 'infantry',
+      speed: 2 * (section?.speedFactor ?? 1),
+      kind: man?.role === 'officer' ? 'officer' : 'infantry',
       faction: command.faction,
       stance: 'standing',
       squadId,
       hp: MAX_HP,
-      weaponId: DEFAULT_WEAPON_ID,
-      magazine: command.dummy ? 0 : WEAPONS[DEFAULT_WEAPON_ID].magazine,
-      reserve: command.dummy ? 0 : WEAPONS[DEFAULT_WEAPON_ID].reserve,
+      weaponId,
+      magazine: command.dummy ? 0 : load.magazine,
+      reserve: command.dummy ? 0 : load.reserve,
+      ...(man?.sidearm ? { sidearmId: man.sidearm } : {}),
+      ...(section ? { sectionType: section.id } : {}),
       morale: MAX_MORALE,
       alive: true,
       suppressed: false,
@@ -264,6 +275,9 @@ export function spawnTroop(
       }
     }
   }
+  // A machine-gun crew brings its belts: the squad's pool.
+  const gun = section?.men.find((man) => getWeapon(man.weapon)?.fire === 'belt');
+  if (gun && !command.dummy) ctx.gunPools = { ...(ctx.gunPools ?? {}), [squadId]: trainingLoad(gun.weapon).pool ?? 0 };
   ctx.nextSquadId += 1;
 }
 

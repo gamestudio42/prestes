@@ -38,4 +38,4 @@
 - [ ] 5.1 Goldens re-recorded; battle report bands on all maps with assaults counted (verify: `pnpm check:determinism`; report tests)
 - [ ] 5.2 Bench: Bairro with garrisons under 3 ms a tick (verify: `pnpm bench`)
 - [ ] 5.3 Gates: `pnpm verify`, `pnpm e2e`, `openspec validate garrison-and-assault --type change --strict`
-- [ ] 5.4 Hand check by the user: clear a street in the Bairro and hold the engenho on the Fazenda; decide the open question on trench lines; findings in `docs/status.md`
+- [ ] 5.4 Hand check by the user: clear a street in the Bairro and hold the engenho on the Fazenda; findings in `docs/status.md`

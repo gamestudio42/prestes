@@ -31,9 +31,13 @@ test('shows the seven desk objects and the four maps', async ({ page }) => {
   ]) {
     await expect(page.getByTestId(id)).toBeVisible();
   }
+  // pre-battle-roster 5.1: one folded map; the four fields are on the setup screen.
+  await expect(page.getByTestId('open-skirmish')).toBeVisible();
+  await page.getByTestId('open-skirmish').click();
   for (const map of ['vila-militar', 'fazenda', 'serra-rio', 'bairro']) {
-    await expect(page.getByTestId(`map-option-${map}`)).toBeAttached();
+    await expect(page.getByTestId(`map-option-${map}`)).toBeVisible();
   }
+  await page.getByTestId('setup-back').click();
   await expect(page.getByTestId('gramophone-title')).toHaveCount(0);
 });
 
@@ -103,6 +107,38 @@ test('the compass carries sound and language', async ({ page }) => {
   await expect(page.getByTestId('menu-mark-options')).toContainText('Opções');
 });
 
+// refine-map-editor 4.4: "Smooth edges" (MSAA), default on, kept in prestes.graphics.v1.
+async function battleEdges(page: Page): Promise<{ antialias: boolean; samples: number }> {
+  await page.getByTestId('open-skirmish').click();
+  await page.getByTestId('start-battle-3v3').click();
+  await expect.poll(() => page.evaluate(() => Boolean((window as unknown as { __prestesScene?: unknown }).__prestesScene)), { timeout: 20000 }).toBe(true);
+  return page.evaluate(() => (window as unknown as { __prestesScene: { smoothEdges: () => { antialias: boolean; samples: number } } }).__prestesScene.smoothEdges());
+}
+
+test('the compass turns smooth edges off, and the choice holds over a reload', async ({ page }) => {
+  await page.evaluate(() => window.localStorage.removeItem('prestes.graphics.v1'));
+  await page.goto('/');
+  await page.getByTestId('menu-mark-options').click();
+  const toggle = page.getByTestId('smooth-edges');
+  await expect(toggle).toHaveAttribute('aria-pressed', 'true');
+  await expect(toggle).toContainText('Smooth edges: on');
+  await page.goto('/');
+  expect(await battleEdges(page)).toEqual({ antialias: true, samples: 4 });
+
+  await page.goto('/');
+  await page.getByTestId('menu-mark-options').click();
+  await page.getByTestId('smooth-edges').click();
+  await expect(page.getByTestId('smooth-edges')).toHaveAttribute('aria-pressed', 'false');
+  await page.reload();
+  await page.getByTestId('menu-mark-options').click();
+  await expect(page.getByTestId('smooth-edges')).toHaveAttribute('aria-pressed', 'false');
+  await page.getByTestId('language-select').selectOption('pt-BR');
+  await expect(page.getByTestId('smooth-edges')).toContainText('Suavizar bordas: desligado');
+  await page.getByTestId('language-select').selectOption('en');
+  await page.goto('/');
+  expect(await battleEdges(page)).toEqual({ antialias: false, samples: 0 });
+});
+
 test('the theodolite opens the map editor', async ({ page }) => {
   await expect(page.getByTestId('menu-mark-editor')).toContainText('Map editor');
   await page.getByTestId('menu-mark-editor').click();
@@ -110,13 +146,12 @@ test('the theodolite opens the map editor', async ({ page }) => {
   await expect(page.getByTestId('editor-viewport')).toHaveAttribute('data-ready', 'true', { timeout: 20000 });
 });
 
-test('cycles the map fan and starts the 3v3 on the chosen map', async ({ page }) => {
-  const active = page.locator('[role="radio"][aria-checked="true"]');
-  await expect(active).toHaveAttribute('data-testid', 'map-option-vila-militar');
-  await active.click();
-  await expect(active).toHaveAttribute('data-testid', 'map-option-fazenda');
-  await active.click();
-  await expect(active).toHaveAttribute('data-testid', 'map-option-serra-rio');
+test('opens the setup from the desk, picks Serra e Rio and starts', async ({ page }) => {
+  await page.getByTestId('open-skirmish').click();
+  await expect(page.getByTestId('skirmish-setup')).toBeVisible();
+  await expect(page.getByTestId('map-option-vila-militar')).toHaveAttribute('aria-checked', 'true');
+  await page.getByTestId('map-option-serra-rio').click();
+  await expect(page.getByTestId('map-option-serra-rio')).toHaveAttribute('aria-checked', 'true');
 
   await page.getByTestId('start-battle-3v3').click();
   await expect(page.getByTestId('hud')).toBeVisible();

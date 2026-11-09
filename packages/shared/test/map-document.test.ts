@@ -101,7 +101,7 @@ describe('map document', () => {
 
   it('compiles deterministically', () => {
     const map = flat();
-    map.roads.push({ id: 1, type: 'dirt-road', width: 5, camber: 0.1, ditches: { left: false, right: true }, points: [{ x: -100, y: 20 }, { x: 100, y: 30 }] });
+    map.roads.push({ id: 1, type: 'dirt-road', width: 5, ditches: { left: false, right: true }, points: [{ x: -100, y: 20 }, { x: 100, y: 30 }] });
     const a = compileMapDocument(map);
     const b = compileMapDocument(map);
     expect(a).toEqual(b);
@@ -149,7 +149,7 @@ describe('grid terrain and painted surfaces', () => {
   it('a road over painted mud gives the road surface; its ditch gives trench cover', () => {
     const map = flat();
     for (let index = 0; index < map.paint.length; index += 1) map.paint[index] = groundMaterialIndex('mud');
-    map.roads.push({ id: 1, type: 'dirt-road', width: 5, camber: 0.1, ditches: { left: false, right: true }, points: [{ x: -100, y: 0 }, { x: 100, y: 0 }] });
+    map.roads.push({ id: 1, type: 'dirt-road', width: 5, ditches: { left: false, right: true }, points: [{ x: -100, y: 0 }, { x: 100, y: 0 }] });
     const compiled = compileMapDocument(map);
     setActiveMap(compiled);
     expect(terrainSurfaceAt(0.5, 0.5)).toBe('dirt-road');
@@ -220,7 +220,7 @@ describe('every object affects the battle', () => {
   });
 
   it('every catalog entry declares a footprint that emits something', () => {
-    for (const type of ['farmhouse', 'boulder', 'outcrop', 'stone-pile', 'tree-broad', 'juazeiro', 'mandacaru', 'lamp', 'sandbags', 'trench-line', 'well', 'pebbles']) {
+    for (const type of ['farmhouse', 'boulder', 'outcrop', 'stone-pile', 'tree-broad', 'juazeiro', 'mandacaru', 'lamp', 'sandbags', 'well', 'pebbles']) {
       const entry = catalogObject(type)!;
       const map = flat();
       map.objects.push({ id: 1, type, x: 0, y: 0, rotation: 0 });

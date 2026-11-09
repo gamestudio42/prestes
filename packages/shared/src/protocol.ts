@@ -2,7 +2,7 @@ import type { BattleMapId } from './maps/types';
 import type { MapDocument } from './maps/document';
 import type { Gait } from './gait';
 import type { WeaponId } from './weapons';
-import type { Roster } from './sections';
+import type { Roster, SectionTypeId } from './sections';
 
 export interface Vec2 {
   x: number;
@@ -37,6 +37,13 @@ export interface CoverPoint {
    * a cart, a wall); the cover layer leaves it alone.
    */
   drawnBy?: 'map';
+  /**
+   * refine-map-editor D6: a fire trench's forward normal (unit, world). The
+   * piece shelters only from threats on that side; its slots face it.
+   */
+  facing?: Vec2;
+  /** refine-map-editor D6: a piece that offers no slots (a communication trench, a parapet's sandbags). */
+  noSlots?: boolean;
 }
 
 export interface SightObstacle {
@@ -177,6 +184,10 @@ export interface UnitSnapshot {
   aboardFerry?: boolean;
   /** refine-battle-maps 5.4: at a landing, waiting for the ferry. */
   waitingFerry?: boolean;
+  /** pre-battle-roster 5.2: the section type of a rostered man (absent in the default battle). */
+  sectionType?: SectionTypeId;
+  /** pre-battle-roster 5.2: a machine gunner's gun is set up ("pronta"); absent for other weapons. */
+  gunSet?: boolean;
 }
 
 export interface RosterRecord {
@@ -207,7 +218,13 @@ export type RejectionReason =
   | 'invalid_order'
   | 'invalid_state'
   | 'no_officer'
-  | 'no_rescue_target';
+  | 'no_rescue_target'
+  /** add-deployment-phase: a fight order given in the deployment phase. */
+  | 'not_during_deployment'
+  /** add-deployment-phase: a deployment order whose positions leave the side's area. */
+  | 'outside_deployment_area'
+  /** add-deployment-phase: a deployment order whose positions fall in deep water or a footprint. */
+  | 'blocked';
 
 export type Command =
   /** `facing`: the way the section faces on arrival, formation kept. */
@@ -241,6 +258,8 @@ export type Command =
       role?: UnitRole;
       nonLethal?: boolean;
       holdFire?: boolean;
+      /** pre-battle-roster 5.3: a troop of this section type (its men, weapons and speed); `count` is ignored. */
+      section?: SectionTypeId;
     }
   | { type: 'training_phase'; setup: TrainingPhaseSetup }
   | { type: 'despawn_role'; role: UnitRole }
@@ -258,6 +277,10 @@ export type Command =
   | { type: 'set_bounding'; enabled: boolean }
   /** Sandbox: fog of war on or off (fog-of-war). */
   | { type: 'fog'; enabled: boolean }
+  /** add-deployment-phase: ends the deployment phase; the next tick is the battle's first. */
+  | { type: 'start_battle' }
+  /** add-deployment-phase: puts the player's sections back at their default places. */
+  | { type: 'reset_deployment' }
   | { type: 'noop' };
 
 export interface CommandEnvelope {
@@ -279,6 +302,12 @@ export type SimEvent =
       x2: number;
       y2: number;
       hit: boolean;
+      /**
+       * pre-battle-roster 5.4: an automatic weapon's round: true for the first
+       * of its burst, false for the rest (the view draws one tracer and plays
+       * one sound per burst). Absent for aimed fire.
+       */
+      burstStart?: boolean;
     }
   | { type: 'unit_hit'; tick: number; unitId: number; damage: number; hp: number }
   | { type: 'unit_died'; tick: number; unitId: number }
@@ -298,7 +327,14 @@ export type SimEvent =
    * fog-of-war: a shot by a soldier the target's side does not see. The marker
    * lies near the shooter, off by up to `radius` metres; it never names him.
    */
-  | { type: 'unseen_fire'; tick: number; side: Faction; target: number; x: number; y: number; radius: number };
+  | { type: 'unseen_fire'; tick: number; side: Faction; target: number; x: number; y: number; radius: number }
+  /** add-deployment-phase: the deployment phase ended at `tick`; ticks run from here. */
+  | { type: 'battle_started'; tick: number };
+
+/** pre-battle-roster 5.4: whether a shot is drawn and heard: aimed fire, or the first round of a burst. */
+export function shotShown(event: { burstStart?: boolean }): boolean {
+  return event.burstStart !== false;
+}
 
 export interface Frame {
   tick: number;
@@ -317,7 +353,14 @@ export interface Frame {
   fog?: boolean;
   /** add-battle-maps: each ferry raft's position. */
   ferries?: readonly { id: number; x: number; y: number; moving: boolean }[];
+  /** pre-battle-roster 5.2: each machine-gun squad's belt pool, by squad id. */
+  gunPools?: Readonly<Record<number, number>>;
+  /** add-deployment-phase: the battle's phase, in battles started with one. */
+  phase?: BattlePhase;
 }
+
+/** add-deployment-phase: before the battle (no time passes) or the battle itself. */
+export type BattlePhase = 'deployment' | 'battle';
 
 /** pre-battle-roster 3.1: the forces of a 3v3. */
 export interface BattleRosters {
@@ -348,6 +391,8 @@ export type WorkerRequest =
        * engine draws one of the map's presets.
        */
       rosters?: BattleRosters;
+      /** add-deployment-phase: open in the deployment phase (skirmishes); absent, the battle starts at once. */
+      deployment?: boolean;
     }
   | { type: 'command'; command: Command }
   | { type: 'step'; ticks: number };

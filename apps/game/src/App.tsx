@@ -7,6 +7,7 @@ import {
   registerBattleMap,
   TRAINING_AMMUNITION,
   type BattleMapId,
+  type BattleRosters,
   type Frame,
   type MapDocument,
 } from '@prestes/shared';
@@ -19,6 +20,7 @@ import { GameCanvas } from './ui/GameCanvas';
 import { Hud } from './ui/Hud';
 import { SandboxPanel } from './ui/SandboxPanel';
 import { StartScreenDesk } from './ui/menu/StartScreenDesk';
+import { battleRosters, loadSetup, saveSetup, withMap, type SkirmishSetup } from './ui/menu/setupState';
 import { BattleEndPanel } from './ui/BattleEndPanel';
 import { clearBootcampProgress, loadLocale, loadRoutesVisible, saveLocale, saveRoutesVisible } from './storage';
 import { useAudio } from './hooks/useAudio';
@@ -32,8 +34,16 @@ export function App() {
   const [started, setStarted] = useState(false);
   // retire-bootcamp: old saved bootcamp progress is cleared once.
   useEffect(() => clearBootcampProgress(), []);
-  // add-battle-maps: the map the next 3v3 starts on.
-  const [battleMapId, setBattleMapId] = useState<BattleMapId>(DEFAULT_BATTLE_MAP);
+  // pre-battle-roster 5.1: the skirmish setup (map, force, enemy), saved locally.
+  const [setup, setSetup] = useState<SkirmishSetup>(loadSetup);
+  // add-battle-maps: the map the next 3v3 starts on (the setup's, or the editor's playtest).
+  const [battleMapId, setBattleMapId] = useState<BattleMapId>(() => setup.map ?? DEFAULT_BATTLE_MAP);
+  const changeSetup = (next: SkirmishSetup): void => {
+    setSetup(next);
+    saveSetup(next);
+    setBattleMapId(next.map);
+  };
+  const changeBattleMap = (map: BattleMapId): void => changeSetup(withMap(setup, map));
   const [showCodex, setShowCodex] = useState(false);
   const [frame, setFrame] = useState<Frame | null>(null);
   const [band, setBand] = useState<CameraBand>('tactical');
@@ -73,6 +83,8 @@ export function App() {
     controlBothSides,
     setControlBothSides,
     placementPreview,
+    troopSection,
+    setTroopSection,
   } = useSandbox(frame);
   const {
     selectedSquadId,
@@ -127,6 +139,7 @@ export function App() {
     controlBothSides,
     setControlBothSides,
     sandboxTool,
+    troopSection,
     placementPreview,
     placementRotation,
     setPlacementPoint,
@@ -164,7 +177,7 @@ export function App() {
     saveLocale(next);
   };
 
-  const createClient = (map: BattleMapId): GameClient => {
+  const createClient = (map: BattleMapId, rosters?: BattleRosters): GameClient => {
     const client = new GameClient({
       seed: 1922,
       sandbox: true,
@@ -172,6 +185,7 @@ export function App() {
       opposition: true,
       scenario: 'battle3v3',
       battleMap: map,
+      ...(rosters ? { rosters } : {}),
       ...(playtestRef.current?.id === map ? { mapDocument: playtestRef.current } : {}),
       onEvent: (event) => audioRef.current?.handleEvent(event),
       onFrame: (next) => {
@@ -211,9 +225,10 @@ export function App() {
     setStarted(false);
   };
 
-  const handleStartBattle3v3 = (): void => startBattle(battleMapId);
+  // The setup's forces go with its map; the editor's playtest map fields the default.
+  const handleStartBattle3v3 = (): void => startBattle(battleMapId, battleMapId === setup.map ? battleRosters(setup) : undefined);
 
-  const startBattle = (map: BattleMapId): void => {
+  const startBattle = (map: BattleMapId, rosters?: BattleRosters): void => {
     void audioRef.current?.unlock();
     clientRef.current?.dispose();
     clientRef.current = null;
@@ -230,7 +245,7 @@ export function App() {
     setOrdersCollapsed(false);
     setSpeed(DEFAULT_SPEED);
     setStarted(true);
-    createClient(map);
+    createClient(map, rosters);
   };
 
   // add-map-editor: `?playtest` starts the editor's map straight away.
@@ -361,8 +376,8 @@ export function App() {
           onLocaleChange={handleLocaleChange}
           audioMuted={audioMuted}
           onStartBattle3v3={handleStartBattle3v3}
-          battleMap={battleMapId}
-          onBattleMapChange={setBattleMapId}
+          setup={setup}
+          onSetupChange={changeSetup}
           onToggleAudio={handleToggleAudio}
         />
       </div>
@@ -496,7 +511,7 @@ export function App() {
           onToggleFog={() => clientRef.current?.sendCommand({ type: 'fog', enabled: frame?.fog !== true })}
           onStartBattle3v3={handleStartBattle3v3}
           battleMap={battleMapId}
-          onBattleMapChange={setBattleMapId}
+          onBattleMapChange={changeBattleMap}
           onClose={() => {
             setSandboxOpen(false);
             setSandboxTool(null);
@@ -506,6 +521,8 @@ export function App() {
           onReset={handleResetSandbox}
           onStep={handleStep}
           onTool={setSandboxTool}
+          troopSection={troopSection}
+          onTroopSection={setTroopSection}
         />
       ) : null}
       {showCodex ? (

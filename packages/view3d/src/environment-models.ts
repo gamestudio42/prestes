@@ -10,10 +10,19 @@ import { toonGradient } from './materials';
  */
 export interface EnvironmentAsset {
   geometry(name: string): THREE.BufferGeometry | undefined;
+  /** The atlas material most models share. */
   readonly material: THREE.Material;
+  /** A model's own material: the atlas, or vertex colours for the trees. */
+  materialOf(name: string): THREE.Material;
 }
 
-const FILES = ['buildings', 'fortifications', 'vegetation', 'props'];
+/**
+ * The trees (refine-map-editor D8, from the owner's Refloreste models) load
+ * last, so their broad-leaved tree and araucaria replace the older ones; they
+ * are coloured per vertex, not by the atlas.
+ */
+const FILES = ['buildings', 'fortifications', 'vegetation', 'props', 'trees'];
+const VERTEX_COLOURED = new Set(['trees']);
 
 export async function loadEnvironmentAsset(base = './models/'): Promise<EnvironmentAsset> {
   // The loader is a separate chunk, fetched only when models are wanted.
@@ -31,7 +40,9 @@ export async function loadEnvironmentAsset(base = './models/'): Promise<Environm
   map.needsUpdate = true;
 
   const geometries = new Map<string, THREE.BufferGeometry>();
-  for (const scene of scenes) {
+  const coloured = new Set<string>();
+  for (const [index, scene] of scenes.entries()) {
+    const byVertex = VERTEX_COLOURED.has(FILES[index]!);
     scene.updateMatrixWorld(true);
     scene.traverse((child) => {
       const mesh = child as THREE.Mesh;
@@ -40,11 +51,19 @@ export async function loadEnvironmentAsset(base = './models/'): Promise<Environm
       const geometry = mesh.geometry.clone().applyMatrix4(mesh.matrixWorld);
       geometry.computeBoundingSphere();
       geometries.set(mesh.name, geometry);
+      if (byVertex) coloured.add(mesh.name);
+      else coloured.delete(mesh.name);
       mesh.geometry.dispose();
     });
   }
   const material = new THREE.MeshToonMaterial({ map, gradientMap: toonGradient() });
-  return { geometry: (name) => geometries.get(name), material };
+  // Double-sided: the buriti's fronds are open sheets (hand check 2026-11-09: they vanished from behind).
+  const vertexMaterial = new THREE.MeshToonMaterial({ vertexColors: true, gradientMap: toonGradient(), side: THREE.DoubleSide });
+  return {
+    geometry: (name) => geometries.get(name),
+    material,
+    materialOf: (name) => (coloured.has(name) ? vertexMaterial : material),
+  };
 }
 
 /**
@@ -80,7 +99,7 @@ export class ModelPlacements {
     for (const [name, list] of this.matrices) {
       const geometry = asset.geometry(name);
       if (!geometry) continue;
-      const mesh = new THREE.InstancedMesh(geometry, asset.material, list.length);
+      const mesh = new THREE.InstancedMesh(geometry, asset.materialOf(name), list.length);
       list.forEach((matrix, index) => mesh.setMatrixAt(index, matrix));
       mesh.instanceMatrix.needsUpdate = true;
       mesh.frustumCulled = false;

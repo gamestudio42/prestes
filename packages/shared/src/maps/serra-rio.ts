@@ -1,6 +1,6 @@
 import type { CoverPoint, Vec2 } from '../protocol';
 import { buildingCover, type Building } from '../world';
-import { box, clutter, fenceCovers, rock, stripPolygon, trenchRun, zone } from './kit';
+import { box, clutter, fenceCovers, rock, stripPolygon, trenchRun, zone, band } from './kit';
 import type { BattleMap, PropPlacement, Strip } from './types';
 
 /**
@@ -217,8 +217,9 @@ export const SERRA_RIO: BattleMap = {
   ],
   sightObstacles: [],
   deployment: {
-    column: zone([-44, 0, 44], 96, -1),
-    legalist: zone([-44, 0, 44], -96, 1),
+    // add-deployment-phase 1.1: fronts 65 m from the centre line, 130 m apart (out of rifle range).
+    column: zone([-44, 0, 44], 96, -1, band(-190, 190, 65, 190)),
+    legalist: zone([-44, 0, 44], -96, 1, band(-190, 190, -65, -190)),
   },
   props: [
     ...BURITI,

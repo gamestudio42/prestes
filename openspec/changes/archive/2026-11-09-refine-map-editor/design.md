@@ -146,6 +146,23 @@ golden is re-recorded.
 `garrison-and-assault` reads trench lines as positions: capacity is one man
 per 1.2 m of fire step, ports are the slots.
 
+Applied (2.1–2.3):
+
+- **Shallow simulation cut** (decided with the owner): with the full 1.2 m
+  cut, a crouched man's eye sits 0.2 m below the ground and the 0.4 m
+  parapet hides everything, which a fire step 0.3 m up does not cure. The
+  heightfield therefore sinks 0.5 m for a 1.2 m trench and 0.3 m for a
+  0.8 m one (`TRENCH.simDepth`), so a crouched man on the fire step sees over
+  the parapet and a prone man does not. The view (2.4) dresses that cut:
+  dark floor, duckboards, revetted walls up to the lip, the parapet and the
+  traverses, so a man on the floor is drawn below the ground where the
+  simulation has him. Cover, slots and stance rules are unchanged.
+- The cut is 2.4 m wide in the heightfield (the 2 m grid would miss a 1.5 m
+  one); floor surface, cover and slots keep 1.5 m.
+- Cover pieces are whole numbers of 1.2 m slots (about 3.6 m, not 3 m), so
+  a line's slot count is one per 1.2 m exactly.
+- Traverses are view data; slots are not removed near them.
+
 ### D7. Trees tool: seeded Poisson-disc scatter
 
 - A stroke scatters trees by Poisson disc, at least 2 m apart and 2 m from
@@ -164,6 +181,13 @@ per 1.2 m of fire step, ports are the slots.
 - The asset register records the source project and the licence the owner
   gives.
 - A species without a model keeps its named placeholder.
+
+Applied (5.2): the owner confirmed Refloreste is their own work. Its crowns
+are leaf cards that a Godot shader expands into billboards, so a straight
+decimation leaves specks. The trunks come from a low LOD, and each crown is
+rebuilt from its cards as k-means clumps in the species' leaf colour; palm
+fronds are real geometry and stay. The models are vertex-coloured, so they
+load with their own toon material.
 
 ### D9. Cover preview reuses the game's slots
 
@@ -201,4 +225,4 @@ per 1.2 m of fire step, ports are the slots.
 - [The Fazenda's trench geometry changes battle results] → re-record its
   golden with the reason; the battle report bands must still pass.
 - [Licence of the Refloreste trees] → ask the owner before committing the
-  models; placeholders until then.
+  models; placeholders until then. Resolved: the owner's own work.

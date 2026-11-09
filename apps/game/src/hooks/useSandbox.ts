@@ -4,7 +4,9 @@ import {
   isPointBlockedByCovers,
   normaliseRotation,
   rotateOffset,
+  SECTION_TYPES,
   troopFormationOffsets,
+  type SectionTypeId,
   type Frame,
   type Vec2,
 } from '@prestes/shared';
@@ -18,6 +20,8 @@ export function useSandbox(frame: Frame | null) {
   const [placementPoint, setPlacementPoint] = useState<Vec2 | null>(null);
   const [placementRotation, setPlacementRotation] = useState(0);
   const [controlBothSides, setControlBothSides] = useState(false);
+  /** pre-battle-roster 5.3: the section type a placed troop is made of; null is the plain troop. */
+  const [troopSection, setTroopSection] = useState<SectionTypeId | null>(null);
 
   useEffect(() => {
     setPlacementPoint(null);
@@ -84,8 +88,8 @@ export function useSandbox(frame: Frame | null) {
     const rotation = placementRotation;
     const positions: Vec2[] = [];
     if (sandboxTool === 'enemy-troop' || sandboxTool === 'command-troop') {
-      const count = sandboxTool === 'enemy-troop' ? 11 : 3;
-      const columns = sandboxTool === 'enemy-troop' ? 6 : 3;
+      const count = troopSection ? SECTION_TYPES[troopSection].men.length : sandboxTool === 'enemy-troop' ? 11 : 3;
+      const columns = troopSection || sandboxTool === 'enemy-troop' ? 6 : 3;
       for (const offset of troopFormationOffsets(count, columns, 2.4, rotation)) {
         positions.push({
           x: placementPoint.x + offset.x,
@@ -137,7 +141,7 @@ export function useSandbox(frame: Frame | null) {
       rotation: placementRotation,
       valid,
     };
-  }, [sandboxTool, placementPoint, placementRotation, frame?.covers, frame?.units]);
+  }, [sandboxTool, troopSection, placementPoint, placementRotation, frame?.covers, frame?.units]);
 
   return {
     sandboxOpen,
@@ -150,5 +154,7 @@ export function useSandbox(frame: Frame | null) {
     controlBothSides,
     setControlBothSides,
     placementPreview,
+    troopSection,
+    setTroopSection,
   };
 }

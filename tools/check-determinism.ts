@@ -16,8 +16,13 @@ interface Golden {
 
 const BATTLE_TICKS = 1000;
 
-function runBattle(map: BattleMapId): string {
-  const engine = new SimulationEngine({ seed: SEED, scenario: 'battle3v3', sandbox: true, battleMap: map });
+function runBattle(map: BattleMapId, throughDeployment = false): string {
+  const engine = new SimulationEngine({ seed: SEED, scenario: 'battle3v3', sandbox: true, battleMap: map, deployment: throughDeployment });
+  if (throughDeployment) {
+    // add-deployment-phase 2.4: an empty deployment phase, ended at once.
+    engine.enqueue({ type: 'start_battle' });
+    engine.runTicks(1);
+  }
   return engine.runTicks(BATTLE_TICKS).hash;
 }
 
@@ -87,6 +92,10 @@ for (const map of [...BATTLE_MAP_IDS, ...authoredMapIds()]) {
   }
   if (hash !== runBattle(map)) {
     console.error(`FAIL nondeterminism: two 3v3 runs on ${map} produced different hashes`);
+    process.exit(1);
+  }
+  if (hash !== runBattle(map, true)) {
+    console.error(`FAIL deployment: the 3v3 on ${map} through an empty deployment phase differs from the battle without one`);
     process.exit(1);
   }
   battles[map] = hash;

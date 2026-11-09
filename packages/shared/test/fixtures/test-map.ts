@@ -1,3 +1,4 @@
+import { band } from '../../src/maps/kit';
 import type { BattleMap } from '../../src/maps/types';
 
 /**
@@ -44,8 +45,8 @@ export const TEST_MAP: BattleMap = {
   covers: [],
   sightObstacles: [],
   deployment: {
-    column: { sections: [{ x: -44, y: 100 }, { x: 0, y: 100 }, { x: 44, y: 100 }], facing: { x: 0, y: -1 } },
-    legalist: { sections: [{ x: -44, y: -90 }, { x: 0, y: -90 }, { x: 44, y: -90 }], facing: { x: 0, y: 1 } },
+    column: { sections: [{ x: -44, y: 100 }, { x: 0, y: 100 }, { x: 44, y: 100 }], facing: { x: 0, y: -1 }, area: band(-190, 190, 65, 190) },
+    legalist: { sections: [{ x: -44, y: -90 }, { x: 0, y: -90 }, { x: 44, y: -90 }], facing: { x: 0, y: 1 }, area: band(-190, 190, -65, -190) },
   },
   props: [],
   fences: [],

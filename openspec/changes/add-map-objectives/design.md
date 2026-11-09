@@ -11,6 +11,11 @@
   the end panel (`BattleEndPanel`) shows result, time and casualties.
 - `refine-battle-maps` plans the decided-battle rule (a side below a fifth
   falls back) and search; this change uses "broken" from it when present.
+- `pre-battle-roster` 6.1 found that 9 of 36 headless runs of a mixed
+  roster against the enemy presets end without an outcome by 900 s: the
+  enemy's first attack fails and stops, and the scripted player waits for a
+  1.25:1 count it does not reach (see that change's "Apply findings"). The
+  objectives and the time limit here are what make such battles end.
 
 ## Goals / Non-Goals
 

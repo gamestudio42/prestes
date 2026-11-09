@@ -26,6 +26,7 @@ import {
   SUPPRESSION_DECAY,
 } from '@prestes/shared';
 import type {
+  BattlePhase,
   BattleMap,
   BattleMapId,
   BattleRosters,
@@ -42,6 +43,8 @@ import type {
   SightObstacle,
 } from '@prestes/shared';
 import { OrderManager } from './order-manager';
+import { applyDeploymentCommand } from './systems/deployment';
+import { deployEnemy } from './systems/enemy-deployment';
 import { initialGunPools, updateMachineGuns } from './systems/machine-gun';
 import { DEFAULT_UNITS, FATIGUE_REST, TRAINING_UNITS, battleUnits } from './systems/model';
 import type { ActiveOrder, BoundingGroup, MutableUnit } from './systems/model';
@@ -119,6 +122,14 @@ export interface SimulationOptions {
   battleMap?: BattleMapId | BattleMap;
   /** pre-battle-roster 3.1: the 3v3's forces; absent, the default roster on both sides. */
   rosters?: BattleRosters;
+  /** add-deployment-phase: open in the deployment phase. Headless tools and tests skip it unless they ask. */
+  deployment?: boolean;
+  /**
+   * add-deployment-phase D4: the legalist commander places its sections on
+   * the map's anchors before the first tick. Independent of the phase, so an
+   * untouched deployment equals a battle without one.
+   */
+  enemyDeployment?: boolean;
 }
 
 /** pre-battle-roster 3.2: the weapon a rostered battle names for a soldier (others carry the default). */
@@ -176,6 +187,12 @@ export class SimulationEngine implements SimContext {
   /** pre-battle-roster 4.3: the machine-gun squads' belt pools (rostered battles with a gun only). */
   gunPools?: Record<number, number>;
   fog: boolean;
+  /** add-deployment-phase D1: no tick passes in deployment; `start_battle` begins the battle. */
+  phase: BattlePhase;
+  /** Whether this battle opened with a deployment phase (its frames then carry `phase`). */
+  readonly hasDeployment: boolean;
+  /** The player's men as the phase opened, for `reset_deployment`. */
+  private deploymentStart: DeploymentPlace[] = [];
 
   constructor(options: SimulationOptions) {
     this.rng = new RNG(options.seed);
@@ -315,6 +332,10 @@ export class SimulationEngine implements SimContext {
       const pools = initialGunPools(this.units);
       if (Object.keys(pools).length > 0) this.gunPools = pools;
     }
+    if (options.enemyDeployment && this.battleMap) deployEnemy(this);
+    this.hasDeployment = options.deployment === true && this.battleMap !== null;
+    this.phase = this.hasDeployment ? 'deployment' : 'battle';
+    if (this.hasDeployment) this.deploymentStart = this.units.filter((unit) => unit.faction === 'column').map(placeOf);
   }
 
   /** Makes this engine's terrain and map the ones the shared queries read. */
@@ -362,6 +383,10 @@ export class SimulationEngine implements SimContext {
   private step(): void {
     // Engines can share a thread (tests, tools): select this map's terrain.
     this.selectTerrain();
+    if (this.phase === 'deployment') {
+      this.stepDeployment();
+      return;
+    }
     const nextTick = this.tickCount + 1;
     const events: SimEvent[] = [];
 
@@ -468,7 +493,9 @@ export class SimulationEngine implements SimContext {
    * their shots had no sound, tracer or effect.
    */
   runTicks(count: number, options?: FrameOptions): Frame {
-    const safeCount = Math.max(0, Math.floor(count));
+    // add-deployment-phase D1: in deployment one step applies the queue and no time passes.
+    const asked = Math.max(0, Math.floor(count));
+    const safeCount = this.phase === 'deployment' ? Math.min(1, asked) : asked;
     const events: SimEvent[] = [];
     for (let index = 0; index < safeCount; index += 1) {
       this.step();
@@ -494,9 +521,42 @@ export class SimulationEngine implements SimContext {
       seen: seenSnapshot(this),
       fog: this.fog,
       ...(this.ferries.length > 0 ? { ferries: ferrySnapshot(this) } : {}),
+      ...(this.gunPools ? { gunPools: { ...this.gunPools } } : {}),
       outcome: this.outcome,
+      ...(this.hasDeployment ? { phase: this.phase } : {}),
       hash: options?.hash === false ? '' : this.hashState(),
     };
+  }
+
+  /**
+   * add-deployment-phase D1/D2: the deployment phase's step. Commands take
+   * effect at once and the tick does not advance; `start_battle` ends the
+   * phase, and commands queued after it wait for the battle's first tick.
+   */
+  private stepDeployment(): void {
+    const events: SimEvent[] = [];
+    while (this.queue.length > 0 && this.phase === 'deployment') {
+      const envelope = this.queue.shift()!;
+      const command = envelope.command;
+      if (command.type === 'noop') continue;
+      if (command.type === 'start_battle') {
+        this.phase = 'battle';
+        events.push({ type: 'battle_started', tick: this.tickCount });
+      } else if (command.type === 'reset_deployment') {
+        this.resetDeployment();
+      } else {
+        applyDeploymentCommand(this, envelope, events);
+      }
+    }
+    this.lastEvents = events;
+  }
+
+  /** Puts the player's men back where the phase opened them. */
+  private resetDeployment(): void {
+    for (const place of this.deploymentStart) {
+      const unit = this.units.find((entry) => entry.id === place.id);
+      if (unit) restorePlace(unit, place);
+    }
   }
 
   /**
@@ -543,9 +603,40 @@ export class SimulationEngine implements SimContext {
         outcome: this.outcome,
         ...(this.ferries.length > 0 ? { ferries: this.ferries } : {}),
         ...(this.gunPools ? { gunPools: this.gunPools } : {}),
+        // add-deployment-phase D1: hashed only during the phase, so a battle hashes as before.
+        ...(this.phase === 'deployment' ? { phase: this.phase } : {}),
       }),
     );
   }
+}
+
+/** A man's place, facing and stance as the deployment phase opened. */
+interface DeploymentPlace {
+  id: number;
+  x: number;
+  y: number;
+  facingX: number;
+  facingY: number;
+  stance: MutableUnit['stance'];
+  formation: MutableUnit['formation'];
+}
+
+function placeOf(unit: MutableUnit): DeploymentPlace {
+  return { id: unit.id, x: unit.x, y: unit.y, facingX: unit.facingX, facingY: unit.facingY, stance: unit.stance, formation: unit.formation };
+}
+
+function restorePlace(unit: MutableUnit, place: DeploymentPlace): void {
+  unit.x = place.x;
+  unit.y = place.y;
+  unit.targetX = place.x;
+  unit.targetY = place.y;
+  unit.facingX = place.facingX;
+  unit.facingY = place.facingY;
+  unit.stance = place.stance;
+  unit.formation = place.formation;
+  unit.path = [];
+  unit.pathIndex = 0;
+  unit.slotId = null;
 }
 
 /**

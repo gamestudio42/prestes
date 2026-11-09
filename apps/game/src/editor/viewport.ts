@@ -1,16 +1,28 @@
 import * as THREE from 'three';
 import {
+  TRENCH,
+  trenchLength,
   bridgePolygon,
   catalogObject,
+  clusterBadges,
+  insideDeploymentArea,
+  vegetationAt,
+  type BattleMap,
+  type ProtectionClass,
   groundMaterialIndex,
   mapSide,
   rectangle,
   terrainHeightAt,
+  TreeScatter,
+  treeStrokeSeed,
+  treesUnder,
+  type ScatteredTree,
   type DocBridge,
   type EditableMap,
   type Vec2,
 } from '@prestes/shared';
 import { SceneView } from '@prestes/view3d';
+import { loadGraphicsSettings } from '../storage';
 import { fill, layerOf, sampleHeight, Stroke } from './brush';
 import { rasterCommand, type EditorStore, type SelectionItem } from './store';
 
@@ -20,7 +32,7 @@ import { rasterCommand, type EditorStore, type SelectionItem } from './store';
  * points, and the pointer logic of every tool.
  */
 
-const POLYLINE_TOOLS = new Set(['road', 'river', 'pond', 'line', 'bridge', 'ferry']);
+const POLYLINE_TOOLS = new Set(['road', 'river', 'pond', 'line', 'trench', 'bridge', 'ferry']);
 const BRUSH_TOOLS = new Set(['paint', 'erase', 'vegetation', 'raise', 'lower', 'smooth', 'flatten', 'setHeight', 'noise']);
 
 const COLORS = {
@@ -31,12 +43,27 @@ const COLORS = {
   pond: 0x5aa7d6,
   line: 0xcfcfcf,
   selection: 0xffd23f,
+  tree: 0x6fbf4a,
+  erase: 0xd65a4a,
   column: 0xd65a4a,
   legalist: 0x4a7fd6,
+  hatch: 0xa6d96a,
 };
+
+/** refine-map-editor 6.1: slot dots by what they protect (the panel's legend uses the same). */
+export const PROTECTION_COLORS: Record<ProtectionClass, number> = {
+  standing: 0x4fd36b,
+  crouched: 0xf2c14e,
+  prone: 0xe8743b,
+};
+
+/** Above this camera span the cover badges cluster per 50 m cell (strategic span). */
+const BADGE_CLUSTER_SPAN = 160;
 
 type Drag =
   | { kind: 'stroke'; stroke: Stroke; last: Vec2; time: number }
+  | { kind: 'scatter'; scatter: TreeScatter; last: Vec2 }
+  | { kind: 'erase-trees'; ids: Set<number>; last: Vec2 }
   | { kind: 'move'; start: Vec2; current: Vec2; items: SelectionItem[] }
   | { kind: 'box'; start: Vec2; current: Vec2 }
   | { kind: 'pan'; x: number; y: number };
@@ -50,8 +77,11 @@ export interface CursorInfo {
 export class EditorViewport {
   readonly view: SceneView;
   private readonly overlay = new THREE.Group();
+  private readonly coverLayer = new THREE.Group();
+  private coverFor: BattleMap | null = null;
   private readonly labels: HTMLDivElement;
   private readonly sectionLabels: HTMLDivElement[] = [];
+  private readonly badgeLabels: HTMLDivElement[] = [];
   private cursor: Vec2 | null = null;
   private draft: Vec2[] = [];
   private draftTool: string;
@@ -67,10 +97,12 @@ export class EditorViewport {
     private readonly sectionText: (side: 'column' | 'legalist', index: number) => string,
   ) {
     this.draftTool = store.tool;
-    this.view = new SceneView({ container, battleMap: store.compiled, strategicField: true });
+    this.view = new SceneView({ container, battleMap: store.compiled, strategicField: true, antialias: loadGraphicsSettings().smoothEdges });
     this.view.frameMap();
     this.overlay.name = 'editor-overlay';
     this.view.editorScene.add(this.overlay);
+    this.coverLayer.name = 'editor-cover';
+    this.view.editorScene.add(this.coverLayer);
     this.labels = document.createElement('div');
     this.labels.className = 'editor-labels';
     container.appendChild(this.labels);
@@ -128,6 +160,7 @@ export class EditorViewport {
     this.view.setGroundOverlay(view.overlay);
     this.view.setGroundGrid(view.grid ? (this.view.camera.span > 160 ? 10 : 1) : 0);
     this.view.setTopDown(view.topDown);
+    this.syncCoverLayer();
     this.rebuildOverlay();
   }
 
@@ -141,7 +174,146 @@ export class EditorViewport {
       this.view.replaceBattleMap(compiled);
     }
     this.lastRasterLayer = null;
+    this.syncCoverLayer();
     this.rebuildOverlay();
+  }
+
+  // --- cover overlay (refine-map-editor 6.1, D9) -----------------------------
+
+  /** The slot dots and the concealment hatch, rebuilt when the map recompiles. */
+  private syncCoverLayer(): void {
+    const on = this.store.view.cover;
+    const compiled = this.store.compiled;
+    if (on ? this.coverFor === compiled : this.coverFor === null) return;
+    for (const child of [...this.coverLayer.children]) {
+      this.coverLayer.remove(child);
+      const mesh = child as THREE.Mesh;
+      mesh.geometry?.dispose();
+      (mesh.material as THREE.Material | undefined)?.dispose();
+    }
+    this.coverFor = on ? compiled : null;
+    if (!on) {
+      this.store.setCoverHover(null);
+      return;
+    }
+    // Concealing vegetation, hatched: diagonals through every third cell.
+    const raster = compiled.raster?.vegetation;
+    if (raster) {
+      const { minX, minY } = compiled.bounds;
+      const side = Math.round(compiled.bounds.maxX - minX);
+      const vertices: number[] = [];
+      for (let row = 0; row < side; row += 1) {
+        for (let col = row % 3; col < side; col += 3) {
+          if (!raster[row * side + col]) continue;
+          const x = minX + col;
+          const y = minY + row;
+          if (!vegetationAt(x + 0.5, y + 0.5)) continue;
+          vertices.push(x, terrainHeightAt(x, y) + 0.3, y, x + 1, terrainHeightAt(x + 1, y + 1) + 0.3, y + 1);
+        }
+      }
+      if (vertices.length > 0) {
+        const geometry = new THREE.BufferGeometry();
+        geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+        const hatch = new THREE.LineSegments(geometry, new THREE.LineBasicMaterial({ color: COLORS.hatch, depthTest: false, transparent: true, opacity: 0.55 }));
+        hatch.name = 'cover-hatch';
+        hatch.renderOrder = 9;
+        this.coverLayer.add(hatch);
+      }
+    }
+    // The game's slots, one instanced dot each, coloured by what they protect.
+    const { slots } = this.store.coverPreview();
+    if (slots.length > 0) {
+      const disc = new THREE.CircleGeometry(0.4, 10);
+      disc.rotateX(-Math.PI / 2);
+      const dots = new THREE.InstancedMesh(disc, new THREE.MeshBasicMaterial({ depthTest: false, transparent: true, opacity: 0.95 }), slots.length);
+      const matrix = new THREE.Matrix4();
+      const color = new THREE.Color();
+      slots.forEach((slot, index) => {
+        matrix.makeTranslation(slot.x, terrainHeightAt(slot.x, slot.y) + 0.35, slot.y);
+        dots.setMatrixAt(index, matrix);
+        dots.setColorAt(index, color.setHex(PROTECTION_COLORS[slot.protects]));
+      });
+      dots.instanceMatrix.needsUpdate = true;
+      if (dots.instanceColor) dots.instanceColor.needsUpdate = true;
+      dots.name = 'cover-slots';
+      dots.renderOrder = 12;
+      dots.frustumCulled = false;
+      this.coverLayer.add(dots);
+    }
+  }
+
+  /** The piece whose slot is nearest the pointer, within the pick radius. */
+  private coverPieceAt(point: Vec2): string | null {
+    let best: string | null = null;
+    let bestDistance = Math.max(1.5, this.pick) ** 2;
+    for (const slot of this.store.coverPreview().slots) {
+      if (!slot.piece) continue;
+      const distance = (slot.x - point.x) ** 2 + (slot.y - point.y) ** 2;
+      if (distance < bestDistance) {
+        bestDistance = distance;
+        best = slot.piece;
+      }
+    }
+    return best;
+  }
+
+  /** Hover detail: the piece's slots ringed, each with its guard arc. */
+  private drawCoverHover(): void {
+    const key = this.store.coverHover;
+    if (!this.store.view.cover || !key) return;
+    for (const slot of this.store.coverPreview().slots) {
+      if (slot.piece !== key) continue;
+      const color = PROTECTION_COLORS[slot.protects];
+      this.overlay.add(this.ring(slot, 0.6, color));
+      if (!slot.guard) continue;
+      const angle = Math.atan2(slot.guard.y, slot.guard.x);
+      const arc: Vec2[] = [slot];
+      for (let step = -3; step <= 3; step += 1) {
+        const a = angle + (step / 3) * (Math.PI / 4);
+        arc.push({ x: slot.x + Math.cos(a) * 2.5, y: slot.y + Math.sin(a) * 2.5 });
+      }
+      arc.push(slot);
+      this.overlay.add(this.line(arc, color, false, 0.4));
+    }
+  }
+
+  /** Slot-count badges per piece, clustered per 50 m cell at strategic span. */
+  private placeBadges(): void {
+    let index = 0;
+    if (this.store.view.cover) {
+      const { pieces } = this.store.coverPreview();
+      const clustered = this.view.camera.span > BADGE_CLUSTER_SPAN;
+      const badges = clustered
+        ? clusterBadges(pieces).map((cluster) => ({ key: cluster.key, at: cluster.at, count: cluster.count, cluster: true }))
+        : pieces.map((piece) => ({ key: piece.key, at: piece.at, count: piece.count, cluster: false }));
+      const width = this.container.clientWidth;
+      const height = this.container.clientHeight;
+      for (const badge of badges) {
+        const screen = this.view.groundToScreen(badge.at.x, badge.at.y);
+        if (!screen || screen.x < -40 || screen.y < -40 || screen.x > width + 40 || screen.y > height + 40) continue;
+        let label = this.badgeLabels[index];
+        if (!label) {
+          label = document.createElement('div');
+          label.className = 'editor-badge';
+          this.labels.appendChild(label);
+          this.badgeLabels[index] = label;
+        }
+        label.style.display = 'block';
+        label.style.transform = `translate(${Math.round(screen.x)}px, ${Math.round(screen.y) - 18}px) translateX(-50%)`;
+        const text = String(badge.count);
+        if (label.textContent !== text) label.textContent = text;
+        if (badge.cluster) {
+          delete label.dataset.piece;
+          label.dataset.cluster = badge.key;
+        } else {
+          delete label.dataset.cluster;
+          label.dataset.piece = badge.key;
+        }
+        label.dataset.hover = String(!badge.cluster && badge.key === this.store.coverHover);
+        index += 1;
+      }
+    }
+    for (; index < this.badgeLabels.length; index += 1) this.badgeLabels[index]!.style.display = 'none';
   }
 
   private lastRasterLayer: string | null = null;
@@ -209,6 +381,26 @@ export class EditorViewport {
       this.rebuildOverlay();
       return;
     }
+    if (tool === 'trees') {
+      const settings = this.store.settings;
+      const radius = Math.max(0.5, settings.size / 2);
+      if (settings.treeMode === 'single') {
+        const snapped = this.snap(point);
+        if (!catalogObject(settings.treeSpecies)) return;
+        this.store.editVector((draft) => {
+          draft.objects.push({ id: this.store.nextId(draft.objects), type: settings.treeSpecies, x: snapped.x, y: snapped.y, rotation: (settings.rotation * Math.PI) / 180 });
+        });
+      } else if (settings.treeMode === 'erase') {
+        this.drag = { kind: 'erase-trees', ids: new Set(treesUnder(map, point.x, point.y, radius)), last: point };
+      } else {
+        this.store.treeStrokes += 1;
+        const scatter = new TreeScatter(map, { radius, biome: settings.treeBiome, density: settings.treeDensity, seed: treeStrokeSeed(map.id, this.store.treeStrokes) });
+        scatter.dab(point.x, point.y);
+        this.drag = { kind: 'scatter', scatter, last: point };
+      }
+      this.rebuildOverlay();
+      return;
+    }
     if (tool === 'place') {
       const snapped = this.snap(point);
       const { objectType, rotation, scale } = this.store.settings;
@@ -244,6 +436,7 @@ export class EditorViewport {
     this.cursor = ground ? this.clampToMap(ground) : null;
     if (ground) this.onCursor?.({ x: ground.x, y: ground.y, height: terrainHeightAt(ground.x, ground.y) });
     else this.onCursor?.(null);
+    if (this.store.view.cover && !this.drag) this.store.setCoverHover(ground ? this.coverPieceAt(ground) : null);
     if (!ground) return;
     const point = this.clampToMap(ground);
     const drag = this.drag;
@@ -253,6 +446,17 @@ export class EditorViewport {
       drag.last = point;
       drag.time = now;
       this.showStroke(drag.stroke);
+    } else if (drag?.kind === 'scatter' || drag?.kind === 'erase-trees') {
+      // Dabs every half radius along the drag, so a fast stroke leaves no gaps.
+      const radius = Math.max(0.5, this.store.settings.size / 2);
+      const length = Math.hypot(point.x - drag.last.x, point.y - drag.last.y);
+      const steps = Math.floor(length / (radius / 2));
+      for (let step = 1; step <= steps; step += 1) {
+        const at = { x: drag.last.x + ((point.x - drag.last.x) * step) / steps, y: drag.last.y + ((point.y - drag.last.y) * step) / steps };
+        if (drag.kind === 'scatter') drag.scatter.dab(at.x, at.y);
+        else for (const id of treesUnder(this.store.map, at.x, at.y, radius)) drag.ids.add(id);
+      }
+      if (steps > 0) drag.last = point;
     } else if (drag?.kind === 'move' || drag?.kind === 'box') {
       drag.current = point;
     }
@@ -268,6 +472,22 @@ export class EditorViewport {
       if (drag.stroke.changes.size > 0) {
         this.lastRasterLayer = drag.stroke.layer;
         this.store.record(rasterCommand(drag.stroke.layer, drag.stroke.changes, this.store.map, drag.stroke.dirtyBox()));
+      }
+    } else if (drag.kind === 'scatter') {
+      // One stroke is one undo step.
+      const trees: ScatteredTree[] = drag.scatter.trees;
+      if (trees.length > 0) {
+        this.store.editVector((draft) => {
+          let id = this.store.nextId(draft.objects);
+          for (const tree of trees) draft.objects.push({ id: id++, ...tree });
+        });
+      }
+    } else if (drag.kind === 'erase-trees') {
+      if (drag.ids.size > 0) {
+        this.store.editVector((draft) => {
+          draft.objects = draft.objects.filter((object) => !drag.ids.has(object.id));
+        });
+        this.store.setSelection(this.store.selection.filter((item) => !(item.kind === 'object' && drag.ids.has(item.id))));
       }
     } else if (drag.kind === 'move') {
       const dx = drag.current.x - drag.start.x;
@@ -291,6 +511,7 @@ export class EditorViewport {
   private onPointerLeave = (): void => {
     this.cursor = null;
     this.onCursor?.(null);
+    this.store.setCoverHover(null);
     this.rebuildOverlay();
   };
 
@@ -302,8 +523,27 @@ export class EditorViewport {
     // Insert a point on the selected polyline's nearest segment.
     const ground = this.groundAt(event);
     const item = this.store.selection[0];
-    if (!ground || !item || !['road', 'river', 'line', 'pond'].includes(item.kind)) return;
+    if (!ground || !item || !['road', 'river', 'line', 'trench', 'pond', 'area'].includes(item.kind)) return;
     const point = this.snap(ground);
+    if (item.kind === 'area') {
+      // A corner on the area's nearest edge, the closing edge included.
+      this.store.editVector((draft) => {
+        // The draft is a copy (editVector): its area may be changed in place.
+        const area = draft.deployment[item.side].area as Vec2[];
+        let best = 0;
+        let bestDistance = Infinity;
+        for (let index = 0; index < area.length; index += 1) {
+          const distance = segmentDistance(point, area[index]!, area[(index + 1) % area.length]!);
+          if (distance < bestDistance) {
+            bestDistance = distance;
+            best = index + 1;
+          }
+        }
+        area.splice(best, 0, point);
+      });
+      this.store.setSelection([{ kind: 'area', side: item.side }]);
+      return;
+    }
     this.store.editVector((draft) => {
       const target = polylineOf(draft, item);
       if (!target) return;
@@ -353,6 +593,14 @@ export class EditorViewport {
       this.rebuildOverlay();
       return;
     }
+    // refine-map-editor 2.5: X flips the selected trench lines, or the next one drawn.
+    if (event.code === 'KeyX') {
+      const trenches = store.selection.filter((item) => item.kind === 'trench');
+      if (trenches.length > 0) this.flipTrenches(trenches.map((item) => ('id' in item ? item.id : -1)));
+      else if (store.tool === 'trench') store.updateSettings({ trenchFacing: store.settings.trenchFacing === 'left' ? 'right' : 'left' });
+      this.rebuildOverlay();
+      return;
+    }
     if (event.code === 'KeyR' && store.tool === 'place') {
       const step = store.settings.rotateStep ? 15 : 5;
       store.updateSettings({ rotation: (store.settings.rotation + (event.shiftKey ? -step : step) + 360) % 360 });
@@ -373,13 +621,20 @@ export class EditorViewport {
 
   // --- edits -----------------------------------------------------------------
 
+  /** Turns the parapet (and the slots) of these trench lines to the other side. */
+  flipTrenches(ids: readonly number[]): void {
+    this.store.editVector((draft) => {
+      for (const line of draft.trenches) if (ids.includes(line.id)) line.facing = line.facing === 'left' ? 'right' : 'left';
+    });
+  }
+
   private finishDraft(): void {
     const tool = this.store.tool;
     const points = this.draft;
     this.draft = [];
     const settings = this.store.settings;
     const minimum = tool === 'pond' ? 3 : 2;
-    if (points.length < minimum) {
+    if (points.length < minimum || (tool === 'trench' && trenchLength(points) < TRENCH.minLength)) {
       this.rebuildOverlay();
       return;
     }
@@ -390,7 +645,6 @@ export class EditorViewport {
             id: this.store.nextId(draft.roads),
             type: settings.roadType,
             width: settings.roadWidth,
-            camber: settings.camber,
             ditches: { left: settings.ditchLeft, right: settings.ditchRight },
             points,
           });
@@ -403,6 +657,17 @@ export class EditorViewport {
           break;
         case 'line':
           draft.lines.push({ id: this.store.nextId(draft.lines), kind: settings.lineKind, height: settings.lineHeight, points });
+          break;
+        case 'trench':
+          draft.trenches.push({
+            id: this.store.nextId(draft.trenches),
+            kind: settings.trenchKind,
+            depth: settings.trenchDepth,
+            facing: settings.trenchFacing,
+            bays: settings.trenchKind === 'fire' && settings.trenchBays,
+            parapet: settings.trenchParapet,
+            points,
+          });
           break;
         case 'bridge': {
           const [a, b] = points as [Vec2, Vec2];
@@ -498,6 +763,12 @@ export class EditorViewport {
             break;
           case 'section':
             break;
+          case 'area': {
+            // A corner goes while three remain; the area itself cannot be deleted.
+            const area = draft.deployment[item.side].area as Vec2[];
+            if (item.point !== undefined && area.length > 3) area.splice(item.point, 1);
+            break;
+          }
           default: {
             const target = polylineOf(draft, item);
             const minimum = item.kind === 'pond' ? 3 : 2;
@@ -505,7 +776,7 @@ export class EditorViewport {
               target.points.splice(item.point, 1);
               if (item.kind === 'river') draft.rivers.find((entry) => entry.id === item.id)!.kinds.splice(Math.max(0, item.point - 1), 1);
             } else {
-              const key = (item.kind + 's') as 'roads' | 'rivers' | 'ponds' | 'lines';
+              const key = (item.kind + (item.kind === 'trench' ? 'es' : 's')) as 'roads' | 'rivers' | 'ponds' | 'lines' | 'trenches';
               (draft[key] as { id: number }[]) = (draft[key] as { id: number }[]).filter((entry) => entry.id !== item.id);
             }
           }
@@ -539,10 +810,22 @@ export class EditorViewport {
       const index = map.deployment[side].sections.findIndex((section) => Math.hypot(section.x - point.x, section.y - point.y) <= Math.max(pick, 3));
       if (index >= 0) return { kind: 'section', side, index };
     }
-    if (sectionsOnly) return null;
+    if (sectionsOnly) {
+      // add-deployment-phase 1.2: the deployment tool also takes the areas' corners, then their edges and insides.
+      for (const side of ['column', 'legalist'] as const) {
+        const index = map.deployment[side].area.findIndex((corner) => Math.hypot(corner.x - point.x, corner.y - point.y) <= pick);
+        if (index >= 0) return { kind: 'area', side, point: index };
+      }
+      for (const side of ['column', 'legalist'] as const) {
+        const area = map.deployment[side].area;
+        const nearEdge = area.some((corner, index) => segmentDistance(point, corner, area[(index + 1) % area.length]!) <= pick);
+        if (nearEdge || insideDeploymentArea(area, point.x, point.y)) return { kind: 'area', side };
+      }
+      return null;
+    }
     // Points of the selected polylines first, then any polyline point.
-    for (const kind of ['road', 'river', 'line', 'pond'] as const) {
-      const list = kind === 'road' ? map.roads : kind === 'river' ? map.rivers : kind === 'line' ? map.lines : map.ponds;
+    for (const kind of ['road', 'river', 'line', 'trench', 'pond'] as const) {
+      const list = kind === 'road' ? map.roads : kind === 'river' ? map.rivers : kind === 'line' ? map.lines : kind === 'trench' ? map.trenches : map.ponds;
       for (const entry of list) {
         const points = 'polygon' in entry ? entry.polygon : entry.points;
         const index = points.findIndex((p) => Math.hypot(p.x - point.x, p.y - point.y) <= pick);
@@ -574,8 +857,8 @@ export class EditorViewport {
     for (const bridge of map.bridges) {
       if (insideBridge(bridge, point)) return { kind: 'bridge', id: bridge.id };
     }
-    for (const kind of ['road', 'river', 'line'] as const) {
-      const list = kind === 'road' ? map.roads : kind === 'river' ? map.rivers : map.lines;
+    for (const kind of ['road', 'river', 'line', 'trench'] as const) {
+      const list = kind === 'road' ? map.roads : kind === 'river' ? map.rivers : kind === 'line' ? map.lines : map.trenches;
       for (const entry of list) {
         const width = 'width' in entry ? entry.width / 2 : 1;
         for (let index = 1; index < entry.points.length; index += 1) {
@@ -611,6 +894,7 @@ export class EditorViewport {
       }
     }
     this.placeLabels();
+    this.placeBadges();
     this.frame = requestAnimationFrame(this.tick);
   };
 
@@ -727,6 +1011,14 @@ export class EditorViewport {
         this.overlay.add(this.line(pond.polygon, isSelected ? COLORS.selection : COLORS.pond, true));
         if (isSelected || tool === 'select') pond.polygon.forEach((point) => this.overlay.add(this.marker(point, isSelected ? COLORS.selection : COLORS.pond, pick * 0.6)));
       }
+      for (const trench of map.trenches) {
+        const isSelected = selected({ kind: 'trench', id: trench.id });
+        const color = isSelected ? COLORS.selection : COLORS.line;
+        this.overlay.add(this.line(trench.points, color));
+        // Ticks on the parapet side, every 4 m: which way the trench faces.
+        if (trench.kind === 'fire') this.overlay.add(this.line(facingTicks(trench.points, trench.facing), color));
+        if (isSelected || tool === 'select' || tool === 'trench') trench.points.forEach((point) => this.overlay.add(this.marker(point, color, pick * 0.5)));
+      }
       for (const line of map.lines) {
         const isSelected = selected({ kind: 'line', id: line.id });
         if (isSelected || tool === 'select' || tool === 'line') {
@@ -752,9 +1044,16 @@ export class EditorViewport {
       const scale = object.scale ?? 1;
       this.overlay.add(this.line(rectangle(object.x, object.y, Math.max(0.4, entry.halfWidth * scale), Math.max(0.4, entry.halfDepth * scale), object.rotation), COLORS.selection, true));
     }
-    // Deployment: section points and facing.
+    // Deployment: each side's area (corners shown with the deployment tool), section points and facing.
     for (const side of ['column', 'legalist'] as const) {
       const zone = map.deployment[side];
+      const areaSelected = selected({ kind: 'area', side });
+      this.overlay.add(this.line(zone.area, areaSelected ? COLORS.selection : COLORS[side], true));
+      if (tool === 'deployment') {
+        zone.area.forEach((corner, point) => {
+          this.overlay.add(this.marker(corner, areaSelected || selected({ kind: 'area', side, point }) ? COLORS.selection : COLORS[side], pick * 0.6));
+        });
+      }
       zone.sections.forEach((section, index) => {
         const isSelected = selected({ kind: 'section', side, index });
         this.overlay.add(this.ring(section, 3, isSelected ? COLORS.selection : COLORS[side]));
@@ -763,6 +1062,7 @@ export class EditorViewport {
         this.overlay.add(this.line(rectangle(section.x, section.y + 1.4, 7, 1.4), COLORS[side], true, 0.2));
       });
     }
+    this.drawCoverHover();
     // Drafts and the cursor.
     const drag = this.drag;
     if (drag?.kind === 'move') {
@@ -773,6 +1073,12 @@ export class EditorViewport {
         if (at) this.overlay.add(this.marker({ x: at.x + dx, y: at.y + dy }, COLORS.selection, pick * 0.7));
       }
     }
+    if (drag?.kind === 'scatter') {
+      for (const tree of drag.scatter.trees) this.overlay.add(this.marker(tree, COLORS.tree, pick * 0.6));
+    }
+    if (drag?.kind === 'erase-trees') {
+      for (const object of map.objects) if (drag.ids.has(object.id)) this.overlay.add(this.marker(object, COLORS.erase, pick * 0.7));
+    }
     if (drag?.kind === 'box') {
       const { start, current } = drag;
       this.overlay.add(this.line([start, { x: current.x, y: start.y }, current, { x: start.x, y: current.y }], COLORS.selection, true));
@@ -781,12 +1087,16 @@ export class EditorViewport {
       const color = tool === 'river' || tool === 'pond' ? COLORS.river : COLORS.draft;
       const preview = this.cursor ? [...this.draft, this.snap(this.cursor)] : this.draft;
       this.overlay.add(this.line(preview, color, tool === 'pond'));
+      if (tool === 'trench' && settings.trenchKind === 'fire' && preview.length > 1) this.overlay.add(this.line(facingTicks(preview, settings.trenchFacing), color));
       this.draft.forEach((point) => this.overlay.add(this.marker(point, color, pick * 0.6)));
     }
     const cursor = this.cursor;
     if (cursor) {
       if (BRUSH_TOOLS.has(tool)) {
         this.overlay.add(this.ring(cursor, Math.max(0.5, settings.size / 2), COLORS.cursor, settings.shape === 'square'));
+      } else if (tool === 'trees') {
+        if (settings.treeMode === 'single') this.overlay.add(this.marker(this.snap(cursor), COLORS.tree, pick * 0.5));
+        else this.overlay.add(this.ring(cursor, Math.max(0.5, settings.size / 2), settings.treeMode === 'erase' ? COLORS.erase : COLORS.tree));
       } else if (tool === 'place') {
         const entry = catalogObject(settings.objectType);
         if (entry) {
@@ -798,6 +1108,29 @@ export class EditorViewport {
       }
     }
   }
+}
+
+/**
+ * Short ticks off a trench line toward its parapet, every 4 m, drawn as one
+ * zig-zag polyline (out and back) so the overlay's line helper draws them.
+ */
+function facingTicks(points: readonly Vec2[], facing: 'left' | 'right'): Vec2[] {
+  const out: Vec2[] = [];
+  const side = facing === 'right' ? 1 : -1;
+  for (let index = 1; index < points.length; index += 1) {
+    const a = points[index - 1]!;
+    const b = points[index]!;
+    const length = Math.hypot(b.x - a.x, b.y - a.y);
+    if (length < 0.01) continue;
+    const nx = (-(b.y - a.y) / length) * side;
+    const ny = ((b.x - a.x) / length) * side;
+    for (let along = 2; along < length; along += 4) {
+      const x = a.x + ((b.x - a.x) * along) / length;
+      const y = a.y + ((b.y - a.y) * along) / length;
+      out.push({ x, y }, { x: x + nx * 1.5, y: y + ny * 1.5 }, { x, y });
+    }
+  }
+  return out;
 }
 
 function sameItem(a: SelectionItem, b: SelectionItem): boolean {
@@ -812,10 +1145,14 @@ function polylineOf(map: EditableMap, item: SelectionItem): { points: Vec2[] } |
       return map.rivers.find((entry) => entry.id === item.id) ?? null;
     case 'line':
       return map.lines.find((entry) => entry.id === item.id) ?? null;
+    case 'trench':
+      return map.trenches.find((entry) => entry.id === item.id) ?? null;
     case 'pond': {
       const pond = map.ponds.find((entry) => entry.id === item.id);
       return pond ? { points: pond.polygon } : null;
     }
+    case 'area':
+      return { points: map.deployment[item.side].area as Vec2[] };
     default:
       return null;
   }

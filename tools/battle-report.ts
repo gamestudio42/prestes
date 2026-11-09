@@ -1,5 +1,5 @@
 import { fileURLToPath } from 'node:url';
-import { battleMap, type BattleMap, type BattleMapId, type Frame, type UnitSnapshot } from '../packages/shared/src';
+import { battleMap, battleMaps, type BattleMap, type BattleMapId, type BattleRosters, type Frame, type Roster, type UnitSnapshot } from '../packages/shared/src';
 import { SimulationEngine } from '../packages/simulation/src/engine';
 
 /**
@@ -58,6 +58,8 @@ function enemyLine(map: BattleMap): { x: number; y: number } {
 
 interface ScriptState {
   map: BattleMap;
+  /** pre-battle-roster 6.1: a rostered battle; its sections hold 10 m in front of where they deployed. */
+  rostered: boolean;
   countering: boolean;
   /** Enemy soldiers the player saw fall (fog-of-war: his only count of the enemy's losses). */
   seenDown: Set<number>;
@@ -78,6 +80,21 @@ function orderPlayer(engine: SimulationEngine, frame: Frame, state: ScriptState)
   }
   const enemies = frame.units.filter((unit) => unit.faction === 'legalist' && fit(unit) && seen.has(unit.id));
   const estimate = frame.units.filter((unit) => unit.faction === 'legalist').length - state.seenDown.size;
+  if (frame.tick === 0 && state.rostered) {
+    const zone = state.map.deployment.column;
+    for (const squad of new Set(own.map((unit) => unit.squadId))) {
+      const section = own.filter((unit) => unit.squadId === squad);
+      const centre = centroid(section);
+      engine.enqueue({
+        type: 'order',
+        order: 'defend',
+        unitIds: section.map((unit) => unit.id),
+        to: { x: centre.x, y: centre.y + zone.facing.y * 10 },
+        facing: zone.facing,
+      });
+    }
+    return;
+  }
   if (frame.tick === 0) {
     // Each section holds its own line, 10 m in front of its start.
     const zone = state.map.deployment.column;
@@ -124,9 +141,10 @@ export async function battleReport(
   seed = 1922,
   maxSeconds = 900,
   mapId: BattleMapId = 'vila-militar',
+  rosters?: BattleRosters,
 ): Promise<BattleReport> {
   const map = battleMap(mapId);
-  const engine = new SimulationEngine({ seed, scenario: 'battle3v3', sandbox: true, battleMap: mapId });
+  const engine = new SimulationEngine({ seed, scenario: 'battle3v3', sandbox: true, battleMap: mapId, rosters });
   let frame = engine.frame();
   const faction = new Map(frame.units.map((unit) => [unit.id, unit.faction]));
   const casualties = { column: 0, legalist: 0 };
@@ -138,7 +156,7 @@ export async function battleReport(
   let silenceStart = 0;
   let longestSilence = 0;
   let outcome: BattleReport['outcome'] = 'none';
-  const script: ScriptState = { map, countering: false, seenDown: new Set() };
+  const script: ScriptState = { map, rostered: rosters !== undefined, countering: false, seenDown: new Set() };
   let firstSight = -1;
   const maxTicks = maxSeconds * 10;
   for (let tick = 0; tick < maxTicks && outcome === 'none'; tick += 1) {
@@ -211,9 +229,46 @@ function bothSidesFit(frame: Frame): boolean {
   );
 }
 
+/** pre-battle-roster 6.1: a full mixed force of 33 for the player. */
+export const MIXED_PLAYER: Roster = { sections: ['comando', 'metralhadora', 'esquadra-5', 'fuzileiros', 'irregulares', 'esquadra-4'] };
+export const DEFAULT_PLAYER: Roster = { sections: ['fuzileiros', 'fuzileiros', 'fuzileiros'] };
+export const PRESET_SEEDS = [1922, 1924, 1925];
+
+/** The battle-lab feel bands (spec "Report within bands"); null when the report is inside them. */
+export function outsideBands(report: BattleReport): string | null {
+  const misses: string[] = [];
+  if (report.seconds < 180 || report.seconds > 600) misses.push(`time ${report.seconds}s`);
+  if (report.maxShotsPerTick > 8) misses.push(`shots/tick ${report.maxShotsPerTick}`);
+  if (report.longestSilence > 75) misses.push(`silence ${report.longestSilence}s`);
+  if (report.bunching >= 0.15) misses.push(`bunching ${report.bunching}`);
+  return misses.length > 0 ? misses.join(', ') : null;
+}
+
+async function presetTable(): Promise<void> {
+  console.log('| Map | Enemy | Player | Seed | Time (s) | Outcome | Cas. col/leg | Shots/cas. | Max shots/tick | Silence (s) | Bunching | Bands |');
+  console.log('| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |');
+  for (const map of battleMaps()) {
+    for (const [index, enemy] of (map.enemyForces ?? []).entries()) {
+      for (const [name, player] of [['default', DEFAULT_PLAYER], ['mixed', MIXED_PLAYER]] as const) {
+        for (const seed of PRESET_SEEDS) {
+          const report = await battleReport(seed, 900, map.id, { column: player, legalist: enemy });
+          const r = report;
+          console.log(
+            `| ${map.id} | ${String.fromCharCode(65 + index)} | ${name} | ${seed} | ${r.seconds} | ${r.outcome} | ${r.casualties.column}/${r.casualties.legalist} | ${r.shotsPerCasualty} | ${r.maxShotsPerTick} | ${r.longestSilence} | ${r.bunching} | ${outsideBands(r) ?? 'ok'} |`,
+          );
+        }
+      }
+    }
+  }
+}
+
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
-  // pnpm battle:report [--map fazenda] [seed ...]
+  // pnpm battle:report [--map fazenda] [seed ...] | pnpm battle:report --presets
   const args = process.argv.slice(2);
+  if (args.includes('--presets')) {
+    await presetTable();
+    process.exit(0);
+  }
   const mapAt = args.indexOf('--map');
   const map = (mapAt >= 0 ? args[mapAt + 1] : 'vila-militar') as BattleMapId;
   const seeds = args.filter((_, index) => index !== mapAt && index !== mapAt + 1).map(Number).filter((value) => Number.isFinite(value));

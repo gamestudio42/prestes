@@ -1,4 +1,5 @@
 import {
+  growthMask,
   groundMaterialIndex,
   heightNodes,
   HEIGHT_SPACING,
@@ -79,7 +80,14 @@ export class Stroke {
       : box;
   }
 
+  /** refine-map-editor D2: where plants may grow, worked out once per stroke. */
+  private mask: Uint8Array | null = null;
+
   private set(index: number, value: number): void {
+    if (this.layer === 'vegetation' && value !== 0) {
+      this.mask ??= growthMask(this.map);
+      if (!this.mask[index]) return;
+    }
     const data = this.map[this.layer];
     if (data[index] === value) return;
     if (!this.changes.has(index)) this.changes.set(index, data[index]!);

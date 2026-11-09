@@ -1,5 +1,6 @@
 import { SANDBOX_TERRAIN } from '../terrain';
 import { BATTLE_COVERS, BUILDINGS } from '../world';
+import { band } from './kit';
 import type { BattleMap } from './types';
 
 /**
@@ -29,8 +30,9 @@ export const VILA_MILITAR: BattleMap = {
   covers: BATTLE_COVERS,
   sightObstacles: [],
   deployment: {
-    column: { sections: [{ x: -44, y: 90 }, { x: 0, y: 90 }, { x: 44, y: 90 }], facing: { x: 0, y: -1 } },
-    legalist: { sections: [{ x: -44, y: -90 }, { x: 0, y: -90 }, { x: 44, y: -90 }], facing: { x: 0, y: 1 } },
+    // add-deployment-phase 1.1: fronts 65 m from the centre line, back to the field's edge.
+    column: { sections: [{ x: -44, y: 90 }, { x: 0, y: 90 }, { x: 44, y: 90 }], facing: { x: 0, y: -1 }, area: band(-100, 100, 65, 100) },
+    legalist: { sections: [{ x: -44, y: -90 }, { x: 0, y: -90 }, { x: 44, y: -90 }], facing: { x: 0, y: 1 }, area: band(-100, 100, -65, -100) },
   },
   props: [],
   fences: [],

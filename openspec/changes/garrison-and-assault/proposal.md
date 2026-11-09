@@ -19,9 +19,10 @@ streets cannot be fought house by house.
   are positions a section can occupy.
 - **Ocupar (enter)**: an order on a position; the section walks to its
   entrances and goes in, up to the capacity; the rest stay in slots outside.
-  Inside, soldiers are not drawn individually: the position shows a
-  garrison marker (side colour, men count, a strength bar) and muzzle
+  Inside a building, soldiers are not drawn individually: the building
+  shows a garrison marker (side colour, men count, a strength bar) and muzzle
   flashes at its ports when they fire.
+  Men in a trench line stay drawn on the fire step (an open work).
 - **Fire from inside**: each port has a facing arc; defenders are assigned
   to ports facing the threat and fire with good cover (building 0.6,
   trench 0.5 on top of stance); fire at the position hits a defender at a

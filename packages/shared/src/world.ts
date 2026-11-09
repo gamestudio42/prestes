@@ -503,6 +503,10 @@ export function coverAgainst(
     if (point.height < 1.2 && stance === 'standing') {
       return;
     }
+    // A fire trench shelters only from its front (refine-map-editor D6).
+    if (point.facing && (threatX - point.x) * point.facing.x + (threatY - point.y) * point.facing.y <= 0) {
+      return;
+    }
     // A shooter inside the same cover (in the same trench) gets no cover from it.
     if (isPointInCover(threatX, threatY, point) && isPointInCover(x, y, point)) {
       return;

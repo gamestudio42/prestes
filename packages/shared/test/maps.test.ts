@@ -144,8 +144,8 @@ describe('map validation', () => {
     const broken: BattleMap = {
       ...TEST_MAP,
       deployment: {
-        column: { sections: [{ x: 0, y: 0 }, { x: 0, y: 260 }], facing: { x: 0, y: -1 } },
-        legalist: { sections: [{ x: -44, y: 60 }, { x: 0, y: 60 }, { x: 44, y: 60 }], facing: { x: 0, y: 1 } },
+        column: { sections: [{ x: 0, y: 0 }, { x: 0, y: 260 }], facing: { x: 0, y: -1 }, area: TEST_MAP.deployment.column.area },
+        legalist: { sections: [{ x: -44, y: 60 }, { x: 0, y: 60 }, { x: 44, y: 60 }], facing: { x: 0, y: 1 }, area: TEST_MAP.deployment.legalist.area },
       },
     };
     const errors = validateBattleMap(broken);

@@ -5,6 +5,7 @@ import type { Frame, UnitSnapshot } from '@prestes/shared';
 import { Rifle as RifleIcon } from '../icons';
 import { Tooltip } from '../Tooltip';
 import { orderLetter, type Translate } from './orderMeta';
+import { mainWeapon, weaponLines } from './weaponLines';
 
 interface WeaponCardProps {
   t: Translate;
@@ -31,7 +32,12 @@ export function WeaponCard({
 }: WeaponCardProps) {
   const [overflowOpen, setOverflowOpen] = useState(false);
   const wound = aliveUnits[0]?.wound ?? 'none';
-  const weapon = aliveUnits[0];
+  const lines = weaponLines(aliveUnits);
+  const weapon = mainWeapon(lines);
+  const squadId = squadUnits[0]?.squadId;
+  const gunPool = squadId !== undefined ? frame?.gunPools?.[squadId] : undefined;
+  // A mixed section, or a gun crew, lists each weapon with its rounds.
+  const listed = lines.length > 1 || lines.some((line) => line.gunSet !== undefined);
   const coverValue =
     aliveUnits.length === 0
       ? 0
@@ -76,9 +82,11 @@ export function WeaponCard({
           <strong data-testid="weapon-value">
             {weaponKey ? t(weaponKey) : t('hud.noWeapon')}
           </strong>
-          <span className="weapon-ammo">
-            {magazine}/{reserve}
-          </span>
+          {listed ? null : (
+            <span className="weapon-ammo">
+              {magazine}/{reserve}
+            </span>
+          )}
           <Tooltip title={t('hud.more')} description={t('hud.tip.more')}>
             <button
               type="button"
@@ -92,6 +100,30 @@ export function WeaponCard({
             </button>
           </Tooltip>
         </div>
+        {listed ? (
+          <ul className="weapon-lines" data-testid="weapon-lines">
+            {lines.map((line) => (
+              <li key={line.weaponId} className="weapon-line" data-testid={`weapon-line-${line.weaponId}`}>
+                <span className="weapon-line-name">
+                  {t(`weapon.${line.weaponId}.short` as MessageKey)} ×{line.men}
+                </span>
+                {line.gunSet !== undefined ? (
+                  <span className={`weapon-gun-state ${line.gunSet ? 'ready' : 'setting'}`} data-testid="gun-state">
+                    {t(line.gunSet ? 'hud.gunReady' : 'hud.gunSetting')}
+                  </span>
+                ) : null}
+                <span className="weapon-line-rounds">
+                  {line.magazine}/{line.total}
+                </span>
+                {line.gunSet !== undefined && gunPool !== undefined ? (
+                  <span className="weapon-line-pool" data-testid="gun-pool">
+                    {t('hud.gunPool', { rounds: gunPool })}
+                  </span>
+                ) : null}
+              </li>
+            ))}
+          </ul>
+        ) : null}
         <div className="status-row">
           <Tooltip title={t(stateKey)} description={t('hud.tip.morale')}>
             <span className="status-chip">

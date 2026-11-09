@@ -9,15 +9,16 @@ relief alone) and the request for a deployment phase.
 
 | Order | Change | State | Lands |
 | --- | --- | --- | --- |
-| 0 | `fog-of-war`, `add-battle-maps` | implemented; hand checks open | the user's hand checks, then archive; the Blender kits move to `docs/maps/REVIEW.md` |
+| 0 | `fog-of-war`, `add-battle-maps` | archived (`add-battle-maps` 2026-11-08, `fog-of-war` 2026-11-09 after the user's hand check) | the Blender kits move to `docs/maps/REVIEW.md` |
 | 0 | `add-menu-desk`, `polish-menu-desk` | the owner's menu work; sprite redraws open | finish and archive on the owner's schedule; independent of the rest |
-| 1 | `refine-map-editor` | planned (21 tasks) | plants as plants on every map, vegetation only on land, bridges on their abutments, smooth edges (smoothed rivers, dithered borders, MSAA option), roads that paint without touching the relief, trees tool and tree models, trench lines drawn like roads (any length, fire or communication), the cover overlay; map document v2 |
-| 2 | `refine-battle-maps` | planned (30 tasks; 5.3 and 5.12 moved to 1, 5.8 narrowed) | battles that end, 3 ms on all maps, period placeholders, start view, previews, per-map review |
-| 3 | `pre-battle-roster` | planned (25 tasks) | section types, five period weapons, the roster spread, enemy presets |
-| 4 | `add-deployment-phase` | planned (14 tasks) | a deployment round before the clock: orders take effect at once, defend fills trench lines, deployment areas (map document v3), the enemy deploys, a placement preview of cover |
+| 1 | `refine-map-editor` | archived 2026-11-09 (specs synced to `battle-maps` and `map-editor`) | plants as plants on every map, vegetation only on land, bridges on their abutments, smooth edges (smoothed rivers, dithered borders, MSAA option), roads that paint without touching the relief, trees tool and tree models, trench lines drawn like roads (any length, fire or communication), the cover overlay; map document v2 |
+| 2 | `refine-battle-maps` | archived 2026-11-08 | battles that end, 3 ms on all maps, period placeholders, start view, previews, per-map review |
+| 3 | `pre-battle-roster` | archived 2026-11-09 after the user's hand check (specs synced: `force-roster`, `weapons`, `battle-lab`) | section types, five period weapons, the roster spread, enemy presets |
+| 4 | `add-deployment-phase` | next; its prerequisites are archived (14 tasks) | a deployment round before the clock: orders take effect at once, defend fills trench lines, deployment areas (map document v3), the enemy deploys, a placement preview of cover |
 | 5 | `add-map-objectives` | planned (17 tasks) | capture-and-hold objectives with flags, battle clock from "Start battle", victory by value; objectives in the editor (map document v4) |
 | 6 | `garrison-and-assault` | planned (23 tasks) | enter and leave buildings and trench lines (capacity by trench length), fire from ports and from towers, upper floors and roofs, close assault with bars; enter at once during deployment |
 | 7 | `video-tutorial-manual` | planned (19 tasks) | the Manual, thirteen lessons recorded from the game (deployment, objectives and garrisons included), training-ground removal |
+| later | machine guns | the user's word, 2026-11-09 | their sound, tracers, and whether they really fire |
 
 Why this order:
 
@@ -35,6 +36,14 @@ Why this order:
 - Map document versions follow the same order (v2 editor round, v3
   deployment areas, v4 objectives). Each loads the older files.
 
+## Hand checks of 2026-11-09
+
+- `fog-of-war` (4.2): a 3v3 under fog works very well.
+- `pre-battle-roster` (6.4): the setup screen and the rosters in battle work
+  well.
+- Later, the user's word: machine guns need work: their sound, tracers, and
+  whether they really fire.
+
 ## Map editor (add-map-editor, 2026-11-08)
 
 `editor.html` builds battle maps in the browser: small, medium and large
@@ -50,7 +59,38 @@ Campaign maps load on demand, so `fazenda-doc` weighs nothing in the game
 and worker bundles. Bundle budgets raised to the measured sizes: game JS
 400 -> 510 KB, worker 110 -> 155 KB, menu CSS 85 -> 100 KB (the editor's map
 compiler is about 20 KB of it; the rest is the gramophone, compendium and desk
-menu work). Open: decimated Refloreste trees for the catalog.
+menu work).
+
+refine-map-editor (2026-11-09): map document v2 with trench lines (fire or
+communication, any length) and roads that leave the relief alone; plants
+drawn as plants (corn rows, cane, capim, scrub) and only on land; bridges
+on their abutments; smoothed rivers and water outlines, dithered ground
+borders, a "Smooth edges" option; a trees tool with biome scatter; tree
+models adapted from the owner's Refloreste project; the Cover view (the
+game's cover places by stance, counts per piece, concealment, deployment
+area totals). Open: the araucaria's crown reads as dark clumps without its
+candelabra shape (hand check); the English editor toolbar now wraps to two
+rows at 1440 px, like the Portuguese one.
+
+Hand check of refine-map-editor (user, 2026-11-09): building the map is
+enjoyable and the map played without trouble. Findings and what was done:
+
+- Bushes added later moved the plants already placed: every plant drew from
+  one random stream for the whole map. Each plant now takes its jitter, size
+  and colour from its own grid point, and capim and scrub stand on one map
+  grid, so a field stays as it was when another changes.
+- The small cacti (xique-xique, macambira), the bush and the shade round
+  cerrado trees and juazeiros grew scrub plants round themselves. They still
+  conceal men like scrub, but the view now draws the object there, not
+  scrub (`raster.objectCover`).
+- The buriti stood off its trunk: trees are now centred on the trunk's foot,
+  and the tree material is double-sided, so its fronds show from every side.
+- W A S D and Q E were tool shortcuts as well as the camera keys. Tools moved
+  to wall L, trees Y, deployment K, eraser C, smooth M.
+- Some trees looked too small: the cerrado tree was 4 m (an adult pequi is
+  6 to 10 m) and the bush narrower than its 2.8 m footprint. At the user's
+  word the cerrado tree is now 6 m and the bush spreads 2.6 m (still 1.3 m
+  high); the view only, its cover in battle is unchanged.
 
 ## Menu desk (default, 2026-11-06)
 

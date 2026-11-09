@@ -1,10 +1,14 @@
-import { useState } from 'react';
-import type { BattleMapId } from '@prestes/shared';
+import { lazy, Suspense, useState } from 'react';
 import type { Locale } from '@prestes/content';
 import { useGramophone } from '../../hooks/useGramophone';
 import { MarchingScene } from '../MarchingScene';
 import { PixelVideo } from '../PixelVideo';
 import { MenuDesk } from './MenuDesk';
+// The setup screen opens on demand: its own chunk keeps the start screen's bundle within budget.
+const SkirmishSetup = lazy(() =>
+  import('./SkirmishSetup').then((module) => ({ default: module.SkirmishSetup })),
+);
+import type { SkirmishSetup as Setup } from './setupState';
 
 const VIDEO_SRC = `${import.meta.env.BASE_URL}video/menu-book.mp4`;
 
@@ -13,8 +17,9 @@ export interface StartScreenDeskProps {
   audioMuted: boolean;
   onLocaleChange: (locale: Locale) => void;
   onStartBattle3v3: () => void;
-  battleMap: BattleMapId;
-  onBattleMapChange: (map: BattleMapId) => void;
+  /** pre-battle-roster 5.1: the skirmish setup the desk's map opens. */
+  setup: Setup;
+  onSetupChange: (setup: Setup) => void;
   onToggleAudio: () => void;
 }
 
@@ -27,10 +32,11 @@ export function StartScreenDesk({
   audioMuted,
   onLocaleChange,
   onStartBattle3v3,
-  battleMap,
-  onBattleMapChange,
+  setup,
+  onSetupChange,
   onToggleAudio,
 }: StartScreenDeskProps) {
+  const [setupOpen, setSetupOpen] = useState(false);
   const gramophone = useGramophone({ muted: audioMuted, onEnableSound: onToggleAudio });
   const [videoFailed, setVideoFailed] = useState(false);
 
@@ -39,7 +45,12 @@ export function StartScreenDesk({
       {videoFailed ? (
         <MarchingScene className="menu-scene" />
       ) : (
-        <PixelVideo src={VIDEO_SRC} width={320} className="menu-scene" onError={() => setVideoFailed(true)} />
+        <PixelVideo
+          src={VIDEO_SRC}
+          width={320}
+          className="menu-scene"
+          onError={() => setVideoFailed(true)}
+        />
       )}
       <div className="menu-vignette" aria-hidden="true" />
 
@@ -47,12 +58,22 @@ export function StartScreenDesk({
         locale={locale}
         audioMuted={audioMuted}
         onLocaleChange={onLocaleChange}
-        onStartBattle3v3={onStartBattle3v3}
-        battleMap={battleMap}
-        onBattleMapChange={onBattleMapChange}
+        battleMap={setup.map}
+        onOpenSetup={() => setSetupOpen(true)}
         onToggleAudio={onToggleAudio}
         gramophone={gramophone}
       />
+      {setupOpen ? (
+        <Suspense fallback={null}>
+          <SkirmishSetup
+            locale={locale}
+            setup={setup}
+            onChange={onSetupChange}
+            onStart={onStartBattle3v3}
+            onBack={() => setSetupOpen(false)}
+          />
+        </Suspense>
+      ) : null}
     </main>
   );
 }

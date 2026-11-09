@@ -12,9 +12,14 @@ import {
 import { distanceToPolyline, pointInPolygon, pointsBox, polygonBox, smooth, type Box } from './geometry';
 import { GROUND_MATERIAL_IDS, groundMaterial, groundMaterialIndex, type GroundMaterialId } from './ground-materials';
 import { decodeRaster, encodeRaster, type EncodedRaster } from './raster';
-import { HEIGHT_SPACING, SURFACES, VEGETATION_KINDS } from './runtime';
+import { BRIDGE_RAMP, bridgeDeckHeight, bridgeLandings, bridgePolygon, HEIGHT_SPACING, SURFACES, VEGETATION_KINDS } from './runtime';
 import { boundsForSize, MAP_SIZE_METRES, MAP_SIZES, type MapSize } from './sizes';
-import type { BattleMap, DeploymentZone, LocalizedText, MapLine, PropPlacement, WaterArea } from './types';
+import { growthMask } from './growth-mask';
+import { buildTrenchLines, TRENCH, type TrenchLineDef } from './trench-lines';
+import { noteCoverPieces, type CoverPiece } from './cover-preview';
+import { defaultDeploymentArea } from './deployment-areas';
+import { smoothCentreline } from './water-outline';
+import type { BattleMap, DeploymentZone, HeightShape, LocalizedText, MapLine, PropPlacement, WaterArea } from './types';
 
 /**
  * The map editor's document (add-map-editor): raster layers (heights, paint,
@@ -25,7 +30,7 @@ import type { BattleMap, DeploymentZone, LocalizedText, MapLine, PropPlacement, 
  */
 
 export const MAP_DOCUMENT_FORMAT = 'prestes-map';
-export const MAP_DOCUMENT_VERSION = 1;
+export const MAP_DOCUMENT_VERSION = 3;
 
 /** Heights the editor allows (m). */
 export const MIN_HEIGHT = -12;
@@ -38,16 +43,14 @@ export interface RoadTypeInfo {
   nameKey: string;
   surface: TerrainSurface;
   material: GroundMaterialId;
-  /** How far the road sinks into the ground (m). */
-  sink: number;
   defaultWidth: number;
 }
 
 export const ROAD_TYPES: readonly RoadTypeInfo[] = [
-  { type: 'trail', nameKey: 'editor.road.trail', surface: 'dirt-road', material: 'packed-earth', sink: 0.05, defaultWidth: 2 },
-  { type: 'dirt-road', nameKey: 'editor.road.dirt-road', surface: 'dirt-road', material: 'packed-earth', sink: 0.15, defaultWidth: 5 },
-  { type: 'cobbled-street', nameKey: 'editor.road.cobbled-street', surface: 'cobbles', material: 'cobbles', sink: 0.05, defaultWidth: 7 },
-  { type: 'paved-road', nameKey: 'editor.road.paved-road', surface: 'road', material: 'gravel', sink: 0, defaultWidth: 6 },
+  { type: 'trail', nameKey: 'editor.road.trail', surface: 'dirt-road', material: 'packed-earth', defaultWidth: 2 },
+  { type: 'dirt-road', nameKey: 'editor.road.dirt-road', surface: 'dirt-road', material: 'packed-earth', defaultWidth: 5 },
+  { type: 'cobbled-street', nameKey: 'editor.road.cobbled-street', surface: 'cobbles', material: 'cobbles', defaultWidth: 7 },
+  { type: 'paved-road', nameKey: 'editor.road.paved-road', surface: 'road', material: 'gravel', defaultWidth: 6 },
 ];
 
 export function roadType(type: RoadType): RoadTypeInfo {
@@ -57,8 +60,8 @@ export function roadType(type: RoadType): RoadTypeInfo {
 /** A drainage ditch (vala) beside a road: this wide and deep (m). */
 export const DITCH_WIDTH = 1.5;
 export const DITCH_DEPTH = 0.8;
-/** Road shoulders blend back into the ground over this many metres. */
-const SHOULDER = 3;
+/** A ditch's banks blend back into the ground over this many metres (the 2 m heightfield must see it). */
+const DITCH_BANK = 1;
 /** River banks slope over this many metres. */
 const RIVER_BANK = 5;
 /** Deep water's bed sits this far under the water surface. */
@@ -68,8 +71,6 @@ export interface DocRoad {
   id: number;
   type: RoadType;
   width: number;
-  /** How much lower the edges are than the crown (m). */
-  camber: number;
   ditches: { left: boolean; right: boolean };
   points: Vec2[];
 }
@@ -111,6 +112,9 @@ export interface DocLine {
   points: Vec2[];
 }
 
+/** refine-map-editor D6: a trench line, as `buildTrenchLine` takes it. */
+export type DocTrenchLine = TrenchLineDef;
+
 export interface DocObject {
   id: number;
   /** A catalog object id. */
@@ -143,6 +147,7 @@ interface MapDocumentBody {
   bridges: DocBridge[];
   ferries: DocFerry[];
   lines: DocLine[];
+  trenches: DocTrenchLine[];
   objects: DocObject[];
   deployment: { column: DeploymentZone; legalist: DeploymentZone };
 }
@@ -190,9 +195,12 @@ export function createEditableMap(options: {
   const side = mapSide(options.size);
   const nodes = heightNodes(options.size);
   const reach = Math.min(95, side / 2 - 20);
+  const points = (y: number) => [-44, 0, 44].map((x) => ({ x, y }));
+  const bounds = boundsForSize(options.size);
   const zone = (y: number, facingY: number): DeploymentZone => ({
-    sections: [-44, 0, 44].map((x) => ({ x, y })),
+    sections: points(y),
     facing: { x: 0, y: facingY },
+    area: defaultDeploymentArea(bounds, points(y), points(-y)),
   });
   const base = options.baseMaterial ?? 'grass';
   return {
@@ -214,6 +222,7 @@ export function createEditableMap(options: {
     bridges: [],
     ferries: [],
     lines: [],
+    trenches: [],
     objects: [],
     deployment: { column: zone(reach, -1), legalist: zone(-reach, 1) },
   };
@@ -233,7 +242,9 @@ function structuredCloneBody(body: MapDocumentBody): MapDocumentBody {
   return JSON.parse(JSON.stringify(body)) as MapDocumentBody;
 }
 
-export function fromMapDocument(document: MapDocument): EditableMap {
+export function fromMapDocument(source: MapDocument): EditableMap {
+  // A bundled or hand-loaded document may be older than this build: upgrade it first.
+  const document = source.version < MAP_DOCUMENT_VERSION ? (migrate(source as unknown as Record<string, unknown>) as unknown as MapDocument) : source;
   const body: MapDocumentBody = { ...document };
   delete (body as Partial<MapDocument>).format;
   delete (body as Partial<MapDocument>).version;
@@ -259,15 +270,79 @@ const isPoints = (value: unknown, min: number): value is Vec2[] => Array.isArray
 const isText = (value: unknown): value is LocalizedText => isObject(value) && isString(value.en) && isString(value['pt-BR']);
 const isRaster = (value: unknown): value is EncodedRaster =>
   isObject(value) && value.encoding === 'rle-base64' && (value.type === 'i16' || value.type === 'u8') && isNumber(value.length) && isString(value.data);
-const isZone = (value: unknown): value is DeploymentZone => isObject(value) && isPoints(value.sections, 1) && isPoint(value.facing);
+const isZone = (value: unknown): value is DeploymentZone => isObject(value) && isPoints(value.sections, 1) && isPoint(value.facing) && isPoints(value.area, 3);
 
 /**
- * Older documents are upgraded here, one version at a time. Version 1 is
- * the first; future versions add their steps.
+ * Older documents are upgraded here, one version at a time.
+ *
+ * 1 -> 2 (refine-map-editor): each `trench-line` object becomes a 12 m
+ * straight fire trench at its place, its parapet on the side the object's
+ * sandbags were (its local north); road cambers are dropped.
+ *
+ * 2 -> 3 (add-deployment-phase): each side gets the default deployment area
+ * round its section points.
  */
 function migrate(document: Record<string, unknown>): Record<string, unknown> {
-  return document;
+  let doc = document;
+  if (doc.version === 1) doc = migrateV1(doc);
+  if (doc.version === 2) doc = migrateV2(doc);
+  return doc;
 }
+
+function migrateV2(doc: Record<string, unknown>): Record<string, unknown> {
+  if (!isObject(doc.deployment) || !MAP_SIZES.includes(doc.size as MapSize)) return { ...doc, version: 3 };
+  const bounds = boundsForSize(doc.size as MapSize);
+  const sides = doc.deployment;
+  const sections = (zone: unknown): Vec2[] => (isObject(zone) && isPoints(zone.sections, 1) ? zone.sections : []);
+  const withArea = (own: unknown, other: unknown) =>
+    isObject(own) ? { ...own, area: isPoints(own.area, 3) ? own.area : defaultDeploymentArea(bounds, sections(own), sections(other)) } : own;
+  return { ...doc, version: 3, deployment: { ...sides, column: withArea(sides.column, sides.legalist), legalist: withArea(sides.legalist, sides.column) } };
+}
+
+function migrateV1(doc: Record<string, unknown>): Record<string, unknown> {
+  const objects = Array.isArray(doc.objects) ? (doc.objects as unknown[]) : [];
+  const trenches: DocTrenchLine[] = [];
+  let nextId = 1;
+  const kept = objects.filter((object) => {
+    if (!isObject(object) || object.type !== 'trench-line') return true;
+    if (!isNumber(object.x) || !isNumber(object.y) || !isNumber(object.rotation)) return true;
+    const cos = Math.cos(object.rotation);
+    const sin = Math.sin(object.rotation);
+    // Local x runs along the old object; its sandbags were at local -y, left of travel.
+    trenches.push({
+      id: nextId++,
+      kind: 'fire',
+      depth: 1.2,
+      facing: 'left',
+      bays: true,
+      parapet: 'sandbag',
+      points: [
+        { x: object.x - 6 * cos, y: object.y - 6 * sin },
+        { x: object.x + 6 * cos, y: object.y + 6 * sin },
+      ],
+    });
+    return false;
+  });
+  const roads = Array.isArray(doc.roads)
+    ? (doc.roads as unknown[]).map((road) => {
+        if (!isObject(road)) return road;
+        const copy = { ...road };
+        delete copy.camber;
+        return copy;
+      })
+    : doc.roads;
+  return { ...doc, version: 2, objects: kept, roads, trenches };
+}
+
+const isTrenchLine = (line: unknown): boolean =>
+  isObject(line) &&
+  isNumber(line.id) &&
+  (line.kind === 'fire' || line.kind === 'communication') &&
+  (line.depth === 1.2 || line.depth === 0.8) &&
+  (line.facing === 'left' || line.facing === 'right') &&
+  typeof line.bays === 'boolean' &&
+  (line.parapet === 'earth' || line.parapet === 'sandbag') &&
+  isPoints(line.points, 2);
 
 /** Checks and upgrades a parsed JSON value; never throws. */
 export function parseMapDocument(value: unknown): ParseResult {
@@ -286,16 +361,17 @@ export function parseMapDocument(value: unknown): ParseResult {
   if (!isNumber(doc.waterLevel)) return fail('waterLevel');
   if (!GROUND_MATERIAL_IDS.includes(doc.baseMaterial as GroundMaterialId)) return fail('baseMaterial');
   if (!isObject(doc.layers) || !isRaster(doc.layers.height) || !isRaster(doc.layers.paint) || !isRaster(doc.layers.vegetation)) return fail('layers');
-  for (const key of ['roads', 'rivers', 'ponds', 'bridges', 'ferries', 'lines', 'objects'] as const) {
+  for (const key of ['roads', 'rivers', 'ponds', 'bridges', 'ferries', 'lines', 'trenches', 'objects'] as const) {
     if (!Array.isArray(doc[key])) return fail(key);
   }
   const roads = doc.roads as unknown[];
-  if (!roads.every((road) => isObject(road) && isNumber(road.id) && isNumber(road.width) && isNumber(road.camber) && isPoints(road.points, 2) && isObject(road.ditches) && ROAD_TYPES.some((info) => info.type === road.type))) return fail('roads');
+  if (!roads.every((road) => isObject(road) && isNumber(road.id) && isNumber(road.width) && isPoints(road.points, 2) && isObject(road.ditches) && ROAD_TYPES.some((info) => info.type === road.type))) return fail('roads');
   if (!(doc.rivers as unknown[]).every((river) => isObject(river) && isNumber(river.id) && isNumber(river.width) && isPoints(river.points, 2) && Array.isArray(river.kinds))) return fail('rivers');
   if (!(doc.ponds as unknown[]).every((pond) => isObject(pond) && isNumber(pond.id) && (pond.kind === 'deep' || pond.kind === 'ford') && isPoints(pond.polygon, 3))) return fail('ponds');
   if (!(doc.bridges as unknown[]).every((bridge) => isObject(bridge) && ['id', 'x', 'y', 'rotation', 'halfWidth', 'halfDepth', 'deckHeight'].every((key) => isNumber(bridge[key])))) return fail('bridges');
   if (!(doc.ferries as unknown[]).every((ferry) => isObject(ferry) && isNumber(ferry.id) && isPoint(ferry.landingA) && isPoint(ferry.landingB))) return fail('ferries');
   if (!(doc.lines as unknown[]).every((line) => isObject(line) && isNumber(line.id) && isNumber(line.height) && isPoints(line.points, 2) && isString(line.kind))) return fail('lines');
+  if (!(doc.trenches as unknown[]).every(isTrenchLine)) return fail('trenches');
   if (!(doc.objects as unknown[]).every((object) => isObject(object) && isNumber(object.id) && isString(object.type) && isNumber(object.x) && isNumber(object.y) && isNumber(object.rotation))) return fail('objects');
   if (!isObject(doc.deployment) || !isZone(doc.deployment.column) || !isZone(doc.deployment.legalist)) return fail('deployment');
   const document = doc as unknown as MapDocument;
@@ -396,7 +472,11 @@ interface Field {
   heights: Float64Array;
 }
 
-function sampleField(field: Field, x: number, y: number): number {
+/** How far the ground under a bridge's span stays below its deck. */
+const BRIDGE_CLEARANCE = 0.4;
+
+/** Bilinear height of the compile field, as the runtime samples its grid. */
+function fieldHeightAt(field: Field, x: number, y: number): number {
   const gx = Math.max(0, Math.min(field.nodes - 1.000001, (x - field.minX) / HEIGHT_SPACING));
   const gy = Math.max(0, Math.min(field.nodes - 1.000001, (y - field.minY) / HEIGHT_SPACING));
   const column = Math.floor(gx);
@@ -526,21 +606,6 @@ function objectCover(entry: CatalogObject, object: DocObject, id: number): Cover
   }
 }
 
-/** A trench line (four bays and their sandbag parapet), turned to `rotation`; the enemy is on its local north. */
-function rotatedTrenchLine(firstId: number, object: DocObject): CoverPoint[] {
-  const cos = Math.cos(object.rotation);
-  const sin = Math.sin(object.rotation);
-  const at = (lx: number, ly: number): Vec2 => ({ x: object.x + lx * cos - ly * sin, y: object.y + lx * sin + ly * cos });
-  return [-9, -3, 3, 9].flatMap((dx, index): CoverPoint[] => {
-    const bay = at(dx, 0);
-    const parapet = at(dx, -1.9);
-    return [
-      { id: firstId + index * 2, kind: 'trench', ...bay, rotation: object.rotation, halfWidth: 2.8, halfDepth: 1.6, height: 0.2, radius: 3.2, quality: 0.4, blocksMovement: false, blocksSight: false },
-      { id: firstId + index * 2 + 1, kind: 'sandbag', ...parapet, rotation: object.rotation, halfWidth: 2.8, halfDepth: 0.4, height: 0.9, radius: 3.5, quality: 0.3, blocksMovement: false, blocksSight: false },
-    ];
-  });
-}
-
 /** The id an authored map's locale keys hang off (it carries its own text). */
 const textKey = (id: string, field: string): string => `map.${id}.${field}`;
 
@@ -560,10 +625,12 @@ export function compileMapDocument(source: EditableMap | MapDocument): BattleMap
   // Water: carve river channels and pond beds under the water surface.
   const water: WaterArea[] = [];
   for (const river of [...map.rivers].sort((a, b) => a.id - b.id)) {
-    const box = pointsBox(river.points, river.width / 2 + RIVER_BANK);
+    // refine-map-editor D4: the centreline smoothed every 2 m; each piece keeps its source segment's kind.
+    const smoothed = smoothCentreline(river.points);
+    const box = pointsBox(smoothed.points, river.width / 2 + RIVER_BANK);
     forNodesIn(field, box, (index, x, y) => {
-      const near = closestOnPolyline(x, y, river.points);
-      const kind = river.kinds[near.segment] ?? 'deep';
+      const near = closestOnPolyline(x, y, smoothed.points);
+      const kind = river.kinds[smoothed.source[near.segment] ?? 0] ?? 'deep';
       const bed = map.waterLevel - (kind === 'deep' ? DEEP_BED : 0.45);
       const edge = near.distance - river.width / 2;
       const current = field.heights[index]!;
@@ -577,7 +644,9 @@ export function compileMapDocument(source: EditableMap | MapDocument): BattleMap
       const a = river.points[segment]!;
       const b = river.points[segment + 1]!;
       const kind = river.kinds[segment] ?? 'deep';
-      const area: WaterArea = { kind, strip: { points: [a, b], width: river.width } };
+      const first = smoothed.source.indexOf(segment);
+      const last = smoothed.source.lastIndexOf(segment);
+      const area: WaterArea = { kind, strip: { points: smoothed.points.slice(first, last + 2).map((p) => ({ ...p })), width: river.width } };
       if (kind === 'ford') {
         const mid = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
         const length = Math.hypot(b.x - a.x, b.y - a.y) || 1;
@@ -603,40 +672,32 @@ export function compileMapDocument(source: EditableMap | MapDocument): BattleMap
   // Surfaces and the view's paint, from the painted materials.
   const paint = map.paint.slice();
   const vegetation = map.vegetation.slice();
+  const objectConcealed = new Uint8Array(vegetation.length);
   const stampMaterial = (index: number, material: GroundMaterialId): void => {
     paint[index] = groundMaterialIndex(material);
   };
 
-  // Roads: flatten across, sink, camber, ditches; in id order.
+  // Roads, in id order. A road leaves the relief as the author shaped it
+  // (refine-map-editor D1); only its ditches dig their channel.
   const covers: CoverPoint[] = [];
+  /** refine-map-editor 6.1: the piece each cover came from, for the editor's cover preview. */
+  const coverPieces = new Map<number, CoverPiece>();
   let coverId = 5000;
   const roadSurface = new Map<number, TerrainSurface>();
   for (const road of [...map.roads].sort((a, b) => a.id - b.id)) {
     const info = roadType(road.type);
     const half = road.width / 2;
-    const reach = half + DITCH_WIDTH + SHOULDER;
-    const box = pointsBox(road.points, reach);
-    const base = { ...field, heights: field.heights.slice() };
-    forNodesIn(field, box, (index, x, y) => {
-      const near = closestOnPolyline(x, y, road.points);
-      if (near.distance > reach) return;
-      const crown = sampleField(base, near.point.x, near.point.y) - info.sink;
-      const ditch = near.side > 0 ? road.ditches.right : road.ditches.left;
-      const current = base.heights[index]!;
-      let target: number;
-      let weight = 1;
-      if (near.distance <= half) {
-        const t = near.distance / Math.max(half, 0.01);
-        target = crown - road.camber * t * t;
-      } else if (ditch && near.distance <= half + DITCH_WIDTH) {
-        target = crown - road.camber - DITCH_DEPTH;
-      } else {
-        const start = half + (ditch ? DITCH_WIDTH : 0);
-        target = crown - road.camber;
-        weight = 1 - smooth((near.distance - start) / SHOULDER);
-      }
-      field.heights[index] = current + (target - current) * weight;
-    });
+    if (road.ditches.left || road.ditches.right) {
+      const middle = half + DITCH_WIDTH / 2;
+      const box = pointsBox(road.points, middle + DITCH_WIDTH / 2 + DITCH_BANK);
+      forNodesIn(field, box, (index, x, y) => {
+        const near = closestOnPolyline(x, y, road.points);
+        if (!(near.side > 0 ? road.ditches.right : road.ditches.left)) return;
+        const off = Math.abs(near.distance - middle) - DITCH_WIDTH / 2;
+        const weight = off <= 0 ? 1 : 1 - smooth(off / DITCH_BANK);
+        if (weight > 0) field.heights[index] = field.heights[index]! - DITCH_DEPTH * weight;
+      });
+    }
     forCellsIn(side, bounds.minX, bounds.minY, pointsBox(road.points, half + DITCH_WIDTH), (index, x, y) => {
       const near = closestOnPolyline(x, y, road.points);
       if (near.distance <= half) {
@@ -655,6 +716,7 @@ export function compileMapDocument(source: EditableMap | MapDocument): BattleMap
     ] as const) {
       if (!enabled) continue;
       for (const piece of pieces(offsetPolyline(road.points, sign * (half + DITCH_WIDTH / 2)), 12)) {
+        coverPieces.set(coverId, { kind: 'ditch', id: road.id, side: sign > 0 ? 'right' : 'left' });
         covers.push({
           id: coverId++,
           kind: 'trench',
@@ -672,6 +734,24 @@ export function compileMapDocument(source: EditableMap | MapDocument): BattleMap
         });
       }
     }
+  }
+
+  // Trench lines (refine-map-editor D6): cuts and parapets as height shapes
+  // over the grid, the floor's surface, no plants in the cut.
+  const heightShapes: HeightShape[] = [];
+  const trenches = [...map.trenches].sort((a, b) => a.id - b.id);
+  for (const [index, built] of buildTrenchLines(trenches, coverId).entries()) {
+    covers.push(...built.covers);
+    for (const cover of built.covers) coverPieces.set(cover.id, { kind: 'trench', id: trenches[index]!.id });
+    coverId += built.covers.length;
+    heightShapes.push(...built.shapes);
+    const points = trenches[index]!.points;
+    const clear = TRENCH.floor / 2 + TRENCH.wall + (built.parapet ? TRENCH.parapetWidth : 0);
+    forCellsIn(side, bounds.minX, bounds.minY, pointsBox(points, clear), (cell, x, y) => {
+      const distance = distanceToPolyline(x, y, points);
+      if (distance <= TRENCH.floor / 2) roadSurface.set(cell, 'trench-floor');
+      if (distance <= clear) vegetation[cell] = 0;
+    });
   }
 
   // Objects.
@@ -707,17 +787,15 @@ export function compileMapDocument(source: EditableMap | MapDocument): BattleMap
         };
         buildings.push(building);
         covers.push(buildingCover(building));
+        coverPieces.set(building.id, { kind: 'object', id: object.id });
         continue;
       }
-      case 'trench-line':
-        covers.push(...rotatedTrenchLine(coverId, object));
-        coverId += 8;
-        continue;
       case 'decal':
         footprintCells((index) => stampMaterial(index, entry.footprint.kind === 'decal' ? entry.footprint.material : map.baseMaterial));
         continue;
       case 'foliage':
         footprintCells((index) => {
+          if (!vegetation[index]) objectConcealed[index] = 1;
           vegetation[index] = SCRUB;
         });
         break;
@@ -727,6 +805,7 @@ export function compileMapDocument(source: EditableMap | MapDocument): BattleMap
           // Sandbags and barricades are drawn by the cover layer, like the hand-written maps'.
           if (entry.group === 'cover') delete cover.drawnBy;
           covers.push(cover);
+          coverPieces.set(cover.id, { kind: 'object', id: object.id });
           coverId += 1;
         }
         if (entry.group === 'cover') continue;
@@ -739,7 +818,9 @@ export function compileMapDocument(source: EditableMap | MapDocument): BattleMap
     if (entry.concealRadius) {
       const radius = entry.concealRadius * scale;
       forCellsIn(side, bounds.minX, bounds.minY, footprintBox, (index, x, y) => {
-        if (Math.hypot(x - object.x, y - object.y) <= radius) vegetation[index] = SCRUB;
+        if (Math.hypot(x - object.x, y - object.y) > radius) return;
+        if (!vegetation[index]) objectConcealed[index] = 1;
+        vegetation[index] = SCRUB;
       });
     }
     props.push({ model: entry.model, x: object.x, y: object.y, rotation: object.rotation, scale });
@@ -753,6 +834,7 @@ export function compileMapDocument(source: EditableMap | MapDocument): BattleMap
     lines.push({ kind: line.kind, points: line.points, height: line.height });
     if (line.kind === 'wire-fence') fences.push(line.points);
     for (const piece of pieces(line.points, 12)) {
+      coverPieces.set(coverId, { kind: 'line', id: line.id });
       covers.push({
         id: coverId++,
         kind: info.wall ? 'low-wall' : 'fence',
@@ -776,11 +858,33 @@ export function compileMapDocument(source: EditableMap | MapDocument): BattleMap
     }
   }
 
+  // Plants grow only on land (refine-map-editor D2): the mask clears water,
+  // bridges, paved and cobbled roads, buildings and trench channels.
+  const mask = growthMask(map);
+  for (let index = 0; index < vegetation.length; index += 1) if (!mask[index]) vegetation[index] = 0;
+
   // Surfaces: painted material, then roads (water and bridges go over in the bake).
   const surfaces = new Uint8Array(side * side);
   for (let index = 0; index < surfaces.length; index += 1) {
     const surface = roadSurface.get(index) ?? groundMaterial(paint[index]!).surface;
     surfaces[index] = SURFACES.indexOf(surface);
+  }
+
+  // Bridges rest on their abutments (refine-map-editor D3): between the
+  // ramps the ground stays at least BRIDGE_CLEARANCE below the deck.
+  for (const bridge of [...map.bridges].sort((a, b) => a.id - b.id)) {
+    const ends = bridgeLandings(bridge, (x, y) => fieldHeightAt(field, x, y));
+    const ramp = Math.min(BRIDGE_RAMP, bridge.halfDepth / 2);
+    const cos = Math.cos(bridge.rotation);
+    const sin = Math.sin(bridge.rotation);
+    const reach = bridge.halfWidth + HEIGHT_SPACING;
+    forNodesIn(field, polygonBox(bridgePolygon({ ...bridge, halfWidth: reach })), (index, x, y) => {
+      const across = (x - bridge.x) * cos + (y - bridge.y) * sin;
+      const along = -(x - bridge.x) * sin + (y - bridge.y) * cos;
+      if (Math.abs(across) > reach || Math.abs(along) > bridge.halfDepth - ramp) return;
+      const floor = bridgeDeckHeight(bridge, map.waterLevel, ends, along) - BRIDGE_CLEARANCE;
+      field.heights[index] = Math.min(field.heights[index]!, floor);
+    });
   }
 
   const centimetres = new Int16Array(nodes * nodes);
@@ -789,7 +893,7 @@ export function compileMapDocument(source: EditableMap | MapDocument): BattleMap
     centimetres[index] = Math.round(metres * 100);
   }
 
-  return {
+  const compiled: BattleMap = {
     id: map.id,
     nameKey: textKey(map.id, 'name'),
     descriptionKey: textKey(map.id, 'description'),
@@ -797,8 +901,8 @@ export function compileMapDocument(source: EditableMap | MapDocument): BattleMap
     codexKey: map.codexKey ?? '',
     setting: { ...map.setting },
     bounds,
-    height: { kind: 'field', shapes: [], grid: { columns: nodes, rows: nodes, centimetres } },
-    raster: { surfaces, vegetation },
+    height: { kind: 'field', shapes: heightShapes, grid: { columns: nodes, rows: nodes, centimetres } },
+    raster: { surfaces, vegetation, objectCover: objectConcealed },
     paint,
     baseSurface: groundMaterial(groundMaterialIndex(map.baseMaterial)).surface,
     surfaces: [],
@@ -811,14 +915,25 @@ export function compileMapDocument(source: EditableMap | MapDocument): BattleMap
     covers,
     sightObstacles: [],
     deployment: {
-      column: { sections: map.deployment.column.sections.map((p) => ({ ...p })), facing: { ...map.deployment.column.facing } },
-      legalist: { sections: map.deployment.legalist.sections.map((p) => ({ ...p })), facing: { ...map.deployment.legalist.facing } },
+      column: {
+        sections: map.deployment.column.sections.map((p) => ({ ...p })),
+        facing: { ...map.deployment.column.facing },
+        area: map.deployment.column.area.map((p) => ({ ...p })),
+      },
+      legalist: {
+        sections: map.deployment.legalist.sections.map((p) => ({ ...p })),
+        facing: { ...map.deployment.legalist.facing },
+        area: map.deployment.legalist.area.map((p) => ({ ...p })),
+      },
     },
     props,
     fences,
     lines,
+    ...(trenches.length > 0 ? { trenches: trenches.map((line) => ({ ...line, points: line.points.map((p) => ({ ...p })) })) } : {}),
     palette: map.palette,
   };
+  noteCoverPieces(compiled, coverPieces);
+  return compiled;
 }
 
 /** The name or description of a map in a language: an authored map's own text, else null (use its locale key). */

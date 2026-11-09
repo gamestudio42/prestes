@@ -343,3 +343,131 @@
 .editor-dialog input[aria-invalid='true'] {
   border-color: #e8735f;
 }
+
+/* refine-map-editor 5.1: the trees tool. */
+.editor-segmented {
+  display: flex;
+  gap: 2px;
+}
+
+.editor-segmented button {
+  flex: 1;
+  font-size: 12px;
+}
+
+.editor-segmented button[aria-checked='true'],
+.editor-tree-species button[aria-selected='true'] {
+  background: #5a4a28;
+  border-color: #ffd23f;
+  color: #fff;
+}
+
+.editor-tree-species {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+  gap: 4px;
+}
+
+.editor-tree-species button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 4px 2px;
+  font-size: 11px;
+  line-height: 1.15;
+}
+
+.editor-tree-species button:disabled {
+  cursor: default;
+  opacity: 1;
+}
+
+.editor-tree-species button:disabled[aria-selected='false'] {
+  opacity: 0.45;
+}
+
+.editor-tree-species img,
+.editor-tree-blank {
+  width: 48px;
+  height: 48px;
+  image-rendering: pixelated;
+}
+
+/* refine-map-editor 6.1: the cover overlay. */
+.editor-badge {
+  position: absolute;
+  left: 0;
+  top: 0;
+  min-width: 18px;
+  padding: 0 4px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 16px;
+  text-align: center;
+  color: #1d2016;
+  background: rgb(242 236 214 / 88%);
+  border: 1px solid #4a5240;
+  border-radius: 8px;
+}
+
+.editor-badge[data-cluster] {
+  background: rgb(255 210 63 / 90%);
+}
+
+.editor-badge[data-hover='true'] {
+  outline: 2px solid #ffd23f;
+}
+
+.editor-cover-panel {
+  margin-top: 10px;
+  padding-top: 6px;
+  border-top: 1px solid #4a5240;
+}
+
+.editor-cover-panel h3 {
+  margin: 0 0 4px;
+  font-size: 13px;
+}
+
+.editor-cover-legend {
+  margin: 0 0 6px;
+  padding: 0;
+  list-style: none;
+  font-size: 12px;
+}
+
+.editor-cover-legend li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.editor-cover-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.editor-cover-hatch {
+  width: 10px;
+  height: 10px;
+  background: repeating-linear-gradient(45deg, #a6d96a 0 2px, transparent 2px 5px);
+}
+
+.editor-cover-zone,
+.editor-cover-hover {
+  margin: 4px 0;
+  font-size: 12px;
+}
+
+.editor-cover-zone span,
+.editor-cover-hover span,
+.editor-cover-hover strong {
+  display: block;
+}
+
+.editor-cover-zone span,
+.editor-cover-hover span {
+  opacity: 0.75;
+}

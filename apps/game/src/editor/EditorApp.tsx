@@ -1,7 +1,15 @@
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore, type CSSProperties, type ReactNode } from 'react';
 import {
+  BIOME_MIX,
   CATALOG_OBJECTS,
   catalogObject,
+  PROTECTION_CLASSES,
+  type CoverPiece,
+  TREE_BIOMES,
+  TREE_DENSITIES,
+  treeSpecies,
+  type TreeBiome,
+  type TreeDensity,
   createEditableMap,
   fromMapDocument,
   GROUND_ATLAS,
@@ -25,6 +33,12 @@ import {
   type EditableMap,
   type GroundMaterialId,
   type LineKind,
+  trenchLength,
+  trenchSlotCount,
+  type TrenchDepth,
+  type TrenchFacing,
+  type TrenchKind,
+  type TrenchParapet,
   type MapPalette,
   type MapProblem,
   type MapSize,
@@ -37,7 +51,8 @@ import { loadLocale, saveLocale } from '../storage';
 import { autosave, exportDocument, loadLast, readDocumentFile, saveToProject, storePlaytest } from './persistence';
 import { EditorStore, replaceCommand, type SelectionItem, type ToolId } from './store';
 import { editorBridge, type EditorBridge } from './test-bridge';
-import { EditorViewport, type CursorInfo } from './viewport';
+import { EditorViewport, PROTECTION_COLORS, type CursorInfo } from './viewport';
+import { useThumbnails } from './thumbnails';
 
 /**
  * The map editor page (add-map-editor): toolbar, tool palette, properties,
@@ -53,20 +68,24 @@ const TOOL_GROUPS: readonly { layer: string; tools: readonly ToolId[] }[] = [
   { layer: 'editor.layer.terrain', tools: ['raise', 'lower', 'smooth', 'flatten', 'setHeight', 'noise'] },
   { layer: 'editor.layer.roads', tools: ['road'] },
   { layer: 'editor.layer.water', tools: ['river', 'pond', 'bridge', 'ferry'] },
-  { layer: 'editor.layer.structures', tools: ['line'] },
-  { layer: 'editor.layer.objects', tools: ['place'] },
+  { layer: 'editor.layer.structures', tools: ['line', 'trench'] },
+  { layer: 'editor.layer.objects', tools: ['place', 'trees'] },
   { layer: 'editor.layer.vegetation', tools: ['vegetation'] },
   { layer: 'editor.layer.gameplay', tools: ['deployment'] },
 ];
 
+/**
+ * Tool shortcuts. W, A, S, D move the camera and Q, E turn it, as in the
+ * battle, so no tool takes them (hand check 2026-11-09).
+ */
 const TOOL_KEYS: Record<ToolId, string> = {
   select: 'V',
   paint: 'B',
   fill: 'G',
-  erase: 'E',
+  erase: 'C',
   raise: 'H',
   lower: '',
-  smooth: 'S',
+  smooth: 'M',
   flatten: 'F',
   setHeight: '',
   noise: '',
@@ -75,10 +94,12 @@ const TOOL_KEYS: Record<ToolId, string> = {
   pond: '',
   bridge: '',
   ferry: '',
-  line: 'W',
+  line: 'L',
+  trench: 'T',
   place: 'O',
+  trees: 'Y',
   vegetation: 'P',
-  deployment: 'D',
+  deployment: 'K',
 };
 
 const OBJECT_GROUPS = ['building', 'stone', 'tree', 'post', 'cover', 'prop', 'decal'] as const;
@@ -89,8 +110,10 @@ const AUTOSAVE_DELAY = 1500;
 function hintKey(tool: ToolId): string {
   if (tool === 'paint' || tool === 'erase' || tool === 'fill' || tool === 'vegetation') return 'editor.tool.hint.paint';
   if (['raise', 'lower', 'smooth', 'flatten', 'setHeight', 'noise'].includes(tool)) return 'editor.tool.hint.height';
+  if (tool === 'trench') return 'editor.tool.hint.trench';
   if (['road', 'river', 'pond', 'line', 'bridge', 'ferry'].includes(tool)) return 'editor.tool.hint.polyline';
   if (tool === 'place') return 'editor.tool.hint.place';
+  if (tool === 'trees') return 'editor.tool.hint.trees';
   if (tool === 'deployment') return 'editor.tool.hint.deployment';
   return 'editor.tool.hint.select';
 }
@@ -116,9 +139,6 @@ export function footprintFacts(entry: CatalogObject, t: T): string[] {
     case 'decal':
       facts.push(t('editor.prop.flat'), t('editor.prop.surface', { speed: surfaceSpeed(groundMaterial(groundMaterialIndex(footprint.material)).surface).toFixed(2) }));
       break;
-    case 'trench-line':
-      facts.push(t('editor.prop.cover', { quality: '0.40' }), t('editor.prop.seeThrough'));
-      break;
   }
   if (entry.concealRadius) facts.push(t('editor.prop.conceals'));
   return facts;
@@ -143,6 +163,7 @@ function problemSelection(problem: MapProblem): SelectionItem[] {
     if (side === 'column' || side === 'legalist') return [{ kind: 'section', side, index: Number(index) }];
     return [];
   }
+  if (target.kind === 'area') return target.id === 'column' || target.id === 'legalist' ? [{ kind: 'area', side: target.id }] : [];
   if (typeof target.id !== 'number') return [];
   return [{ kind: target.kind, id: target.id }];
 }
@@ -284,7 +305,7 @@ export function EditorApp(): ReactNode {
     if (problem.at) viewport.current?.centreOn(problem.at);
     const selection = problemSelection(problem);
     if (selection.length > 0) {
-      store.setTool(selection[0]!.kind === 'section' ? 'deployment' : 'select');
+      store.setTool(selection[0]!.kind === 'section' || selection[0]!.kind === 'area' ? 'deployment' : 'select');
       store.setSelection(selection);
     }
   };
@@ -320,6 +341,7 @@ export function EditorApp(): ReactNode {
         <button type="button" aria-pressed={!view.topDown} onClick={() => store.updateView({ topDown: false })}>{t('editor.view.3d')}</button>
         <button type="button" aria-pressed={view.topDown} onClick={() => store.updateView({ topDown: true })}>{t('editor.view.2d')}</button>
         <button type="button" aria-pressed={view.grid} onClick={() => store.updateView({ grid: !view.grid })}>{t('editor.view.grid')}</button>
+        <button type="button" data-testid="editor-cover" aria-pressed={view.cover} onClick={() => store.updateView({ cover: !view.cover })}>{t('editor.view.cover')}</button>
         <select data-testid="editor-overlay" value={view.overlay} onChange={(event) => store.updateView({ overlay: event.target.value as typeof view.overlay })}>
           {(['none', 'relief', 'contours', 'slope'] as const).map((overlay) => (
             <option key={overlay} value={overlay}>{t(`editor.overlay.${overlay}`)}</option>
@@ -365,6 +387,7 @@ export function EditorApp(): ReactNode {
         <h2>{t(`editor.tool.${tool}`)}</h2>
         <p className="editor-hint">{t(hintKey(tool))}</p>
         <ToolProperties store={store} t={t} />
+        {view.cover ? <CoverPanel store={store} t={t} /> : null}
         {tool === 'select' ? <SelectionPanel store={store} viewport={viewport.current} t={t} /> : null}
         {settings.snap !== undefined && ['road', 'river', 'pond', 'line', 'bridge', 'ferry', 'place', 'select', 'deployment'].includes(tool) ? (
           <label>
@@ -561,7 +584,6 @@ function ToolProperties({ store, t }: { store: EditorStore; t: T }): ReactNode {
     fields.push(<NumberField key="width" label={t('editor.prop.width')} value={settings.roadWidth} min={1.5} max={12} step={0.5} onChange={(roadWidth) => set({ roadWidth })} />);
     if (tool === 'road') {
       fields.push(
-        <NumberField key="camber" label={t('editor.prop.camber')} value={settings.camber} min={0} max={0.3} step={0.05} onChange={(camber) => set({ camber })} />,
         <Check key="dl" label={t('editor.prop.ditchLeft')} checked={settings.ditchLeft} onChange={(ditchLeft) => set({ ditchLeft })} />,
         <Check key="dr" label={t('editor.prop.ditchRight')} checked={settings.ditchRight} onChange={(ditchRight) => set({ ditchRight })} />,
       );
@@ -597,6 +619,27 @@ function ToolProperties({ store, t }: { store: EditorStore; t: T }): ReactNode {
       </label>,
       <NumberField key="lineHeight" label={t('editor.prop.height')} value={settings.lineHeight} min={0.5} max={3} step={0.1} onChange={(lineHeight) => set({ lineHeight })} />,
     );
+  }
+  if (tool === 'trench') {
+    fields.push(
+      <TrenchFields
+        key="trench"
+        t={t}
+        value={{ kind: settings.trenchKind, depth: settings.trenchDepth, facing: settings.trenchFacing, bays: settings.trenchBays, parapet: settings.trenchParapet }}
+        onChange={(patch) =>
+          set({
+            ...(patch.kind !== undefined ? { trenchKind: patch.kind } : {}),
+            ...(patch.depth !== undefined ? { trenchDepth: patch.depth } : {}),
+            ...(patch.facing !== undefined ? { trenchFacing: patch.facing } : {}),
+            ...(patch.bays !== undefined ? { trenchBays: patch.bays } : {}),
+            ...(patch.parapet !== undefined ? { trenchParapet: patch.parapet } : {}),
+          })
+        }
+      />,
+    );
+  }
+  if (tool === 'trees') {
+    fields.push(<TreeFields key="trees" store={store} t={t} />);
   }
   if (tool === 'place') {
     const entry = catalogObject(settings.objectType);
@@ -641,6 +684,7 @@ function SelectionPanel({ store, viewport, t }: { store: EditorStore; viewport: 
   const entry = object ? catalogObject(object.type) : undefined;
   const road = first.kind === 'road' && selection.length === 1 ? store.map.roads.find((item) => item.id === first.id) : undefined;
   const line = first.kind === 'line' && selection.length === 1 ? store.map.lines.find((item) => item.id === first.id) : undefined;
+  const trench = first.kind === 'trench' && selection.length === 1 ? store.map.trenches.find((item) => item.id === first.id) : undefined;
   return (
     <div className="editor-fields">
       <p>{t('editor.prop.selected', { count: selection.length })}</p>
@@ -685,11 +729,226 @@ function SelectionPanel({ store, viewport, t }: { store: EditorStore; viewport: 
           <NumberField label={t('editor.prop.height')} value={line.height} min={0.5} max={3} step={0.1} onChange={(height) => store.editVector((draft) => { const target = draft.lines.find((item) => item.id === line.id); if (target) target.height = height; })} />
         </>
       ) : null}
+      {trench ? (
+        <>
+          <TrenchFields
+            t={t}
+            value={trench}
+            onChange={(patch) =>
+              store.editVector((draft) => {
+                const target = draft.trenches.find((item) => item.id === trench.id);
+                if (!target) return;
+                Object.assign(target, patch);
+                if (target.kind !== 'fire') target.bays = false;
+              })
+            }
+          />
+          <ul className="editor-footprint" data-testid="trench-facts">
+            <li data-testid="trench-length">{t('editor.trench.length', { length: trenchLength(trench.points).toFixed(1) })}</li>
+            <li data-testid="trench-slots">{t('editor.trench.slots', { count: trenchSlotCount(trench) })}</li>
+            <li data-testid="trench-capacity">{t('editor.trench.capacity', { count: trenchSlotCount(trench) })}</li>
+          </ul>
+          <button type="button" data-testid="trench-flip" onClick={() => viewport?.flipTrenches([trench.id])}>{t('editor.trench.flip')}</button>
+        </>
+      ) : null}
       <div className="editor-row">
         {selection.some((item) => item.kind === 'object') ? <button type="button" onClick={() => viewport?.duplicateSelection()}>{t('editor.prop.duplicate')}</button> : null}
         <button type="button" onClick={() => viewport?.deleteSelection()}>{t('editor.prop.delete')}</button>
       </div>
     </div>
+  );
+}
+
+/** A trench line's kind, depth, facing, bays and parapet (refine-map-editor 2.5). */
+/**
+ * refine-map-editor 5.1: the trees tool. Scatter paints a biome's mix at a
+ * density, single places the chosen species, erase removes trees under the
+ * brush. The species list shows each tree's thumbnail.
+ */
+function TreeFields({ store, t }: { store: EditorStore; t: T }): ReactNode {
+  const { settings } = store;
+  const set = store.updateSettings.bind(store);
+  const species = useMemo(() => treeSpecies(), []);
+  const pictures = useThumbnails(species.map((id) => catalogObject(id)!.model));
+  const inMix = new Set(BIOME_MIX[settings.treeBiome].map((entry) => entry.type));
+  return (
+    <>
+      <div className="editor-segmented" role="radiogroup" aria-label={t('editor.prop.treeMode')}>
+        {(['scatter', 'single', 'erase'] as const).map((mode) => (
+          <button key={mode} type="button" role="radio" aria-checked={settings.treeMode === mode} data-testid={`tree-mode-${mode}`} onClick={() => set({ treeMode: mode })}>
+            {t(`editor.trees.mode.${mode}`)}
+          </button>
+        ))}
+      </div>
+      {settings.treeMode !== 'single' ? (
+        <NumberField label={t('editor.prop.size')} value={settings.size} min={2} max={64} step={1} onChange={(size) => set({ size })} />
+      ) : (
+        <NumberField label={t('editor.prop.rotation')} value={settings.rotation} min={0} max={359} step={15} onChange={(rotation) => set({ rotation })} />
+      )}
+      {settings.treeMode === 'scatter' ? (
+        <>
+          <label>
+            {t('editor.prop.treeBiome')}
+            <select data-testid="tree-biome" value={settings.treeBiome} onChange={(event) => set({ treeBiome: event.target.value as TreeBiome })}>
+              {TREE_BIOMES.map((biome) => (
+                <option key={biome} value={biome}>{t(`editor.trees.biome.${biome}`)}</option>
+              ))}
+            </select>
+          </label>
+          <label>
+            {t('editor.prop.treeDensity')}
+            <select data-testid="tree-density" value={settings.treeDensity} onChange={(event) => set({ treeDensity: event.target.value as TreeDensity })}>
+              {TREE_DENSITIES.map((density) => (
+                <option key={density} value={density}>{t(`editor.trees.density.${density}`)}</option>
+              ))}
+            </select>
+          </label>
+        </>
+      ) : null}
+      {settings.treeMode !== 'erase' ? (
+        <div className="editor-tree-species" role="listbox" aria-label={t('editor.prop.treeSpecies')}>
+          {species.map((id) => {
+            const entry = catalogObject(id)!;
+            const picture = pictures.get(entry.model);
+            const chosen = settings.treeMode === 'single' ? settings.treeSpecies === id : inMix.has(id);
+            return (
+              <button
+                key={id}
+                type="button"
+                role="option"
+                aria-selected={chosen}
+                data-tree={id}
+                disabled={settings.treeMode === 'scatter'}
+                title={t(entry.nameKey)}
+                onClick={() => set({ treeSpecies: id })}
+              >
+                {picture ? <img src={picture} width={48} height={48} alt="" data-thumbnail={id} /> : <span className="editor-tree-blank" aria-hidden="true" />}
+                <span>{t(entry.nameKey)}</span>
+              </button>
+            );
+          })}
+        </div>
+      ) : null}
+    </>
+  );
+}
+
+/** The name of a cover piece in the panel. */
+function coverPieceName(store: EditorStore, piece: CoverPiece, t: T): string {
+  switch (piece.kind) {
+    case 'object': {
+      const object = store.map.objects.find((entry) => entry.id === piece.id);
+      const entry = object && catalogObject(object.type);
+      return entry ? t(entry.nameKey) : t('editor.cover.piece.object');
+    }
+    case 'line': {
+      const line = store.map.lines.find((entry) => entry.id === piece.id);
+      return line ? t(`editor.line.${line.kind}`) : t('editor.cover.piece.line');
+    }
+    case 'trench': {
+      const line = store.map.trenches.find((entry) => entry.id === piece.id);
+      return line ? t(`editor.trench.${line.kind}`) : t('editor.cover.piece.trench');
+    }
+    case 'ditch':
+      return t('editor.cover.piece.ditch');
+  }
+}
+
+/**
+ * refine-map-editor 6.1: the cover overlay's panel. The legend of the slot
+ * dots, the slots inside each side's deployment area and the piece under the
+ * pointer, all read from the game's own slots.
+ */
+function CoverPanel({ store, t }: { store: EditorStore; t: T }): ReactNode {
+  const preview = store.coverPreview();
+  const hovered = store.coverHover ? preview.pieces.find((piece) => piece.key === store.coverHover) : undefined;
+  const hoveredSlots = hovered ? preview.slots.filter((slot) => slot.piece === hovered.key) : [];
+  const colour = (value: number) => `#${value.toString(16).padStart(6, '0')}`;
+  return (
+    <section className="editor-cover-panel" data-testid="cover-panel">
+      <h3>{t('editor.cover.title')}</h3>
+      <ul className="editor-cover-legend">
+        {PROTECTION_CLASSES.map((stance) => (
+          <li key={stance}>
+            <span className="editor-cover-dot" style={{ background: colour(PROTECTION_COLORS[stance]) }} />
+            {t(`editor.cover.class.${stance}`)}
+          </li>
+        ))}
+        <li>
+          <span className="editor-cover-hatch" />
+          {t('editor.cover.concealment')}
+        </li>
+      </ul>
+      {(['column', 'legalist'] as const).map((side) => {
+        const zone = preview.zones[side];
+        return (
+          <p key={side} className="editor-cover-zone" data-testid={`zone-total-${side}`} data-total={zone.total}>
+            {t('editor.cover.zone', { side: t(`editor.side.${side}`), total: zone.total })}
+            <span>{t('editor.cover.byClass', { standing: zone.byClass.standing, crouched: zone.byClass.crouched, prone: zone.byClass.prone })}</span>
+          </p>
+        );
+      })}
+      {hovered ? (
+        <p className="editor-cover-hover" data-testid="cover-hover" data-piece={hovered.key} data-count={hovered.count}>
+          <strong>{coverPieceName(store, hovered.piece, t)}</strong>
+          {t('editor.cover.hover', { count: hovered.count })}
+          <span>
+            {t('editor.cover.byClass', {
+              standing: hoveredSlots.filter((slot) => slot.protects === 'standing').length,
+              crouched: hoveredSlots.filter((slot) => slot.protects === 'crouched').length,
+              prone: hoveredSlots.filter((slot) => slot.protects === 'prone').length,
+            })}
+          </span>
+        </p>
+      ) : (
+        <p className="editor-hint">{t('editor.cover.hoverNone')}</p>
+      )}
+    </section>
+  );
+}
+
+function TrenchFields({ value, onChange, t }: {
+  value: { kind: TrenchKind; depth: TrenchDepth; facing: TrenchFacing; bays: boolean; parapet: TrenchParapet };
+  onChange: (patch: Partial<{ kind: TrenchKind; depth: TrenchDepth; facing: TrenchFacing; bays: boolean; parapet: TrenchParapet }>) => void;
+  t: T;
+}): ReactNode {
+  const fire = value.kind === 'fire';
+  return (
+    <>
+      <label>
+        {t('editor.prop.trenchKind')}
+        <select data-testid="prop-trench-kind" value={value.kind} onChange={(event) => onChange({ kind: event.target.value as TrenchKind })}>
+          <option value="fire">{t('editor.trench.fire')}</option>
+          <option value="communication">{t('editor.trench.communication')}</option>
+        </select>
+      </label>
+      <label>
+        {t('editor.prop.trenchDepth')}
+        <select data-testid="prop-trench-depth" value={value.depth} onChange={(event) => onChange({ depth: Number(event.target.value) as TrenchDepth })}>
+          <option value={1.2}>{t('editor.trench.deep')}</option>
+          <option value={0.8}>{t('editor.trench.shallow')}</option>
+        </select>
+      </label>
+      {fire ? (
+        <>
+          <label>
+            {t('editor.prop.trenchFacing')}
+            <select data-testid="prop-trench-facing" value={value.facing} onChange={(event) => onChange({ facing: event.target.value as TrenchFacing })}>
+              <option value="left">{t('editor.trench.left')}</option>
+              <option value="right">{t('editor.trench.right')}</option>
+            </select>
+          </label>
+          <Check label={t('editor.prop.trenchBays')} checked={value.bays} onChange={(bays) => onChange({ bays })} />
+          <label>
+            {t('editor.prop.trenchParapet')}
+            <select data-testid="prop-trench-parapet" value={value.parapet} onChange={(event) => onChange({ parapet: event.target.value as TrenchParapet })}>
+              <option value="earth">{t('editor.trench.earth')}</option>
+              <option value="sandbag">{t('editor.trench.sandbag')}</option>
+            </select>
+          </label>
+        </>
+      ) : null}
+    </>
   );
 }
 

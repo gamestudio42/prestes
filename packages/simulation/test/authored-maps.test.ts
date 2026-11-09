@@ -13,7 +13,7 @@ import { createSimulationHost } from '../src/worker-host';
 
 function sampleMap() {
   const map = createEditableMap({ id: 'authored-sample', size: 'medium', name: { en: 'Sample', 'pt-BR': 'Amostra' } });
-  map.roads.push({ id: 1, type: 'dirt-road', width: 5, camber: 0.1, ditches: { left: true, right: true }, points: [{ x: -200, y: 0 }, { x: 200, y: 10 }] });
+  map.roads.push({ id: 1, type: 'dirt-road', width: 5, ditches: { left: true, right: true }, points: [{ x: -200, y: 0 }, { x: 200, y: 10 }] });
   map.objects.push(
     { id: 1, type: 'matacao', x: -30, y: 20, rotation: 0.4 },
     { id: 2, type: 'casa-terrea', x: 60, y: -30, rotation: 0 },

@@ -2,6 +2,7 @@ import type { CoverPoint, Vec2 } from '../protocol';
 import type { TerrainFeature, TerrainSurface } from '../terrain';
 import type { Building } from '../world';
 import type { Roster } from '../sections';
+import type { TrenchLineDef } from './trench-lines';
 
 /** The hand-written maps. */
 export type BuiltinBattleMapId = 'vila-militar' | 'fazenda' | 'serra-rio' | 'bairro';
@@ -85,6 +86,11 @@ export interface PropPlacement {
 export interface DeploymentZone {
   sections: readonly Vec2[];
   facing: Vec2;
+  /**
+   * add-deployment-phase D3: where the side may deploy. It holds the
+   * section points and does not overlap the other side's.
+   */
+  area: Polygon;
 }
 
 /** Text in both shipped languages (authored maps carry their own names). */
@@ -133,7 +139,17 @@ export interface BattleMap {
    * (0 none, else VEGETATION_KINDS index + 1), used instead of the
    * `surfaces` and `vegetation` areas. Water and bridges still apply over them.
    */
-  raster?: { surfaces: Uint8Array; vegetation: Uint8Array };
+  raster?: {
+    surfaces: Uint8Array;
+    vegetation: Uint8Array;
+    /**
+     * refine-map-editor 7.3: cells whose vegetation is an object's
+     * concealment (a bush, a cactus, the shade round a tree), set only where
+     * nothing was painted. They conceal like scrub; the view draws the
+     * object there, not scrub plants.
+     */
+    objectCover?: Uint8Array;
+  };
   /** Ground under everything else (field maps). */
   baseSurface: TerrainSurface;
   /** Later areas win. */
@@ -160,6 +176,11 @@ export interface BattleMap {
   yards?: readonly Polygon[];
   /** Authored maps: walls and fences by kind, for the view. */
   lines?: readonly MapLine[];
+  /**
+   * refine-map-editor D6: trench lines, for the view (their covers, height
+   * shapes and floor are already in `covers`, `height` and the surfaces).
+   */
+  trenches?: readonly TrenchLineDef[];
   /** Authored maps: the painted ground (GROUND_MATERIALS index per 1 m cell), for the view. */
   paint?: Uint8Array;
   /** The view's ground colour family. */

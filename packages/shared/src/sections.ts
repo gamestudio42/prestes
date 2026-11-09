@@ -192,5 +192,6 @@ export function validateRoster(roster: Roster): RosterCheck {
 /** The first reason adding a section of `type` would be refused, or null when it fits. */
 export function canAdd(roster: Roster, type: SectionTypeId): RosterRefusal | null {
   const check = validateRoster({ sections: [...roster.sections, type] });
-  return check.refusals.find((refusal) => refusal.code !== 'empty') ?? null;
+  // A type's own limit says more than the budget ("só uma metralhadora").
+  return check.refusals.find((refusal) => refusal.code === 'limit') ?? check.refusals.find((refusal) => refusal.code !== 'empty') ?? null;
 }

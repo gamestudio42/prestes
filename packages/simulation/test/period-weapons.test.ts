@@ -38,7 +38,9 @@ function duel(column: SectionTypeId, legalist: SectionTypeId, gap: number, seed 
   const side = (faction: 'column' | 'legalist') => engine.units.filter((unit) => unit.faction === faction);
   const shotsBy = (units: readonly MutableUnit[]) => {
     const ids = new Set(units.map((unit) => unit.id));
-    return events.filter((event) => event.type === 'shot' && ids.has(event.source));
+    return events.filter(
+      (event): event is Extract<SimEvent, { type: 'shot' }> => event.type === 'shot' && ids.has(event.source),
+    );
   };
   return { engine, events, run, side, shotsBy };
 }
@@ -86,6 +88,22 @@ describe('burst fire (4.2)', () => {
     const gaps = ticks.slice(1).map((tick, index) => tick - ticks[index]!);
     expect(gaps.filter((gap) => gap === 2).length).toBeGreaterThan(3);
     expect(gaps.some((gap) => gap > 10)).toBe(true);
+  });
+
+  it('marks the first round of each burst, and only aimed fire goes unmarked (5.4)', () => {
+    const t = duel('fuzil-metralhador', 'esquadra-4', 60);
+    t.engine.enqueue({ type: 'hold_fire', unitIds: t.side('legalist').map((unit) => unit.id), hold: true });
+    t.run(200);
+    const gunner = t.side('column').find((unit) => unit.weaponId === 'fuzil-automatico-7mm')!;
+    const shots = t.shotsBy([gunner]);
+    expect(shots.every((event) => typeof event.burstStart === 'boolean')).toBe(true);
+    const starts = shots.filter((event) => event.burstStart).length;
+    // The view draws one tracer per burst: fewer than the rounds, at least the long gaps.
+    expect(starts).toBeGreaterThan(1);
+    expect(starts).toBeLessThan(shots.length);
+    expect(shots[0]?.burstStart).toBe(true);
+    const loaders = t.side('column').filter((unit) => unit.weaponId === 'mauser-7mm');
+    expect(t.shotsBy(loaders).every((event) => event.burstStart === undefined)).toBe(true);
   });
 
   it('a 600-tick burst duel is deterministic', () => {

@@ -83,7 +83,6 @@ export function buildFazendaDocument(): EditableMap {
       id: index + 1,
       type: 'dirt-road',
       width: area.strip!.width,
-      camber: 0.08,
       ditches: { left: false, right: index === 0 },
       points: area.strip!.points.map((point) => ({ ...point })),
     }));
@@ -123,27 +122,33 @@ export function buildFazendaDocument(): EditableMap {
   }
   map.lines = lines;
 
-  // Objects: buildings, trench lines, trees and props.
+  // Objects: buildings, trees and props.
   const objects: DocObject[] = [];
   const add = (type: string, x: number, y: number, rotation = 0, scale?: number): void => {
     if (!catalogObject(type)) throw new Error(`no catalog object ${type}`);
     objects.push({ id: objects.length + 1, type, x, y, rotation, ...(scale && scale !== 1 ? { scale } : {}) });
   };
   for (const building of FAZENDA.buildings) add(building.model, building.x, building.y, building.rotation);
-  // Trench lines: the enemy on each line's local north.
-  for (const x of [-44, 0, 44]) {
-    add('trench-line', x, -80, Math.PI);
-    add('trench-line', x, 80, 0);
-  }
   for (const prop of FAZENDA.props) {
     if (prop.model === 'coffee-row') continue;
     add(prop.model, prop.x, prop.y, prop.rotation ?? 0, prop.scale);
   }
   map.objects = objects;
 
+  // Trench lines (refine-map-editor 2.6): the Fazenda's own, through the same builder.
+  map.trenches = (FAZENDA.trenches ?? []).map((line) => ({ ...line, points: line.points.map((point) => ({ ...point })) }));
+
   map.deployment = {
-    column: { sections: FAZENDA.deployment.column.sections.map((point) => ({ ...point })), facing: { ...FAZENDA.deployment.column.facing } },
-    legalist: { sections: FAZENDA.deployment.legalist.sections.map((point) => ({ ...point })), facing: { ...FAZENDA.deployment.legalist.facing } },
+    column: {
+      sections: FAZENDA.deployment.column.sections.map((point) => ({ ...point })),
+      facing: { ...FAZENDA.deployment.column.facing },
+      area: FAZENDA.deployment.column.area.map((point) => ({ ...point })),
+    },
+    legalist: {
+      sections: FAZENDA.deployment.legalist.sections.map((point) => ({ ...point })),
+      facing: { ...FAZENDA.deployment.legalist.facing },
+      area: FAZENDA.deployment.legalist.area.map((point) => ({ ...point })),
+    },
   };
   return map;
 }

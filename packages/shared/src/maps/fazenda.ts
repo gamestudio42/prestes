@@ -1,6 +1,7 @@
 import type { CoverPoint } from '../protocol';
 import { buildingCover, type Building } from '../world';
-import { box, clutter, communicationTrench, wallLines, fenceCovers, lowWall, propRow, roadDitches, trenchLine, zone } from './kit';
+import { box, clutter, wallLines, fenceCovers, lowWall, propRow, roadDitches, zone, band } from './kit';
+import { buildTrenchLines, type TrenchLineDef } from './trench-lines';
 import type { Vec2 } from '../protocol';
 import type { BattleMap, PropPlacement, Strip } from './types';
 
@@ -54,14 +55,44 @@ const DITCHES = [
   roadDitches(2300, WEST_ROAD, 'right'),
 ];
 
+/**
+ * refine-map-editor 2.3: the trench lines, built by the editor's builder.
+ * Each side's three 24 m fire trenches face the other (travelling east, the
+ * legalist line at y -80 faces south, right; the column's at 80 faces north,
+ * left), with sandbag parapets and bays; communication trenches run back.
+ */
+const fire = (id: number, x: number, y: number, facing: 'left' | 'right'): TrenchLineDef => ({
+  id,
+  kind: 'fire',
+  depth: 1.2,
+  facing,
+  bays: true,
+  parapet: 'sandbag',
+  points: [
+    { x: x - 12, y },
+    { x: x + 12, y },
+  ],
+});
+const communication = (id: number, from: Vec2, to: Vec2): TrenchLineDef => ({
+  id,
+  kind: 'communication',
+  depth: 1.2,
+  facing: 'left',
+  bays: false,
+  parapet: 'earth',
+  points: [from, to],
+});
+const TRENCHES: TrenchLineDef[] = [
+  ...[-44, 0, 44].map((x, index) => fire(1 + index, x, -80, 'right')),
+  ...[-44, 0, 44].map((x, index) => fire(4 + index, x, 80, 'left')),
+  communication(7, { x: 0, y: -80.75 }, { x: 0, y: -122 }),
+  communication(8, { x: -44, y: -80.75 }, { x: -60, y: -118 }),
+  communication(9, { x: 0, y: 80.75 }, { x: 0, y: 122 }),
+  communication(10, { x: 44, y: 80.75 }, { x: 60, y: 118 }),
+];
+const BUILT_TRENCHES = buildTrenchLines(TRENCHES, 3000);
+
 const LINES: CoverPoint[] = [
-  ...[-44, 0, 44].flatMap((x, index) => trenchLine(600 + index * 10, x, -80, 1)),
-  ...[-44, 0, 44].flatMap((x, index) => trenchLine(630 + index * 10, x, 80, -1)),
-  // Communication trenches back to each side's rear.
-  communicationTrench(660, { x: 0, y: -82 }, { x: 0, y: -122 }),
-  communicationTrench(661, { x: -44, y: -82 }, { x: -60, y: -118 }),
-  communicationTrench(662, { x: 0, y: 82 }, { x: 0, y: 122 }),
-  communicationTrench(663, { x: 44, y: 82 }, { x: 60, y: 118 }),
   // The corral's stone wall and the casa-sede's yard wall.
   lowWall(670, 160, -36, 10),
   lowWall(671, 160, -56, 10),
@@ -164,6 +195,7 @@ export const FAZENDA: BattleMap = {
       // A shallow swale between the lines.
       { kind: 'channel', points: [{ x: -200, y: 6 }, { x: -60, y: -4 }, { x: 60, y: 8 }, { x: 200, y: -2 }], width: 6, bank: 24, depth: 1.2 },
       ...DITCHES.flatMap((ditch) => ditch.shapes),
+      ...BUILT_TRENCHES.flatMap((trench) => trench.shapes),
     ],
   },
   baseSurface: 'pasture',
@@ -174,6 +206,7 @@ export const FAZENDA: BattleMap = {
     { surface: 'dirt-road', strip: SEDE_ROAD },
     { surface: 'dirt-road', strip: WEST_ROAD },
     { surface: 'mud', polygon: box(152, -54, 168, -38) },
+    ...BUILT_TRENCHES.map((trench) => ({ surface: 'trench-floor' as const, strip: trench.floor })),
   ],
   water: [],
   waterLevel: 0,
@@ -198,11 +231,14 @@ export const FAZENDA: BattleMap = {
     // refine-battle-maps: from 1000; at 720 they shared ids with the fences (680 on).
     ...fenceCovers(1000, COFFEE_ROWS, 1.6),
     ...DITCHES.flatMap((ditch) => ditch.covers),
+    ...BUILT_TRENCHES.flatMap((trench) => trench.covers),
   ],
+  trenches: TRENCHES,
   sightObstacles: [],
   deployment: {
-    column: zone([-44, 0, 44], 92, -1),
-    legalist: zone([-44, 0, 44], -94, 1),
+    // add-deployment-phase 1.1: fronts 65 m from the centre line, 130 m apart (out of rifle range).
+    column: zone([-44, 0, 44], 92, -1, band(-190, 190, 65, 190)),
+    legalist: zone([-44, 0, 44], -94, 1, band(-190, 190, -65, -190)),
   },
   props: [
     ...COFFEE,

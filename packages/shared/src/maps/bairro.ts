@@ -1,6 +1,6 @@
 import type { CoverPoint, Vec2 } from '../protocol';
 import { buildingCover, type Building } from '../world';
-import { barricade, box, clutter, wallLines, fenceCovers, lowWall, propRow, railLine, zone } from './kit';
+import { barricade, box, clutter, wallLines, fenceCovers, lowWall, propRow, railLine, zone, band } from './kit';
 import type { BattleMap, PropPlacement, SurfaceArea, VegetationArea } from './types';
 
 /**
@@ -258,8 +258,9 @@ export const BAIRRO: BattleMap = {
   covers: [...COVERS.map((cover) => (cover.kind === 'low-wall' ? { ...cover, drawnBy: 'map' as const } : cover)), ...PRACA.covers, ...fenceCovers(4000, FENCES), ...BUILDINGS.map(buildingCover)],
   sightObstacles: [],
   deployment: {
-    column: zone([-60, 0, 60], 90, -1),
-    legalist: zone([-60, 0, 60], -92, 1),
+    // add-deployment-phase 1.1: fronts 65 m from the centre line, 130 m apart (out of rifle range).
+    column: zone([-60, 0, 60], 90, -1, band(-150, 150, 65, 150)),
+    legalist: zone([-60, 0, 60], -92, 1, band(-150, 150, -65, -150)),
   },
   props: PROPS,
   fences: FENCES,

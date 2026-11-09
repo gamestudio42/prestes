@@ -330,8 +330,74 @@ function onBridge(runtime: MapRuntime, x: number, y: number): Bridge | null {
   return null;
 }
 
+/**
+ * refine-map-editor D3: a bridge rests on its abutments. Each end meets the
+ * ground at its landing; between the ramps the deck is the higher of the
+ * water clearance and the straight line between the ends. The ramps blend
+ * from the landing to that core, so men walk on without a step. The
+ * simulation, the compiler and the view share this profile.
+ */
+export const BRIDGE_RAMP = 3;
+
+/** A point on a bridge's centreline, `along` metres from its centre (local y). */
+export function bridgePoint(bridge: Bridge, along: number): { x: number; y: number } {
+  return { x: bridge.x - along * Math.sin(bridge.rotation), y: bridge.y + along * Math.cos(bridge.rotation) };
+}
+
+/** The deck's height `along` metres from the centre, given the ground at each end. */
+export function bridgeDeckHeight(bridge: Bridge, waterLevel: number, ends: readonly [number, number], along: number): number {
+  const half = bridge.halfDepth;
+  const t = Math.max(0, Math.min(1, (along + half) / (2 * half)));
+  const line = ends[0] + (ends[1] - ends[0]) * t;
+  const core = Math.max(waterLevel + bridge.deckHeight, line);
+  const ramp = Math.min(BRIDGE_RAMP, half / 2);
+  const fromEnd = half - Math.abs(along);
+  const weight = ramp > 0 ? smooth(Math.max(0, Math.min(1, fromEnd / ramp))) : 1;
+  return line + (core - line) * weight;
+}
+
+/** Ground heights at a bridge's two landings (local y = -halfDepth, +halfDepth). */
+export function bridgeLandings(bridge: Bridge, groundAt: (x: number, y: number) => number): [number, number] {
+  const a = bridgePoint(bridge, -bridge.halfDepth);
+  const b = bridgePoint(bridge, bridge.halfDepth);
+  return [groundAt(a.x, a.y), groundAt(b.x, b.y)];
+}
+
+const landingCache = new WeakMap<MapRuntime, Map<Bridge, [number, number]>>();
+
+/** A bridge's landings on a baked map, worked out once per runtime. */
+export function runtimeBridgeLandings(runtime: MapRuntime, bridge: Bridge): [number, number] {
+  let byBridge = landingCache.get(runtime);
+  if (!byBridge) {
+    byBridge = new Map();
+    landingCache.set(runtime, byBridge);
+  }
+  let ends = byBridge.get(bridge);
+  if (!ends) {
+    ends = bridgeLandings(bridge, (x, y) => runtimeGroundAt(runtime, x, y));
+    byBridge.set(bridge, ends);
+  }
+  return ends;
+}
+
+/** A bridge's deck height at a point over it, on a baked map. */
+export function runtimeBridgeDeckAt(runtime: MapRuntime, bridge: Bridge, x: number, y: number): number {
+  const along = -(x - bridge.x) * Math.sin(bridge.rotation) + (y - bridge.y) * Math.cos(bridge.rotation);
+  return bridgeDeckHeight(bridge, runtime.map.waterLevel, runtimeBridgeLandings(runtime, bridge), along);
+}
+
 /** Bilinear height of the heightfield, with bridge decks on top. */
 export function runtimeHeightAt(runtime: MapRuntime, x: number, y: number): number {
+  const ground = runtimeGroundAt(runtime, x, y);
+  if (runtime.map.bridges.length > 0) {
+    const bridge = onBridge(runtime, x, y);
+    if (bridge) return Math.max(ground, runtimeBridgeDeckAt(runtime, bridge, x, y));
+  }
+  return ground;
+}
+
+/** Bilinear height of the heightfield alone. */
+function runtimeGroundAt(runtime: MapRuntime, x: number, y: number): number {
   const gx = Math.max(0, Math.min(runtime.heightColumns - 1.000001, (x - runtime.minX) / HEIGHT_SPACING));
   const gy = Math.max(0, Math.min(runtime.heightRows - 1.000001, (y - runtime.minY) / HEIGHT_SPACING));
   const column = Math.floor(gx);
@@ -343,12 +409,7 @@ export function runtimeHeightAt(runtime: MapRuntime, x: number, y: number): numb
   const h10 = runtime.heights[index + 1]!;
   const h01 = runtime.heights[index + runtime.heightColumns]!;
   const h11 = runtime.heights[index + runtime.heightColumns + 1]!;
-  const ground = (h00 * (1 - fx) + h10 * fx) * (1 - fy) + (h01 * (1 - fx) + h11 * fx) * fy;
-  if (runtime.map.bridges.length > 0) {
-    const bridge = onBridge(runtime, x, y);
-    if (bridge) return Math.max(ground, runtime.map.waterLevel + bridge.deckHeight);
-  }
-  return ground;
+  return (h00 * (1 - fx) + h10 * fx) * (1 - fy) + (h01 * (1 - fx) + h11 * fx) * fy;
 }
 
 function cellIndex(runtime: MapRuntime, x: number, y: number): number {

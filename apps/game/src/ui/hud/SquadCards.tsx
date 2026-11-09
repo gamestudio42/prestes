@@ -58,6 +58,11 @@ export function SquadCards({
       <div className="squad-stack">
         {squadIds.map((squadId) => {
           const units = frame?.units.filter((unit) => unit.squadId === squadId) ?? [];
+          // A rostered troop is named by its section type ("Comando", "Esquadra de 5").
+          const sectionType = units.find((unit) => unit.sectionType !== undefined)?.sectionType;
+          const nameKey: MessageKey = sectionType
+            ? (`section.${sectionType}.name` as MessageKey)
+            : (sectionNames[squadId] ?? 'hud.squad2');
           const alive = units.filter((unit) => unit.alive && !unit.routed);
           const hp = alive.reduce((sum, unit) => sum + unit.hp, 0);
           const rounds = alive.reduce((sum, unit) => sum + unit.magazine + unit.reserve, 0);
@@ -85,7 +90,7 @@ export function SquadCards({
                   <User aria-hidden="true" size={17} />
                 </span>
                 <span className="section-copy">
-                  <strong>{t(sectionNames[squadId] ?? 'hud.squad2')}</strong>
+                  <strong data-testid={`squad-name-${squadId}`}>{t(nameKey)}</strong>
                   <span>
                     {t('hud.alive')}: {alive.length}
                   </span>

@@ -58,14 +58,36 @@ function spread(length: number, spacing: number): number[] {
  * has slots along both long faces, a trench along its floor, a barrel one per
  * side and a building at its corners and along its walls.
  */
+/** A fire trench's slots stand this far forward of its centreline, on the fire step (m). */
+const FIRE_STEP_OFFSET = 0.45;
+
 export function coverSlots(cover: CoverPoint): CoverSlot[] {
   // A fence stops a man but shelters no one: it has no slots.
-  if (cover.kind === 'fence') return [];
+  if (cover.kind === 'fence' || cover.noSlots) return [];
   const low = cover.height < LOW_COVER_HEIGHT;
   const slotStance: Stance = cover.kind === 'trench' || low ? 'crouched' : 'standing';
   const local: Array<{ x: number; y: number; guard: Vec2 | null }> = [];
 
-  if (cover.kind === 'trench') {
+  if (cover.kind === 'trench' && cover.facing) {
+    // A fire trench (refine-map-editor D6): slots on the fire step, facing the parapet.
+    // Its pieces are whole slots long (trench-lines.ts), so the count rounds.
+    const facing = cover.facing;
+    const length = cover.halfWidth * 2;
+    const count = Math.max(1, Math.round(length / LINEAR_SPACING));
+    return Array.from({ length: count }, (_, index) => -length / 2 + (length / count) * (index + 0.5))
+      .slice(0, MAX_SLOTS)
+      .map((x, index) => {
+        const position = toWorld(cover, x, 0);
+        return {
+          id: cover.id * MAX_SLOTS + index,
+          coverId: cover.id,
+          x: position.x + facing.x * FIRE_STEP_OFFSET,
+          y: position.y + facing.y * FIRE_STEP_OFFSET,
+          guard: { x: facing.x, y: facing.y },
+          stance: slotStance,
+        };
+      });
+  } else if (cover.kind === 'trench') {
     for (const x of spread(cover.halfWidth * 2, LINEAR_SPACING)) {
       local.push({ x, y: 0, guard: null });
     }

@@ -21,9 +21,11 @@ a button and a click on it. The section SHALL walk to the nearest entrances
 and its soldiers SHALL go in one by one, up to the capacity; those over the
 capacity SHALL take cover slots outside. A position held by the enemy
 SHALL NOT be entered (Assaltar instead). Two friendly sections MAY share a
-position up to its capacity. Inside soldiers SHALL NOT be drawn
-individually; the position SHALL show a garrison marker with the side's
-colour, the men inside and a strength bar.
+position up to its capacity. Soldiers inside a building SHALL NOT be drawn
+individually; the building SHALL show a garrison marker with the side's
+colour, the men inside and a strength bar. Soldiers in a trench line SHALL
+stay drawn at their places on the fire step (it is an open work); the
+trench position SHALL serve only for capacity, cover and assault.
 
 #### Scenario: Enter a house
 - **WHEN** an Esquadra de 4 is ordered to enter a one-storey house
@@ -32,6 +34,10 @@ colour, the men inside and a strength bar.
 #### Scenario: Over capacity
 - **WHEN** a section of eleven is ordered into a house of capacity 4
 - **THEN** four go in and seven take slots outside
+
+#### Scenario: Men in a trench stay visible
+- **WHEN** a section enters a fire trench line
+- **THEN** its soldiers are drawn on the fire step and no garrison marker is shown
 
 ### Requirement: Elevated positions and roofs
 

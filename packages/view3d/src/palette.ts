@@ -9,6 +9,10 @@ export const PALETTE = {
   terrainAlt: 0x6a6a47,
   terrainTrench: 0x3f3a2c,
   trenchDeep: 0x2d281f,
+  /** refine-map-editor 2.4: a trench's earth parapet and traverses, its revetment and duckboards. */
+  trenchEarth: 0x6b5a3e,
+  revetment: 0x4f3c2a,
+  duckboard: 0x7a6447,
   terrainRoad: 0x8a7a5a,
   terrainCrater: 0x4a4634,
   grid: 0x494c33,

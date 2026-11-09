@@ -1,0 +1,134 @@
+import { expect, test, type Page } from '@playwright/test';
+
+// pre-battle-roster 5.1, 5.5, 5.6: the skirmish setup screen opened from the desk.
+
+interface Bridge {
+  __prestes?: {
+    frame: () => { units: Array<{ id: number; faction: string; squadId: number; weaponId: string }> } | null;
+  };
+}
+
+const units = (page: Page) => page.evaluate(() => (window as unknown as Bridge).__prestes?.frame()?.units ?? []);
+
+async function openSetup(page: Page): Promise<void> {
+  await page.goto('/');
+  await page.getByTestId('open-skirmish').click();
+  await expect(page.getByTestId('skirmish-setup')).toBeVisible();
+}
+
+async function clearRoster(page: Page): Promise<void> {
+  while ((await page.getByTestId('roster-remove-0').count()) > 0) await page.getByTestId('roster-remove-0').click();
+}
+
+test('back to the desk', async ({ page }) => {
+  await openSetup(page);
+  await page.getByTestId('setup-back').click();
+  await expect(page.getByTestId('skirmish-setup')).toHaveCount(0);
+  await expect(page.getByTestId('open-skirmish')).toBeVisible();
+  await page.getByTestId('open-skirmish').click();
+  await page.keyboard.press('Escape');
+  await expect(page.getByTestId('skirmish-setup')).toHaveCount(0);
+  await expect(page.getByTestId('hud')).toHaveCount(0);
+});
+
+test('builds a six-section force on Bairro and fights with it', async ({ page }) => {
+  await openSetup(page);
+  await page.getByTestId('map-option-bairro').click();
+  await clearRoster(page);
+  for (const type of ['comando', 'esquadra-5', 'esquadra-5', 'irregulares', 'irregulares', 'irregulares']) {
+    await page.getByTestId(`roster-add-${type}`).click();
+  }
+  await expect(page.getByTestId('roster-counters')).toContainText('29/33');
+  await expect(page.getByTestId('roster-counters')).toContainText('6/6');
+  // A third automatic rifle and a seventh section are refused, with the reason shown.
+  await expect(page.getByTestId('roster-refusal-fuzil-metralhador')).toBeVisible();
+  // A refused type is aria-disabled: the click goes through and changes nothing.
+  await page.getByTestId('roster-add-esquadra-4').click({ force: true });
+  await expect(page.getByTestId('roster-row-6')).toHaveCount(0);
+
+  await page.getByTestId('start-battle-3v3').click();
+  await expect(page.getByTestId('hud')).toBeVisible();
+  await expect.poll(async () => (await units(page)).filter((unit) => unit.faction === 'column').length).toBe(29);
+  for (let squad = 1; squad <= 6; squad += 1) await expect(page.getByTestId(`squad-${squad}`)).toBeAttached();
+});
+
+test('budget refuses an addition', async ({ page }) => {
+  await openSetup(page);
+  await expect(page.getByTestId('roster-counters')).toContainText('33/33');
+  await expect(page.getByTestId('roster-refusal-esquadra-4')).toContainText('33');
+  await page.getByTestId('roster-add-esquadra-4').click({ force: true });
+  await expect(page.getByTestId('roster-row-3')).toHaveCount(0);
+  await page.getByTestId('roster-remove-2').click();
+  await page.getByTestId('roster-add-esquadra-4').click();
+  await expect(page.getByTestId('roster-row-2')).toBeVisible();
+  await expect(page.getByTestId('roster-counters')).toContainText('26/33');
+});
+
+test('roster remembered', async ({ page }) => {
+  await openSetup(page);
+  await page.getByTestId('map-option-fazenda').click();
+  await clearRoster(page);
+  await page.getByTestId('roster-add-metralhadora').click();
+  await page.getByTestId('roster-add-comando').click();
+  await page.getByTestId('start-battle-3v3').click();
+  await expect(page.getByTestId('hud')).toBeVisible();
+
+  await openSetup(page);
+  await expect(page.getByTestId('map-option-fazenda')).toHaveAttribute('aria-checked', 'true');
+  await expect(page.getByTestId('roster-row-0')).toContainText(/Metralhadora|Machine gun/);
+  await expect(page.getByTestId('roster-row-1')).toContainText(/Comando|Command/);
+  await expect(page.getByTestId('roster-row-2')).toHaveCount(0);
+});
+
+test('enemy chosen: Fazenda with force C', async ({ page }) => {
+  await openSetup(page);
+  await page.getByTestId('map-option-fazenda').click();
+  await page.getByTestId('enemy-preset-2').check();
+  await page.getByTestId('start-battle-3v3').click();
+  await expect(page.getByTestId('hud')).toBeVisible();
+  await expect.poll(async () => (await units(page)).length).toBeGreaterThan(0);
+  const legalists = (await units(page)).filter((unit) => unit.faction === 'legalist');
+  // Two irregular sections, a rifle section, a squad of five and a squad of four.
+  expect(legalists).toHaveLength(30);
+  expect(new Set(legalists.map((unit) => unit.squadId)).size).toBe(5);
+  expect(legalists.filter((unit) => unit.weaponId === 'winchester-44')).toHaveLength(10);
+});
+
+test('enemy built: a second machine gun is refused', async ({ page }) => {
+  await openSetup(page);
+  await page.getByTestId('enemy-built').check();
+  await expect(page.getByTestId('enemy-roster-builder')).toBeVisible();
+  await page.getByTestId('enemy-roster-remove-0').click();
+  await page.getByTestId('enemy-roster-add-metralhadora').click();
+  await expect(page.getByTestId('enemy-roster-refusal-metralhadora')).toContainText(/metralhadora|machine gun/);
+  await page.getByTestId('enemy-roster-add-metralhadora').click({ force: true });
+  await expect(page.getByTestId('enemy-roster-row-3')).toHaveCount(0);
+  // Changing the map keeps a built enemy.
+  await page.getByTestId('map-option-serra-rio').click();
+  await expect(page.getByTestId('enemy-roster-row-2')).toBeVisible();
+});
+
+// pre-battle-roster 5.2: the HUD names rostered troops and lists a mixed section's weapons.
+test('weapon card shows the mix', async ({ page }) => {
+  await openSetup(page);
+  await page.getByTestId('map-option-fazenda').click();
+  await clearRoster(page);
+  await page.getByTestId('roster-add-esquadra-5').click();
+  await page.getByTestId('roster-add-metralhadora').click();
+  await page.getByTestId('start-battle-3v3').click();
+  await expect(page.getByTestId('hud')).toBeVisible();
+
+  await page.getByTestId('squad-1').click();
+  await expect(page.getByTestId('squad-name-1')).toContainText(/Esquadra de 5|Squad of 5/);
+  await expect(page.getByTestId('weapon-line-mauser-7mm')).toContainText('×4');
+  await expect(page.getByTestId('weapon-line-fuzil-automatico-7mm')).toContainText('20/120');
+  await expect(page.getByTestId('gun-state')).toHaveCount(0);
+
+  await page.getByTestId('squad-2').click();
+  await expect(page.getByTestId('squad-name-2')).toContainText(/Metralhadora|Machine gun/);
+  await expect(page.getByTestId('weapon-line-metralhadora-7mm')).toContainText('250/250');
+  await expect(page.getByTestId('gun-state')).toContainText(/montando|pronta|setting up|ready/);
+  await expect(page.getByTestId('gun-pool')).toContainText('750');
+  // A man's tooltip names his weapon.
+  await expect(page.locator('[data-testid^="helmet-"][data-weapon="metralhadora-7mm"]')).toHaveCount(1);
+});

@@ -38,9 +38,10 @@ export interface MenuDeskProps {
   locale: Locale;
   audioMuted: boolean;
   onLocaleChange: (locale: Locale) => void;
-  onStartBattle3v3: () => void;
+  /** The last skirmish map chosen; its sheet lies on the desk. */
   battleMap: BattleMapId;
-  onBattleMapChange: (map: BattleMapId) => void;
+  /** pre-battle-roster 5.1: the desk's map opens the skirmish setup screen. */
+  onOpenSetup: () => void;
   onToggleAudio: () => void;
   gramophone: {
     track: GramophoneTrack;
@@ -63,9 +64,8 @@ export function MenuDesk({
   locale,
   audioMuted,
   onLocaleChange,
-  onStartBattle3v3,
   battleMap,
-  onBattleMapChange,
+  onOpenSetup,
   onToggleAudio,
   gramophone,
 }: MenuDeskProps) {
@@ -298,8 +298,7 @@ export function MenuDesk({
         <SkirmishMaps
           locale={locale}
           battleMap={battleMap}
-          onBattleMapChange={onBattleMapChange}
-          onStartBattle3v3={onStartBattle3v3}
+          onOpenSetup={onOpenSetup}
         />
       </DeskObject>
 

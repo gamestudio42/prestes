@@ -19,6 +19,7 @@ import {
   type UnitSnapshot,
   type FogExtras,
   troopFormationOffsets,
+  shotShown,
 } from '@prestes/shared';
 import { CameraRig, STRATEGIC_TILT, TACTICAL_SPAN, type CameraBand } from './camera-rig';
 import { CharacterLayer } from './character-layer';
@@ -70,7 +71,12 @@ export interface SceneViewOptions {
   /** add-battle-maps: the 3v3's map; the Vila Militar field when absent. The editor passes the map itself. */
   battleMap?: BattleMapId | BattleMap;
   onCameraAction?: (kind: 'pan' | 'zoom' | 'rotate') => void;
+  /** refine-map-editor D4: smooth edges (MSAA), fixed for the view's life. */
+  antialias?: boolean;
 }
+
+/** Samples of the scene's target when edges are smoothed. */
+const MSAA_SAMPLES = 4;
 
 const INTERNAL_HEIGHT = 300;
 
@@ -96,7 +102,7 @@ export class SceneView {
   private sun: THREE.DirectionalLight | null = null;
   /** add-map-editor: the painted ground of an authored map. */
   private paintedGround: PaintedGround | null = null;
-  private readonly post = new PixelPost();
+  private readonly post: PixelPost;
   private readonly covers = new CoverLayer();
   private readonly characters = new CharacterLayer();
   private readonly paths = new PathLayer();
@@ -132,12 +138,19 @@ export class SceneView {
   private frameHandle = 0;
   private lastTime = 0;
 
+  /** Whether edges are smoothed: the context's antialias flag and the scene target's samples. */
+  smoothEdges(): { antialias: boolean; samples: number } {
+    return { antialias: this.renderer.getContextAttributes()?.antialias === true, samples: this.post.target.samples };
+  }
+
   constructor(options: SceneViewOptions) {
     this.container = options.container;
     this.onBandChange = options.onBandChange;
     this.onCameraAction = options.onCameraAction;
 
-    this.renderer = new THREE.WebGLRenderer({ antialias: false, alpha: false });
+    const antialias = options.antialias ?? false;
+    this.renderer = new THREE.WebGLRenderer({ antialias, alpha: false });
+    this.post = new PixelPost(antialias ? MSAA_SAMPLES : 0);
     this.renderer.setPixelRatio(1);
     this.renderer.domElement.style.display = 'block';
     this.renderer.domElement.style.width = '100%';
@@ -357,6 +370,10 @@ export class SceneView {
     return this.characters.clipState(unitId);
   }
 
+  weaponState(unitId: number) {
+    return this.characters.weaponState(unitId);
+  }
+
   /** fog-of-war: the units the view is drawing, by id (dev checks). */
   shownUnitIds(): number[] {
     return this.lastFrame?.units.map((unit) => unit.id) ?? [];
@@ -526,7 +543,7 @@ export class SceneView {
     if (frame.tick !== this.lastEventTick) {
       this.lastEventTick = frame.tick;
       for (const event of frame.events) {
-        if (event.type === 'shot') {
+        if (event.type === 'shot' && shotShown(event)) {
           this.tracers.spawn(event);
         }
       }
@@ -834,6 +851,7 @@ export class SceneView {
       this.paths.update(selectedOrders(this.lastFrame.orders, this.selectedUnits), this.rig.span);
     }
     this.tracers.update(delta);
+    this.mapLayer?.tick(time / 1000, this.rig.span);
     // The marks' 10 s run from the battle's first frame.
     if (this.deployment && this.lastFrame) this.deployment.update(time, (x, y) => this.groundToScreen(x, y));
     const camera = this.rig.camera;

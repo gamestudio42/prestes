@@ -6,8 +6,11 @@ import { toon } from './materials';
 /**
  * The ground of a painted map (add-map-editor): 40 m chunks of the 2 m
  * heightfield, each cell drawn with its material's pixel-art tile, sampled
- * in world space with nearest filtering, and a 4 × 4 Bayer dither (in tile
- * texels) where two materials meet: a pixel dither, never a blur. The toon
+ * in world space with nearest filtering. Where materials meet, the cell
+ * lookup is offset by a 4 × 4 Bayer pattern within half a cell
+ * (refine-map-editor D4), per tile texel: the border becomes a pixel dither
+ * one cell wide, never a blur, and diagonal borders lose their 1 m
+ * staircase. The toon
  * ramp lights it like the kits. The editor also uses its overlays (slope,
  * contours, metre grid) and rebuilds only the chunks an edit touched.
  */
@@ -18,6 +21,33 @@ export const GROUND_CHUNK = 40;
 export type GroundOverlay = 'none' | 'slope' | 'contours' | 'relief';
 
 const OVERLAY_CODE: Record<GroundOverlay, number> = { none: 0, slope: 1, contours: 2, relief: 3 };
+
+/** The 4 × 4 Bayer matrix, row by row. */
+export const BAYER_4X4 = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5] as const;
+
+/** The Bayer threshold (0..1) of a texel. */
+export function bayerAt(texelX: number, texelY: number): number {
+  const x = ((Math.floor(texelX) % 4) + 4) % 4;
+  const y = ((Math.floor(texelY) % 4) + 4) % 4;
+  return (BAYER_4X4[y * 4 + x]! + 0.5) / 16;
+}
+
+/**
+ * The shader's lookup, in TypeScript: the cell (column, row from the map's
+ * minimum corner) whose material a ground point shows. The offset is fixed
+ * per tile texel and lies within half a cell, so only points within half a
+ * cell of a border can show the neighbour.
+ */
+export function ditheredCell(x: number, y: number, minX: number, minY: number, texelsPerMetre: number = GROUND_ATLAS.tile / GROUND_ATLAS.metresPerTile): [number, number] {
+  const texelX = Math.floor(x * texelsPerMetre);
+  const texelY = Math.floor(y * texelsPerMetre);
+  const offsetX = bayerAt(texelX, texelY) - 0.5;
+  const offsetY = bayerAt(texelY + 2, texelX + 1) - 0.5;
+  // From the texel's centre, so the pick is one per texel.
+  const centreX = (texelX + 0.5) / texelsPerMetre - minX;
+  const centreY = (texelY + 0.5) / texelsPerMetre - minY;
+  return [Math.floor(centreX + offsetX), Math.floor(centreY + offsetY)];
+}
 
 let generatedAtlas: THREE.DataTexture | null = null;
 
@@ -83,7 +113,7 @@ float groundBayer(vec2 p) {
   int x = int(mod(p.x, 4.0));
   int y = int(mod(p.y, 4.0));
   int index = y * 4 + x;
-  float m[16] = float[16](0.0, 8.0, 2.0, 10.0, 12.0, 4.0, 14.0, 6.0, 3.0, 11.0, 1.0, 9.0, 15.0, 7.0, 13.0, 5.0);
+  float m[16] = float[16](${BAYER_4X4.map((value) => `${value}.0`).join(', ')});
   return (m[index] + 0.5) / 16.0;
 }
 `;
@@ -91,22 +121,12 @@ const FRAGMENT_BODY = /* glsl */ `
 {
   vec2 xz = vGroundWorld.xz;
   vec2 local = xz - uMin;
-  vec2 cell = floor(local);
-  vec2 f = local - cell;
-  float own = groundMaterialAt(cell);
-  float pick = own;
-  // Snap the dither to the tile's texels so the edge stays pixel art.
+  // The lookup offset by the Bayer pattern within half a cell, fixed per
+  // tile texel so the border stays pixel art (ditheredCell mirrors this).
   vec2 texel = floor(xz * uTexels / uTileMetres);
-  float threshold = groundBayer(texel);
-  vec2 toEdge = min(f, 1.0 - f);
-  const float BAND = 0.4;
-  if (toEdge.x < toEdge.y) {
-    float other = groundMaterialAt(cell + vec2(f.x < 0.5 ? -1.0 : 1.0, 0.0));
-    if (other != own && threshold < 0.5 * max(0.0, BAND - toEdge.x) / BAND) pick = other;
-  } else {
-    float other = groundMaterialAt(cell + vec2(0.0, f.y < 0.5 ? -1.0 : 1.0));
-    if (other != own && threshold < 0.5 * max(0.0, BAND - toEdge.y) / BAND) pick = other;
-  }
+  vec2 offset = vec2(groundBayer(texel), groundBayer(texel.yx + vec2(2.0, 1.0))) - 0.5;
+  vec2 centre = (texel + 0.5) * uTileMetres / uTexels - uMin;
+  float pick = groundMaterialAt(floor(centre + offset));
   // Clamped: on a tile seam fract() can round to 1.0 and read the next tile in the atlas.
   vec2 tileUV = (min(floor(fract(xz / uTileMetres) * uTexels), uTexels - 1.0) + 0.5) / uTexels;
   vec2 tile = vec2(mod(pick, uAtlasGrid.x), floor(pick / uAtlasGrid.x));

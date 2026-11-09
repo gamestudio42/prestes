@@ -74,6 +74,7 @@ test('desk gramophone screen matches the baseline', async ({ page }) => {
 
 test('3v3 HUD matches the baseline', async ({ page }) => {
   await page.goto('/');
+  await page.getByTestId('open-skirmish').click();
   await page.getByTestId('start-battle-3v3').click();
   await expect(page.getByTestId('hud')).toBeVisible();
   await page.waitForFunction(() => Boolean((window as unknown as { __prestes?: unknown }).__prestes));
@@ -99,6 +100,7 @@ test('3v3 HUD matches the baseline', async ({ page }) => {
 
 async function openPausedHud(page: Page): Promise<void> {
   await page.goto('/');
+  await page.getByTestId('open-skirmish').click();
   await page.getByTestId('start-battle-3v3').click();
   await expect(page.getByTestId('hud')).toBeVisible();
   await page.waitForFunction(() => Boolean((window as unknown as { __prestes?: unknown }).__prestes));

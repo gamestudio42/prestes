@@ -1,8 +1,11 @@
-import { findPath } from '../pathfinding';
+import { deploymentSlots } from '../deploy-roster';
+import { findPath, isWalkable } from '../pathfinding';
+import { insideDeploymentArea, polygonsOverlap } from './deployment-areas';
 import { isPointBlockedByCovers } from '../world';
 import { setActiveMap } from './catalog';
 import { isDeepWater } from './runtime';
-import type { BattleMap } from './types';
+import type { CoverPoint } from '../protocol';
+import type { BattleMap, Polygon } from './types';
 
 /** Deployment zones must be at least this far apart (m). */
 export const MIN_DEPLOYMENT_GAP = 160;
@@ -60,6 +63,56 @@ export function validateBattleMap(map: BattleMap): string[] {
     if (from && to && findPath(from, to, blocking).length === 0) {
       errors.push(`${map.id}: no walkable path from column section ${index + 1} to the legalist zone`);
     }
+  }
+  return errors;
+}
+
+/** The share of a deployment area that must be walkable. */
+export const MIN_WALKABLE_AREA_SHARE = 0.5;
+/** Spacing of the sample grid for the walkable share (m). */
+const AREA_SAMPLE_STEP = 2;
+
+/** The walkable share (0-1) of an area on the active map, sampled on a 2 m grid. */
+export function walkableShare(area: Polygon, covers: readonly CoverPoint[]): number {
+  const xs = area.map((p) => p.x);
+  const ys = area.map((p) => p.y);
+  let inside = 0;
+  let walkable = 0;
+  for (let y = Math.min(...ys) + AREA_SAMPLE_STEP / 2; y < Math.max(...ys); y += AREA_SAMPLE_STEP) {
+    for (let x = Math.min(...xs) + AREA_SAMPLE_STEP / 2; x < Math.max(...xs); x += AREA_SAMPLE_STEP) {
+      if (!insideDeploymentArea(area, x, y)) continue;
+      inside += 1;
+      if (isWalkable(x, y, covers)) walkable += 1;
+    }
+  }
+  return inside === 0 ? 0 : walkable / inside;
+}
+
+/**
+ * add-deployment-phase D3: the deployment areas of a map. Each side's area
+ * holds its six deployment slots, the two areas do not overlap, and at least
+ * half of each area is walkable (sampled on a 2 m grid). Leaves `map` active.
+ */
+export function validateDeploymentAreas(map: BattleMap): string[] {
+  const errors: string[] = [];
+  setActiveMap(map);
+  for (const side of ['column', 'legalist'] as const) {
+    const area = map.deployment[side].area;
+    if (!area || area.length < 3) {
+      errors.push(`${map.id}: ${side} has no deployment area`);
+      continue;
+    }
+    for (const slot of deploymentSlots(map, side)) {
+      if (!insideDeploymentArea(area, slot.x, slot.y)) {
+        errors.push(`${map.id}: ${side} slot at (${slot.x.toFixed(1)}, ${slot.y.toFixed(1)}) lies outside its deployment area`);
+      }
+    }
+    const share = walkableShare(area, map.covers);
+    if (share < MIN_WALKABLE_AREA_SHARE) errors.push(`${map.id}: ${side} deployment area is only ${Math.round(share * 100)}% walkable`);
+  }
+  const { column, legalist } = map.deployment;
+  if (column.area?.length >= 3 && legalist.area?.length >= 3 && polygonsOverlap(column.area, legalist.area)) {
+    errors.push(`${map.id}: the column and legalist deployment areas overlap`);
   }
   return errors;
 }
