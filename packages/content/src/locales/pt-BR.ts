@@ -579,6 +579,7 @@ export const ptBR: Record<MessageKey, string> = {
   'campaign.objectives': 'Objetivos',
   'campaign.inCompendium': 'No compêndio',
   'campaign.play': 'Jogar capítulo: em preparação',
+  'campaign.playMap': 'Jogar o mapa',
   'gramophone.title': 'Gramofone',
   'gramophone.records': 'Discos',
   'gramophone.play': 'Tocar',

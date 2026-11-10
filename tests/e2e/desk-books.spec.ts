@@ -168,3 +168,36 @@ test('a locale switch keeps the same entry open', async ({ page }) => {
   await expect(page.getByTestId('codex-page')).toHaveAttribute('data-entry', 'miguel-costa');
   await expect(page.getByTestId('book-label')).toHaveText('Histórico');
 });
+
+// author-game-maps 5.3: a chapter whose mission has a map offers "Play the map".
+test('a mission with a map plays it; a chapter without one has no play action', async ({ page }) => {
+  // Fixture: the index holds a campaign map for "02 O Anel de Ferro" (the Fazenda proof, relabelled).
+  await page.route(/\/maps\/authored\/index\.ts(\?.*)?$/, async (route) => {
+    const response = await route.fetch();
+    const original = await response.text();
+    // Vite serves the generated module reformatted, so match loosely.
+    const body = original.replace(/("?id"?\s*:\s*"fazenda-doc"\s*,\s*"?use"?\s*:\s*)"test"/, '$1"campaign", mission: "anel-de-ferro"');
+    if (body === original) throw new Error(`fixture not applied: ${original.slice(0, 400)}`);
+    await route.fulfill({ response, body });
+  });
+  await openDesk(page);
+  await page.getByTestId('menu-mark-campaign').click();
+  await page.getByTestId('book-ribbon-contents').click();
+  await page.getByTestId('campaign-chapter-a-divisao').click();
+  const frame = page.getByTestId('campaign-book').locator('.desk-book-frame');
+  await frame.focus();
+  for (let i = 0; i < 10 && (await page.getByTestId('chapter-briefing').count()) === 0; i += 1) await page.keyboard.press('ArrowRight');
+  await expect(page.getByTestId('chapter-play-a-divisao')).toBeVisible();
+  await expect(page.getByTestId('chapter-play-map-a-divisao')).toHaveCount(0);
+
+  await page.getByTestId('book-ribbon-contents').click();
+  await page.getByTestId('campaign-chapter-anel-de-ferro').click();
+  await frame.focus();
+  for (let i = 0; i < 10 && (await page.getByTestId('chapter-play-map-anel-de-ferro').count()) === 0; i += 1) await page.keyboard.press('ArrowRight');
+  await expect(page.getByTestId('chapter-play-map-anel-de-ferro')).toHaveText('Play the map');
+  await page.getByTestId('chapter-play-map-anel-de-ferro').click();
+  await expect(page.getByTestId('hud')).toBeVisible();
+  await expect
+    .poll(() => page.evaluate(() => (window as unknown as { __prestes?: { frame: () => { units: unknown[] } | null } }).__prestes?.frame()?.units.length ?? 0))
+    .toBe(66);
+});

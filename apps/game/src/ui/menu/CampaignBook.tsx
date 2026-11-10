@@ -15,6 +15,7 @@ import { DESK_ART, deskArtData, deskArtStyle } from './deskArt';
 import { BookEndOrnament, BookFrame, publicImage, useBookPosition } from './BookFrame';
 import { campaignBook, folio, type BookPage, type TextItem } from './bookPages';
 import { PixelPhoto } from '../PixelPhoto';
+import { authoredMapIndex } from '@prestes/shared';
 import coverImage from '../../assets/menu/coluna-prestes.webp';
 
 export interface CampaignBookProps {
@@ -23,6 +24,8 @@ export interface CampaignBookProps {
   onStartSkirmish: () => void;
   /** Opens the compendium book at an entry. */
   onOpenEntry: (entryId: string) => void;
+  /** author-game-maps 5.3: plays the map saved for a chapter's mission. */
+  onPlayMap: (mapId: string) => void;
 }
 
 const CHAPTER = new Map(CAMPAIGN_CHAPTERS.map((chapter) => [chapter.id, chapter]));
@@ -35,7 +38,9 @@ const FIGURE = new Map(FIGURES.map((figure) => [figure.id, figure]));
  * beginning on the right), its prose, and a briefing spread. No chapter is
  * playable yet; the skirmish action brings the map fan forward instead.
  */
-export function CampaignBook({ locale, open, onStartSkirmish, onOpenEntry }: CampaignBookProps) {
+export function CampaignBook({ locale, open, onStartSkirmish, onOpenEntry, onPlayMap }: CampaignBookProps) {
+  // author-game-maps 5.3: the map saved for each mission, from the index (nothing is loaded here).
+  const missionMap = new Map(authoredMapIndex().filter((entry) => entry.use === 'campaign' && entry.mission).map((entry) => [entry.mission!, entry.id]));
   const t = (key: MessageKey, values?: Readonly<Record<string, string | number>>) =>
     translate(locale, key, values);
   const book = useMemo(() => campaignBook(locale), [locale]);
@@ -243,6 +248,11 @@ export function CampaignBook({ locale, open, onStartSkirmish, onOpenEntry }: Cam
               ))}
             </ul>
             <div className="desk-book-actions">
+              {missionMap.has(chapter.id) ? (
+                <button type="button" className="desk-entry primary" onClick={() => onPlayMap(missionMap.get(chapter.id)!)} data-testid={`chapter-play-map-${chapter.id}`}>
+                  {t('campaign.playMap')}
+                </button>
+              ) : null}
               <button
                 type="button"
                 className="desk-entry desk-entry-disabled"

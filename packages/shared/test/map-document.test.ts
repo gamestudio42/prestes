@@ -298,13 +298,13 @@ describe('document validation', () => {
     expect(problems.filter((problem) => problem.severity === 'error')).toEqual([]);
   });
 
-  it('a deployment point in a pond is reported at its spot', () => {
+  it('a section start in a pond is reported at its spot, pointing at the area (author-game-maps 8.2)', () => {
     const map = riverMap();
     map.rivers = [];
     map.ponds.push({ id: 1, kind: 'deep', polygon: [{ x: -60, y: 80 }, { x: -30, y: 80 }, { x: -30, y: 110 }, { x: -60, y: 110 }] });
     const problem = validateEditableMap(map).find((entry) => entry.code === 'section-not-walkable');
-    expect(problem?.at).toEqual({ x: -44, y: 95 });
-    expect(problem?.target).toEqual({ kind: 'section', id: 'column:0' });
+    expect(problem?.at).toEqual(compileMapDocument(toMapDocument(map)).deployment.column.sections[0]);
+    expect(problem?.target).toEqual({ kind: 'area', id: 'column' });
   });
 
   it('a campaign map needs its source note; both names are required', () => {

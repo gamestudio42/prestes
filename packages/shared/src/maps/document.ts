@@ -17,7 +17,7 @@ import { boundsForSize, MAP_SIZE_METRES, MAP_SIZES, type MapSize } from './sizes
 import { growthMask } from './growth-mask';
 import { buildTrenchLines, TRENCH, type TrenchLineDef } from './trench-lines';
 import { noteCoverPieces, type CoverPiece } from './cover-preview';
-import { defaultDeploymentArea } from './deployment-areas';
+import { defaultDeploymentArea, sectionStartsFromArea } from './deployment-areas';
 import { smoothCentreline } from './water-outline';
 import { detectWallYards, type YardWall } from './wall-yards';
 import type { Roster } from '../sections';
@@ -661,8 +661,23 @@ const textKey = (id: string, field: string): string => `map.${id}.${field}`;
  * deterministic: plain float math in a fixed order, heights rounded back to
  * whole centimetres, no RNG.
  */
+/** author-game-maps 8.1: each side faces the other's area (centre to centre). */
+function facingFromAreas(column: readonly Vec2[], legalist: readonly Vec2[]): { column: Vec2; legalist: Vec2 } {
+  const centre = (points: readonly Vec2[]) => ({
+    x: points.reduce((sum, p) => sum + p.x, 0) / Math.max(1, points.length),
+    y: points.reduce((sum, p) => sum + p.y, 0) / Math.max(1, points.length),
+  });
+  const a = centre(column);
+  const b = centre(legalist);
+  const length = Math.hypot(b.x - a.x, b.y - a.y) || 1;
+  const round = (value: number) => Math.round(value * 1000) / 1000 || 0;
+  const toward = { x: round((b.x - a.x) / length), y: round((b.y - a.y) / length) };
+  return { column: toward, legalist: { x: -toward.x || 0, y: -toward.y || 0 } };
+}
+
 export function compileMapDocument(source: EditableMap | MapDocument): BattleMap {
   const map = 'layers' in source ? fromMapDocument(source) : source;
+  const facing = facingFromAreas(map.deployment.column.area, map.deployment.legalist.area);
   const bounds = boundsForSize(map.size);
   const side = mapSide(map.size);
   const nodes = heightNodes(map.size);
@@ -993,13 +1008,15 @@ export function compileMapDocument(source: EditableMap | MapDocument): BattleMap
     sightObstacles: [],
     deployment: {
       column: {
-        sections: map.deployment.column.sections.map((p) => ({ ...p })),
-        facing: { ...map.deployment.column.facing },
+        // author-game-maps 8.1: the starts come from the area, not the document.
+        sections: sectionStartsFromArea(map.deployment.column.area, facing.column),
+        facing: facing.column,
         area: map.deployment.column.area.map((p) => ({ ...p })),
       },
       legalist: {
-        sections: map.deployment.legalist.sections.map((p) => ({ ...p })),
-        facing: { ...map.deployment.legalist.facing },
+        // author-game-maps 8.1: the starts come from the area, not the document.
+        sections: sectionStartsFromArea(map.deployment.legalist.area, facing.legalist),
+        facing: facing.legalist,
         area: map.deployment.legalist.area.map((p) => ({ ...p })),
       },
     },

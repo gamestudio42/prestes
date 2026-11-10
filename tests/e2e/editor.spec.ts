@@ -535,14 +535,15 @@ test('erase trees: the trees under the brush go, and undo brings them back', asy
   for (const tree of grove) expect(back.some((object) => object.id === tree.id)).toBe(true);
 });
 
-test('a section point drags to a new place', async ({ page }) => {
+test('the section starts follow the deployment area (author-game-maps 8.3)', async ({ page }) => {
   await openEditor(page);
-  const before = (await state(page)).sections.column[0]!;
+  const before = (await state(page)).sections.column;
   await tool(page, 'deployment');
-  await dragGround(page, before, { x: before.x, y: before.y - 20 });
-  const after = (await state(page)).sections.column[0]!;
-  expect(after.x).toBe(before.x);
-  expect(after.y).toBe(before.y - 20);
+  // Grabbing where a section point used to be now grabs the area itself.
+  await dragGround(page, before[1]!, { x: before[1]!.x, y: before[1]!.y - 20 });
+  const after = (await state(page)).sections.column;
+  expect(after).toEqual(before.map((p) => ({ x: p.x, y: p.y - 20 })));
+  expect((await state(page)).selection).toEqual([{ kind: 'area', side: 'column' }]);
 });
 
 test('shape a deployment area', async ({ page }) => {
@@ -566,7 +567,7 @@ test('shape a deployment area', async ({ page }) => {
   expect((await state(page)).selection).toEqual([{ kind: 'area', side: 'legalist', point: 2 }]);
   await page.keyboard.press('Delete');
   expect((await state(page)).areas.legalist).toHaveLength(area.length);
-  // Drag the whole legalist area onto the column's: its sections fall outside it and the areas overlap.
+  // Drag the whole legalist area onto the column's: the areas overlap (its section starts go with it).
   const { column, legalist } = (await state(page)).sections;
   const centre = (points: Point[]) => ({ x: points.reduce((sum, p) => sum + p.x, 0) / points.length, y: points.reduce((sum, p) => sum + p.y, 0) / points.length });
   const shift = { x: centre(column).x - centre(legalist).x, y: centre(column).y - centre(legalist).y };
@@ -574,10 +575,10 @@ test('shape a deployment area', async ({ page }) => {
   await dragGround(page, grab, { x: grab.x + shift.x, y: grab.y + shift.y });
   await page.getByTestId('editor-validate').click();
   await expect(page.locator('[data-code="areas-overlap"]')).toBeVisible();
-  await expect(page.locator('[data-code="section-outside-area"]')).toHaveCount(3);
+  await expect(page.locator('[data-code="section-outside-area"]')).toHaveCount(0);
 });
 
-test('a section in a pond is a problem; choosing it selects the section', async ({ page }) => {
+test('a section start in a pond is a problem; choosing it selects the area', async ({ page }) => {
   await openEditor(page);
   const section = (await state(page)).sections.legalist[1]!;
   await tool(page, 'pond');
@@ -590,7 +591,7 @@ test('a section in a pond is a problem; choosing it selects the section', async 
   await problem.locator('button').click();
   const current = await state(page);
   expect(current.tool).toBe('deployment');
-  expect(current.selection).toEqual([{ kind: 'section', side: 'legalist', index: 1 }]);
+  expect(current.selection).toEqual([{ kind: 'area', side: 'legalist' }]);
 });
 
 test('export and import round-trip the map; a bad file leaves it unchanged', async ({ page }, testInfo) => {

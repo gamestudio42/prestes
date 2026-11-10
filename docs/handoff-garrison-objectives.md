@@ -4,78 +4,64 @@ Written 2026-11-09 so any agent (or another AI model) can pick the work up
 cold. Keep this file current as tasks close; delete it once
 `add-map-objectives` is archived. The older sections below are history.
 
-## Session 2026-11-10 (Opus, stopped to save tokens)
+## START HERE (updated 2026-11-10, end of the Opus session)
 
-Done and marked: **2.2** (sandboxMaps + skirmish-catalog.test.ts + sandbox
-e2e), **3.2** (determinism on the test map, golden `reason`), **4.3**
-(editor e2e "time of day"; fix: replaceBattleMap re-aims the sun).
-author-game-maps is now 13/31.
+- Branch `refine-battle-maps`. Last commit `fd19887` holds everything up to
+  task 5.2. **Uncommitted:** section 8 (section starts from the deployment
+  area; see below). Commit only when the user asks; never push, merge,
+  rebase or force-push. The project stays local (no remote, no Pages).
+- Reply to the user in PT-BR; code, docs, specs and commits in English.
+- Another session (the HUD work) edits files in this tree at the same time
+  (`scene-view.ts`, `editor.spec.ts`, `map-document.test.ts` changed on disk
+  mid-session). Read a file right before editing it; never revert foreign
+  changes.
+- Mute the game sound before using the preview pane (`prestes.audio.v1`).
+  Do not paint in the editor inside the shared preview pane (its autosave
+  overwrites the user's map); verify editor work with Playwright.
 
-Open, in this order:
-1. **3.4 done** after the user chose a 4.5 ms test-map budget
-   (`TEST_MAP_BUDGET_MS` in tools/sim-bench.ts). author-game-maps 14/31.
-Later on 2026-11-10: **5.1** done (screenshots shared), **5.2** done
-(desk e2e with a routed empty index). author-game-maps 16/31. Next: 3.3,
-3.5, 3.6, 5.3, section 7, 6.x.
+### author-game-maps: 23/36 done
 
-2. (done) **5.1** only lacks the screenshots of the test map in the battle view at
-   7 h and 17 h (set `light` in a copy of the document or use the editor's
-   3D view on campo-de-provas through Playwright, never the shared pane).
-3. (done) **5.2** e2e (empty sheet needs an index with no skirmish map: route or
-   stub `AUTHORED_MAP_INDEX`; a fixture map deploys).
-4. Then 3.3, 3.5 (visual baselines, coordinate with the HUD session), 3.6,
-   5.3, section 7 (bridges), 6.x.
+Done on 2026-11-10: 2.2 (sandboxMaps; catalog test), 3.2 (determinism on
+the test map, golden `reason`), 3.4 (bench on the test map; the user chose a
+4.5 ms test-map budget), 4.3 (light e2e; undo re-aims the sun), 5.1 (light
+tests and screenshots shown), 5.2 (desk e2e with a routed empty index), and
+section 8 (8.1-8.5): the compiler derives each side's three section starts
+and facing from its deployment area (`sectionStartsFromArea` in
+`packages/shared/src/maps/deployment-areas.ts`, `facingFromAreas` in
+`document.ts`); stored section points are ignored; the editor shows only the
+areas; map problems about starts select the side's area. The rule (middle of
+the depth, 1/5-1/2-4/5, rounded, west to east) reproduces the test map's
+old points, so its hashes did not change.
 
-Another session edits files in this tree at the same time (scene-view.ts,
-editor.spec.ts changed on disk mid-session); read before editing.
+Open, recommended order (each has a Status/Apply note in tasks.md):
+1. (done) **3.3 battle-report** on the test map; the gun bands hold only in
+   battles of 600 s or more (user decision).
+2. (done) **5.3 campaign book "Play the map"**. Its e2e fixture relabels
+   `fazenda-doc`; switch it to `campo-de-provas` when 3.6 removes fazenda-doc.
+3. **3.6 remove the old maps** (NEXT; the full file inventory and a 6-step
+   plan are in the task's Status note in tasks.md; do it in one sitting so
+   the tree never stays broken) (`vila-militar`, `fazenda`, `serra-rio`,
+   `bairro`, `fazenda-doc.map.json`); worker bundle back under 200,000 B.
+   Then drop `fazenda-doc` from the goldens (`--update --reason`).
+4. **3.5 visual baselines**: visual.spec has failing baselines; re-record
+   only in coordination with the HUD session
+   (`local_ab470961-e164-4068-8fef-5d9a7672a40b`), or ask the user.
+5. **Section 7 bridges** (7.1 repro first, screenshots before/after to the
+   user).
+6. **6.0 spec scenarios naming removed maps, 6.1 docs, 6.2 gates
+   (`pnpm verify`, `pnpm e2e`, `openspec validate author-game-maps
+   --strict`), 6.3 and 5.4 user hand checks** (mark only after the user
+   confirms).
 
-## Where things stand (updated 2026-11-09, end of session)
+Known flake: `packages/simulation/test/deployment-orders.test.ts` "replay a
+deployment" can fail in the full parallel vitest run and passes alone.
 
-- Branch `refine-battle-maps`. **Nothing committed since `7dc9098`**; all work
-  is in the working tree. Commit only when the user asks. Never push,
-  merge, rebase or force-push (CLAUDE.md). The project stays local: no
-  remote, no Pages.
-- garrison-and-assault and add-run-toggle are archived. Active changes
-  (`npx openspec list`): **author-game-maps 10/25 (current)**,
-  add-map-objectives 0/17 (to be reworked next, after author-game-maps),
-  machine-gun-fire-feedback 12/13 and polish-menu-desk 30/34 (other
-  sessions), video-tutorial-manual 0/19, retire-bootcamp complete
-  (not archived).
-- **The user is authoring maps in the editor right now** and asks for
-  editor/look fixes as they find them. Treat those requests as first
-  priority, then return to the tasks. Record each in author-game-maps
-  `design.md` "## Apply findings".
-- Do not paint or edit in the editor inside the shared preview pane: the
-  editor autosaves to IndexedDB (shared across tabs) and would overwrite the
-  user's map. Verify editor changes with Playwright (isolated context).
-
-### author-game-maps: next steps, in order
-
-Every open task in `openspec/changes/author-game-maps/tasks.md` has a
-"Status" sub-bullet saying what is built and what is missing. Short version:
-
-1. **4.3 / 5.1 (lighting), implemented, needs tests:** editor e2e for the
-   sliders (`map-light`, `map-light-time`, `map-light-bearing`) plus undo; a
-   view test (sun at 17 h from the west lights west faces more than
-   midday); a simulation same-hash test for two lights; screenshots at 7 h
-   and 17 h shown to the user. Then mark both.
-2. **5.2 (desk fan), implemented:** add the e2e from its verify, then mark.
-3. **5.4 (thumbnail), implemented and tested:** mark after the user's hand check.
-4. **3.5 (e2e on the test map), mostly done:** visual.spec has 4 failing
-   baselines and the editor pixel-art screenshot changed (the toolbar grew).
-   The HUD session `local_ab470961-e164-4068-8fef-5d9a7672a40b` ("Battle
-   HUD") waits for a go-ahead before re-recording the visual baselines;
-   message it before and after every Playwright run. If you cannot
-   message sessions, ask the user to coordinate.
-5. **Section 7, bridges (new, asked by the user with a screenshot):** the
-   bridge reads as an embankment. Tasks 7.1 to 7.6 hold the causes found in
-   code. Start with 7.1 (repro on the test map) and show the user
-   screenshots before and after.
-6. **2.2:** the catalog unit test by build flag, then mark.
-7. **3.2** determinism goldens, **3.3** battle-report, **3.4** bench,
-   **3.6** remove the four old maps, **5.3** campaign "Play the map",
-   **6.0** spec scenarios naming removed maps, **6.1** docs, **6.2** gates,
-   **6.3** user hand check.
+Other changes: machine-gun-fire-feedback 12/13 (only gates + the user's hand
+check), polish-menu-desk 30/35 (Aseprite sprites, needs the user's
+Aseprite window; new task 6.6: the user finds the open book look still bad,
+start with screenshots of both open books and review them with the user), retire-bootcamp complete (archive it when asked),
+add-map-objectives 0/17 and video-tutorial-manual 0/19 (after
+author-game-maps).
 
 ### Built this session outside the task list (all asked by the user while authoring)
 

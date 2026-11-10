@@ -170,10 +170,11 @@ export function validateEditableMap(map: EditableMap): MapProblem[] {
   }
 
   for (const side of ['column', 'legalist'] as const) {
-    const zone = map.deployment[side];
+    // author-game-maps 8.2: the compiled starts, derived from the area.
+    const zone = compiled.deployment[side];
     if (zone.sections.length !== 3) add({ code: 'section-count', severity: 'error', params: { side, count: zone.sections.length } });
     zone.sections.forEach((start, index) => {
-      const target = { kind: 'section' as const, id: `${side}:${index}` };
+      const target = { kind: 'area' as const, id: side };
       let reported = false;
       for (const [dx, dy] of [
         [0, 0],
@@ -197,10 +198,10 @@ export function validateEditableMap(map: EditableMap): MapProblem[] {
   }
   // add-deployment-phase 1.2: each section point inside its side's area, the areas apart and half walkable.
   for (const side of ['column', 'legalist'] as const) {
-    const zone = map.deployment[side];
+    const zone = compiled.deployment[side];
     zone.sections.forEach((start, index) => {
       if (!insideDeploymentArea(zone.area, start.x, start.y)) {
-        add({ code: 'section-outside-area', severity: 'error', params: { side, section: index + 1 }, at: start, target: { kind: 'section', id: `${side}:${index}` } });
+        add({ code: 'section-outside-area', severity: 'error', params: { side, section: index + 1 }, at: start, target: { kind: 'area', id: side } });
       }
     });
     const share = zone.area.length >= 3 ? walkableShare(zone.area, compiled.covers) : 0;
@@ -211,15 +212,15 @@ export function validateEditableMap(map: EditableMap): MapProblem[] {
   if (polygonsOverlap(map.deployment.column.area, map.deployment.legalist.area)) {
     add({ code: 'areas-overlap', severity: 'error', params: {}, at: centroid(map.deployment.column.area), target: { kind: 'area', id: 'column' } });
   }
-  const column = centroid(map.deployment.column.sections);
-  const legalist = centroid(map.deployment.legalist.sections);
+  const column = centroid(compiled.deployment.column.sections);
+  const legalist = centroid(compiled.deployment.legalist.sections);
   const gap = Math.hypot(column.x - legalist.x, column.y - legalist.y);
   if (gap < MIN_DEPLOYMENT_GAP) add({ code: 'zones-too-close', severity: 'error', params: { metres: Math.round(gap), minimum: MIN_DEPLOYMENT_GAP }, at: column });
   for (let index = 0; index < 3; index += 1) {
-    const from = map.deployment.column.sections[index];
-    const to = map.deployment.legalist.sections[index];
+    const from = compiled.deployment.column.sections[index];
+    const to = compiled.deployment.legalist.sections[index];
     if (from && to && findPath(from, to, compiled.covers).length === 0) {
-      add({ code: 'no-path', severity: 'error', params: { section: index + 1 }, at: from, target: { kind: 'section', id: `column:${index}` } });
+      add({ code: 'no-path', severity: 'error', params: { section: index + 1 }, at: from, target: { kind: 'area', id: 'column' } });
     }
   }
   const coverGap = longestCoverGap(compiled, column, legalist);

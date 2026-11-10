@@ -755,15 +755,9 @@ export class EditorViewport {
             }
             break;
           }
-          case 'section': {
-            const point = draft.deployment[item.side].sections[item.index];
-            if (point) {
-              point.x = round(point.x + dx);
-              point.y = round(point.y + dy);
-            }
-            faceEachOther(draft);
+          case 'section':
+            // author-game-maps 8.3: section starts follow the area; nothing to move.
             break;
-          }
           case 'bridge': {
             const bridge = draft.bridges.find((entry) => entry.id === item.id);
             if (bridge) {
@@ -854,10 +848,6 @@ export class EditorViewport {
   private hitTest(point: Vec2, sectionsOnly: boolean): SelectionItem | null {
     const map = this.store.map;
     const pick = this.pick;
-    for (const side of ['column', 'legalist'] as const) {
-      const index = map.deployment[side].sections.findIndex((section) => Math.hypot(section.x - point.x, section.y - point.y) <= Math.max(pick, 3));
-      if (index >= 0) return { kind: 'section', side, index };
-    }
     if (sectionsOnly) {
       // add-deployment-phase 1.2: the deployment tool also takes the areas' corners, then their edges and insides.
       for (const side of ['column', 'legalist'] as const) {
@@ -1092,7 +1082,7 @@ export class EditorViewport {
       const scale = object.scale ?? 1;
       this.overlay.add(this.line(rectangle(object.x, object.y, Math.max(0.4, entry.halfWidth * scale), Math.max(0.4, entry.halfDepth * scale), object.rotation), COLORS.selection, true));
     }
-    // Deployment: each side's area (corners shown with the deployment tool), section points and facing.
+    // Deployment: each side's area (corners shown with the deployment tool); the section starts follow it (author-game-maps 8.3).
     for (const side of ['column', 'legalist'] as const) {
       const zone = map.deployment[side];
       const areaSelected = selected({ kind: 'area', side });
@@ -1102,13 +1092,6 @@ export class EditorViewport {
           this.overlay.add(this.marker(corner, areaSelected || selected({ kind: 'area', side, point }) ? COLORS.selection : COLORS[side], pick * 0.6));
         });
       }
-      zone.sections.forEach((section, index) => {
-        const isSelected = selected({ kind: 'section', side, index });
-        this.overlay.add(this.ring(section, 3, isSelected ? COLORS.selection : COLORS[side]));
-        this.overlay.add(this.line([section, { x: section.x + zone.facing.x * 8, y: section.y + zone.facing.y * 8 }], COLORS[side]));
-        // The section's two ranks of six.
-        this.overlay.add(this.line(rectangle(section.x, section.y + 1.4, 7, 1.4), COLORS[side], true, 0.2));
-      });
     }
     this.drawCoverHover();
     // Drafts and the cursor.
@@ -1247,18 +1230,4 @@ function insideBridge(bridge: DocBridge, point: Vec2): boolean {
 }
 
 /** Each side faces the other's centre. */
-function faceEachOther(map: EditableMap): void {
-  const centre = (points: readonly Vec2[]) => ({
-    x: points.reduce((sum, p) => sum + p.x, 0) / Math.max(1, points.length),
-    y: points.reduce((sum, p) => sum + p.y, 0) / Math.max(1, points.length),
-  });
-  const column = centre(map.deployment.column.sections);
-  const legalist = centre(map.deployment.legalist.sections);
-  const dx = legalist.x - column.x;
-  const dy = legalist.y - column.y;
-  const length = Math.hypot(dx, dy) || 1;
-  map.deployment.column.facing = { x: Math.round((dx / length) * 1000) / 1000, y: Math.round((dy / length) * 1000) / 1000 };
-  map.deployment.legalist.facing = { x: -map.deployment.column.facing.x, y: -map.deployment.column.facing.y };
-}
-
 export { layerOf };

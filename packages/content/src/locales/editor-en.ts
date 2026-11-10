@@ -122,7 +122,7 @@ export const editorEn = {
   'editor.tool.hint.polyline': 'Click to add points, Enter or double-click to finish, Esc to cancel.',
   'editor.tool.hint.place': 'Click to place. R rotates, Esc cancels.',
   'editor.tool.hint.select': 'Click an object or point; drag to move. Shift+drag selects a box. Del deletes, Ctrl+D duplicates.',
-  'editor.tool.hint.deployment': 'Drag a section point to move it. Drag a corner of a deployment area to shape it, double-click its edge to add a corner, Delete removes the selected corner.',
+  'editor.tool.hint.deployment': 'The sections start inside the area, set back from its front edge. Drag a corner of a deployment area to shape it, double-click its edge to add a corner, Delete removes the selected corner.',
   'editor.tool.hint.trench': 'Click to add points, Enter or double-click to finish. X flips the parapet side; ticks show it.',
   'editor.prop.trenchKind': 'Trench',
   'editor.prop.trenchDepth': 'Depth',

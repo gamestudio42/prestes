@@ -73,8 +73,9 @@ export function editorBridge(store: EditorStore, viewport: () => EditorViewport 
       bridges: store.map.bridges.length,
       trenches: store.map.trenches.map(({ id, kind, facing, points }) => ({ id, kind, facing, length: trenchLength(points) })),
       sections: {
-        column: store.map.deployment.column.sections.map(({ x, y }) => ({ x, y })),
-        legalist: store.map.deployment.legalist.sections.map(({ x, y }) => ({ x, y })),
+        // author-game-maps 8.3: the compiled starts, derived from the areas.
+        column: store.compiled.deployment.column.sections.map(({ x, y }) => ({ x, y })),
+        legalist: store.compiled.deployment.legalist.sections.map(({ x, y }) => ({ x, y })),
       },
       areas: {
         column: store.map.deployment.column.area.map(({ x, y }) => ({ x, y })),

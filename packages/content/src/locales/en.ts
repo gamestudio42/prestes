@@ -578,6 +578,7 @@ export const en = {
   'campaign.objectives': 'Objectives',
   'campaign.inCompendium': 'In the compendium',
   'campaign.play': 'Play chapter: in preparation',
+  'campaign.playMap': 'Play the map',
   'gramophone.title': 'Gramophone',
   'gramophone.records': 'Records',
   'gramophone.play': 'Play',

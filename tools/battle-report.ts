@@ -1,5 +1,5 @@
 import { fileURLToPath } from 'node:url';
-import { battleMap, battleMaps, type BattleMap, type BattleMapId, type BattleRosters, type Frame, type Roster, type UnitSnapshot, type WeaponId, getWeapon } from '../packages/shared/src';
+import { battleMap, DEFAULT_BATTLE_MAP, hasBattleMap, loadAuthoredMap, type BattleMap, type BattleMapId, type BattleRosters, type Frame, type Roster, type UnitSnapshot, type WeaponId, getWeapon } from '../packages/shared/src';
 import { SimulationEngine } from '../packages/simulation/src/engine';
 import { visible } from '../packages/simulation/src/systems/combat';
 
@@ -153,11 +153,14 @@ const YIELD_EVERY = 500;
 export async function battleReport(
   seed = 1922,
   maxSeconds = 900,
-  mapId: BattleMapId = 'vila-militar',
+  mapId: BattleMapId = DEFAULT_BATTLE_MAP,
   rosters?: BattleRosters,
   /** add-deployment-phase 4.1: the enemy places itself on the map's cover before the battle. */
   enemyDeployment = false,
 ): Promise<BattleReport> {
+  // author-game-maps 3.3: any authored map loads on demand (the test map by default).
+  if (!hasBattleMap(mapId)) throw new Error(`unknown battle map ${mapId}`);
+  await loadAuthoredMap(mapId);
   const map = battleMap(mapId);
   const engine = new SimulationEngine({ seed, scenario: 'battle3v3', sandbox: true, battleMap: mapId, rosters, enemyDeployment });
   let frame = engine.frame();
@@ -307,10 +310,16 @@ function gunFire(report: BattleReport): string {
   return fire ? `${fire.rounds}/${fire.bursts}/${fire.hits}` : '-';
 }
 
-async function presetTable(): Promise<void> {
+/** author-game-maps 3.3: the tables run on the test map, or on the map `--map` names. */
+async function reportMaps(id: BattleMapId): Promise<BattleMap[]> {
+  await loadAuthoredMap(id);
+  return [battleMap(id)];
+}
+
+async function presetTable(id: BattleMapId): Promise<void> {
   console.log('| Map | Enemy | Player | Seed | Time (s) | Outcome | Cas. col/leg | Shots/cas. | Max shots/tick | Silence (s) | Bunching | MG rounds/bursts/hits | Gun set | Bands |');
   console.log('| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |');
-  for (const map of battleMaps()) {
+  for (const map of await reportMaps(id)) {
     for (const [index, enemy] of (map.enemyForces ?? []).entries()) {
       for (const [name, player] of [['default', DEFAULT_PLAYER], ['mixed', MIXED_PLAYER]] as const) {
         for (const seed of PRESET_SEEDS) {
@@ -326,10 +335,10 @@ async function presetTable(): Promise<void> {
 }
 
 /** add-deployment-phase 4.1: every map, three seeds, the enemy where it starts and deployed on cover. */
-async function deploymentTable(): Promise<void> {
+async function deploymentTable(id: BattleMapId): Promise<void> {
   console.log('| Map | Enemy deployed | Seed | Time (s) | Outcome | Cas. col/leg | Shots/cas. | Max shots/tick | Silence (s) | Bunching | Bands |');
   console.log('| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |');
-  for (const map of battleMaps()) {
+  for (const map of await reportMaps(id)) {
     for (const deployed of [false, true]) {
       for (const seed of PRESET_SEEDS) {
         const r = await battleReport(seed, 900, map.id, undefined, deployed);
@@ -342,10 +351,10 @@ async function deploymentTable(): Promise<void> {
 }
 
 /** garrison-and-assault 3.4 / 5.1: every map, three seeds: who went in, and the assaults. */
-async function garrisonTable(): Promise<void> {
+async function garrisonTable(id: BattleMapId): Promise<void> {
   console.log('| Map | Seed | Time (s) | Outcome | Cas. col/leg | Entered col/leg | Assaults | Won col/leg | Bands |');
   console.log('| --- | --- | --- | --- | --- | --- | --- | --- | --- |');
-  for (const map of battleMaps()) {
+  for (const map of await reportMaps(id)) {
     for (const seed of PRESET_SEEDS) {
       const r = await battleReport(seed, 900, map.id);
       const g = r.garrison;
@@ -357,22 +366,22 @@ async function garrisonTable(): Promise<void> {
 }
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
-  // pnpm battle:report [--map fazenda] [seed ...] | pnpm battle:report --presets | pnpm battle:report --deployment
+  // pnpm battle:report [--map <id>] [seed ...] | --presets | --deployment | --garrisons (each with an optional --map)
   const args = process.argv.slice(2);
+  const mapAt = args.indexOf('--map');
+  const map = (mapAt >= 0 ? args[mapAt + 1] : DEFAULT_BATTLE_MAP) as BattleMapId;
   if (args.includes('--garrisons')) {
-    await garrisonTable();
+    await garrisonTable(map);
     process.exit(0);
   }
   if (args.includes('--deployment')) {
-    await deploymentTable();
+    await deploymentTable(map);
     process.exit(0);
   }
   if (args.includes('--presets')) {
-    await presetTable();
+    await presetTable(map);
     process.exit(0);
   }
-  const mapAt = args.indexOf('--map');
-  const map = (mapAt >= 0 ? args[mapAt + 1] : 'vila-militar') as BattleMapId;
   const seeds = args.filter((_, index) => index !== mapAt && index !== mapAt + 1).map(Number).filter((value) => Number.isFinite(value));
   for (const seed of seeds.length > 0 ? seeds : [1922]) {
     console.log(JSON.stringify({ map, ...(await battleReport(seed, 900, map)) }));

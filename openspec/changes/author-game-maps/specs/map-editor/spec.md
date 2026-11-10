@@ -68,3 +68,36 @@ action.
 #### Scenario: Not in the published build
 - **WHEN** the editor runs from the published build
 - **THEN** "save to project" is not shown and export is offered instead
+
+### Requirement: Gameplay layers
+
+The editor SHALL place both sides' deployment areas (a polygon per side,
+named column and legalist) and SHALL show them labelled. A new map SHALL
+start with a default area for each side; the author SHALL move, insert and
+delete the area's corners and move a whole area. The editor SHALL NOT show
+or edit section points: each side's three section starts and its facing
+SHALL be derived from the areas when the map is compiled (the starts on the
+line across the middle of the area's depth, at 1/5, 1/2 and 4/5 of its
+width, rounded to the metre; each side facing the other's area). The map
+check SHALL report as errors a derived start that is not walkable or out of
+bounds, areas that overlap, and an area with less than half its surface
+walkable; these problems SHALL select the side's area when clicked. When the
+map objectives capability is present, the editor SHALL also place
+objectives with their area, flag point, value, initial owner and localized
+name. Labels SHALL be localized in EN and PT-BR.
+
+#### Scenario: Move a deployment point
+- **WHEN** the author drags the column's area 20 m north (section points are no longer moved on their own)
+- **THEN** the column's three section starts move 20 m north with it and the playtest starts the sections there
+
+#### Scenario: Shape a deployment area
+- **WHEN** the author drags a corner of the legalist area
+- **THEN** the area follows and the playtest's deployment phase refuses positions outside the new shape
+
+#### Scenario: Point outside its area
+- **WHEN** a pond covers a derived legalist section start and the map is checked (a derived start is always inside its area)
+- **THEN** the check reports an error that selects the legalist area when clicked
+
+#### Scenario: Stored points are ignored
+- **WHEN** a map document still carries hand-placed section points
+- **THEN** the compiled map uses the starts derived from its areas

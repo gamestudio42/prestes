@@ -277,6 +277,12 @@ export function App() {
   // The setup's forces go with its map; the editor's playtest map fields the default.
   const handleStartBattle3v3 = (): void => startBattle(battleMapId, battleMapId === setup.map ? battleRosters(setup) : undefined);
 
+  // author-game-maps 5.3: a campaign chapter's map plays the 3 vs 3 with the default forces.
+  const handlePlayMap = (map: BattleMapId): void => {
+    setBattleMapId(map);
+    startBattle(map);
+  };
+
   const startBattle = (map: BattleMapId, rosters?: BattleRosters): void => {
     // An authored map not fetched yet: fetch it, then start (the document goes to the worker with the start).
     if (playtestRef.current?.id !== map && !documentsRef.current.has(map) && authoredMapIndex().some((entry) => entry.id === map)) {
@@ -425,6 +431,7 @@ export function App() {
           onLocaleChange={handleLocaleChange}
           audioMuted={audioMuted}
           onStartBattle3v3={handleStartBattle3v3}
+          onPlayMap={handlePlayMap}
           setup={setup}
           onSetupChange={changeSetup}
           onToggleAudio={handleToggleAudio}

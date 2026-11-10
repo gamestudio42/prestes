@@ -46,6 +46,7 @@
 - [x] 6.3 Rebuild `CompendiumBook.tsx` on the page model: contents spread, entry spreads with plate or emblem, label, date and place, body, note, sources with confidence, and related-entry links; verify e2e that the Miguel Costa entry shows his portrait, credit and label, and an entry without an image shows the emblem.
 - [x] 6.4 Rebuild `CampaignBook.tsx` on the page model: title, contents, chapter opening, prose and briefing spreads, a disabled "in preparation" play action, the skirmish action, and compendium links that open the compendium at the entry; verify e2e that chapter 3 shows Miguel Costa as commander and its link opens the compendium entry.
 - [x] 6.5 Add an e2e overflow check over every spread of both books at 1440 x 900 and 1280 x 720 in EN and PT-BR; verify no page content overflows and no page has a scroll bar.
+- [ ] 6.6 Rework the open book look (asked by the user, 2026-11-10: "o visual do livro aberto ainda está ruim"): first screenshot both open books (campaign title, contents, a chapter opening, prose and briefing; compendium contents and an entry) at 1440 x 900 and 1280 x 720 and review them with the user to list what reads badly (frame, paper, margins, type, plate, page edges, the spine); then fix those points in `BookFrame.tsx`, the book CSS and the frame art, keeping the 2x desk standard; verify the user approves before/after screenshots, the overflow e2e (6.5) passes, and the desk book baselines are refreshed after review.
 
 ## 7. Verification
 

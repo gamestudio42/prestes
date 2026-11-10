@@ -4,10 +4,10 @@
   "hash": "eaeae59f",
   "battleMaps": {
     "campo-de-provas": "1b9f568f",
-    "fazenda-doc": "43006b86"
+    "fazenda-doc": "62fab20d"
   },
   "mixedRosters": {
     "campo-de-provas": "de6f9b99"
   },
-  "reason": "maps moved to the test map"
+  "reason": "section starts derived from the deployment area (fazenda-doc only; the test map keeps its starts)"
 }

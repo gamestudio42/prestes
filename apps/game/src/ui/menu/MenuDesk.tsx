@@ -42,6 +42,8 @@ export interface MenuDeskProps {
   battleMap: BattleMapId;
   /** pre-battle-roster 5.1: the desk's map opens the skirmish setup screen. */
   onOpenSetup: (map: BattleMapId) => void;
+  /** author-game-maps 5.3: plays a campaign chapter's map. */
+  onPlayMap: (map: BattleMapId) => void;
   /** author-game-maps 5.2: the skirmish maps on the desk. */
   maps: readonly BattleMap[];
   onSelectMap: (map: BattleMapId) => void;
@@ -69,6 +71,7 @@ export function MenuDesk({
   onLocaleChange,
   battleMap,
   onOpenSetup,
+  onPlayMap,
   maps,
   onSelectMap,
   onToggleAudio,
@@ -217,6 +220,7 @@ export function MenuDesk({
           open={open.has('campaign')}
           onStartSkirmish={openMaps}
           onOpenEntry={openEntry}
+          onPlayMap={onPlayMap}
         />
       </DeskObject>
 

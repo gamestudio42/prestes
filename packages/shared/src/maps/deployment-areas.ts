@@ -96,3 +96,44 @@ export function polygonArea(polygon: Polygon): number {
 export function insideDeploymentArea(area: Polygon, x: number, y: number): boolean {
   return area.length >= 3 && pointInPolygon(x, y, area);
 }
+
+/**
+ * author-game-maps 8.1: a side's three section starts, derived from its
+ * deployment area. They stand on the line across the middle of the area's
+ * depth (along `facing`), at 1/5, 1/2 and 4/5 of the area's width on that
+ * line, rounded to the metre and ordered west to east (then north to south),
+ * the convention the hand-placed points followed.
+ */
+export function sectionStartsFromArea(area: Polygon, facing: Vec2): Vec2[] {
+  if (area.length < 3) return [];
+  const length = Math.hypot(facing.x, facing.y) || 1;
+  const f = { x: facing.x / length, y: facing.y / length };
+  const l = { x: -f.y, y: f.x };
+  const depthOf = (p: Vec2) => p.x * f.x + p.y * f.y;
+  const sideOf = (p: Vec2) => p.x * l.x + p.y * l.y;
+  const depths = area.map(depthOf);
+  const front = Math.max(...depths);
+  const back = Math.min(...depths);
+  const line = (front + back) / 2;
+  // Where the line crosses the area's edges.
+  const crossings: number[] = [];
+  for (let index = 0; index < area.length; index += 1) {
+    const a = area[index]!;
+    const b = area[(index + 1) % area.length]!;
+    const da = depthOf(a) - line;
+    const db = depthOf(b) - line;
+    if ((da <= 0 && db > 0) || (da > 0 && db <= 0)) {
+      const t = da / (da - db);
+      crossings.push(sideOf(a) + (sideOf(b) - sideOf(a)) * t);
+    }
+  }
+  const sides = crossings.length >= 2 ? crossings : area.map(sideOf);
+  const from = Math.min(...sides);
+  const to = Math.max(...sides);
+  return [1 / 5, 1 / 2, 4 / 5]
+    .map((share) => {
+      const s = from + (to - from) * share;
+      return { x: Math.round(f.x * line + l.x * s) || 0, y: Math.round(f.y * line + l.y * s) || 0 };
+    })
+    .sort((a, b) => a.x - b.x || a.y - b.y);
+}

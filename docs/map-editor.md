@@ -61,12 +61,18 @@ menu desk, choose the theodolite (**Map editor**); or start the dev server
 | Place object | buildings, stones, trees and plants, posts, covers, props, ground decals | O; R rotates (Shift+R back) |
 | Trees | scatter a biome's mix at a density, place one species, or erase trees under the brush | Y; [ ] size |
 | Vegetation | corn, sugarcane, capim, scrub (they conceal men inside) | P |
-| Deployment | drag each side's three section points; drag an area's corners, or the whole area from inside; double-click an edge to add a corner | K; Del removes the selected corner (three stay) |
+| Deployment | drag an area's corners, or the whole area from inside; double-click an edge to add a corner | K; Del removes the selected corner (three stay) |
 
 **Deployment areas** (document version 3): each side has one area, a
 polygon where its men may be placed before the battle. Older documents open
 with a default area: the side's half of the map, cut a margin short of the
 middle. Areas are drawn in the side's colour.
+
+The sections' starting points are not edited: the game derives each side's
+three starts from its area (on the line across the middle of its depth, at
+1/5, 1/2 and 4/5 of its width) and faces each side toward the other's area.
+To move where the sections start, move or reshape the area. Section points
+still stored in older documents are ignored.
 
 **Roads** paint their surface and leave the ground as you shaped it; shape
 the relief first with the terrain tools. A road's ditches still dig their

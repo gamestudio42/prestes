@@ -18,6 +18,8 @@ export interface StartScreenDeskProps {
   audioMuted: boolean;
   onLocaleChange: (locale: Locale) => void;
   onStartBattle3v3: () => void;
+  /** author-game-maps 5.3: plays a campaign chapter's map. */
+  onPlayMap: (map: string) => void;
   /** pre-battle-roster 5.1: the skirmish setup the desk's map opens. */
   setup: Setup;
   onSetupChange: (setup: Setup) => void;
@@ -33,6 +35,7 @@ export function StartScreenDesk({
   audioMuted,
   onLocaleChange,
   onStartBattle3v3,
+  onPlayMap,
   setup,
   onSetupChange,
   onToggleAudio,
@@ -85,6 +88,7 @@ export function StartScreenDesk({
           setSetupOpen(true);
         }}
         onToggleAudio={onToggleAudio}
+        onPlayMap={onPlayMap}
         gramophone={gramophone}
       />
       {setupOpen && maps.length > 0 ? (

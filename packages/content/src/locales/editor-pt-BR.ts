@@ -124,7 +124,7 @@ export const editorPtBR: Record<keyof typeof editorEn, string> = {
   'editor.tool.hint.polyline': 'Clique para pôr pontos, Enter ou duplo clique termina, Esc cancela.',
   'editor.tool.hint.place': 'Clique para colocar. R gira, Esc cancela.',
   'editor.tool.hint.select': 'Clique num objeto ou ponto; arraste para mover. Shift+arrastar seleciona uma área. Del apaga, Ctrl+D duplica.',
-  'editor.tool.hint.deployment': 'Arraste o ponto de uma seção para movê-la. Arraste um canto da área de desdobramento para moldá-la, clique duas vezes na borda para criar um canto; Delete apaga o canto selecionado.',
+  'editor.tool.hint.deployment': 'As seções começam dentro da área, um pouco atrás da borda da frente. Arraste um canto da área de desdobramento para moldá-la, clique duas vezes na borda para criar um canto; Delete apaga o canto selecionado.',
   'editor.tool.hint.trench': 'Clique para pôr pontos, Enter ou duplo clique para terminar. X troca o lado do parapeito; os traços o mostram.',
   'editor.prop.trenchKind': 'Trincheira',
   'editor.prop.trenchDepth': 'Profundidade',
