@@ -1,5 +1,5 @@
 import { Eye, EyeOff, Crate as Box, Crosshair, Restart as RotateCcw, Step as StepForward, Troop as Users, Lab as FlaskConical, Close as X } from './icons';
-import { SECTION_TYPE_IDS, SECTION_TYPES, battleMaps, terrainHeightAt, terrainSpeedFactor, type BattleMapId, type Frame, type SectionTypeId } from '@prestes/shared';
+import { SECTION_TYPE_IDS, SECTION_TYPES, sandboxMaps, terrainHeightAt, terrainSpeedFactor, type BattleMapId, type Frame, type SectionTypeId } from '@prestes/shared';
 import { translate, type Locale, type MessageKey } from '@prestes/content';
 
 export type SandboxTool =
@@ -291,7 +291,7 @@ export function SandboxPanel({
             onChange={(event) => onBattleMapChange(event.target.value as BattleMapId)}
             data-testid="sandbox-battle-map"
           >
-            {battleMaps().map((map) => (
+            {sandboxMaps().map((map) => (
               <option key={map.id} value={map.id}>
                 {t(map.nameKey as MessageKey)}
               </option>

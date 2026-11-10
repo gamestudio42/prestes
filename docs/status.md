@@ -14,7 +14,7 @@ relief alone) and the request for a deployment phase.
 | 1 | `refine-map-editor` | archived 2026-11-09 (specs synced to `battle-maps` and `map-editor`) | plants as plants on every map, vegetation only on land, bridges on their abutments, smooth edges (smoothed rivers, dithered borders, MSAA option), roads that paint without touching the relief, trees tool and tree models, trench lines drawn like roads (any length, fire or communication), the cover overlay; map document v2 |
 | 2 | `refine-battle-maps` | archived 2026-11-08 | battles that end, 3 ms on all maps, period placeholders, start view, previews, per-map review |
 | 3 | `pre-battle-roster` | archived 2026-11-09 after the user's hand check (specs synced: `force-roster`, `weapons`, `battle-lab`) | section types, five period weapons, the roster spread, enemy presets |
-| 4 | `add-deployment-phase` | next; its prerequisites are archived (14 tasks) | a deployment round before the clock: orders take effect at once, defend fills trench lines, deployment areas (map document v3), the enemy deploys, a placement preview of cover |
+| 4 | `add-deployment-phase` | implemented 2026-11-09, awaiting the user's hand check (4.4) | a deployment round before the clock: orders take effect at once, defend fills trench lines, deployment areas (map document v3), the enemy deploys, a placement preview of cover |
 | 5 | `add-map-objectives` | planned (17 tasks) | capture-and-hold objectives with flags, battle clock from "Start battle", victory by value; objectives in the editor (map document v4) |
 | 6 | `garrison-and-assault` | planned (23 tasks) | enter and leave buildings and trench lines (capacity by trench length), fire from ports and from towers, upper floors and roofs, close assault with bars; enter at once during deployment |
 | 7 | `video-tutorial-manual` | planned (19 tasks) | the Manual, thirteen lessons recorded from the game (deployment, objectives and garrisons included), training-ground removal |
@@ -43,6 +43,29 @@ Why this order:
   well.
 - Later, the user's word: machine guns need work: their sound, tracers, and
   whether they really fire.
+- `add-deployment-phase` (4.4), played together with `machine-gun-fire-feedback`
+  and `add-run-toggle`: "o teste foi muito bem, está ficando bem legal".
+
+## Run toggle (`add-run-toggle`, 2026-11-09)
+
+- The order board has a "Passo" group, Andar / Correr (key R). A section set
+  to Correr runs (3.5 m/s) in every order but recon, so it crosses open
+  ground in less than half the time; winded men still drop to a walk.
+
+## Deployment phase (`add-deployment-phase`, 2026-11-09)
+
+- Every battle (skirmish, presets, editor playtest) opens in deployment: the
+  clock stands still, the speed controls hide, both deployment areas show,
+  and a banner offers "Start battle" (Enter) and "Reset deployment".
+- Placing orders take effect at once inside the side's area; defend fills a
+  trench line's fire step. Fight orders and places outside the area are
+  refused, with the reason under the banner.
+- The enemy deploys on the best cover of its area (trenches, then walls and
+  stones, then fences) and defends facing the column.
+- With a move or defend order on the cursor, the slots within 25 m show by
+  the stance they hide, with a free/total count per piece.
+- Maps: document version 3 with one area per side; the editor shapes them
+  and **Check map** checks them.
 
 ## Map editor (add-map-editor, 2026-11-08)
 

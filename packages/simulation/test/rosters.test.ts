@@ -1,17 +1,21 @@
 import { describe, expect, it } from 'vitest';
-import { battleMaps, FAZENDA, isWalkable, setActiveMap, type BattleRosters, type PortLike, type SectionTypeId, type WorkerResponse } from '@prestes/shared';
+import { battleMap, isWalkable, setActiveMap, type BattleRosters, type PortLike, type SectionTypeId, type WorkerResponse } from '@prestes/shared';
 import { SimulationEngine } from '../src/engine';
 import { createSimulationHost } from '../src/worker-host';
+import { openField } from './open-field';
+
+// author-game-maps 3.1: on the test map (its enemy presets are in its document).
+const TEST_MAP = 'campo-de-provas';
 
 const six: SectionTypeId[] = ['comando', 'metralhadora', 'esquadra-5', 'fuzil-metralhador', 'esquadra-4', 'irregulares'];
 
-function battle(map: string, rosters?: BattleRosters, seed = 1922) {
-  return new SimulationEngine({ seed, scenario: 'battle3v3', battleMap: map as never, rosters });
+function battle(map: string | ReturnType<typeof openField>, rosters?: BattleRosters, seed = 1922) {
+  return new SimulationEngine({ seed, scenario: 'battle3v3', battleMap: map, rosters });
 }
 
 describe('rostered 3v3 (pre-battle-roster 3.1-3.4)', () => {
-  it('six small sections deploy on every map', () => {
-    for (const map of battleMaps()) {
+  it('six small sections deploy on the test map', () => {
+    for (const map of [battleMap(TEST_MAP)]) {
       const engine = battle(map.id, { column: { sections: six }, legalist: { sections: six } });
       setActiveMap(map);
       for (const unit of engine.units) expect(isWalkable(unit.x, unit.y, map.covers), `${map.id} unit ${unit.id}`).toBe(true);
@@ -24,7 +28,7 @@ describe('rostered 3v3 (pre-battle-roster 3.1-3.4)', () => {
   });
 
   it('each man carries his section weapon and its training load', () => {
-    const engine = battle('fazenda', { column: { sections: six }, legalist: { sections: ['fuzileiros'] } });
+    const engine = battle(TEST_MAP, { column: { sections: six }, legalist: { sections: ['fuzileiros'] } });
     const squad = (id: number) => engine.units.filter((unit) => unit.squadId === id);
     const [officer, bugler] = squad(1);
     expect(officer).toMatchObject({ kind: 'officer', weaponId: 'revolver', magazine: 6, reserve: 18, sectionType: 'comando' });
@@ -36,8 +40,8 @@ describe('rostered 3v3 (pre-battle-roster 3.1-3.4)', () => {
   });
 
   it('the default roster as a player roster fields the same men as no roster', () => {
-    const plain = battle('bairro');
-    const rostered = battle('bairro', { column: { sections: ['fuzileiros', 'fuzileiros', 'fuzileiros'] }, legalist: { sections: ['fuzileiros', 'fuzileiros', 'fuzileiros'] } });
+    const plain = battle(TEST_MAP);
+    const rostered = battle(TEST_MAP, { column: { sections: ['fuzileiros', 'fuzileiros', 'fuzileiros'] }, legalist: { sections: ['fuzileiros', 'fuzileiros', 'fuzileiros'] } });
     const place = (engine: SimulationEngine) => engine.units.map(({ id, x, y, squadId, faction, weaponId }) => ({ id, x, y, squadId, faction, weaponId }));
     expect(place(rostered)).toEqual(place(plain));
   });
@@ -46,25 +50,25 @@ describe('rostered 3v3 (pre-battle-roster 3.1-3.4)', () => {
     const rosters = { column: { sections: six } };
     const sections = (engine: SimulationEngine) => engine.rosters?.legalist?.sections;
     for (const seed of [1, 2, 3, 4, 5, 6]) {
-      const a = battle('fazenda', rosters, seed);
-      const b = battle('fazenda', rosters, seed);
+      const a = battle(TEST_MAP, rosters, seed);
+      const b = battle(TEST_MAP, rosters, seed);
       expect(sections(a)).toEqual(sections(b));
-      expect(FAZENDA.enemyForces!.map((preset) => preset.sections)).toContainEqual(sections(a));
+      expect(battleMap(TEST_MAP).enemyForces!.map((preset) => preset.sections)).toContainEqual(sections(a));
       expect(a.hashState()).toBe(b.hashState());
     }
-    const drawn = new Set([1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((seed) => JSON.stringify(sections(battle('fazenda', rosters, seed)))));
+    const drawn = new Set([1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((seed) => JSON.stringify(sections(battle(TEST_MAP, rosters, seed)))));
     expect(drawn.size).toBeGreaterThan(1);
   });
 
   it('chosen enemy is not drawn', () => {
-    const chosen = battle('fazenda', { column: { sections: six }, legalist: { sections: ['irregulares', 'irregulares'] } });
-    const drawnState = new SimulationEngine({ seed: 1922, scenario: 'battle3v3', battleMap: 'fazenda' }).rng.getState();
+    const chosen = battle(TEST_MAP, { column: { sections: six }, legalist: { sections: ['irregulares', 'irregulares'] } });
+    const drawnState = new SimulationEngine({ seed: 1922, scenario: 'battle3v3', battleMap: TEST_MAP }).rng.getState();
     expect(chosen.rosters?.legalist?.sections).toEqual(['irregulares', 'irregulares']);
     expect(chosen.rng.getState()).toEqual(drawnState);
   });
 
   it('a battle without rosters draws nothing', () => {
-    const engine = battle('fazenda');
+    const engine = battle(TEST_MAP);
     expect(engine.rosters).toBeUndefined();
     expect(engine.units.some((unit) => 'sectionType' in unit)).toBe(false);
   });
@@ -77,20 +81,19 @@ describe('rostered 3v3 (pre-battle-roster 3.1-3.4)', () => {
         new SimulationEngine({ seed, sandbox, training, opposition, bounding, scenario, battleMap, rosters }),
       port,
     );
-    host.handle({ type: 'start', seed: 1, scenario: 'battle3v3', battleMap: 'fazenda', rosters: { column: { sections: ['metralhadora', 'metralhadora'] } } });
+    host.handle({ type: 'start', seed: 1, scenario: 'battle3v3', battleMap: TEST_MAP, rosters: { column: { sections: ['metralhadora', 'metralhadora'] } } });
     expect(posted).toEqual([{ type: 'error', message: 'roster_invalid' }]);
-    host.handle({ type: 'start', seed: 1, scenario: 'battle3v3', battleMap: 'fazenda', rosters: { column: { sections: six } } });
+    host.handle({ type: 'start', seed: 1, scenario: 'battle3v3', battleMap: TEST_MAP, rosters: { column: { sections: six } } });
     const ready = posted[1];
     expect(ready?.type).toBe('ready');
     if (ready?.type === 'ready') expect(ready.frame.units.filter((unit) => unit.faction === 'column')).toHaveLength(25);
   });
 
   it('gun crew is slower and irregulars faster', () => {
-    // Each section alone marches 100 m north over the Vila Militar's open field;
-    // timed while the section's mean progress passes 50 m, before the far end's
-    // buildings break up the line.
+    // Each section alone marches 100 m north over open ground; timed while the
+    // section's mean progress passes 50 m.
     const ticksTo = (type: SectionTypeId): number => {
-      const engine = battle('vila-militar', { column: { sections: [type] }, legalist: { sections: ['esquadra-4'] } });
+      const engine = battle(openField(), { column: { sections: [type] }, legalist: { sections: ['esquadra-4'] } });
       const ids = engine.units.filter((unit) => unit.faction === 'column').map((unit) => unit.id);
       const men = () => engine.units.filter((unit) => ids.includes(unit.id));
       const start = men().reduce((sum, unit) => sum + unit.y, 0) / ids.length;
@@ -114,7 +117,7 @@ describe('rostered 3v3 (pre-battle-roster 3.1-3.4)', () => {
 
 describe('sandbox troops of a section type (pre-battle-roster 5.3)', () => {
   it('spawns a machine-gun crew with its weapons, speed and belt pool', () => {
-    const engine = new SimulationEngine({ seed: 7, scenario: 'battle3v3', sandbox: true, battleMap: 'fazenda' });
+    const engine = new SimulationEngine({ seed: 7, scenario: 'battle3v3', sandbox: true, battleMap: TEST_MAP });
     const before = engine.units.length;
     const anchor = engine.units[0]!;
     for (const dy of [12, -12, 24, -24]) {
@@ -134,7 +137,7 @@ describe('sandbox troops of a section type (pre-battle-roster 5.3)', () => {
   });
 
   it('a plain spawned troop is unchanged: no section type, no pool', () => {
-    const engine = new SimulationEngine({ seed: 7, scenario: 'battle3v3', sandbox: true, battleMap: 'fazenda' });
+    const engine = new SimulationEngine({ seed: 7, scenario: 'battle3v3', sandbox: true, battleMap: TEST_MAP });
     const before = engine.units.length;
     const anchor = engine.units[0]!;
     for (const dy of [12, -12, 24, -24]) {

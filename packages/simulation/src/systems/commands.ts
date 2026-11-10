@@ -28,6 +28,8 @@ import { routeFor, sectionRoutes } from './routes';
 import { incapacitate, wound, releaseCarry } from './casualties';
 import { applyTacticalOrder, assignFlankPaths, beginWithdraw } from './orders';
 import { spawnDummy, spawnTroop, setTrainingPhase, despawnRole, reinforce } from './spawning';
+import { orderEnter, orderExit, releaseForOrder } from './garrison';
+import { orderAssault } from './assault';
 
 /**
  * A ground point an order may go to on a battle map: inside the bounds and
@@ -164,6 +166,30 @@ export function applyCommand(
   }
   const actionable = resolution.actionable;
 
+  // garrison-and-assault: in and out of positions; ground orders take men out first.
+  if (command.type === 'order' && command.order === 'enter') {
+    orderEnter(ctx, actionable, command.positionId, tick, envelope.seq, events);
+    return;
+  }
+  if (command.type === 'order' && command.order === 'exit') {
+    orderExit(ctx, actionable, command.to, tick, envelope.seq, events);
+    return;
+  }
+  if (command.type === 'assault') {
+    orderAssault(ctx, actionable, command.positionId, tick, envelope.seq, events);
+    return;
+  }
+  if (
+    command.type === 'move' ||
+    command.type === 'move_line' ||
+    command.type === 'withdraw' ||
+    command.type === 'flank' ||
+    command.type === 'order'
+  ) {
+    const toward = 'to' in command && command.to ? command.to : undefined;
+    releaseForOrder(ctx, actionable, toward, tick, events);
+  }
+
   // An ordered facing must be a direction; it is used normalised.
   let facing: Vec2 | undefined;
   if (
@@ -234,6 +260,14 @@ export function applyCommand(
       unit.fireOnContact = false;
       unit.fireControlSet = true;
       unit.autoContact = undefined;
+    }
+    return;
+  }
+
+  if (command.type === 'hurry') {
+    for (const unit of actionable) {
+      if (command.hurry) unit.hurry = true;
+      else delete unit.hurry;
     }
     return;
   }

@@ -77,14 +77,13 @@ test('3v3 HUD matches the baseline', async ({ page }) => {
   await page.getByTestId('open-skirmish').click();
   await page.getByTestId('start-battle-3v3').click();
   await expect(page.getByTestId('hud')).toBeVisible();
+  // add-deployment-phase: the skirmish opens in deployment; start the battle.
+  await page.getByTestId('start-battle').click();
   await page.waitForFunction(() => Boolean((window as unknown as { __prestes?: unknown }).__prestes));
-  // Pause so the panels stop changing, then show the orders panel.
+  // Pause so the panels stop changing.
   await page.evaluate(() =>
     (window as unknown as { __prestes: { step: (ticks: number) => void } }).__prestes.step(1),
   );
-  if ((await page.getByTestId('orders-toggle').getAttribute('aria-label'))?.match(/show|mostrar/i)) {
-    await page.getByTestId('orders-toggle').click();
-  }
   // The full-screen 3D canvas sits behind the HUD; hide it rather than mask it.
   await page.addStyleTag({ content: '[data-testid="game-canvas"] { visibility: hidden !important; }' });
   await stableFonts(page);
@@ -103,6 +102,8 @@ async function openPausedHud(page: Page): Promise<void> {
   await page.getByTestId('open-skirmish').click();
   await page.getByTestId('start-battle-3v3').click();
   await expect(page.getByTestId('hud')).toBeVisible();
+  // add-deployment-phase: the skirmish opens in deployment; start the battle.
+  await page.getByTestId('start-battle').click();
   await page.waitForFunction(() => Boolean((window as unknown as { __prestes?: unknown }).__prestes));
   await page.evaluate(() =>
     (window as unknown as { __prestes: { step: (ticks: number) => void } }).__prestes.step(1),
@@ -117,12 +118,12 @@ const liveNumbers = (page: Page) => [
   page.getByTestId('squad-status').locator('.mini-bar'),
 ];
 
-test('collapsed orders panel matches the baseline', async ({ page }) => {
+test('orders window as a column matches the baseline', async ({ page }) => {
+  await page.addInitScript(() => window.localStorage.removeItem('prestes.hud.windows.v1'));
   await openPausedHud(page);
-  if ((await page.getByTestId('orders-toggle').getAttribute('aria-label'))?.match(/hide|ocultar/i)) {
-    await page.getByTestId('orders-toggle').click();
-  }
-  await expect(page).toHaveScreenshot('orders-collapsed.png', { ...SCREENSHOT, mask: liveNumbers(page) });
+  await page.getByTestId('window-orders-orientation').click();
+  await expect(page.getByTestId('window-orders')).toHaveAttribute('data-orientation', 'vertical');
+  await expect(page).toHaveScreenshot('orders-column.png', { ...SCREENSHOT, mask: liveNumbers(page) });
 });
 
 test('sandbox panel matches the baseline', async ({ page }) => {

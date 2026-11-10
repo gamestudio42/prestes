@@ -25,9 +25,9 @@ describe('HUD icon map', () => {
     expect(shared).toEqual([]);
   });
 
-  it('lists the ten orders of the board (compact-orders)', () => {
+  it('lists the orders of the board (compact-orders, with Ocupar, Sair and Assaltar)', () => {
     expect(ORDER_CATALOG.map((entry) => entry.id).sort()).toEqual(
-      ['advance', 'aim', 'attack', 'defend', 'flank', 'hold', 'move', 'recon', 'suppress', 'withdraw'].sort(),
+      ['advance', 'aim', 'attack', 'defend', 'flank', 'hold', 'move', 'recon', 'suppress', 'withdraw', 'enter', 'exit', 'assault'].sort(),
     );
   });
 

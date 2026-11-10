@@ -1,5 +1,12 @@
 import * as THREE from 'three';
 import {
+  buildingOpenings,
+  BUILDING_WALL_SHARE,
+  buildingTower,
+  TOWER_EYE,
+  windowHeight,
+  windowMiddleHeight,
+  type BuildingWall,
   activeMapRuntime,
   bridgeDeckHeight,
   buildTrenchLine,
@@ -8,6 +15,7 @@ import {
   runtimeBridgeLandings,
   traceWaterOutlines,
   FORD_DEPTH,
+  groundHeightAt,
   pointInPolygon,
   terrainHeightAt,
   TRENCH,
@@ -160,8 +168,6 @@ class Instancer {
 
 /** Shops with an awning and a blank sign board over the street door. */
 const SHOPS = new Set(['venda', 'armazem']);
-/** Two storeys: an upper row of windows and a balcony. */
-const STOREYS: Readonly<Record<string, number>> = { sobrado: 2, factory: 2, 'casa-sede': 1 };
 
 /** Places one piece of a building in its own frame. */
 type Put = (
@@ -204,60 +210,77 @@ function placeholderBuilding(building: Building, pieces: Instancer): void {
   }
   const width = building.halfWidth * 2;
   const depth = building.halfDepth * 2;
-  const wall = building.height * 0.72;
+  const wall = building.height * BUILDING_WALL_SHARE;
   // Sunk a little so a block on a slope shows no gap under it.
   put(unitBox, look.wall, 0, wall / 2 - 0.2, 0, [width, wall + 0.4, depth]);
   // The ridge runs along the long side.
   if (depth > width) put(unitPrism, look.roof, 0, wall, 0, [depth + 0.4, (building.height - wall) * 2, width + 0.4], Math.PI / 2);
   else put(unitPrism, look.roof, 0, wall, 0, [width + 0.4, (building.height - wall) * 2, depth + 0.4]);
-  const storeys = STOREYS[building.model] ?? 1;
-  const storey = wall / storeys;
+  // garrison-and-assault 4.7: the doors and windows are the simulation's entrances and ports.
+  const openings = buildingOpenings(building);
   const front = building.front ?? 1;
-  const bays = Math.max(2, Math.floor(width / 2.6));
-  const door = Math.floor(bays / 2);
   const shop = SHOPS.has(building.model);
-  for (const side of [1, -1] as const) {
-    const z = side * (depth / 2 + 0.03);
-    const street = side === front;
-    for (let bay = 0; bay < bays; bay += 1) {
-      const x = -width / 2 + (bay + 0.5) * (width / bays);
-      for (let level = 0; level < storeys; level += 1) {
-        const base = level * storey;
-        if (level === 0 && street && (bay === door || (shop && bay % 2 === 1))) {
-          // A door (on shops, wide doors in every other bay).
-          const doorWidth = shop ? 1.6 : 1.1;
-          put(unitBox, PALETTE.door, x, Math.min(2.2, storey * 0.8) / 2, z, [doorWidth, Math.min(2.2, storey * 0.8), 0.06]);
-          continue;
-        }
-        if (!street && level === 0 && bay % 2 === 1) continue;
-        // A window with its shutters folded back.
-        const height = Math.min(1.3, storey * 0.42);
-        const y = base + storey * 0.55;
-        put(unitBox, PALETTE.window, x, y, z, [0.8, height, 0.05]);
-        if (street) {
-          put(unitBox, PALETTE.shutter, x - 0.62, y, z, [0.4, height, 0.06]);
-          put(unitBox, PALETTE.shutter, x + 0.62, y, z, [0.4, height, 0.06]);
-        }
-      }
+  const church = building.model === 'church';
+  const face = (wall: BuildingWall) => wall === 'front' || wall === 'back';
+  for (const door of openings.doors) {
+    const x = door.x + door.outX * 0.03;
+    const z = door.y + door.outY * 0.03;
+    const across = face(door.wall);
+    put(unitBox, PALETTE.door, x, door.height / 2, z, across ? [door.width, door.height, 0.06] : [0.06, door.height, door.width]);
+    if (church && door.wall === 'front') {
+      // A stone frame round the portal.
+      put(unitBox, PALETTE.plasterShade, x, door.height + 0.25, z, [door.width + 0.8, 0.5, 0.1]);
+      put(unitBox, PALETTE.plasterShade, x - door.width / 2 - 0.2, door.height / 2, z, [0.4, door.height, 0.1]);
+      put(unitBox, PALETTE.plasterShade, x + door.width / 2 + 0.2, door.height / 2, z, [0.4, door.height, 0.1]);
     }
-    if (!street) continue;
-    if (storeys > 1) {
-      // A balcony along the upper floor.
-      put(unitBox, PALETTE.wood, 0, storey, z + side * 0.45, [width * 0.7, 0.12, 0.9]);
-      put(unitBox, PALETTE.wire, 0, storey + 0.5, z + side * 0.88, [width * 0.7, 0.06, 0.04]);
+  }
+  for (const window of openings.windows) {
+    const x = window.x + window.outX * 0.03;
+    const z = window.y + window.outY * 0.03;
+    const across = face(window.wall);
+    // The church's are tall and narrow; the rest have shutters folded back on the street face.
+    const height = windowHeight(openings, window, building.model);
+    const y = windowMiddleHeight(openings, window, building.model);
+    const width = church ? 0.7 : 0.8;
+    put(unitBox, PALETTE.window, x, y, z, across ? [width, height, 0.05] : [0.05, height, width]);
+    if (window.wall === 'front' && !church) {
+      put(unitBox, PALETTE.shutter, x - 0.62, y, z, [0.4, height, 0.06]);
+      put(unitBox, PALETTE.shutter, x + 0.62, y, z, [0.4, height, 0.06]);
     }
-    if (shop) {
-      // A canvas awning sloping out over the doors, and a blank sign board.
-      put(unitBox, building.id % 2 === 0 ? PALETTE.awning : PALETTE.awningAlt, 0, 2.55, z + side * 0.8, [width * 0.86, 0.08, 1.6], 0, side * 0.25);
-      put(unitBox, PALETTE.sign, 0, Math.min(wall - 0.4, 3.2), z + side * 0.02, [width * 0.5, 0.55, 0.06]);
-    }
+  }
+  const frontZ = front * (depth / 2 + 0.03);
+  const upperFloor = openings.windows.find((window) => window.level > 0)?.elevation;
+  if (building.model === 'sobrado' && upperFloor !== undefined) {
+    // A balcony along the upper floor.
+    put(unitBox, PALETTE.wood, 0, upperFloor, frontZ + front * 0.45, [width * 0.7, 0.12, 0.9]);
+    put(unitBox, PALETTE.wire, 0, upperFloor + 0.5, frontZ + front * 0.88, [width * 0.7, 0.06, 0.04]);
+  }
+  if (shop) {
+    // A canvas awning sloping out over the door, and a blank sign board.
+    put(unitBox, building.id % 2 === 0 ? PALETTE.awning : PALETTE.awningAlt, 0, 2.55, frontZ + front * 0.8, [width * 0.86, 0.08, 1.6], 0, front * 0.25);
+    put(unitBox, PALETTE.sign, 0, Math.min(wall - 0.4, 3.2), frontZ + front * 0.02, [width * 0.5, 0.55, 0.06]);
   }
   if (look.tower === 'chimney') {
     put(unitCylinder, PALETTE.brickDark, width * 0.32, building.height * 0.9, 0, [0.6, building.height * 1.8, 0.6]);
   } else if (look.tower === 'bell') {
-    put(unitBox, look.wall, -width / 2 + 1.6, building.height * 0.8, 0, [3, building.height * 1.6, 3]);
-    put(unitBox, PALETTE.window, -width / 2 + 1.6, building.height * 1.3, 1.52, [1, 1.4, 0.05]);
-    put(unitCone, look.roof, -width / 2 + 1.6, building.height * 1.75, 0, [2.2, 2.4, 2.2], Math.PI / 4);
+    // The bell tower rises over the façade, above the portal, with a cross on its spire.
+    const tower = buildingTower(building)!;
+    const { side, top } = tower;
+    const towerZ = tower.y;
+    put(unitBox, look.wall, 0, top / 2, towerZ, [side, top, side]);
+    put(unitBox, PALETTE.plasterShade, 0, wall + 0.2, towerZ, [side + 0.3, 0.3, side + 0.3]);
+    // garrison-and-assault 1.4: the posts' openings on every face (a man's eye at 9 m),
+    // and the belfry's openings near the top.
+    const post = TOWER_EYE - 0.2;
+    for (const [height, tall] of [[post, 1.2], [top - 1.6, 1.4]] as const) {
+      put(unitBox, PALETTE.window, 0, height, towerZ + side / 2 + 0.03, [0.9, tall, 0.05]);
+      put(unitBox, PALETTE.window, 0, height, towerZ - side / 2 - 0.03, [0.9, tall, 0.05]);
+      put(unitBox, PALETTE.window, side / 2 + 0.03, height, towerZ, [0.05, tall, 0.9]);
+      put(unitBox, PALETTE.window, -side / 2 - 0.03, height, towerZ, [0.05, tall, 0.9]);
+    }
+    put(unitCone, look.roof, 0, top + 1.2, towerZ, [2.6, 2.4, 2.6], Math.PI / 4);
+    put(unitBox, PALETTE.wood, 0, top + 3, towerZ, [0.12, 1.2, 0.12]);
+    put(unitBox, PALETTE.wood, 0, top + 3.2, towerZ, [0.6, 0.12, 0.12]);
   }
 }
 
@@ -386,13 +409,45 @@ function vegetation(map: BattleMap): { group: THREE.Group; plants: THREE.Instanc
   return { group, plants, clumps };
 }
 
-/** Deck pieces along a bridge: short enough to follow its ramps. */
+/** Deck pieces along a bridge (beams, curbs, rails): short enough to follow its ramps. */
 const DECK_PIECE = 1;
+/** One deck plank, laid across the bridge. */
+const PLANK = 0.42;
+/** Plank shades, worn unevenly. */
+const PLANK_SHADES = [PALETTE.wood, PALETTE.wood, PALETTE.wood, PALETTE.bark] as const;
+/** Railing post spacing and height. */
+const RAIL_POST = 2;
+const RAIL_HEIGHT = 1;
+/** Pile bent spacing, and how deep the piles stand in the bed. */
+const BENT = 4.5;
+const PILE_FOOT = 0.8;
+/** How far the planks stand above the walkable deck height. */
+const DECK_LIFT = 0.1;
 
 /**
- * A bridge on its abutments (refine-map-editor D3): the deck follows the
- * shared profile, meeting each bank at its landing and clearing the water in
- * between, so no ground shows through it.
+ * Bridge materials, pulled toward the camera in depth: the ground sheet is
+ * lifted to the deck under a bridge, and the far orthographic camera would
+ * otherwise let it flicker through the planks.
+ */
+const bridgeMaterials = new Map<number, THREE.Material>();
+function bridgeMaterial(color: number): THREE.Material {
+  let value = bridgeMaterials.get(color);
+  if (!value) {
+    value = material(color).clone();
+    value.polygonOffset = true;
+    value.polygonOffsetFactor = -4;
+    value.polygonOffsetUnits = -16;
+    bridgeMaterials.set(color, value);
+  }
+  return value;
+}
+
+/**
+ * A timber trestle bridge on stone abutments (refine-map-editor D3): the deck
+ * follows the shared profile, meeting each bank at its landing and clearing
+ * the water in between, so no ground shows through it. Planks laid across,
+ * stringers and curbs along, a two-rail parapet, and pile bents with a cap and
+ * cross bracing wherever the deck stands clear of the ground.
  */
 function bridge(map: BattleMap, entry: BattleMap['bridges'][number]): THREE.Group {
   const group = new THREE.Group();
@@ -400,39 +455,120 @@ function bridge(map: BattleMap, entry: BattleMap['bridges'][number]): THREE.Grou
   const runtime = activeMapRuntime();
   const flat = map.waterLevel + entry.deckHeight;
   const ends: [number, number] = runtime && runtime.map === map ? runtimeBridgeLandings(runtime, entry) : [flat, flat];
-  const deckAt = (along: number): number => bridgeDeckHeight(entry, map.waterLevel, ends, along);
-  const width = entry.halfWidth * 2;
-  const pieces = Math.max(1, Math.ceil((entry.halfDepth * 2) / DECK_PIECE));
-  const step = (entry.halfDepth * 2) / pieces;
-  for (let piece = 0; piece < pieces; piece += 1) {
-    const z0 = -entry.halfDepth + piece * step;
+  // The ground sheet is lifted to the deck under the bridge, so the planks ride just above it.
+  const deckAt = (along: number): number => bridgeDeckHeight(entry, map.waterLevel, ends, along) + DECK_LIFT;
+  const slopeAt = (along: number): number => -Math.atan2(deckAt(along + 0.1) - deckAt(along - 0.1), 0.2);
+  // The ground under the deck (terrainHeightAt would give the deck itself).
+  const cos = Math.cos(entry.rotation);
+  const sin = Math.sin(entry.rotation);
+  const groundAt = (along: number): number => groundHeightAt(entry.x - along * sin, entry.y + along * cos);
+  const half = entry.halfWidth;
+  const width = half * 2;
+  const random = seededRandom(entry.id * 7919 + 17);
+  const pieces = new Instancer();
+  const frame = { x: entry.x, ground: 0, y: entry.y, rotation: -entry.rotation };
+  const put: Put = (geometry, color, x, y, z, scale, spin = 0, tilt = 0) => pieces.add(geometry, color, frame, [x, y, z], scale, spin, tilt);
+
+  // Planks across, each a little uneven in length and shade.
+  const planks = Math.max(1, Math.round((entry.halfDepth * 2) / PLANK));
+  const plank = (entry.halfDepth * 2) / planks;
+  for (let index = 0; index < planks; index += 1) {
+    const z = -entry.halfDepth + (index + 0.5) * plank;
+    const shade = PLANK_SHADES[Math.floor(random() * PLANK_SHADES.length)]!;
+    const overhang = (random() - 0.5) * 0.16;
+    put(unitBox, shade, overhang, deckAt(z) - 0.04, z, [width + 0.1 + Math.abs(overhang), 0.08, plank * 0.9], 0, slopeAt(z));
+  }
+
+  // Stringers under the planks, curbs on their edges and the parapet rails, piece by piece along the ramps.
+  const steps = Math.max(1, Math.ceil((entry.halfDepth * 2) / DECK_PIECE));
+  const step = (entry.halfDepth * 2) / steps;
+  for (let index = 0; index < steps; index += 1) {
+    const z0 = -entry.halfDepth + index * step;
     const z1 = z0 + step;
     const h0 = deckAt(z0);
     const h1 = deckAt(z1);
     const tilt = -Math.atan2(h1 - h0, step);
-    const length = Math.hypot(step, h1 - h0) + 0.02;
+    const length = Math.hypot(step, h1 - h0) + 0.03;
     const middle = (h0 + h1) / 2;
-    placed(group, unitBox, PALETTE.wood, 0, middle - 0.12, (z0 + z1) / 2, [width, 0.24, length]).rotation.x = tilt;
+    const z = (z0 + z1) / 2;
+    // A dark floor under the plank gaps, so the ground sheet beneath never shows between them.
+    put(unitBox, PALETTE.revetment, 0, middle - 0.095, z, [width, 0.02, length], 0, tilt);
+    for (const across of [-(half - 0.35), 0, half - 0.35]) put(unitBox, PALETTE.bark, across, middle - 0.3, z, [0.26, 0.36, length], 0, tilt);
     for (const side of [-1, 1]) {
-      placed(group, unitBox, PALETTE.bark, side * (entry.halfWidth - 0.1), middle + 0.85, (z0 + z1) / 2, [0.12, 0.1, length]).rotation.x = tilt;
+      put(unitBox, PALETTE.revetment, side * (half - 0.12), middle + 0.08, z, [0.22, 0.16, length], 0, tilt);
+      put(unitBox, PALETTE.wood, side * (half - 0.08), middle + RAIL_HEIGHT, z, [0.12, 0.12, length], 0, tilt);
+      put(unitBox, PALETTE.wood, side * (half - 0.08), middle + RAIL_HEIGHT * 0.52, z, [0.07, 0.09, length], 0, tilt);
     }
   }
-  for (const side of [-1, 1]) {
-    for (let z = -entry.halfDepth; z <= entry.halfDepth + 0.01; z += 2.4) {
-      placed(group, unitBox, PALETTE.bark, side * (entry.halfWidth - 0.1), deckAt(z) + 0.45, z, [0.14, 0.9, 0.14]);
+
+  // Parapet posts, a stouter pair at each end.
+  const posts = Math.max(1, Math.round((entry.halfDepth * 2) / RAIL_POST));
+  for (let index = 0; index <= posts; index += 1) {
+    const z = -entry.halfDepth + 0.1 + (index / posts) * (entry.halfDepth * 2 - 0.2);
+    const end = index === 0 || index === posts;
+    const size = end ? 0.26 : 0.16;
+    const height = RAIL_HEIGHT + (end ? 0.25 : 0.06);
+    for (const side of [-1, 1]) put(unitBox, PALETTE.bark, side * (half - 0.08), deckAt(z) + height / 2, z, [size, height, size]);
+  }
+
+  // Pile bents: two piles, a cap beam under the stringers, and an X of braces when tall enough.
+  const bents = Math.max(1, Math.round((entry.halfDepth * 2) / BENT));
+  for (let index = 1; index < bents; index += 1) {
+    const z = -entry.halfDepth + (index / bents) * entry.halfDepth * 2;
+    const top = deckAt(z) - 0.48;
+    const bed = Math.min(groundAt(z), map.waterLevel);
+    if (top - bed < 0.5) continue;
+    const foot = bed - PILE_FOOT;
+    const spread = half - 0.25;
+    for (const side of [-1, 1]) put(unitCylinder, PALETTE.bark, side * spread, (top + foot) / 2, z, [0.2, top - foot, 0.2]);
+    put(unitBox, PALETTE.revetment, 0, top - 0.12, z, [width + 0.3, 0.26, 0.32]);
+    const low = Math.max(bed, map.waterLevel - 0.2);
+    const rise = top - 0.3 - low;
+    if (rise > 1.2) {
+      const length = Math.hypot(spread * 2, rise);
+      const lean = Math.atan2(rise, spread * 2);
+      for (const sign of [-1, 1]) put(unitBox, PALETTE.wood, 0, low + rise / 2, z + sign * 0.14, [0.1, 0.16, length], Math.PI / 2, sign * lean);
     }
   }
-  for (let z = -entry.halfDepth + 3; z < entry.halfDepth - 2; z += 5) {
-    const top = deckAt(z);
-    const foot = map.waterLevel - 1.6;
-    if (top - foot < 0.5) continue;
+
+  // Stone abutments where each bank drops away under the deck, with loose stones at their wings.
+  for (const end of [-1, 1]) {
+    let edge = end * entry.halfDepth;
+    for (let walk = 0; walk < entry.halfDepth; walk += 0.5) {
+      const along = end * (entry.halfDepth - walk);
+      if (deckAt(along) - groundAt(along) > 0.6) break;
+      edge = along;
+    }
+    const seat = deckAt(edge) - 0.42;
+    const bottom = map.waterLevel - 0.6;
+    if (seat - bottom < 0.4) continue;
+    const depth = 1.6;
+    const z = edge + end * (depth / 2 - 0.4);
+    put(unitBox, PALETTE.stone, 0, (seat + bottom) / 2, z, [width + 0.9, seat - bottom, depth]);
+    put(unitBox, PALETTE.stoneDark, 0, seat - 0.08, z - end * 0.1, [width + 1.05, 0.16, depth + 0.1]);
+    for (let course = bottom + 0.45; course < seat - 0.2; course += 0.45) {
+      put(unitBox, PALETTE.stoneDark, 0, course, z - end * (depth / 2 + 0.005), [width + 0.92, 0.04, 0.02]);
+    }
     for (const side of [-1, 1]) {
-      placed(group, unitCylinder, PALETTE.bark, side * (entry.halfWidth - 0.3), (top + foot) / 2, z, [0.22, top - foot, 0.22]);
+      for (let n = 0; n < 3; n += 1) {
+        const size = 0.35 + random() * 0.35;
+        put(
+          unitRock,
+          n === 1 ? PALETTE.stoneDark : PALETTE.stone,
+          side * (half + 0.55 + random() * 0.5),
+          Math.max(map.waterLevel, groundAt(edge)) - size * 0.3 + (2 - n) * 0.25,
+          edge + end * (n * 0.55 - 0.3),
+          [size, size * 0.7, size],
+          random() * 6.28,
+        );
+      }
     }
   }
-  group.position.set(entry.x, 0, entry.y);
-  group.rotation.y = -entry.rotation;
-  return group;
+
+  pieces.build(group);
+  for (const child of group.children) {
+    if (child instanceof THREE.InstancedMesh) child.material = bridgeMaterial((child.material as THREE.MeshToonMaterial).color.getHex());
+  }  return group;
 }
 
 /** The ferry's raft (moved from the frame), with a pole and pennant that mark it from afar (5.4). */
@@ -652,7 +788,7 @@ function riverbanks(map: BattleMap): THREE.Group {
   const inBounds = (x: number, y: number) =>
     x > map.bounds.minX && x < map.bounds.maxX && y > map.bounds.minY && y < map.bounds.maxY;
   for (const area of map.water) {
-    if (area.kind !== 'deep' || !area.strip) continue;
+    if (!area.strip) continue;
     const half = area.strip.width / 2;
     for (const side of [1, -1] as const) {
       group.add(drapedRibbon(map, area.strip.points, half - 0.6, half + 2.2, side, PALETTE.gravel));
@@ -665,7 +801,7 @@ function riverbanks(map: BattleMap): THREE.Group {
         // Loose stones on the gravel.
         for (let n = 0; n < 2; n += 1) {
           const spot = lay(half - 0.4 + random() * 2.4);
-          const size = 0.45 + random() * 0.5;
+          const size = 0.22 + random() * 0.26;
           const turn = random() * 6.28;
           if (!spot.ok) continue;
           pieces.add(
@@ -676,24 +812,7 @@ function riverbanks(map: BattleMap): THREE.Group {
             [size, size * 0.45, size * 0.8],
           );
         }
-        // A reed clump at the waterline, now and then.
-        if (random() < 0.3) {
-          const spot = lay(half - 1 + random() * 2);
-          if (!spot.ok) continue;
-          const stems = 4 + Math.floor(random() * 4);
-          for (let n = 0; n < stems; n += 1) {
-            const height = 1.4 + random() * 1.0;
-            pieces.add(
-              unitCone,
-              n % 2 === 0 ? PALETTE.reed : PALETTE.reedDark,
-              { x: spot.x, ground: spot.ground, y: spot.y, rotation: (n / stems) * 6.28 },
-              [0.3 + random() * 0.5, height / 2, 0],
-              [0.3, height, 0.3],
-              0,
-              (random() - 0.5) * 0.4,
-            );
-          }
-        }
+        // author-game-maps: no reed clumps; tall cones read as little pines.
       }
     }
   }
@@ -704,8 +823,70 @@ function riverbanks(map: BattleMap): THREE.Group {
 /** refine-battle-maps 5.10: water colours, so a ford reads lighter than the deep river. */
 export const WATER_LOOK = {
   deep: { color: PALETTE.waterDeep, opacity: 0.88 },
-  ford: { color: PALETTE.fordShallow, opacity: 0.78 },
+  ford: { color: PALETTE.fordShallow, opacity: 0.55 },
 } as const;
+
+/** author-game-maps: the deep water shoals toward a ford over this many metres, in bands. */
+const SHOAL_LENGTH = 12;
+const SHOAL_BANDS = 3;
+
+/** The last `length` metres of a polyline, from its end (`atEnd`) or its start. */
+function polylineEnd(points: readonly Vec2[], length: number, atEnd: boolean): Vec2[] {
+  const ordered = atEnd ? [...points].reverse() : [...points];
+  const out: Vec2[] = [ordered[0]!];
+  let left = length;
+  for (let index = 1; index < ordered.length && left > 0; index += 1) {
+    const a = ordered[index - 1]!;
+    const b = ordered[index]!;
+    const step = Math.hypot(b.x - a.x, b.y - a.y);
+    if (step >= left) {
+      const t = left / (step || 1);
+      out.push({ x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t });
+      break;
+    }
+    out.push(b);
+    left -= step;
+  }
+  return atEnd ? out.reverse() : out;
+}
+
+const near = (a: Vec2, b: Vec2) => Math.hypot(a.x - b.x, a.y - b.y) < 0.5;
+
+/**
+ * author-game-maps: where a deep stretch meets a ford, bands of water between
+ * the two colours on the deep side, so the river lightens toward the ford
+ * instead of changing at a line.
+ */
+function shoals(map: BattleMap): THREE.Group {
+  const group = new THREE.Group();
+  group.name = 'water:shoals';
+  const deepColor = new THREE.Color(WATER_LOOK.deep.color);
+  const fordColor = new THREE.Color(WATER_LOOK.ford.color);
+  const fords = map.water.filter((area) => area.kind === 'ford' && area.strip).map((area) => area.strip!);
+  for (const area of map.water) {
+    if (area.kind !== 'deep' || !area.strip) continue;
+    const points = area.strip.points;
+    const first = points[0]!;
+    const last = points[points.length - 1]!;
+    for (const atEnd of [false, true]) {
+      const joint = atEnd ? last : first;
+      if (!fords.some((strip) => near(strip.points[0]!, joint) || near(strip.points[strip.points.length - 1]!, joint))) continue;
+      for (let band = 0; band < SHOAL_BANDS; band += 1) {
+        // Band 0 touches the ford and is the lightest.
+        const reach = (SHOAL_LENGTH * (band + 1)) / SHOAL_BANDS;
+        const piece = polylineEnd(points, reach, atEnd);
+        if (piece.length < 2) continue;
+        const loops = traceWaterOutlines(map, [{ kind: 'deep', strip: { points: piece, width: area.strip.width } }]);
+        // Nested reaches: the shortest, nearest the ford and lightest, draws on top.
+        // Distinct steps from the ford's tone to the deep's (the pixel pass would flatten a fine gradient).
+        const color = deepColor.clone().lerp(fordColor, 1 - (band + 1) / (SHOAL_BANDS + 1));
+        const mesh = outlineMesh(loops, map.waterLevel + 0.01 + (SHOAL_BANDS - band) * 0.004, color.getHex(), WATER_LOOK.ford.opacity, `water:shoal-${band}`);
+        if (mesh) group.add(mesh);
+      }
+    }
+  }
+  return group;
+}
 
 /** One ripple ring on a ford: it widens and fades, then starts again. */
 interface Ripple {
@@ -1150,7 +1331,8 @@ export class BattleMapLayer {
     if (deepMesh) this.group.add(deepMesh);
     const fordMesh = outlineMesh(traceWaterOutlines(this.map, fordReaches, deep), this.map.waterLevel + 0.03, WATER_LOOK.ford.color, WATER_LOOK.ford.opacity, 'water:ford');
     if (fordMesh) this.group.add(fordMesh);
-    if (this.map.water.some((area) => area.kind === 'deep' && area.strip)) this.group.add(riverbanks(this.map));
+    this.group.add(shoals(this.map));
+    if (this.map.water.some((area) => area.strip)) this.group.add(riverbanks(this.map));
   }
 
   /** The raft floats on the water, or sits on the landing's ground when docked above it. */

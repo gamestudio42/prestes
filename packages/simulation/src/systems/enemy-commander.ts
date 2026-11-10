@@ -4,6 +4,7 @@ import type { SimContext } from './context';
 import type { MutableUnit } from './model';
 import { applyCommand } from './commands';
 import { MARKER_TICKS, REMEMBER_TICKS, otherSide, type Side } from './vision';
+import { dealWithGarrison, garrisonOnDeploy, leaveIfLost } from './commander-positions';
 
 /**
  * The 3v3 battle's flow (battle-feel-3v3): the legalist commander and the rule
@@ -12,7 +13,7 @@ import { MARKER_TICKS, REMEMBER_TICKS, otherSide, type Side } from './vision';
  */
 
 /** A withdrawn section that has stopped rallies: it defends where it stands and is never pulled back again. */
-export type SectionPlan = 'hold' | 'attack' | 'withdraw' | 'rallied';
+export type SectionPlan = 'hold' | 'attack' | 'withdraw' | 'rallied' | 'garrison';
 
 export interface BattleMemory {
   /** Each side's deployment line (centroid at the start): a fact of the map both sides know. */
@@ -530,7 +531,17 @@ function commandLegalists(ctx: SimContext, tick: number, events: SimEvent[]): vo
     : knownEnemies(ctx, 'legalist', tick).length;
   const enemyCentre = ctx.battle.deployment.get('column')!;
 
+  const command = (order: Command) => issue(ctx, order, tick, events);
+  const home = ctx.battle.deployment.get('legalist')!;
   for (const [squadId, section] of own) {
+    // garrison-and-assault 3.4: a section going in or assaulting keeps to it;
+    // one inside holds it, and leaves it only when it is lost.
+    if (section.some((unit) => unit.entering !== undefined || unit.assaulting !== undefined)) continue;
+    if (section.some((unit) => unit.garrison !== undefined)) {
+      plans.set(squadId, 'garrison');
+      leaveIfLost(ctx, 'legalist', section, home, knownEnemies(ctx, 'legalist', tick), command);
+      continue;
+    }
     const plan = plans.get(squadId);
     const ids = section.map((unit) => unit.id);
     const here = centroid(section);
@@ -540,7 +551,17 @@ function commandLegalists(ctx: SimContext, tick: number, events: SimEvent[]): vo
       const dy = enemyCentre.y - here.y;
       const length = Math.sqrt(dx ** 2 + dy ** 2) || 1;
       const to = { x: here.x + (dx / length) * 10, y: here.y + (dy / length) * 10 };
+      // garrison-and-assault 3.4: one section garrisons a position near the line.
+      if (garrisonOnDeploy(ctx, 'legalist', ids, to, command)) {
+        plans.set(squadId, 'garrison');
+        continue;
+      }
       issue(ctx, { type: 'order', order: 'defend', unitIds: ids, to, facing: { x: dx / length, y: dy / length } }, tick, events);
+      plans.set(squadId, 'hold');
+      continue;
+    }
+    // A section that went in and came out (or was turned away) is back in the line.
+    if (plan === 'garrison') {
       plans.set(squadId, 'hold');
       continue;
     }
@@ -557,6 +578,8 @@ function commandLegalists(ctx: SimContext, tick: number, events: SimEvent[]): vo
       plans.set(squadId, 'withdraw');
       continue;
     }
+    // garrison-and-assault 3.4: an attacking section near a known enemy garrison suppresses, then assaults it.
+    if (plan === 'attack' && dealWithGarrison(ctx, 'legalist', section, command)) continue;
     if (plan === 'attack') {
       // A section advancing to look for the enemy attacks him as soon as it
       // sees him, instead of marching on into his fire.

@@ -80,6 +80,11 @@ export class DeploymentLayer {
     }
   }
 
+  /** add-deployment-phase: the marks stay full while the phase lasts; their 10 s start when it ends. */
+  hold(): void {
+    this.startedAt = null;
+  }
+
   setLabels(labels: DeploymentLabels): void {
     for (const side of this.sides) side.label.textContent = labels[side.key];
   }
@@ -121,6 +126,60 @@ export class DeploymentLayer {
     this.clear();
     this.group.traverse((object) => {
       if (object instanceof THREE.Mesh) (object.material as THREE.Material).dispose();
+    });
+  }
+}
+
+/** Points along a closed polygon every `step` m, draped on the ground. */
+function drapedLoop(polygon: readonly Vec2[], heightAt: (x: number, y: number) => number, step = 2): THREE.Vector3[] {
+  const points: THREE.Vector3[] = [];
+  for (let index = 0; index < polygon.length; index += 1) {
+    const a = polygon[index]!;
+    const b = polygon[(index + 1) % polygon.length]!;
+    const steps = Math.max(1, Math.ceil(Math.hypot(b.x - a.x, b.y - a.y) / step));
+    for (let s = 0; s < steps; s += 1) {
+      const x = a.x + ((b.x - a.x) * s) / steps;
+      const y = a.y + ((b.y - a.y) * s) / steps;
+      points.push(new THREE.Vector3(x, heightAt(x, y) + 0.35, y));
+    }
+  }
+  if (points[0]) points.push(points[0].clone());
+  return points;
+}
+
+/**
+ * add-deployment-phase 3.1: the two deployment areas while the phase lasts:
+ * the player's as a solid outline, the enemy's as a dashed one. View only.
+ */
+export class DeploymentAreasLayer {
+  readonly group = new THREE.Group();
+
+  constructor(map: BattleMap, heightAt: (x: number, y: number) => number) {
+    this.group.name = 'deployment-areas';
+    const sides = [
+      { area: map.deployment.column.area, color: PALETTE.factions.column, dashed: false },
+      { area: map.deployment.legalist.area, color: PALETTE.factions.legalist, dashed: true },
+    ];
+    for (const { area, color, dashed } of sides) {
+      if (area.length < 3) continue;
+      const geometry = new THREE.BufferGeometry().setFromPoints(drapedLoop(area, heightAt));
+      const material = dashed
+        ? new THREE.LineDashedMaterial({ color, dashSize: 3, gapSize: 2, transparent: true, opacity: 0.9, depthTest: false, depthWrite: false })
+        : new THREE.LineBasicMaterial({ color, transparent: true, opacity: 0.95, depthTest: false, depthWrite: false });
+      const line = new THREE.Line(geometry, material);
+      if (dashed) line.computeLineDistances();
+      line.renderOrder = 11;
+      line.name = dashed ? 'deployment-area-enemy' : 'deployment-area-own';
+      this.group.add(line);
+    }
+  }
+
+  dispose(): void {
+    this.group.traverse((object) => {
+      if (object instanceof THREE.Line) {
+        object.geometry.dispose();
+        (object.material as THREE.Material).dispose();
+      }
     });
   }
 }

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { WorkerResponse } from '@prestes/shared';
 import { SimulationEngine, createSimulationHost } from '../src';
 
-const battle = (deployment: boolean, seed = 1924) => new SimulationEngine({ seed, scenario: 'battle3v3', battleMap: 'bairro', deployment });
+const battle = (deployment: boolean, seed = 1924) => new SimulationEngine({ seed, scenario: 'battle3v3', battleMap: 'campo-de-provas', deployment });
 
 describe('deployment phase (add-deployment-phase 2.1)', () => {
   it('time stands still: no tick, no shot, no man moves', () => {
@@ -61,7 +61,7 @@ describe('deployment phase (add-deployment-phase 2.1)', () => {
         new SimulationEngine({ seed, sandbox, training, opposition, bounding, scenario, battleMap, rosters, deployment }),
       { postMessage: (message) => messages.push(message) },
     );
-    host.handle({ type: 'start', seed: 1924, scenario: 'battle3v3', battleMap: 'bairro', deployment: true });
+    host.handle({ type: 'start', seed: 1924, scenario: 'battle3v3', battleMap: 'campo-de-provas', deployment: true });
     host.handle({ type: 'step', ticks: 4 });
     const held = messages.at(-1);
     expect(held?.type === 'frame' && held.frame.tick).toBe(0);

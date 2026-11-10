@@ -2,8 +2,10 @@ import { useEffect, useRef, useState } from 'react';
 import { Eye } from './ui/icons';
 import { translate, type Locale } from '@prestes/content';
 import {
+  authoredMapIndex,
   compileMapDocument,
   DEFAULT_BATTLE_MAP,
+  loadAuthoredMap,
   registerBattleMap,
   TRAINING_AMMUNITION,
   type BattleMapId,
@@ -28,6 +30,7 @@ import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { useOrders } from './hooks/useOrders';
 import { useSandbox } from './hooks/useSandbox';
 import { useTestBridge } from './hooks/useTestBridge';
+import { isDeploymentRefusal, type DeploymentRefusal } from './ui/hud/DeploymentBanner';
 
 export function App() {
   const [locale, setLocale] = useState<Locale>(loadLocale);
@@ -54,7 +57,6 @@ export function App() {
   const [routesVisible, setRoutesVisible] = useState(() => loadRoutesVisible());
   useEffect(() => saveRoutesVisible(routesVisible), [routesVisible]);
   const [speed, setSpeed] = useState<0 | 1 | 2 | 4 | 8>(DEFAULT_SPEED);
-  const [ordersCollapsed, setOrdersCollapsed] = useState(false);
   const [hudHidden, setHudHidden] = useState(false);
   const [cursor, setCursor] = useState<{ x: number; y: number } | null>(null);
   const [hoverHint, setHoverHint] = useState<{
@@ -64,15 +66,49 @@ export function App() {
   } | null>(null);
 
   const clientRef = useRef<GameClient | null>(null);
+  // add-deployment-phase 3.1: the latest refused deployment order, shown for a few seconds.
+  const [deploymentRefusal, setDeploymentRefusal] = useState<DeploymentRefusal | null>(null);
+  const refusalTimer = useRef<number | null>(null);
+  const showDeploymentRefusal = (reason: DeploymentRefusal): void => {
+    setDeploymentRefusal(reason);
+    if (refusalTimer.current !== null) window.clearTimeout(refusalTimer.current);
+    refusalTimer.current = window.setTimeout(() => setDeploymentRefusal(null), 3500);
+  };
+  const deploying = frame?.phase === 'deployment';
+  const handleStartDeployedBattle = (): void => {
+    setDeploymentRefusal(null);
+    clientRef.current?.sendCommand({ type: 'start_battle' });
+  };
+  const handleResetDeployment = (): void => {
+    setDeploymentRefusal(null);
+    clientRef.current?.sendCommand({ type: 'reset_deployment' });
+  };
+  // Enter starts the battle, unless a field or a button has the keys.
+  useEffect(() => {
+    if (!deploying) return;
+    const onKeyDown = (event: KeyboardEvent): void => {
+      if (event.key !== 'Enter' || event.repeat) return;
+      const target = event.target;
+      if (target instanceof HTMLElement && ['INPUT', 'SELECT', 'TEXTAREA', 'BUTTON'].includes(target.tagName)) return;
+      event.preventDefault();
+      handleStartDeployedBattle();
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [deploying]);
   // add-map-editor: the editor's map when the game was opened to playtest it.
   const playtestRef = useRef<MapDocument | null>(null);
+  // author-game-maps D2: authored maps are fetched when a battle asks for them, then sent to the worker.
+  const documentsRef = useRef(new Map<BattleMapId, MapDocument>());
   const [playtest, setPlaytest] = useState(false);
   const resumeSpeed = useRef<1 | 2 | 4>(DEFAULT_SPEED);
   const cameraNonce = useRef(0);
   const selectionInitialized = useRef(false);
   const selectedCountRef = useRef(0);
 
-  const { audioRef, audioMuted, audioVolume, handleToggleAudio, handleAudioVolume } = useAudio();
+  const { audioRef, audioMuted, handleToggleAudio } = useAudio();
+  // machine-gun-fire-feedback 4.2: a burst's rounds keep their spacing at the game speed.
+  useEffect(() => audioRef.current?.setSpeed(speed), [audioRef, speed]);
   const {
     sandboxOpen,
     setSandboxOpen,
@@ -98,7 +134,6 @@ export function App() {
     aimPending,
     setAimPending,
     orderCallout,
-    previewEnabled,
     setPreviewEnabled,
     hoverUnitId,
     targetUnitIds,
@@ -109,7 +144,8 @@ export function App() {
     needsTarget,
     previewPlan,
     slotView,
-    handleTogglePreview,
+    exitRing,
+    deploymentSlots,
     handleClearOrder,
     handlePreviewGround,
     handlePreviewUnit,
@@ -130,6 +166,8 @@ export function App() {
     handleRegroup,
     handleFormation,
     handleStance,
+    hurry,
+    handleHurry,
   } = useOrders({
     frame,
     locale,
@@ -156,6 +194,7 @@ export function App() {
     setPendingTactical,
     setAimPending,
     onRegroup: handleRegroup,
+    onToggleHurry: () => handleHurry(!hurry),
   });
   useTestBridge(clientRef, setSpeed);
 
@@ -185,9 +224,19 @@ export function App() {
       opposition: true,
       scenario: 'battle3v3',
       battleMap: map,
+      // add-deployment-phase: every skirmish (and the editor's playtest) opens in deployment.
+      deployment: true,
       ...(rosters ? { rosters } : {}),
-      ...(playtestRef.current?.id === map ? { mapDocument: playtestRef.current } : {}),
-      onEvent: (event) => audioRef.current?.handleEvent(event),
+      ...(playtestRef.current?.id === map
+        ? { mapDocument: playtestRef.current }
+        : documentsRef.current.has(map)
+          ? { mapDocument: documentsRef.current.get(map)! }
+          : {}),
+      onEvent: (event) => {
+        audioRef.current?.handleEvent(event);
+        // add-deployment-phase 3.1: a refused deployment order says why, for a few seconds.
+        if (event.type === 'command_rejected' && isDeploymentRefusal(event.reason)) showDeploymentRefusal(event.reason);
+      },
       onFrame: (next) => {
         setFrame(next);
         if (!selectionInitialized.current) {
@@ -229,6 +278,15 @@ export function App() {
   const handleStartBattle3v3 = (): void => startBattle(battleMapId, battleMapId === setup.map ? battleRosters(setup) : undefined);
 
   const startBattle = (map: BattleMapId, rosters?: BattleRosters): void => {
+    // An authored map not fetched yet: fetch it, then start (the document goes to the worker with the start).
+    if (playtestRef.current?.id !== map && !documentsRef.current.has(map) && authoredMapIndex().some((entry) => entry.id === map)) {
+      void loadAuthoredMap(map).then((document) => {
+        if (!document) return;
+        documentsRef.current.set(map, document);
+        startBattle(map, rosters);
+      });
+      return;
+    }
     void audioRef.current?.unlock();
     clientRef.current?.dispose();
     clientRef.current = null;
@@ -242,7 +300,6 @@ export function App() {
     setPendingTactical(null);
     setAimPending(false);
     setPreviewEnabled(false);
-    setOrdersCollapsed(false);
     setSpeed(DEFAULT_SPEED);
     setStarted(true);
     createClient(map, rosters);
@@ -301,14 +358,6 @@ export function App() {
   const handleAdvance = (ticks: number): void => {
     handleSetSpeed(0);
     clientRef.current?.step(ticks);
-  };
-
-  const handleToggleOrders = (): void => {
-    setOrdersCollapsed((value) => !value);
-  };
-
-  const handleHideHud = (): void => {
-    setHudHidden(true);
   };
 
   const handleCameraBand = (next: CameraBand): void => {
@@ -392,12 +441,14 @@ export function App() {
     <div className="app game" data-testid="app" data-tick={frame?.tick ?? 0}>
       <GameCanvas
         client={client}
+        deploymentAreas={deploying}
         postStrong={postStrong}
         routesVisible={routesVisible}
         onAudioView={(listener) => audioRef.current?.setListener(listener)}
         cameraRequest={cameraRequest}
         preview={previewPlan}
-        slotMarkers={slotView?.markers}
+        slotMarkers={deploymentSlots?.markers ?? slotView?.markers}
+        slotBadges={deploymentSlots?.pieces.map((piece) => ({ x: piece.at.x, y: piece.at.y, text: `${piece.free}/${piece.total}` }))}
         aimPending={aimPending}
         pendingAction={pendingOrder !== null || pendingTactical !== null || aimPending || sandboxTool !== null}
         lineMoveArmed={pendingOrder === 'move'}
@@ -405,10 +456,11 @@ export function App() {
         groundOrderArmed={
           pendingOrder === 'move' ||
           (pendingTactical !== null &&
-            ['advance', 'defend', 'ambush', 'disperse', 'recon', 'reserve'].includes(pendingTactical))
+            ['advance', 'defend', 'ambush', 'disperse', 'recon', 'reserve', 'enter', 'exit', 'assault'].includes(pendingTactical))
         }
         orderCallout={callout}
         placementPreview={placementPreview}
+        rangeRing={exitRing}
         targetUnitIds={targetUnitIds}
         selectedUnitIds={selectedUnitIds}
         strategicField
@@ -439,8 +491,6 @@ export function App() {
         postStrong={postStrong}
         selectedSquadId={selectedSquadId}
         controlBothSides={controlBothSides}
-        ordersCollapsed={ordersCollapsed}
-        previewEnabled={previewEnabled}
         selectedCount={selectedIds.length}
         selectedUnitIds={selectedIds}
         // The 3v3 is a training battle: both sides carry the depot issue.
@@ -459,12 +509,11 @@ export function App() {
         onPosture={handlePosture}
         onFireControl={handleFireControl}
         onSelectSquad={handleSelectSquad}
-        onToggleOrders={handleToggleOrders}
-        onTogglePreview={handleTogglePreview}
-        onHideHud={handleHideHud}
         onCameraBand={handleCameraBand}
         onFormation={handleFormation}
         onStance={handleStance}
+        hurry={hurry}
+        onHurry={handleHurry}
         onSetSpeed={handleSetSpeed}
         onTogglePause={handleTogglePause}
         onTogglePost={() => setPostStrong((value) => !value)}
@@ -472,10 +521,9 @@ export function App() {
         onToggleRoutes={() => setRoutesVisible((value) => !value)}
         onToggleCodex={() => setShowCodex((open) => !open)}
         onToggleSandbox={handleToggleSandbox}
-        audioMuted={audioMuted}
-        audioVolume={audioVolume}
-        onToggleAudio={handleToggleAudio}
-        onAudioVolume={handleAudioVolume}
+        onStartBattle={handleStartDeployedBattle}
+        onResetDeployment={handleResetDeployment}
+        deploymentRefusal={deploymentRefusal}
         />
       ) : null}
       {hudHidden ? (

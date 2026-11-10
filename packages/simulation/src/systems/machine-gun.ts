@@ -1,6 +1,7 @@
-import { getWeapon, trainingLoad, type WeaponId } from '@prestes/shared';
+import { getWeapon, trainingLoad, type GunState, type WeaponId } from '@prestes/shared';
 import type { MutableUnit } from './model';
 import type { SimContext } from './context';
+import { mayEngage, visible } from './combat';
 
 /**
  * pre-battle-roster 4.3: the crew-served machine gun. The gun is set when its
@@ -15,6 +16,10 @@ import type { SimContext } from './context';
 export const FEED_RADIUS = 3;
 /** A gun that fired within this many ticks is firing (longer than its pause between bursts). */
 export const FIRING_TICKS = 30;
+/** Orders under which the crew halts its gun to fire (machine-gun-fire-feedback 2.2). */
+const HALT_ORDERS = new Set(['attack', 'pursue', 'advance']);
+/** A halted gun with no enemy in reach and sight this long goes on with its order (5 s). */
+export const GUN_RESUME_TICKS = 50;
 /** What a gunner who takes over carried before: the crew's rifle. */
 const CREW_RIFLE: WeaponId = 'mauser-7mm';
 
@@ -40,8 +45,63 @@ export function gunReady(unit: MutableUnit): boolean {
   return (unit.gunStill ?? 0) >= (weapon.setupTicks ?? 0);
 }
 
+/** machine-gun-fire-feedback 3.1: a gunner's gun, for the HUD. */
+export function gunState(unit: MutableUnit): GunState {
+  if (moving(unit)) return 'moving';
+  return gunReady(unit) ? 'set' : 'setting';
+}
+
+/** Ticks of set-up the gun still needs (0 once set). */
+export function gunSetupLeft(unit: MutableUnit): number {
+  const setup = getWeapon(unit.weaponId)?.setupTicks ?? 0;
+  return Math.max(0, setup - (unit.gunStill ?? 0));
+}
+
 function moving(unit: MutableUnit): boolean {
-  return unit.path.length > 0 && unit.pathIndex < unit.path.length;
+  return !unit.gunHalt && unit.path.length > 0 && unit.pathIndex < unit.path.length;
+}
+
+/** Whether the gunner has an enemy he may fire on: in the gun's reach, his cone and line of fire. */
+function hasEngageableEnemy(ctx: SimContext, gunner: MutableUnit): boolean {
+  return ctx.units.some(
+    (enemy) =>
+      enemy.faction !== gunner.faction &&
+      enemy.alive &&
+      !enemy.incapacitated &&
+      !enemy.routed &&
+      !enemy.dummy &&
+      !(gunner.faction !== 'column' && enemy.faction === 'target') &&
+      mayEngage(gunner, enemy) &&
+      visible(ctx, gunner, enemy),
+  );
+}
+
+/**
+ * machine-gun-fire-feedback 2.2: under attack, pursue or advance, the crew
+ * halts its gun when the gunner has an enemy to fire on, and goes on with the
+ * order after GUN_RESUME_TICKS without one. Any other order lifts the halt.
+ */
+function updateHalt(ctx: SimContext, gunner: MutableUnit, crew: readonly MutableUnit[]): void {
+  const halting = gunner.currentOrder !== null && HALT_ORDERS.has(gunner.currentOrder);
+  const halted = gunner.gunHalt === true;
+  let halt = false;
+  if (halting && hasEngageableEnemy(ctx, gunner)) {
+    halt = true;
+    gunner.gunIdle = undefined;
+  } else if (halting && halted) {
+    const idle = (gunner.gunIdle ?? 0) + 1;
+    halt = idle < GUN_RESUME_TICKS;
+    gunner.gunIdle = halt ? idle : undefined;
+  } else {
+    gunner.gunIdle = undefined;
+  }
+  for (const unit of crew) {
+    if (!fit(unit)) {
+      unit.gunHalt = undefined;
+      continue;
+    }
+    unit.gunHalt = halt ? true : undefined;
+  }
 }
 
 export function updateMachineGuns(ctx: SimContext): void {
@@ -70,8 +130,10 @@ export function updateMachineGuns(ctx: SimContext): void {
       fallen.weaponId = CREW_RIFLE;
       fallen.magazine = 0;
       fallen.gunStill = undefined;
+      fallen.gunIdle = undefined;
       gunner = next;
     }
+    updateHalt(ctx, gunner, crew);
     gunner.gunStill = moving(gunner) ? 0 : Math.min(getWeapon(gunner.weaponId)?.setupTicks ?? 0, (gunner.gunStill ?? 0) + 1);
   }
 }

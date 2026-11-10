@@ -11,6 +11,9 @@ export interface InterpolatedFrame {
   seen?: Frame['seen'];
   fog?: boolean;
   ferries?: Frame['ferries'];
+  /** garrison-and-assault: held positions and close fights, as the frame has them. */
+  garrisons?: Frame['garrisons'];
+  assaults?: Frame['assaults'];
 }
 
 /**
@@ -53,6 +56,8 @@ export class ClientMirror {
         seen: current.seen,
         fog: current.fog,
         ferries: current.ferries,
+        ...(current.garrisons ? { garrisons: current.garrisons } : {}),
+        ...(current.assaults ? { assaults: current.assaults } : {}),
         units: current.units.map((unit) => ({ ...unit })),
       };
     }
@@ -68,6 +73,8 @@ export class ClientMirror {
       seen: current.seen,
       fog: current.fog,
       ferries: interpolateFerries(previous.ferries, current.ferries, clamped),
+      ...(current.garrisons ? { garrisons: current.garrisons } : {}),
+      ...(current.assaults ? { assaults: current.assaults } : {}),
       units: current.units.map((unit) => {
         const previousUnit = previousById.get(unit.id);
         if (!previousUnit) {

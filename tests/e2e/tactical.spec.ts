@@ -5,6 +5,8 @@ test('issues an area order and an immediate group order', async ({ page }) => {
   await page.getByTestId('open-skirmish').click();
   await page.getByTestId('start-battle-3v3').click();
   await expect(page.getByTestId('hud')).toBeVisible();
+  // add-deployment-phase: the skirmish opens in deployment; start the battle.
+  await page.getByTestId('start-battle').click();
   await page.waitForFunction(() => Boolean(window.__prestes?.frame()));
   await expect(page.getByTestId('squad-status')).toContainText('Selection: 11/11');
 
@@ -26,6 +28,8 @@ test('changes formation without clearing the current order', async ({ page }) =>
   await page.getByTestId('open-skirmish').click();
   await page.getByTestId('start-battle-3v3').click();
   await expect(page.getByTestId('hud')).toBeVisible();
+  // add-deployment-phase: the skirmish opens in deployment; start the battle.
+  await page.getByTestId('start-battle').click();
   await page.waitForFunction(() => Boolean(window.__prestes?.frame()));
   await expect(page.getByTestId('squad-status')).toContainText('Selection: 11/11');
 
@@ -51,6 +55,8 @@ test('toggles passive posture and hold fire', async ({ page }) => {
   await page.getByTestId('open-skirmish').click();
   await page.getByTestId('start-battle-3v3').click();
   await expect(page.getByTestId('hud')).toBeVisible();
+  // add-deployment-phase: the skirmish opens in deployment; start the battle.
+  await page.getByTestId('start-battle').click();
   await page.waitForFunction(() => Boolean((window as unknown as { __prestes?: unknown }).__prestes));
   // The section is selected once the first frames arrive: until then a
   // posture click has no one to command (the test was flaky under load).
@@ -95,6 +101,8 @@ test('shows action names immediately and descriptions after five seconds', async
   await page.getByTestId('open-skirmish').click();
   await page.getByTestId('start-battle-3v3').click();
   await expect(page.getByTestId('hud')).toBeVisible();
+  // add-deployment-phase: the skirmish opens in deployment; start the battle.
+  await page.getByTestId('start-battle').click();
 
   await page.getByTestId('order-attack').hover();
   await expect(page.getByRole('tooltip')).toContainText('Attack');
@@ -108,6 +116,8 @@ test('draws a line formation with Shift held when Move is pending', async ({ pag
   await page.getByTestId('open-skirmish').click();
   await page.getByTestId('start-battle-3v3').click();
   await expect(page.getByTestId('hud')).toBeVisible();
+  // add-deployment-phase: the skirmish opens in deployment; start the battle.
+  await page.getByTestId('start-battle').click();
 
   await page.getByTestId('order-tab-movement').click();
   await page.getByTestId('order-move').click();
@@ -136,6 +146,8 @@ test('a drag from the destination turns the section to face that way', async ({ 
   await page.getByTestId('open-skirmish').click();
   await page.getByTestId('start-battle-3v3').click();
   await expect(page.getByTestId('hud')).toBeVisible();
+  // add-deployment-phase: the skirmish opens in deployment; start the battle.
+  await page.getByTestId('start-battle').click();
   await page.waitForFunction(() => Boolean(window.__prestes?.frame()));
   await expect(page.getByTestId('squad-status')).toContainText('Selection: 11/11');
 
@@ -170,6 +182,8 @@ test('the drag closes or opens the spacing, shown beside the cursor', async ({ p
   await page.getByTestId('open-skirmish').click();
   await page.getByTestId('start-battle-3v3').click();
   await expect(page.getByTestId('hud')).toBeVisible();
+  // add-deployment-phase: the skirmish opens in deployment; start the battle.
+  await page.getByTestId('start-battle').click();
   await page.waitForFunction(() => Boolean(window.__prestes?.frame()));
 
   await page.getByTestId('order-tab-movement').click();
@@ -193,6 +207,8 @@ test('a move marches and an advance goes by bounds', async ({ page }) => {
   await page.getByTestId('open-skirmish').click();
   await page.getByTestId('start-battle-3v3').click();
   await expect(page.getByTestId('hud')).toBeVisible();
+  // add-deployment-phase: the skirmish opens in deployment; start the battle.
+  await page.getByTestId('start-battle').click();
   await page.waitForFunction(() =>
     Boolean((window as unknown as { __prestes?: { frame: () => unknown } }).__prestes?.frame()),
   );
@@ -246,6 +262,8 @@ test('splits a UI advance into bounds and clears the order', async ({ page }) =>
   await page.getByTestId('open-skirmish').click();
   await page.getByTestId('start-battle-3v3').click();
   await page.waitForFunction(() => Boolean(window.__prestes?.frame()));
+  // add-deployment-phase: the skirmish opens in deployment; start the battle.
+  await page.getByTestId('start-battle').click();
   await page.getByTestId('order-tab-movement').click();
   await page.getByTestId('order-advance').click();
   await page.getByTestId('game-canvas').click({ position: { x: 820, y: 430 } });
@@ -284,6 +302,8 @@ test('hides the movement routes and remembers the choice', async ({ page }) => {
   await page.getByTestId('open-skirmish').click();
   await page.getByTestId('start-battle-3v3').click();
   await expect(page.getByTestId('hud')).toBeVisible();
+  // add-deployment-phase: the skirmish opens in deployment; start the battle.
+  await page.getByTestId('start-battle').click();
   await expect(page.getByTestId('routes-toggle')).toHaveAttribute('aria-pressed', 'true');
   await page.getByTestId('routes-toggle').click();
   await expect(page.getByTestId('routes-toggle')).toHaveAttribute('aria-pressed', 'false');

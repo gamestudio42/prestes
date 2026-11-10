@@ -21,6 +21,15 @@ describe('effects layer', () => {
     expect(layer.count).toBeGreaterThanOrEqual(6);
   });
 
+  it('automatic fire flashes every round and smokes once per burst (machine-gun-fire-feedback 5.2)', () => {
+    const layer = new EffectsLayer();
+    const round = (tick: number, burstStart: boolean): Shot => ({ ...shot(true, tick), burstStart });
+    layer.onFrame(frame(5, [round(5, true)]));
+    expect(layer.count).toBe(3); // flash, smoke, blood
+    layer.onFrame(frame(6, [round(6, false)]));
+    expect(layer.count).toBe(5); // flash and blood, no new smoke
+  });
+
   it('effects expire', () => {
     const layer = new EffectsLayer();
     layer.onFrame(frame(5, [shot(false)]));

@@ -117,6 +117,24 @@ export interface MapLine {
   height: number;
 }
 
+export interface GarrisonYard {
+  /** The position's id: its first wall's cover id. */
+  id: number;
+  wallIds: readonly number[];
+  capacity: number;
+  /** The yard's middle; the ports face away from it. */
+  centre: Vec2;
+}
+
+/** author-game-maps D5: hours from 6 to 18, and the compass bearing the sun shines from (0 north, clockwise). */
+export interface MapLight {
+  time: number;
+  bearing: number;
+}
+
+export const DEFAULT_MAP_LIGHT: MapLight = { time: 12, bearing: 45 };
+export const MAP_LIGHT_TIME = { min: 6, max: 18 } as const;
+
 export interface BattleMap {
   id: BattleMapId;
   nameKey: string;
@@ -149,6 +167,8 @@ export interface BattleMap {
      * object there, not scrub plants.
      */
     objectCover?: Uint8Array;
+    /** author-game-maps: per cell, how thick the view draws the plants (0 normal, 1 sparse, 2 dense); absent: all normal. */
+    vegetationDensity?: Uint8Array;
   };
   /** Ground under everything else (field maps). */
   baseSurface: TerrainSurface;
@@ -174,6 +194,12 @@ export interface BattleMap {
    * searching side looks into when it knows an enemy went near them.
    */
   yards?: readonly Polygon[];
+  /**
+   * garrison-and-assault D1: walled yards a section can hold as a position
+   * (the Bairro's factory yard): its walls' slots facing out are the ports,
+   * the gaps between the walls the entrances.
+   */
+  garrisonYards?: readonly GarrisonYard[];
   /** Authored maps: walls and fences by kind, for the view. */
   lines?: readonly MapLine[];
   /**
@@ -185,6 +211,8 @@ export interface BattleMap {
   paint?: Uint8Array;
   /** The view's ground colour family. */
   palette: 'temperate' | 'cerrado' | 'caatinga' | 'urban';
+  /** author-game-maps: the time of day and sun bearing the view lights the map with (view only, never hashed). */
+  light?: MapLight;
   /**
    * pre-battle-roster 2.3: the legalist forces the engine draws from when the
    * player brings a roster (built-in maps). Absent: the default roster.

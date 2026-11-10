@@ -5,23 +5,21 @@ import { VILA_MILITAR } from './vila-militar';
 import { FAZENDA } from './fazenda';
 import { SERRA_RIO } from './serra-rio';
 import { BAIRRO } from './bairro';
-import { AUTHORED_MAP_LOADERS, AUTHORED_SKIRMISH_DOCUMENTS } from './authored';
-import { compileMapDocument, type MapDocument } from './document';
+import { AUTHORED_MAP_INDEX, AUTHORED_MAP_LOADERS } from './authored';
+import { compileMapDocument, type AuthoredMapEntry, type MapDocument } from './document';
 
 /** The battle maps, in the order the menu lists them: the hand-written ones, then the authored. */
 const MAPS = new Map<BattleMapId, BattleMap>(
   [VILA_MILITAR, FAZENDA, SERRA_RIO, BAIRRO].map((map) => [map.id, map]),
 );
 const BUILTIN = new Set<BattleMapId>(MAPS.keys());
-/**
- * Authored maps known in this thread, compiled on first use: the skirmish
- * maps from the start, campaign maps once `loadAuthoredMap` fetched them.
- */
-const AUTHORED = new Map<BattleMapId, MapDocument>(AUTHORED_SKIRMISH_DOCUMENTS.map((document) => [document.id, document]));
+/** Authored maps known in this thread, compiled on first use, once `loadAuthoredMap` fetched them. */
+const AUTHORED = new Map<BattleMapId, MapDocument>();
 /** Maps registered at run time (the editor's playtest), outside the menu's list. */
 const TRANSIENT = new Map<BattleMapId, BattleMap>();
 
-export const DEFAULT_BATTLE_MAP: BattleMapId = 'vila-militar';
+/** author-game-maps D3: the test map; tests, tools and the sandbox load it before building an engine. */
+export const DEFAULT_BATTLE_MAP: BattleMapId = 'campo-de-provas';
 
 export function battleMap(id: BattleMapId): BattleMap {
   const transient = TRANSIENT.get(id);
@@ -46,6 +44,20 @@ export function hasBattleMap(id: BattleMapId): boolean {
 export function battleMaps(): BattleMap[] {
   const authored = [...AUTHORED.values()].filter((document) => document.use === 'skirmish' && !BUILTIN.has(document.id));
   return [...[...BUILTIN].map((id) => MAPS.get(id)!), ...authored.map((document) => battleMap(document.id))];
+}
+
+/**
+ * author-game-maps 2.2: the sandbox panel's maps (dev only): the menu's maps
+ * and, first, the test map once it is loaded.
+ */
+export function sandboxMaps(): BattleMap[] {
+  const test = AUTHORED.has(DEFAULT_BATTLE_MAP) ? [battleMap(DEFAULT_BATTLE_MAP)] : [];
+  return [...test, ...battleMaps().filter((map) => map.id !== DEFAULT_BATTLE_MAP)];
+}
+
+/** author-game-maps D2: what the menus know of every authored map (slot, names), without loading any. */
+export function authoredMapIndex(): readonly AuthoredMapEntry[] {
+  return AUTHORED_MAP_INDEX;
 }
 
 /** The ids of every authored map in the project, skirmish and campaign. */
@@ -89,4 +101,25 @@ export function unregisterBattleMap(id: BattleMapId): void {
 export function setActiveMap(map: BattleMap): void {
   setActiveTerrain(map.height.kind === 'features' ? map.height.features : []);
   setActiveMapRuntime(map);
+}
+
+/**
+ * author-game-maps 5.2: the skirmish desk's maps, authored only, in the
+ * index's order: every skirmish map, and the test map when `includeTest`
+ * (the dev server and the sandbox). Only maps already loaded are returned;
+ * `loadSkirmishMaps` fetches them first.
+ */
+export function skirmishMaps(options: { includeTest?: boolean } = {}): BattleMap[] {
+  return skirmishEntries(options)
+    .filter((entry) => AUTHORED.has(entry.id))
+    .map((entry) => battleMap(entry.id));
+}
+
+export async function loadSkirmishMaps(options: { includeTest?: boolean } = {}): Promise<BattleMap[]> {
+  await Promise.all(skirmishEntries(options).map((entry) => loadAuthoredMap(entry.id)));
+  return skirmishMaps(options);
+}
+
+function skirmishEntries(options: { includeTest?: boolean }): readonly AuthoredMapEntry[] {
+  return AUTHORED_MAP_INDEX.filter((entry) => entry.use === 'skirmish' || (options.includeTest === true && entry.use === 'test' && entry.id === DEFAULT_BATTLE_MAP));
 }

@@ -53,6 +53,19 @@ export const SURFACES: readonly TerrainSurface[] = [
 
 export const VEGETATION_KINDS: readonly VegetationKind[] = ['cane', 'corn', 'scrub', 'tall-grass'];
 
+/**
+ * author-game-maps: a painted vegetation cell holds its kind (1-based, low
+ * four bits) and how thick the plants are drawn (high bits): 0 normal, 1
+ * sparse, 2 dense. Density is the view's only: the compiled raster the
+ * simulation reads keeps the kind alone.
+ */
+export const VEGETATION_DENSITIES = ['normal', 'sparse', 'dense'] as const;
+export type VegetationDensity = (typeof VEGETATION_DENSITIES)[number];
+export const VEGETATION_KIND_BITS = 0x0f;
+export const vegetationCell = (kind: number, density: number): number => (kind === 0 ? 0 : (kind & VEGETATION_KIND_BITS) | ((density & 0x03) << 4));
+export const vegetationKindOf = (cell: number): number => cell & VEGETATION_KIND_BITS;
+export const vegetationDensityOf = (cell: number): number => (cell >> 4) & 0x03;
+
 /** Mutable bounds every system clamps to: the active map's (±120 m on the feature maps). */
 export const MAP_BOUNDS = { minX: -120, minY: -120, maxX: 120, maxY: 120 };
 
@@ -397,7 +410,7 @@ export function runtimeHeightAt(runtime: MapRuntime, x: number, y: number): numb
 }
 
 /** Bilinear height of the heightfield alone. */
-function runtimeGroundAt(runtime: MapRuntime, x: number, y: number): number {
+export function runtimeGroundAt(runtime: MapRuntime, x: number, y: number): number {
   const gx = Math.max(0, Math.min(runtime.heightColumns - 1.000001, (x - runtime.minX) / HEIGHT_SPACING));
   const gy = Math.max(0, Math.min(runtime.heightRows - 1.000001, (y - runtime.minY) / HEIGHT_SPACING));
   const column = Math.floor(gx);

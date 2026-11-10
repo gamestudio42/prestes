@@ -12,6 +12,11 @@ export interface WindowState {
   x: number;
   y: number;
   minimized: boolean;
+  /** A size the player gave the window by resizing it; absent, it fits its content. */
+  w?: number;
+  h?: number;
+  /** Where the window sat before it became a column, to go back there. */
+  before?: { x: number; y: number };
 }
 
 export type WindowLayout = Partial<Record<WindowId, WindowState>>;
@@ -37,6 +42,74 @@ export function clampWindow(position: { x: number; y: number }, size: Size, view
     x: snap(Math.min(Math.max(position.x, 0), maxX)),
     y: snap(Math.min(Math.max(position.y, TOP_BAR_HEIGHT), maxY)),
   };
+}
+
+/** The smallest a resized window may get: one column of order buttons. */
+export const MIN_WINDOW: Size = { w: 168, h: 160 };
+/** The width of the Orders window laid out as a column. */
+export const VERTICAL_WIDTH = 176;
+
+/**
+ * Clamps a size the player drags to: never below the minimum, never past the
+ * right or bottom edge of the view from where the window sits.
+ */
+export function clampSize(size: Size, at: { x: number; y: number }, view: Size, min: Size = MIN_WINDOW): Size {
+  const maxW = Math.max(min.w, view.w - at.x);
+  const maxH = Math.max(min.h, view.h - at.y);
+  return {
+    w: snap(Math.min(Math.max(size.w, min.w), maxW)),
+    h: snap(Math.min(Math.max(size.h, min.h), maxH)),
+  };
+}
+
+/** A sized window taller than it is wide is laid out as a column. */
+export function isVertical(state: WindowState | undefined): boolean {
+  return state?.w !== undefined && state.h !== undefined && state.h > state.w;
+}
+
+/** Where a window turned into a column goes: where it sits, or the right edge of the view. */
+export type ColumnEdge = 'keep' | 'right';
+
+/**
+ * Toggles a window between a narrow, tall column (full height below the top
+ * bar) and its natural, content-sized shape. The column keeps the window's
+ * left edge, or goes to the right edge of the view, clear of the windows in
+ * the bottom-left corner.
+ */
+export function toggleVertical(state: WindowState, view: Size, edge: ColumnEdge = 'keep'): WindowState {
+  if (isVertical(state)) {
+    // Back where it was; its natural size then keeps it inside the view.
+    return { ...(state.before ?? { x: state.x, y: state.y }), minimized: state.minimized };
+  }
+  const y = TOP_BAR_HEIGHT + MARGIN;
+  const x = edge === 'right' ? view.w - VERTICAL_WIDTH - MARGIN : state.x;
+  const size = clampSize({ w: VERTICAL_WIDTH, h: view.h - y - MARGIN }, { x, y }, view);
+  return {
+    ...clampWindow({ x, y }, size, view),
+    minimized: state.minimized,
+    ...size,
+    before: { x: state.x, y: state.y },
+  };
+}
+
+export interface Rect {
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
+/**
+ * Whether one window lies over another's title bar, the only handle that
+ * moves it: then the covered window can no longer be dragged or minimized.
+ */
+export function coversTitle(cover: Rect, title: Rect): boolean {
+  return (
+    cover.x < title.x + title.w &&
+    title.x < cover.x + cover.w &&
+    cover.y < title.y + title.h &&
+    title.y < cover.y + cover.h
+  );
 }
 
 /**
@@ -76,7 +149,15 @@ export function loadLayout(storage: Pick<Storage, 'getItem'> | null | undefined)
         Number.isFinite(entry.y) &&
         typeof entry.minimized === 'boolean'
       ) {
-        layout[id] = { x: entry.x!, y: entry.y!, minimized: entry.minimized };
+        const sized =
+          Number.isFinite(entry.w) && Number.isFinite(entry.h) && entry.w! > 0 && entry.h! > 0
+            ? { w: entry.w!, h: entry.h! }
+            : {};
+        const before =
+          entry.before && Number.isFinite(entry.before.x) && Number.isFinite(entry.before.y)
+            ? { before: { x: entry.before.x, y: entry.before.y } }
+            : {};
+        layout[id] = { x: entry.x!, y: entry.y!, minimized: entry.minimized, ...sized, ...before };
       }
     }
     return layout;

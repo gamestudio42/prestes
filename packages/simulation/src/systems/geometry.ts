@@ -124,6 +124,8 @@ export function hasLineOfSight(
     ctx.covers,
     ctx.sightObstacles,
     eyeHeightForStance(stance),
-    eyeHeightForStance(target.stance),
+    eyeHeightForStance(target.stance) + (target.elevation ?? 0),
+    undefined,
+    target.inTower,
   );
 }

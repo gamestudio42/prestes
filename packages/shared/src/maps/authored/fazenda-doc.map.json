@@ -11,7 +11,7 @@
   "en": "The Fazenda re-created in the map editor: two trench lines across pasture, cane on the west flank, corn under the casa-sede.",
   "pt-BR": "A Fazenda refeita no editor de mapas: duas linhas de trincheira no pasto, cana no flanco oeste, milho sob a casa-sede."
  },
- "use": "campaign",
+ "use": "test",
  "setting": {
   "label": "historical-setting-fictional-place",
   "sourceNote": "The Paraná front of 1924-1925 was held from dug-in lines (macaulay-1974, ch. III, pp. 71, 82, 85); coffee and cane fazendas of the São Paulo interior (historical note)."

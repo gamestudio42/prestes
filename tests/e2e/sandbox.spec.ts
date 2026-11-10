@@ -5,9 +5,13 @@ test('opens the sandbox, steps, spawns and resets', async ({ page }) => {
   await page.getByTestId('open-skirmish').click();
   await page.getByTestId('start-battle-3v3').click();
   await expect(page.getByTestId('hud')).toBeVisible();
+  // add-deployment-phase: the skirmish opens in deployment; start the battle.
+  await page.getByTestId('start-battle').click();
 
   await page.keyboard.press('F1');
   await expect(page.getByTestId('sandbox-panel')).toBeVisible();
+  // author-game-maps 2.2: dev builds list the test map in the sandbox.
+  await expect(page.getByTestId('sandbox-battle-map').locator('option[value="campo-de-provas"]')).toHaveCount(1);
   // retire-bootcamp: the sandbox opens over the 3v3 field and its covers.
   await expect(page.getByTestId('sandbox-counts')).toContainText(/Covers: [1-9]\d*/);
   const startCovers = Number(/Covers: (\d+)/.exec((await page.getByTestId('sandbox-counts').textContent()) ?? '')![1]);
@@ -47,6 +51,8 @@ test('drills a casualty, shows progress and completes recovery', async ({ page }
   await page.getByTestId('open-skirmish').click();
   await page.getByTestId('start-battle-3v3').click();
   await expect(page.getByTestId('hud')).toBeVisible();
+  // add-deployment-phase: the skirmish opens in deployment; start the battle.
+  await page.getByTestId('start-battle').click();
 
   await page.keyboard.press('F1');
   await page.getByTestId('sandbox-incapacitate').click();
@@ -132,6 +138,8 @@ test('spawns a machine-gun crew and sees its card', async ({ page }) => {
   await page.getByTestId('open-skirmish').click();
   await page.getByTestId('start-battle-3v3').click();
   await expect(page.getByTestId('hud')).toBeVisible();
+  // add-deployment-phase: the skirmish opens in deployment; start the battle.
+  await page.getByTestId('start-battle').click();
   await page.keyboard.press('F1');
   await expect(page.getByTestId('sandbox-panel')).toBeVisible();
 

@@ -5,8 +5,9 @@ import { type CommanderBalloon,
   type OrderCallout,
   type PlacementPreview,
   type TrainingMarker,
+  type SlotBadge,
 } from '@prestes/view3d';
-import { coverAgainst, dragSpacing, type PreviewPlan, type SlotMarker, type Vec2 } from '@prestes/shared';
+import { coverAgainst, dragSpacing, type PreviewPlan, type ProtectionClass, type SlotMarker, type Vec2 } from '@prestes/shared';
 import { translate, type Locale } from '@prestes/content';
 import type { GameClient } from '../client/GameClient';
 import { loadGraphicsSettings } from '../storage';
@@ -27,7 +28,9 @@ export interface GameCanvasProps {
   /** Ground point the camera centres on when it changes (the current station). */
   cameraFocus?: { x: number; y: number; key: string } | null;
   preview: PreviewPlan | null;
-  slotMarkers?: readonly SlotMarker[];
+  slotMarkers?: readonly (SlotMarker & { protects?: ProtectionClass })[];
+  /** add-deployment-phase D5: free/total per cover piece near the cursor. */
+  slotBadges?: readonly SlotBadge[];
   aimPending?: boolean;
   pendingAction?: boolean;
   lineMoveArmed?: boolean;
@@ -40,6 +43,10 @@ export interface GameCanvasProps {
   trainingMarkers?: readonly TrainingMarker[];
   orderCallout?: OrderCallout | null;
   placementPreview?: PlacementPreview | null;
+  /** garrison-and-assault 4.1: Sair's 30 m ring, while the order waits for its point. */
+  rangeRing?: { x: number; y: number; radius: number } | null;
+  /** add-deployment-phase 3.1: draw both deployment areas (the phase is on). */
+  deploymentAreas?: boolean;
   targetUnitIds?: readonly number[];
   selectedUnitIds?: readonly number[];
   onCameraAction?: (kind: 'pan' | 'zoom' | 'rotate') => void;
@@ -83,6 +90,7 @@ export function GameCanvas({
   commanderBalloon = null,
   preview,
   slotMarkers,
+  slotBadges,
   aimPending = false,
   pendingAction = false,
   lineMoveArmed = false,
@@ -93,6 +101,8 @@ export function GameCanvas({
   trainingMarkers = [],
   orderCallout = null,
   placementPreview = null,
+  rangeRing = null,
+  deploymentAreas = false,
   targetUnitIds = [],
   selectedUnitIds = [],
   onCameraAction,
@@ -155,7 +165,11 @@ export function GameCanvas({
         groundToScreen: (x: number, y: number) => scene.groundToScreen(x, y),
         focusOn: (x: number, y: number) => scene.focusOn(x, y),
         view: () => scene.view(),
+        garrisonMarks: () => scene.garrisonMarks(),
         deploymentMarks: () => scene.deploymentMarksShown(),
+        deploymentAreas: () => scene.deploymentAreasShown(),
+        slotPreview: () => scene.slotPreviewState(),
+        rangeRing: () => scene.rangeRingState(),
         setBand: (band: 'tactical' | 'strategic') => scene.setBand(band),
         effects: () => scene.effectsState(),
         clips: (unitId: number) => scene.clipState(unitId),
@@ -175,8 +189,13 @@ export function GameCanvas({
       if (frame) {
         scene.update(frame);
         if (onAudioView) {
-          const units = new Map(frame.units.map((unit) => [unit.id, unit.faction]));
-          onAudioView({ ...scene.view(), faction: 'column', factionOf: (id) => units.get(id) });
+          const units = new Map(frame.units.map((unit) => [unit.id, unit]));
+          onAudioView({
+            ...scene.view(),
+            faction: 'column',
+            factionOf: (id) => units.get(id)?.faction,
+            weaponOf: (id) => units.get(id)?.weaponId,
+          });
         }
       }
       frameHandle = requestAnimationFrame(loop);
@@ -193,6 +212,10 @@ export function GameCanvas({
   useEffect(() => {
     sceneRef.current?.setPlacementPreview(placementPreview);
   }, [placementPreview]);
+
+  useEffect(() => {
+    sceneRef.current?.setRangeRing(rangeRing);
+  }, [rangeRing]);
 
   useEffect(() => {
     sceneRef.current?.setTargetUnits(targetUnitIds);
@@ -224,6 +247,11 @@ export function GameCanvas({
     sceneRef.current?.setSlotMarkers(slotMarkers ?? []);
   }, [slotMarkers]);
 
+  const badgeKey = (slotBadges ?? []).map((badge) => `${badge.x}:${badge.y}:${badge.text}`).join('|');
+  useEffect(() => {
+    sceneRef.current?.setSlotBadges(slotBadges ?? []);
+  }, [badgeKey, client]);
+
   useEffect(() => {
     sceneRef.current?.setTrainingMarkers(trainingMarkers);
   }, [trainingMarkers]);
@@ -238,6 +266,10 @@ export function GameCanvas({
   useEffect(() => {
     sceneRef.current?.setCommanderBalloon(commanderBalloon);
   }, [balloonKey, client]);
+
+  useEffect(() => {
+    sceneRef.current?.setDeploymentAreas(deploymentAreas === true);
+  }, [deploymentAreas, client]);
 
   // refine-battle-maps 6.2: the opening deployment marks, labelled in the player's language.
   useEffect(() => {

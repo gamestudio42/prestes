@@ -22,6 +22,7 @@ export type ProblemCode =
   | 'name-missing'
   | 'description-missing'
   | 'source-note-missing'
+  | 'mission-missing'
   | 'section-count'
   | 'section-out-of-bounds'
   | 'section-not-walkable'
@@ -125,6 +126,8 @@ export function validateEditableMap(map: EditableMap): MapProblem[] {
   if (!map.setting.sourceNote.trim()) {
     add({ code: 'source-note-missing', severity: map.use === 'campaign' ? 'error' : 'warning', params: {} });
   }
+  // author-game-maps D1: a campaign map belongs to one mission.
+  if (map.use === 'campaign' && !map.mission) add({ code: 'mission-missing', severity: 'error', params: {} });
 
   const compiled = compileMapDocument(map);
   setActiveMap(compiled);

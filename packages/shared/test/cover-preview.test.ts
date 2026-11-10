@@ -5,7 +5,8 @@ import {
   compileMapDocument,
   coverPreview,
   createEditableMap,
-  DEPLOYMENT_PREVIEW_RADIUS,
+  deploymentSlotView,
+  DEPLOYMENT_SLOT_RADIUS,
   protectionClass,
   setActiveMap,
   VILA_MILITAR,
@@ -20,6 +21,9 @@ function field(): EditableMap {
   const map = createEditableMap({ id: 'cover', size: 'small', name: { en: 'C', 'pt-BR': 'C' } });
   map.deployment.column.sections = [{ x: -60, y: 0 }];
   map.deployment.legalist.sections = [{ x: 60, y: 0 }];
+  // add-deployment-phase: each zone is its area, 30 m round its point.
+  map.deployment.column.area = [{ x: -90, y: -30 }, { x: -30, y: -30 }, { x: -30, y: 30 }, { x: -90, y: 30 }];
+  map.deployment.legalist.area = [{ x: 30, y: -30 }, { x: 90, y: -30 }, { x: 90, y: 30 }, { x: 30, y: 30 }];
   return map;
 }
 
@@ -51,7 +55,6 @@ describe('cover preview', () => {
     expect(after.zones.column.total).toBe(before.column.total + wall.count);
     expect(after.zones.column.byClass.crouched).toBe(before.column.byClass.crouched + wall.count);
     expect(after.zones.legalist.total).toBe(before.legalist.total);
-    expect(DEPLOYMENT_PREVIEW_RADIUS).toBe(40);
   });
 
   it('classes by the cover height rules, and fences give no badge', () => {
@@ -78,5 +81,24 @@ describe('cover preview', () => {
     const clusters = clusterBadges(pieces);
     expect(clusters).toHaveLength(2);
     expect(clusters.reduce((sum, cluster) => sum + cluster.count, 0)).toBe(pieces.reduce((sum, piece) => sum + piece.count, 0));
+  });
+
+  it('deployment preview: the slots within 25 m of the cursor, classed, counted per piece, with the planned ones', () => {
+    const map = field();
+    map.lines.push({ id: 5, kind: 'stone-wall', height: 1.2, points: [{ x: -70, y: 10 }, { x: -50, y: 10 }] });
+    map.lines.push({ id: 6, kind: 'stone-wall', height: 1.2, points: [{ x: 40, y: 10 }, { x: 60, y: 10 }] });
+    const { compiled } = preview(map);
+    const view = deploymentSlotView(compiled, compiled.covers, [], { x: -60, y: 10 }, new Set());
+    const wall = view.pieces.find((piece) => piece.key === 'line:5')!;
+    expect(wall.total).toBeGreaterThan(5);
+    expect(wall.free).toBe(wall.total);
+    expect(view.pieces.some((piece) => piece.key === 'line:6')).toBe(false);
+    expect(view.markers.every((marker) => Math.hypot(marker.x + 60, marker.y - 10) <= DEPLOYMENT_SLOT_RADIUS)).toBe(true);
+    expect(view.markers.filter((marker) => marker.protects === 'crouched').length).toBe(wall.total);
+    const first = view.markers[0]!;
+    const held = deploymentSlotView(compiled, compiled.covers, [{ slotId: first.slotId, alive: true }], { x: -60, y: 10 }, new Set([view.markers[1]!.slotId]));
+    expect(held.free).toBe(view.free - 1);
+    expect(held.markers.find((marker) => marker.slotId === first.slotId)!.state).toBe('taken');
+    expect(held.markers.find((marker) => marker.slotId === view.markers[1]!.slotId)!.state).toBe('planned');
   });
 });

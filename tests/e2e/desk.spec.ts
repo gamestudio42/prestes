@@ -31,12 +31,12 @@ test('shows the seven desk objects and the four maps', async ({ page }) => {
   ]) {
     await expect(page.getByTestId(id)).toBeVisible();
   }
-  // pre-battle-roster 5.1: one folded map; the four fields are on the setup screen.
+  // author-game-maps 5.2: one sheet per authored skirmish map; on the dev server the test map.
+  await expect(page.getByTestId('skirmish-sheet-campo-de-provas')).toBeVisible();
   await expect(page.getByTestId('open-skirmish')).toBeVisible();
   await page.getByTestId('open-skirmish').click();
-  for (const map of ['vila-militar', 'fazenda', 'serra-rio', 'bairro']) {
-    await expect(page.getByTestId(`map-option-${map}`)).toBeVisible();
-  }
+  await expect(page.getByTestId('map-option-campo-de-provas')).toBeVisible();
+  await expect(page.getByTestId('map-option-vila-militar')).toHaveCount(0);
   await page.getByTestId('setup-back').click();
   await expect(page.getByTestId('gramophone-title')).toHaveCount(0);
 });
@@ -146,12 +146,10 @@ test('the theodolite opens the map editor', async ({ page }) => {
   await expect(page.getByTestId('editor-viewport')).toHaveAttribute('data-ready', 'true', { timeout: 20000 });
 });
 
-test('opens the setup from the desk, picks Serra e Rio and starts', async ({ page }) => {
+test('opens the setup from the desk on the test map and starts', async ({ page }) => {
   await page.getByTestId('open-skirmish').click();
   await expect(page.getByTestId('skirmish-setup')).toBeVisible();
-  await expect(page.getByTestId('map-option-vila-militar')).toHaveAttribute('aria-checked', 'true');
-  await page.getByTestId('map-option-serra-rio').click();
-  await expect(page.getByTestId('map-option-serra-rio')).toHaveAttribute('aria-checked', 'true');
+  await expect(page.getByTestId('map-option-campo-de-provas')).toHaveAttribute('aria-checked', 'true');
 
   await page.getByTestId('start-battle-3v3').click();
   await expect(page.getByTestId('hud')).toBeVisible();
@@ -159,11 +157,29 @@ test('opens the setup from the desk, picks Serra e Rio and starts', async ({ pag
     .poll(() =>
       page.evaluate(
         () =>
-          (window as unknown as { __prestes?: { frame: () => { ferries?: unknown[] } | null } })
-            .__prestes?.frame()?.ferries?.length ?? 0,
+          (window as unknown as { __prestes?: { frame: () => { units: unknown[] } | null } })
+            .__prestes?.frame()?.units.length ?? 0,
       ),
     )
-    .toBeGreaterThan(0);
+    .toBe(66);
+});
+
+// author-game-maps 5.2: with no skirmish map in the index the fan shows one
+// empty sheet, in both languages.
+test('no skirmish map: the fan shows the empty sheet', async ({ page }) => {
+  await page.route(/\/maps\/authored\/index\.ts(\?.*)?$/, (route) =>
+    route.fulfill({
+      contentType: 'application/javascript',
+      body: 'export const AUTHORED_MAP_INDEX = [];\nexport const AUTHORED_MAP_LOADERS = {};\n',
+    }),
+  );
+  await page.goto('/');
+  await expect(page.getByTestId('skirmish-maps')).toHaveAttribute('data-count', '0');
+  await expect(page.getByTestId('skirmish-empty')).toContainText('No maps yet — open the editor');
+  await page.evaluate(() => window.localStorage.setItem('prestes.locale', 'pt-BR'));
+  await page.addInitScript(() => window.localStorage.setItem('prestes.locale', 'pt-BR'));
+  await page.goto('/');
+  await expect(page.getByTestId('skirmish-empty')).toContainText('Nenhum mapa ainda — abra o editor');
 });
 
 test('drags an object, remembers the position and tidies the desk', async ({ page }) => {

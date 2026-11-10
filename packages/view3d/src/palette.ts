@@ -47,6 +47,8 @@ export const PALETTE = {
   grassDeep: 0x4a552f,
   wood: 0x5b4632,
   metal: 0x4a4d48,
+  /** garrison-and-assault 4.7: a rifle barrel out of a window. */
+  barrel: 0x2a2622,
   water: 0x3f5e63,
   dust: 0xa99a7a,
   grass: 0x5f6b3d,
@@ -94,7 +96,8 @@ export const PALETTE = {
   riverbed: 0x4d4632,
   ford: 0x6f8a86,
   /** refine-battle-maps 5.4 and 5.10: shallow ford water, its broken edge, the gravel bar and banks, reeds. */
-  fordShallow: 0xa3c2b6,
+  // author-game-maps: close to the deep water's tone; its lower opacity lets the riverbed show through.
+  fordShallow: 0x5f8381,
   fordEdge: 0xe2ead8,
   gravel: 0xa0957a,
   gravelDark: 0x7d7461,

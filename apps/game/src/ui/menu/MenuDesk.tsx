@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import type { BattleMapId } from '@prestes/shared';
+import type { BattleMap, BattleMapId } from '@prestes/shared';
 import { translate, type Locale, type MessageKey } from '@prestes/content';
 import type { GramophoneState } from '../../audio/Gramophone';
 import type { GramophoneTrack } from '../../audio/gramophone-tracks';
@@ -41,7 +41,10 @@ export interface MenuDeskProps {
   /** The last skirmish map chosen; its sheet lies on the desk. */
   battleMap: BattleMapId;
   /** pre-battle-roster 5.1: the desk's map opens the skirmish setup screen. */
-  onOpenSetup: () => void;
+  onOpenSetup: (map: BattleMapId) => void;
+  /** author-game-maps 5.2: the skirmish maps on the desk. */
+  maps: readonly BattleMap[];
+  onSelectMap: (map: BattleMapId) => void;
   onToggleAudio: () => void;
   gramophone: {
     track: GramophoneTrack;
@@ -66,6 +69,8 @@ export function MenuDesk({
   onLocaleChange,
   battleMap,
   onOpenSetup,
+  maps,
+  onSelectMap,
   onToggleAudio,
   gramophone,
 }: MenuDeskProps) {
@@ -297,8 +302,10 @@ export function MenuDesk({
       >
         <SkirmishMaps
           locale={locale}
+          maps={maps}
           battleMap={battleMap}
           onOpenSetup={onOpenSetup}
+          onSelect={onSelectMap}
         />
       </DeskObject>
 

@@ -113,6 +113,39 @@ a body compacted to 5 m, then spreading to its own destination near the end.
   the engine mutates a unit. Order priority and task contracts live beside it.
 - The simulation is headless and tested through the headless runner.
 
+## Deployment phase (add-deployment-phase)
+
+- `SimulationEngine` takes `deployment` (the battle opens in
+  `phase: 'deployment'`) and `enemyDeployment` (the enemy places itself
+  before tick 0). They are separate, so a deployment the player leaves
+  untouched hashes like a battle with no phase; `pnpm check:determinism`
+  checks it.
+- In deployment, `step()` runs `stepDeployment()`: it applies the command
+  queue and does not advance the tick. `start_battle` sets the phase to
+  battle, emits `battle_started` and leaves later queued commands for tick 1;
+  `reset_deployment` puts the column back where the phase began. The phase is
+  hashed only while it lasts, and frames carry `phase` only in a battle that
+  had one.
+- **Instant planners** (`systems/deployment.ts`): a placing command (move,
+  move line, hold, stance, formation, face, fire control, posture; the
+  orders defend, ambush, disperse, regroup, reserve) runs the battle's own
+  `applyCommand`, then each man is set at once on his planned target, facing
+  his aim or his slot's guard. A defend order within 10 m of a trench takes
+  its fire-step slots. A target outside the side's area, in deep water or
+  blocked is refused (`outside_deployment_area`, `blocked`) and the world is
+  restored; fight orders are refused with `not_during_deployment`.
+- **Enemy deployment** (`systems/enemy-deployment.ts`): each enemy section
+  takes the best free anchor in its area (trench 3, low wall, stone and
+  sandbag 2, fence 1; anchors 25 m apart and within 40 m of the section's
+  place, ties by the simulation RNG), then a
+  defend order facing the column's area.
+- Areas: `insideDeploymentArea`, `validateDeploymentAreas` (sections inside,
+  at least half walkable, no overlap) in `packages/shared/src/maps`.
+- View: `DeploymentAreasLayer` draws both areas while the phase lasts (own
+  solid, enemy dashed); `deploymentSlotView` feeds the placement preview
+  (slots within 25 m of the cursor, coloured by the stance they hide, a
+  free/total badge per piece).
+
 ## Presentation
 
 - The worker owns the simulation; the main thread keeps a read-only `ClientMirror`.
@@ -262,13 +295,14 @@ a body compacted to 5 m, then spreading to its own destination near the end.
 ## Map documents and the editor (add-map-editor)
 
 Battle maps can also be authored as **map documents** (`*.map.json`,
-format `prestes-map` v2, `packages/shared/src/maps/document.ts`): an Int16
+format `prestes-map` v3, `packages/shared/src/maps/document.ts`): an Int16
 height grid in centimetres every 2 m, 1 m paint (ground material) and
 vegetation rasters (RLE + base64), and vectors for roads, rivers, ponds,
 bridges, ferries, walls and fences, trench lines, catalog objects and the
-deployment zones. `migrate()` opens version 1 files (each `trench-line`
-object becomes a 12 m fire trench, road cambers are dropped); writers write
-version 2. `compileMapDocument` is pure and deterministic: it carves river
+deployment zones with one area polygon per side. `migrate()` opens version
+1 files (each `trench-line` object becomes a 12 m fire trench, road cambers
+are dropped) and version 2 files (a default area per side,
+`defaultDeploymentArea`); writers write version 3. `compileMapDocument` is pure and deterministic: it carves river
 and pond beds along the river centrelines smoothed every 2 m, paints roads
 without touching the relief (only their ditches dig), lowers the ground
 under bridge spans, builds trench lines, turns walls,

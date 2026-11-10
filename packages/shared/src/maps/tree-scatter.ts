@@ -99,6 +99,19 @@ export interface TreeScatterOptions {
   biome: TreeBiome;
   density: TreeDensity;
   seed: number;
+  /**
+   * The species the author chose for the stroke (catalog tree ids). A species
+   * of the biome keeps the biome's weight, any other weighs 1. Absent or
+   * empty: the biome's mix.
+   */
+  species?: readonly string[];
+}
+
+/** The weighted mix a stroke draws from: the chosen species, or the biome's. */
+export function scatterMix(biome: TreeBiome, species?: readonly string[]): readonly { type: string; weight: number }[] {
+  const base = BIOME_MIX[biome];
+  if (!species || species.length === 0) return base;
+  return species.map((type) => ({ type, weight: base.find((entry) => entry.type === type)?.weight ?? 1 }));
 }
 
 /** A tree placed by a stroke, before it gets its object id. */
@@ -122,7 +135,7 @@ export class TreeScatter {
     this.spacing = Math.max(TREE_CLEARANCE, TREE_SPACING[options.density]);
     this.standing = map.objects.filter(isTreeObject).map((object) => ({ x: object.x, y: object.y }));
     this.footprints = map.objects.filter((object) => !isTreeObject(object));
-    this.mix = BIOME_MIX[options.biome];
+    this.mix = scatterMix(options.biome, options.species);
     this.total = this.mix.reduce((sum, entry) => sum + entry.weight, 0);
   }
 

@@ -1,5 +1,5 @@
 export type TerrainKind = 'ridge' | 'trench' | 'crater' | 'road';
-import { activeMapRuntime, runtimeHeightAt, runtimeSurfaceAt } from './maps/runtime';
+import { activeMapRuntime, runtimeGroundAt, runtimeHeightAt, runtimeSurfaceAt } from './maps/runtime';
 
 /**
  * Ground surfaces. The first five are the feature maps'; the rest are the
@@ -105,6 +105,20 @@ function influence(feature: TerrainFeature, x: number, y: number): number {
 export function terrainHeightAt(x: number, y: number): number {
   const runtime = activeMapRuntime();
   if (runtime) return runtimeHeightAt(runtime, x, y);
+  return featureHeightAt(x, y);
+}
+
+/**
+ * The ground itself, without bridge decks: what the drawn ground sheet
+ * follows, so a bridge stands open over the water instead of on a fill.
+ */
+export function groundHeightAt(x: number, y: number): number {
+  const runtime = activeMapRuntime();
+  if (runtime) return runtimeGroundAt(runtime, x, y);
+  return featureHeightAt(x, y);
+}
+
+function featureHeightAt(x: number, y: number): number {
   let height = 0;
   for (const feature of activeTerrain) {
     if (feature.kind === 'ridge') {

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import * as THREE from 'three';
-import { battleMap } from '@prestes/shared';
+import type { BattleMap } from '@prestes/shared';
+import { TEST_MAP } from '../../shared/test/fixtures/test-map';
 import { BattleMapLayer } from '../src/battle-map-layer';
 import { PALETTE } from '../src/palette';
 import { hillshade } from '../src/scene-view';
@@ -23,9 +24,16 @@ function hasColor(mesh: THREE.Mesh, hex: number): boolean {
 }
 
 // refine-battle-maps 5.6 and 5.8: rutted roads and the headlands round the fields.
+// author-game-maps 3.1: maps written as data (no painted ground) still draw
+// their roads and field headlands; the fixture field stands for them.
+const FIELD: BattleMap = {
+  ...TEST_MAP,
+  surfaces: [...TEST_MAP.surfaces, { surface: 'crop', polygon: [{ x: 40, y: 40 }, { x: 100, y: 40 }, { x: 100, y: 90 }, { x: 40, y: 90 }] }],
+};
+
 describe('battle map ground', () => {
-  it('each Fazenda dirt road is drawn rutted, with a crown and verges, never below the ground', () => {
-    const map = battleMap('fazenda');
+  it('each dirt road of a data map is drawn rutted, with a crown and verges, never below the ground', () => {
+    const map = FIELD;
     const roads = named(new BattleMapLayer(map).group, 'battle-map-road');
     expect(roads).toHaveLength(map.surfaces.filter((area) => area.surface === 'dirt-road').length);
     for (const road of roads) {
@@ -37,8 +45,8 @@ describe('battle map ground', () => {
     }
   });
 
-  it('a headland path runs round each Fazenda field, outside it', () => {
-    const map = battleMap('fazenda');
+  it('a headland path runs round each field of a data map, outside it', () => {
+    const map = FIELD;
     const fields = map.surfaces.filter((area) => area.surface === 'crop');
     const headlands = named(new BattleMapLayer(map).group, 'battle-map-headland');
     expect(headlands).toHaveLength(fields.length);

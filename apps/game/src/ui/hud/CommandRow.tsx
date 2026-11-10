@@ -1,4 +1,4 @@
-import { ChevronDown, ChevronUp, Close as X } from '../icons';
+import { Close as X } from '../icons';
 import type { MessageKey } from '@prestes/content';
 import type { Stance, TacticalOrder, UnitOrder } from '@prestes/shared';
 import { Tooltip } from '../Tooltip';
@@ -21,8 +21,6 @@ interface CommandRowProps {
   pendingOrder: OrderMode | null;
   pendingTactical: TacticalOrder | null;
   aimPending: boolean;
-  ordersCollapsed: boolean;
-  onToggleOrders: () => void;
   onCancelOrder: () => void;
 }
 
@@ -39,8 +37,6 @@ export function CommandRow({
   pendingOrder,
   pendingTactical,
   aimPending,
-  ordersCollapsed,
-  onToggleOrders,
   onCancelOrder,
 }: CommandRowProps) {
   const stanceKey =
@@ -94,23 +90,6 @@ export function CommandRow({
           </span>
         </Tooltip>
       ) : null}
-      <div className="orders-slot">
-        <Tooltip title={ordersCollapsed ? t('hud.showOrders') : t('hud.hideOrders')} description={t('hud.tip.orders')}>
-          <button
-            type="button"
-            className="orders-toggle"
-            onClick={onToggleOrders}
-            aria-label={ordersCollapsed ? t('hud.showOrders') : t('hud.hideOrders')}
-            data-testid="orders-toggle"
-          >
-            {ordersCollapsed ? (
-              <ChevronUp aria-hidden="true" size={15} />
-            ) : (
-              <ChevronDown aria-hidden="true" size={15} />
-            )}
-          </button>
-        </Tooltip>
-      </div>
     </div>
 
     {pendingOrder || pendingTactical || aimPending ? (

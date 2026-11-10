@@ -471,3 +471,56 @@
 .editor-cover-hover span {
   opacity: 0.75;
 }
+
+/* author-game-maps: the map's enemy presets in the properties dialog. */
+.editor-enemy {
+  border: 1px solid #4a5240;
+  padding: 6px 8px;
+  margin: 8px 0;
+}
+
+.editor-enemy-preset {
+  border-top: 1px solid #343b2e;
+  padding: 6px 0;
+}
+
+.editor-enemy-sections {
+  margin: 4px 0;
+  padding-left: 20px;
+}
+
+.editor-enemy-sections button {
+  margin-left: 6px;
+  padding: 0 6px;
+}
+
+/* author-game-maps 4.2: the Open dialog's slot lists. */
+.editor-dialog h3 {
+  margin: 10px 0 4px;
+  font-size: 0.95em;
+}
+.editor-open-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.editor-open-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 2px 0;
+}
+.editor-open-empty {
+  opacity: 0.6;
+}
+
+/* author-game-maps: a river's stretches, deep or ford; the ones beside a selected point are marked. */
+.editor-stretches label {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+}
+.editor-stretch-near {
+  outline: 1px solid var(--px-gold, #d6b25e);
+}

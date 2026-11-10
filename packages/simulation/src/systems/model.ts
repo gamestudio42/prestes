@@ -82,6 +82,10 @@ export interface MutableUnit {
   burstLeft?: number;
   /** pre-battle-roster 4.3: ticks a gunner has stood still, up to his gun's set-up time. */
   gunStill?: number;
+  /** machine-gun-fire-feedback 2.2: the gun's crew is halted to fire (its order's path is kept). */
+  gunHalt?: true;
+  /** machine-gun-fire-feedback 2.2: ticks a halted gunner has had no enemy to fire on. */
+  gunIdle?: number;
   magazine: number;
   reserve: number;
   morale: number;
@@ -173,6 +177,23 @@ export interface MutableUnit {
   reserveMode: boolean;
   recon: boolean;
   reconReported: boolean;
+  /** add-run-toggle: set only while the pace is Run, so a walking battle hashes as before. */
+  hurry?: true;
+  /** garrison-and-assault: the position he is inside, and his port's index there. */
+  garrison?: number;
+  port?: number;
+  /** garrison-and-assault: the position he is walking in to. */
+  entering?: number;
+  /** garrison-and-assault: his turn to leave (tick), and the point he leaves for. */
+  exitAt?: number;
+  exitTo?: Vec2;
+  /** garrison-and-assault D5: the position he is assaulting, and where his section came from. */
+  assaulting?: number;
+  assaultFrom?: Vec2;
+  /** garrison-and-assault 4.7: at an upper-floor window, that floor's height (m); absent on the ground. */
+  elevation?: number;
+  /** garrison-and-assault 1.5: the church whose tower he is in; its walls do not hide him nor his view. */
+  inTower?: number;
   reconContacts: number;
   rescueTargetId: number | null;
   rescueQueue: number[];

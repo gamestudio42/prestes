@@ -1,12 +1,14 @@
 ﻿import * as THREE from 'three';
 import { terrainHeightAt, type PreviewPlan } from '@prestes/shared';
-import type { SlotMarker } from '@prestes/shared';
+import type { ProtectionClass, SlotMarker } from '@prestes/shared';
 import { PALETTE } from './palette';
 
 const MAX_LINE_VERTICES = 4096;
 const MAX_RINGS = 64;
 const MAX_SLOT_MARKERS = 128;
 const SLOT_COLORS = { free: PALETTE.losClear, taken: PALETTE.losBlocked, planned: PALETTE.preview } as const;
+/** add-deployment-phase D5: a free slot coloured by the stances it hides, as in the editor's cover overlay. */
+const PROTECTION_COLORS: Record<ProtectionClass, number> = { standing: 0x4fd36b, crouched: 0xf2c14e, prone: 0xe8743b };
 
 export class PreviewLayer {
   readonly group = new THREE.Group();
@@ -234,7 +236,7 @@ export class PreviewLayer {
   }
 
   /** Ground ticks for cover slots: free, taken, or planned by the pending order. */
-  setSlotMarkers(markers: readonly SlotMarker[]): void {
+  setSlotMarkers(markers: readonly (SlotMarker & { protects?: ProtectionClass })[]): void {
     let count = 0;
     for (const marker of markers) {
       if (count >= MAX_SLOT_MARKERS) {
@@ -243,7 +245,8 @@ export class PreviewLayer {
       this.position.set(marker.x, terrainHeightAt(marker.x, marker.y) + 0.24, marker.y);
       this.matrix.compose(this.position, this.quaternion, this.scale);
       this.slotMarkers.setMatrixAt(count, this.matrix);
-      this.slotMarkers.setColorAt(count, this.color.setHex(SLOT_COLORS[marker.state]));
+      const hex = marker.state === 'free' && marker.protects ? PROTECTION_COLORS[marker.protects] : SLOT_COLORS[marker.state];
+      this.slotMarkers.setColorAt(count, this.color.setHex(hex));
       count += 1;
     }
     this.slotMarkers.count = count;

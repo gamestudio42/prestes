@@ -14,6 +14,12 @@ import {
 import { SoldierInstance, loadSoldierAsset, type SoldierAsset } from './soldier-models';
 import { WeaponProps } from './weapon-placeholders';
 import {
+  activeMapGeneration,
+  activeMapRuntime,
+  buildingOpenings,
+  windowMiddleHeight,
+  buildingTower,
+  TOWER_EYE,
   terrainHeightAt,
   type Faction,
   type Frame,
@@ -37,6 +43,15 @@ interface UnitMarks {
 
 /** After a shot the soldier keeps his rifle up this long (ms). */
 const ENGAGED_MS = 4000;
+
+/** garrison-and-assault 4.7 and 1.4: a building's window heights, and its tower's middle and face (world). */
+interface BuildingWindows {
+  ground: number;
+  upper: number;
+  /** The roof's ridge (m): an upper floor's marker floats over it. */
+  ridge: number;
+  tower?: { x: number; y: number; half: number; height: number; frontX: number; frontY: number };
+}
 
 interface CharacterView {
   marks: UnitMarks;
@@ -201,6 +216,19 @@ export class CharacterLayer {
   private readonly proxyQuaternion = new THREE.Quaternion();
   private readonly proxyPosition = new THREE.Vector3();
   private readonly proxyScale = new THREE.Vector3();
+  /**
+   * garrison-and-assault 4.7: men inside a building are not drawn, only
+   * their rifle barrels out of the windows.
+   */
+  private readonly barrels: THREE.InstancedMesh;
+  /**
+   * garrison-and-assault 1.4: a diamond in the side's colour over each
+   * occupied tower and upper floor (the men there are not drawn).
+   */
+  private readonly elevatedMarkers: THREE.InstancedMesh;
+  /** The active map's buildings by id: each floor's window height, and the tower's (world) when it has one. */
+  private windowHeights = new Map<number, BuildingWindows>();
+  private windowHeightsFor = -1;
   private asset: SoldierAsset | null = null;
   private lastUpdate = performance.now();
   private lastEventTick = -1;
@@ -239,7 +267,15 @@ export class CharacterLayer {
       new THREE.MeshBasicMaterial({ color: PALETTE.factions.legalist, transparent: true, opacity: 0.35, depthWrite: false }),
       128,
     );
-    for (const mesh of [this.proxyBody, this.proxyHead, this.proxyRing, this.proxyCorpse, this.ghosts]) {
+    this.barrels = new THREE.InstancedMesh(new THREE.BoxGeometry(0.1, 0.1, 1), toon({ color: PALETTE.barrel }), 256);
+    this.barrels.name = 'garrison-barrels';
+    this.elevatedMarkers = new THREE.InstancedMesh(
+      new THREE.OctahedronGeometry(0.9, 0),
+      new THREE.MeshBasicMaterial({ color: 0xffffff }),
+      64,
+    );
+    this.elevatedMarkers.name = 'garrison-elevated-markers';
+    for (const mesh of [this.proxyBody, this.proxyHead, this.proxyRing, this.proxyCorpse, this.ghosts, this.barrels, this.elevatedMarkers]) {
       mesh.count = 0;
       mesh.frustumCulled = false;
       this.group.add(mesh);
@@ -289,6 +325,10 @@ export class CharacterLayer {
     let proxyIndex = 0;
     let corpseIndex = 0;
     const farBand = span > TACTICAL_SPAN;
+    const windows = this.buildingWindows();
+    let barrelIndex = 0;
+    // Occupied raised floors: building id and floor ('upper' | 'tower') -> where its marker floats.
+    const raised = new Map<string, { x: number; y: number; z: number; count: number; faction: string }>();
     for (const unit of frame.units) {
       seen.add(unit.id);
       let view = this.views.get(unit.id);
@@ -337,6 +377,42 @@ export class CharacterLayer {
         view.soldier?.retrigger(
           soldierClip(unit, { moving: false, firing: true }),
         );
+      }
+
+      const inside = unit.garrison !== undefined ? windows.get(unit.garrison) : undefined;
+      if (inside) {
+        // Inside a building: only his barrel shows, out of his window, where he faces.
+        view.marks.root.visible = false;
+        view.facingAngle = turnToward(view.facingAngle, Math.atan2(-unit.facingX, -unit.facingY), seconds);
+        // A man up in a church is in its tower; his barrel shows at the tower's face he looks out of.
+        const tower = unit.elevation ? inside.tower : undefined;
+        if (unit.elevation && !down) {
+          const key = `${unit.garrison}:${tower ? 'tower' : 'upper'}`;
+          const ground = terrainHeightAt(unit.x, unit.y);
+          const at = tower
+            ? { x: tower.x + tower.frontX * (tower.half + 0.6), y: tower.y + tower.frontY * (tower.half + 0.6), z: ground + tower.height + 2 }
+            : { x: unit.x, y: unit.y, z: ground + inside.ridge + 1.4 };
+          const entry = raised.get(key);
+          if (entry) {
+            entry.x += at.x;
+            entry.y += at.y;
+            entry.z = Math.max(entry.z, at.z);
+            entry.count += 1;
+          } else raised.set(key, { ...at, count: 1, faction: unit.faction });
+        }
+        if (!down && barrelIndex < 256) {
+          const fx = -Math.sin(view.facingAngle);
+          const fy = -Math.cos(view.facingAngle);
+          const height = tower ? tower.height : unit.elevation ? inside.upper : inside.ground;
+          const from = tower ? { x: tower.x, y: tower.y, out: tower.half + 0.45 } : { x: unit.x, y: unit.y, out: 0.45 };
+          this.proxyQuaternion.setFromAxisAngle(new THREE.Vector3(0, 1, 0), view.facingAngle);
+          this.proxyPosition.set(from.x + fx * from.out, terrainHeightAt(unit.x, unit.y) + height, from.y + fy * from.out);
+          this.proxyScale.set(1, 1, 1.1);
+          this.proxyMatrix.compose(this.proxyPosition, this.proxyQuaternion, this.proxyScale);
+          this.barrels.setMatrixAt(barrelIndex, this.proxyMatrix);
+          barrelIndex += 1;
+        }
+        continue;
       }
 
       // A soldier without the model (still loading, or failed) is a proxy too.
@@ -475,6 +551,24 @@ export class CharacterLayer {
     this.proxyHead.count = proxyIndex;
     this.proxyRing.count = proxyIndex;
     this.proxyCorpse.count = corpseIndex;
+    this.barrels.count = barrelIndex;
+    this.barrels.instanceMatrix.needsUpdate = true;
+    let markerIndex = 0;
+    const markerColor = new THREE.Color();
+    for (const entry of raised.values()) {
+      if (markerIndex >= 64) break;
+      this.proxyQuaternion.identity();
+      this.proxyPosition.set(entry.x / entry.count, entry.z, entry.y / entry.count);
+      this.proxyScale.set(1, 1.4, 1);
+      this.proxyMatrix.compose(this.proxyPosition, this.proxyQuaternion, this.proxyScale);
+      this.elevatedMarkers.setMatrixAt(markerIndex, this.proxyMatrix);
+      markerColor.setHex(entry.faction === 'legalist' ? PALETTE.factions.legalist : PALETTE.factions.column);
+      this.elevatedMarkers.setColorAt(markerIndex, markerColor);
+      markerIndex += 1;
+    }
+    this.elevatedMarkers.count = markerIndex;
+    this.elevatedMarkers.instanceMatrix.needsUpdate = true;
+    if (this.elevatedMarkers.instanceColor) this.elevatedMarkers.instanceColor.needsUpdate = true;
     this.proxyBody.instanceMatrix.needsUpdate = true;
     this.proxyHead.instanceMatrix.needsUpdate = true;
     this.proxyRing.instanceMatrix.needsUpdate = true;
@@ -491,6 +585,50 @@ export class CharacterLayer {
         this.views.delete(id);
       }
     }
+  }
+
+  /** The active map's enterable buildings: each floor's window height, by building id. */
+  private buildingWindows(): Map<number, BuildingWindows> {
+    const generation = activeMapGeneration();
+    if (generation === this.windowHeightsFor) return this.windowHeights;
+    this.windowHeightsFor = generation;
+    this.windowHeights = new Map();
+    for (const building of activeMapRuntime()?.map.buildings ?? []) {
+      const openings = buildingOpenings(building);
+      const upper = openings.windows.find((window) => window.level > 0) ?? { elevation: openings.storey, level: 1 };
+      const tower = buildingTower(building);
+      const cos = Math.cos(building.rotation);
+      const sin = Math.sin(building.rotation);
+      const front = building.front ?? 1;
+      this.windowHeights.set(building.id, {
+        ground: windowMiddleHeight(openings, { elevation: 0, level: 0 }, building.model),
+        upper: windowMiddleHeight(openings, upper, building.model),
+        ridge: building.height,
+        ...(tower
+          ? {
+              tower: {
+                x: building.x + tower.x * cos - tower.y * sin,
+                y: building.y + tower.x * sin + tower.y * cos,
+                half: tower.side / 2,
+                height: TOWER_EYE - 0.2,
+                frontX: -sin * front,
+                frontY: cos * front,
+              },
+            }
+          : {}),
+      });
+    }
+    return this.windowHeights;
+  }
+
+  /** garrison-and-assault 4.7: the barrels out of the windows (dev checks). */
+  barrelCount(): number {
+    return this.barrels.count;
+  }
+
+  /** garrison-and-assault 1.4: the markers over occupied towers and upper floors (dev checks). */
+  elevatedMarkerCount(): number {
+    return this.elevatedMarkers.count;
   }
 
   /** fog-of-war: the faded silhouettes of enemies last seen there. */

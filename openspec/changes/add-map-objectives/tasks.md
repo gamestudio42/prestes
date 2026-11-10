@@ -26,6 +26,6 @@
 
 ## 4. Close
 
-- [ ] 4.1 Battle report: `decidedBy`, objectives held, capture times; bands on all maps and three seeds (verify: report tests pass)
+- [ ] 4.1 Battle report: `decidedBy`, objectives held, capture times; bands on all maps and three seeds, with the enemy deployed (`pnpm battle:report --deployment`; the Bairro stalled there without objectives, see add-deployment-phase design.md Apply findings; with garrison-and-assault the enemy garrisons a section at the start, so the report's player must take positions and assaults must show on the Bairro: `pnpm battle:report --garrisons`, see garrison-and-assault design.md Apply findings 3.4; empty STALLED_UNTIL_OBJECTIVES in tests/simulation/battle-maps-report.test.ts, LONG_UNTIL_OBJECTIVES in tests/simulation/battle-feel.test.ts and restore the Bairro gun's 10 bursts in tests/simulation/battle-report-weapons.test.ts) (verify: report tests pass)
 - [ ] 4.2 Gates: `pnpm verify`, `pnpm e2e`, `openspec validate add-map-objectives --type change --strict`
 - [ ] 4.3 Hand check by the user: one battle on each battle map played for the objectives; findings in `docs/status.md`

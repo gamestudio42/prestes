@@ -202,6 +202,8 @@ function spotRandom(seed: number, kind: number, x: number, y: number): () => num
 /** A field: a test for being inside it, its cells or polygon's extent, centre and main axis. */
 interface Field {
   inside: (x: number, y: number) => boolean;
+  /** author-game-maps: how thick the plants are drawn here (0 normal, 1 sparse, 2 dense). */
+  density: (x: number, y: number) => number;
   /** Within a metre of the field's edge. */
   nearEdge: (x: number, y: number) => boolean;
   centre: { x: number; y: number };
@@ -276,6 +278,10 @@ function rasterFields(map: BattleMap, kind: VegetationKind): Field[] {
     const { centre, axis } = PLANT_LOOK[kind].rows ? principalAxis(cells) : { centre: { x: 0, y: 0 }, axis: { x: 1, y: 0 } };
     fields.push({
       inside: isCode,
+      density: (x, y) => {
+        const index = cellAt(x, y);
+        return index >= 0 ? (raster.vegetationDensity?.[index] ?? 0) : 0;
+      },
       nearEdge: (x, y) => !isCode(x + 1, y) || !isCode(x - 1, y) || !isCode(x, y + 1) || !isCode(x, y - 1),
       centre,
       axis,
@@ -318,6 +324,7 @@ function polygonFields(map: BattleMap, kind: VegetationKind): Field[] {
       }
       return {
         inside: (x: number, y: number) => pointInPolygon(x, y, area.polygon) && plantableAt(map, x, y),
+        density: () => 0,
         nearEdge: (x: number, y: number) => distanceToEdge(x, y, area.polygon) < 1,
         centre: principalAxis(area.polygon).centre,
         axis,
@@ -353,17 +360,25 @@ export function plantSpots(map: BattleMap, kind: VegetationKind, seed: number): 
       maxV = Math.max(maxV, v + 1);
     }
     // Rows sit on whole multiples of the row spacing from the centre, so a field's rows are straight and parallel.
+    // author-game-maps: the grid is walked at half steps (along rows; both ways for capim and scrub).
+    // The whole steps are the normal look; sparse cells thin them, dense cells add the half steps.
+    const stepU = look.along / 2;
+    const stepV = look.rows ? look.across : look.across / 2;
     const firstRow = Math.ceil(minV / look.across) * look.across;
     const firstStep = Math.ceil(minU / look.along) * look.along;
-    for (let v = firstRow; v <= maxV; v += look.across) {
-      for (let u = firstStep; u <= maxU; u += look.along) {
+    for (let row = 0, v = firstRow; v <= maxV; row += 1, v = firstRow + row * stepV) {
+      for (let step = 0, u = firstStep; u <= maxU; step += 1, u = firstStep + step * stepU) {
+        const whole = step % 2 === 0 && (look.rows || row % 2 === 0);
         const random = spotRandom(seed, kindIndex, centre.x + axis.x * u + across.x * v, centre.y + axis.y * u + across.y * v);
-        const ju = (random() - 0.5) * look.along * (look.rows ? 0.4 : 0.7);
-        const jv = look.rows ? (random() - 0.5) * 0.06 : (random() - 0.5) * look.across * 0.7;
+        const ju = (random() - 0.5) * look.along * (look.rows ? 0.4 : 0.7) * (whole ? 1 : 0.5);
+        const jv = look.rows ? (random() - 0.5) * 0.06 : (random() - 0.5) * look.across * 0.7 * (whole ? 1 : 0.5);
         const x = centre.x + axis.x * (u + ju) + across.x * (v + jv);
         const y = centre.y + axis.y * (u + ju) + across.y * (v + jv);
         const thin = random();
         if (!field.inside(x, y)) continue;
+        const density = field.density(x, y);
+        if (!whole && density !== 2) continue;
+        if (whole && density === 1 && thin < 0.55) continue;
         if (field.nearEdge(x, y) && thin < 0.5) continue;
         spots.push({ x, y, turn: random() * Math.PI * 2, size: random(), stretch: random(), shade: random() });
       }

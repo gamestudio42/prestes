@@ -3,6 +3,7 @@ export {
   type OrderCallout,
   type PlacementKind,
   type PlacementPreview,
+  type SlotBadge,
 } from './scene-view';
 export type { CommanderBalloon } from './scene-view';
 export {
@@ -35,3 +36,4 @@ export { renderThumbnails } from './thumbnails';
 export { DEPLOYMENT_MARK_SECONDS, type DeploymentLabels } from './deployment-layer';
 export { PaintedGround, GROUND_CHUNK, type GroundOverlay } from './painted-ground';
 export { groundAtlasPixels } from './ground-atlas';
+export { sunFromLight, type SunLook } from './map-light';

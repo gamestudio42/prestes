@@ -2,12 +2,13 @@ import { describe, expect, it } from 'vitest';
 import { vegetationAt, type SimEvent } from '@prestes/shared';
 import { SimulationEngine } from '../src/engine';
 import { searchAreas } from '../src/systems/enemy-commander';
+import { caneField } from './open-field';
 
 // refine-battle-maps 2.1 / 2.2: the winning side searches using only what it
 // knows, and a broken side out of contact falls back so the battle ends.
 
-function fazenda(seed = 1922) {
-  const engine = new SimulationEngine({ seed, scenario: 'battle3v3', sandbox: true, fog: true, battleMap: 'fazenda' });
+function field(seed = 1922) {
+  const engine = new SimulationEngine({ seed, scenario: 'battle3v3', sandbox: true, fog: true, battleMap: caneField() });
   const events: Array<SimEvent & { at: number }> = [];
   const run = (ticks: number, until?: () => boolean) => {
     for (let index = 0; index < ticks; index += 1) {
@@ -28,7 +29,7 @@ function fazenda(seed = 1922) {
 
 describe('a decided battle ends', () => {
   it('the last survivors of a broken side, out of contact, fall back off the field', () => {
-    const t = fazenda();
+    const t = field();
     t.strikeDown(3);
     const column = t.side('column');
     // The column holds well back, out of sight, and does not fire.
@@ -45,7 +46,7 @@ describe('a decided battle ends', () => {
   }, 120_000);
 
   it('a side still in contact does not fall back, however few', () => {
-    const t = fazenda();
+    const t = field();
     t.strikeDown(3);
     t.run(300);
     const legalists = t.side('legalist').filter((unit) => unit.alive);
@@ -63,7 +64,7 @@ describe('a decided battle ends', () => {
 
 describe('the winning side searches', () => {
   it('a clue by the cane makes the cane near it a search area, before the enemy deployment', () => {
-    const t = fazenda();
+    const t = field();
     t.run(1);
     t.engine.battle.clues.column.set('test', { x: -60, y: 0 });
     const areas = searchAreas(t.engine, 'column');
@@ -80,7 +81,7 @@ describe('the winning side searches', () => {
   });
 
   it('no cheating: where an unseen enemy hides does not change the search', () => {
-    const t = fazenda();
+    const t = field();
     t.run(1);
     t.engine.battle.clues.column.set('test', { x: -60, y: 0 });
     const before = searchAreas(t.engine, 'column').map((area) => area.id);
@@ -93,7 +94,7 @@ describe('the winning side searches', () => {
   });
 
   it('search the cane: the last column section, seen entering the canefield, is searched for there within 2 minutes', () => {
-    const t = fazenda();
+    const t = field();
     // The column's last section (a third of its strength: not broken) hides
     // crouched in the canefield; the legalists last saw it at the edge.
     const column = t.side('column');

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { UnitSnapshot, WeaponId } from '../../packages/shared/src';
-import { mainWeapon, weaponLines } from '../../apps/game/src/ui/hud/weaponLines';
+import { gunStateLabel, mainWeapon, weaponLines } from '../../apps/game/src/ui/hud/weaponLines';
 
 // pre-battle-roster 5.2: the weapon card's lines for a mixed section.
 
@@ -24,5 +24,14 @@ describe('weapon lines', () => {
     // The crew's card is named after its gun, though three loaders carry rifles.
     expect(mainWeapon([...lines, { weaponId: 'mauser-7mm', men: 3, magazine: 15, total: 60 }])?.weaponId).toBe('metralhadora-7mm');
     expect(mainWeapon([])).toBeNull();
+  });
+
+  it('labels the gun moving, setting up with its seconds left, and set (machine-gun-fire-feedback 3.2)', () => {
+    const gunner = (gunState: 'moving' | 'setting' | 'set', gunSetupLeft: number) =>
+      ({ id: 1, weaponId: 'metralhadora-7mm', magazine: 250, reserve: 0, gunSet: gunState === 'set', gunState, gunSetupLeft }) as UnitSnapshot;
+    expect(gunStateLabel(weaponLines([gunner('moving', 40)])[0]!)).toMatchObject({ key: 'hud.gunMoving', tone: 'moving' });
+    expect(gunStateLabel(weaponLines([gunner('setting', 20)])[0]!)).toEqual({ key: 'hud.gunSettingLeft', seconds: 2, tone: 'setting' });
+    expect(gunStateLabel(weaponLines([gunner('setting', 3)])[0]!).seconds).toBe(1);
+    expect(gunStateLabel(weaponLines([gunner('set', 0)])[0]!)).toMatchObject({ key: 'hud.gunReady', tone: 'ready' });
   });
 });

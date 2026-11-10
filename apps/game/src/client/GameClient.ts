@@ -31,6 +31,8 @@ export interface GameClientOptions {
   mapDocument?: MapDocument;
   /** pre-battle-roster 3.1: the 3v3's forces (absent: the default roster). */
   rosters?: BattleRosters;
+  /** add-deployment-phase: open in the deployment phase (the enemy deploys too). */
+  deployment?: boolean;
   onFrame?: (frame: Frame) => void;
   onEvent?: (event: SimEvent) => void;
 }
@@ -54,6 +56,7 @@ export class GameClient {
   readonly battleMap?: BattleMapId;
   private readonly mapDocument?: MapDocument;
   private readonly rosters?: BattleRosters;
+  private readonly deployment?: boolean;
   private bounding?: boolean;
   private timer: number | null = null;
   /** Half ticks owed: the interval runs every 100 ms, the speed is per 200 ms. */
@@ -75,6 +78,7 @@ export class GameClient {
     this.battleMap = options.battleMap;
     this.mapDocument = options.mapDocument;
     this.rosters = options.rosters;
+    this.deployment = options.deployment;
     this.worker = new Worker(new URL('../sim.worker.ts', import.meta.url), { type: 'module' });
     this.worker.onmessage = (event: MessageEvent<WorkerResponse>) => {
       const message = event.data;
@@ -98,7 +102,7 @@ export class GameClient {
       }
     };
 
-    this.send({ type: 'start', seed: options.seed, sandbox: options.sandbox, training: options.training, opposition: options.opposition, bounding: options.bounding, scenario: options.scenario, battleMap: options.battleMap, ...(options.mapDocument ? { mapDocument: options.mapDocument } : {}), ...(options.rosters ? { rosters: options.rosters } : {}) });
+    this.send({ type: 'start', seed: options.seed, sandbox: options.sandbox, training: options.training, opposition: options.opposition, bounding: options.bounding, scenario: options.scenario, battleMap: options.battleMap, ...(options.mapDocument ? { mapDocument: options.mapDocument } : {}), ...(options.rosters ? { rosters: options.rosters } : {}), ...(options.deployment ? { deployment: true } : {}) });
   }
 
   start(): void {
@@ -138,7 +142,7 @@ export class GameClient {
       outcome: 'playing',
       hash: '',
     });
-    this.send({ type: 'start', seed: this.seed, sandbox: this.sandbox, training: this.training, opposition: this.opposition, bounding: this.bounding, scenario: this.scenario, battleMap: this.battleMap, ...(this.mapDocument ? { mapDocument: this.mapDocument } : {}), ...(this.rosters ? { rosters: this.rosters } : {}) });
+    this.send({ type: 'start', seed: this.seed, sandbox: this.sandbox, training: this.training, opposition: this.opposition, bounding: this.bounding, scenario: this.scenario, battleMap: this.battleMap, ...(this.mapDocument ? { mapDocument: this.mapDocument } : {}), ...(this.rosters ? { rosters: this.rosters } : {}), ...(this.deployment ? { deployment: true } : {}) });
   }
 
   step(ticks = 1): void {

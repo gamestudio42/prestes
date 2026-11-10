@@ -414,19 +414,7 @@
   background: #8fa278;
 }
 
-.squad-actions {
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  gap: 4px;
-  padding-left: 4px;
-  border-left: 1px solid rgba(109, 81, 48, 0.4);
-}
 
-.squad-actions .icon-button {
-  width: 40px;
-  height: 40px;
-}
 
 .action-button {
   display: grid;
@@ -519,11 +507,6 @@
   white-space: nowrap;
 }
 
-.weapon-more {
-  width: 24px;
-  height: 24px;
-}
-
 /* pre-battle-roster 5.2: a mixed section or a gun crew lists each weapon with its rounds. */
 .weapon-lines {
   display: grid;
@@ -567,6 +550,11 @@
   color: var(--hud-paper-bright);
 }
 
+.weapon-gun-state.moving,
+.weapon-gun-state.none {
+  color: var(--hud-dim);
+}
+
 .status-row {
   display: flex;
   align-items: center;
@@ -599,55 +587,11 @@
   line-height: 1.25;
 }
 
-.hud-overflow-menu {
-  position: absolute;
-  right: 0;
-  bottom: calc(100% + 6px);
-  z-index: 30;
-  display: grid;
-  gap: 3px;
-  width: 218px;
-  padding: 6px;
-  background: var(--hud-panel-raised);
-  border: 1px solid var(--hud-border);
-  border-radius: 0;
-  box-shadow: var(--px-shadow);
-}
 
-.hud-overflow-menu button,
-.hud-overflow-menu label {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  width: 100%;
-  padding: 6px 7px;
-  border: 0;
-  border-radius: 0;
-  background: transparent;
-  color: var(--hud-paper);
-  font-size: 10px;
-  text-align: left;
-}
 
-.hud-overflow-menu button:hover,
-.hud-overflow-menu label:hover {
-  background: rgba(208, 164, 92, 0.1);
-}
 
-.hud-overflow-menu input[type='checkbox'] {
-  accent-color: var(--hud-gold);
-}
 
-.volume-control {
-  display: grid !important;
-  grid-template-columns: 1fr;
-  gap: 3px !important;
-}
 
-.volume-control input {
-  width: 100%;
-  accent-color: var(--hud-gold);
-}
 
 .command-row {
   position: relative;
@@ -749,30 +693,6 @@
   color: var(--hud-dim);
 }
 
-.orders-slot {
-  display: flex;
-  margin-left: auto;
-}
-
-.orders-toggle {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 30px;
-  height: 24px;
-  margin-left: 0;
-  padding: 0;
-  border: 1px solid var(--hud-border-soft);
-  border-radius: 0;
-  background: transparent;
-  color: var(--hud-dim);
-}
-
-.orders-toggle:hover {
-  border-color: var(--hud-gold);
-  color: var(--hud-paper);
-}
-
 .pending-banner {
   position: absolute;
   bottom: calc(100% + 8px);
@@ -816,37 +736,11 @@
   color: var(--hud-paper);
 }
 
-.orders-panel.collapsed {
-  height: 34px;
-  padding: 4px 16px;
-}
 
-.orders-panel.collapsed .hud-deck {
-  display: none;
-}
 
-.orders-panel.collapsed .command-row {
-  display: flex;
-  min-height: 26px;
-  margin: 0;
-  padding: 0;
-  background: transparent;
-  border: 0;
-  justify-content: center;
-}
 
-.orders-panel.collapsed .command-row > :not(.orders-slot) {
-  display: none;
-}
 
-.orders-panel.collapsed .orders-slot {
-  display: flex;
-  margin-left: auto;
-}
 
-.orders-panel.collapsed .orders-toggle {
-  margin: 0;
-}
 
 .hud-restore {
   position: absolute;

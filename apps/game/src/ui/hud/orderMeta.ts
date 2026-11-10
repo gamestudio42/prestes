@@ -52,6 +52,12 @@ export function orderLetter(order: UnitOrder): string {
       return 'Reserve';
     case 'rescue':
       return 'Rescue';
+    case 'enter':
+      return 'Enter';
+    case 'exit':
+      return 'Exit';
+    case 'assault':
+      return 'Assault';
   }
 }
 
@@ -76,6 +82,9 @@ export const ICONS = {
   disperse: pixelIcon('order-disperse'),
   reserve: pixelIcon('order-reserve'),
   regroup: pixelIcon('order-regroup'),
+  enter: pixelIcon('order-enter'),
+  exit: pixelIcon('order-exit'),
+  assault: pixelIcon('order-assault'),
   'posture-balanced': pixelIcon('posture-balanced'),
   'posture-aggressive': pixelIcon('posture-aggressive'),
   'posture-defensive': pixelIcon('posture-defensive'),

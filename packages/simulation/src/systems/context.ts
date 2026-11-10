@@ -4,6 +4,7 @@ import type {
   CommandEnvelope,
   CoverPoint,
   Outcome,
+  PositionDef,
   SightObstacle,
   SimEvent,
 } from '@prestes/shared';
@@ -12,6 +13,8 @@ import type { ActiveOrder, BoundingGroup, MutableUnit } from './model';
 import type { BattleMemory } from './enemy-commander';
 import type { VisionState } from './vision';
 import type { FerryState } from './ferry';
+import type { Garrison } from './garrison';
+import type { Assault } from './assault';
 
 /**
  * The mutable simulation state every system reads and writes. The engine
@@ -55,4 +58,11 @@ export interface SimContext {
   readonly battleMap: BattleMap | null;
   /** pre-battle-roster 4.3: each machine-gun squad's belts beyond the one in the gun (rostered battles). */
   gunPools?: Record<number, number>;
+  /** garrison-and-assault: the map's positions, by id. */
+  readonly positions: readonly PositionDef[];
+  readonly positionById: ReadonlyMap<number, PositionDef>;
+  /** garrison-and-assault: the held positions, by position id. */
+  readonly garrisons: Map<number, Garrison>;
+  /** garrison-and-assault D5: the close fights under way, by position id. */
+  readonly assaults: Map<number, Assault>;
 }

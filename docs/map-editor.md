@@ -42,8 +42,7 @@ menu desk, choose the theodolite (**Map editor**); or start the dev server
     trench line; zoomed out past about 160 m, the badges in each 50 m square
     add up into one;
   - concealing vegetation hatched;
-  - in the side panel, the places inside each side's deployment area (for
-    now, 40 m round each section point);
+  - in the side panel, the places inside each side's deployment area;
   - pointing at a piece rings its places, draws the arc each one guards, and
     gives its name and count in the panel.
 
@@ -62,7 +61,12 @@ menu desk, choose the theodolite (**Map editor**); or start the dev server
 | Place object | buildings, stones, trees and plants, posts, covers, props, ground decals | O; R rotates (Shift+R back) |
 | Trees | scatter a biome's mix at a density, place one species, or erase trees under the brush | Y; [ ] size |
 | Vegetation | corn, sugarcane, capim, scrub (they conceal men inside) | P |
-| Deployment | drag each side's three section points | K |
+| Deployment | drag each side's three section points; drag an area's corners, or the whole area from inside; double-click an edge to add a corner | K; Del removes the selected corner (three stay) |
+
+**Deployment areas** (document version 3): each side has one area, a
+polygon where its men may be placed before the battle. Older documents open
+with a default area: the side's half of the map, cut a margin short of the
+middle. Areas are drawn in the side's colour.
 
 **Roads** paint their surface and leave the ground as you shaped it; shape
 the relief first with the terrain tools. A road's ditches still dig their
@@ -95,6 +99,9 @@ boulder hides a standing one; posts and cacti stop no bullet; walls under
 
 - **Check map** lists errors and warnings (missing names, sections off the
   map or in water, no path between the sides, overlapping buildings, bridges
-  not over water, long open ground). Click a problem to go to it.
-- **Playtest** saves the map, opens the 3 vs 3 on it, and offers "Back to the
-  editor" at the top of the screen and at the battle's end.
+  not over water, long open ground, a section outside its deployment area,
+  areas that overlap, an area less than half walkable). Click a problem to
+  go to it.
+- **Playtest** saves the map, opens the 3 vs 3 on it in the deployment
+  phase (bound by the map's areas), and offers "Back to the editor" at the
+  top of the screen and at the battle's end.

@@ -118,32 +118,21 @@ test('the section at tactical span stays within the frame budget', async ({ page
   expect(result.mean).toBeLessThan(BUDGET_MS);
 });
 
-// refine-map-editor 3.3: the new plant meshes keep the budget at strategic zoom,
-// over the Fazenda's crops and on the largest authored map.
-for (const map of ['fazenda', 'fazenda-doc']) {
-  test(`strategic zoom over the crops of ${map} stays within the frame budget`, async ({ page }) => {
+// refine-map-editor 3.3: the budget at strategic zoom; author-game-maps 3.5 on the
+// test map (the Fazenda's crops leave with the generated maps).
+for (const map of ['campo-de-provas']) {
+  test(`strategic zoom over ${map} stays within the frame budget`, async ({ page }) => {
     test.setTimeout(90_000);
     await page.goto('/');
     const gpu = await renderer(page);
     test.skip(/swiftshader|llvmpipe|software|none/i.test(gpu), `no GPU for the probe (${gpu})`);
-    if (map === 'fazenda') {
-      await page.getByTestId('open-skirmish').click();
-      await page.getByTestId(`map-option-${map}`).click();
-      await page.getByTestId('start-battle-3v3').click();
-    } else {
-      // A campaign map: opened in the editor and played from there.
-      await page.goto('/editor.html');
-      await expect(page.getByTestId('editor-viewport')).toHaveAttribute('data-ready', 'true');
-      await page.getByTestId('editor-import-input').setInputFiles(`packages/shared/src/maps/authored/${map}.map.json`);
-      await expect.poll(() => page.evaluate(() => (window as unknown as { __prestesEditor: { state: () => { id: string } } }).__prestesEditor.state().id)).toBe(map);
-      await page.getByTestId('editor-playtest').click();
-      await page.waitForURL(/index\.html\?playtest=1/);
-    }
+    await page.getByTestId('open-skirmish').click();
+    await page.getByTestId(`map-option-${map}`).click();
+    await page.getByTestId('start-battle-3v3').click();
     await expect(page.getByTestId('hud')).toBeVisible();
     await page.evaluate(() => {
       const scene = (window as unknown as Bridge).__prestesScene!;
       scene.setBand('strategic');
-      // Between the cornfield and the canefield.
       scene.focusOn(0, -6);
     });
     await page.waitForTimeout(2500);

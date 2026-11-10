@@ -1,7 +1,8 @@
 import type { MessageKey } from '@prestes/content';
-import { trainingLoad, type UnitSnapshot } from '@prestes/shared';
+import { trainingLoad, type CoverPoint, type UnitSnapshot } from '@prestes/shared';
 import { Helmet } from '../icons';
 import type { Translate } from './orderMeta';
+import { positionName } from './positionName';
 
 interface TroopSummaryProps {
   t: Translate;
@@ -9,6 +10,8 @@ interface TroopSummaryProps {
   selectedIds: ReadonlySet<number>;
   /** Rounds a soldier of the default troop carries when full (magazine plus reserve). */
   ammoFull: number;
+  /** The frame's covers, to name the positions garrisoned men are inside. */
+  covers: readonly CoverPoint[];
 }
 
 type HelmetTone = 'fit' | 'selected' | 'wounded' | 'down' | 'dead';
@@ -26,7 +29,7 @@ const pct = (value: number) => `${Math.round(Math.max(0, Math.min(1, value)) * 1
  * One helmet per soldier of the troop, each with three vertical bars: health,
  * morale and ammunition. The helmet's colour gives the soldier's condition.
  */
-export function TroopSummary({ t, squadUnits, selectedIds, ammoFull }: TroopSummaryProps) {
+export function TroopSummary({ t, squadUnits, selectedIds, ammoFull, covers }: TroopSummaryProps) {
   const soldiers = [...squadUnits].filter((unit) => !unit.dummy).sort((left, right) => left.id - right.id);
   return (
     <ul className="troop-helmets" data-testid="troop-helmets" aria-label={t('hud.windowSummary')}>
@@ -36,19 +39,23 @@ export function TroopSummary({ t, squadUnits, selectedIds, ammoFull }: TroopSumm
         // A rostered man is full at his own weapon's load; the gun's belts are the crew's pool.
         const load = unit.sectionType !== undefined ? trainingLoad(unit.weaponId) : null;
         const full = load ? load.magazine + load.reserve : ammoFull;
-        const tip = t('hud.soldierTip', {
+        // garrison-and-assault 4.4: a man inside a position is marked and his tip names it.
+        const inside = unit.alive && unit.garrison !== undefined ? positionName(t, unit.garrison, covers) : null;
+        const soldierTip = t('hud.soldierTip', {
           id: unit.id,
           weapon: t(`weapon.${unit.weaponId}.short` as MessageKey),
           state: t(`state.${unit.alive ? unit.state : 'routed'}` as MessageKey),
           fatigue: Math.round(unit.fatigue),
           rounds,
         });
+        const tip = inside ? `${soldierTip} · ${t('hud.inside', { place: inside })}` : soldierTip;
         return (
           <li
             key={unit.id}
-            className={`troop-helmet tone-${tone}`}
+            className={`troop-helmet tone-${tone}${inside ? ' inside' : ''}`}
             data-testid={`helmet-${unit.id}`}
             data-tone={tone}
+            data-inside={inside ?? undefined}
             data-weapon={unit.weaponId}
             title={tip}
           >

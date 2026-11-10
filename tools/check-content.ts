@@ -16,7 +16,7 @@ import {
   validateMissionCommander,
   type MissionMetadata,
 } from '@prestes/content';
-import { BATTLE_MAP_IDS, battleMaps, SECTION_TYPES, setActiveMap, validateBattleMap, validateDeploymentAreas, validateMapRosters, validateSectionTypes, validateWeapons, VILA_MILITAR, WEAPONS } from '@prestes/shared';
+import { BATTLE_MAP_IDS, battleMaps, SECTION_TYPES, setActiveMap, validateBattleMap, validateDeploymentAreas, validateMapRosters, validatePositions, validateSectionTypes, validateWeapons, VILA_MILITAR, WEAPONS } from '@prestes/shared';
 
 const root = process.cwd();
 const errors: string[] = [];
@@ -128,6 +128,7 @@ for (const map of maps) {
   errors.push(...validateBattleMap(map));
   // add-deployment-phase 1.1: each side's area holds its slots, is half walkable, and the two do not overlap.
   errors.push(...validateDeploymentAreas(map));
+  errors.push(...validatePositions(map));
   // pre-battle-roster 2.3: enemy presets are valid and any roster deploys on walkable ground.
   errors.push(...validateMapRosters(map, { requirePresets: (BATTLE_MAP_IDS as readonly string[]).includes(map.id) }));
   // refine-battle-maps 6.3: its pixel preview for the skirmish page (`pnpm maps:previews`).

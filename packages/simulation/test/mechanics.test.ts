@@ -801,6 +801,53 @@ describe('mechanics: gaits (order-tempo-and-facing)', () => {
     expect(t.engine.units.find((unit) => unit.id === 1)!.moveSpeed ?? 0).toBeLessThan(1);
   });
 
+  // add-run-toggle 1.1
+  it('a running section crosses faster: Run takes under two thirds of the walk', () => {
+    const arrival = (hurry: boolean) => {
+      const t = harness();
+      quiet(t);
+      const to = { x: -40, y: 30 };
+      if (hurry) t.send({ type: 'hurry', unitIds: [1], hurry: true });
+      t.send({ type: 'move', unitIds: [1], to });
+      let ticks = 0;
+      while (distance(t.unit(1), to) > 1.5 && ticks < 2000) {
+        t.run(1);
+        ticks += 1;
+      }
+      return ticks;
+    };
+    expect(arrival(true)).toBeLessThan(arrival(false) * (2 / 3));
+  });
+
+  it('Run: the frame carries the pace and the gait is run; Walk clears it', () => {
+    const t = harness();
+    quiet(t);
+    t.send({ type: 'hurry', unitIds: [1], hurry: true });
+    t.send({ type: 'move', unitIds: [1], to: { x: -40, y: 30 } }, 10);
+    expect(t.unit(1).hurry).toBe(true);
+    expect(t.unit(1).gait).toBe('run');
+    t.send({ type: 'hurry', unitIds: [1], hurry: false }, 10);
+    expect(t.unit(1).hurry).toBeUndefined();
+    expect(t.unit(1).gait).toBe('walk');
+  });
+
+  it('Run: recon stays slow', () => {
+    const t = harness();
+    quiet(t);
+    t.send({ type: 'hurry', unitIds: [1], hurry: true });
+    t.send({ type: 'order', order: 'recon', unitIds: [1], to: { x: -40, y: 30 } }, 10);
+    expect(t.unit(1).gait).toBe('slow');
+  });
+
+  it('Run: running still tires (a winded soldier walks)', () => {
+    const t = harness();
+    quiet(t);
+    t.engine.units.find((entry) => entry.id === 1)!.fatigue = 80;
+    t.send({ type: 'hurry', unitIds: [1], hurry: true });
+    t.send({ type: 'move', unitIds: [1], to: { x: -40, y: 30 } }, 10);
+    expect(t.unit(1).gait).toBe('walk');
+  });
+
   it('a winded soldier walks', () => {
     const t = harness();
     quiet(t);

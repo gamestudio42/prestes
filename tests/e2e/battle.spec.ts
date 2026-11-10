@@ -14,6 +14,8 @@ async function startFromMenu(page: Page): Promise<void> {
   await page.getByTestId('open-skirmish').click();
   await page.getByTestId('start-battle-3v3').click();
   await expect(page.getByTestId('hud')).toBeVisible();
+  // add-deployment-phase: the skirmish opens in deployment; start the battle.
+  await page.getByTestId('start-battle').click();
   await expect
     .poll(() => page.evaluate(() => (window as unknown as Bridge).__prestes?.frame()?.units.length ?? 0))
     .toBe(66);
@@ -60,6 +62,8 @@ test('starts the 3 vs 3 from the menu and ends it in victory', async ({ page }) 
   // Fight again: a fresh battle with all 66 soldiers.
   await page.getByTestId('battle-end-restart').click();
   await expect(page.getByTestId('battle-end')).toHaveCount(0);
+  // add-deployment-phase: the fresh battle opens in deployment too.
+  await page.getByTestId('start-battle').click();
   await expect
     .poll(() =>
       page.evaluate(() => {

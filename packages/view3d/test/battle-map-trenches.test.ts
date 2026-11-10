@@ -45,16 +45,16 @@ describe('trench works', () => {
     expect(instanced.reduce((sum, mesh) => sum + mesh.count, 0)).toBeGreaterThan(100);
   });
 
-  it('the Fazenda draws its trench lines', () => {
-    const fazenda = battleMap('fazenda');
-    setActiveMap(fazenda);
-    expect(fazenda.trenches).toHaveLength(10);
-    const group = trenchWorks(fazenda);
-    expect(group.children.filter((child) => child.name === 'trench-floor')).toHaveLength(10);
-    // Its six fire trenches have sandbag parapets, so no earth parapet ribbons.
-    expect(group.children.filter((child) => child.name === 'trench-parapet')).toHaveLength(0);
-    // The map layer draws them; the cover layer leaves their pieces alone.
-    const built = fazenda.covers.filter((cover) => cover.id >= 3000 && cover.id < 4000);
+  it('the test map draws its trench line', () => {
+    const map = battleMap('campo-de-provas');
+    setActiveMap(map);
+    expect(map.trenches).toHaveLength(1);
+    const group = trenchWorks(map);
+    expect(group.children.filter((child) => child.name === 'trench-floor')).toHaveLength(1);
+    // Its fire trench has an earth parapet: a parapet ribbon.
+    expect(group.children.filter((child) => child.name === 'trench-parapet').length).toBeGreaterThan(0);
+    // The map layer draws it; the cover layer leaves its pieces alone.
+    const built = map.covers.filter((cover) => cover.kind === 'trench' && !cover.ditch);
     expect(built.length).toBeGreaterThan(0);
     expect(built.every((cover) => cover.drawnBy === 'map')).toBe(true);
   });

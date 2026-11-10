@@ -8,6 +8,7 @@ import {
   battleMap,
   type BattleMap,
   type BattleMapId,
+  groundHeightAt,
   terrainHeightAt,
   terrainSurfaceAt,
   type TerrainSurface,
@@ -16,28 +17,29 @@ import {
   type Vec2,
   type PreviewPlan,
   type SlotMarker,
+  type ProtectionClass,
   type UnitSnapshot,
   type FogExtras,
-  troopFormationOffsets,
-  shotShown,
-} from '@prestes/shared';
+  troopFormationOffsets, type MapLight } from '@prestes/shared';
 import { CameraRig, STRATEGIC_TILT, TACTICAL_SPAN, type CameraBand } from './camera-rig';
 import { CharacterLayer } from './character-layer';
 import { CoverLayer } from './cover-layer';
 import { EffectsLayer } from './effects-layer';
 import { MarkerLayer } from './marker-layer';
+import { GarrisonLayer, type AssaultBarsState, type GarrisonBannerState } from './garrison-layer';
 import { loadEnvironmentAsset, type EnvironmentAsset } from './environment-models';
 import { PaintedGround, type GroundOverlay } from './painted-ground';
 import { terrainGradient, toon, toonGradient } from './materials';
 import { PALETTE } from './palette';
+import { sunForMap } from './map-light';
 import { PathLayer, selectedOrders } from './path-layer';
 import { PixelPost } from './post';
 import { PreviewLayer } from './preview-layer';
-import { TracerLayer } from './tracer-layer';
+import { TracerLayer, tracerKind } from './tracer-layer';
 import { TrainingLayer, type TrainingMarker } from './training-layer';
 import { WorldLayer } from './world-layer';
 import { BattleMapLayer } from './battle-map-layer';
-import { DeploymentLayer, type DeploymentLabels } from './deployment-layer';
+import { DeploymentAreasLayer, DeploymentLayer, type DeploymentLabels } from './deployment-layer';
 
 
 export interface OrderCallout {
@@ -55,6 +57,13 @@ export type PlacementKind =
   | 'enemy-troop'
   | 'command-troop';
 
+/** add-deployment-phase D5: a piece's slot count over the ground. */
+export interface SlotBadge {
+  x: number;
+  y: number;
+  text: string;
+}
+
 export interface PlacementPreview {
   kind: PlacementKind;
   x: number;
@@ -68,6 +77,8 @@ export interface SceneViewOptions {
   onBandChange?: (band: CameraBand) => void;
   trainingField?: boolean;
   strategicField?: boolean;
+  /** How far out the view may zoom, as a share of the map's extent (the editor sees whole hills from further out). */
+  maxSpanFactor?: number;
   /** add-battle-maps: the 3v3's map; the Vila Militar field when absent. The editor passes the map itself. */
   battleMap?: BattleMapId | BattleMap;
   onCameraAction?: (kind: 'pan' | 'zoom' | 'rotate') => void;
@@ -93,6 +104,7 @@ function wireFences(map: BattleMap): BattleMap['fences'] {
 
 export class SceneView {
   private readonly container: HTMLElement;
+  private readonly maxSpanFactor: number;
   private readonly onBandChange?: (band: CameraBand) => void;
   private readonly onCameraAction?: (kind: 'pan' | 'zoom' | 'rotate') => void;
   private readonly renderer: THREE.WebGLRenderer;
@@ -107,19 +119,30 @@ export class SceneView {
   private readonly characters = new CharacterLayer();
   private readonly paths = new PathLayer();
   private readonly tracers = new TracerLayer();
+  private readonly viewDirection = new THREE.Vector3();
   private readonly effects = new EffectsLayer();
   private readonly markers = new MarkerLayer();
+  private readonly garrisonLayer = new GarrisonLayer();
   private readonly preview = new PreviewLayer();
   private battleMap: BattleMap | null;
   private mapLayer: BattleMapLayer | null = null;
   /** refine-battle-maps 6.2: the opening deployment marks (a battle only, never the editor). */
   private deployment: DeploymentLayer | null = null;
+  private slotMarkerCount = 0;
+  private slotBadgeLabels: { badge: SlotBadge; element: HTMLDivElement }[] = [];
+  /** add-deployment-phase 3.1: the deployment areas, while the phase lasts. */
+  private deploymentAreas: DeploymentAreasLayer | null = null;
+  /** The battle's map for the deployment areas: any battle map, the Vila Militar field included. */
+  private areasMap: BattleMap | null = null;
   private environment: EnvironmentAsset | null = null;
   private readonly training = new TrainingLayer();
   private world: WorldLayer;
   private disposed = false;
   private selectedUnits: readonly number[] = [];
   private readonly placementRoot = new THREE.Group();
+  /** garrison-and-assault 4.1: the ring Sair's point must fall in. */
+  private readonly rangeRoot = new THREE.Group();
+  private rangeRing: { x: number; y: number; radius: number } | null = null;
   private readonly targetRoot = new THREE.Group();
   private readonly calloutRoot: HTMLDivElement;
   private callout: {
@@ -144,6 +167,7 @@ export class SceneView {
   }
 
   constructor(options: SceneViewOptions) {
+    this.maxSpanFactor = options.maxSpanFactor ?? 1.1;
     this.container = options.container;
     this.onBandChange = options.onBandChange;
     this.onCameraAction = options.onCameraAction;
@@ -188,6 +212,7 @@ export class SceneView {
           : battleMap(options.battleMap)
         : null;
     this.battleMap = map && map.height.kind === 'field' ? map : null;
+    this.areasMap = map;
     if (this.battleMap) {
       setActiveMap(this.battleMap);
       this.mapLayer = new BattleMapLayer(this.battleMap);
@@ -217,8 +242,10 @@ export class SceneView {
       this.tracers.group,
       this.effects.group,
       this.markers.group,
+      this.garrisonLayer.group,
       this.preview.group,
       this.placementRoot,
+      this.rangeRoot,
       this.targetRoot,
     );
 
@@ -356,8 +383,75 @@ export class SceneView {
     this.preview.setPlan(plan);
   }
 
-  setSlotMarkers(markers: readonly SlotMarker[]): void {
+  setSlotMarkers(markers: readonly (SlotMarker & { protects?: ProtectionClass })[]): void {
     this.preview.setSlotMarkers(markers);
+    this.slotMarkerCount = markers.length;
+  }
+
+  /**
+   * add-deployment-phase D5: a count badge per cover piece near the cursor
+   * (its free slots of all), placed over the ground each frame.
+   */
+  setSlotBadges(badges: readonly SlotBadge[]): void {
+    for (const label of this.slotBadgeLabels) label.element.remove();
+    this.slotBadgeLabels = badges.map((badge) => {
+      const element = document.createElement('div');
+      element.className = 'slot-badge';
+      element.dataset.testid = 'slot-badge';
+      element.textContent = badge.text;
+      element.style.position = 'absolute';
+      element.style.display = 'none';
+      this.calloutRoot.append(element);
+      return { badge, element };
+    });
+  }
+
+  /** What the deployment preview shows (the test bridge). */
+  /** garrison-and-assault 4.1: a ring on the ground (Sair's 30 m around the position), or none. */
+  setRangeRing(ring: { x: number; y: number; radius: number } | null): void {
+    if (ring?.x === this.rangeRing?.x && ring?.y === this.rangeRing?.y && ring?.radius === this.rangeRing?.radius) return;
+    this.rangeRing = ring;
+    for (const child of this.rangeRoot.children) {
+      if (child instanceof THREE.Line) {
+        child.geometry.dispose();
+        (child.material as THREE.Material).dispose();
+      }
+    }
+    this.rangeRoot.clear();
+    if (!ring) return;
+    const points: THREE.Vector3[] = [];
+    const segments = 64;
+    for (let index = 0; index <= segments; index += 1) {
+      const angle = (index / segments) * Math.PI * 2;
+      const x = ring.x + Math.cos(angle) * ring.radius;
+      const z = ring.y + Math.sin(angle) * ring.radius;
+      points.push(new THREE.Vector3(x, terrainHeightAt(x, z) + 0.15, z));
+    }
+    const line = new THREE.Line(
+      new THREE.BufferGeometry().setFromPoints(points),
+      new THREE.LineBasicMaterial({ color: 0xe0b85a, transparent: true, opacity: 0.85, depthWrite: false }),
+    );
+    line.name = 'range-ring';
+    this.rangeRoot.add(line);
+  }
+
+  rangeRingState(): { x: number; y: number; radius: number } | null {
+    return this.rangeRing ? { ...this.rangeRing } : null;
+  }
+
+  slotPreviewState(): { markers: number; badges: string[] } {
+    return { markers: this.slotMarkerCount, badges: this.slotBadgeLabels.map((label) => label.badge.text) };
+  }
+
+  private placeSlotBadges(): void {
+    for (const { badge, element } of this.slotBadgeLabels) {
+      const screen = this.groundToScreen(badge.x, badge.y);
+      element.style.display = screen ? '' : 'none';
+      if (screen) {
+        element.style.left = `${screen.x}px`;
+        element.style.top = `${screen.y}px`;
+      }
+    }
   }
 
   /** Shows or hides the movement routes of orders (the player's choice). */
@@ -387,6 +481,17 @@ export class SceneView {
   /** The ground point the camera looks at and the metres across the view. */
   view(): { x: number; y: number; span: number } {
     return { x: this.rig.focusX, y: this.rig.focusY, span: this.rig.span };
+  }
+
+  /** garrison-and-assault 1.4: barrels out of windows and markers over raised floors drawn now (dev checks). */
+  garrisonMarks(): { barrels: number; elevated: number; banners: GarrisonBannerState[]; arrows: number; assaults: AssaultBarsState[] } {
+    return {
+      barrels: this.characters.barrelCount(),
+      elevated: this.characters.elevatedMarkerCount(),
+      banners: this.garrisonLayer.shown.map((banner) => ({ ...banner })),
+      arrows: this.garrisonLayer.arrowCount,
+      assaults: this.garrisonLayer.assaultBars.map((bars) => ({ ...bars })),
+    };
   }
 
   /** Centres the camera on a ground point (a new training station). */
@@ -539,12 +644,17 @@ export class SceneView {
     const fogged = frame as (Frame | InterpolatedFrame) & FogExtras;
     this.characters.updateGhosts(fogged.ghosts ?? [], this.rig.span);
     this.markers.update(fogged.markers ?? [], frame.tick, this.rig.span);
+    this.garrisonLayer.update((frame as Frame).garrisons ?? [], frame.units, this.selectedUnits, this.rig.span, (frame as Frame).assaults ?? []);
     this.paths.update(selectedOrders(frame.orders, this.selectedUnits), this.rig.span);
     if (frame.tick !== this.lastEventTick) {
       this.lastEventTick = frame.tick;
+      // machine-gun-fire-feedback 5.1: every round draws its tracer, styled by the shooter's weapon.
+      const weapons = new Map(frame.units.map((unit) => [unit.id, unit.weaponId]));
+      // garrison-and-assault 4.7: a shot from an upper window leaves from that floor.
+      const raised = new Map(frame.units.filter((unit) => unit.elevation).map((unit) => [unit.id, unit.elevation!]));
       for (const event of frame.events) {
-        if (event.type === 'shot' && shotShown(event)) {
-          this.tracers.spawn(event);
+        if (event.type === 'shot') {
+          this.tracers.spawn(event, tracerKind(weapons.get(event.source), event), raised.get(event.source) ?? 0, raised.get(event.target) ?? 0);
         }
       }
     }
@@ -674,6 +784,7 @@ export class SceneView {
       disposeObject(this.mapLayer.group);
     }
     this.battleMap = map;
+    this.areasMap = map;
     this.mapLayer = new BattleMapLayer(map);
     if (this.environment) this.mapLayer.useModels(this.environment);
     this.scene.add(this.mapLayer.group);
@@ -684,7 +795,9 @@ export class SceneView {
     this.scene.add(this.world.group);
     if (this.paintedGround && map.paint && this.paintedGround.side === Math.round(map.bounds.maxX - map.bounds.minX)) {
       this.paintedGround.setPaint(map.paint);
-      this.paintedGround.updateHeights(terrainHeightAt);
+      this.paintedGround.updateHeights(groundHeightAt);
+      // author-game-maps 4.3: a light change (or its undo) re-aims the sun.
+      this.aimSun(map);
     } else {
       if (this.terrainMesh) {
         this.scene.remove(this.terrainMesh);
@@ -738,6 +851,23 @@ export class SceneView {
     this.deployment.setLabels(labels);
   }
 
+  /** add-deployment-phase 3.1: shows the two deployment areas (the phase) or takes them away. */
+  setDeploymentAreas(shown: boolean): void {
+    if (shown && !this.deploymentAreas && this.areasMap) {
+      this.deploymentAreas = new DeploymentAreasLayer(this.areasMap, terrainHeightAt);
+      this.scene.add(this.deploymentAreas.group);
+    } else if (!shown && this.deploymentAreas) {
+      this.scene.remove(this.deploymentAreas.group);
+      this.deploymentAreas.dispose();
+      this.deploymentAreas = null;
+    }
+  }
+
+  /** Whether the deployment areas are drawn. */
+  deploymentAreasShown(): boolean {
+    return this.deploymentAreas !== null;
+  }
+
   /** Whether the opening deployment marks are up. */
   deploymentMarksShown(): boolean {
     return this.deployment?.shown ?? false;
@@ -749,7 +879,7 @@ export class SceneView {
     const { minX, minY, maxX, maxY } = this.battleMap.bounds;
     this.rig.focusX = (minX + maxX) / 2;
     this.rig.focusY = (minY + maxY) / 2;
-    this.rig.maxSpan = Math.max(this.rig.maxSpan, (maxY - minY) * 1.1);
+    this.rig.maxSpan = Math.max(this.rig.maxSpan, (maxY - minY) * this.maxSpanFactor);
     this.rig.targetSpan = Math.min(this.rig.maxSpan, (maxY - minY) * 1.05);
   }
 
@@ -768,12 +898,15 @@ export class SceneView {
     window.removeEventListener('keyup', this.onKeyUp);
     this.renderer.domElement.removeEventListener('wheel', this.onWheel);
     this.deployment?.dispose();
+    this.deploymentAreas?.dispose();
+    for (const label of this.slotBadgeLabels) label.element.remove();
     this.covers.dispose();
     this.characters.dispose();
     this.paths.dispose();
     this.tracers.dispose();
     this.effects.dispose();
     this.markers.dispose();
+    this.garrisonLayer.dispose();
     this.preview.dispose();
     this.post.dispose();
     disposeObject(this.scene);
@@ -786,9 +919,10 @@ export class SceneView {
     const bounds = this.battleMap?.bounds;
     if (this.battleMap?.paint && bounds) {
       // add-map-editor: an authored map's painted ground.
-      this.paintedGround = new PaintedGround(bounds, this.battleMap.paint, terrainHeightAt, './models/textures/ground-atlas.png');
+      this.paintedGround = new PaintedGround(bounds, this.battleMap.paint, groundHeightAt, './models/textures/ground-atlas.png');
       this.terrainMesh = this.paintedGround.group;
       this.scene.add(this.paintedGround.group);
+      this.aimSun(this.battleMap);
       return;
     }
     const width = bounds ? bounds.maxX - bounds.minX : 240;
@@ -805,7 +939,7 @@ export class SceneView {
       for (let index = 0; index < terrainPositions.count; index += 1) {
         const x = terrainPositions.getX(index);
         const z = terrainPositions.getZ(index);
-        terrainPositions.setY(index, terrainHeightAt(x, z));
+        terrainPositions.setY(index, groundHeightAt(x, z));
         color.setHex(surfaceColor(terrainSurfaceAt(x, z), palette));
         colors[index * 3] = color.r;
         colors[index * 3 + 1] = color.g;
@@ -814,25 +948,37 @@ export class SceneView {
       terrainPositions.needsUpdate = true;
       terrainGeometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
       terrainGeometry.computeVertexNormals();
-      if (bounds && palette) hillshade(terrainGeometry, SUN_BY_PALETTE[palette].position);
+      if (bounds && this.battleMap) hillshade(terrainGeometry, sunForMap(this.battleMap, SUN_BY_PALETTE, PALETTE.sun).position);
     }
     const ground = new THREE.Mesh(
       terrainGeometry,
       // refine-battle-maps 5.9: smooth normals (shared vertices) under a soft, six-step ramp.
       toon({ color: 0xffffff, vertexColors: true, gradientMap: bounds ? terrainGradient() : toonGradient() }),
     );
-    if (bounds && palette) this.aimSun(palette);
+    if (bounds && this.battleMap) this.aimSun(this.battleMap);
     ground.name = 'sandbox-terrain';
     this.terrainMesh = ground;
     this.scene.add(ground);
   }
 
-  /** refine-battle-maps 5.9: the sun's angle and strength for the map's palette. */
-  private aimSun(palette: BattleMap['palette']): void {
+  /** author-game-maps 4.3: the editor's live preview of a light (null: back to the map's own). */
+  previewLight(light: MapLight | null): void {
+    if (!this.battleMap) return;
+    this.aimSun(light ? { ...this.battleMap, light } : this.battleMap);
+  }
+
+  /** author-game-maps 4.3: where the sun stands now (tests read it through the editor bridge). */
+  sunPosition(): [number, number, number] | null {
+    return this.sun ? [this.sun.position.x, this.sun.position.y, this.sun.position.z] : null;
+  }
+
+  /** refine-battle-maps 5.9, author-game-maps 5.1: the sun from the map's light, else its palette's. */
+  private aimSun(map: BattleMap): void {
     if (!this.sun) return;
-    const look = SUN_BY_PALETTE[palette];
+    const look = sunForMap(map, SUN_BY_PALETTE, PALETTE.sun);
     this.sun.position.set(...look.position);
     this.sun.intensity = look.intensity;
+    this.sun.color.setHex(look.color);
   }
 
   private animate = (time: number): void => {
@@ -850,12 +996,15 @@ export class SceneView {
       this.characters.update(this.lastFrame, this.rig.span);
       this.paths.update(selectedOrders(this.lastFrame.orders, this.selectedUnits), this.rig.span);
     }
+    const camera = this.rig.camera;
+    const metresHigh = (camera.top - camera.bottom) / camera.zoom;
+    this.tracers.setView(camera.getWorldDirection(this.viewDirection), metresHigh / Math.max(1, this.post.target.height));
     this.tracers.update(delta);
     this.mapLayer?.tick(time / 1000, this.rig.span);
     // The marks' 10 s run from the battle's first frame.
+    if (this.deployment && this.deploymentAreas) this.deployment.hold();
     if (this.deployment && this.lastFrame) this.deployment.update(time, (x, y) => this.groundToScreen(x, y));
-    const camera = this.rig.camera;
-    const metresHigh = (camera.top - camera.bottom) / camera.zoom;
+    if (this.slotBadgeLabels.length > 0) this.placeSlotBadges();
     this.effects.update(this.lastFrame, delta, this.post.target.height / Math.max(1, metresHigh));
     this.updateCallout(time);
     this.updateBalloon();
@@ -863,6 +1012,24 @@ export class SceneView {
     this.post.render(this.renderer, this.scene, this.rig.camera);
     this.frameHandle = requestAnimationFrame(this.animate);
   };
+
+  /**
+   * author-game-maps: the view as the player framed it, as a square PNG data
+   * URL of `size` pixels (the centre of the view, cropped). Renders a frame
+   * first so the drawing buffer holds it when it is read.
+   */
+  snapshot(size = 256): string {
+    this.post.render(this.renderer, this.scene, this.rig.camera);
+    const source = this.renderer.domElement;
+    const side = Math.min(source.width, source.height);
+    const canvas = document.createElement('canvas');
+    canvas.width = size;
+    canvas.height = size;
+    const context = canvas.getContext('2d')!;
+    context.imageSmoothingEnabled = false;
+    context.drawImage(source, (source.width - side) / 2, (source.height - side) / 2, side, side, 0, 0, size, size);
+    return canvas.toDataURL('image/png');
+  }
 
   private applyPan(delta: number): void {
     const pan = this.rig.span * 0.7 * delta;

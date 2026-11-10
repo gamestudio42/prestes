@@ -19,6 +19,7 @@ const PLACING_COMMANDS: ReadonlySet<Command['type']> = new Set([
   'formation',
   'face',
   'hold_fire',
+  'hurry',
   'fire_control',
   'posture',
 ]);

@@ -2,7 +2,7 @@ import { activeMapRuntime } from '@prestes/shared';
 import type { UnitSnapshot } from '@prestes/shared';
 import { isConcealed, isRevealed } from './concealment';
 import { waitingSide } from './ferry';
-import { gunReady, isBelt } from './machine-gun';
+import { gunReady, gunSetupLeft, gunState, isBelt } from './machine-gun';
 import { RESCUE_CARRY_TICKS, TREAT_TICKS } from './model';
 import type { SimContext } from './context';
 
@@ -56,6 +56,10 @@ export function snapshotUnits(ctx: SimContext): UnitSnapshot[] {
     boundTeam: unit.boundTeam,
     boundPhase: unit.boundPhase,
     gait: unit.path.length > 0 ? unit.gait : undefined,
+    ...(unit.hurry ? { hurry: true } : {}),
+    ...(unit.garrison !== undefined ? { garrison: unit.garrison } : {}),
+    ...(unit.entering !== undefined ? { entering: unit.entering } : {}),
+    ...(unit.elevation ? { elevation: unit.elevation } : {}),
     role: unit.role,
     nonLethal: unit.nonLethal,
     ...(battleMap && unit.alive && isConcealed(ctx, unit) ? { concealed: true } : {}),
@@ -63,6 +67,6 @@ export function snapshotUnits(ctx: SimContext): UnitSnapshot[] {
     ...(unit.ferryId !== undefined ? { aboardFerry: true } : {}),
     ...(ctx.ferries.some((ferry) => waitingSide(ferry, unit) !== null) ? { waitingFerry: true } : {}),
     ...(unit.sectionType !== undefined ? { sectionType: unit.sectionType } : {}),
-    ...(ctx.gunPools && isBelt(unit) ? { gunSet: gunReady(unit) } : {}),
+    ...(ctx.gunPools && isBelt(unit) ? { gunSet: gunReady(unit), gunState: gunState(unit), gunSetupLeft: gunSetupLeft(unit) } : {}),
   }));
 }

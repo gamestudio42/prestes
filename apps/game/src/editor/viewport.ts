@@ -1,3 +1,4 @@
+import type { MapLight } from '@prestes/shared';
 import * as THREE from 'three';
 import {
   TRENCH,
@@ -48,6 +49,7 @@ const COLORS = {
   column: 0xd65a4a,
   legalist: 0x4a7fd6,
   hatch: 0xa6d96a,
+  port: 0xf4ead2,
 };
 
 /** refine-map-editor 6.1: slot dots by what they protect (the panel's legend uses the same). */
@@ -97,7 +99,7 @@ export class EditorViewport {
     private readonly sectionText: (side: 'column' | 'legalist', index: number) => string,
   ) {
     this.draftTool = store.tool;
-    this.view = new SceneView({ container, battleMap: store.compiled, strategicField: true, antialias: loadGraphicsSettings().smoothEdges });
+    this.view = new SceneView({ container, battleMap: store.compiled, strategicField: true, maxSpanFactor: 2.5, antialias: loadGraphicsSettings().smoothEdges });
     this.view.frameMap();
     this.overlay.name = 'editor-overlay';
     this.view.editorScene.add(this.overlay);
@@ -141,6 +143,25 @@ export class EditorViewport {
   /** Centres on a point (a problem in the list). */
   centreOn(point: Vec2): void {
     this.view.centreOn(point.x, point.y);
+  }
+
+  /** author-game-maps 4.3: lights the view with `light` while the properties dialog is open (null: the map's own). */
+  previewLight(light: MapLight | null): void {
+    this.view.previewLight(light);
+  }
+
+  /** author-game-maps: the current view as the map's thumbnail (a square PNG data URL). */
+  snapshot(): string {
+    this.overlay.visible = false;
+    this.coverLayer.visible = false;
+    this.labels.style.visibility = 'hidden';
+    try {
+      return this.view.snapshot(256);
+    } finally {
+      this.overlay.visible = true;
+      this.coverLayer.visible = true;
+      this.labels.style.visibility = '';
+    }
   }
 
   frameMap(): void {
@@ -240,6 +261,33 @@ export class EditorViewport {
       dots.frustumCulled = false;
       this.coverLayer.add(dots);
     }
+    // garrison-and-assault 4.6: every position's firing posts, a short tick from the post facing out
+    // (raised at upper floors and the tower by the post's height).
+    const ports = this.store.positions().flatMap((position) => position.ports);
+    if (ports.length > 0) {
+      const tick = new THREE.PlaneGeometry(1, 0.16);
+      tick.rotateX(-Math.PI / 2);
+      tick.translate(0.5, 0, 0);
+      const ticks = new THREE.InstancedMesh(tick, new THREE.MeshBasicMaterial({ color: COLORS.port, depthTest: false, transparent: true, opacity: 0.95, side: THREE.DoubleSide }), ports.length);
+      const matrix = new THREE.Matrix4();
+      const turn = new THREE.Matrix4();
+      ports.forEach((port, index) => {
+        turn.makeRotationY(-Math.atan2(port.facing.y, port.facing.x));
+        matrix.makeTranslation(port.x, terrainHeightAt(port.x, port.y) + 0.4 + (port.elevation ?? 0), port.y).multiply(turn);
+        ticks.setMatrixAt(index, matrix);
+      });
+      ticks.instanceMatrix.needsUpdate = true;
+      ticks.name = 'cover-ports';
+      ticks.renderOrder = 13;
+      ticks.frustumCulled = false;
+      this.coverLayer.add(ticks);
+    }
+  }
+
+  /** garrison-and-assault 4.6: port ticks drawn by the cover overlay (0 while it is off). */
+  coverPortCount(): number {
+    const ticks = this.coverLayer.getObjectByName('cover-ports') as THREE.InstancedMesh | undefined;
+    return ticks?.count ?? 0;
   }
 
   /** The piece whose slot is nearest the pointer, within the pick radius. */
@@ -394,7 +442,7 @@ export class EditorViewport {
         this.drag = { kind: 'erase-trees', ids: new Set(treesUnder(map, point.x, point.y, radius)), last: point };
       } else {
         this.store.treeStrokes += 1;
-        const scatter = new TreeScatter(map, { radius, biome: settings.treeBiome, density: settings.treeDensity, seed: treeStrokeSeed(map.id, this.store.treeStrokes) });
+        const scatter = new TreeScatter(map, { radius, biome: settings.treeBiome, species: settings.treeMix, density: settings.treeDensity, seed: treeStrokeSeed(map.id, this.store.treeStrokes) });
         scatter.dab(point.x, point.y);
         this.drag = { kind: 'scatter', scatter, last: point };
       }

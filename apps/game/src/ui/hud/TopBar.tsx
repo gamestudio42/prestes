@@ -13,6 +13,8 @@ interface TopBarProps {
   routesVisible: boolean;
   speed: 0 | 1 | 2 | 4 | 8;
   sandboxOpen: boolean;
+  /** add-deployment-phase 3.1: no time passes in deployment, so the speed controls are hidden. */
+  deploying?: boolean;
   onLocaleChange: (locale: Locale) => void;
   onCameraBand: (band: CameraBand) => void;
   onSetSpeed: (speed: 0 | 1 | 2 | 4 | 8) => void;
@@ -33,6 +35,7 @@ export function TopBar({
   routesVisible,
   speed,
   sandboxOpen,
+  deploying = false,
   onLocaleChange,
   onCameraBand,
   onSetSpeed,
@@ -114,6 +117,7 @@ export function TopBar({
         >
           <ICONS.codex aria-hidden="true" size={15} />
         </IconButton>
+        {deploying ? null : (
         <div className="speed-control">
           <IconButton
             testId="pause-button"
@@ -142,6 +146,7 @@ export function TopBar({
             </button>
           ))}
         </div>
+        )}
         <button
           type="button"
           className="post-button"

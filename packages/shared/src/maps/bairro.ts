@@ -174,11 +174,14 @@ BUILDINGS.push({ id: id(), model: 'coreto', x: 0, y: 14, rotation: 0, halfWidth:
 
 // The factory and its walled yard east of the praça row; warehouses by the railway.
 BUILDINGS.push({ id: id(), model: 'factory', x: 134, y: -6, rotation: Math.PI / 2, halfWidth: 20, halfDepth: 12, height: 9 });
-COVERS.push(
+const FACTORY_YARD_WALLS = [
   lowWall(id(), 114, -6, 22, Math.PI / 2, 2.2),
   lowWall(id(), 134, -29, 10, 0, 2.2),
   lowWall(id(), 134, 17, 10, 0, 2.2),
-);
+];
+COVERS.push(...FACTORY_YARD_WALLS);
+/** garrison-and-assault D1: the factory yard as a position, its three walls the ports. */
+const FACTORY_YARD = { id: FACTORY_YARD_WALLS[0]!.id, wallIds: FACTORY_YARD_WALLS.map((wall) => wall.id), capacity: 12, centre: { x: 118, y: -6 } };
 BUILDINGS.push(
   { id: id(), model: 'warehouse', x: -90, y: -140, rotation: 0, halfWidth: 18, halfDepth: 8, height: 7 },
   { id: id(), model: 'warehouse', x: 60, y: -142, rotation: 0, halfWidth: 22, halfDepth: 8, height: 7 },
@@ -267,6 +270,7 @@ export const BAIRRO: BattleMap = {
   fenceStyle: 'boards',
   lines: wallLines(COVERS.filter((cover) => cover.kind === 'low-wall'), 'brick-wall'),
   yards: QUINTAIS,
+  garrisonYards: [FACTORY_YARD],
   palette: 'urban',
   // pre-battle-roster 2.3: the enemy's forces, one drawn per battle when the player brings a roster.
   enemyForces: [

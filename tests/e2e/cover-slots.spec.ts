@@ -9,7 +9,8 @@ type Bridge = {
 test.setTimeout(120_000);
 
 /** The long trench in the middle of the Vila Militar field (cover 9). */
-const TRENCH = { x: -15, y: -13 };
+// author-game-maps 3.5: the test map's fire trench, at its middle.
+const TRENCH = { x: -45, y: -55 };
 
 async function frame(page: Page): Promise<Frame> {
   return page.evaluate(() => (window as unknown as Bridge).__prestes!.frame()!);
@@ -43,6 +44,8 @@ test('hovering the trench shows its slots and a click fills them', async ({ page
   await page.goto('/');
   await page.getByTestId('open-skirmish').click();
   await page.getByTestId('start-battle-3v3').click();
+  // add-deployment-phase: the skirmish opens in deployment; start the battle.
+  await page.getByTestId('start-battle').click();
   await page.waitForFunction(() => Boolean((window as unknown as Bridge).__prestes?.frame()));
   await stepRendered(page, 2);
   // The enemy holds its fire: this test is about the slots, not the fight.
@@ -59,25 +62,28 @@ test('hovering the trench shows its slots and a click fills them', async ({ page
     (next) => (window as unknown as Bridge).__prestes!.command(next),
     { type: 'move', unitIds: ids, to: { x: TRENCH.x, y: TRENCH.y + 10 } } as Command,
   );
-  await stepRendered(page, 900);
-  await page.waitForTimeout(400);
+  await stepRendered(page, 1800);
+  await page.evaluate(({ x, y }) => (window as unknown as { __prestesScene: { focusOn: (x: number, y: number) => void } }).__prestesScene.focusOn(x, y), TRENCH);
+  await page.waitForTimeout(600);
 
   const point = await screenOf(page, TRENCH);
   await page.getByTestId('game-canvas').hover({ position: point });
   const count = page.getByTestId('slot-count');
   await expect(count).toBeVisible();
-  expect(Number(await count.getAttribute('data-total'))).toBeGreaterThanOrEqual(8);
-  expect(Number(await count.getAttribute('data-free'))).toBeGreaterThanOrEqual(8);
+  // author-game-maps 3.5: the test map's trench has bays, so a piece holds a few men; all its slots are free.
+  const total = Number(await count.getAttribute('data-total'));
+  expect(total).toBeGreaterThanOrEqual(3);
+  expect(Number(await count.getAttribute('data-free'))).toBe(total);
 
   await page.getByTestId('order-tab-movement').click();
   await page.getByTestId('order-move').click();
   const again = await screenOf(page, TRENCH);
   await page.getByTestId('game-canvas').hover({ position: again });
-  await expect(count).toHaveAttribute('data-planned', /^(?:[8-9]|1\d)$/);
+  await expect.poll(async () => Number(await count.getAttribute('data-planned'))).toBeGreaterThanOrEqual(total);
   await page.getByTestId('game-canvas').click({ position: again });
   await stepRendered(page, 400);
   const settled = await frame(page);
   const slotted = settled.units.filter((unit) => ids.includes(unit.id) && unit.slotId != null);
-  expect(slotted.length).toBeGreaterThanOrEqual(8);
+  expect(slotted.length).toBeGreaterThanOrEqual(total);
   expect(new Set(slotted.map((unit) => unit.slotId)).size).toBe(slotted.length);
 });

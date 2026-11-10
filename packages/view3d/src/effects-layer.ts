@@ -236,23 +236,26 @@ export class EffectsLayer {
     // Flash and smoke at the muzzle, about 0.8 m in front of the shooter.
     const mx = event.x + ux * 0.8;
     const my = event.y + uy * 0.8;
-    const mh = terrainHeightAt(mx, my) + muzzleHeight(source?.stance ?? 'standing');
+    const mh = terrainHeightAt(mx, my) + muzzleHeight(source?.stance ?? 'standing') + (source?.elevation ?? 0);
     this.spawn({ kind: 'muzzle', x: mx, y: mh, z: my, vx: 0, vy: 0, vz: 0, life: 0.16, size: 1.1, grow: 0, tint: 'none' });
-    this.spawn({
-      kind: 'smoke',
-      x: mx,
-      y: mh,
-      z: my,
-      vx: ux * 0.3,
-      vy: 0.35,
-      vz: uy * 0.3,
-      life: 2,
-      size: 0.8,
-      grow: 1,
-      tint: 'none',
-    });
+    // machine-gun-fire-feedback 5.2: a flash for every round, smoke once per burst.
+    if (event.burstStart !== false) {
+      this.spawn({
+        kind: 'smoke',
+        x: mx,
+        y: mh,
+        z: my,
+        vx: ux * 0.3,
+        vy: 0.35,
+        vz: uy * 0.3,
+        life: 2,
+        size: 0.8,
+        grow: 1,
+        tint: 'none',
+      });
+    }
     if (event.hit) {
-      const h = terrainHeightAt(event.x2, event.y2) + muzzleHeight(target?.stance ?? 'standing') * 0.85;
+      const h = terrainHeightAt(event.x2, event.y2) + muzzleHeight(target?.stance ?? 'standing') * 0.85 + (target?.elevation ?? 0);
       this.spawn({ kind: 'spurt', x: event.x2, y: h, z: event.y2, vx: ux * 0.6, vy: 0.4, vz: uy * 0.6, life: 0.6, size: 0.8, grow: 0.4, tint: 'blood' });
       return;
     }

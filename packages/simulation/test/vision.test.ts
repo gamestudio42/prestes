@@ -2,10 +2,11 @@ import { describe, expect, it } from 'vitest';
 import type { CoverPoint } from '@prestes/shared';
 import { SimulationEngine } from '../src/engine';
 import { unseenFireMarker, updateVision } from '../src/systems/vision';
+import { openField } from './open-field';
 
 // fog-of-war: what each side sees.
 function field() {
-  const engine = new SimulationEngine({ seed: 1922, scenario: 'battle3v3', sandbox: true });
+  const engine = new SimulationEngine({ seed: 1922, scenario: 'battle3v3', sandbox: true, battleMap: openField() });
   engine.covers.splice(0);
   // One observer, one enemy, everyone else far away and out of sight.
   for (const unit of engine.units) {
@@ -103,7 +104,7 @@ describe('unseen fire marker', () => {
   });
 
   it('is emitted with the shot in a running battle', () => {
-    const engine = new SimulationEngine({ seed: 1922, scenario: 'battle3v3', sandbox: true });
+    const engine = new SimulationEngine({ seed: 1922, scenario: 'battle3v3', sandbox: true, battleMap: openField() });
     let markers = 0;
     for (let tick = 0; tick < 1500 && markers === 0; tick += 1) {
       markers += engine.tick().events.filter((event) => event.type === 'unseen_fire').length;

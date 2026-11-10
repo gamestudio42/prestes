@@ -23,6 +23,8 @@ async function start3v3(page: Page): Promise<void> {
   await page.getByTestId('open-skirmish').click();
   await page.getByTestId('start-battle-3v3').click();
   await expect(page.getByTestId('hud')).toBeVisible();
+  // add-deployment-phase: the skirmish opens in deployment; start the battle.
+  await page.getByTestId('start-battle').click();
   await expect
     .poll(() => page.evaluate(() => (window as unknown as Bridge).__prestes?.frame()?.units.length ?? 0))
     .toBe(66);

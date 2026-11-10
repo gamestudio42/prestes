@@ -141,6 +141,10 @@ export function unitGait(ctx: SimContext, unit: MutableUnit): Gait {
   if (unit.underFireTicks && gait !== 'slow') {
     gait = 'run';
   }
+  // add-run-toggle: the player's Run hurries every order but recon.
+  if (unit.hurry && !unit.recon) {
+    gait = 'run';
+  }
   if (unit.fatigue > WINDED_FATIGUE) {
     unit.winded = true;
   } else if (unit.fatigue < WINDED_RECOVER) {
@@ -206,7 +210,9 @@ export function moveUnit(
     unit.dummy ||
     unit.incapacitated ||
     unit.state === 'pinned' ||
-    unit.path.length === 0
+    unit.path.length === 0 ||
+    // machine-gun-fire-feedback 2.2: a gun crew halted to fire keeps its path.
+    unit.gunHalt
   ) {
     unit.moveSpeed = 0;
     unit.stuckFrom = undefined;

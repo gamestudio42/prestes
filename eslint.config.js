@@ -17,6 +17,8 @@ export default tseslint.config(
       '.hermes/**',
       '.pi/**',
       '.cursor/**',
+      // Session worktrees are other checkouts, linted there.
+      '.claude/**',
       'openspec/**',
     ],
   },

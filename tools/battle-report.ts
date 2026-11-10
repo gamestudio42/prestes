@@ -1,6 +1,7 @@
 import { fileURLToPath } from 'node:url';
-import { battleMap, battleMaps, type BattleMap, type BattleMapId, type BattleRosters, type Frame, type Roster, type UnitSnapshot } from '../packages/shared/src';
+import { battleMap, battleMaps, type BattleMap, type BattleMapId, type BattleRosters, type Frame, type Roster, type UnitSnapshot, type WeaponId, getWeapon } from '../packages/shared/src';
 import { SimulationEngine } from '../packages/simulation/src/engine';
+import { visible } from '../packages/simulation/src/systems/combat';
 
 /**
  * Battle feel report (battle-feel-3v3): runs the 3v3 headless with the
@@ -27,6 +28,18 @@ export interface BattleReport {
   bunching: number;
   /** Seconds until the player's side first sees an enemy (fog-of-war). */
   firstSight: number;
+  /** machine-gun-fire-feedback 1.1: rounds, bursts (aimed shots count as one each) and hits, per side and weapon. */
+  weapons: Record<'column' | 'legalist', Partial<Record<WeaponId, WeaponFire>>>;
+  /** Per side with a machine gun: share of the ticks its gunner had a target in sight and reach during which the gun was set. */
+  gunSetShare: Partial<Record<'column' | 'legalist', number>>;
+  /** garrison-and-assault 3.4 / 5.1: men who went into a position, and close assaults started and won, per side. */
+  garrison: { entered: Record<'column' | 'legalist', number>; assaults: number; assaultsWon: Record<'column' | 'legalist', number> };
+}
+
+export interface WeaponFire {
+  rounds: number;
+  bursts: number;
+  hits: number;
 }
 
 const ORDER_EVERY = 50;
@@ -142,9 +155,11 @@ export async function battleReport(
   maxSeconds = 900,
   mapId: BattleMapId = 'vila-militar',
   rosters?: BattleRosters,
+  /** add-deployment-phase 4.1: the enemy places itself on the map's cover before the battle. */
+  enemyDeployment = false,
 ): Promise<BattleReport> {
   const map = battleMap(mapId);
-  const engine = new SimulationEngine({ seed, scenario: 'battle3v3', sandbox: true, battleMap: mapId, rosters });
+  const engine = new SimulationEngine({ seed, scenario: 'battle3v3', sandbox: true, battleMap: mapId, rosters, enemyDeployment });
   let frame = engine.frame();
   const faction = new Map(frame.units.map((unit) => [unit.id, unit.faction]));
   const casualties = { column: 0, legalist: 0 };
@@ -158,6 +173,10 @@ export async function battleReport(
   let outcome: BattleReport['outcome'] = 'none';
   const script: ScriptState = { map, rostered: rosters !== undefined, countering: false, seenDown: new Set() };
   let firstSight = -1;
+  const weapons: BattleReport['weapons'] = { column: {}, legalist: {} };
+  const gunTicks = { column: { targeted: 0, set: 0 }, legalist: { targeted: 0, set: 0 } };
+  const unitById = new Map(engine.units.map((unit) => [unit.id, unit]));
+  const garrison: BattleReport['garrison'] = { entered: { column: 0, legalist: 0 }, assaults: 0, assaultsWon: { column: 0, legalist: 0 } };
   const maxTicks = maxSeconds * 10;
   for (let tick = 0; tick < maxTicks && outcome === 'none'; tick += 1) {
     if (tick % YIELD_EVERY === 0) await new Promise<void>((resolve) => setImmediate(resolve));
@@ -165,7 +184,16 @@ export async function battleReport(
     frame = engine.runTicks(1);
     let tickShots = 0;
     for (const event of frame.events) {
-      if (event.type === 'shot') tickShots += 1;
+      if (event.type === 'shot') {
+        tickShots += 1;
+        const shooter = unitById.get(event.source);
+        if (shooter && (shooter.faction === 'column' || shooter.faction === 'legalist')) {
+          const fire = (weapons[shooter.faction][shooter.weaponId] ??= { rounds: 0, bursts: 0, hits: 0 });
+          fire.rounds += 1;
+          if (event.burstStart !== false) fire.bursts += 1;
+          if (event.hit) fire.hits += 1;
+        }
+      }
       // A death after incapacitation is the same casualty, counted once.
       if ((event.type === 'unit_incapacitated' || event.type === 'unit_died') && !down.has(event.unitId)) {
         down.add(event.unitId);
@@ -173,8 +201,25 @@ export async function battleReport(
         if (side === 'column' || side === 'legalist') casualties[side] += 1;
       }
       if (event.type === 'outcome' && event.outcome !== 'playing') outcome = event.outcome;
+      if (event.type === 'unit_entered') {
+        const side = faction.get(event.unitId);
+        if (side === 'column' || side === 'legalist') garrison.entered[side] += 1;
+      }
+      if (event.type === 'assault_started') garrison.assaults += 1;
+      if (event.type === 'assault_ended') garrison.assaultsWon[event.winner] += 1;
     }
     shots += tickShots;
+    for (const unit of engine.units) {
+      if (unit.faction !== 'column' && unit.faction !== 'legalist') continue;
+      if (!unit.alive || unit.incapacitated || unit.targetId === null) continue;
+      const weapon = getWeapon(unit.weaponId);
+      if (weapon?.fire !== 'belt') continue;
+      // A target he can fire on: an attack keeps its objective out of sight too.
+      const target = unitById.get(unit.targetId);
+      if (!target || !target.alive || target.incapacitated || !visible(engine, unit, target)) continue;
+      gunTicks[unit.faction].targeted += 1;
+      if ((unit.gunStill ?? 0) >= (weapon.setupTicks ?? 0)) gunTicks[unit.faction].set += 1;
+    }
     if (firstSight < 0 && (frame.seen?.column.length ?? 0) > 0) firstSight = frame.tick;
     if (frame.tick % 10 === 0) bunching = Math.max(bunching, bunchedShare(frame, 'column'), bunchedShare(frame, 'legalist'));
     maxShotsPerTick = Math.max(maxShotsPerTick, tickShots);
@@ -198,6 +243,13 @@ export async function battleReport(
     firstShot: firstShot < 0 ? -1 : firstShot / 10,
     bunching: Number(bunching.toFixed(2)),
     firstSight: firstSight < 0 ? -1 : firstSight / 10,
+    weapons,
+    garrison,
+    gunSetShare: Object.fromEntries(
+      (['column', 'legalist'] as const)
+        .filter((side) => gunTicks[side].targeted > 0)
+        .map((side) => [side, Number((gunTicks[side].set / gunTicks[side].targeted).toFixed(2))]),
+    ),
   };
 }
 
@@ -241,12 +293,23 @@ export function outsideBands(report: BattleReport): string | null {
   if (report.maxShotsPerTick > 8) misses.push(`shots/tick ${report.maxShotsPerTick}`);
   if (report.longestSilence > 75) misses.push(`silence ${report.longestSilence}s`);
   if (report.bunching >= 0.15) misses.push(`bunching ${report.bunching}`);
+  // machine-gun-fire-feedback 2.4: the player's gun is set while it has a target.
+  const gunSet = report.gunSetShare.column;
+  if (gunSet !== undefined && gunSet < GUN_SET_BAND) misses.push(`gun set ${gunSet}`);
   return misses.length > 0 ? misses.join(', ') : null;
 }
 
+/** Least share of its targeted time the player's machine gun is set (battle-lab band). */
+export const GUN_SET_BAND = 0.7;
+
+function gunFire(report: BattleReport): string {
+  const fire = report.weapons.column['metralhadora-7mm'];
+  return fire ? `${fire.rounds}/${fire.bursts}/${fire.hits}` : '-';
+}
+
 async function presetTable(): Promise<void> {
-  console.log('| Map | Enemy | Player | Seed | Time (s) | Outcome | Cas. col/leg | Shots/cas. | Max shots/tick | Silence (s) | Bunching | Bands |');
-  console.log('| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |');
+  console.log('| Map | Enemy | Player | Seed | Time (s) | Outcome | Cas. col/leg | Shots/cas. | Max shots/tick | Silence (s) | Bunching | MG rounds/bursts/hits | Gun set | Bands |');
+  console.log('| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |');
   for (const map of battleMaps()) {
     for (const [index, enemy] of (map.enemyForces ?? []).entries()) {
       for (const [name, player] of [['default', DEFAULT_PLAYER], ['mixed', MIXED_PLAYER]] as const) {
@@ -254,7 +317,7 @@ async function presetTable(): Promise<void> {
           const report = await battleReport(seed, 900, map.id, { column: player, legalist: enemy });
           const r = report;
           console.log(
-            `| ${map.id} | ${String.fromCharCode(65 + index)} | ${name} | ${seed} | ${r.seconds} | ${r.outcome} | ${r.casualties.column}/${r.casualties.legalist} | ${r.shotsPerCasualty} | ${r.maxShotsPerTick} | ${r.longestSilence} | ${r.bunching} | ${outsideBands(r) ?? 'ok'} |`,
+            `| ${map.id} | ${String.fromCharCode(65 + index)} | ${name} | ${seed} | ${r.seconds} | ${r.outcome} | ${r.casualties.column}/${r.casualties.legalist} | ${r.shotsPerCasualty} | ${r.maxShotsPerTick} | ${r.longestSilence} | ${r.bunching} | ${gunFire(r)} | ${r.gunSetShare.column ?? '-'} | ${outsideBands(r) ?? 'ok'} |`,
           );
         }
       }
@@ -262,9 +325,48 @@ async function presetTable(): Promise<void> {
   }
 }
 
+/** add-deployment-phase 4.1: every map, three seeds, the enemy where it starts and deployed on cover. */
+async function deploymentTable(): Promise<void> {
+  console.log('| Map | Enemy deployed | Seed | Time (s) | Outcome | Cas. col/leg | Shots/cas. | Max shots/tick | Silence (s) | Bunching | Bands |');
+  console.log('| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |');
+  for (const map of battleMaps()) {
+    for (const deployed of [false, true]) {
+      for (const seed of PRESET_SEEDS) {
+        const r = await battleReport(seed, 900, map.id, undefined, deployed);
+        console.log(
+          `| ${map.id} | ${deployed ? 'yes' : 'no'} | ${seed} | ${r.seconds} | ${r.outcome} | ${r.casualties.column}/${r.casualties.legalist} | ${r.shotsPerCasualty} | ${r.maxShotsPerTick} | ${r.longestSilence} | ${r.bunching} | ${outsideBands(r) ?? 'ok'} |`,
+        );
+      }
+    }
+  }
+}
+
+/** garrison-and-assault 3.4 / 5.1: every map, three seeds: who went in, and the assaults. */
+async function garrisonTable(): Promise<void> {
+  console.log('| Map | Seed | Time (s) | Outcome | Cas. col/leg | Entered col/leg | Assaults | Won col/leg | Bands |');
+  console.log('| --- | --- | --- | --- | --- | --- | --- | --- | --- |');
+  for (const map of battleMaps()) {
+    for (const seed of PRESET_SEEDS) {
+      const r = await battleReport(seed, 900, map.id);
+      const g = r.garrison;
+      console.log(
+        `| ${map.id} | ${seed} | ${r.seconds} | ${r.outcome} | ${r.casualties.column}/${r.casualties.legalist} | ${g.entered.column}/${g.entered.legalist} | ${g.assaults} | ${g.assaultsWon.column}/${g.assaultsWon.legalist} | ${outsideBands(r) ?? 'ok'} |`,
+      );
+    }
+  }
+}
+
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
-  // pnpm battle:report [--map fazenda] [seed ...] | pnpm battle:report --presets
+  // pnpm battle:report [--map fazenda] [seed ...] | pnpm battle:report --presets | pnpm battle:report --deployment
   const args = process.argv.slice(2);
+  if (args.includes('--garrisons')) {
+    await garrisonTable();
+    process.exit(0);
+  }
+  if (args.includes('--deployment')) {
+    await deploymentTable();
+    process.exit(0);
+  }
   if (args.includes('--presets')) {
     await presetTable();
     process.exit(0);

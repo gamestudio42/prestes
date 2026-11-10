@@ -80,9 +80,28 @@ export function smoothCentreline(points: readonly Vec2[], step = RIVER_STEP): Sm
 }
 
 /** Signed distance of a point to a water area's edge: positive inside. */
+/**
+ * author-game-maps: how far (x, y) lies inside a strip's flat ends (negative
+ * past them). A river is cut into stretches by kind; flat ends let a deep
+ * stretch and the ford after it meet on one line instead of a round cap
+ * poking into the ford.
+ */
+function insideEnds(points: readonly Vec2[], x: number, y: number): number {
+  if (points.length < 2) return Number.POSITIVE_INFINITY;
+  const a = points[0]!;
+  const b = points[1]!;
+  const y1 = points[points.length - 2]!;
+  const z = points[points.length - 1]!;
+  const start = Math.hypot(b.x - a.x, b.y - a.y) || 1;
+  const end = Math.hypot(z.x - y1.x, z.y - y1.y) || 1;
+  const fromStart = ((x - a.x) * (b.x - a.x) + (y - a.y) * (b.y - a.y)) / start;
+  const toEnd = ((z.x - x) * (z.x - y1.x) + (z.y - y) * (z.y - y1.y)) / end;
+  return Math.min(fromStart, toEnd);
+}
+
 function signedDistance(area: WaterArea, x: number, y: number): number {
   let value = Number.NEGATIVE_INFINITY;
-  if (area.strip) value = Math.max(value, area.strip.width / 2 - distanceToPolyline(x, y, area.strip.points));
+  if (area.strip) value = Math.max(value, Math.min(area.strip.width / 2 - distanceToPolyline(x, y, area.strip.points), insideEnds(area.strip.points, x, y)));
   if (area.polygon) {
     const edge = distanceToPolyline(x, y, [...area.polygon, area.polygon[0]!]);
     value = Math.max(value, pointInPolygon(x, y, area.polygon) ? edge : -edge);

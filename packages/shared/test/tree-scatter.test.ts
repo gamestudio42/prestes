@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   BIOME_MIX,
+  scatterMix,
   createEditableMap,
   isTreeObject,
   TREE_CLEARANCE,
@@ -80,5 +81,25 @@ describe('tree scatter', () => {
   it('every biome draws only catalog trees', () => {
     const species = treeSpecies();
     for (const mix of Object.values(BIOME_MIX)) for (const entry of mix) expect(species).toContain(entry.type);
+  });
+});
+
+// author-game-maps: the author chooses the scatter's species; the biome only fills the starting list.
+describe('chosen species', () => {
+  it('draws from the chosen species only, keeping the biome weights of those it has', () => {
+    expect(scatterMix('atlantic-edge')).toBe(BIOME_MIX['atlantic-edge']);
+    expect(scatterMix('atlantic-edge', [])).toBe(BIOME_MIX['atlantic-edge']);
+    expect(scatterMix('atlantic-edge', ['tree-broad', 'buriti'])).toEqual([
+      { type: 'tree-broad', weight: 5 },
+      { type: 'buriti', weight: 1 },
+    ]);
+  });
+
+  it('a stroke along the river with broad-leaved trees and bushes plants no araucária', () => {
+    const map = flat();
+    const scatter = new TreeScatter(map, { radius: 12, biome: 'atlantic-edge', density: 'dense', seed: 7, species: ['tree-broad', 'bush'] });
+    for (let x = -60; x <= 60; x += 6) scatter.dab(x, 44);
+    expect(scatter.trees.length).toBeGreaterThan(10);
+    expect(new Set(scatter.trees.map((tree) => tree.type))).toEqual(new Set(['tree-broad', 'bush']));
   });
 });

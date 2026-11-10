@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { battleMaps, rosterMen, SECTION_TYPES, type BattleMapId } from '@prestes/shared';
+import { mapText } from './SkirmishMaps';
+import { rosterMen, SECTION_TYPES, type BattleMap, type BattleMapId } from '@prestes/shared';
 import { translate, type Locale, type MessageKey } from '@prestes/content';
 import { Troop as Users } from '../icons';
 import { moveFocus, RosterBuilder } from './RosterBuilder';
@@ -8,6 +9,8 @@ import { setupReady, withMap, type EnemyChoice, type SkirmishSetup as Setup } fr
 export interface SkirmishSetupProps {
   locale: Locale;
   setup: Setup;
+  /** author-game-maps 5.2: the desk's maps (never empty: the desk opens the screen only with a map). */
+  maps: readonly BattleMap[];
   onChange: (setup: Setup) => void;
   onStart: () => void;
   onBack: () => void;
@@ -22,9 +25,8 @@ const presetLetter = (index: number) => String.fromCharCode(65 + index);
  * player's force and the enemy; "Voltar" (Escape) returns to the desk and
  * "Combater" starts the battle.
  */
-export function SkirmishSetup({ locale, setup, onChange, onStart, onBack }: SkirmishSetupProps) {
+export function SkirmishSetup({ locale, setup, maps, onChange, onStart, onBack }: SkirmishSetupProps) {
   const t = (key: MessageKey, values?: Readonly<Record<string, string | number>>) => translate(locale, key, values);
-  const maps = battleMaps();
   const map = maps.find((entry) => entry.id === setup.map) ?? maps[0]!;
   const presets = map.enemyForces ?? [];
   const ready = setupReady(setup);
@@ -64,7 +66,7 @@ export function SkirmishSetup({ locale, setup, onChange, onStart, onBack }: Skir
           <div className="setup-map-list" role="radiogroup" aria-label={t('start.battleMap')} onKeyDown={moveFocus}>
             {maps.map((entry) => {
               const active = entry.id === map.id;
-              const name = t(entry.nameKey as MessageKey);
+              const name = mapText(entry, 'name', locale);
               return (
                 <div
                   key={entry.id}
@@ -107,15 +109,15 @@ export function SkirmishSetup({ locale, setup, onChange, onStart, onBack }: Skir
                 src={preview(map.id)}
                 width={192}
                 height={192}
-                alt={t('start.mapPreview', { name: t(map.nameKey as MessageKey) })}
+                alt={t('start.mapPreview', { name: mapText(map, 'name', locale) })}
                 draggable={false}
                 data-testid={`map-preview-${map.id}`}
                 onError={() => setMissing((current) => new Set(current).add(map.id))}
               />
             )}
             <figcaption>
-              <strong>{t(map.nameKey as MessageKey)}</strong>
-              <span>{t(map.descriptionKey as MessageKey)}</span>
+              <strong>{mapText(map, 'name', locale)}</strong>
+              <span>{mapText(map, 'description', locale)}</span>
             </figcaption>
           </figure>
         </section>

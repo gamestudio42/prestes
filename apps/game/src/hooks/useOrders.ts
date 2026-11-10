@@ -28,6 +28,7 @@ import {
   type Vec2,
 } from '@prestes/shared';
 import { previewKey } from './previewKey';
+import { battleMap as mapById, deploymentSlotView, positionNear, positionsFor, type BattleMapId, type DeploymentSlotView, type PositionDef } from '@prestes/shared';
 import type { OrderCallout, PlacementPreview } from '@prestes/view3d';
 import type { GameClient } from '../client/GameClient';
 import type { SelectionMode } from '../ui/GameCanvas';
@@ -100,9 +101,14 @@ export function useOrders({
   const holdFire = selectedUnits.length > 0 && selectedUnits.every((unit) => unit.holdFire === true);
   const fireControl: FireControl =
     selectedUnits[0]?.fireControl ?? (holdFire ? 'hold' : 'free');
+  /** add-run-toggle: the selection's pace is Run when every selected soldier hurries. */
+  const hurry = selectedUnits.length > 0 && selectedUnits.every((unit) => unit.hurry === true);
   const posture = selectedUnits[0]?.posture ?? 'balanced';
-  const previewOrder =
-    pendingTactical ?? pendingOrder ?? (aimPending ? 'aim' : facingDrag || lineDrag ? 'move' : null);
+  // garrison-and-assault 4.1: Ocupar, Sair and Assaltar have no path preview.
+  const positionOrder = pendingTactical === 'enter' || pendingTactical === 'exit' || pendingTactical === 'assault';
+  const previewOrder = positionOrder
+    ? null
+    : (pendingTactical ?? pendingOrder ?? (aimPending ? 'aim' : facingDrag || lineDrag ? 'move' : null));
   const needsTarget =
     pendingOrder === 'attack' ||
     pendingOrder === 'suppress' ||
@@ -111,8 +117,11 @@ export function useOrders({
     pendingTactical === 'rescue';
   // Recomputed only when what it depends on changes, not on every frame
   // (movement-polish: a still pointer over a running battle cost a preview a frame).
+  // add-deployment-phase 3.2: in deployment a move or defend order on the cursor always previews.
+  const deploying = frame?.phase === 'deployment';
+  const deploymentPreview = deploying && (previewOrder === 'move' || previewOrder === 'defend');
   const previewActive = Boolean(
-    previewEnabled && !hudHidden && frame && previewOrder && (!needsTarget || hoverUnitId !== null),
+    (previewEnabled || deploymentPreview) && !hudHidden && frame && previewOrder && (!needsTarget || hoverUnitId !== null),
   );
   const planKey = previewActive
     ? previewKey({
@@ -190,6 +199,59 @@ export function useOrders({
     return coverSlotView(frame.covers, frame.units, hoverPoint, planned);
     // Recompute only when the hovered cover, the selection, the order or a holder changes.
   }, [hoveredCoverId, selectionKey, previewOrder, heldKey, plannedKey]);
+
+  // add-deployment-phase 3.2 (D5): in deployment, the slots within 25 m of the cursor, by class, counted per piece.
+  const battleMapId: BattleMapId | undefined = clientRef.current?.battleMap;
+  const deploymentCell = deploymentPreview && hoverPoint && !hudHidden ? `${Math.round(hoverPoint.x / 2)}:${Math.round(hoverPoint.y / 2)}` : null;
+  const deploymentSlots: DeploymentSlotView | null = useMemo(() => {
+    const current = latestFrame.current;
+    if (!deploymentCell || !current || !hoverPoint) return null;
+    const planned = new Set<number>();
+    for (const path of previewPlan?.paths ?? []) if (path.slotId !== undefined) planned.add(path.slotId);
+    let map = null;
+    try {
+      map = battleMapId ? mapById(battleMapId) : null;
+    } catch {
+      map = null;
+    }
+    return deploymentSlotView(map, current.covers, current.units, hoverPoint, planned);
+  }, [deploymentCell, heldKey, plannedKey, battleMapId]);
+
+  // garrison-and-assault 4.1: the map's positions, rebuilt when the works change (trenches dug in the editor).
+  const coverCount = frame?.covers.length ?? 0;
+  const positions: readonly PositionDef[] = useMemo(() => {
+    const current = latestFrame.current;
+    if (!battleMapId || !current) return [];
+    try {
+      const map = mapById(battleMapId);
+      return positionsFor({ buildings: map.buildings, covers: current.covers, garrisonYards: map.garrisonYards });
+    } catch {
+      return [];
+    }
+  }, [battleMapId, coverCount]);
+  /** Sair: the 30 m ring around the selection's position, while the order waits for its point. */
+  const exitRing = useMemo(() => {
+    if (pendingTactical !== 'exit') return null;
+    const positionId = selectedUnits.find((unit) => unit.garrison !== undefined)?.garrison;
+    const position = positions.find((entry) => entry.id === positionId);
+    return position ? { x: position.x, y: position.y, radius: 30 } : null;
+  }, [pendingTactical, selectedUnits.map((unit) => unit.garrison ?? '').join(','), positions]);
+
+  /** Sends an order on a position (Ocupar, Assaltar), or keeps waiting when the click meant none. */
+  const sendPositionOrder = (order: 'enter' | 'assault', positionId: number | undefined): boolean => {
+    if (positionId === undefined || selectedIds.length === 0) return false;
+    clientRef.current?.sendCommand(
+      order === 'enter'
+        ? { type: 'order', order: 'enter', unitIds: selectedIds, positionId }
+        : { type: 'assault', unitIds: selectedIds, positionId },
+    );
+    triggerOrderCallout(order, selectedIds);
+    setPendingTactical(null);
+    return true;
+  };
+  const ownSide = (): 'column' | 'legalist' => (selectedUnits[0]?.faction === 'legalist' ? 'legalist' : 'column');
+  const enemyHeld = (position: PositionDef): boolean =>
+    frame?.garrisons?.some((garrison) => garrison.positionId === position.id && garrison.side !== ownSide()) ?? false;
 
   useEffect(() => {
     if (!frame) {
@@ -285,10 +347,6 @@ export function useOrders({
       officerText: text,
       troopText: translate(locale, 'hud.calloutTroop', { order: text }),
     });
-  };
-
-  const handleTogglePreview = (): void => {
-    setPreviewEnabled((value) => !value);
   };
 
   const handleClearOrder = (): void => {
@@ -522,8 +580,13 @@ export function useOrders({
     }
     if (
       pendingTactical &&
-      ['advance', 'defend', 'ambush', 'disperse', 'recon', 'reserve'].includes(pendingTactical)
+      ['advance', 'defend', 'ambush', 'disperse', 'recon', 'reserve', 'exit'].includes(pendingTactical)
     ) {
+      return;
+    }
+    // garrison-and-assault 4.1: a click on a man inside a position means that position.
+    if (pendingTactical === 'enter' || pendingTactical === 'assault') {
+      sendPositionOrder(pendingTactical, target.garrison);
       return;
     }
     if (aimPending) {
@@ -580,6 +643,23 @@ export function useOrders({
       }
       triggerOrderCallout('aim', selectedIds);
       setAimPending(false);
+      return;
+    }
+    // garrison-and-assault 4.1: Ocupar and Assaltar take the position clicked; Sair, the point.
+    if (pendingTactical === 'enter') {
+      sendPositionOrder('enter', positionNear(positions, point, (position) => !enemyHeld(position))?.id);
+      return;
+    }
+    if (pendingTactical === 'assault') {
+      sendPositionOrder('assault', positionNear(positions, point, enemyHeld)?.id);
+      return;
+    }
+    if (pendingTactical === 'exit') {
+      if (selectedIds.length > 0) {
+        clientRef.current?.sendCommand({ type: 'order', order: 'exit', unitIds: selectedIds, to: point });
+        triggerOrderCallout('exit', selectedIds);
+      }
+      setPendingTactical(null);
       return;
     }
     if (
@@ -746,7 +826,10 @@ export function useOrders({
       order === 'ambush' ||
       order === 'disperse' ||
       order === 'recon' ||
-      order === 'reserve'
+      order === 'reserve' ||
+      order === 'enter' ||
+      order === 'exit' ||
+      order === 'assault'
     ) {
       handleTacticalOrder(order);
     }
@@ -776,6 +859,13 @@ export function useOrders({
     }
     clientRef.current?.sendCommand({ type: 'fire_control', unitIds: selectedIds, mode });
     triggerHoldFireCallout(mode !== 'free');
+  };
+  /** add-run-toggle: Walk or Run for the selected sections. */
+  const handleHurry = (on: boolean): void => {
+    if (selectedIds.length === 0) {
+      return;
+    }
+    clientRef.current?.sendCommand({ type: 'hurry', unitIds: selectedIds, hurry: on });
   };
   const handleFormation = (formation: FormationKind): void => {
     if (selectedIds.length > 0) {
@@ -814,6 +904,8 @@ export function useOrders({
 
   return {
     slotView,
+    positions,
+    exitRing,
     selectedSquadId,
     setSelectedSquadId,
     selectedUnitIds,
@@ -827,6 +919,7 @@ export function useOrders({
     orderCallout,
     previewEnabled,
     setPreviewEnabled,
+    deploymentSlots,
     hoverUnitId,
     targetUnitIds,
     selectedUnits,
@@ -837,7 +930,6 @@ export function useOrders({
     needsTarget,
     previewPlan,
     selectSquad,
-    handleTogglePreview,
     handleClearOrder,
     handlePreviewGround,
     handlePreviewUnit,
@@ -858,5 +950,7 @@ export function useOrders({
     handleRegroup,
     handleFormation,
     handleStance,
+    hurry,
+    handleHurry,
   };
 }

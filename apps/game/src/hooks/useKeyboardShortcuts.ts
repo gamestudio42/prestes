@@ -15,6 +15,8 @@ interface KeyboardShortcutOptions {
   setAimPending: Dispatch<SetStateAction<boolean>>;
   /** G closes the selected section on its centre (the old Regroup order). */
   onRegroup: () => void;
+  /** add-run-toggle: R switches the selected sections between Walk and Run. */
+  onToggleHurry: () => void;
 }
 
 /** H hides the HUD, F1 toggles the sandbox, Escape cancels tools and pending orders. */
@@ -29,6 +31,7 @@ export function useKeyboardShortcuts({
   setPendingTactical,
   setAimPending,
   onRegroup,
+  onToggleHurry,
 }: KeyboardShortcutOptions): void {
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent): void => {
@@ -40,6 +43,10 @@ export function useKeyboardShortcuts({
       if (!typing && !event.ctrlKey && !event.metaKey && !event.altKey && event.key.toLowerCase() === 'g') {
         event.preventDefault();
         onRegroup();
+      }
+      if (!typing && !event.ctrlKey && !event.metaKey && !event.altKey && event.key.toLowerCase() === 'r') {
+        event.preventDefault();
+        onToggleHurry();
       }
       if (event.key === 'F1') {
         event.preventDefault();
@@ -65,5 +72,5 @@ export function useKeyboardShortcuts({
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [controlBothSides, selectedSquadId, sandboxTool, onRegroup]);
+  }, [controlBothSides, selectedSquadId, sandboxTool, onRegroup, onToggleHurry]);
 }

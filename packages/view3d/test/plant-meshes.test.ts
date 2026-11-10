@@ -1,15 +1,15 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import * as THREE from 'three';
-import { battleMap, compileMapDocument, createEditableMap, setActiveMap, VEGETATION_KINDS, VILA_MILITAR, type BattleMap } from '@prestes/shared';
+import { compileMapDocument, createEditableMap, fromMapDocument, toMapDocument, setActiveMap, vegetationCell, VEGETATION_KINDS, VILA_MILITAR, type BattleMap } from '@prestes/shared';
 import { BattleMapLayer } from '../src/battle-map-layer';
 import { clumpGeometry, plantGeometry, plantSpots, STRATEGIC_CLUMP_CAP } from '../src/plant-meshes';
 
 // refine-map-editor 3.2: plants are code-built meshes, corn in rows, capim as blades.
 afterEach(() => setActiveMap(VILA_MILITAR));
 
-function fieldMap(kind: 'corn' | 'tall-grass'): BattleMap {
+function fieldMap(kind: 'corn' | 'tall-grass', density = 0): BattleMap {
   const map = createEditableMap({ id: 'plants', size: 'small', name: { en: 'P', 'pt-BR': 'P' } });
-  const code = VEGETATION_KINDS.indexOf(kind) + 1;
+  const code = vegetationCell(VEGETATION_KINDS.indexOf(kind) + 1, density);
   // A 40 x 20 m field, its long axis along x.
   for (let y = 100; y < 120; y += 1) for (let x = 100; x < 140; x += 1) map.vegetation[y * 240 + x] = code;
   const compiled = compileMapDocument(map);
@@ -27,6 +27,25 @@ function triangles(geometry: THREE.BufferGeometry): THREE.Vector3[][] {
 }
 
 describe('plant meshes', () => {
+  it('density (author-game-maps): the look only; dense draws more plants, sparse fewer, the raster keeps the kind', () => {
+    const counts = [0, 1, 2].map((density) => {
+      const map = fieldMap('tall-grass', density);
+      expect(map.raster!.vegetation[110 * 240 + 120]).toBe(VEGETATION_KINDS.indexOf('tall-grass') + 1);
+      expect(map.raster!.vegetationDensity?.[110 * 240 + 120] ?? 0).toBe(density);
+      return plantSpots(map, 'tall-grass', 1924).length;
+    });
+    const [normal, sparse, dense] = counts as [number, number, number];
+    expect(dense).toBeGreaterThan(normal * 2.5);
+    expect(sparse).toBeLessThan(normal * 0.65);
+    expect(sparse).toBeGreaterThan(normal * 0.3);
+  });
+
+  it('density survives the saved document', () => {
+    const map = createEditableMap({ id: 'plants', size: 'small', name: { en: 'P', 'pt-BR': 'P' } });
+    map.vegetation[5] = vegetationCell(4, 2);
+    expect(fromMapDocument(JSON.parse(JSON.stringify(toMapDocument(map)))).vegetation[5]).toBe(vegetationCell(4, 2));
+  });
+
   it('corn in rows: stalks stand in parallel rows along the field, with leaves and a tassel', () => {
     const map = fieldMap('corn');
     const spots = plantSpots(map, 'corn', 1924);
@@ -94,8 +113,13 @@ describe('plant meshes', () => {
     expect(edge / 40).toBeLessThan(0.75);
   });
 
-  it('the Fazenda shows plants up close and capped clumps at strategic span', () => {
-    const fazenda = battleMap('fazenda');
+  it('a farm shows plants up close and capped clumps at strategic span', () => {
+    // author-game-maps 3.1: a field of each kind on a small authored map.
+    const editable = createEditableMap({ id: 'farm', size: 'small', name: { en: 'F', 'pt-BR': 'F' } });
+    VEGETATION_KINDS.forEach((_, index) => {
+      for (let y = 20; y < 60; y += 1) for (let x = 10 + index * 55; x < 55 + index * 55; x += 1) editable.vegetation[y * 240 + x] = index + 1;
+    });
+    const fazenda = compileMapDocument(editable);
     setActiveMap(fazenda);
     const layer = new BattleMapLayer(fazenda);
     const meshes: THREE.InstancedMesh[] = [];

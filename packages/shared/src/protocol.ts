@@ -44,6 +44,8 @@ export interface CoverPoint {
   facing?: Vec2;
   /** refine-map-editor D6: a piece that offers no slots (a communication trench, a parapet's sandbags). */
   noSlots?: boolean;
+  /** garrison-and-assault D1: a road ditch, shelter like a shallow trench but no position. */
+  ditch?: boolean;
 }
 
 export interface SightObstacle {
@@ -69,7 +71,11 @@ export type TacticalOrder =
   | 'protect-officer'
   | 'recon'
   | 'reserve'
-  | 'rescue';
+  | 'rescue'
+  /** garrison-and-assault: go into a position (`positionId`); leave it toward `to`; close assault. */
+  | 'enter'
+  | 'exit'
+  | 'assault';
 
 export type UnitOrder =
   | OrderKind
@@ -176,6 +182,14 @@ export interface UnitSnapshot {
   boundPhase?: 'cover' | 'advance' | null;
   /** The gait while moving (order-tempo-and-facing); absent when halted. */
   gait?: Gait;
+  /** add-run-toggle: the player set this soldier's pace to Run. */
+  hurry?: boolean;
+  /** garrison-and-assault: the position he is inside. */
+  garrison?: number;
+  /** garrison-and-assault 4.2: the position he is walking into. */
+  entering?: number;
+  /** garrison-and-assault 4.7: at an upper-floor window, that floor's height (m). */
+  elevation?: number;
   /** add-battle-maps: hidden by the vegetation he is in (the view marks it). */
   concealed?: boolean;
   /** refine-battle-maps 5.14: in the vegetation but given away by his own shot ("Revelado"). */
@@ -188,7 +202,14 @@ export interface UnitSnapshot {
   sectionType?: SectionTypeId;
   /** pre-battle-roster 5.2: a machine gunner's gun is set up ("pronta"); absent for other weapons. */
   gunSet?: boolean;
+  /** machine-gun-fire-feedback 3.1: the gun moving, setting up or set; absent for other weapons (not hashed). */
+  gunState?: GunState;
+  /** machine-gun-fire-feedback 3.1: ticks of set-up left while setting up (0 once set). */
+  gunSetupLeft?: number;
 }
+
+/** machine-gun-fire-feedback 3.1: what a machine gun is doing. */
+export type GunState = 'moving' | 'setting' | 'set';
 
 export interface RosterRecord {
   id: number;
@@ -224,7 +245,14 @@ export type RejectionReason =
   /** add-deployment-phase: a deployment order whose positions leave the side's area. */
   | 'outside_deployment_area'
   /** add-deployment-phase: a deployment order whose positions fall in deep water or a footprint. */
-  | 'blocked';
+  | 'blocked'
+  /** garrison-and-assault: a position held by the enemy (assault it instead), or full. */
+  | 'position_held'
+  | 'position_full'
+  /** garrison-and-assault: an exit point over 30 m from the position, or an assault from over 15 m. */
+  | 'too_far'
+  /** garrison-and-assault: an exit for men not inside, or an assault on a position the enemy does not hold. */
+  | 'not_garrisoned';
 
 export type Command =
   /** `facing`: the way the section faces on arrival, formation kept. */
@@ -245,7 +273,11 @@ export type Command =
       facing?: Vec2;
       /** Ground orders: metres between soldiers, kept by the section. */
       spacing?: number;
+      /** garrison-and-assault: the position an `enter` order goes into. */
+      positionId?: number;
     }
+  /** garrison-and-assault: a close assault on an enemy-held position. */
+  | { type: 'assault'; unitIds: number[]; positionId: number }
   | { type: 'spawn_cover'; kind: CoverKind; to: Vec2; rotation?: number }
   | { type: 'spawn_dummy'; to: Vec2; rotation?: number }
   | {
@@ -270,6 +302,8 @@ export type Command =
   /** Halt: stop and hold here, taking cover within reach; `facing` turns the section. */
   | { type: 'hold'; unitIds: number[]; facing?: Vec2 }
   | { type: 'hold_fire'; unitIds: number[]; hold: boolean }
+  /** add-run-toggle: the section's pace, Run (true) or Walk (false). */
+  | { type: 'hurry'; unitIds: number[]; hurry: boolean }
   /** Free fire, fire on contact (hold until an enemy is close), or hold fire. */
   | { type: 'fire_control'; unitIds: number[]; mode: FireControl }
   | { type: 'posture'; unitIds: number[]; posture: Posture }
@@ -329,7 +363,11 @@ export type SimEvent =
    */
   | { type: 'unseen_fire'; tick: number; side: Faction; target: number; x: number; y: number; radius: number }
   /** add-deployment-phase: the deployment phase ended at `tick`; ticks run from here. */
-  | { type: 'battle_started'; tick: number };
+  | { type: 'battle_started'; tick: number }
+  | { type: 'unit_entered'; tick: number; unitId: number; positionId: number }
+  | { type: 'unit_left'; tick: number; unitId: number; positionId: number }
+  | { type: 'assault_started'; tick: number; positionId: number }
+  | { type: 'assault_ended'; tick: number; positionId: number; winner: 'column' | 'legalist' };
 
 /** pre-battle-roster 5.4: whether a shot is drawn and heard: aimed fire, or the first round of a burst. */
 export function shotShown(event: { burstStart?: boolean }): boolean {
@@ -357,6 +395,36 @@ export interface Frame {
   gunPools?: Readonly<Record<number, number>>;
   /** add-deployment-phase: the battle's phase, in battles started with one. */
   phase?: BattlePhase;
+  /** garrison-and-assault: the held positions (absent when none is held). */
+  garrisons?: readonly GarrisonSnapshot[];
+  /** garrison-and-assault: the close fights under way, for the bars. */
+  assaults?: readonly AssaultSnapshot[];
+}
+
+/** garrison-and-assault: a position and the men inside it. */
+export interface GarrisonSnapshot {
+  positionId: number;
+  side: 'column' | 'legalist';
+  unitIds: readonly number[];
+  /** Shared suppression of the whole garrison (0-100). */
+  suppression: number;
+  /**
+   * 3.3: what the other side knows of it: held (fired on from it) or its
+   * strength too (a man seen at a port). Absent while it is unknown.
+   */
+  known?: 'occupied' | 'counted';
+  /** Set by the player's fog view: the garrison is known held, its strength not ("?"). */
+  strengthUnknown?: true;
+}
+
+/** garrison-and-assault: a close fight's fit fighters, now and at its start. */
+export interface AssaultSnapshot {
+  positionId: number;
+  attackers: number;
+  defenders: number;
+  attackersStart: number;
+  defendersStart: number;
+  attackerSide: 'column' | 'legalist';
 }
 
 /** add-deployment-phase: before the battle (no time passes) or the battle itself. */

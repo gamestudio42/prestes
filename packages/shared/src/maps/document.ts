@@ -12,14 +12,16 @@ import {
 import { distanceToPolyline, pointInPolygon, pointsBox, polygonBox, smooth, type Box } from './geometry';
 import { GROUND_MATERIAL_IDS, groundMaterial, groundMaterialIndex, type GroundMaterialId } from './ground-materials';
 import { decodeRaster, encodeRaster, type EncodedRaster } from './raster';
-import { BRIDGE_RAMP, bridgeDeckHeight, bridgeLandings, bridgePolygon, HEIGHT_SPACING, SURFACES, VEGETATION_KINDS } from './runtime';
+import { BRIDGE_RAMP, bridgeDeckHeight, bridgeLandings, bridgePolygon, HEIGHT_SPACING, SURFACES, VEGETATION_KINDS, vegetationDensityOf, vegetationKindOf } from './runtime';
 import { boundsForSize, MAP_SIZE_METRES, MAP_SIZES, type MapSize } from './sizes';
 import { growthMask } from './growth-mask';
 import { buildTrenchLines, TRENCH, type TrenchLineDef } from './trench-lines';
 import { noteCoverPieces, type CoverPiece } from './cover-preview';
 import { defaultDeploymentArea } from './deployment-areas';
 import { smoothCentreline } from './water-outline';
-import type { BattleMap, DeploymentZone, HeightShape, LocalizedText, MapLine, PropPlacement, WaterArea } from './types';
+import { detectWallYards, type YardWall } from './wall-yards';
+import type { Roster } from '../sections';
+import { DEFAULT_MAP_LIGHT, MAP_LIGHT_TIME, type BattleMap, type DeploymentZone, type HeightShape, type LocalizedText, type MapLight, type MapLine, type PropPlacement, type WaterArea } from './types';
 
 /**
  * The map editor's document (add-map-editor): raster layers (heights, paint,
@@ -30,7 +32,7 @@ import type { BattleMap, DeploymentZone, HeightShape, LocalizedText, MapLine, Pr
  */
 
 export const MAP_DOCUMENT_FORMAT = 'prestes-map';
-export const MAP_DOCUMENT_VERSION = 3;
+export const MAP_DOCUMENT_VERSION = 4;
 
 /** Heights the editor allows (m). */
 export const MIN_HEIGHT = -12;
@@ -66,6 +68,8 @@ const DITCH_BANK = 1;
 const RIVER_BANK = 5;
 /** Deep water's bed sits this far under the water surface. */
 const DEEP_BED = 1.8;
+/** author-game-maps: a river's bed eases between deep and ford over this many metres either side of the change. */
+const FORD_TAPER = 6;
 
 export interface DocRoad {
   id: number;
@@ -126,7 +130,8 @@ export interface DocObject {
   scale?: number;
 }
 
-export type MapUse = 'skirmish' | 'campaign';
+/** author-game-maps: a skirmish map, a campaign mission's map, or the test map. */
+export type MapUse = 'skirmish' | 'campaign' | 'test';
 export type SettingLabel = BattleMap['setting']['label'];
 export type MapPalette = BattleMap['palette'];
 
@@ -136,6 +141,15 @@ interface MapDocumentBody {
   name: LocalizedText;
   description: LocalizedText;
   use: MapUse;
+  /** author-game-maps D1: the campaign chapter this map is for (campaign maps). */
+  mission?: string;
+  /** author-game-maps D5: time of day and sun bearing; absent = midday from the north-east. */
+  light?: MapLight;
+  /**
+   * author-game-maps: the legalist forces one is drawn from when the player
+   * brings a roster (pre-battle-roster 2.3); absent = the default roster.
+   */
+  enemyForces?: Roster[];
   setting: { label: SettingLabel; sourceNote: string };
   codexKey?: string;
   palette: MapPalette;
@@ -150,6 +164,21 @@ interface MapDocumentBody {
   trenches: DocTrenchLine[];
   objects: DocObject[];
   deployment: { column: DeploymentZone; legalist: DeploymentZone };
+}
+
+/**
+ * author-game-maps D2: what the menus know of an authored map without
+ * loading it (generated into authored/index.ts by tools/check-maps.ts).
+ */
+export interface AuthoredMapEntry {
+  id: string;
+  use: MapUse;
+  mission?: string;
+  size: MapSize;
+  name: LocalizedText;
+  description: LocalizedText;
+  /** A preview image exists at maps/<id>.png. */
+  preview: boolean;
 }
 
 /** The file format. */
@@ -183,6 +212,14 @@ export function isValidMapId(id: string): boolean {
   return ID_PATTERN.test(id) && id.length <= 48;
 }
 
+/** author-game-maps D5: a document's light, defaulted and kept in range. */
+export function mapLight(light: MapLight | undefined): MapLight {
+  if (!light) return { ...DEFAULT_MAP_LIGHT };
+  const time = Math.max(MAP_LIGHT_TIME.min, Math.min(MAP_LIGHT_TIME.max, light.time));
+  const bearing = ((light.bearing % 360) + 360) % 360;
+  return { time, bearing };
+}
+
 /** A new flat map, deployment zones 190 m apart on its north-south axis. */
 export function createEditableMap(options: {
   id: string;
@@ -191,6 +228,7 @@ export function createEditableMap(options: {
   baseMaterial?: GroundMaterialId;
   palette?: MapPalette;
   use?: MapUse;
+  mission?: string;
 }): EditableMap {
   const side = mapSide(options.size);
   const nodes = heightNodes(options.size);
@@ -209,6 +247,8 @@ export function createEditableMap(options: {
     name: { en: options.name?.en ?? '', 'pt-BR': options.name?.['pt-BR'] ?? '' },
     description: { en: '', 'pt-BR': '' },
     use: options.use ?? 'skirmish',
+    ...(options.mission ? { mission: options.mission } : {}),
+    light: { ...DEFAULT_MAP_LIGHT },
     setting: { label: 'historical-setting-fictional-place', sourceNote: '' },
     palette: options.palette ?? 'temperate',
     waterLevel: -1.2,
@@ -281,11 +321,15 @@ const isZone = (value: unknown): value is DeploymentZone => isObject(value) && i
  *
  * 2 -> 3 (add-deployment-phase): each side gets the default deployment area
  * round its section points.
+ *
+ * 3 -> 4 (author-game-maps): `mission`, `light` and `enemyForces` are new
+ * and optional; the document is only relabelled.
  */
 function migrate(document: Record<string, unknown>): Record<string, unknown> {
   let doc = document;
   if (doc.version === 1) doc = migrateV1(doc);
   if (doc.version === 2) doc = migrateV2(doc);
+  if (doc.version === 3) doc = { ...doc, version: 4 };
   return doc;
 }
 
@@ -354,7 +398,10 @@ export function parseMapDocument(value: unknown): ParseResult {
   if (!isString(doc.id) || !isValidMapId(doc.id)) return fail('id');
   if (!MAP_SIZES.includes(doc.size as MapSize)) return fail('size');
   if (!isText(doc.name) || !isText(doc.description)) return fail('name');
-  if (doc.use !== 'skirmish' && doc.use !== 'campaign') return fail('use');
+  if (doc.use !== 'skirmish' && doc.use !== 'campaign' && doc.use !== 'test') return fail('use');
+  if (doc.mission !== undefined && !isString(doc.mission)) return fail('mission');
+  if (doc.light !== undefined && !(isObject(doc.light) && isNumber(doc.light.time) && isNumber(doc.light.bearing))) return fail('light');
+  if (doc.enemyForces !== undefined && !(Array.isArray(doc.enemyForces) && doc.enemyForces.every((roster) => isObject(roster) && Array.isArray(roster.sections) && roster.sections.every(isString)))) return fail('enemyForces');
   if (!isObject(doc.setting) || !isString(doc.setting.label) || !isString(doc.setting.sourceNote)) return fail('setting');
   if (!['training-ground', 'historical-setting-fictional-place', 'reconstructed-historical-place'].includes(doc.setting.label)) return fail('setting');
   if (!['temperate', 'cerrado', 'caatinga', 'urban'].includes(doc.palette as string)) return fail('palette');
@@ -628,10 +675,23 @@ export function compileMapDocument(source: EditableMap | MapDocument): BattleMap
     // refine-map-editor D4: the centreline smoothed every 2 m; each piece keeps its source segment's kind.
     const smoothed = smoothCentreline(river.points);
     const box = pointsBox(smoothed.points, river.width / 2 + RIVER_BANK);
+    // author-game-maps: distance along the centreline, and where the kind changes.
+    const along: number[] = [0];
+    for (let index = 1; index < smoothed.points.length; index += 1) {
+      along.push(along[index - 1]! + Math.hypot(smoothed.points[index]!.x - smoothed.points[index - 1]!.x, smoothed.points[index]!.y - smoothed.points[index - 1]!.y));
+    }
+    const kindAt = (segment: number) => river.kinds[smoothed.source[segment] ?? 0] ?? 'deep';
+    const changes: number[] = [];
+    for (let segment = 1; segment + 1 < smoothed.points.length; segment += 1) if (kindAt(segment) !== kindAt(segment - 1)) changes.push(along[segment]!);
     forNodesIn(field, box, (index, x, y) => {
       const near = closestOnPolyline(x, y, smoothed.points);
-      const kind = river.kinds[smoothed.source[near.segment] ?? 0] ?? 'deep';
-      const bed = map.waterLevel - (kind === 'deep' ? DEEP_BED : 0.45);
+      const kind = kindAt(near.segment);
+      const start = smoothed.points[near.segment]!;
+      const here = along[near.segment]! + Math.hypot(near.point.x - start.x, near.point.y - start.y);
+      const gap = changes.reduce((least, at) => Math.min(least, Math.abs(here - at)), Number.POSITIVE_INFINITY);
+      // Within FORD_TAPER of a change the depth eases from one kind to the other (half-way at the change).
+      const deepness = gap >= FORD_TAPER ? (kind === 'deep' ? 1 : 0) : 0.5 + (kind === 'deep' ? 0.5 : -0.5) * smooth(gap / FORD_TAPER);
+      const bed = map.waterLevel - (0.45 + (DEEP_BED - 0.45) * deepness);
       const edge = near.distance - river.width / 2;
       const current = field.heights[index]!;
       if (edge <= 0) field.heights[index] = Math.min(current, bed);
@@ -671,7 +731,16 @@ export function compileMapDocument(source: EditableMap | MapDocument): BattleMap
 
   // Surfaces and the view's paint, from the painted materials.
   const paint = map.paint.slice();
-  const vegetation = map.vegetation.slice();
+  // author-game-maps: the simulation reads the kind; the density goes to the view alone.
+  const vegetation = new Uint8Array(map.vegetation.length);
+  const vegetationDensity = new Uint8Array(map.vegetation.length);
+  let anyDensity = false;
+  for (let index = 0; index < vegetation.length; index += 1) {
+    const cell = map.vegetation[index]!;
+    vegetation[index] = vegetationKindOf(cell);
+    vegetationDensity[index] = vegetationDensityOf(cell);
+    if (vegetationDensity[index]) anyDensity = true;
+  }
   const objectConcealed = new Uint8Array(vegetation.length);
   const stampMaterial = (index: number, material: GroundMaterialId): void => {
     paint[index] = groundMaterialIndex(material);
@@ -726,11 +795,13 @@ export function compileMapDocument(source: EditableMap | MapDocument): BattleMap
           halfWidth: piece.halfLength,
           halfDepth: DITCH_WIDTH / 2,
           height: 0.2,
-          radius: 2,
+          // author-game-maps 3.1: the whole piece shelters (a 2 m radius left most of a 12 m piece bare).
+          radius: Math.max(2, piece.halfLength + 1),
           quality: 0.3,
           blocksMovement: false,
           blocksSight: false,
           drawnBy: 'map',
+          ditch: true,
         });
       }
     }
@@ -829,11 +900,15 @@ export function compileMapDocument(source: EditableMap | MapDocument): BattleMap
   // Walls and fences.
   const lines: MapLine[] = [];
   const fences: Vec2[][] = [];
+  const yardWalls: YardWall[] = [];
   for (const line of [...map.lines].sort((a, b) => a.id - b.id)) {
     const info = lineKind(line.kind);
     lines.push({ kind: line.kind, points: line.points, height: line.height });
     if (line.kind === 'wire-fence') fences.push(line.points);
+    const lineCoverIds: number[] = [];
+    if (info.wall) yardWalls.push({ id: line.id, points: line.points, height: line.height, coverIds: lineCoverIds });
     for (const piece of pieces(line.points, 12)) {
+      lineCoverIds.push(coverId);
       coverPieces.set(coverId, { kind: 'line', id: line.id });
       covers.push({
         id: coverId++,
@@ -857,6 +932,8 @@ export function compileMapDocument(source: EditableMap | MapDocument): BattleMap
       });
     }
   }
+
+  const garrisonYards = detectWallYards(yardWalls);
 
   // Plants grow only on land (refine-map-editor D2): the mask clears water,
   // bridges, paved and cobbled roads, buildings and trench channels.
@@ -902,7 +979,7 @@ export function compileMapDocument(source: EditableMap | MapDocument): BattleMap
     setting: { ...map.setting },
     bounds,
     height: { kind: 'field', shapes: heightShapes, grid: { columns: nodes, rows: nodes, centimetres } },
-    raster: { surfaces, vegetation, objectCover: objectConcealed },
+    raster: { surfaces, vegetation, objectCover: objectConcealed, ...(anyDensity ? { vegetationDensity } : {}) },
     paint,
     baseSurface: groundMaterial(groundMaterialIndex(map.baseMaterial)).surface,
     surfaces: [],
@@ -929,8 +1006,12 @@ export function compileMapDocument(source: EditableMap | MapDocument): BattleMap
     props,
     fences,
     lines,
+    // author-game-maps: walled yards found from the walls.
+    ...(garrisonYards.length > 0 ? { garrisonYards } : {}),
     ...(trenches.length > 0 ? { trenches: trenches.map((line) => ({ ...line, points: line.points.map((p) => ({ ...p })) })) } : {}),
     palette: map.palette,
+    light: mapLight(map.light),
+    ...(map.enemyForces && map.enemyForces.length > 0 ? { enemyForces: map.enemyForces.map((roster) => ({ sections: [...roster.sections] })) } : {}),
   };
   noteCoverPieces(compiled, coverPieces);
   return compiled;

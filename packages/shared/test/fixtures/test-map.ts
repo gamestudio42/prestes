@@ -7,7 +7,7 @@ import type { BattleMap } from '../../src/maps/types';
  * canefield, a cornfield, tall grass and scrub south of the river.
  */
 export const TEST_MAP: BattleMap = {
-  id: 'fazenda',
+  id: 'test-field',
   nameKey: 'map.test.name',
   descriptionKey: 'map.test.description',
   codexKey: 'codex.map.test',

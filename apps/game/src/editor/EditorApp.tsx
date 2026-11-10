@@ -43,16 +43,26 @@ import {
   type MapProblem,
   type MapSize,
   type MapUse,
+  type PositionDef,
+  type AuthoredMapEntry,
   type RoadType,
+  type Roster,
   type SettingLabel,
+  DEFAULT_MAP_LIGHT,
+  VEGETATION_DENSITIES,
+  MAP_LIGHT_TIME,
+  mapLight,
+  type MapLight,
 } from '@prestes/shared';
 import { LOCALES, translate, type Locale, type MessageKey } from '@prestes/content';
 import { loadLocale, saveLocale } from '../storage';
-import { autosave, exportDocument, loadLast, readDocumentFile, saveToProject, storePlaytest } from './persistence';
+import { autosave, exportDocument, listProjectMaps, loadLast, loadProjectMap, readDocumentFile, saveThumbnail, saveToProject, storePlaytest } from './persistence';
+import { missionLabel, OpenDialog, slotOf, SlotSelect, type Slot } from './MapSlots';
 import { EditorStore, replaceCommand, type SelectionItem, type ToolId } from './store';
 import { editorBridge, type EditorBridge } from './test-bridge';
 import { EditorViewport, PROTECTION_COLORS, type CursorInfo } from './viewport';
 import { useThumbnails } from './thumbnails';
+import { EnemyForces } from './EnemyForces';
 
 /**
  * The map editor page (add-map-editor): toolbar, tool palette, properties,
@@ -180,7 +190,14 @@ export function EditorApp(): ReactNode {
   const viewport = useRef<EditorViewport | null>(null);
   const fileInput = useRef<HTMLInputElement | null>(null);
   const [cursor, setCursor] = useState<CursorInfo | null>(null);
-  const [dialog, setDialog] = useState<'new' | 'properties' | null>(null);
+  const [dialog, setDialog] = useState<'new' | 'properties' | 'open' | null>(null);
+  // author-game-maps 4.1, 4.2: the project's maps, fetched when a dialog that shows slots opens.
+  const [projectMaps, setProjectMaps] = useState<AuthoredMapEntry[] | null>(null);
+  const openDialog = (next: 'new' | 'properties' | 'open'): void => {
+    setProjectMaps(null);
+    setDialog(next);
+    void listProjectMaps().then(setProjectMaps);
+  };
   const [ready, setReady] = useState(false);
   const tRef = useRef(t);
   tRef.current = t;
@@ -276,16 +293,34 @@ export function EditorApp(): ReactNode {
     store.setMessage(null);
   };
 
+  // author-game-maps: the view as framed (position and zoom) becomes the saved map's thumbnail on the desk.
+  const onSaveThumbnail = async (): Promise<void> => {
+    const picture = viewport.current?.snapshot();
+    if (!picture) return;
+    const result = await saveThumbnail(store.map.id, picture);
+    if (result.ok) store.setMessage(t('editor.thumbnail.ok', { file: result.file }));
+    else store.setMessage(t(result.reason === 'save-first' ? 'editor.thumbnail.saveFirst' : 'editor.save.failed', { reason: result.reason }), true);
+  };
+
   const onSaveToProject = async (): Promise<void> => {
     const problems = runValidation();
     if (problems.some((problem) => problem.severity === 'error')) {
       store.setMessage(t('editor.save.refused'), true);
       return;
     }
-    const result = await saveToProject(toMapDocument(store.map));
+    const document = toMapDocument(store.map);
+    let result = await saveToProject(document);
+    // author-game-maps 4.1: one map per mission; replacing asks first.
+    if (!result.ok && result.reason === 'mission-taken' && document.mission) {
+      if (!window.confirm(t('editor.save.replaceMission', { mission: missionLabel(document.mission, locale), holder: result.holder ?? '' }))) {
+        store.setMessage(t('editor.save.kept'), true);
+        return;
+      }
+      result = await saveToProject(document, true);
+    }
     if (result.ok) {
       store.saveState = 'saved';
-      store.setMessage(t('editor.save.ok', { file: result.file }));
+      store.setMessage(result.moved ? t('editor.save.moved', { file: result.file, holder: result.moved }) : t('editor.save.ok', { file: result.file }));
     } else {
       store.setMessage(t('editor.save.failed', { reason: result.reason }), true);
     }
@@ -299,6 +334,18 @@ export function EditorApp(): ReactNode {
     await autosave(document);
     await storePlaytest(document);
     window.location.href = './index.html?playtest=1';
+  };
+
+  const onOpenProjectMap = async (id: string): Promise<void> => {
+    const result = await loadProjectMap(id);
+    if (!result.ok) {
+      store.setMessage(t(`editor.import.error.${result.error}`, { detail: result.detail ?? '' }), true);
+      return;
+    }
+    store.load(fromMapDocument(result.document));
+    viewport.current?.frameMap();
+    store.setMessage(null);
+    setDialog(null);
   };
 
   const chooseProblem = (problem: MapProblem): void => {
@@ -315,8 +362,9 @@ export function EditorApp(): ReactNode {
     <div className="editor">
       <header className="editor-toolbar">
         <span className="editor-title">{t('editor.title')}</span>
-        <button type="button" data-testid="editor-new" onClick={() => setDialog('new')}>{t('editor.file.new')}</button>
-        <button type="button" data-testid="editor-properties" onClick={() => setDialog('properties')}>{t('editor.file.properties')}</button>
+        <button type="button" data-testid="editor-new" onClick={() => openDialog('new')}>{t('editor.file.new')}</button>
+        <button type="button" data-testid="editor-open" onClick={() => openDialog('open')}>{t('editor.file.open')}</button>
+        <button type="button" data-testid="editor-properties" onClick={() => openDialog('properties')}>{t('editor.file.properties')}</button>
         <button type="button" onClick={() => fileInput.current?.click()}>{t('editor.file.import')}</button>
         <input
           ref={fileInput}
@@ -333,6 +381,9 @@ export function EditorApp(): ReactNode {
         <button type="button" data-testid="editor-export" onClick={() => exportDocument(toMapDocument(store.map))}>{t('editor.file.export')}</button>
         {import.meta.env.DEV ? (
           <button type="button" data-testid="editor-save-project" onClick={() => void onSaveToProject()}>{t('editor.file.saveProject')}</button>
+        ) : null}
+        {import.meta.env.DEV ? (
+          <button type="button" data-testid="editor-thumbnail" title={t('editor.thumbnail.hint')} onClick={() => void onSaveThumbnail()}>{t('editor.thumbnail')}</button>
         ) : null}
         <span className="editor-separator" />
         <button type="button" data-testid="editor-undo" disabled={!store.canUndo} onClick={() => store.undo()}>{t('editor.file.undo')}</button>
@@ -432,12 +483,21 @@ export function EditorApp(): ReactNode {
         {store.message ? <span data-testid="editor-message" className={store.message.error ? 'editor-error' : 'editor-ok'}>{store.message.text}</span> : null}
       </footer>
 
-      {dialog ? (
+      {dialog === 'open' ? (
+        <OpenDialog maps={projectMaps} locale={locale} t={t} onOpen={(id) => void onOpenProjectMap(id)} onClose={() => setDialog(null)} />
+      ) : null}
+      {dialog === 'new' || dialog === 'properties' ? (
         <MapDialog
           mode={dialog}
           map={map}
+          maps={projectMaps ?? []}
+          locale={locale}
           t={t}
-          onClose={() => setDialog(null)}
+          onClose={() => {
+            viewport.current?.previewLight(null);
+            setDialog(null);
+          }}
+          onPreviewLight={(light) => viewport.current?.previewLight(light)}
           onCreate={(next) => {
             store.load(next);
             viewport.current?.frameMap();
@@ -560,6 +620,15 @@ function ToolProperties({ store, t }: { store: EditorStore; t: T }): ReactNode {
           ))}
         </select>
       </label>,
+      <label key="vegetationDensity">
+        {t('editor.prop.vegetationDensity')}
+        <select data-testid="prop-vegetation-density" value={settings.vegetationDensity} onChange={(event) => set({ vegetationDensity: Number(event.target.value) })}>
+          {VEGETATION_DENSITIES.map((density, index) => (
+            <option key={density} value={index}>{t(`editor.vegetation.density.${density}`)}</option>
+          ))}
+        </select>
+      </label>,
+      <p key="vegetationDensityHint" className="editor-hint">{t('editor.vegetation.densityHint')}</p>,
     );
   }
   if (tool === 'road' || tool === 'bridge') {
@@ -685,6 +754,9 @@ function SelectionPanel({ store, viewport, t }: { store: EditorStore; viewport: 
   const road = first.kind === 'road' && selection.length === 1 ? store.map.roads.find((item) => item.id === first.id) : undefined;
   const line = first.kind === 'line' && selection.length === 1 ? store.map.lines.find((item) => item.id === first.id) : undefined;
   const trench = first.kind === 'trench' && selection.length === 1 ? store.map.trenches.find((item) => item.id === first.id) : undefined;
+  const river = first.kind === 'river' && selection.length === 1 ? store.map.rivers.find((item) => item.id === first.id) : undefined;
+  // A selected point marks the stretches on either side of it.
+  const nearPoint = (stretch: number): boolean => first.kind === 'river' && first.point !== undefined && (stretch === first.point || stretch === first.point - 1);
   return (
     <div className="editor-fields">
       <p>{t('editor.prop.selected', { count: selection.length })}</p>
@@ -715,12 +787,42 @@ function SelectionPanel({ store, viewport, t }: { store: EditorStore; viewport: 
               ))}
             </ul>
           </div>
+          {entry.footprint.kind === 'building' ? <PositionFacts position={store.positionOf('object', object.id)} t={t} /> : null}
         </>
       ) : null}
       {road ? (
         <>
           <p>{t(`editor.road.${road.type}`)}</p>
           <NumberField label={t('editor.prop.width')} value={road.width} min={1.5} max={12} step={0.5} onChange={(width) => store.editVector((draft) => { const target = draft.roads.find((item) => item.id === road.id); if (target) target.width = width; })} />
+        </>
+      ) : null}
+      {river ? (
+        <>
+          <p>{t('editor.tool.river')}</p>
+          <NumberField label={t('editor.prop.width')} value={river.width} min={3} max={60} step={1} onChange={(width) => store.editVector((draft) => { const target = draft.rivers.find((item) => item.id === river.id); if (target) target.width = width; })} />
+          {/* author-game-maps: each stretch between two points is deep or a ford, set here after drawing. */}
+          <fieldset className="editor-stretches" data-testid="river-stretches">
+            <legend>{t('editor.river.stretches')}</legend>
+            {river.kinds.map((kind, stretch) => (
+              <label key={stretch} className={nearPoint(stretch) ? 'editor-stretch-near' : undefined}>
+                {t('editor.river.stretch', { number: stretch + 1 })}
+                <select
+                  data-testid={`river-stretch-${stretch}`}
+                  value={kind}
+                  onChange={(event) =>
+                    store.editVector((draft) => {
+                      const target = draft.rivers.find((item) => item.id === river.id);
+                      if (target) target.kinds[stretch] = event.target.value as 'deep' | 'ford';
+                    })
+                  }
+                >
+                  <option value="deep">{t('editor.prop.deep')}</option>
+                  <option value="ford">{t('editor.prop.ford')}</option>
+                </select>
+              </label>
+            ))}
+            <p className="editor-hint">{t('editor.river.hint')}</p>
+          </fieldset>
         </>
       ) : null}
       {line ? (
@@ -748,6 +850,7 @@ function SelectionPanel({ store, viewport, t }: { store: EditorStore; viewport: 
             <li data-testid="trench-slots">{t('editor.trench.slots', { count: trenchSlotCount(trench) })}</li>
             <li data-testid="trench-capacity">{t('editor.trench.capacity', { count: trenchSlotCount(trench) })}</li>
           </ul>
+          <PositionFacts position={store.positionOf('trench', trench.id)} t={t} />
           <button type="button" data-testid="trench-flip" onClick={() => viewport?.flipTrenches([trench.id])}>{t('editor.trench.flip')}</button>
         </>
       ) : null}
@@ -770,7 +873,7 @@ function TreeFields({ store, t }: { store: EditorStore; t: T }): ReactNode {
   const set = store.updateSettings.bind(store);
   const species = useMemo(() => treeSpecies(), []);
   const pictures = useThumbnails(species.map((id) => catalogObject(id)!.model));
-  const inMix = new Set(BIOME_MIX[settings.treeBiome].map((entry) => entry.type));
+  const inMix = new Set(settings.treeMix);
   return (
     <>
       <div className="editor-segmented" role="radiogroup" aria-label={t('editor.prop.treeMode')}>
@@ -789,7 +892,15 @@ function TreeFields({ store, t }: { store: EditorStore; t: T }): ReactNode {
         <>
           <label>
             {t('editor.prop.treeBiome')}
-            <select data-testid="tree-biome" value={settings.treeBiome} onChange={(event) => set({ treeBiome: event.target.value as TreeBiome })}>
+            <select
+              data-testid="tree-biome"
+              value={settings.treeBiome}
+              onChange={(event) => {
+                const treeBiome = event.target.value as TreeBiome;
+                // The biome is a starting mix; the species below can then be switched on and off.
+                set({ treeBiome, treeMix: BIOME_MIX[treeBiome].map((entry) => entry.type) });
+              }}
+            >
               {TREE_BIOMES.map((biome) => (
                 <option key={biome} value={biome}>{t(`editor.trees.biome.${biome}`)}</option>
               ))}
@@ -805,6 +916,7 @@ function TreeFields({ store, t }: { store: EditorStore; t: T }): ReactNode {
           </label>
         </>
       ) : null}
+      {settings.treeMode === 'scatter' ? <p className="editor-hint" data-testid="tree-mix-hint">{t('editor.trees.mixHint')}</p> : null}
       {settings.treeMode !== 'erase' ? (
         <div className="editor-tree-species" role="listbox" aria-label={t('editor.prop.treeSpecies')}>
           {species.map((id) => {
@@ -818,9 +930,13 @@ function TreeFields({ store, t }: { store: EditorStore; t: T }): ReactNode {
                 role="option"
                 aria-selected={chosen}
                 data-tree={id}
-                disabled={settings.treeMode === 'scatter'}
                 title={t(entry.nameKey)}
-                onClick={() => set({ treeSpecies: id })}
+                onClick={() => {
+                  if (settings.treeMode !== 'scatter') return set({ treeSpecies: id });
+                  // Scatter: the species toggles in the mix; the last one stays.
+                  const next = inMix.has(id) ? settings.treeMix.filter((type) => type !== id) : [...settings.treeMix, id];
+                  if (next.length > 0) set({ treeMix: next });
+                }}
               >
                 {picture ? <img src={picture} width={48} height={48} alt="" data-thumbnail={id} /> : <span className="editor-tree-blank" aria-hidden="true" />}
                 <span>{t(entry.nameKey)}</span>
@@ -859,6 +975,24 @@ function coverPieceName(store: EditorStore, piece: CoverPiece, t: T): string {
  * dots, the slots inside each side's deployment area and the piece under the
  * pointer, all read from the game's own slots.
  */
+/** garrison-and-assault 4.6: what the battle makes of a building or trench line: men inside, ways in, firing posts. */
+function PositionFacts({ position, t }: { position: PositionDef | null; t: T }): ReactNode {
+  return (
+    <div className="editor-footprint" data-testid="position-facts">
+      <h4>{t('editor.position.title')}</h4>
+      {position ? (
+        <ul>
+          <li data-testid="position-capacity" data-value={position.capacity}>{t('editor.position.capacity', { count: position.capacity })}</li>
+          <li data-testid="position-entrances" data-value={position.entrances.length}>{t('editor.position.entrances', { count: position.entrances.length })}</li>
+          <li data-testid="position-ports" data-value={position.ports.length}>{t('editor.position.ports', { count: position.ports.length })}</li>
+        </ul>
+      ) : (
+        <p data-testid="position-none">{t('editor.position.none')}</p>
+      )}
+    </div>
+  );
+}
+
 function CoverPanel({ store, t }: { store: EditorStore; t: T }): ReactNode {
   const preview = store.coverPreview();
   const hovered = store.coverHover ? preview.pieces.find((piece) => piece.key === store.coverHover) : undefined;
@@ -952,11 +1086,19 @@ function TrenchFields({ value, onChange, t }: {
   );
 }
 
+/** "07:30" for 7.5 h. */
+const lightClock = (time: number): string => `${String(Math.floor(time)).padStart(2, '0')}:${time % 1 >= 0.5 ? '30' : '00'}`;
+/** The eight-point compass direction of a bearing. */
+const compassPoint = (bearing: number): string => ['n', 'ne', 'e', 'se', 's', 'sw', 'w', 'nw'][Math.round((((bearing % 360) + 360) % 360) / 45) % 8]!;
+
 function MapDialog(props: {
   mode: 'new' | 'properties';
   map: EditableMap;
+  maps: readonly AuthoredMapEntry[];
+  locale: Locale;
   t: T;
   onClose: () => void;
+  onPreviewLight: (light: MapLight) => void;
   onCreate: (map: EditableMap) => void;
   onApply: (map: EditableMap) => void;
 }): ReactNode {
@@ -967,12 +1109,19 @@ function MapDialog(props: {
   const [namePt, setNamePt] = useState(mode === 'new' ? '' : map.name['pt-BR']);
   const [descriptionEn, setDescriptionEn] = useState(mode === 'new' ? '' : map.description.en);
   const [descriptionPt, setDescriptionPt] = useState(mode === 'new' ? '' : map.description['pt-BR']);
-  const [use, setUse] = useState<MapUse>(mode === 'new' ? 'skirmish' : map.use);
+  const [slot, setSlot] = useState<Slot>(mode === 'new' ? { use: 'skirmish' } : slotOf(map));
   const [setting, setSetting] = useState<SettingLabel>(mode === 'new' ? 'historical-setting-fictional-place' : map.setting.label);
   const [sourceNote, setSourceNote] = useState(mode === 'new' ? '' : map.setting.sourceNote);
   const [palette, setPalette] = useState<MapPalette>(mode === 'new' ? 'temperate' : map.palette);
   const [baseMaterial, setBaseMaterial] = useState<GroundMaterialId>(mode === 'new' ? 'grass' : map.baseMaterial);
   const [waterLevel, setWaterLevel] = useState(mode === 'new' ? 0 : map.waterLevel);
+  // author-game-maps 4.3: time of day and sun bearing, previewed live in the view.
+  const [light, setLight] = useState<MapLight>(mode === 'new' ? { ...DEFAULT_MAP_LIGHT } : mapLight(map.light));
+  const changeLight = (next: MapLight): void => {
+    setLight(next);
+    props.onPreviewLight(next);
+  };
+  const [enemyForces, setEnemyForces] = useState<Roster[]>(mode === 'new' ? [] : (map.enemyForces ?? []).map((roster) => ({ sections: [...roster.sections] })));
   const valid = isValidMapId(id);
   const outside = mode === 'properties' && size !== map.size ? resizeEditableMap(map, size).outside : [];
 
@@ -982,14 +1131,18 @@ function MapDialog(props: {
       id,
       name: { en: nameEn, 'pt-BR': namePt },
       description: { en: descriptionEn, 'pt-BR': descriptionPt },
-      use,
+      use: slot.use as MapUse,
+      mission: slot.use === 'campaign' ? slot.mission : undefined,
       setting: { label: setting, sourceNote },
       palette,
       baseMaterial,
       waterLevel,
+      light,
+      // An empty preset is dropped; none at all leaves the field out (the default roster).
+      enemyForces: enemyForces.some((roster) => roster.sections.length > 0) ? enemyForces.filter((roster) => roster.sections.length > 0) : undefined,
     };
     if (mode === 'new') {
-      const created = createEditableMap({ id, size, baseMaterial, palette, use });
+      const created = createEditableMap({ id, size, baseMaterial, palette, use: slot.use, mission: slot.use === 'campaign' ? slot.mission : undefined });
       props.onCreate({ ...created, ...fields });
       return;
     }
@@ -1014,6 +1167,8 @@ function MapDialog(props: {
       >
         <h2>{t(mode === 'new' ? 'editor.file.new' : 'editor.file.properties')}</h2>
         {mode === 'new' ? <p className="editor-hint">{t('editor.map.discardWarn')}</p> : null}
+        <SlotSelect value={slot} onChange={setSlot} maps={props.maps} selfId={mode === 'new' ? null : map.id} lockFilled={mode === 'properties'} locale={props.locale} t={t} />
+        {slot.use === 'campaign' ? <p className="editor-hint" data-testid="map-slot-hint">{t('editor.slot.campaignHint')}</p> : null}
         <label>
           {t('editor.map.id')}
           <input data-testid="map-id" value={id} aria-invalid={!valid} onChange={(event) => setId(event.target.value.trim())} />
@@ -1041,13 +1196,6 @@ function MapDialog(props: {
         <label>
           {t('editor.map.descriptionPt')}
           <textarea value={descriptionPt} rows={2} onChange={(event) => setDescriptionPt(event.target.value)} />
-        </label>
-        <label>
-          {t('editor.map.use')}
-          <select data-testid="map-use" value={use} onChange={(event) => setUse(event.target.value as MapUse)}>
-            <option value="skirmish">{t('editor.map.use.skirmish')}</option>
-            <option value="campaign">{t('editor.map.use.campaign')}</option>
-          </select>
         </label>
         <label>
           {t('editor.map.setting')}
@@ -1081,6 +1229,35 @@ function MapDialog(props: {
           {t('editor.prop.waterLevel')}
           <input type="number" step={0.1} min={-12} max={40} value={waterLevel} onChange={(event) => setWaterLevel(Number(event.target.value))} />
         </label>
+        <fieldset className="editor-light" data-testid="map-light">
+          <legend>{t('editor.light.title')}</legend>
+          <label>
+            {t('editor.light.time', { time: lightClock(light.time) })}
+            <input
+              type="range"
+              data-testid="map-light-time"
+              min={MAP_LIGHT_TIME.min}
+              max={MAP_LIGHT_TIME.max}
+              step={0.5}
+              value={light.time}
+              onChange={(event) => changeLight({ ...light, time: Number(event.target.value) })}
+            />
+          </label>
+          <label>
+            {t('editor.light.bearing', { bearing: Math.round(light.bearing), direction: t(`editor.light.compass.${compassPoint(light.bearing)}`) })}
+            <input
+              type="range"
+              data-testid="map-light-bearing"
+              min={0}
+              max={355}
+              step={5}
+              value={light.bearing}
+              onChange={(event) => changeLight({ ...light, bearing: Number(event.target.value) })}
+            />
+          </label>
+          <p className="editor-hint">{t('editor.light.hint')}</p>
+        </fieldset>
+        <EnemyForces presets={enemyForces} onChange={setEnemyForces} t={t} />
         <div className="editor-row">
           <button type="button" onClick={props.onClose}>{t('editor.map.close')}</button>
           <button type="submit" className="editor-primary" data-testid="map-submit" disabled={!valid}>{t(mode === 'new' ? 'editor.map.create' : 'editor.map.apply')}</button>

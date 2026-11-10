@@ -31,9 +31,9 @@ test('back to the desk', async ({ page }) => {
   await expect(page.getByTestId('hud')).toHaveCount(0);
 });
 
-test('builds a six-section force on Bairro and fights with it', async ({ page }) => {
+test('builds a six-section force on the test map and fights with it', async ({ page }) => {
   await openSetup(page);
-  await page.getByTestId('map-option-bairro').click();
+  await page.getByTestId('map-option-campo-de-provas').click();
   await clearRoster(page);
   for (const type of ['comando', 'esquadra-5', 'esquadra-5', 'irregulares', 'irregulares', 'irregulares']) {
     await page.getByTestId(`roster-add-${type}`).click();
@@ -66,7 +66,7 @@ test('budget refuses an addition', async ({ page }) => {
 
 test('roster remembered', async ({ page }) => {
   await openSetup(page);
-  await page.getByTestId('map-option-fazenda').click();
+  await page.getByTestId('map-option-campo-de-provas').click();
   await clearRoster(page);
   await page.getByTestId('roster-add-metralhadora').click();
   await page.getByTestId('roster-add-comando').click();
@@ -74,15 +74,15 @@ test('roster remembered', async ({ page }) => {
   await expect(page.getByTestId('hud')).toBeVisible();
 
   await openSetup(page);
-  await expect(page.getByTestId('map-option-fazenda')).toHaveAttribute('aria-checked', 'true');
+  await expect(page.getByTestId('map-option-campo-de-provas')).toHaveAttribute('aria-checked', 'true');
   await expect(page.getByTestId('roster-row-0')).toContainText(/Metralhadora|Machine gun/);
   await expect(page.getByTestId('roster-row-1')).toContainText(/Comando|Command/);
   await expect(page.getByTestId('roster-row-2')).toHaveCount(0);
 });
 
-test('enemy chosen: Fazenda with force C', async ({ page }) => {
+test('enemy chosen: the test map with force C', async ({ page }) => {
   await openSetup(page);
-  await page.getByTestId('map-option-fazenda').click();
+  await page.getByTestId('map-option-campo-de-provas').click();
   await page.getByTestId('enemy-preset-2').check();
   await page.getByTestId('start-battle-3v3').click();
   await expect(page.getByTestId('hud')).toBeVisible();
@@ -103,15 +103,15 @@ test('enemy built: a second machine gun is refused', async ({ page }) => {
   await expect(page.getByTestId('enemy-roster-refusal-metralhadora')).toContainText(/metralhadora|machine gun/);
   await page.getByTestId('enemy-roster-add-metralhadora').click({ force: true });
   await expect(page.getByTestId('enemy-roster-row-3')).toHaveCount(0);
-  // Changing the map keeps a built enemy.
-  await page.getByTestId('map-option-serra-rio').click();
+  // Choosing the map again keeps a built enemy.
+  await page.getByTestId('map-option-campo-de-provas').click();
   await expect(page.getByTestId('enemy-roster-row-2')).toBeVisible();
 });
 
 // pre-battle-roster 5.2: the HUD names rostered troops and lists a mixed section's weapons.
 test('weapon card shows the mix', async ({ page }) => {
   await openSetup(page);
-  await page.getByTestId('map-option-fazenda').click();
+  await page.getByTestId('map-option-campo-de-provas').click();
   await clearRoster(page);
   await page.getByTestId('roster-add-esquadra-5').click();
   await page.getByTestId('roster-add-metralhadora').click();
@@ -127,7 +127,7 @@ test('weapon card shows the mix', async ({ page }) => {
   await page.getByTestId('squad-2').click();
   await expect(page.getByTestId('squad-name-2')).toContainText(/Metralhadora|Machine gun/);
   await expect(page.getByTestId('weapon-line-metralhadora-7mm')).toContainText('250/250');
-  await expect(page.getByTestId('gun-state')).toContainText(/montando|pronta|setting up|ready/);
+  await expect(page.getByTestId('gun-state')).toContainText(/montando|pronta|em movimento|setting up|ready|moving/);
   await expect(page.getByTestId('gun-pool')).toContainText('750');
   // A man's tooltip names his weapon.
   await expect(page.locator('[data-testid^="helmet-"][data-weapon="metralhadora-7mm"]')).toHaveCount(1);

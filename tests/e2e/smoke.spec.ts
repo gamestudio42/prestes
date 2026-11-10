@@ -14,6 +14,8 @@ test('boots, selects a section, gives orders, fights and toggles the post', asyn
   await page.getByTestId('open-skirmish').click();
   await page.getByTestId('start-battle-3v3').click();
   await expect(page.getByTestId('hud')).toBeVisible();
+  // add-deployment-phase: the skirmish opens in deployment; start the battle.
+  await page.getByTestId('start-battle').click();
   await page.evaluate(() => document.fonts.ready);
   expect(await page.evaluate(() => document.fonts.check('400 16px "Pixelify Sans"'))).toBe(true);
   await expect(page.getByTestId('game-canvas')).toBeVisible();
@@ -27,7 +29,8 @@ test('boots, selects a section, gives orders, fights and toggles the post', asyn
   await expect(page.getByTestId('morale-state')).toContainText(/Cobertura: \d+%/);
   await expect(page.getByTestId('app')).not.toHaveAttribute('data-tick', '0', { timeout: 5000 });
   await expect(page.getByTestId('hud')).not.toContainText('Tick');
-  await expect(page.getByTestId('band-value')).toContainText('Estratégica');
+  // refine-battle-maps 6.1: the battle opens at tactical span on the first section.
+  await expect(page.getByTestId('band-value')).toContainText('Tática');
   await expect(page.getByTestId('squad-1')).toHaveAttribute('aria-pressed', 'true');
   // The game starts at the speed labelled 1x; 0.5x is the slow option.
   await expect(page.getByTestId('speed-2')).toHaveClass(/active/);

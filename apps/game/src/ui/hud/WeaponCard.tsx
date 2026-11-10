@@ -1,22 +1,16 @@
-import { useState } from 'react';
-import { CoverIcon as BrickWall, EyeOff, Health as Heart, Cohesion as Link2, More as MoreHorizontal, Settings as Settings2, Suppression as Zap } from '../icons';
+import { CoverIcon as BrickWall, Health as Heart, Cohesion as Link2, Settings as Settings2, Suppression as Zap } from '../icons';
 import type { MessageKey } from '@prestes/content';
 import type { Frame, UnitSnapshot } from '@prestes/shared';
 import { Rifle as RifleIcon } from '../icons';
 import { Tooltip } from '../Tooltip';
 import { orderLetter, type Translate } from './orderMeta';
-import { mainWeapon, weaponLines } from './weaponLines';
+import { gunStateLabel, mainWeapon, weaponLines } from './weaponLines';
 
 interface WeaponCardProps {
   t: Translate;
   frame: Frame | null;
   squadUnits: readonly UnitSnapshot[];
   aliveUnits: readonly UnitSnapshot[];
-  audioMuted: boolean;
-  audioVolume: number;
-  onHideHud: () => void;
-  onToggleAudio: () => void;
-  onAudioVolume: (volume: number) => void;
 }
 
 export function WeaponCard({
@@ -24,13 +18,7 @@ export function WeaponCard({
   frame,
   squadUnits,
   aliveUnits,
-  audioMuted,
-  audioVolume,
-  onHideHud,
-  onToggleAudio,
-  onAudioVolume,
 }: WeaponCardProps) {
-  const [overflowOpen, setOverflowOpen] = useState(false);
   const wound = aliveUnits[0]?.wound ?? 'none';
   const lines = weaponLines(aliveUnits);
   const weapon = mainWeapon(lines);
@@ -38,6 +26,8 @@ export function WeaponCard({
   const gunPool = squadId !== undefined ? frame?.gunPools?.[squadId] : undefined;
   // A mixed section, or a gun crew, lists each weapon with its rounds.
   const listed = lines.length > 1 || lines.some((line) => line.gunSet !== undefined);
+  // machine-gun-fire-feedback 3.2: a gun crew whose gun has no fit man left to serve it.
+  const noGunner = gunPool !== undefined && aliveUnits.length > 0 && !lines.some((line) => line.gunSet !== undefined);
   const coverValue =
     aliveUnits.length === 0
       ? 0
@@ -87,18 +77,6 @@ export function WeaponCard({
               {magazine}/{reserve}
             </span>
           )}
-          <Tooltip title={t('hud.more')} description={t('hud.tip.more')}>
-            <button
-              type="button"
-              className="icon-button weapon-more"
-              aria-label={t('hud.more')}
-              aria-expanded={overflowOpen}
-              onClick={() => setOverflowOpen((value) => !value)}
-              data-testid="hud-more"
-            >
-              <MoreHorizontal aria-hidden="true" size={18} />
-            </button>
-          </Tooltip>
         </div>
         {listed ? (
           <ul className="weapon-lines" data-testid="weapon-lines">
@@ -107,11 +85,16 @@ export function WeaponCard({
                 <span className="weapon-line-name">
                   {t(`weapon.${line.weaponId}.short` as MessageKey)} ×{line.men}
                 </span>
-                {line.gunSet !== undefined ? (
-                  <span className={`weapon-gun-state ${line.gunSet ? 'ready' : 'setting'}`} data-testid="gun-state">
-                    {t(line.gunSet ? 'hud.gunReady' : 'hud.gunSetting')}
-                  </span>
-                ) : null}
+                {line.gunSet !== undefined
+                  ? (() => {
+                      const label = gunStateLabel(line);
+                      return (
+                        <span className={`weapon-gun-state ${label.tone}`} data-testid="gun-state" data-gun-state={label.tone}>
+                          {t(label.key, { seconds: label.seconds })}
+                        </span>
+                      );
+                    })()
+                  : null}
                 <span className="weapon-line-rounds">
                   {line.magazine}/{line.total}
                 </span>
@@ -122,6 +105,13 @@ export function WeaponCard({
                 ) : null}
               </li>
             ))}
+            {noGunner ? (
+              <li className="weapon-line">
+                <span className="weapon-gun-state none" data-testid="gun-state" data-gun-state="none">
+                  {t('hud.gunNoGunner')}
+                </span>
+              </li>
+            ) : null}
           </ul>
         ) : null}
         <div className="status-row">
@@ -184,35 +174,6 @@ export function WeaponCard({
             </span>
           ) : null}
         </div>
-        {overflowOpen ? (
-          <div className="hud-overflow-menu">
-            <button type="button" onClick={onHideHud} data-testid="hide-hud">
-              <EyeOff aria-hidden="true" size={14} />
-              {t('hud.hideHud')}
-            </button>
-            <label>
-              <input
-                type="checkbox"
-                checked={!audioMuted}
-                onChange={onToggleAudio}
-                data-testid="audio-toggle"
-              />
-              {t('hud.audio')}
-            </label>
-            <label className="volume-control">
-              <span>{t('hud.audioVolume')}</span>
-              <input
-                type="range"
-                min="0"
-                max="1"
-                step="0.05"
-                value={audioVolume}
-                onChange={(event) => onAudioVolume(Number(event.target.value))}
-                data-testid="audio-volume"
-              />
-            </label>
-          </div>
-        ) : null}
       </div>
     </div>
   );

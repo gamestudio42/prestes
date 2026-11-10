@@ -14,9 +14,10 @@ import type { SimContext } from './context';
 import { nearestEnemy } from './geometry';
 import { woundAccuracyFactor } from './casualties';
 import { markUnderFire, shooterOf } from './fire-reaction';
-import { unseenFireMarker } from './vision';
+import { VISION_RANGE, unseenFireMarker } from './vision';
 import { hiddenByVegetation, revealShooter } from './concealment';
 import { drawBelt, feedingGun, gunReady } from './machine-gun';
+import { facingDefender, garrisonCover } from './garrison';
 
 /**
  * Ambush and fire on contact hold their fire beyond their radius: the shooter
@@ -88,7 +89,7 @@ export function acquireTargets(ctx: SimContext): void {
           suppressed: current.suppressed,
           kind: current.kind,
         },
-        engaged.get(current.id) ?? 0,
+        currentEngaged(unit, engaged.get(current.id) ?? 0),
       );
       let best: MutableUnit | null = null;
       let bestScore = Number.NEGATIVE_INFINITY;
@@ -203,13 +204,26 @@ export function acquireTargets(ctx: SimContext): void {
 }
 
 /**
+ * machine-gun-fire-feedback 2.2: the count of men on a gunner's current
+ * target leaves him out. Counting himself (25 points, more than the
+ * hysteresis) made a lone gunner swap between like targets every tick, and
+ * each swap drew a new reaction, so the gun hardly fired. Rifles keep the old
+ * count until the general fix is decided (it moves every golden).
+ */
+function currentEngaged(unit: MutableUnit, count: number): number {
+  return getWeapon(unit.weaponId)?.fire === 'belt' ? Math.max(0, count - 1) : count;
+}
+
+/**
  * pre-battle-roster 4.1: how far a man can engage, his weapon's range within
  * the battle's combat range (seeing is not shooting: vision keeps its own).
  * The Mauser's range is the 3v3's combat range, so riflemen are unchanged.
  */
 export function engageRange(ctx: SimContext, shooter: MutableUnit): number {
   const weapon = getWeapon(shooter.weaponId);
-  return weapon ? Math.min(ctx.combatRange, weapon.range) : ctx.combatRange;
+  if (!weapon) return ctx.combatRange;
+  // machine-gun-fire-feedback 2.1: the crew-served gun reaches its own range.
+  return weapon.fire === 'belt' ? weapon.range : Math.min(ctx.combatRange, weapon.range);
 }
 
 export function visible(ctx: SimContext, shooter: MutableUnit, target: MutableUnit): boolean {
@@ -222,6 +236,9 @@ export function visible(ctx: SimContext, shooter: MutableUnit, target: MutableUn
   if (!isPointInVision(shooter, target)) {
     return false;
   }
+  if (!beyondSightSpotted(ctx, shooter, target, dx * dx + dy * dy)) {
+    return false;
+  }
   return !isLineBlocked(
     shooter.x,
     shooter.y,
@@ -229,9 +246,22 @@ export function visible(ctx: SimContext, shooter: MutableUnit, target: MutableUn
     target.y,
     ctx.covers,
     ctx.sightObstacles,
-    eyeHeightForStance(shooter.stance),
-    eyeHeightForStance(target.stance),
+    eyeHeightForStance(shooter.stance) + (shooter.elevation ?? 0),
+    eyeHeightForStance(target.stance) + (target.elevation ?? 0),
+    shooter.inTower,
+    target.inTower,
   ) && !hiddenByVegetation(ctx, shooter, target);
+}
+
+/**
+ * machine-gun-fire-feedback 2.1: beyond a man's sight (a gun firing to its
+ * 140 m) under fog of war, the target must be one his side sees; the gunner
+ * still needs his own line of fire.
+ */
+function beyondSightSpotted(ctx: SimContext, shooter: MutableUnit, target: MutableUnit, squared: number): boolean {
+  if (squared <= VISION_RANGE * VISION_RANGE || !ctx.fog) return true;
+  if (shooter.faction !== 'column' && shooter.faction !== 'legalist') return true;
+  return ctx.vision.seen[shooter.faction].has(target.id);
 }
 
 export function fire(ctx: SimContext, tick: number, events: SimEvent[]): void {
@@ -266,8 +296,10 @@ export function fire(ctx: SimContext, tick: number, events: SimEvent[]): void {
       }
       continue;
     }
-    const objective =
+    const aimedFor =
       unit.targetId === null ? null : ctx.units.find((entry) => entry.id === unit.targetId);
+    // garrison-and-assault D4: fire at a position meets the man at the port facing the shooter.
+    const objective = aimedFor && aimedFor.alive && !aimedFor.incapacitated ? facingDefender(ctx, aimedFor, unit) : aimedFor;
     if (!objective || !objective.alive || objective.routed || objective.incapacitated) {
       unit.aimedAt = undefined;
       if (unit.currentOrder !== 'pursue') {
@@ -317,7 +349,8 @@ export function fire(ctx: SimContext, tick: number, events: SimEvent[]): void {
     if (burstStart) {
       unit.burstLeft = burst.rounds[0] + Math.floor(ctx.rng.nextFloat() * (burst.rounds[1] - burst.rounds[0] + 1));
     }
-    const targetCover = coverAgainst(target.x, target.y, unit.x, unit.y, target.stance, ctx.covers);
+    // garrison-and-assault D4: a man at a port has the position's cover on top of his stance's.
+    const targetCover = garrisonCover(ctx, target) ?? coverAgainst(target.x, target.y, unit.x, unit.y, target.stance, ctx.covers);
     const moraleFactor = unit.morale < SUPPRESSION_THRESHOLD ? 0.55 : 1;
     // A man keeping his head down under fire aims worse.
     const underFireFactor = unit.state === 'suppressed' ? SUPPRESSED_AIM : 1;

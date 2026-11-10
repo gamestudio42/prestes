@@ -38,6 +38,7 @@ import type {
   CoverPoint,
   Frame,
   Outcome,
+  PositionDef,
   SimEvent,
   RosterRecord,
   SightObstacle,
@@ -88,6 +89,8 @@ import { createVisionState, seenSnapshot, updateVision } from './systems/vision'
 import { createFerries, ferrySnapshot, headingForLanding, heldByFerry, updateFerries } from './systems/ferry';
 import { defaultConcealedFire } from './systems/concealment';
 import type { FerryState } from './systems/ferry';
+import { createPositions, garrisonSnapshot, pinGarrisons, updateGarrisons, type Garrison } from './systems/garrison';
+import { assaultSnapshot, updateAssaults, type Assault } from './systems/assault';
 import { applyRoster } from './systems/spawning';
 import { reactToFire, screenOfficers } from './systems/fire-reaction';
 import { handoverSuppress } from './systems/orders';
@@ -184,6 +187,11 @@ export class SimulationEngine implements SimContext {
   readonly battle = createBattleMemory();
   readonly vision = createVisionState();
   readonly ferries: FerryState[];
+  /** garrison-and-assault: the map's positions and the held ones. */
+  readonly positions: readonly PositionDef[];
+  readonly positionById: ReadonlyMap<number, PositionDef>;
+  readonly garrisons = new Map<number, Garrison>();
+  readonly assaults = new Map<number, Assault>();
   /** pre-battle-roster 4.3: the machine-gun squads' belt pools (rostered battles with a gun only). */
   gunPools?: Record<number, number>;
   fog: boolean;
@@ -235,6 +243,9 @@ export class SimulationEngine implements SimContext {
           : [];
     this.terrain = trainingGround ? TRAINING_GROUND.terrain : SANDBOX_TERRAIN;
     this.ferries = createFerries(this.battleMap?.ferries ?? []);
+    const positions = createPositions(this.battleMap ? { ...this.battleMap, covers: this.covers } : null);
+    this.positions = positions.positions;
+    this.positionById = positions.byId;
     this.selectTerrain();
     this.rosters = this.battleMap ? resolveRosters(this.battleMap, options.rosters, this.rng) : undefined;
     const source =
@@ -435,6 +446,9 @@ export class SimulationEngine implements SimContext {
       }
 
       if (this.ferries.length > 0) updateFerries(this);
+      // garrison-and-assault: men at an entrance go in; men leaving go out on their turn.
+      if (this.positions.length > 0) updateGarrisons(this, nextTick, events);
+      if (this.positions.length > 0) updateAssaults(this, nextTick, events);
       separateUnits(this);
       if (this.battleMap?.height.kind === 'field') keepOutOfDeepWater(this);
       // Vision before targets and fire: a side shoots with what it knows.
@@ -475,6 +489,8 @@ export class SimulationEngine implements SimContext {
       checkRouted(this, nextTick, events);
       clearArrivedOrders(this);
       cleanupOrders(this);
+      // garrison-and-assault: no other system moves a man inside; he stands at his port.
+      if (this.garrisons.size > 0) pinGarrisons(this, nextTick);
       updateFacing(this);
       if (this.battleMap?.height.kind === 'field') keepOffFordFloor(this);
       updateOutcome(this, nextTick, events);
@@ -524,6 +540,8 @@ export class SimulationEngine implements SimContext {
       ...(this.gunPools ? { gunPools: { ...this.gunPools } } : {}),
       outcome: this.outcome,
       ...(this.hasDeployment ? { phase: this.phase } : {}),
+      ...(this.garrisons.size > 0 ? { garrisons: garrisonSnapshot(this) } : {}),
+      ...(this.assaults.size > 0 ? { assaults: assaultSnapshot(this) } : {}),
       hash: options?.hash === false ? '' : this.hashState(),
     };
   }
@@ -605,6 +623,9 @@ export class SimulationEngine implements SimContext {
         ...(this.gunPools ? { gunPools: this.gunPools } : {}),
         // add-deployment-phase D1: hashed only during the phase, so a battle hashes as before.
         ...(this.phase === 'deployment' ? { phase: this.phase } : {}),
+        // garrison-and-assault: hashed only while a position is held.
+        ...(this.garrisons.size > 0 ? { garrisons: garrisonSnapshot(this) } : {}),
+        ...(this.assaults.size > 0 ? { assaults: [...this.assaults.values()] } : {}),
       }),
     );
   }

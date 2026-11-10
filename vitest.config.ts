@@ -5,6 +5,7 @@ export default defineConfig({
     include: ['packages/*/test/**/*.test.ts', 'tests/**/*.test.ts'],
     exclude: ['**/node_modules/**', 'tests/e2e/**'],
     environment: 'node',
+    setupFiles: ['tests/setup-test-map.ts'],
     // Simulation tests run whole battles; under a full parallel run the 5 s
     // default timed out tests that take half a second alone.
     testTimeout: 20_000,

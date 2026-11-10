@@ -51,6 +51,8 @@ test('controls both sides with reinforcements and exercises combat commands', as
   await page.goto('/');
   await page.getByTestId('open-skirmish').click();
   await page.getByTestId('start-battle-3v3').click();
+  // add-deployment-phase: the skirmish opens in deployment; start the battle.
+  await page.getByTestId('start-battle').click();
   await page.waitForFunction(() => Boolean(window.__prestes?.frame()));
   await expect(page.getByTestId('squad-status')).toContainText('Selection: 11/11');
   // Paused: the test steps the simulation itself, so a slow machine cannot let

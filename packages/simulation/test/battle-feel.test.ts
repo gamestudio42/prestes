@@ -97,11 +97,15 @@ describe('battle feel: the enemy commander', () => {
     const t = battle();
     // Before his 30 s of patience run out (he then goes looking).
     t.run(250);
+    // garrison-and-assault 3.4 (kept by the user, 2026-11-09): one section goes
+    // into a position near its line; the men it has no room for defend at it.
+    const garrisoned = [11, 12, 13].filter((squad) => sectionOf(t, squad).some((unit) => unit.garrison !== undefined));
+    expect(garrisoned).toHaveLength(1);
     for (const squad of [11, 12, 13]) {
       const section = sectionOf(t, squad);
-      expect(section.every((unit) => unit.currentOrder === 'defend')).toBe(true);
-      // Behind a parapet and in a trench: well above a crouch in the open.
-      expect(section.filter((unit) => unit.cover > 0.45).length).toBeGreaterThanOrEqual(8);
+      expect(section.every((unit) => unit.currentOrder === 'defend' || unit.garrison !== undefined)).toBe(true);
+      // Behind a parapet, in a trench or inside: well above a crouch in the open.
+      expect(section.filter((unit) => unit.cover > 0.45).length).toBeGreaterThanOrEqual(squad === garrisoned[0] ? 4 : 8);
     }
     expect(t.events.some((event) => event.type === 'shot')).toBe(false);
   });

@@ -22,6 +22,9 @@ interface OrderBoardProps {
   posture: Posture;
   fireControl: FireControl;
   stance: Stance;
+  /** add-run-toggle: the selection's pace. */
+  hurry: boolean;
+  onHurry: (on: boolean) => void;
   formation: FormationKind;
   selectedCount: number;
   onActivateOrder: (order: string, activation: OrderActivation) => void;
@@ -67,6 +70,8 @@ export function OrderBoard({
   posture,
   fireControl,
   stance,
+  hurry,
+  onHurry,
   formation,
   selectedCount,
   onActivateOrder,
@@ -175,6 +180,22 @@ export function OrderBoard({
               <ProneIcon aria-hidden="true" size={18} />
             </button>
           </Tooltip>
+        </section>
+        <section className="passive-group pace-group" data-testid="pace" data-value={hurry ? 'run' : 'walk'}>
+          <span className="passive-label">{t('hud.pace')}</span>
+          {([false, true] as const).map((on) => (
+            <Tooltip key={String(on)} title={t(on ? 'hud.run' : 'hud.walk')} description={t('hud.tip.pace')}>
+              <button
+                type="button"
+                className={`passive-button pace-button ${hurry === on ? 'active' : ''}`}
+                onClick={() => onHurry(on)}
+                aria-pressed={hurry === on}
+                data-testid={on ? 'pace-run' : 'pace-walk'}
+              >
+                {t(on ? 'hud.run' : 'hud.walk')}
+              </button>
+            </Tooltip>
+          ))}
         </section>
         <section className="passive-group fire-control-group" data-testid="fire-control">
           <span className="passive-label">{t('hud.fireControl')}</span>

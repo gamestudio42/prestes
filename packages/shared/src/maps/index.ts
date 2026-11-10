@@ -1,5 +1,6 @@
 export * from './types';
 export {
+  activeMapGeneration,
   activeMapRuntime,
   bakeMap,
   bridgePolygon,
@@ -16,6 +17,10 @@ export {
   runtimeWaterAt,
   SURFACES,
   VEGETATION_KINDS,
+  VEGETATION_DENSITIES,
+  vegetationCell,
+  vegetationKindOf,
+  vegetationDensityOf,
   setActiveMapRuntime,
   vegetationAt,
   waterAt,
@@ -38,11 +43,15 @@ export {
 } from './concealment';
 export {
   authoredMapIds,
+  authoredMapIndex,
   loadAuthoredMap,
   battleMap,
   battleMaps,
   DEFAULT_BATTLE_MAP,
   hasBattleMap,
+  loadSkirmishMaps,
+  sandboxMaps,
+  skirmishMaps,
   registerBattleMap,
   setActiveMap,
   unregisterBattleMap,
@@ -63,6 +72,8 @@ export { VILA_MILITAR } from './vila-militar';
 export { FAZENDA } from './fazenda';
 export { SERRA_RIO } from './serra-rio';
 export { BAIRRO } from './bairro';
-export { MIN_DEPLOYMENT_GAP, MIN_WALKABLE_AREA_SHARE, validateBattleMap, validateDeploymentAreas, walkableShare } from './validate';
+export { MIN_DEPLOYMENT_GAP, MIN_WALKABLE_AREA_SHARE, validateBattleMap, validateDeploymentAreas, validatePositions, walkableShare } from './validate';
+export * from './openings';
+export * from './positions';
 export { sameCovers } from './cover-index';
 export * from './validate-document';

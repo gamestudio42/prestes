@@ -3,16 +3,11 @@
   "ticks": 600,
   "hash": "eaeae59f",
   "battleMaps": {
-    "vila-militar": "efd540ac",
-    "fazenda": "d0c07f6f",
-    "serra-rio": "18128bc3",
-    "bairro": "8da934b4",
-    "fazenda-doc": "4c2d008a"
+    "campo-de-provas": "1b9f568f",
+    "fazenda-doc": "43006b86"
   },
   "mixedRosters": {
-    "vila-militar": "c3a39646",
-    "fazenda": "2cd851df",
-    "serra-rio": "f3d06ac0",
-    "bairro": "d2308369"
-  }
+    "campo-de-provas": "de6f9b99"
+  },
+  "reason": "maps moved to the test map"
 }

@@ -18,6 +18,8 @@ const ANCHOR_SCORE: Partial<Record<CoverKind, number>> = {
 
 /** Two sections' anchors are kept at least this far apart (m). */
 export const ANCHOR_SPACING = 25;
+/** Each section takes cover only this close to its own start (m), so the line holds together in front. */
+export const ANCHOR_REACH = 40;
 
 /** A slot must face the column's area this squarely to count (cosine). */
 const FACING_MIN = 0.5;
@@ -59,7 +61,8 @@ export function deployEnemy(ctx: SimContext): void {
     const dx = towards.x - slot.x;
     const dy = towards.y - slot.y;
     const length = Math.sqrt(dx * dx + dy * dy) || 1;
-    if (!slot.guard || (slot.guard.x * dx + slot.guard.y * dy) / length < FACING_MIN) continue;
+    // A slot with no guard (a trench bay with no fire step) shelters from every side.
+    if (slot.guard && (slot.guard.x * dx + slot.guard.y * dy) / length < FACING_MIN) continue;
     anchors.push({ x: slot.x, y: slot.y, score });
   }
   if (anchors.length === 0) return;
@@ -79,13 +82,20 @@ export function deployEnemy(ctx: SimContext): void {
 
 function placeSections(ctx: SimContext, squads: readonly number[], anchors: readonly Anchor[], taken: Anchor[], towards: Vec2, events: SimEvent[]): void {
   for (const squadId of squads) {
-    const free = anchors.filter((anchor) => taken.every((other) => (anchor.x - other.x) ** 2 + (anchor.y - other.y) ** 2 >= ANCHOR_SPACING * ANCHOR_SPACING));
-    if (free.length === 0) break;
+    const men = ctx.units.filter((unit) => unit.faction === 'legalist' && unit.squadId === squadId && unit.alive);
+    const start = centroid(men);
+    const free = anchors.filter(
+      (anchor) =>
+        (anchor.x - start.x) ** 2 + (anchor.y - start.y) ** 2 <= ANCHOR_REACH * ANCHOR_REACH &&
+        taken.every((other) => (anchor.x - other.x) ** 2 + (anchor.y - other.y) ** 2 >= ANCHOR_SPACING * ANCHOR_SPACING),
+    );
+    // No cover in reach: the section keeps its default place.
+    if (free.length === 0) continue;
     const best = Math.max(...free.map((anchor) => anchor.score));
     const top = free.filter((anchor) => anchor.score === best);
     const anchor = top[Math.min(top.length - 1, Math.floor(ctx.rng.nextFloat() * top.length))]!;
     taken.push(anchor);
-    const unitIds = ctx.units.filter((unit) => unit.faction === 'legalist' && unit.squadId === squadId && unit.alive).map((unit) => unit.id);
+    const unitIds = men.map((unit) => unit.id);
     // Facing the column's area: the planner then needs no enemy to face.
     const dx = towards.x - anchor.x;
     const dy = towards.y - anchor.y;

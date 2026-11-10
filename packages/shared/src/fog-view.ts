@@ -1,4 +1,4 @@
-import type { Faction, Frame, SimEvent, UnitSnapshot } from './protocol';
+import type { Faction, Frame, GarrisonSnapshot, SimEvent, UnitSnapshot } from './protocol';
 import type { InterpolatedFrame } from './mirror';
 
 /**
@@ -113,10 +113,24 @@ export class FogView {
     return {
       ...frame,
       units,
+      ...(frame.garrisons ? { garrisons: this.garrisons(frame.garrisons) } : {}),
       events: this.events(frame.events, seen),
       ghosts: [...this.ghosts.values()],
       markers: this.markers,
     };
+  }
+
+  /**
+   * garrison-and-assault 3.3: an enemy garrison shows only once its side is
+   * known to hold it, and without its men until one was seen at a port.
+   */
+  private garrisons(garrisons: readonly GarrisonSnapshot[]): GarrisonSnapshot[] {
+    return garrisons.flatMap((garrison) => {
+      if (garrison.side === this.side) return [garrison];
+      if (garrison.known === 'counted') return [garrison];
+      if (garrison.known === 'occupied') return [{ ...garrison, unitIds: [], suppression: 0, strengthUnknown: true as const }];
+      return [];
+    });
   }
 
   /** An unseen enemy's shot starts at its marker and names no shooter. */

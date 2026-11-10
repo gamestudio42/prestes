@@ -38,13 +38,29 @@ describe('check-maps', () => {
     expect(checkAuthoredMaps(dir!).some((error) => error.includes('does not match'))).toBe(true);
   });
 
-  it('generates an index that bundles skirmish maps and loads campaign maps on demand', () => {
-    write('forte.map.json', { use: 'skirmish' });
-    write('serra-nova.map.json', { use: 'campaign' });
-    const source = indexSource(['forte.map.json', 'serra-nova.map.json'], dir!);
-    expect(source).toContain("import forteMap from './forte.map.json';");
-    expect(source).not.toContain("import serraNovaMap");
+  // author-game-maps 1.2: an index of names and slots, every document loaded on demand.
+  it('generates an index of every map and loads every document on demand', () => {
+    const skirmish = createEditableMap({ id: 'forte', size: 'small', name: { en: 'Fort', 'pt-BR': 'Forte' } });
+    const mission = createEditableMap({ id: 'serra-nova', size: 'medium', use: 'campaign', mission: 'serra-nova', name: { en: 'Serra Nova', 'pt-BR': 'Serra Nova' } });
+    write('forte.map.json', toMapDocument(skirmish));
+    write('serra-nova.map.json', toMapDocument(mission));
+    const source = indexSource(['forte.map.json', 'serra-nova.map.json'], dir!, dir!);
+    expect(source).not.toMatch(/^import \w+ from/m);
+    expect(source).toContain('{"id":"forte","use":"skirmish","size":"small","name":{"en":"Fort","pt-BR":"Forte"}');
+    expect(source).toContain('"id":"serra-nova","use":"campaign","mission":"serra-nova"');
+    expect(source).toContain('"preview":false');
     expect(source).toContain("'serra-nova': () => import('./serra-nova.map.json')");
     expect(source).toContain("'forte': () => import('./forte.map.json')");
+  });
+
+  it('two maps for one mission fail the check', () => {
+    for (const id of ['anel-a', 'anel-b']) {
+      const map = createEditableMap({ id, size: 'small', use: 'campaign', mission: 'anel-de-ferro', name: { en: id, 'pt-BR': id } });
+      map.setting.sourceNote = 'Macaulay';
+      map.deployment.column.sections = map.deployment.column.sections.map((point) => ({ ...point, y: 90 }));
+      map.deployment.legalist.sections = map.deployment.legalist.sections.map((point) => ({ ...point, y: -90 }));
+      write(`${id}.map.json`, toMapDocument(map));
+    }
+    expect(checkAuthoredMaps(dir!)).toEqual(['anel-b.map.json: mission anel-de-ferro already has the map anel-a']);
   });
 });

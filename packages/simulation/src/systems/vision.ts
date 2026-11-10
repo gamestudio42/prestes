@@ -38,13 +38,22 @@ export interface VisionState {
   readonly lastSeen: Record<Side, Map<number, Sighting>>;
   /** Unseen fire each side has heard: the marker and where the shot really came from. */
   readonly heard: Record<Side, Array<{ x: number; y: number; fromX: number; fromY: number; tick: number }>>;
+  /**
+   * garrison-and-assault 3.3: the enemy garrisons each side knows of, by
+   * position id: `occupied` once fired on from it unseen, `counted` once a
+   * man inside was seen at a port. Forgotten when the garrison is gone.
+   */
+  readonly garrisons: Record<Side, Map<number, GarrisonIntel>>;
 }
+
+export type GarrisonIntel = 'occupied' | 'counted';
 
 export function createVisionState(): VisionState {
   return {
     seen: { column: new Set(), legalist: new Set() },
     lastSeen: { column: new Map(), legalist: new Map() },
     heard: { column: [], legalist: [] },
+    garrisons: { column: new Map(), legalist: new Map() },
   };
 }
 
@@ -89,6 +98,10 @@ export function unseenFireMarker(
   const x = shooter.x + offsetX * radius;
   const y = shooter.y + offsetY * radius;
   heard.push({ x, y, fromX: shooter.x, fromY: shooter.y, tick });
+  // garrison-and-assault 3.3: fire from a position tells the side under it that the position is held.
+  if (shooter.garrison !== undefined && !ctx.vision.garrisons[listener].has(shooter.garrison)) {
+    ctx.vision.garrisons[listener].set(shooter.garrison, 'occupied');
+  }
   return { type: 'unseen_fire', tick, side: shooter.faction, target: target.id, x, y, radius };
 }
 
@@ -112,8 +125,10 @@ export function sees(ctx: SimContext, observer: MutableUnit, target: MutableUnit
     target.y,
     ctx.covers,
     ctx.sightObstacles,
-    eyeHeightForStance(observer.stance),
-    eyeHeightForStance(target.stance),
+    eyeHeightForStance(observer.stance) + (observer.elevation ?? 0),
+    eyeHeightForStance(target.stance) + (target.elevation ?? 0),
+    observer.inTower,
+    target.inTower,
   ) && !hiddenByVegetation(ctx, observer, target);
 }
 
@@ -146,6 +161,21 @@ export function updateVision(ctx: SimContext, tick: number): void {
         lastSeen.set(target.id, { x: target.x, y: target.y, tick });
       }
     }
+    updateGarrisonIntel(ctx, side);
+  }
+}
+
+/** garrison-and-assault 3.3: a man seen at a port counts his garrison; a garrison gone is forgotten. */
+function updateGarrisonIntel(ctx: SimContext, side: Side): void {
+  const known = ctx.vision.garrisons[side];
+  if (ctx.garrisons.size === 0 && known.size === 0) return;
+  const seen = ctx.vision.seen[side];
+  for (const [positionId, garrison] of ctx.garrisons) {
+    if (garrison.side !== side && garrison.unitIds.some((id) => seen.has(id))) known.set(positionId, 'counted');
+  }
+  for (const positionId of [...known.keys()]) {
+    const garrison = ctx.garrisons.get(positionId);
+    if (!garrison || garrison.side === side) known.delete(positionId);
   }
 }
 

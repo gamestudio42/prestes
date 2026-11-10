@@ -93,7 +93,7 @@ export function roadDitches(firstId: number, road: Strip, side: DitchSide): { sh
   for (const sign of sides) {
     const line = offsetLine(road.points, sign * offset);
     shapes.push({ kind: 'channel', points: line, width: DITCH.width, bank: DITCH.bank, depth: DITCH.depth });
-    const run = trenchRun(id, line, DITCH.width / 2);
+    const run = trenchRun(id, line, DITCH.width / 2).map((cover) => ({ ...cover, ditch: true }));
     covers.push(...run);
     id += run.length;
   }

@@ -1,8 +1,8 @@
 import { Soldier as User } from '../icons';
 import type { MessageKey } from '@prestes/content';
 import type { Frame } from '@prestes/shared';
-import { IconButton } from './IconButton';
-import { ICONS, bar, type Translate } from './orderMeta';
+import { bar, type Translate } from './orderMeta';
+import { positionName } from './positionName';
 
 interface SquadCardsProps {
   t: Translate;
@@ -10,9 +10,7 @@ interface SquadCardsProps {
   selectedSquadId: number;
   controlBothSides: boolean;
   battleMode: boolean;
-  previewEnabled: boolean;
   onSelectSquad: (squadId: number) => void;
-  onTogglePreview: () => void;
 }
 
 export function SquadCards({
@@ -21,9 +19,7 @@ export function SquadCards({
   selectedSquadId,
   controlBothSides,
   battleMode,
-  previewEnabled,
   onSelectSquad,
-  onTogglePreview,
 }: SquadCardsProps) {
   const squadIds =
     frame === null
@@ -70,6 +66,10 @@ export function SquadCards({
             alive.length === 0
               ? 0
               : Math.round(alive.reduce((sum, unit) => sum + unit.morale, 0) / alive.length);
+          // garrison-and-assault 4.4: the position most of the section's men are inside.
+          const inside = new Map<number, number>();
+          for (const unit of alive) if (unit.garrison !== undefined) inside.set(unit.garrison, (inside.get(unit.garrison) ?? 0) + 1);
+          const insideId = [...inside].sort((left, right) => right[1] - left[1] || left[0] - right[0])[0]?.[0];
           return (
             <div
               className={`squad-card ${selectedSquadId === squadId ? 'selected' : ''}`}
@@ -94,6 +94,11 @@ export function SquadCards({
                   <span>
                     {t('hud.alive')}: {alive.length}
                   </span>
+                  {insideId !== undefined && frame ? (
+                    <span className="section-inside" data-testid={`squad-inside-${squadId}`}>
+                      {t('hud.inside', { place: positionName(t, insideId, frame.covers) })}
+                    </span>
+                  ) : null}
                   <span className="mini-bar health">
                     <span style={{ width: bar(hp, alive.length * 100) }} />
                   </span>
@@ -108,17 +113,6 @@ export function SquadCards({
             </div>
           );
         })}
-      </div>
-      <div className="squad-actions">
-        <IconButton
-          testId="preview-toggle"
-          label={t('hud.preview')}
-          description={t('hud.tip.preview')}
-          onClick={onTogglePreview}
-          active={previewEnabled}
-        >
-          <ICONS.preview aria-hidden="true" size={17} />
-        </IconButton>
       </div>
     </div>
   );

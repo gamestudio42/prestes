@@ -20,6 +20,8 @@ interface EditorState {
   trenches: { id: number; kind: string; facing: string; length: number }[];
   sections: { column: Point[]; legalist: Point[] };
   areas: { column: Point[]; legalist: Point[] };
+  enemyForces: string[][];
+  light: { time: number; bearing: number } | null;
   selection: { kind: string; side?: string; index?: number }[];
   problems: { code: string; severity: string }[] | null;
   canUndo: boolean;
@@ -29,6 +31,7 @@ interface Bridge {
   __prestesEditor?: {
     state: () => EditorState;
     toScreen: (x: number, y: number) => Point | null;
+    sun: () => [number, number, number] | null;
     surfaceAt: (x: number, y: number) => string;
     heightAt: (x: number, y: number) => number;
     vegetationAt: (x: number, y: number) => string | null;
@@ -38,6 +41,8 @@ interface Bridge {
     look: (x: number, y: number, span: number) => void;
     trenchSlots: (id: number) => { x: number; y: number; guard: { x: number; y: number } | null }[];
     coverPreview: () => { zones: { column: number; legalist: number }; pieces: Record<string, number> };
+    position: (kind: 'object' | 'trench', id: number) => { capacity: number; entrances: number; ports: number } | null;
+    coverPorts: () => number;
   };
   __prestes?: { frame: () => { units: unknown[] } | null };
 }
@@ -143,6 +148,58 @@ test('a new medium map is 400 m across, and shrinking a large one warns about ob
   expect(current.objects).toHaveLength(0);
 });
 
+// author-game-maps: the map's enemy presets, under the roster rules.
+test('enemy forces: a preset is built under the roster rules, reaches the compiled map, and undo removes it', async ({ page }) => {
+  await openEditor(page);
+  await newMap(page, 'teste-inimigo', 'medium');
+  expect((await state(page)).enemyForces).toEqual([]);
+  await page.getByTestId('editor-properties').click();
+  await expect(page.getByTestId('enemy-forces')).toBeVisible();
+  await page.getByTestId('enemy-preset-add').click();
+  // Three rifle sections are 33 men: a fourth is refused, with the reason.
+  await expect(page.getByTestId('enemy-preset-0-counters')).toContainText('33');
+  await expect(page.getByTestId('enemy-preset-0-add')).toBeDisabled();
+  await expect(page.getByTestId('enemy-preset-0-refusal')).toBeVisible();
+  await page.getByTestId('enemy-preset-0-section-2-remove').click();
+  await page.getByTestId('enemy-preset-0-type').selectOption('metralhadora');
+  await expect(page.getByTestId('enemy-preset-0-add')).toBeEnabled();
+  await page.getByTestId('enemy-preset-0-add').click();
+  await page.getByTestId('map-submit').click();
+  await settle(page);
+  expect((await state(page)).enemyForces).toEqual([['fuzileiros', 'fuzileiros', 'metralhadora']]);
+  await page.getByTestId('editor-undo').click();
+  await settle(page);
+  expect((await state(page)).enemyForces).toEqual([]);
+});
+
+test('time of day: the slider moves the sun in the view, the document stores it, undo restores it', async ({ page }, testInfo) => {
+  await openEditor(page);
+  await newMap(page, 'teste-luz', 'medium');
+  const before = await state(page);
+  const sunBefore = await page.evaluate(() => (window as unknown as Bridge).__prestesEditor!.sun());
+  await page.getByTestId('editor-properties').click();
+  await page.getByTestId('map-light-time').fill('17');
+  await page.getByTestId('map-light-bearing').fill('270');
+  // Live preview: the sun moves before the dialog is applied.
+  const sunPreview = await page.evaluate(() => (window as unknown as Bridge).__prestesEditor!.sun());
+  expect(sunPreview).not.toEqual(sunBefore);
+  expect(sunPreview![0]).toBeLessThan(0); // west is -x
+  await page.getByTestId('map-submit').click();
+  await settle(page);
+  expect((await state(page)).light).toEqual({ time: 17, bearing: 270 });
+  await page.screenshot({ path: testInfo.outputPath('light-17h-west.png') });
+  await page.getByTestId('editor-undo').click();
+  await settle(page);
+  expect((await state(page)).light).toEqual(before.light);
+  expect(await page.evaluate(() => (window as unknown as Bridge).__prestesEditor!.sun())).toEqual(sunBefore);
+  await page.getByTestId('editor-properties').click();
+  await page.getByTestId('map-light-time').fill('7');
+  await page.getByTestId('map-light-bearing').fill('90');
+  await page.getByTestId('map-submit').click();
+  await settle(page);
+  await page.screenshot({ path: testInfo.outputPath('light-7h-east.png') });
+});
+
 test('the texture brush paints mud the game reads, and undo restores it', async ({ page }) => {
   await openEditor(page);
   expect(await surfaceAt(page, 0, 0)).not.toBe('mud');
@@ -233,6 +290,46 @@ test('a placed farmhouse and a drawn stone wall become cover', async ({ page }) 
   expect(kinds['low-wall'] ?? 0).toBeGreaterThan(0);
 });
 
+// garrison-and-assault 4.6: the properties panel reads what the battle makes of a building and a trench line.
+test('a farmhouse and a trench line show their capacity, entrances and ports; the cover overlay draws the ports', async ({ page }) => {
+  await openEditor(page);
+  await tool(page, 'place');
+  await page.locator('details', { has: page.locator('[data-object="farmhouse"]') }).locator('summary').click();
+  await page.locator('[data-object="farmhouse"]').click();
+  await clickGround(page, 40, 30);
+  await tool(page, 'trench');
+  await clickGround(page, -15, 0);
+  await clickGround(page, 15, 0);
+  await page.keyboard.press('Enter');
+  const current = await state(page);
+  const farmhouse = current.objects[0]!;
+  const trench = current.trenches[0]!;
+  const position = (kind: 'object' | 'trench', id: number) =>
+    page.evaluate(([k, i]) => (window as unknown as Bridge).__prestesEditor!.position(k as 'object' | 'trench', i as number), [kind, id] as const);
+  const house = (await position('object', farmhouse.id))!;
+  const line = (await position('trench', trench.id))!;
+  expect(house.capacity).toBe(6);
+
+  await tool(page, 'select');
+  await clickGround(page, 40, 30);
+  await expect(page.getByTestId('position-capacity')).toHaveAttribute('data-value', '6');
+  await expect(page.getByTestId('position-capacity')).toContainText('6');
+  await expect(page.getByTestId('position-entrances')).toHaveAttribute('data-value', String(house.entrances));
+  await expect(page.getByTestId('position-ports')).toHaveAttribute('data-value', String(house.ports));
+  expect(house.entrances).toBeGreaterThan(0);
+  expect(house.ports).toBeGreaterThan(0);
+
+  await clickGround(page, 10, 0);
+  await expect(page.getByTestId('position-capacity')).toHaveAttribute('data-value', String(line.capacity));
+  await expect(page.getByTestId('position-ports')).toHaveAttribute('data-value', String(line.ports));
+
+  // The cover overlay draws a tick at every post of both.
+  const ports = () => page.evaluate(() => (window as unknown as Bridge).__prestesEditor!.coverPorts());
+  expect(await ports()).toBe(0);
+  await page.getByTestId('editor-cover').click();
+  await expect.poll(ports).toBe(house.ports + line.ports);
+});
+
 test("count the slots of a trench: its badge and hover show the game's slots on the fire step", async ({ page }) => {
   // refine-map-editor 6.1.
   await openEditor(page);
@@ -313,6 +410,16 @@ test('the vegetation brush plants corn', async ({ page }) => {
   expect(await page.evaluate(() => (window as unknown as Bridge).__prestesEditor!.vegetationAt(0, -40))).toBe('corn');
 });
 
+// author-game-maps: density is the look only; the painted kind stays capim.
+test('vegetation density: dense capim is painted, the kind and the concealment stay capim', async ({ page }) => {
+  await openEditor(page);
+  await tool(page, 'vegetation');
+  await page.getByTestId('prop-vegetation').selectOption({ label: 'Capim' });
+  await page.getByTestId('prop-vegetation-density').selectOption({ label: 'Dense' });
+  await dragGround(page, { x: -3, y: -40 }, { x: 3, y: -40 });
+  expect(await page.evaluate(() => (window as unknown as Bridge).__prestesEditor!.vegetationAt(0, -40))).toBe('tall-grass');
+});
+
 test('capim painted across a river grows on both banks, not in the water', async ({ page }) => {
   // refine-map-editor 3.1: the brush skips cells where nothing grows.
   await openEditor(page);
@@ -327,6 +434,26 @@ test('capim painted across a river grows on both banks, not in the water', async
   expect(await plant(0.5, 0.5)).toBeNull();
   expect(await plant(0.5, -14.5)).toBe('tall-grass');
   expect(await plant(0.5, 14.5)).toBe('tall-grass');
+});
+
+// author-game-maps: a river drawn deep gets a ford on one stretch afterwards, and undo restores it.
+test('river stretches: a stretch of a drawn river is set to a ford, and undo makes it deep again', async ({ page }) => {
+  await openEditor(page);
+  await newMap(page, 'teste-rio', 'small');
+  await tool(page, 'river');
+  await clickGround(page, -60, 0);
+  await clickGround(page, 0, 0);
+  await clickGround(page, 60, 0);
+  await page.keyboard.press('Enter');
+  await tool(page, 'select');
+  await clickGround(page, 30, 0);
+  await expect(page.getByTestId('river-stretches')).toBeVisible();
+  const kinds = async () => ((await page.evaluate(() => (window as unknown as Bridge).__prestesEditor!.document())) as { rivers: { kinds: string[] }[] }).rivers[0]!.kinds;
+  expect(await kinds()).toEqual(['deep', 'deep']);
+  await page.getByTestId('river-stretch-1').selectOption('ford');
+  expect(await kinds()).toEqual(['deep', 'ford']);
+  await page.getByTestId('editor-undo').click();
+  expect(await kinds()).toEqual(['deep', 'deep']);
 });
 
 // refine-map-editor 5.1: the trees tool.
@@ -369,6 +496,29 @@ test('scatter a cerrado grove: cerrado trees inside the stroke, 2 m apart, none 
   expect((await state(page)).objects.filter((object) => object.type === 'cerrado-tree' || object.type === 'buriti' || object.type === 'bush')).toHaveLength(0);
 });
 
+// author-game-maps: in scatter mode the author picks the species; the biome only fills the starting list.
+test('scatter with chosen species: switching araucária off plants none along the river', async ({ page }) => {
+  await openEditor(page);
+  await tool(page, 'river');
+  await clickGround(page, -80, 0);
+  await clickGround(page, 80, 0);
+  await page.keyboard.press('Enter');
+  await tool(page, 'trees');
+  await page.getByTestId('tree-mode-scatter').click();
+  await page.getByTestId('tree-biome').selectOption('atlantic-edge');
+  await expect(page.getByTestId('tree-mix-hint')).toBeVisible();
+  const araucaria = page.locator('[data-tree="tree-araucaria"]');
+  await expect(araucaria).toHaveAttribute('aria-selected', 'true');
+  await araucaria.click();
+  await expect(araucaria).toHaveAttribute('aria-selected', 'false');
+  await page.getByTestId('tree-density').selectOption('dense');
+  for (let press = 0; press < 16; press += 1) await page.keyboard.press(']');
+  await dragGround(page, { x: -40, y: 14 }, { x: 40, y: 14 });
+  const types = new Set((await state(page)).objects.map((object) => object.type));
+  expect(types.has('tree-broad')).toBe(true);
+  expect(types.has('tree-araucaria')).toBe(false);
+});
+
 test('erase trees: the trees under the brush go, and undo brings them back', async ({ page }) => {
   const grove = await cerradoGrove(page);
   await page.getByTestId('tree-mode-erase').click();
@@ -404,7 +554,7 @@ test('shape a deployment area', async ({ page }) => {
   const moved = { x: corner.x + 10, y: corner.y - 10 };
   await dragGround(page, corner, moved);
   const dragged = (await state(page)).areas.legalist[0]!;
-  expect(Math.hypot(dragged.x - moved.x, dragged.y - moved.y)).toBeLessThan(1);
+  expect(Math.hypot(dragged.x - moved.x, dragged.y - moved.y)).toBeLessThanOrEqual(1.5); // the drag snaps to the grid
   // Double-click an edge: a corner is added there.
   const [a, b] = [(await state(page)).areas.legalist[1]!, (await state(page)).areas.legalist[2]!];
   const mid = await screen(page, (a.x + b.x) / 2, (a.y + b.y) / 2);
@@ -493,10 +643,94 @@ test('playtest starts the 3 vs 3 on the edited map and returns to the editor', a
   const centre = { x: first.reduce((sum, unit) => sum + unit.x, 0) / first.length, y: first.reduce((sum, unit) => sum + unit.y, 0) / first.length };
   expect(Math.hypot(centre.x - moved.x, centre.y - moved.y)).toBeLessThan(Math.hypot(centre.x - before.x, centre.y - before.y));
   expect(Math.hypot(centre.x - moved.x, centre.y - moved.y)).toBeLessThan(10);
+  // add-deployment-phase 3.3: the playtest opens in deployment, bound by the map's areas.
+  await expect(page.getByTestId('deployment-banner')).toBeVisible();
+  expect(await page.evaluate(() => (window as unknown as { __prestes: { frame: () => { phase?: string } } }).__prestes.frame().phase)).toBe('deployment');
+  const enemy = units.filter((unit) => unit.faction === 'legalist');
+  const enemyCentre = { x: enemy.reduce((sum, unit) => sum + unit.x, 0) / enemy.length, y: enemy.reduce((sum, unit) => sum + unit.y, 0) / enemy.length };
+  const ids = (await page.evaluate(() => (window as unknown as { __prestes: { frame: () => { units: { id: number; faction: string; squadId: number }[] } } }).__prestes.frame().units))
+    .filter((unit) => unit.faction === 'column' && unit.squadId === 1)
+    .map((unit) => unit.id);
+  await page.evaluate(([unitIds, to]) => (window as unknown as { __prestes: { command: (command: unknown) => void } }).__prestes.command({ type: 'move', unitIds, to }), [ids, enemyCentre] as const);
+  await expect(page.getByTestId('deployment-refusal')).toHaveAttribute('data-reason', 'outside_deployment_area');
+  await page.getByTestId('start-battle').click();
+  await expect(page.getByTestId('deployment-banner')).toHaveCount(0);
+  await expect
+    .poll(() => page.evaluate(() => (window as unknown as { __prestes: { frame: () => { phase?: string } } }).__prestes.frame().phase))
+    .toBe('battle');
   await page.getByTestId('playtest-back').click();
   await page.waitForURL(/editor\.html/);
   await expect(page.getByTestId('editor-viewport')).toHaveAttribute('data-ready', 'true');
   expect((await state(page)).id).toBe('teste-jogo');
+});
+
+// author-game-maps 4.1: a new map takes a campaign slot, and the document records the mission.
+test('slots: a new map for a campaign mission records it, and saving over a held mission asks first', async ({ page }) => {
+  await openEditor(page);
+  await page.getByTestId('editor-new').click();
+  await page.getByTestId('map-id').fill('teste-anel');
+  await page.getByTestId('map-name-en').fill('Iron ring');
+  await page.getByTestId('map-name-pt').fill('Anel de ferro');
+  await expect(page.getByTestId('map-slot').locator('option[value="mission:anel-de-ferro"]')).toHaveText(/^02 /);
+  await page.getByTestId('map-slot').selectOption('mission:anel-de-ferro');
+  await expect(page.getByTestId('map-slot-hint')).toBeVisible();
+  await page.getByTestId('map-source').fill('Campaign book, chapter 02.');
+  await page.getByTestId('map-submit').click();
+  await settle(page);
+  const document = (await page.evaluate(() => (window as unknown as Bridge).__prestesEditor!.document())) as { use: string; mission?: string };
+  expect(document).toMatchObject({ use: 'campaign', mission: 'anel-de-ferro' });
+
+  // The dev server answers that another map holds the mission; the editor asks, then saves with replace.
+  const saves: string[] = [];
+  await page.route('**/__editor/save-map**', async (route) => {
+    const url = route.request().url();
+    saves.push(url);
+    if (url.includes('replace=1')) await route.fulfill({ status: 200, json: { ok: true, file: 'teste-anel.map.json', moved: 'outro-anel' } });
+    else await route.fulfill({ status: 409, json: { ok: false, reason: 'mission-taken', holder: 'outro-anel' } });
+  });
+  let asked = '';
+  page.once('dialog', (dialog) => {
+    asked = dialog.message();
+    void dialog.accept();
+  });
+  await page.getByTestId('editor-save-project').click();
+  await expect(page.getByTestId('editor-message')).toContainText('outro-anel');
+  expect(asked).toContain('outro-anel');
+  expect(saves).toHaveLength(2);
+  expect(saves[1]).toContain('replace=1');
+});
+
+// author-game-maps 4.2: Open lists the project's maps by slot and loads one.
+test('open: the project maps are listed by slot, and opening one loads it', async ({ page }) => {
+  await openEditor(page);
+  await page.getByTestId('editor-open').click();
+  await expect(page.getByTestId('open-dialog')).toBeVisible();
+  await expect(page.getByTestId('open-slot-anel-de-ferro')).toBeVisible();
+  await expect(page.getByTestId('open-test').getByTestId('open-map-campo-de-provas')).toBeVisible();
+  await page.getByTestId('open-campo-de-provas').click();
+  await settle(page);
+  await expect(page.getByTestId('open-dialog')).toHaveCount(0);
+  expect((await state(page)).id).toBe('campo-de-provas');
+});
+
+// author-game-maps 5.4: the framed view becomes the map's thumbnail.
+test('thumbnail: the editor sends the framed view as a square PNG', async ({ page }) => {
+  await openEditor(page);
+  let body = '';
+  await page.route('**/__editor/thumbnail**', async (route) => {
+    body = route.request().postData() ?? '';
+    await route.fulfill({ status: 200, json: { ok: true, file: 'apps/game/public/maps/novo-mapa.png' } });
+  });
+  await page.getByTestId('editor-thumbnail').click();
+  await expect(page.getByTestId('editor-message')).toContainText('novo-mapa.png');
+  expect(body.startsWith('data:image/png;base64,')).toBe(true);
+  const size = await page.evaluate(async (url) => {
+    const image = new Image();
+    image.src = url;
+    await image.decode();
+    return [image.width, image.height];
+  }, body);
+  expect(size).toEqual([256, 256]);
 });
 
 test('the dev server endpoint refuses a map with errors and writes nothing', async ({ page }) => {

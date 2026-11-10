@@ -1,6 +1,26 @@
 import { useEffect, useRef, type KeyboardEvent, type PointerEvent, type ReactNode } from 'react';
-import { Grip, Minimize, Restore } from './icons';
-import { clampWindow, type Size, type WindowState } from './windowLayout';
+import { Grip, Minimize, pixelIcon, Restore } from './icons';
+import {
+  clampSize,
+  clampWindow,
+  isVertical,
+  toggleVertical,
+  type ColumnEdge,
+  type Size,
+  type WindowState,
+} from './windowLayout';
+
+const ColumnIcon = pixelIcon('formation-column');
+const RowIcon = pixelIcon('formation-line');
+
+/** Labels for a window the player may resize and turn into a column. */
+export interface ResizableLabels {
+  resize: string;
+  vertical: string;
+  horizontal: string;
+  /** Where the column goes; by default it keeps the window's left edge. */
+  columnEdge?: ColumnEdge;
+}
 
 export interface FloatingWindowProps {
   id: string;
@@ -14,6 +34,8 @@ export interface FloatingWindowProps {
   moveLabel: string;
   testId?: string;
   className?: string;
+  /** Given, the window gets a resize grip and a column/row toggle; its size is kept in its state. */
+  resizable?: ResizableLabels;
   children: ReactNode;
 }
 
@@ -34,10 +56,12 @@ export function FloatingWindow({
   moveLabel,
   testId,
   className,
+  resizable,
   children,
 }: FloatingWindowProps) {
   const rootRef = useRef<HTMLDivElement | null>(null);
   const drag = useRef<{ pointerId: number; startX: number; startY: number; x: number; y: number } | null>(null);
+  const resize = useRef<{ pointerId: number; startX: number; startY: number; w: number; h: number } | null>(null);
   const latest = useRef(state);
   latest.current = state;
 
@@ -113,19 +137,67 @@ export function FloatingWindow({
     onChange({ ...state, ...clampWindow({ x: state.x + delta[0]!, y: state.y + delta[1]! }, size(), viewSize()) });
   };
 
+  const resizeTo = (next: Size) => {
+    if (!state) return;
+    const sized = clampSize(next, state, viewSize());
+    if (sized.w !== state.w || sized.h !== state.h) onChange({ ...state, ...sized });
+  };
+  const onResizeDown = (event: PointerEvent<HTMLDivElement>) => {
+    if (!state || event.button !== 0) return;
+    event.preventDefault();
+    event.currentTarget.setPointerCapture(event.pointerId);
+    const current = size();
+    resize.current = {
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      w: state.w ?? current.w,
+      h: state.h ?? current.h,
+    };
+  };
+  const onResizeMove = (event: PointerEvent<HTMLDivElement>) => {
+    const active = resize.current;
+    if (!active || active.pointerId !== event.pointerId) return;
+    resizeTo({ w: active.w + event.clientX - active.startX, h: active.h + event.clientY - active.startY });
+  };
+  const endResize = (event: PointerEvent<HTMLDivElement>) => {
+    if (resize.current?.pointerId === event.pointerId) {
+      resize.current = null;
+      event.currentTarget.releasePointerCapture?.(event.pointerId);
+    }
+  };
+  const onResizeKey = (event: KeyboardEvent<HTMLDivElement>) => {
+    if (!state) return;
+    const step = event.shiftKey ? 32 : 8;
+    const delta =
+      event.key === 'ArrowLeft' ? [-step, 0] :
+      event.key === 'ArrowRight' ? [step, 0] :
+      event.key === 'ArrowUp' ? [0, -step] :
+      event.key === 'ArrowDown' ? [0, step] : null;
+    if (!delta) return;
+    event.preventDefault();
+    const current = size();
+    resizeTo({ w: (state.w ?? current.w) + delta[0]!, h: (state.h ?? current.h) + delta[1]! });
+  };
+
   const minimized = state?.minimized ?? false;
+  const sized = resizable !== undefined && state?.w !== undefined && state.h !== undefined;
+  const vertical = resizable !== undefined && isVertical(state);
   return (
     <div
       ref={rootRef}
-      className={`floating-window ${minimized ? 'minimized' : ''} ${className ?? ''}`}
+      className={`floating-window ${minimized ? 'minimized' : ''} ${sized ? 'sized' : ''} ${vertical ? 'vertical' : ''} ${className ?? ''}`}
       data-testid={testId ?? `window-${id}`}
       data-window={id}
       data-minimized={minimized}
+      data-orientation={resizable ? (vertical ? 'vertical' : 'horizontal') : undefined}
       role="region"
       aria-label={title}
       style={{
         left: state?.x ?? 0,
         top: state?.y ?? 0,
+        width: sized ? state?.w : undefined,
+        height: sized && !minimized ? state?.h : undefined,
         visibility: state ? 'visible' : 'hidden',
       }}
     >
@@ -142,6 +214,19 @@ export function FloatingWindow({
       >
         <Grip size={16} />
         <span className="floating-window-name">{title}</span>
+        {resizable ? (
+          <button
+            type="button"
+            className="floating-window-toggle"
+            data-testid={`window-${id}-orientation`}
+            aria-label={vertical ? resizable.horizontal : resizable.vertical}
+            title={vertical ? resizable.horizontal : resizable.vertical}
+            aria-pressed={vertical}
+            onClick={() => state && onChange(toggleVertical(state, viewSize(), resizable.columnEdge))}
+          >
+            {vertical ? <RowIcon size={16} /> : <ColumnIcon size={16} />}
+          </button>
+        ) : null}
         <button
           type="button"
           className="floating-window-toggle"
@@ -154,6 +239,21 @@ export function FloatingWindow({
         </button>
       </div>
       {!minimized ? <div className="floating-window-body">{children}</div> : null}
+      {resizable && !minimized ? (
+        <div
+          className="floating-window-resize"
+          data-testid={`window-${id}-resize`}
+          role="separator"
+          tabIndex={0}
+          aria-label={resizable.resize}
+          title={resizable.resize}
+          onPointerDown={onResizeDown}
+          onPointerMove={onResizeMove}
+          onPointerUp={endResize}
+          onPointerCancel={endResize}
+          onKeyDown={onResizeKey}
+        />
+      ) : null}
     </div>
   );
 }

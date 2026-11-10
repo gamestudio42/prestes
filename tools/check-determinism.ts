@@ -1,7 +1,7 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
-import { authoredMapIds, BATTLE_MAP_IDS, loadAuthoredMap, type BattleMapId, type SectionTypeId } from '@prestes/shared';
+import { authoredMapIds, DEFAULT_BATTLE_MAP, loadAuthoredMap, type BattleMapId, type SectionTypeId } from '@prestes/shared';
 import { SimulationEngine } from '@prestes/simulation';
 
 interface Golden {
@@ -12,6 +12,8 @@ interface Golden {
   battleMaps?: Partial<Record<BattleMapId, string>>;
   /** pre-battle-roster 4.5: the same 3v3 with a fixed mixed roster against a drawn enemy. */
   mixedRosters?: Partial<Record<BattleMapId, string>>;
+  /** Why the goldens were last re-recorded. */
+  reason?: string;
 }
 
 const BATTLE_TICKS = 1000;
@@ -69,6 +71,11 @@ function readGolden(): Golden | undefined {
 }
 
 const update = process.argv.includes('--update');
+/** `--reason "<why>"` records why the goldens were re-recorded. */
+function reasonArg(): string | undefined {
+  const index = process.argv.indexOf('--reason');
+  return index >= 0 ? process.argv[index + 1] : undefined;
+}
 const first = runScenario();
 const second = runScenario();
 console.log(`seed ${SEED}, ${TICKS} ticks: run 1 ${first}, run 2 ${second}`);
@@ -79,9 +86,9 @@ if (first !== second) {
 }
 
 const battles: Partial<Record<BattleMapId, string>> = {};
-// add-map-editor: the authored maps (the proof Fazenda) have goldens too.
+// author-game-maps 3.2: the 3v3 cases run on the authored maps, the test map first.
 for (const id of authoredMapIds()) await loadAuthoredMap(id);
-for (const map of [...BATTLE_MAP_IDS, ...authoredMapIds()]) {
+for (const map of [DEFAULT_BATTLE_MAP, ...authoredMapIds().filter((id) => id !== DEFAULT_BATTLE_MAP)]) {
   let hash: string;
   try {
     hash = runBattle(map);
@@ -103,7 +110,7 @@ for (const map of [...BATTLE_MAP_IDS, ...authoredMapIds()]) {
 }
 
 const mixed: Partial<Record<BattleMapId, string>> = {};
-for (const map of BATTLE_MAP_IDS) {
+for (const map of [DEFAULT_BATTLE_MAP]) {
   const hash = runMixedBattle(map);
   if (hash !== runMixedBattle(map)) {
     console.error(`FAIL nondeterminism: two mixed-roster 3v3 runs on ${map} produced different hashes`);
@@ -117,7 +124,7 @@ const golden = readGolden();
 if (update) {
   writeFileSync(
     GOLDEN_PATH,
-    `${JSON.stringify({ seed: SEED, ticks: TICKS, hash: first, battleMaps: battles, mixedRosters: mixed }, null, 2)}\n`,
+    `${JSON.stringify({ seed: SEED, ticks: TICKS, hash: first, battleMaps: battles, mixedRosters: mixed, reason: reasonArg() ?? golden?.reason }, null, 2)}\n`,
   );
   console.log(`golden updated: ${golden?.hash ?? '(none)'} -> ${first}`);
   process.exit(0);

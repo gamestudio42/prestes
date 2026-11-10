@@ -19,7 +19,7 @@ function trenchMap(): { map: BattleMap; trenchY: number } {
   return { map: compileMapDocument(toMapDocument(editable)), trenchY };
 }
 
-function deploying(battleMap: BattleMap | 'bairro' = 'bairro'): SimulationEngine {
+function deploying(battleMap: BattleMap | 'campo-de-provas' = 'campo-de-provas'): SimulationEngine {
   return new SimulationEngine({ seed: 1924, scenario: 'battle3v3', battleMap, deployment: true });
 }
 
@@ -39,7 +39,7 @@ describe('deployment orders (add-deployment-phase 2.2)', () => {
     const after = section(frame, 1);
     expect(Math.hypot(centre(after).x - to.x, centre(after).y - to.y)).toBeLessThan(4);
     // A battle run of the same order ends where the deployment put the men.
-    const walked = new SimulationEngine({ seed: 1924, scenario: 'battle3v3', battleMap: 'bairro', fog: false });
+    const walked = new SimulationEngine({ seed: 1924, scenario: 'battle3v3', battleMap: 'campo-de-provas', fog: false });
     walked.enqueue({ type: 'move', unitIds: ids, to });
     walked.runTicks(1);
     const planned = walked.units.filter((unit) => unit.faction === 'column' && unit.squadId === 1).map((unit) => ({ id: unit.id, x: unit.targetX, y: unit.targetY }));
@@ -60,7 +60,7 @@ describe('deployment orders (add-deployment-phase 2.2)', () => {
     expect(section(frame, 1)).toEqual(before);
   });
 
-  it('fight orders refused: fire at, advance, withdraw', () => {
+  it('fight and garrison orders refused: fire at, advance, withdraw, enter, assault', () => {
     const engine = deploying();
     const ids = section(engine.frame(), 1).map((unit) => unit.id);
     const target = engine.frame().units.find((unit) => unit.faction === 'legalist')!.id;
@@ -68,6 +68,9 @@ describe('deployment orders (add-deployment-phase 2.2)', () => {
       engine.enqueue({ type: 'suppress', unitIds: ids, targetId: target }),
       engine.enqueue({ type: 'order', order: 'advance', unitIds: ids, to: { x: 0, y: 0 } }),
       engine.enqueue({ type: 'withdraw', unitIds: ids }),
+      // garrison-and-assault 4.5 (user, 2026-11-09): nobody enters or assaults a position during deployment.
+      engine.enqueue({ type: 'order', order: 'enter', unitIds: ids, positionId: engine.positions[0]!.id }),
+      engine.enqueue({ type: 'assault', unitIds: ids, positionId: engine.positions[0]!.id }),
     ];
     const frame = engine.runTicks(1);
     for (const seq of seqs) expect(frame.events).toContainEqual({ type: 'command_rejected', tick: 0, seq, reason: 'not_during_deployment' });
@@ -100,7 +103,7 @@ describe('deployment orders (add-deployment-phase 2.2)', () => {
 
   it('replay a deployment: three deployment orders replayed from their commands reach the same hash at tick 1,000', () => {
     const play = (orders: boolean): string => {
-      const engine = new SimulationEngine({ seed: 1924, scenario: 'battle3v3', battleMap: 'bairro', deployment: true, enemyDeployment: true });
+      const engine = new SimulationEngine({ seed: 1924, scenario: 'battle3v3', battleMap: 'campo-de-provas', deployment: true, enemyDeployment: true });
       const frame = engine.frame();
       const facing = engine.battleMap!.deployment.column.facing;
       if (orders) {

@@ -1,10 +1,20 @@
-﻿import { shotShown, type SimEvent } from '@prestes/shared';
+﻿import { getWeapon, type SimEvent, type WeaponId } from '@prestes/shared';
 import { openAudioContext } from './context';
+
+/**
+ * machine-gun-fire-feedback 4.1: the sound of a kind of fire. Rifles and
+ * pistols use the Mauser recording; the automatic rifle and the machine gun
+ * have synthesized reports of their own.
+ */
+export type ShotSound = 'rifle' | 'automatic' | 'machine-gun';
 
 export interface GunshotOutput {
   unlock(): Promise<boolean>;
-  /** One shot; `rate` shifts the pitch a little so a volley does not repeat. */
-  play(volume: number, rate?: number): void;
+  /**
+   * One shot; `rate` shifts the pitch a little so a volley does not repeat,
+   * `sound` picks the weapon's report and `delay` (s) schedules it.
+   */
+  play(volume: number, rate?: number, sound?: ShotSound, delay?: number): void;
   /** The rifle's bolt worked `delay` seconds later (outputs that have it). */
   playBolt?(volume: number, delay: number, rate?: number): void;
   dispose(): void;
@@ -14,6 +24,19 @@ export interface GunshotOutput {
  * there (the user could not hear it under a volley). */
 export const BOLT_DELAY = 1.3;
 export const BOLT_LEVEL = 0.8;
+/** Seconds a simulation tick lasts at game speed 1. */
+export const TICK_SECONDS = 0.1;
+/** A burst holds its voice this long after its last round (ms). */
+export const BURST_TAIL_MS = 300;
+/** Automatic fire heard at once: bursts, each one voice (machine-gun-fire-feedback 4.2). */
+export const AUTOMATIC_VOICES = 2;
+/**
+ * User, 2026-11-09: the gun could not be told from rifles by ear. Its rounds
+ * play louder than a rifle's and at an almost steady pitch, so a burst is a
+ * mechanical rattle rather than a ragged volley.
+ */
+export const MACHINE_GUN_GAIN = 1.5;
+export const MACHINE_GUN_PITCH_SPREAD = 0.25;
 
 /** A repeatable playback rate in [0.94, 1.06] for a shot key. */
 export function shotRate(key: string): number {
@@ -24,11 +47,25 @@ export function shotRate(key: string): number {
   return 0.94 + ((hash >>> 0) / 4294967296) * 0.12;
 }
 
+/** The sound a weapon makes; without a known weapon, a burst round is automatic fire. */
+export function shotSound(weaponId: WeaponId | undefined, event: { burstStart?: boolean }): ShotSound {
+  const weapon = weaponId ? getWeapon(weaponId) : null;
+  if (weapon) {
+    if (weapon.fire === 'belt') return 'machine-gun';
+    if (weapon.fire === 'burst') return 'automatic';
+    return 'rifle';
+  }
+  return event.burstStart !== undefined ? 'automatic' : 'rifle';
+}
+
 interface ShotAudioOptions {
   muted?: boolean;
   volume?: number;
   maxVoices?: number;
   voiceMs?: number;
+  automaticVoices?: number;
+  /** Wall clock in ms (tests pass their own). */
+  now?: () => number;
 }
 
 const MAX_SEEN = 512;
@@ -43,6 +80,8 @@ export interface AudioListener {
   faction: string;
   /** Faction of a unit by id (the shooter's side). */
   factionOf: (unitId: number) => string | undefined;
+  /** Weapon of a unit by id (the shooter's), for the sound of his fire. */
+  weaponOf?: (unitId: number) => WeaponId | undefined;
 }
 
 /**
@@ -61,8 +100,16 @@ export class ShotAudio {
   private volume: number;
   private readonly maxVoices: number;
   private readonly voiceMs: number;
+  private readonly automaticVoices: number;
+  private readonly now: () => number;
   private readonly seen = new Set<string>();
   private activeVoices = 0;
+  /** Automatic fire: each shooter's burst voice and when it ends (ms). */
+  private readonly bursts = new Map<number, number>();
+  /** The tick the current run of events is timed from, and when it was heard (ms). */
+  private clockTick: number | null = null;
+  private clockAt = 0;
+  private tickSeconds = TICK_SECONDS;
   private listener: AudioListener | null = null;
   private ready = false;
   private failed = false;
@@ -75,6 +122,8 @@ export class ShotAudio {
     this.volume = options.volume ?? 0.35;
     this.maxVoices = options.maxVoices ?? 4;
     this.voiceMs = options.voiceMs ?? 350;
+    this.automaticVoices = options.automaticVoices ?? AUTOMATIC_VOICES;
+    this.now = options.now ?? (() => globalThis.performance?.now() ?? Date.now());
   }
 
   async unlock(): Promise<void> {
@@ -91,7 +140,7 @@ export class ShotAudio {
   }
 
   handleEvent(event: SimEvent): void {
-    if (event.type !== 'shot' || !shotShown(event) || this.muted || !this.ready) {
+    if (event.type !== 'shot' || this.muted || !this.ready) {
       return;
     }
     const key = `${event.tick}:${event.source}:${event.target}`;
@@ -105,27 +154,79 @@ export class ShotAudio {
         this.seen.delete(oldest);
       }
     }
+    const sound = shotSound(this.listener?.weaponOf?.(event.source), event);
+    const delay = this.delayFor(event.tick);
+    const rate = shotRate(key);
+    const loudness = shotLoudness(this.listener, event.x, event.y);
+    if (sound !== 'rifle') {
+      // Every round of a burst is heard, spaced as it was fired; a burst
+      // holds one voice of the automatic budget, so rifles still sound.
+      if (!this.burstVoice(event.source, delay)) return;
+      const gun = sound === 'machine-gun';
+      const gain = gun ? MACHINE_GUN_GAIN : 1;
+      const pitch = gun ? 1 + (rate - 1) * MACHINE_GUN_PITCH_SPREAD : rate;
+      this.output.play(Math.min(1, this.volume * gain) * loudness, pitch, sound, delay);
+      return;
+    }
     if (this.activeVoices >= this.maxVoices) {
       return;
     }
     this.activeVoices += 1;
-    const rate = shotRate(key);
-    const loudness = shotLoudness(this.listener, event.x, event.y);
-    this.output.play(this.volume * loudness, rate);
-    // Only the player's own rifles are heard working their bolts: the enemy's
-    // would double every shot into noise.
+    this.output.play(this.volume * loudness, rate, 'rifle', delay);
+    // Only the player's own bolt-action rifles are heard working their bolts:
+    // the enemy's would double every shot into noise.
     const side = this.listener?.factionOf(event.source);
-    if (!this.listener || side === this.listener.faction) {
-      this.output.playBolt?.(this.volume * BOLT_LEVEL * loudness, BOLT_DELAY, rate);
+    const weaponId = this.listener?.weaponOf?.(event.source);
+    const boltAction = weaponId === undefined || getWeapon(weaponId)?.kind === 'bolt-rifle';
+    if (boltAction && (!this.listener || side === this.listener.faction)) {
+      this.output.playBolt?.(this.volume * BOLT_LEVEL * loudness, BOLT_DELAY + delay, rate);
     }
     globalThis.setTimeout(() => {
       this.activeVoices = Math.max(0, this.activeVoices - 1);
     }, this.voiceMs);
   }
 
+  /**
+   * Seconds after now to play a round fired on `tick`: events arrive in
+   * batches of ticks, and a burst's rounds keep their spacing at the game
+   * speed in use. A tick whose moment has already passed starts a new run.
+   */
+  private delayFor(tick: number): number {
+    const now = this.now();
+    if (this.clockTick !== null && tick >= this.clockTick) {
+      const at = this.clockAt + (tick - this.clockTick) * this.tickSeconds * 1000;
+      if (at >= now - 1) return Math.max(0, (at - now) / 1000);
+    }
+    this.clockTick = tick;
+    this.clockAt = now;
+    return 0;
+  }
+
+  /** Whether a shooter's round has an automatic voice: his burst's, or a free one. */
+  private burstVoice(source: number, delay: number): boolean {
+    const now = this.now();
+    for (const [shooter, end] of this.bursts) {
+      if (end <= now) this.bursts.delete(shooter);
+    }
+    const ends = now + delay * 1000 + BURST_TAIL_MS;
+    const held = this.bursts.get(source);
+    if (held !== undefined) {
+      this.bursts.set(source, Math.max(held, ends));
+      return true;
+    }
+    if (this.bursts.size >= this.automaticVoices) return false;
+    this.bursts.set(source, ends);
+    return true;
+  }
+
   /** The view the player hears from (set every frame by the canvas). */
   setListener(listener: AudioListener | null): void {
     this.listener = listener;
+  }
+
+  /** The game speed (ticks run 0.1 s each at speed 1). */
+  setSpeed(speed: number): void {
+    this.tickSeconds = TICK_SECONDS / Math.max(1, speed);
   }
 
   setMuted(muted: boolean): void {
@@ -153,14 +254,27 @@ function playBuffer(context: AudioContext, buffer: AudioBuffer, volume: number, 
   source.start(context.currentTime + delay);
 }
 
+/** The synthesized reports of automatic fire, made once per context. */
+function automaticBuffers(context: AudioContext): Record<'automatic' | 'machine-gun', AudioBuffer> {
+  const buffer = (profile: ReportProfile): AudioBuffer => {
+    const samples = synthesizeReport(context.sampleRate, profile);
+    const made = context.createBuffer(1, samples.length, context.sampleRate);
+    made.getChannelData(0).set(samples);
+    return made;
+  };
+  return { automatic: buffer(AUTOMATIC_REPORT), 'machine-gun': buffer(MACHINE_GUN_REPORT) };
+}
+
 /**
  * The Mauser recorded by the project owner: the shot, then the bolt worked
  * 1.3 s later. Falls back to the synthesized shot if the files do not load.
+ * Automatic fire plays the synthesized reports.
  */
 export class RecordedGunshotOutput implements GunshotOutput {
   private context: AudioContext | null = null;
   private shot: AudioBuffer | null = null;
   private bolt: AudioBuffer | null = null;
+  private automatic: Record<'automatic' | 'machine-gun', AudioBuffer> | null = null;
 
   constructor(private readonly base = './audio/') {}
 
@@ -177,11 +291,14 @@ export class RecordedGunshotOutput implements GunshotOutput {
       this.shot = shot ?? synthesizeGunshot(this.context);
       this.bolt = bolt;
     }
+    this.automatic ??= automaticBuffers(this.context);
     return true;
   }
 
-  play(volume: number, rate = 1): void {
-    if (this.context && this.shot) playBuffer(this.context, this.shot, volume, rate);
+  play(volume: number, rate = 1, sound: ShotSound = 'rifle', delay = 0): void {
+    if (!this.context) return;
+    const buffer = sound === 'rifle' ? this.shot : this.automatic?.[sound];
+    if (buffer) playBuffer(this.context, buffer, volume, rate, delay);
   }
 
   playBolt(volume: number, delay: number, rate = 1): void {
@@ -193,6 +310,7 @@ export class RecordedGunshotOutput implements GunshotOutput {
     this.context = null;
     this.shot = null;
     this.bolt = null;
+    this.automatic = null;
   }
 
   private async load(file: string): Promise<AudioBuffer | null> {
@@ -210,6 +328,7 @@ export class RecordedGunshotOutput implements GunshotOutput {
 export class SynthesizedGunshotOutput implements GunshotOutput {
   private context: AudioContext | null = null;
   private buffer: AudioBuffer | null = null;
+  private automatic: Record<'automatic' | 'machine-gun', AudioBuffer> | null = null;
 
   async unlock(): Promise<boolean> {
     this.context = await openAudioContext(this.context);
@@ -217,18 +336,102 @@ export class SynthesizedGunshotOutput implements GunshotOutput {
       return false;
     }
     this.buffer ??= synthesizeGunshot(this.context);
+    this.automatic ??= automaticBuffers(this.context);
     return true;
   }
 
-  play(volume: number, rate = 1): void {
-    if (this.context && this.buffer) playBuffer(this.context, this.buffer, volume, rate);
+  play(volume: number, rate = 1, sound: ShotSound = 'rifle', delay = 0): void {
+    if (!this.context) return;
+    const buffer = sound === 'rifle' ? this.buffer : this.automatic?.[sound];
+    if (buffer) playBuffer(this.context, buffer, volume, rate, delay);
   }
 
   dispose(): void {
     void this.context?.close();
     this.context = null;
     this.buffer = null;
+    this.automatic = null;
   }
+}
+
+/** The shape of a synthesized report (machine-gun-fire-feedback 4.1). */
+export interface ReportProfile {
+  seconds: number;
+  /** Length of the sharp crack at the start (s). */
+  crack: number;
+  /** Low-pass of the noise body: higher is brighter. */
+  brightness: number;
+  /** Frequency (Hz) and level of the low thump. */
+  thump: number;
+  thumpLevel: number;
+  /** Decay rate of the body (1/s). */
+  decay: number;
+  /** The action cycling: a metallic ring (Hz), its level and its time after the crack (s). */
+  ring?: number;
+  ringLevel?: number;
+  ringAt?: number;
+  seed: number;
+}
+
+/**
+ * The machine gun: a deep boom with a metallic clack of the action after each
+ * round, short enough to follow at ten rounds a second. Nothing like it is in
+ * the Mauser recording, so a burst is told apart by ear.
+ */
+export const MACHINE_GUN_REPORT: ReportProfile = {
+  seconds: 0.17,
+  crack: 0.01,
+  brightness: 0.16,
+  thump: 46,
+  thumpLevel: 0.8,
+  decay: 22,
+  ring: 1750,
+  ringLevel: 0.35,
+  ringAt: 0.045,
+  seed: 1924,
+};
+
+/** The automatic rifle: lighter and brighter. */
+export const AUTOMATIC_REPORT: ReportProfile = {
+  seconds: 0.13,
+  crack: 0.006,
+  brightness: 0.4,
+  thump: 92,
+  thumpLevel: 0.32,
+  decay: 34,
+  seed: 1925,
+};
+
+/**
+ * A report as samples, from a fixed-seed noise generator so it is the same on
+ * every run: a crack, a filtered noise body and a low thump, decaying fast.
+ */
+export function synthesizeReport(sampleRate: number, profile: ReportProfile): Float32Array {
+  const length = Math.floor(sampleRate * profile.seconds);
+  const data = new Float32Array(length);
+  let state = profile.seed >>> 0;
+  const noise = (): number => {
+    state = (Math.imul(state, 1664525) + 1013904223) >>> 0;
+    return (state / 4294967296) * 2 - 1;
+  };
+  let filter = 0;
+  for (let index = 0; index < length; index += 1) {
+    const time = index / sampleRate;
+    const white = noise();
+    filter = filter * (1 - profile.brightness) + white * profile.brightness;
+    const crack = time < profile.crack ? white * 0.9 : 0;
+    const thump = Math.sin(Math.PI * 2 * profile.thump * time) * Math.exp(-time * profile.decay * 0.8) * profile.thumpLevel;
+    const body = filter * 1.6 * Math.exp(-time * profile.decay);
+    const after = time - (profile.ringAt ?? 0);
+    const ring =
+      profile.ring && after >= 0
+        ? Math.sin(Math.PI * 2 * profile.ring * after) * Math.exp(-after * 90) * (profile.ringLevel ?? 0)
+        : 0;
+    // A short fade-in and fade-out keep the round from clicking.
+    const edge = Math.min(1, index / 24, (length - index) / 64);
+    data[index] = Math.max(-0.95, Math.min(0.95, (crack + body + thump + ring) * edge));
+  }
+  return data;
 }
 
 function synthesizeGunshot(context: AudioContext): AudioBuffer {

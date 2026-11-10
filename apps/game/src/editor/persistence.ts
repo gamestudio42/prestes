@@ -1,4 +1,4 @@
-import { parseMapDocument, type MapDocument, type ParseResult } from '@prestes/shared';
+import { parseMapDocument, type AuthoredMapEntry, type MapDocument, type ParseResult } from '@prestes/shared';
 
 /**
  * Where the editor keeps maps in the browser (add-map-editor): IndexedDB,
@@ -97,18 +97,58 @@ export async function readDocumentFile(file: File): Promise<ParseResult> {
   }
 }
 
-/** Dev server only: writes the document into the project's authored maps folder. */
-export async function saveToProject(document: MapDocument): Promise<{ ok: true; file: string } | { ok: false; reason: string }> {
+export type SaveResult = { ok: true; file: string; moved?: string } | { ok: false; reason: string; holder?: string };
+
+/**
+ * Dev server only: writes the document into the project's authored maps
+ * folder. A mission another map holds comes back as `mission-taken` with
+ * that map's id, unless `replace` (the other map then becomes a skirmish map).
+ */
+export async function saveToProject(document: MapDocument, replace = false): Promise<SaveResult> {
   try {
-    const response = await fetch('/__editor/save-map', {
+    const response = await fetch(`/__editor/save-map${replace ? '?replace=1' : ''}`, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify(document),
     });
+    const body = (await response.json()) as { ok?: boolean; file?: string; reason?: string; holder?: string; moved?: string };
+    if (response.ok && body.ok && body.file) return { ok: true, file: body.file, ...(body.moved ? { moved: body.moved } : {}) };
+    return { ok: false, reason: body.reason ?? String(response.status), ...(body.holder ? { holder: body.holder } : {}) };
+  } catch (error) {
+    return { ok: false, reason: error instanceof Error ? error.message : 'network' };
+  }
+}
+
+/** author-game-maps 4.2, dev server only: the project's maps (empty when there is no dev server). */
+export async function listProjectMaps(): Promise<AuthoredMapEntry[]> {
+  try {
+    const response = await fetch('/__editor/maps');
+    const body = (await response.json()) as { ok?: boolean; maps?: AuthoredMapEntry[] };
+    return response.ok && body.ok && body.maps ? body.maps : [];
+  } catch {
+    return [];
+  }
+}
+
+/** One project map, read and checked like an imported file. */
+export async function loadProjectMap(id: string): Promise<ParseResult> {
+  try {
+    const response = await fetch(`/__editor/map?id=${encodeURIComponent(id)}`);
+    if (!response.ok) return { ok: false, error: 'not-a-map', detail: String(response.status) };
+    return parseMapDocument(JSON.parse(await response.text()) as unknown);
+  } catch {
+    return { ok: false, error: 'not-a-map', detail: 'network' };
+  }
+}
+
+/** author-game-maps, dev server only: the editor's current view becomes the saved map's thumbnail. */
+export async function saveThumbnail(id: string, dataUrl: string): Promise<{ ok: true; file: string } | { ok: false; reason: string }> {
+  try {
+    const response = await fetch(`/__editor/thumbnail?id=${encodeURIComponent(id)}`, { method: 'POST', headers: { 'content-type': 'text/plain' }, body: dataUrl });
     const body = (await response.json()) as { ok?: boolean; file?: string; reason?: string };
     if (response.ok && body.ok && body.file) return { ok: true, file: body.file };
     return { ok: false, reason: body.reason ?? String(response.status) };
-  } catch (error) {
-    return { ok: false, reason: error instanceof Error ? error.message : 'network' };
+  } catch {
+    return { ok: false, reason: 'network' };
   }
 }

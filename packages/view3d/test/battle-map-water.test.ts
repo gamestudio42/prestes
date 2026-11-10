@@ -7,18 +7,17 @@ import { BattleMapLayer } from '../src/battle-map-layer';
 afterEach(() => setActiveMap(VILA_MILITAR));
 
 describe('battle map water', () => {
-  it('the Serra-rio river is one mesh whose edge follows the bank line', () => {
-    const map = battleMap('serra-rio');
+  it('the test map stream is drawn inside its bank line', () => {
+    const map = battleMap('campo-de-provas');
     setActiveMap(map);
     const layer = new BattleMapLayer(map);
     const meshes: THREE.Mesh[] = [];
     layer.group.traverse((object) => {
       if (object instanceof THREE.Mesh && object.name === 'water:deep') meshes.push(object);
     });
-    expect(meshes).toHaveLength(1);
-    const position = meshes[0]!.geometry.getAttribute('position');
+    expect(meshes.length).toBeGreaterThan(0);
     // Every vertex is inside the river or on its bank, never a cell's width off it.
-    for (let index = 0; index < position.count; index += 1) {
+    for (const position of meshes.map((mesh) => mesh.geometry.getAttribute('position'))) for (let index = 0; index < position.count; index += 1) {
       const x = position.getX(index);
       const y = position.getZ(index);
       if (Math.abs(x) > 195 || Math.abs(y) > 195) continue;

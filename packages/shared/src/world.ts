@@ -305,6 +305,18 @@ function segmentCrossesCover(
   cover: { x: number; y: number; halfWidth: number; halfDepth: number; rotation?: number },
   margin = 0,
 ): boolean {
+  return segmentCoverSpan(ax, ay, bx, by, cover, margin) !== null;
+}
+
+/** The share of the segment (enter, leave in 0..1) inside the cover, or null when it misses. */
+function segmentCoverSpan(
+  ax: number,
+  ay: number,
+  bx: number,
+  by: number,
+  cover: { x: number; y: number; halfWidth: number; halfDepth: number; rotation?: number },
+  margin = 0,
+): [number, number] | null {
   // A cheap reject first: the segment's box against the cover's reach.
   const reach = cover.halfWidth + cover.halfDepth + margin;
   if (
@@ -313,7 +325,7 @@ function segmentCrossesCover(
     cover.y + reach < Math.min(ay, by) ||
     cover.y - reach > Math.max(ay, by)
   ) {
-    return false;
+    return null;
   }
   const { cos, sin } = coverAxes(cover);
   const halfWidth = cover.halfWidth + margin;
@@ -329,7 +341,7 @@ function segmentCrossesCover(
     [startY, endY - startY, halfDepth],
   ] as const) {
     if (Math.abs(delta) < 1e-12) {
-      if (Math.abs(origin) > half) return false;
+      if (Math.abs(origin) > half) return null;
       continue;
     }
     let near = (-half - origin) / delta;
@@ -337,10 +349,10 @@ function segmentCrossesCover(
     if (near > far) [near, far] = [far, near];
     enter = Math.max(enter, near);
     leave = Math.min(leave, far);
-    if (enter > leave) return false;
+    if (enter > leave) return null;
   }
   // Touching only at an end point does not count, as with the sampling.
-  return leave > 0 && enter < 1 && leave - enter > 1e-9;
+  return leave > 0 && enter < 1 && leave - enter > 1e-9 ? [enter, leave] : null;
 }
 
 export function isLineBlocked(
@@ -352,27 +364,30 @@ export function isLineBlocked(
   obstacles: readonly { x: number; y: number; halfWidth: number; halfDepth: number; height: number }[] = [],
   eyeHeight: number = EYE_HEIGHTS.standing,
   targetEyeHeight: number = eyeHeight,
+  /** garrison-and-assault 1.5: a cover either end stands inside (a man in the matriz's tower), not in the way. */
+  ignoreA?: number,
+  ignoreB?: number,
 ): boolean {
   const startHeight = terrainHeightAt(ax, ay) + eyeHeight;
   const endHeight = terrainHeightAt(bx, by) + targetEyeHeight;
   const lineHeightAt = (t: number): number => startHeight + (endHeight - startHeight) * t;
-  if (
-    someCoverAlong(
-      covers,
-      ax,
-      ay,
-      bx,
-      by,
-      (cover) => cover.height >= eyeHeight && segmentCrossesCover(ax, ay, bx, by, cover),
-    )
-  ) {
+  // garrison-and-assault 1.3: with a man above the ground at either end (an
+  // upper window, a loft, a tower) a wall or hedge blocks only where the line
+  // runs below its top, so it is seen over both ways; men on the ground keep
+  // the plain rule (anything as tall as the eye blocks).
+  const raised = Math.max(eyeHeight, targetEyeHeight) > EYE_HEIGHTS.standing + 1e-9;
+  const blocks = (cover: { id?: number; x: number; y: number; halfWidth: number; halfDepth: number; rotation?: number; height: number }): boolean => {
+    if (cover.id !== undefined && (cover.id === ignoreA || cover.id === ignoreB)) return false;
+    if (!raised) return cover.height >= eyeHeight && segmentCrossesCover(ax, ay, bx, by, cover);
+    const span = segmentCoverSpan(ax, ay, bx, by, cover);
+    if (!span) return false;
+    const at = (t: number) => eyeHeight + (targetEyeHeight - eyeHeight) * t;
+    return cover.height >= Math.min(at(span[0]), at(span[1]));
+  };
+  if (someCoverAlong(covers, ax, ay, bx, by, blocks)) {
     return true;
   }
-  if (
-    obstacles.some(
-      (obstacle) => obstacle.height >= eyeHeight && segmentCrossesCover(ax, ay, bx, by, obstacle),
-    )
-  ) {
+  if (obstacles.some(blocks)) {
     return true;
   }
   // Battle maps sample the ground every 2 m (its heightfield spacing); the

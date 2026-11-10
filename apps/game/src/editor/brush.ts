@@ -6,8 +6,7 @@ import {
   mapSide,
   MAX_HEIGHT,
   MIN_HEIGHT,
-  type EditableMap,
-} from '@prestes/shared';
+  type EditableMap, vegetationCell } from '@prestes/shared';
 import type { DirtyBox, RasterLayer, ToolId, ToolSettings } from './store';
 
 /**
@@ -120,7 +119,7 @@ export class Stroke {
       this.layer === 'vegetation'
         ? this.erase
           ? 0
-          : this.settings.vegetation
+          : vegetationCell(this.settings.vegetation, this.settings.vegetationDensity)
         : this.erase || this.tool === 'erase'
           ? groundMaterialIndex(this.map.baseMaterial)
           : groundMaterialIndex(this.settings.material);

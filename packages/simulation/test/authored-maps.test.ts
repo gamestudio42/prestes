@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
+  authoredMapIndex,
+  battleMap,
   compileMapDocument,
+  loadAuthoredMap,
   createEditableMap,
   registerBattleMap,
   toMapDocument,
@@ -31,6 +34,14 @@ describe('authored maps', () => {
     expect(run()).toBe(run());
   });
 
+  it('author-game-maps 5.1: the light is visual only, two lights give the same hash', () => {
+    const run = (time: number, bearing: number) => {
+      const document = { ...toMapDocument(sampleMap()), light: { time, bearing } };
+      return new SimulationEngine({ seed: 1922, scenario: 'battle3v3', battleMap: compileMapDocument(document) }).runTicks(600).hash;
+    };
+    expect(run(7, 90)).toBe(run(17, 270));
+  });
+
   it('the worker host compiles a playtest document and starts the 3v3 on it', () => {
     const messages: WorkerResponse[] = [];
     const port: PortLike = { postMessage: (message) => messages.push(message) };
@@ -47,6 +58,24 @@ describe('authored maps', () => {
       expect(Math.max(...column.map((unit) => unit.y))).toBeGreaterThan(60);
     }
     unregisterBattleMap('authored-sample');
+  });
+
+  // author-game-maps 1.3: a project map is fetched when asked for, then started from its document like the playtest.
+  it('a project map loads on demand and the worker host starts the 3v3 from its document', async () => {
+    // The test setup already loaded the test map; any indexed map loads the same way.
+    const entry = authoredMapIndex()[0]!;
+    const document = await loadAuthoredMap(entry.id);
+    expect(document?.id).toBe(entry.id);
+    expect(battleMap(entry.id).id).toBe(entry.id);
+    const messages: WorkerResponse[] = [];
+    const port: PortLike = { postMessage: (message) => messages.push(message) };
+    const host = createSimulationHost(
+      (seed, sandbox, training, opposition, bounding, scenario, map) => new SimulationEngine({ seed, sandbox, training, opposition, bounding, scenario, battleMap: map }),
+      port,
+    );
+    host.handle({ type: 'start', seed: 1, scenario: 'battle3v3', battleMap: entry.id, mapDocument: document! });
+    expect(messages[0]?.type).toBe('ready');
+    unregisterBattleMap(entry.id);
   });
 
   it('a registered map is played under its id', () => {

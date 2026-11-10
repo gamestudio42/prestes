@@ -1,6 +1,8 @@
 import {
   compileMapDocument,
+  coverPieceOf,
   coverPreview,
+  positionsFor,
   createEditableMap,
   setActiveMap,
   type BattleMap,
@@ -9,6 +11,7 @@ import {
   type GroundMaterialId,
   type LineKind,
   type MapProblem,
+  type PositionDef,
   type RoadType,
   type TrenchDepth,
   type TrenchFacing,
@@ -54,6 +57,8 @@ export interface ToolSettings {
   material: GroundMaterialId;
   /** 0 clears, else VEGETATION_KINDS index + 1. */
   vegetation: number;
+  /** author-game-maps: how thick the painted plants are drawn (0 normal, 1 sparse, 2 dense); the look only. */
+  vegetationDensity: number;
   heightValue: number;
   seed: number;
   roadType: RoadType;
@@ -75,6 +80,8 @@ export interface ToolSettings {
   treeBiome: TreeBiome;
   treeDensity: TreeDensity;
   treeSpecies: string;
+  /** author-game-maps: the species the scatter brush plants; the biome only fills this list when chosen. */
+  treeMix: string[];
   objectType: string;
   rotation: number;
   scale: number;
@@ -135,9 +142,16 @@ export function replaceCommand(before: EditableMap, after: EditableMap): Command
   const old = cloneMap(before);
   const next = cloneMap(after);
   return {
-    apply: (map) => Object.assign(map, cloneMap(next)),
-    revert: (map) => Object.assign(map, cloneMap(old)),
+    apply: (map) => replaceInto(map, cloneMap(next)),
+    revert: (map) => replaceInto(map, cloneMap(old)),
   };
+}
+
+/** Makes `map` the same as `source`, optional fields the source lacks (mission, enemyForces) included. */
+function replaceInto(map: EditableMap, source: EditableMap): void {
+  const target = map as unknown as Record<string, unknown>;
+  for (const key of Object.keys(target)) if (!(key in source)) delete target[key];
+  Object.assign(map, source);
 }
 
 export function cloneMap(map: EditableMap): EditableMap {
@@ -181,6 +195,7 @@ export class EditorStore {
     shape: 'round',
     material: 'dry-grass',
     vegetation: 2,
+    vegetationDensity: 0,
     heightValue: 2,
     seed: 1924,
     roadType: 'dirt-road',
@@ -200,6 +215,7 @@ export class EditorStore {
     treeBiome: 'cerrado',
     treeDensity: 'medium',
     treeSpecies: 'cerrado-tree',
+    treeMix: ['cerrado-tree', 'buriti', 'bush'],
     objectType: 'boulder',
     rotation: 0,
     scale: 1,
@@ -210,6 +226,7 @@ export class EditorStore {
   /** The cover piece under the pointer while the cover overlay is on (its preview key). */
   coverHover: string | null = null;
   private preview: { map: BattleMap; preview: CoverPreview } | null = null;
+  private positionCache: { map: BattleMap; positions: readonly PositionDef[] } | null = null;
   selection: SelectionItem[] = [];
   problems: MapProblem[] | null = null;
   saveState: SaveState = 'saved';
@@ -239,6 +256,24 @@ export class EditorStore {
   coverPreview(): CoverPreview {
     if (this.preview?.map !== this.compiled) this.preview = { map: this.compiled, preview: coverPreview(this.compiled) };
     return this.preview.preview;
+  }
+
+  /** garrison-and-assault 4.6: the enterable positions of the open map, as the battle builds them. */
+  positions(): readonly PositionDef[] {
+    if (this.positionCache?.map !== this.compiled) this.positionCache = { map: this.compiled, positions: positionsFor(this.compiled) };
+    return this.positionCache.positions;
+  }
+
+  /** The position a placed object or a drawn trench makes (null if it makes none). */
+  positionOf(kind: 'object' | 'trench', id: number): PositionDef | null {
+    return (
+      this.positions().find((position) =>
+        position.coverIds.some((coverId) => {
+          const piece = coverPieceOf(this.compiled, coverId);
+          return piece?.kind === kind && piece.id === id;
+        }),
+      ) ?? null
+    );
   }
 
   setCoverHover(key: string | null): void {

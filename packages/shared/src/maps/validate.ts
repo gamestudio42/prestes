@@ -3,6 +3,7 @@ import { findPath, isWalkable } from '../pathfinding';
 import { insideDeploymentArea, polygonsOverlap } from './deployment-areas';
 import { isPointBlockedByCovers } from '../world';
 import { setActiveMap } from './catalog';
+import { positionsFor } from './positions';
 import { isDeepWater } from './runtime';
 import type { CoverPoint } from '../protocol';
 import type { BattleMap, Polygon } from './types';
@@ -113,6 +114,33 @@ export function validateDeploymentAreas(map: BattleMap): string[] {
   const { column, legalist } = map.deployment;
   if (column.area?.length >= 3 && legalist.area?.length >= 3 && polygonsOverlap(column.area, legalist.area)) {
     errors.push(`${map.id}: the column and legalist deployment areas overlap`);
+  }
+  return errors;
+}
+
+/**
+ * garrison-and-assault 1.2: every position's entrances lie on open ground
+ * inside the bounds and are reachable from both sides' deployment. Leaves
+ * `map` active, as validateBattleMap does.
+ */
+export function validatePositions(map: BattleMap): string[] {
+  const errors: string[] = [];
+  setActiveMap(map);
+  const { minX, minY, maxX, maxY } = map.bounds;
+  const starts = [map.deployment.column.sections[1] ?? map.deployment.column.sections[0], map.deployment.legalist.sections[1] ?? map.deployment.legalist.sections[0]];
+  for (const position of positionsFor(map)) {
+    for (const [index, entrance] of position.entrances.entries()) {
+      const where = `${map.id}: ${position.kind} ${position.id} entrance ${index + 1} at (${entrance.x.toFixed(1)}, ${entrance.y.toFixed(1)})`;
+      if (entrance.x < minX || entrance.x > maxX || entrance.y < minY || entrance.y > maxY) errors.push(`${where} leaves the bounds`);
+      else if (isDeepWater(entrance.x, entrance.y) || isPointBlockedByCovers(entrance.x, entrance.y, map.covers, 0)) errors.push(`${where} is not on open ground`);
+      else if (!starts.every((start) => start !== undefined && findPath(start, entrance, map.covers).length > 0)) errors.push(`${where} is not reachable from both sides`);
+    }
+    // A port is the defender's place just inside his own walls: no other work may cover it.
+    const own = new Set(position.coverIds);
+    const others = map.covers.filter((cover) => !own.has(cover.id));
+    for (const [index, port] of position.ports.entries()) {
+      if (isPointBlockedByCovers(port.x, port.y, others, 0)) errors.push(`${map.id}: ${position.kind} ${position.id} port ${index + 1} lies inside another work`);
+    }
   }
   return errors;
 }
