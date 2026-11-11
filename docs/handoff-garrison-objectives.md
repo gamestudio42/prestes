@@ -28,6 +28,21 @@ cold. Keep this file current as tasks close; delete it once
   and ambush still face the nearest enemy, seen or not (the AI's defend
   needs a facing of its own before fog can apply there).
 
+- **Change applied: refine-battle-controls-and-content (12/12, 2026-11-11).**
+  Queued orders (Shift, chips, a localized refusal), crossable barbed wire
+  (3 health once per crossing, no cover, no sight block), double-click
+  centring on the Troop Summary and squad cards, a leave control with a
+  confirmation, no in-battle codex, and the `prestes-not-at-fort` compendium
+  entry removed. Gates: `pnpm check` passes typecheck, eslint, locales,
+  content and maps, with the known parallel-run simulation flakes (the same
+  files pass alone; `PRESTES_PREVIEW_GUARD=2` on this machine); e2e 128/130,
+  the desk label-gap failure pre-existing at `6412ac9` and the smoke codex
+  step fixed after the run (passes alone); `openspec validate --strict`
+  passes. **Uncommitted on purpose:** `paiolzinho.map.json` and
+  `tools/determinism-golden.json` — the wire golden was recorded against the
+  author's in-progress map; commit or re-record both once the map settles.
+  Archive the change when the user asks.
+
 ## Authoring objectives (for the user)
 
 1. Open the editor (the desk's theodolite, or `pnpm dev` and
