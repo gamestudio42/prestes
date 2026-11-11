@@ -15,7 +15,9 @@ const EXCLUDED = ['**/node_modules/**', 'tests/e2e/**'];
 const shared = {
   environment: 'node' as const,
   setupFiles: ['tests/setup-test-map.ts'],
-  testTimeout: 20_000,
+  // A guard against a hung test, not a speed check: whole battles take 5 to
+  // 10 s alone and three times that on a loaded machine.
+  testTimeout: 60_000,
 };
 
 export default defineConfig({
