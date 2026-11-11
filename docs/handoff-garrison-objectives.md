@@ -12,19 +12,16 @@ cold. Keep this file current as tasks close; delete it once
   (+15, ~19, -9); no main spec names a removed map any more (terrain
   hill and garrison scenario fixed after the sync); `openspec validate
   --specs` 23/23.
-- **Current change: add-map-objectives (17/18, started 2026-11-10).** Only
-  4.3, the user's hand check, is open. Everything else is done: data (1.1–1.4),
-  simulation (2.1–2.6), the presentation (3.1–3.4: flags/outline/ring, strip
-  and clock, setup time limit and objectives, end panel), the report with a
-  player that plays the objectives (4.1) and the gates (4.2: check, build,
-  bundle, determinism, tick budget and validate pass; e2e 125/127, with the
-  desk label-gap failure proven pre-existing at `6412ac9` and a tactical
-  tooltip flake that passes alone). NEXT STEP: 4.3, the user plays one battle
-  for the objectives on each battle map and writes findings in
-  `docs/status.md`, then the change can be archived. The user will author the
-  objectives of `paiolzinho` in the editor (see "Authoring objectives" below)
-  before that check. Work in small steps, commit each, and
-  update this file after each. Open points it inherits: defend
+- **Current change: add-map-objectives (18/18, complete, 2026-11-11).**
+  Everything is done: data (1.1–1.4), simulation (2.1–2.6), the presentation
+  (3.1–3.4), the report (4.1), the gates (4.2) and the user's hand check
+  (4.3: the author placed the objectives on the maps, `paiolzinho` included,
+  played the battles for them and confirmed; findings in `docs/status.md`).
+  NEXT STEP: archive it with the user's go-ahead (`openspec-archive-change`:
+  sync the deltas into the main specs, move it to `archive/`). Its goldens:
+  campo-de-provas `b3e2538f`, paiolzinho `d1f0845d`, mixed `9fa6a458`. Work in
+  small steps, commit each, and update this file after each. Open points it
+  inherits: defend
   and ambush still face the nearest enemy, seen or not (the AI's defend
   needs a facing of its own before fog can apply there).
 
@@ -177,7 +174,7 @@ deployment" can fail in the full parallel vitest run and passes alone.
 Other changes: machine-gun-fire-feedback 12/13 (only gates + the user's hand
 check), polish-menu-desk 31/35 (Aseprite sprites, needs the user's
 Aseprite window; task 6.6 done 2026-11-10: the open book redrawn in CSS, user approved; see its Apply note), retire-bootcamp archived 2026-11-10,
-add-map-objectives 17/18 (in progress) and video-tutorial-manual 0/19 (after
+add-map-objectives 18/18 (complete) and video-tutorial-manual 0/19 (after
 author-game-maps).
 
 ### Built this session outside the task list (all asked by the user while authoring)
