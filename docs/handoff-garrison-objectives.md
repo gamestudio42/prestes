@@ -28,12 +28,10 @@ cold. Keep this file current as tasks close; delete it once
 
 The notes below are from finalizing author-game-maps (history).
 
-- Branch `refine-battle-maps`. Last commit `46ae94b`. **Uncommitted, all
-  in the working tree:** polish-menu-desk 6.6 (open book in CSS), 3.6 (old
-  maps removed), the bound spacing fix, "seen enemies only" for cover slots,
-  section 7 closed, the retire-bootcamp archive. Commit only when the user
-  asks; never push, merge, rebase or force-push. The project stays local
-  (no remote, no Pages).
+- Branch `refine-battle-maps`. Last commit `6412ac9` holds everything up to
+  the author-game-maps archive (working tree clean). Commit only when the
+  user asks; never push, merge, rebase or force-push. The project stays
+  local (no remote, no Pages).
 - **Next steps to finalize author-game-maps (34/36; open: 5.4 and 6.3, the user's hand checks):**
   1. (done 2026-11-10, see its Apply note) 6.0: MODIFIED deltas (full requirement text, map names replaced by the
      test map `campo-de-provas` features, or REMOVED with a reason) for the
