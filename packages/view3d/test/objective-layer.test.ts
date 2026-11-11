@@ -56,8 +56,8 @@ describe('objective layer', () => {
     const layer = new ObjectiveLayer();
     layer.update(
       snapshot([
-        { id: 1, owner: 'column', progress: { column: 0, legalist: 0 }, contested: false },
-        { id: 2, owner: 'legalist', progress: { column: 0, legalist: 0 }, contested: false },
+        { id: 1, owner: 'column', progress: { column: 0, legalist: 0 }, contested: false, value: 2, name: { en: 'Objective', 'pt-BR': 'Objetivo' } },
+        { id: 2, owner: 'legalist', progress: { column: 0, legalist: 0 }, contested: false, value: 2, name: { en: 'Objective', 'pt-BR': 'Objetivo' } },
       ]),
       80,
     );
@@ -82,7 +82,7 @@ describe('objective layer', () => {
 
   it('fills the capture ring of the side taking the objective', () => {
     const layer = new ObjectiveLayer();
-    layer.update(snapshot([{ id: 1, owner: 'neutral', progress: { column: 40, legalist: 0 }, contested: false }]), 80);
+    layer.update(snapshot([{ id: 1, owner: 'neutral', progress: { column: 40, legalist: 0 }, contested: false, value: 2, name: { en: 'Objective', 'pt-BR': 'Objetivo' } }]), 80);
     const ring = named(layer, 'objective-capture-ring')[0]!;
     expect(ring.visible).toBe(true);
     expect(color(ring)).toBe(PALETTE.factions.column);
@@ -90,7 +90,7 @@ describe('objective layer', () => {
     expect(layer.marks[0]).toMatchObject({ owner: 'neutral', side: 'column', progress: 0.4 });
 
     // Empty again: the ring goes away.
-    layer.update(snapshot([{ id: 1, owner: 'neutral', progress: { column: 0, legalist: 0 }, contested: false }]), 80);
+    layer.update(snapshot([{ id: 1, owner: 'neutral', progress: { column: 0, legalist: 0 }, contested: false, value: 2, name: { en: 'Objective', 'pt-BR': 'Objetivo' } }]), 80);
     expect(named(layer, 'objective-capture-ring')[0]!.visible).toBe(false);
     layer.dispose();
   });

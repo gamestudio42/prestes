@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { mapText } from './SkirmishMaps';
-import { rosterMen, SECTION_TYPES, type BattleMap, type BattleMapId } from '@prestes/shared';
+import { rosterMen, SECTION_TYPES, TIME_LIMITS, type BattleMap, type BattleMapId } from '@prestes/shared';
 import { translate, type Locale, type MessageKey } from '@prestes/content';
 import { Troop as Users } from '../icons';
 import { moveFocus, RosterBuilder } from './RosterBuilder';
@@ -104,22 +104,80 @@ export function SkirmishSetup({ locale, setup, maps, onChange, onStart, onBack }
           </div>
           <figure className="setup-map-detail">
             {missing.has(map.id) ? null : (
-              <img
-                className="setup-map-preview"
-                src={preview(map.id)}
-                width={192}
-                height={192}
-                alt={t('start.mapPreview', { name: mapText(map, 'name', locale) })}
-                draggable={false}
-                data-testid={`map-preview-${map.id}`}
-                onError={() => setMissing((current) => new Set(current).add(map.id))}
-              />
+              <div className="setup-map-frame">
+                <img
+                  className="setup-map-preview"
+                  src={preview(map.id)}
+                  width={192}
+                  height={192}
+                  alt={t('start.mapPreview', { name: mapText(map, 'name', locale) })}
+                  draggable={false}
+                  data-testid={`map-preview-${map.id}`}
+                  onError={() => setMissing((current) => new Set(current).add(map.id))}
+                />
+                {(map.objectives ?? []).map((objective) => {
+                  const spanX = map.bounds.maxX - map.bounds.minX || 1;
+                  const spanY = map.bounds.maxY - map.bounds.minY || 1;
+                  return (
+                    <span
+                      key={objective.id}
+                      className={`setup-objective-flag ${objective.owner}`}
+                      style={{
+                        left: `${((objective.flag.x - map.bounds.minX) / spanX) * 100}%`,
+                        top: `${((objective.flag.y - map.bounds.minY) / spanY) * 100}%`,
+                      }}
+                      title={objective.name[locale]}
+                      data-testid={`setup-objective-flag-${objective.id}`}
+                    />
+                  );
+                })}
+              </div>
             )}
             <figcaption>
               <strong>{mapText(map, 'name', locale)}</strong>
               <span>{mapText(map, 'description', locale)}</span>
             </figcaption>
           </figure>
+
+          <div className="setup-time-limit">
+            <h4>{t('setup.timeLimit')}</h4>
+            <div className="setup-time-buttons" role="radiogroup" aria-label={t('setup.timeLimit')}>
+              {TIME_LIMITS.map((ticks) => (
+                <button
+                  key={ticks}
+                  type="button"
+                  className={setup.timeLimit === ticks ? 'active' : ''}
+                  aria-pressed={setup.timeLimit === ticks}
+                  onClick={() => onChange({ ...setup, timeLimit: ticks })}
+                  data-testid={`time-limit-${ticks}`}
+                >
+                  {t('setup.minutes', { count: ticks / 600 })}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="setup-objectives" data-testid="setup-objectives">
+            <h4>{t('setup.objectives')}</h4>
+            {(map.objectives ?? []).length === 0 ? (
+              <p className="setup-objectives-none">{t('setup.objectiveNone')}</p>
+            ) : (
+              <ul>
+                {(map.objectives ?? []).map((objective) => (
+                  <li key={objective.id} data-testid={`setup-objective-${objective.id}`}>
+                    <span className={`setup-objective-dot ${objective.owner}`} aria-hidden="true" />
+                    <strong>{objective.name[locale]}</strong>
+                    <span>{t('setup.objectiveStarts', { owner: t(`objective.${objective.owner}` as MessageKey) })}</span>
+                    <span className="setup-objective-pips" aria-hidden="true">
+                      {Array.from({ length: objective.value }, (_, index) => (
+                        <i key={index} />
+                      ))}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
         </section>
 
         <section className="setup-column setup-force" aria-labelledby="setup-force-title">

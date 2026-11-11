@@ -4,7 +4,14 @@ import { expect, test, type Page } from '@playwright/test';
 // area outline at tactical zoom and a capture ring for every objective.
 
 interface Bridge {
-  __prestes?: { frame: () => { objectives?: Array<{ id: number; owner: string }> } | null };
+  __prestes?: {
+    frame: () => {
+      objectives?: Array<{ id: number; owner: string }>;
+      units: Array<{ id: number; faction: string; squadId: number }>;
+    } | null;
+    command: (command: unknown) => void;
+    step: (ticks: number) => void;
+  };
   __prestesScene?: {
     objectiveMarks: () => Array<{ id: number; owner: string; value: number; progress: number; side: string | null; contested: boolean; x: number; y: number }>;
     focusOn: (x: number, y: number) => void;
@@ -15,10 +22,11 @@ interface Bridge {
 const marks = (page: Page) =>
   page.evaluate(() => (window as unknown as Bridge).__prestesScene?.objectiveMarks() ?? []);
 
-async function startOn(page: Page, map: string): Promise<void> {
+async function startOn(page: Page, map: string, timeLimit?: number): Promise<void> {
   await page.goto('/');
   await page.getByTestId('open-skirmish').click();
   await page.getByTestId(`map-option-${map}`).click();
+  if (timeLimit !== undefined) await page.getByTestId(`time-limit-${timeLimit}`).click();
   await page.getByTestId('start-battle-3v3').click();
   await expect(page.getByTestId('hud')).toBeVisible();
   await page.getByTestId('start-battle').click();
@@ -64,4 +72,58 @@ test('draws the flags, owners and tactical outline of the test map objectives', 
     await page.waitForTimeout(1200);
     await page.locator('canvas').first().screenshot({ path });
   }
+});
+
+// add-map-objectives 3.2: the strip shows the owner the simulation has, and the clock runs.
+test('the objective strip follows an owner change and shows the clock', async ({ page }) => {
+  await startOn(page, 'campo-de-provas', 9000);
+  await expect(page.getByTestId('objective-strip')).toBeVisible();
+  await expect(page.getByTestId('objective-icon-3')).toHaveAttribute('data-owner', 'legalist');
+  await expect(page.getByTestId('battle-clock')).toHaveText('15:00');
+  // add-map-objectives 3.2: the tooltip is localized, PT-BR as well as EN.
+  await page.getByTestId('hud-language-select').selectOption('pt-BR');
+  await expect(page.getByTestId('objective-icon-3')).toHaveAttribute('title', 'Igreja, valor 3');
+  await page.getByTestId('hud-language-select').selectOption('en');
+
+  // The column walks onto the bridge; the strip takes its colour.
+  await page.evaluate(() => {
+    const bridge = (window as unknown as Bridge).__prestes!;
+    const units = bridge.frame()!.units.filter((unit) => unit.faction === 'column').map((unit) => unit.id);
+    bridge.command({ type: 'move', unitIds: units, to: { x: 60, y: 7 } });
+    bridge.step(1500);
+  });
+  await expect.poll(async () => page.getByTestId('objective-icon-1').getAttribute('data-owner'), { timeout: 90_000 }).toBe('column');
+  await expect(page.getByTestId('battle-clock')).not.toHaveText('15:00');
+});
+
+// add-map-objectives 3.3: the time limit and the objectives before the battle.
+test('the setup screen offers the time limit and the objectives of the field', async ({ page }) => {
+  await page.goto('/');
+  await page.getByTestId('open-skirmish').click();
+  await page.getByTestId('map-option-campo-de-provas').click();
+  await expect(page.getByTestId('time-limit-9000')).toBeVisible();
+  await page.getByTestId('time-limit-9000').click();
+  await expect(page.getByTestId('time-limit-9000')).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByTestId('setup-objectives').locator('li')).toHaveCount(5);
+  await expect(page.getByTestId('setup-objective-3')).toContainText('Church');
+  await expect(page.locator('[data-testid^="setup-objective-flag-"]')).toHaveCount(5);
+  await page.getByTestId('start-battle-3v3').click();
+  await expect(page.getByTestId('hud')).toBeVisible();
+  await expect(page.getByTestId('battle-clock')).toHaveText('15:00');
+});
+
+// add-map-objectives 3.4: the clock ends the battle and the panel says it was the objectives.
+test('the end panel says the battle was decided on the objectives', async ({ page }) => {
+  await page.goto('/');
+  await page.getByTestId('open-skirmish').click();
+  await page.getByTestId('map-option-campo-de-provas').click();
+  await page.getByTestId('time-limit-9000').click();
+  await page.getByTestId('start-battle-3v3').click();
+  await expect(page.getByTestId('hud')).toBeVisible();
+  await page.getByTestId('start-battle').click();
+  await page.evaluate(() => (window as unknown as Bridge).__prestes!.step(9000));
+  await expect(page.getByTestId('battle-end')).toBeVisible({ timeout: 90_000 });
+  await expect(page.getByTestId('battle-end-decided')).toBeVisible();
+  await expect(page.getByTestId('battle-end-objectives').locator('tbody tr')).toHaveCount(5);
+  await expect(page.getByTestId('battle-end-objective-total')).toBeVisible();
 });

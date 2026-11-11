@@ -2,8 +2,10 @@ import {
   battleMap as findBattleMap,
   DEFAULT_BATTLE_MAP,
   DEFAULT_ROSTER,
+  DEFAULT_TIME_LIMIT,
   hasBattleMap,
   isSectionTypeId,
+  TIME_LIMITS,
   validateRoster,
   type BattleMapId,
   type BattleRosters,
@@ -23,12 +25,19 @@ export interface SkirmishSetup {
   map: BattleMapId;
   roster: Roster;
   enemy: EnemyChoice;
+  /** add-map-objectives 3.3: the battle's time limit in ticks (one of TIME_LIMITS). */
+  timeLimit: number;
 }
 
 export const SETUP_STORAGE_KEY = 'prestes.roster.v1';
 
 export function defaultSetup(): SkirmishSetup {
-  return { map: DEFAULT_BATTLE_MAP, roster: { sections: [...DEFAULT_ROSTER.sections] }, enemy: { kind: 'drawn' } };
+  return {
+    map: DEFAULT_BATTLE_MAP,
+    roster: { sections: [...DEFAULT_ROSTER.sections] },
+    enemy: { kind: 'drawn' },
+    timeLimit: DEFAULT_TIME_LIMIT,
+  };
 }
 
 function readRoster(value: unknown): Roster | null {
@@ -50,9 +59,14 @@ export function parseSetup(raw: string | null): SkirmishSetup {
     return fallback;
   }
   if (!data || typeof data !== 'object') return fallback;
-  const value = data as { map?: unknown; roster?: unknown; enemy?: unknown };
+  const value = data as { map?: unknown; roster?: unknown; enemy?: unknown; timeLimit?: unknown };
   const map = typeof value.map === 'string' && hasBattleMap(value.map) ? value.map : fallback.map;
   const roster = readRoster(value.roster) ?? fallback.roster;
+  // add-map-objectives 3.3: only one of the game's time limits is kept.
+  const timeLimit =
+    typeof value.timeLimit === 'number' && (TIME_LIMITS as readonly number[]).includes(value.timeLimit)
+      ? value.timeLimit
+      : fallback.timeLimit;
   let enemy: EnemyChoice = fallback.enemy;
   const saved = value.enemy as { kind?: unknown; index?: unknown; roster?: unknown } | undefined;
   if (saved?.kind === 'preset' && typeof saved.index === 'number') {
@@ -62,7 +76,7 @@ export function parseSetup(raw: string | null): SkirmishSetup {
     const built = readRoster(saved.roster);
     if (built) enemy = { kind: 'built', roster: built };
   }
-  return { map, roster, enemy };
+  return { map, roster, enemy, timeLimit };
 }
 
 export function loadSetup(): SkirmishSetup {

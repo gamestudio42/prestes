@@ -192,6 +192,8 @@ export function Hud({
         speed={speed}
         sandboxOpen={sandboxOpen}
         deploying={deploying}
+        objectives={frame?.objectives ?? []}
+        {...(frame?.clock ? { clock: frame.clock } : {})}
         onLocaleChange={onLocaleChange}
         onCameraBand={onCameraBand}
         onSetSpeed={onSetSpeed}

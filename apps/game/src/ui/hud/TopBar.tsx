@@ -1,5 +1,6 @@
 import { Camera, PostEffect as Contrast, Eye, EyeOff, Languages, Pause, Play } from '../icons';
 import type { Locale } from '@prestes/content';
+import type { ObjectiveSnapshot } from '@prestes/shared';
 import type { CameraBand } from '@prestes/view3d';
 import { IconButton } from './IconButton';
 import { ICONS } from './orderMeta';
@@ -15,6 +16,9 @@ interface TopBarProps {
   sandboxOpen: boolean;
   /** add-deployment-phase 3.1: no time passes in deployment, so the speed controls are hidden. */
   deploying?: boolean;
+  /** add-map-objectives 3.2: the objectives and the battle clock, on maps with objectives. */
+  objectives?: readonly ObjectiveSnapshot[];
+  clock?: { tick: number; limit: number };
   onLocaleChange: (locale: Locale) => void;
   onCameraBand: (band: CameraBand) => void;
   onSetSpeed: (speed: 0 | 1 | 2 | 4 | 8) => void;
@@ -36,6 +40,8 @@ export function TopBar({
   speed,
   sandboxOpen,
   deploying = false,
+  objectives = [],
+  clock,
   onLocaleChange,
   onCameraBand,
   onSetSpeed,
@@ -48,6 +54,10 @@ export function TopBar({
   const bandKey =
     band === 'strategic' ? 'hud.strategic' : band === 'tactical' ? 'hud.tactical' : 'hud.transition';
   const postKey = postStrong ? 'hud.postStrong' : 'hud.postClean';
+  const clockLeft = clock === undefined ? null : Math.max(0, Math.ceil((clock.limit - clock.tick) / 10));
+  const clockText =
+    clockLeft === null ? '' : `${Math.floor(clockLeft / 60)}:${(clockLeft % 60).toString().padStart(2, '0')}`;
+  const objectiveName = (objective: ObjectiveSnapshot) => objective.name[locale];
 
   return (
     <header className="hud-top" data-testid="hud">
@@ -84,6 +94,43 @@ export function TopBar({
           </button>
         </div>
       </div>
+
+      {objectives.length > 0 ? (
+        <div className="hud-rail objective-rail">
+          <span className="hud-band-value">{t('hud.objectives')}</span>
+          <div className="objective-strip" data-testid="objective-strip">
+            {objectives.map((objective) => {
+              const tip = t('hud.objectiveTip', { name: objectiveName(objective), value: objective.value });
+              return (
+                <span
+                  key={objective.id}
+                  className={`objective-icon ${objective.owner}${objective.contested ? ' contested' : ''}`}
+                  data-testid={`objective-icon-${objective.id}`}
+                  data-owner={objective.owner}
+                  data-contested={objective.contested ? 'true' : 'false'}
+                  title={tip}
+                  aria-label={`${tip}${objective.contested ? ` (${t('hud.contested')})` : ''}`}
+                  role="img"
+                >
+                  <span className="objective-initial" aria-hidden="true">
+                    {objectiveName(objective).slice(0, 1)}
+                  </span>
+                  <span className="objective-pips" aria-hidden="true">
+                    {Array.from({ length: objective.value }, (_, index) => (
+                      <i key={index} />
+                    ))}
+                  </span>
+                </span>
+              );
+            })}
+          </div>
+          {clockText ? (
+            <span className="hud-clock" data-testid="battle-clock" title={t('hud.clock', { time: clockText })}>
+              {clockText}
+            </span>
+          ) : null}
+        </div>
+      ) : null}
 
       <div className="hud-actions">
         <label className="language-control">

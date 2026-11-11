@@ -236,4 +236,16 @@ latest. Goldens re-recorded. No saved data.
   clock). Screenshots reviewed on the test map (church, bridge, houses);
   `paiolzinho` has no objectives yet (`check:maps` warns), so nothing to
   review there.
+- 3.2/3.3/3.4 (2026-11-10): the HUD gets the objective names and values in the
+  frame (`ObjectiveSnapshot.value` and `name`), so the strip, the setup screen
+  and the end panel all read one source. The top bar draws the objective strip
+  (initial, owner colour, value pips, contested pulse, localized tooltip) and
+  the mm:ss clock. The setup screen saves a 15/20/30-minute `timeLimit` with
+  the other choices and shows the field's objectives over its preview from the
+  map bounds; the limit reaches the worker through `GameClientOptions`.
+  The end panel shows draw, the decided-by line (annihilation, broken, all
+  objectives, the limit, draw), the values and the objectives table. E2e:
+  owner change through the strip, localised tooltip, 15:00 clock, five
+  objectives and flags before the battle, and a battle ended on the clock with
+  the objectives table.
 

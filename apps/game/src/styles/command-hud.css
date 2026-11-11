@@ -88,8 +88,7 @@
 }
 
 .hud-top {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
+  display: flex;
   align-items: center;
   gap: 18px;
   flex-wrap: nowrap;
@@ -452,4 +451,86 @@
   .sandbox-panel {
     top: 88px;
   }
+}
+
+/* add-map-objectives 3.2: the objective strip and the battle clock. */
+.objective-rail {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.objective-strip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.objective-icon {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  width: 24px;
+  padding: 2px 0 3px;
+  border: 1px solid var(--hud-line);
+  background: #1c140d;
+  color: #ead9bb;
+  font-size: 12px;
+  line-height: 1;
+}
+
+.objective-icon.neutral {
+  color: #e4dcc2;
+  border-color: #7a6f57;
+}
+
+.objective-icon.column {
+  color: #c9b978;
+  border-color: #8f7f4a;
+}
+
+.objective-icon.legalist {
+  color: #8fa4bd;
+  border-color: #4d6076;
+}
+
+.objective-icon .objective-initial {
+  font-weight: 700;
+}
+
+.objective-icon .objective-pips {
+  display: flex;
+  gap: 1px;
+}
+
+.objective-icon .objective-pips i {
+  display: block;
+  width: 3px;
+  height: 3px;
+  background: currentColor;
+}
+
+.objective-icon.contested {
+  animation: objective-pulse 1s steps(2, end) infinite;
+}
+
+@keyframes objective-pulse {
+  50% {
+    border-color: #d0a45c;
+    box-shadow: inset 0 0 0 1px #d0a45c;
+  }
+}
+
+.hud-clock {
+  padding: 3px 7px;
+  border: 1px solid var(--hud-line);
+  background: #1c140d;
+  color: #ead9bb;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.05em;
 }

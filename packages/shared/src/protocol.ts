@@ -1,4 +1,4 @@
-import type { BattleMapId } from './maps/types';
+import type { BattleMapId, LocalizedText } from './maps/types';
 import type { MapDocument } from './maps/document';
 import type { Gait } from './gait';
 import type { WeaponId } from './weapons';
@@ -131,6 +131,9 @@ export interface ObjectiveSnapshot {
   /** Capture progress of each side, 0-100 ticks. */
   progress: { column: number; legalist: number };
   contested: boolean;
+  /** add-map-objectives 3.2: the objective's worth (1-3) and its localized name, for the HUD. */
+  value: number;
+  name: LocalizedText;
 }
 
 export type UnitRole = 'training-enemy';

@@ -216,7 +216,7 @@ export function App() {
     saveLocale(next);
   };
 
-  const createClient = (map: BattleMapId, rosters?: BattleRosters): GameClient => {
+  const createClient = (map: BattleMapId, rosters?: BattleRosters, timeLimitTicks?: number): GameClient => {
     const client = new GameClient({
       seed: 1922,
       sandbox: true,
@@ -227,6 +227,7 @@ export function App() {
       // add-deployment-phase: every skirmish (and the editor's playtest) opens in deployment.
       deployment: true,
       ...(rosters ? { rosters } : {}),
+      ...(timeLimitTicks === undefined ? {} : { timeLimitTicks }),
       ...(playtestRef.current?.id === map
         ? { mapDocument: playtestRef.current }
         : documentsRef.current.has(map)
@@ -275,7 +276,8 @@ export function App() {
   };
 
   // The setup's forces go with its map; the editor's playtest map fields the default.
-  const handleStartBattle3v3 = (): void => startBattle(battleMapId, battleMapId === setup.map ? battleRosters(setup) : undefined);
+  const handleStartBattle3v3 = (): void =>
+    startBattle(battleMapId, battleMapId === setup.map ? battleRosters(setup) : undefined, battleMapId === setup.map ? setup.timeLimit : undefined);
 
   // author-game-maps 5.3: a campaign chapter's map plays the 3 vs 3 with the default forces.
   const handlePlayMap = (map: BattleMapId): void => {
@@ -283,13 +285,13 @@ export function App() {
     startBattle(map);
   };
 
-  const startBattle = (map: BattleMapId, rosters?: BattleRosters): void => {
+  const startBattle = (map: BattleMapId, rosters?: BattleRosters, timeLimitTicks?: number): void => {
     // An authored map not fetched yet: fetch it, then start (the document goes to the worker with the start).
     if (playtestRef.current?.id !== map && !documentsRef.current.has(map) && authoredMapIndex().some((entry) => entry.id === map)) {
       void loadAuthoredMap(map).then((document) => {
         if (!document) return;
         documentsRef.current.set(map, document);
-        startBattle(map, rosters);
+        startBattle(map, rosters, timeLimitTicks);
       });
       return;
     }
@@ -308,7 +310,7 @@ export function App() {
     setPreviewEnabled(false);
     setSpeed(DEFAULT_SPEED);
     setStarted(true);
-    createClient(map, rosters);
+    createClient(map, rosters, timeLimitTicks);
   };
 
   // add-map-editor: `?playtest` starts the editor's map straight away.

@@ -432,3 +432,119 @@
   font-size: 0.8em;
   text-align: center;
 }
+
+/* add-map-objectives 3.3: the time limit and the chosen field's objectives. */
+.setup-map-frame {
+  position: relative;
+  align-self: center;
+  width: min(192px, 100%);
+}
+
+.setup-map-frame .setup-map-preview {
+  width: 100%;
+}
+
+.setup-objective-flag {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  margin: -5px 0 0 -5px;
+  border: 1px solid #1a1610;
+  border-radius: 50%;
+}
+
+.setup-objective-flag.neutral {
+  background: #e4dcc2;
+}
+
+.setup-objective-flag.column {
+  background: #c9b978;
+}
+
+.setup-objective-flag.legalist {
+  background: #5b6f88;
+}
+
+.setup-time-limit h4,
+.setup-objectives h4 {
+  margin: 4px 0 2px;
+  color: var(--book-accent);
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.setup-time-buttons {
+  display: flex;
+  gap: 6px;
+}
+
+.setup-time-buttons button {
+  padding: 4px 10px;
+  border: 1px solid var(--book-edge);
+  background: var(--book-paper);
+  color: var(--book-ink);
+  font: inherit;
+  cursor: pointer;
+}
+
+.setup-time-buttons button.active {
+  border-color: var(--book-accent);
+  background: var(--book-accent);
+  color: var(--book-paper);
+}
+
+.setup-objectives ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.setup-objectives li {
+  display: grid;
+  grid-template-columns: 10px minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+}
+
+.setup-objective-dot {
+  width: 8px;
+  height: 8px;
+  border: 1px solid #1a1610;
+  border-radius: 50%;
+}
+
+.setup-objective-dot.neutral {
+  background: #e4dcc2;
+}
+
+.setup-objective-dot.column {
+  background: #c9b978;
+}
+
+.setup-objective-dot.legalist {
+  background: #5b6f88;
+}
+
+.setup-objective-pips {
+  display: flex;
+  gap: 1px;
+}
+
+.setup-objective-pips i {
+  display: block;
+  width: 4px;
+  height: 4px;
+  background: var(--book-accent);
+}
+
+.setup-objectives-none {
+  margin: 0;
+  font-size: 12px;
+  opacity: 0.8;
+}
