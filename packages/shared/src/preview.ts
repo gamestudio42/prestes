@@ -263,13 +263,6 @@ export function nearestKnownEnemyAt(
   return nearestEnemyIn(frame, point, faction, true);
 }
 
-/**
- * Defend and ambush still face the nearest enemy, seen or not, as the
- * simulation does (author-game-maps 3.6 follow-up, open point).
- */
-function nearestEnemyAt(frame: Frame, point: Vec2, faction: UnitSnapshot['faction']): UnitSnapshot | null {
-  return nearestEnemyIn(frame, point, faction, false);
-}
 
 function nearestEnemyIn(
   frame: Frame,
@@ -359,7 +352,7 @@ function previewCoverSlots(
   const regionLimited = request.order === 'defend' || request.order === 'ambush';
   return planCoverSlots(units, anchorMap, request.frame.covers, {
     held,
-    threat: target ?? (regionLimited ? nearestEnemyAt : nearestKnownEnemyAt)(request.frame, center, units[0]!.faction),
+    threat: target ?? nearestKnownEnemyAt(request.frame, center, units[0]!.faction),
     facing: line ? lineFacing(request.line!.from, request.line!.to) : (facing ?? null),
     click: line ? null : request.to,
     region: regionLimited ? { center: request.to, radius: DEFEND_REGION_RADIUS } : null,
@@ -422,7 +415,7 @@ export function planOrderPreview(request: PreviewRequest): PreviewPlan | null {
   } else if (lineDirection) {
     formationFacing = lineDirection;
   } else if (hasDestination && (request.order === 'defend' || request.order === 'ambush')) {
-    const threat = target ?? nearestEnemyAt(request.frame, request.to!, units[0]!.faction);
+    const threat = target ?? nearestKnownEnemyAt(request.frame, request.to!, units[0]!.faction);
     formationFacing = threat ? facingToward(request.to!, threat) : averageAim(units);
   } else if (hasDestination && isPointNearCover(request.to!, request.frame.covers)) {
     formationFacing = averageAim(units) ?? averageFacing(units);

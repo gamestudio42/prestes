@@ -112,3 +112,38 @@ describe('unseen fire marker', () => {
     expect(markers).toBeGreaterThan(0);
   });
 });
+
+// Open point closed 2026-11-11: defend and ambush faced the nearest enemy,
+// seen or not, so a section turned toward men its side had never spotted.
+describe('defend and ambush under fog', () => {
+  for (const order of ['defend', 'ambush'] as const) {
+    it(`${order} does not turn toward an enemy nobody has seen`, () => {
+      const t = field();
+      // Behind the observer, outside his cone and his 15 m all-round sense.
+      t.enemy.x = 0;
+      t.enemy.y = 60;
+      t.enemy.facingX = 0;
+      t.enemy.facingY = 1;
+      expect(t.look()).toBe(false);
+      t.engine.enqueue({ type: 'order', order, unitIds: [t.observer.id], to: { x: 0, y: -6 } });
+      t.engine.runTicks(80);
+      expect(t.engine.vision.seen.column.has(t.enemy.id)).toBe(false);
+      expect(t.observer.facingY).toBeLessThan(0);
+    });
+  }
+
+  it('defend faces the enemy its side sees', () => {
+    const t = field();
+    t.enemy.x = 30;
+    t.enemy.y = -60;
+    t.enemy.facingX = 0;
+    t.enemy.facingY = -1;
+    expect(t.look()).toBe(true);
+    t.engine.enqueue({ type: 'order', order: 'defend', unitIds: [t.observer.id], to: { x: 0, y: -6 } });
+    t.engine.runTicks(80);
+    const dx = t.enemy.x - t.observer.x;
+    const dy = t.enemy.y - t.observer.y;
+    const length = Math.sqrt(dx * dx + dy * dy);
+    expect((t.observer.facingX * dx + t.observer.facingY * dy) / length).toBeGreaterThan(0.9);
+  });
+});

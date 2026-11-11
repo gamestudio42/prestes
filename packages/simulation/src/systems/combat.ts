@@ -12,7 +12,7 @@ import { CONCEALED_CONTACT_RADIUS, CONTACT_RADIUS, AMBUSH_RADIUS, AWARENESS_RANG
 import type { MutableUnit } from './model';
 import type { SimContext } from './context';
 import { ALL_HELD_TICKS, objectiveValues } from './objectives';
-import { nearestEnemy } from './geometry';
+import { nearestEnemy, nearestKnownEnemyAt } from './geometry';
 import { woundAccuracyFactor } from './casualties';
 import { markUnderFire, shooterOf } from './fire-reaction';
 import { VISION_RANGE, unseenFireMarker } from './vision';
@@ -531,7 +531,8 @@ export function updateFacing(ctx: SimContext): void {
       dx = unit.aimX;
       dy = unit.aimY;
     } else if (unit.currentOrder === 'defend' || unit.currentOrder === 'ambush') {
-      const threat = nearestEnemy(ctx, unit);
+      // Only a man his side knows of turns him (fog of war).
+      const threat = nearestKnownEnemyAt(ctx, unit, unit.faction);
       if (threat) {
         dx = threat.x - unit.x;
         dy = threat.y - unit.y;

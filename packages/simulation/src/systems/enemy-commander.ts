@@ -608,7 +608,8 @@ function commandLegalists(ctx: SimContext, tick: number, events: SimEvent[]): vo
     }
     if (plan === 'withdraw') {
       if (section.every((unit) => unit.path.length === 0)) {
-        issue(ctx, { type: 'order', order: 'defend', unitIds: ids, to: here }, tick, events);
+        // He ran with his back to the enemy: the rallied line turns round.
+        issue(ctx, { type: 'order', order: 'defend', unitIds: ids, to: here, facing: facingFrom(here, enemyCentre) }, tick, events);
         plans.set(squadId, 'rallied');
       }
       continue;
@@ -670,6 +671,18 @@ function commandLegalists(ctx: SimContext, tick: number, events: SimEvent[]): vo
   commitLastMinutes(ctx, own, plans, tick, events);
 }
 
+/**
+ * A defend order's facing from a point toward another. The legalists give
+ * their defends one, so the line does not depend on seeing the enemy (fog of
+ * war): undefined when the points coincide, and the order then faces by itself.
+ */
+function facingFrom(from: Vec2, toward: Vec2): Vec2 | undefined {
+  const dx = toward.x - from.x;
+  const dy = toward.y - from.y;
+  const length = Math.sqrt(dx ** 2 + dy ** 2);
+  return length > 0.001 ? { x: dx / length, y: dy / length } : undefined;
+}
+
 /** add-map-objectives D4: squared distance between two points. */
 function distanceTo(point: Vec2, target: Vec2): number {
   return (point.x - target.x) ** 2 + (point.y - target.y) ** 2;
@@ -710,7 +723,14 @@ function assignObjectiveGuards(
     const [squadId, section] = candidate;
     issue(
       ctx,
-      { type: 'order', order: 'defend', unitIds: section.map((unit) => unit.id), to: { x: objective.flag.x, y: objective.flag.y } },
+      {
+        type: 'order',
+        order: 'defend',
+        unitIds: section.map((unit) => unit.id),
+        to: { x: objective.flag.x, y: objective.flag.y },
+        // The guard faces where the column came from, whoever it sees.
+        facing: facingFrom(objective.flag, ctx.battle.deployment.get('column') ?? objective.flag),
+      },
       tick,
       events,
     );
