@@ -1,12 +1,13 @@
-import { allCoverSlots, insideDeploymentArea } from '@prestes/shared';
-import type { CommandEnvelope, CoverKind, SimEvent, Vec2 } from '@prestes/shared';
+import { allCoverSlots, insideDeploymentArea, isDeepWater, isPointBlockedByCovers } from '@prestes/shared';
+import type { CommandEnvelope, CoverKind, CoverPoint, SimEvent, Vec2 } from '@prestes/shared';
 import type { SimContext } from './context';
 import { applyDeploymentCommand } from './deployment';
 
 /**
  * add-deployment-phase D4: how much the commander wants each kind of cover
  * as a section's anchor. Trench fire steps first, then walls and hedges.
- * Buildings wait for garrison-and-assault; objectives for add-map-objectives.
+ * Buildings wait for garrison-and-assault; the objectives it holds are added
+ * in `deployEnemy`.
  */
 const ANCHOR_SCORE: Partial<Record<CoverKind, number>> = {
   trench: 3,
@@ -15,6 +16,12 @@ const ANCHOR_SCORE: Partial<Record<CoverKind, number>> = {
   sandbag: 2,
   fence: 1,
 };
+
+/**
+ * add-map-objectives 2.6: a held objective of value 2 or more is the best
+ * anchor there is, so the battle opens with a section on it.
+ */
+const OBJECTIVE_ANCHOR_SCORE = 4;
 
 /** Two sections' anchors are kept at least this far apart (m). */
 export const ANCHOR_SPACING = 25;
@@ -35,13 +42,78 @@ function centroid(points: readonly Vec2[]): Vec2 {
   return { x: points.reduce((sum, p) => sum + p.x, 0) / n, y: points.reduce((sum, p) => sum + p.y, 0) / n };
 }
 
+/** The point of segment `a`-`b` nearest to `point`. */
+function closestOnSegment(point: Vec2, a: Vec2, b: Vec2): Vec2 {
+  const dx = b.x - a.x;
+  const dy = b.y - a.y;
+  const length = dx * dx + dy * dy;
+  if (length === 0) return { x: a.x, y: a.y };
+  const t = Math.max(0, Math.min(1, ((point.x - a.x) * dx + (point.y - a.y) * dy) / length));
+  return { x: a.x + t * dx, y: a.y + t * dy };
+}
+
+/** How far (m) a point lies from the area's boundary. */
+function distanceToEdges(area: readonly Vec2[], point: Vec2): number {
+  let best = Number.POSITIVE_INFINITY;
+  for (let index = 0; index < area.length; index += 1) {
+    const closest = closestOnSegment(point, area[index]!, area[(index + 1) % area.length]!);
+    best = Math.min(best, (closest.x - point.x) ** 2 + (closest.y - point.y) ** 2);
+  }
+  return Math.sqrt(best);
+}
+
+/** add-map-objectives 2.6: how far inside the area an anchor keeps (m), so a section's line fits. */
+const ANCHOR_CLEARANCE = 3;
+
+/**
+ * add-map-objectives 2.6: the point of the deployment area nearest to `point`
+ * (the point itself when it already lies inside), so an objective just off
+ * the area still has a section deployed on its edge. The point is kept clear
+ * of the boundary (for the section's line) and of building footprints (the
+ * church flag stands on the church).
+ */
+function nearestInside(area: readonly Vec2[], point: Vec2, covers: readonly CoverPoint[]): Vec2 {
+  const inside = insideDeploymentArea(area, point.x, point.y);
+  let start = point;
+  if (!inside) {
+    start = point;
+    let bestDistance = Number.POSITIVE_INFINITY;
+    for (let index = 0; index < area.length; index += 1) {
+      const closest = closestOnSegment(point, area[index]!, area[(index + 1) % area.length]!);
+      const distance = (closest.x - point.x) ** 2 + (closest.y - point.y) ** 2;
+      if (distance < bestDistance) {
+        start = closest;
+        bestDistance = distance;
+      }
+    }
+  }
+  // Into the area, on toward its middle: that is where the ground clears the
+  // building the flag may stand on.
+  const origin = point;
+  const middle = centroid(area);
+  const dx = middle.x - origin.x;
+  const dy = middle.y - origin.y;
+  const length = Math.sqrt(dx * dx + dy * dy) || 1;
+  const clear = (at: Vec2) =>
+    insideDeploymentArea(area, at.x, at.y) &&
+    !isDeepWater(at.x, at.y) &&
+    !isPointBlockedByCovers(at.x, at.y, covers, 0) &&
+    distanceToEdges(area, at) >= ANCHOR_CLEARANCE;
+  for (let step = 0.5; step <= ANCHOR_REACH + 20; step += 0.5) {
+    const at = { x: origin.x + (dx / length) * step, y: origin.y + (dy / length) * step };
+    if (clear(at)) return at;
+  }
+  return start;
+}
+
 /**
  * The legalist commander's deployment, before the battle's first tick. It
  * reads only the map (its area, the column's area, the covers) and its own
  * sections, never the column's men:
  *
  * 1. Candidate anchors are cover slots inside its area that face the
- *    column's area, scored by ANCHOR_SCORE.
+ *    column's area, scored by ANCHOR_SCORE, and the objectives it holds and
+ *    must keep (value 2 or more) scored above them.
  * 2. Sections, in roster order, take the best free anchor at least
  *    ANCHOR_SPACING m from those taken; ties go by the seeded RNG.
  * 3. Each is placed there with the deployment's instant defend order.
@@ -55,6 +127,13 @@ export function deployEnemy(ctx: SimContext): void {
   const towards = centroid(map.deployment.column.area);
   const kinds = new Map(ctx.covers.map((cover) => [cover.id, cover.kind]));
   const anchors: Anchor[] = [];
+  // add-map-objectives 2.6: the objectives it holds and must keep are anchors,
+  // so the deployment opens with a section already on each of them.
+  for (const objective of ctx.objectives) {
+    if (objective.owner !== 'legalist' || objective.value < 2) continue;
+    const at = nearestInside(own, objective.flag, ctx.covers);
+    anchors.push({ x: at.x, y: at.y, score: OBJECTIVE_ANCHOR_SCORE });
+  }
   for (const slot of allCoverSlots(ctx.covers)) {
     const score = ANCHOR_SCORE[kinds.get(slot.coverId) ?? 'barrel'];
     if (!score || !insideDeploymentArea(own, slot.x, slot.y)) continue;

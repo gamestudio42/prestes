@@ -43,6 +43,23 @@ describe('enemy deployment (add-deployment-phase 2.3)', () => {
     }
   });
 
+  it('deploys a section on the objective it holds (add-map-objectives 2.6)', () => {
+    const engine = new SimulationEngine({ seed: 1922, scenario: 'battle3v3', battleMap: 'campo-de-provas', deployment: true, enemyDeployment: true });
+    const church = engine.objectives.find((objective) => objective.id === 3)!;
+    const area = engine.battleMap!.deployment.legalist.area;
+    const men = engine.frame().units.filter((unit) => unit.faction === 'legalist');
+    const centres = [11, 12, 13].map((squadId) => {
+      const section = men.filter((unit) => unit.squadId === squadId);
+      return {
+        x: section.reduce((sum, unit) => sum + unit.x, 0) / section.length,
+        y: section.reduce((sum, unit) => sum + unit.y, 0) / section.length,
+      };
+    });
+    const nearest = Math.min(...centres.map((centre) => Math.sqrt((centre.x - church.flag.x) ** 2 + (centre.y - church.flag.y) ** 2)));
+    expect(nearest).toBeLessThanOrEqual(20);
+    for (const unit of men) expect(insideDeploymentArea(area, unit.x, unit.y), `${unit.id}`).toBe(true);
+  });
+
   it('the commander reads the map, not the player: another column leaves its deployment unchanged', () => {
     const map = trenchMap();
     const legalist = { sections: ['fuzileiros', 'fuzileiros', 'fuzileiros'] } as BattleRosters['column'];

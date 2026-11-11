@@ -202,4 +202,15 @@ latest. Goldens re-recorded. No saved data.
 - 2.5 (2026-11-10): goldens re-recorded for the commander change (campo-de-provas
   `b3e2538f`, mixed `9fa6a458`, paiolzinho unchanged); reason logged in
   `tools/determinism-golden.json`.
+- 2.6 (2026-11-10): the clock and the capture already waited for
+  `battle_started`; a test now holds that (frame clock 0 through the phase,
+  capture progress 0). The commander's deployment anchors now include the
+  objectives it holds with value 2 or more, scored above cover. The anchor is
+  not the raw flag: the test map's church flag stands on the church 5 m
+  outside the default deployment area, so it is walked toward the area's
+  middle until it is inside, clear of the boundary (3 m, so the section's
+  line fits) and clear of the building footprint; it lands on the deployment
+  edge 18 m from the flag, inside the objective circle. The golden runs open
+  no deployment, so `pnpm check:determinism` is unchanged. Simulation
+  321/321.
 

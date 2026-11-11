@@ -110,4 +110,25 @@ describe('battle clock and outcome', () => {
     engine.runTicks(5);
     expect(engine.frame().clock).toEqual({ tick: 5, limit: 9000 });
   });
+
+  it('the clock and the capture wait for the deployment', () => {
+    const engine = new SimulationEngine({
+      seed: 1924,
+      scenario: 'battle3v3',
+      battleMap: 'campo-de-provas',
+      deployment: true,
+      timeLimitTicks: 9000,
+    });
+    expect(engine.frame().clock).toEqual({ tick: 0, limit: 9000 });
+    engine.runTicks(20);
+    expect(engine.frame().clock).toEqual({ tick: 0, limit: 9000 });
+    expect(engine.frame().objectives?.every((objective) => objective.progress.column === 0 && objective.progress.legalist === 0)).toBe(
+      true,
+    );
+    engine.enqueue({ type: 'start_battle' });
+    engine.tick();
+    expect(engine.frame().clock?.tick).toBe(0);
+    engine.runTicks(5);
+    expect(engine.frame().clock?.tick).toBe(5);
+  });
 });
