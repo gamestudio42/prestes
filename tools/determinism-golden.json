@@ -4,10 +4,10 @@
   "hash": "0ae3084b",
   "battleMaps": {
     "campo-de-provas": "b3e2538f",
-    "paiolzinho": "42a367fc"
+    "paiolzinho": "d1f0845d"
   },
   "mixedRosters": {
     "campo-de-provas": "9fa6a458"
   },
-  "reason": "the commander plays the objectives: garrison, attack by value, retake, last minutes (add-map-objectives 2.4)"
+  "reason": "the author authored objectives on the paiolzinho map"
 }

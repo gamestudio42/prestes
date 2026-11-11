@@ -955,3 +955,13 @@ Last recorded manual run:
 
 
 
+
+
+## Hand checks
+
+- 2026-11-11, the user: the objectives are authored on the maps and the battle
+  is played for them ("já coloquei objetivos nos mapas e testei, está ok").
+  `add-map-objectives` 4.3 passed; `pnpm check:maps` passes with no
+  objective-count warning. The same session played the queued orders, the
+  wire crossings, the double-click centring, leaving the battle and the
+  removed codex and found them working.
