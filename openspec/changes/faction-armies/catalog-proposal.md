@@ -18,6 +18,10 @@ says so in its compendium note.
 Names are given in Portuguese, as the roster would show them; the English
 catalog keeps the Portuguese term with a gloss in the description.
 
+Owner's change of 2026-11-11 (apply, task 3.4): Jagunços com Mauser carry an
+automatic rifle (five riflemen and the gunner) and count toward the limit of
+two, so a patriotic force can stand in the open; a game organization.
+
 Values are relative to today's rifle section and use only numbers the
 simulation already has. They are a first proposal for the battle report to
 test, not a claim about history beyond the "why" column.

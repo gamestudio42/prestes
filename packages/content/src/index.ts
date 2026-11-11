@@ -19,6 +19,7 @@ export {
 } from './figures';
 export { CONTENT_LABELS, validateCodexEntry, type CodexEntry } from './codex';
 export { SOURCE_KEYS, isSourceKey, type SourceKey } from './sources';
+export { parseNameRegister, validateNameRegister, type NameRow, type NameStatus } from './name-register';
 
 export {
   ORDER_CATALOG,

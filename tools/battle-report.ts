@@ -377,6 +377,12 @@ function bothSidesFit(frame: Frame): boolean {
 /** pre-battle-roster 6.1: a full mixed force of 33 for the player. */
 export const MIXED_PLAYER: Roster = { sections: ['comando', 'metralhadora', 'esquadra-5', 'fuzileiros', 'irregulares', 'esquadra-4'] };
 export const DEFAULT_PLAYER: Roster = { sections: ['fuzileiros', 'fuzileiros', 'fuzileiros'] };
+/** faction-armies 4.1: the enemy pairings the report compares: regulars, patriots, and a mix of both armies. */
+export const ARMY_PAIRINGS: readonly (readonly [string, Roster])[] = [
+  ['legalista', { sections: ['comando-companhia', 'infantaria-exercito', 'brigada-militar', 'metralhadora-legalista', 'fuzil-metralhador-legalista'] }],
+  ['patriotico', { sections: ['voluntarios', 'voluntarios', 'jaguncos-mauser', 'jaguncos-mauser'] }],
+  ['mix', { sections: ['comando-companhia', 'infantaria-exercito', 'jaguncos-mauser', 'jaguncos-mauser', 'cangaceiros'] }],
+];
 export const PRESET_SEEDS = [1922, 1924, 1925];
 
 /** The battle-lab feel bands (spec "Report within bands"); null when the report is inside them. */
@@ -394,7 +400,8 @@ export function outsideBands(report: BattleReport): string | null {
 }
 
 /** Least share of its targeted time the player's machine gun is set (battle-lab band). */
-export const GUN_SET_BAND = 0.7;
+// faction-armies 3.4 (owner, 2026-11-11): 0.7 -> 0.5; the enemy's make-up moves the share (0.45-1.0 measured).
+export const GUN_SET_BAND = 0.5;
 
 function gunFire(report: BattleReport): string {
   const fire = report.weapons.column['metralhadora-7mm'];
@@ -420,6 +427,20 @@ async function presetTable(id: BattleMapId): Promise<void> {
             `| ${map.id} | ${String.fromCharCode(65 + index)} | ${name} | ${seed} | ${r.seconds} | ${r.outcome} | ${r.decidedBy ?? '-'} | ${r.casualties.column}/${r.casualties.legalist} | ${r.shotsPerCasualty} | ${r.maxShotsPerTick} | ${r.longestSilence} | ${r.bunching} | ${gunFire(r)} | ${r.gunSetShare.column ?? '-'} | ${outsideBands(r) ?? 'ok'} |`,
           );
         }
+      }
+    }
+  }
+}
+
+/** faction-armies 4.1: the column against each enemy army pairing, three seeds. */
+async function armiesTable(id: BattleMapId): Promise<void> {
+  console.log('| Map | Enemy army | Player | Seed | Time (s) | Outcome | Decided | Cas. col/leg | Bands |');
+  console.log('| --- | --- | --- | --- | --- | --- | --- | --- | --- |');
+  for (const map of await reportMaps(id)) {
+    for (const [army, enemy] of ARMY_PAIRINGS) {
+      for (const seed of PRESET_SEEDS) {
+        const r = await battleReport(seed, 900, map.id, { column: MIXED_PLAYER, legalist: enemy });
+        console.log(`| ${map.id} | ${army} | mixed | ${seed} | ${r.seconds} | ${r.outcome} | ${r.decidedBy ?? '-'} | ${r.casualties.column}/${r.casualties.legalist} | ${outsideBands(r) ?? 'ok'} |`);
       }
     }
   }
@@ -457,7 +478,7 @@ async function garrisonTable(id: BattleMapId): Promise<void> {
 }
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
-  // pnpm battle:report [--map <id>] [seed ...] | --presets | --deployment | --garrisons (each with an optional --map)
+  // pnpm battle:report [--map <id>] [seed ...] | --presets | --armies | --deployment | --garrisons (each with an optional --map)
   const args = process.argv.slice(2);
   const mapAt = args.indexOf('--map');
   const map = (mapAt >= 0 ? args[mapAt + 1] : DEFAULT_BATTLE_MAP) as BattleMapId;
@@ -467,6 +488,10 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
   }
   if (args.includes('--deployment')) {
     await deploymentTable(map);
+    process.exit(0);
+  }
+  if (args.includes('--armies')) {
+    await armiesTable(map);
     process.exit(0);
   }
   if (args.includes('--presets')) {

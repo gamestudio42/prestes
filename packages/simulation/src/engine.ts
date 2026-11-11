@@ -6,6 +6,9 @@ import {
   WEAPONS,
   TRAINING_AMMUNITION,
   trainingLoad,
+  isSectionTypeId,
+  SECTION_TYPES,
+  unitValues,
   MAX_HP,
   MAX_MORALE,
   SANDBOX_TERRAIN,
@@ -137,6 +140,12 @@ export interface SimulationOptions {
   enemyDeployment?: boolean;
   /** add-map-objectives: the battle's time limit in ticks; absent, DEFAULT_TIME_LIMIT (used from 2.3). */
   timeLimitTicks?: number;
+}
+
+/** faction-armies 3.1: a section short of ammunition carries less in reserve. */
+function sectionReserve(unit: object, reserve: number): number {
+  const type = 'sectionType' in unit && typeof unit.sectionType === 'string' && isSectionTypeId(unit.sectionType) ? SECTION_TYPES[unit.sectionType] : undefined;
+  return type?.ammunitionFactor === undefined ? reserve : Math.round(reserve * type.ammunitionFactor);
 }
 
 /** pre-battle-roster 3.2: the weapon a rostered battle names for a soldier (others carry the default). */
@@ -285,18 +294,19 @@ export class SimulationEngine implements SimContext {
         // The 3v3 is a training battle: both sides draw the depot issue
         // (pre-battle-roster 1.2: each weapon its own).
         ...(rosteredWeapon(unit)
-          ? { magazine: trainingLoad(rosteredWeapon(unit)!).magazine, reserve: trainingLoad(rosteredWeapon(unit)!).reserve }
+          ? { magazine: trainingLoad(rosteredWeapon(unit)!).magazine, reserve: sectionReserve(unit, trainingLoad(rosteredWeapon(unit)!).reserve) }
           : (this.training && unit.faction === 'column') || this.scenario === 'battle3v3'
           ? TRAINING_AMMUNITION
           : {
               magazine: WEAPONS[DEFAULT_WEAPON_ID].magazine,
               reserve: WEAPONS[DEFAULT_WEAPON_ID].reserve,
             }),
-        morale: MAX_MORALE,
+        // faction-armies 3.1: a rostered man starts with his army's and section's morale and cohesion.
+        morale: 'sectionType' in unit && unit.sectionType !== undefined ? unitValues(unit).morale : MAX_MORALE,
         alive: true,
         suppressed: false,
         suppression: 0,
-        cohesion: 100,
+        cohesion: 'sectionType' in unit && unit.sectionType !== undefined ? unitValues(unit).cohesion : 100,
         fatigue: 0,
         formation: 'line',
         orderDestination: null,

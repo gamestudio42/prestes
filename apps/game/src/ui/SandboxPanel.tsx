@@ -1,5 +1,5 @@
 import { Eye, EyeOff, Crate as Box, Crosshair, Restart as RotateCcw, Step as StepForward, Troop as Users, Lab as FlaskConical, Close as X } from './icons';
-import { SECTION_TYPE_IDS, SECTION_TYPES, sandboxMaps, terrainHeightAt, terrainSpeedFactor, type BattleMapId, type Frame, type SectionTypeId } from '@prestes/shared';
+import { ARMIES, SECTION_TYPE_IDS, SECTION_TYPES, sandboxMaps, terrainHeightAt, terrainSpeedFactor, type BattleMapId, type Frame, type SectionTypeId } from '@prestes/shared';
 import { translate, type Locale, type MessageKey } from '@prestes/content';
 
 export type SandboxTool =
@@ -91,6 +91,15 @@ export function SandboxPanel({
     { id: 'enemy-troop', label: 'sandbox.enemyTroop' },
     { id: 'command-troop', label: 'sandbox.commandTroop' },
   ];
+
+  // faction-armies 4.4: a troop is made of its own side's types, grouped by army (enemy troop: the government's two armies).
+  const armiesFor = (toolId: SandboxTool | null) =>
+    Object.values(ARMIES).filter((army) => toolId === null || (toolId === 'enemy-troop' ? army.side === 'legalist' : toolId === 'command-troop' ? army.side === 'column' : true));
+  const sectionAllowed = (section: SectionTypeId, toolId: SandboxTool | null) => armiesFor(toolId).some((army) => army.id === SECTION_TYPES[section].army);
+  const chooseTool = (next: SandboxTool | null) => {
+    if (troopSection && !sectionAllowed(troopSection, next)) onTroopSection(null);
+    onTool(next);
+  };
 
   return (
     <aside className="sandbox-panel" data-testid="sandbox-panel">
@@ -206,7 +215,7 @@ export function SandboxPanel({
               key={entry.id}
               type="button"
               className={`secondary ${tool === entry.id ? 'active' : ''}`}
-              onClick={() => onTool(tool === entry.id ? null : entry.id)}
+              onClick={() => chooseTool(tool === entry.id ? null : entry.id)}
               data-testid={`sandbox-tool-${entry.id}`}
             >
               {entry.id === 'dummy' || entry.id === 'enemy-troop' || entry.id === 'command-troop' ? (
@@ -226,10 +235,14 @@ export function SandboxPanel({
             data-testid="sandbox-troop-section"
           >
             <option value="">{t('sandbox.troopDefault')}</option>
-            {SECTION_TYPE_IDS.map((id) => (
-              <option key={id} value={id}>
-                {t(SECTION_TYPES[id].nameKey as MessageKey)}
-              </option>
+            {armiesFor(tool).map((army) => (
+              <optgroup key={army.id} label={t(army.nameKey as MessageKey)}>
+                {SECTION_TYPE_IDS.filter((id) => SECTION_TYPES[id].army === army.id).map((id) => (
+                  <option key={id} value={id}>
+                    {t(SECTION_TYPES[id].nameKey as MessageKey)}
+                  </option>
+                ))}
+              </optgroup>
             ))}
           </select>
         </label>

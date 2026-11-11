@@ -161,15 +161,43 @@ test('enemy forces: a preset is built under the roster rules, reaches the compil
   await expect(page.getByTestId('enemy-preset-0-add')).toBeDisabled();
   await expect(page.getByTestId('enemy-preset-0-refusal')).toBeVisible();
   await page.getByTestId('enemy-preset-0-section-2-remove').click();
-  await page.getByTestId('enemy-preset-0-type').selectOption('metralhadora');
+  await page.getByTestId('enemy-preset-0-type').selectOption('metralhadora-legalista');
   await expect(page.getByTestId('enemy-preset-0-add')).toBeEnabled();
   await page.getByTestId('enemy-preset-0-add').click();
   await page.getByTestId('map-submit').click();
   await settle(page);
-  expect((await state(page)).enemyForces).toEqual([['fuzileiros', 'fuzileiros', 'metralhadora']]);
+  expect((await state(page)).enemyForces).toEqual([['infantaria-exercito', 'infantaria-exercito', 'metralhadora-legalista']]);
   await page.getByTestId('editor-undo').click();
   await settle(page);
   expect((await state(page)).enemyForces).toEqual([]);
+});
+
+// faction-armies 4.2: a preset may mix the two enemy armies, and it survives an export and import.
+test('enemy forces: a preset mixing the army and the patriots is kept through export and import', async ({ page }, testInfo) => {
+  await openEditor(page);
+  await newMap(page, 'teste-mistura', 'medium');
+  await page.getByTestId('editor-properties').click();
+  await page.getByTestId('enemy-preset-add').click();
+  await expect(page.getByTestId('enemy-preset-0-armies')).toHaveText(/^[^+]+$/);
+  await page.getByTestId('enemy-preset-0-section-2-remove').click();
+  await page.getByTestId('enemy-preset-0-type').selectOption('jaguncos');
+  await page.getByTestId('enemy-preset-0-add').click();
+  await expect(page.getByTestId('enemy-preset-0-armies')).toContainText('+');
+  await page.getByTestId('map-submit').click();
+  await settle(page);
+  expect((await state(page)).enemyForces).toEqual([['infantaria-exercito', 'infantaria-exercito', 'jaguncos']]);
+
+  const downloading = page.waitForEvent('download');
+  await page.getByTestId('editor-export').click();
+  const path = testInfo.outputPath('teste-mistura.map.json');
+  await (await downloading).saveAs(path);
+  await newMap(page, 'outro-mistura', 'small');
+  expect((await state(page)).enemyForces).toEqual([]);
+  await page.getByTestId('editor-import-input').setInputFiles(path);
+  await expect.poll(async () => (await state(page)).id).toBe('teste-mistura');
+  expect((await state(page)).enemyForces).toEqual([['infantaria-exercito', 'infantaria-exercito', 'jaguncos']]);
+  await page.getByTestId('editor-properties').click();
+  await expect(page.getByTestId('enemy-preset-0-armies')).toContainText('+');
 });
 
 test('time of day: the slider moves the sun in the view, the document stores it, undo restores it', async ({ page }, testInfo) => {

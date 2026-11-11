@@ -2,6 +2,7 @@ import type { BattleMapId, LocalizedText } from './maps/types';
 import type { MapDocument } from './maps/document';
 import type { Gait } from './gait';
 import type { WeaponId } from './weapons';
+import type { ArmyId } from './armies';
 import type { Roster, SectionTypeId } from './sections';
 
 export interface Vec2 {
@@ -221,6 +222,8 @@ export interface UnitSnapshot {
   waitingFerry?: boolean;
   /** pre-battle-roster 5.2: the section type of a rostered man (absent in the default battle). */
   sectionType?: SectionTypeId;
+  /** faction-armies 2.1: his army (his section type's, or his side's first); absent for targets. */
+  army?: ArmyId;
   /** pre-battle-roster 5.2: a machine gunner's gun is set up ("pronta"); absent for other weapons. */
   gunSet?: boolean;
   /** machine-gun-fire-feedback 3.1: the gun moving, setting up or set; absent for other weapons (not hashed). */

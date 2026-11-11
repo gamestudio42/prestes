@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 import { mapText } from './SkirmishMaps';
-import { rosterMen, SECTION_TYPES, TIME_LIMITS, type BattleMap, type BattleMapId } from '@prestes/shared';
+import { ARMIES, ENEMY_ARMY_IDS, rosterArmies, rosterMen, SECTION_TYPES, TIME_LIMITS, type BattleMap, type BattleMapId, type Roster } from '@prestes/shared';
 import { translate, type Locale, type MessageKey } from '@prestes/content';
 import { Troop as Users } from '../icons';
 import { moveFocus, RosterBuilder } from './RosterBuilder';
-import { setupReady, withMap, type EnemyChoice, type SkirmishSetup as Setup } from './setupState';
+import { builtEnemy, DEFAULT_ARMY, setupReady, withMap, type EnemyChoice, type SkirmishSetup as Setup } from './setupState';
 
 export interface SkirmishSetupProps {
   locale: Locale;
@@ -50,6 +50,8 @@ export function SkirmishSetup({ locale, setup, maps, onChange, onStart, onBack }
   const setEnemy = (enemy: EnemyChoice) => onChange({ ...setup, enemy });
   const sectionList = (sections: readonly string[]) =>
     sections.map((id) => t(SECTION_TYPES[id as keyof typeof SECTION_TYPES].nameKey as MessageKey)).join(', ');
+  // faction-armies 4.3: a preset shows the armies it holds.
+  const armyList = (roster: Roster) => rosterArmies(roster).map((army) => t(ARMIES[army].nameKey as MessageKey)).join(' + ');
 
   return (
     <div className="skirmish-setup" role="dialog" aria-modal="true" aria-labelledby="skirmish-setup-title" data-testid="skirmish-setup">
@@ -59,6 +61,11 @@ export function SkirmishSetup({ locale, setup, maps, onChange, onStart, onBack }
             {t('menu.mark.skirmish')}
           </h2>
           <p>{t('setup.subtitle')}</p>
+          {setup.migrated ? (
+            <p className="setup-migrated" role="status" data-testid="setup-migrated">
+              {t('setup.migrated')}
+            </p>
+          ) : null}
         </header>
 
         <section className="setup-column setup-map" aria-labelledby="setup-map-title">
@@ -185,6 +192,7 @@ export function SkirmishSetup({ locale, setup, maps, onChange, onStart, onBack }
           <RosterBuilder
             locale={locale}
             roster={setup.roster}
+            army={DEFAULT_ARMY}
             onChange={(roster) => onChange({ ...setup, roster })}
             testPrefix="roster"
             label={t('setup.yourForce')}
@@ -220,6 +228,7 @@ export function SkirmishSetup({ locale, setup, maps, onChange, onStart, onBack }
                 />
                 <span>
                   <strong>{t('setup.enemyPreset', { letter: presetLetter(index), men: rosterMen(preset) })}</strong>
+                  <small data-testid={`enemy-preset-${index}-armies`}>{armyList(preset)}</small>
                   <small>{sectionList(preset.sections)}</small>
                 </span>
               </label>
@@ -230,9 +239,7 @@ export function SkirmishSetup({ locale, setup, maps, onChange, onStart, onBack }
                 name="enemy"
                 data-nav
                 checked={setup.enemy.kind === 'built'}
-                onChange={() =>
-                  setEnemy({ kind: 'built', roster: setup.enemy.kind === 'built' ? setup.enemy.roster : { sections: [...(presets[0]?.sections ?? setup.roster.sections)] } })
-                }
+                onChange={() => setEnemy(setup.enemy.kind === 'built' ? setup.enemy : builtEnemy('legalista'))}
                 data-testid="enemy-built"
               />
               <span>
@@ -242,13 +249,30 @@ export function SkirmishSetup({ locale, setup, maps, onChange, onStart, onBack }
             </label>
           </div>
           {setup.enemy.kind === 'built' ? (
-            <RosterBuilder
-              locale={locale}
-              roster={setup.enemy.roster}
-              onChange={(roster) => setEnemy({ kind: 'built', roster })}
-              testPrefix="enemy-roster"
-              label={t('setup.enemy')}
-            />
+            <>
+              <div className="setup-enemy-army" role="radiogroup" aria-label={t('setup.enemyArmy')}>
+                {ENEMY_ARMY_IDS.map((army) => (
+                  <label key={army} className="setup-enemy-army-option">
+                    <input
+                      type="radio"
+                      name="enemy-army"
+                      checked={setup.enemy.kind === 'built' && setup.enemy.army === army}
+                      onChange={() => setEnemy(builtEnemy(army))}
+                      data-testid={`enemy-army-${army}`}
+                    />
+                    <span>{t(ARMIES[army].nameKey as MessageKey)}</span>
+                  </label>
+                ))}
+              </div>
+              <RosterBuilder
+                locale={locale}
+                roster={setup.enemy.roster}
+                army={setup.enemy.army}
+                onChange={(roster) => setup.enemy.kind === 'built' && setEnemy({ ...setup.enemy, roster })}
+                testPrefix="enemy-roster"
+                label={t('setup.enemy')}
+              />
+            </>
           ) : null}
         </section>
 

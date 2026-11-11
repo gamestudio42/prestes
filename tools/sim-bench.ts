@@ -89,8 +89,9 @@ const BATTLE_TICKS = 3000;
   // pre-battle-roster 6.2: the heaviest mixed rosters on both sides (six
   // sections, the machine gun and both automatic rifles, 32 men a side).
   const HEAVY = ['comando', 'metralhadora', 'esquadra-5', 'fuzil-metralhador', 'fuzileiros', 'irregulares'] as const;
+  const HEAVY_LEGALIST = ['comando-companhia', 'metralhadora-legalista', 'fuzil-metralhador-legalista', 'fuzil-metralhador-legalista', 'infantaria-exercito', 'provisorios'] as const;
   const heavy = () =>
-    new SimulationEngine({ seed: 1922, scenario: 'battle3v3', sandbox: true, battleMap: map, rosters: { column: { sections: [...HEAVY] }, legalist: { sections: [...HEAVY] } } });
+    new SimulationEngine({ seed: 1922, scenario: 'battle3v3', sandbox: true, battleMap: map, rosters: { column: { sections: [...HEAVY] }, legalist: { sections: [...HEAVY_LEGALIST] } } });
   line('battle3v3-heavy-rosters', timed(heavy), TEST_MAP_BUDGET_MS);
   // author-game-maps 3.4: the stress run, each column section ordered into
   // the nearest building (garrison lookups, ports and indoor fire).

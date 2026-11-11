@@ -20,7 +20,7 @@ import { noteCoverPieces, type CoverPiece } from './cover-preview';
 import { defaultDeploymentArea, sectionStartsFromArea } from './deployment-areas';
 import { smoothCentreline } from './water-outline';
 import { detectWallYards, type YardWall } from './wall-yards';
-import type { Roster } from '../sections';
+import { migrateEnemyPreset, type Roster } from '../sections';
 import { DEFAULT_MAP_LIGHT, MAP_LIGHT_TIME, type BattleMap, type DeploymentZone, type HeightShape, type LocalizedText, type MapLight, type Objective, type MapLine, type PropPlacement, type WaterArea } from './types';
 
 /**
@@ -32,7 +32,7 @@ import { DEFAULT_MAP_LIGHT, MAP_LIGHT_TIME, type BattleMap, type DeploymentZone,
  */
 
 export const MAP_DOCUMENT_FORMAT = 'prestes-map';
-export const MAP_DOCUMENT_VERSION = 5;
+export const MAP_DOCUMENT_VERSION = 6;
 
 /** Heights the editor allows (m). */
 export const MIN_HEIGHT = -12;
@@ -337,6 +337,10 @@ const isZone = (value: unknown): value is DeploymentZone => isObject(value) && i
  *
  * 4 -> 5 (add-map-objectives): `objectives` is new and optional; a version 4
  * map opens with none.
+ *
+ * 5 -> 6 (faction-armies D5): a section id names its army, so no field is
+ * new; the enemy presets' ids of the time before the armies go through the
+ * successor table onto the Forças legalistas.
  */
 function migrate(document: Record<string, unknown>): Record<string, unknown> {
   let doc = document;
@@ -344,7 +348,16 @@ function migrate(document: Record<string, unknown>): Record<string, unknown> {
   if (doc.version === 2) doc = migrateV2(doc);
   if (doc.version === 3) doc = { ...doc, version: 4 };
   if (doc.version === 4) doc = { ...doc, version: 5 };
+  if (doc.version === 5) doc = migrateV5(doc);
   return doc;
+}
+
+function migrateV5(doc: Record<string, unknown>): Record<string, unknown> {
+  if (!Array.isArray(doc.enemyForces)) return { ...doc, version: 6 };
+  const enemyForces = doc.enemyForces.map((roster: unknown) =>
+    isObject(roster) && Array.isArray(roster.sections) && roster.sections.every(isString) ? migrateEnemyPreset(roster.sections).roster : roster,
+  );
+  return { ...doc, version: 6, enemyForces };
 }
 
 function migrateV2(doc: Record<string, unknown>): Record<string, unknown> {

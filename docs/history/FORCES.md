@@ -109,3 +109,38 @@ from the jagunço, a part-time gunman called to arms by his patron.
 
 For the game: the commissioning is historical; a cangaceiro section fighting
 the column is **dramatized** and labelled so. The section names no person.
+
+## Names in the game
+
+The register `tools/check-content.ts` reads (`armies` spec, "Period names"):
+every army and section type the game shows has one row. **Status** is
+`period term` (the name, or the force it names, is the source's, with the
+source key and page) or `game organization` (a grouping of ours, said so in
+its compendium note). A name that is neither fails the content check.
+English renderings of Portuguese terms ("provisionals", "volunteers") are
+the source's; the Portuguese form stays an open question where it says so.
+
+| Id | Name shown | Status | Source |
+| --- | --- | --- | --- |
+| army:coluna | Coluna Prestes | period term | macaulay-1974, p. 113 |
+| army:legalista | Forças legalistas | period term | macaulay-1974, pp. 71, 90 |
+| army:patriotico | Batalhões patrióticos | period term | macaulay-1974, pp. 15, 189 |
+| section:comando | Comando do destacamento | game organization | macaulay-1974, pp. 112–113 (the detachment) |
+| section:fuzileiros | Fogão | period term | macaulay-1974, p. 151 |
+| section:esquadra-4 | Meio fogão | game organization | macaulay-1974, p. 151 (the fogão) |
+| section:esquadra-5 | Fogão com fuzil-metralhador | game organization | macaulay-1974, p. 113 |
+| section:fuzil-metralhador | Guarnição de fuzil-metralhador | game organization | macaulay-1974, p. 113 |
+| section:metralhadora | Peça de metralhadora | game organization | macaulay-1974, p. 113 |
+| section:irregulares | Potreada | period term | macaulay-1974, pp. 111, 151–152 |
+| section:veteranos-gauchos | Veteranos gaúchos | game organization | macaulay-1974, pp. 44, 52, 88, 112 |
+| section:comando-companhia | Comando de companhia | game organization | — |
+| section:infantaria-exercito | Infantaria do Exército | game organization | macaulay-1974, pp. 90–91, 178, 192 (the federal army) |
+| section:brigada-militar | Brigada Militar | period term | macaulay-1974, pp. 48, 58, 82 |
+| section:provisorios | Provisórios | period term | macaulay-1974, pp. 48, 55, 81, 178 ("provisionals") |
+| section:metralhadora-legalista | Peça de metralhadora | game organization | macaulay-1974, p. 134 |
+| section:fuzil-metralhador-legalista | Guarnição de fuzil-metralhador | game organization | WEAPONS.md (no page of its own) |
+| section:chefe-capangas | Chefe e capangas | game organization | macaulay-1974, pp. 189, 218, 228 (the regional bosses) |
+| section:jaguncos | Jagunços | period term | macaulay-1974, pp. 192, 228 |
+| section:jaguncos-mauser | Jagunços com Mauser | game organization | macaulay-1974, pp. 189, 205 |
+| section:voluntarios | Voluntários | period term | macaulay-1974, pp. 70–71 ("volunteers") |
+| section:cangaceiros | Cangaceiros | period term | macaulay-1974, p. 191 (fighting the column is dramatized) |

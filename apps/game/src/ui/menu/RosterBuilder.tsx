@@ -1,13 +1,14 @@
 import type { KeyboardEvent } from 'react';
 import {
   canAdd,
-  DEFAULT_ROSTER,
+  defaultRoster,
   ROSTER_MAX_MEN,
   ROSTER_MAX_SECTIONS,
   SECTION_TYPE_IDS,
   SECTION_TYPES,
   validateRoster,
   WEAPONS,
+  type ArmyId,
   type Roster,
   type SectionTypeId,
   type WeaponId,
@@ -19,6 +20,8 @@ import { refusalMessage } from './setupState';
 export interface RosterBuilderProps {
   locale: Locale;
   roster: Roster;
+  /** faction-armies 4.3: the army the roster is built for; only its types are offered. */
+  army: ArmyId;
   onChange: (roster: Roster) => void;
   /** Test id prefix: `roster` for the player's force, `enemy-roster` for a built enemy. */
   testPrefix: string;
@@ -54,11 +57,12 @@ export function moveFocus(event: KeyboardEvent<HTMLElement>): void {
  * with its counters, the reason a type is refused, order and remove, and the
  * default roster. The enemy's "Montar" uses the same builder (5.6).
  */
-export function RosterBuilder({ locale, roster, onChange, testPrefix, label }: RosterBuilderProps) {
+export function RosterBuilder({ locale, roster, army, onChange, testPrefix, label }: RosterBuilderProps) {
   const t = (key: MessageKey, values?: Readonly<Record<string, string | number>>) => translate(locale, key, values);
-  const check = validateRoster(roster);
+  const check = validateRoster(roster, army);
+  const types = SECTION_TYPE_IDS.filter((type) => SECTION_TYPES[type].army === army);
   const add = (type: SectionTypeId) => {
-    if (canAdd(roster, type)) return;
+    if (canAdd(roster, type, army)) return;
     onChange({ sections: [...roster.sections, type] });
   };
   const remove = (index: number) => onChange({ sections: roster.sections.filter((_, at) => at !== index) });
@@ -73,9 +77,9 @@ export function RosterBuilder({ locale, roster, onChange, testPrefix, label }: R
   return (
     <div className="roster-builder" data-testid={`${testPrefix}-builder`}>
       <ul className="roster-types" aria-label={t('setup.types', { side: label })} onKeyDown={moveFocus}>
-        {SECTION_TYPE_IDS.map((type) => {
+        {types.map((type) => {
           const section = SECTION_TYPES[type];
-          const refusal = canAdd(roster, type);
+          const refusal = canAdd(roster, type, army);
           const reason = refusal ? refusalMessage(refusal) : null;
           const name = t(section.nameKey as MessageKey);
           return (
@@ -169,7 +173,7 @@ export function RosterBuilder({ locale, roster, onChange, testPrefix, label }: R
         <button
           type="button"
           className="secondary roster-default"
-          onClick={() => onChange({ sections: [...DEFAULT_ROSTER.sections] })}
+          onClick={() => onChange(defaultRoster(army))}
           data-testid={`${testPrefix}-default`}
         >
           {t('setup.defaultRoster')}

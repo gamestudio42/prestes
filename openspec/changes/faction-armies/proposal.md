@@ -70,8 +70,12 @@ control.
 - `force-roster`: "Section types" (the catalog becomes three catalogs, one
   per army, with the approved names) and "Skirmish setup screen" (the
   roster lists one army's types; the enemy is an army's preset or roster).
+- `battle-lab`: "Battle feel report" (the machine-gun band falls from 70% to
+  50%, since the enemy army's make-up moves the gun's share).
 
 ## Impact
+
+- `battle-lab`: the machine-gun band of the battle report goes from 70% to 50% of the time with a target (owner's review, task 3.4).
 
 - `docs/history`: new `FORCES.md`; `SOURCES.md`, `TIMELINE.md`, `WEAPONS.md`.
 - `packages/shared`: `sections.ts`, `deploy-roster.ts`, `protocol.ts`

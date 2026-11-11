@@ -13,6 +13,7 @@ task and delete the file once the last of these changes is archived.
   changes of 2026-11-11 are the fog fix for defend and ambush, the test
   runner settings and the bundle budgets, all on `main` and described in
   `docs/status.md` ("Fixes of 2026-11-11").
+- **UPDATE 2026-11-11 (later): `faction-armies` is at 16/18**, uncommitted on this branch; only the owner's hand check (5.2) and the archive are left. See the apply notes in its `tasks.md` and "faction-armies apply" in `docs/status.md`. The paragraph below is the earlier state.
 - **NEXT STEP: `faction-armies` task 2.1** (the army registry and `army` on
   units). Tasks 1.1 to 1.4 are done: the research is in
   `docs/history/FORCES.md`, the owner approved the catalog, and the

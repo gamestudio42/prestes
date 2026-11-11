@@ -164,7 +164,7 @@ test('spawns a machine-gun crew and sees its card', async ({ page }) => {
 
   const squadId = men[0]!.squadId;
   await page.getByTestId(`squad-${squadId}`).click();
-  await expect(page.getByTestId(`squad-name-${squadId}`)).toContainText('Machine gun');
+  await expect(page.getByTestId(`squad-name-${squadId}`)).toContainText('Peça de metralhadora');
   await expect(page.getByTestId('gun-state')).toBeVisible();
   await expect(page.getByTestId('gun-pool')).toContainText('750');
 });

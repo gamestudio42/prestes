@@ -103,6 +103,7 @@ describe('book page model', () => {
       'events',
       'places',
       'weapons',
+      'forces',
       'corrections',
     ]);
     expect(compendium.ribbons.find((ribbon) => ribbon.id === 'events')!.anchor).toBe('revolt-1922');

@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from 'react';
-import { canAdd, ROSTER_MAX_MEN, ROSTER_MAX_SECTIONS, SECTION_TYPE_IDS, SECTION_TYPES, validateRoster, type Roster, type SectionTypeId } from '@prestes/shared';
+import { ARMIES, canAdd, defaultRoster, rosterArmies, ROSTER_MAX_MEN, ROSTER_MAX_SECTIONS, SECTION_TYPE_IDS, SECTION_TYPES, validateRoster, type Roster, type SectionTypeId } from '@prestes/shared';
 import { refusalMessage } from '../ui/menu/setupState';
 
 type T = (key: string, values?: Readonly<Record<string, string | number>>) => string;
@@ -14,7 +14,7 @@ type T = (key: string, values?: Readonly<Record<string, string | number>>) => st
 export function EnemyForces({ presets, onChange, t }: { presets: readonly Roster[]; onChange: (presets: Roster[]) => void; t: T }): ReactNode {
   const [adding, setAdding] = useState<Record<number, SectionTypeId>>({});
   const set = (index: number, roster: Roster) => onChange(presets.map((preset, at) => (at === index ? roster : preset)));
-  const choice = (index: number): SectionTypeId => adding[index] ?? 'fuzileiros';
+  const choice = (index: number): SectionTypeId => adding[index] ?? 'infantaria-exercito';
   return (
     <fieldset className="editor-enemy" data-testid="enemy-forces">
       <legend>{t('editor.enemy.title')}</legend>
@@ -27,6 +27,7 @@ export function EnemyForces({ presets, onChange, t }: { presets: readonly Roster
           <div key={index} className="editor-enemy-preset" data-testid={`enemy-preset-${index}`}>
             <div className="editor-row">
               <strong>{t('editor.enemy.preset', { number: index + 1 })}</strong>
+              <span data-testid={`enemy-preset-${index}-armies`}>{rosterArmies(preset).map((army) => t(ARMIES[army].nameKey)).join(' + ')}</span>
               <span data-testid={`enemy-preset-${index}-counters`}>
                 {t('setup.counters', { men: check.men, maxMen: ROSTER_MAX_MEN, sections: check.sections, maxSections: ROSTER_MAX_SECTIONS })}
               </span>
@@ -57,11 +58,17 @@ export function EnemyForces({ presets, onChange, t }: { presets: readonly Roster
                 value={choice(index)}
                 onChange={(event) => setAdding({ ...adding, [index]: event.target.value as SectionTypeId })}
               >
-                {SECTION_TYPE_IDS.filter((type) => SECTION_TYPES[type].sides.includes('legalist')).map((type) => (
-                  <option key={type} value={type}>
-                    {t(SECTION_TYPES[type].nameKey)} ({SECTION_TYPES[type].men.length})
-                  </option>
-                ))}
+                {Object.values(ARMIES)
+                  .filter((army) => army.side === 'legalist')
+                  .map((army) => (
+                    <optgroup key={army.id} label={t(army.nameKey)}>
+                      {SECTION_TYPE_IDS.filter((type) => SECTION_TYPES[type].army === army.id).map((type) => (
+                        <option key={type} value={type}>
+                          {t(SECTION_TYPES[type].nameKey)} ({SECTION_TYPES[type].men.length})
+                        </option>
+                      ))}
+                    </optgroup>
+                  ))}
               </select>
               <button
                 type="button"
@@ -80,7 +87,7 @@ export function EnemyForces({ presets, onChange, t }: { presets: readonly Roster
           </div>
         );
       })}
-      <button type="button" data-testid="enemy-preset-add" onClick={() => onChange([...presets, { sections: ['fuzileiros', 'fuzileiros', 'fuzileiros'] }])}>
+      <button type="button" data-testid="enemy-preset-add" onClick={() => onChange([...presets, defaultRoster('legalista')])}>
         {t('editor.enemy.add')}
       </button>
     </fieldset>

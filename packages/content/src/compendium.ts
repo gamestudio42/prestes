@@ -14,7 +14,7 @@ export { COMPENDIUM_IMAGE_REGISTER } from './compendium-docs';
  * docs/history (Macaulay 1974 as the baseline) and carries its source and the
  * confidence recorded there; nothing here is new research.
  */
-export type CompendiumSection = 'figures' | 'events' | 'places' | 'weapons' | 'corrections';
+export type CompendiumSection = 'figures' | 'events' | 'places' | 'weapons' | 'forces' | 'corrections';
 export type Confidence = 'high' | 'medium' | 'low';
 
 export interface CompendiumEntry {
@@ -60,6 +60,7 @@ export const COMPENDIUM_SECTIONS: readonly CompendiumSection[] = [
   'events',
   'places',
   'weapons',
+  'forces',
   'corrections',
 ];
 
@@ -111,6 +112,30 @@ const BASE: readonly CompendiumEntry[] = [
   { id: 'cartridges', section: 'weapons', sourceRefs: [M], cite: 'Macaulay, p. 113', confidence: 'high' },
   // pre-battle-roster 2.1: the skirmish's section types are a game organization.
   { id: 'skirmish-forces', section: 'weapons', sourceRefs: [M], cite: 'Macaulay, pp. 54, 113, 152; the section types are a game organization', confidence: 'high', label: 'fictional' },
+
+  // faction-armies 2.4: the armies and their section types (docs/history/FORCES.md, "Names in the game").
+  { id: 'army-coluna', section: 'forces', sourceRefs: [M], cite: 'Macaulay, p. 113', confidence: 'high', label: 'historical' },
+  { id: 'army-legalista', section: 'forces', sourceRefs: [M], cite: 'Macaulay, pp. 71, 90', confidence: 'high', label: 'historical' },
+  { id: 'army-patriotico', section: 'forces', sourceRefs: [M], cite: 'Macaulay, pp. 15, 189', confidence: 'high', label: 'historical' },
+  { id: 'section-comando', section: 'forces', sourceRefs: [M], cite: 'Macaulay, pp. 112–113 (the detachment); a game organization', confidence: 'high', label: 'fictional' },
+  { id: 'section-fuzileiros', section: 'forces', sourceRefs: [M], cite: 'Macaulay, p. 151', confidence: 'high', label: 'historical' },
+  { id: 'section-esquadra-4', section: 'forces', sourceRefs: [M], cite: 'Macaulay, p. 151 (the fogão); a game organization', confidence: 'high', label: 'fictional' },
+  { id: 'section-esquadra-5', section: 'forces', sourceRefs: [M], cite: 'Macaulay, p. 113; a game organization', confidence: 'high', label: 'fictional' },
+  { id: 'section-fuzil-metralhador', section: 'forces', sourceRefs: [M], cite: 'Macaulay, p. 113; a game organization', confidence: 'high', label: 'fictional' },
+  { id: 'section-metralhadora', section: 'forces', sourceRefs: [M], cite: 'Macaulay, p. 113; a game organization', confidence: 'high', label: 'fictional' },
+  { id: 'section-irregulares', section: 'forces', sourceRefs: [M], cite: 'Macaulay, pp. 111, 151–152', confidence: 'high', label: 'historical' },
+  { id: 'section-veteranos-gauchos', section: 'forces', sourceRefs: [M], cite: 'Macaulay, pp. 44, 52, 88, 112; a game organization', confidence: 'high', label: 'fictional' },
+  { id: 'section-comando-companhia', section: 'forces', sourceRefs: [M], cite: 'A game organization', confidence: 'high', label: 'fictional' },
+  { id: 'section-infantaria-exercito', section: 'forces', sourceRefs: [M], cite: 'Macaulay, pp. 90–91, 178, 192 (the federal army); a game organization', confidence: 'high', label: 'fictional' },
+  { id: 'section-brigada-militar', section: 'forces', sourceRefs: [M], cite: 'Macaulay, pp. 48, 58, 82', confidence: 'high', label: 'historical' },
+  { id: 'section-provisorios', section: 'forces', sourceRefs: [M], cite: 'Macaulay, pp. 48, 55, 81, 178 ("provisionals")', confidence: 'high', label: 'historical' },
+  { id: 'section-metralhadora-legalista', section: 'forces', sourceRefs: [M], cite: 'Macaulay, p. 134; a game organization', confidence: 'high', label: 'fictional' },
+  { id: 'section-fuzil-metralhador-legalista', section: 'forces', sourceRefs: [M], cite: 'WEAPONS.md (no page of its own); a game organization', confidence: 'high', label: 'fictional' },
+  { id: 'section-chefe-capangas', section: 'forces', sourceRefs: [M], cite: 'Macaulay, pp. 189, 218, 228 (the regional bosses); a game organization', confidence: 'high', label: 'fictional' },
+  { id: 'section-jaguncos', section: 'forces', sourceRefs: [M], cite: 'Macaulay, pp. 192, 228', confidence: 'high', label: 'historical' },
+  { id: 'section-jaguncos-mauser', section: 'forces', sourceRefs: [M], cite: 'Macaulay, pp. 189, 205; a game organization', confidence: 'high', label: 'fictional' },
+  { id: 'section-voluntarios', section: 'forces', sourceRefs: [M], cite: 'Macaulay, pp. 70–71 ("volunteers")', confidence: 'high', label: 'historical' },
+  { id: 'section-cangaceiros', section: 'forces', sourceRefs: [M], cite: 'Macaulay, p. 191 (fighting the column is dramatized)', confidence: 'high', label: 'dramatized' },
 
   // Known corrections (docs/history/TIMELINE.md)
     { id: 'sao-paulo-separate', section: 'corrections', sourceRefs: [M], cite: 'Macaulay, ch. I–IV', confidence: 'high' },

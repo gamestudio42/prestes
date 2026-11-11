@@ -35,7 +35,8 @@ describe('rostered 3v3 (pre-battle-roster 3.1-3.4)', () => {
     expect(bugler).toMatchObject({ kind: 'infantry', weaponId: 'mauser-7mm', magazine: 5, reserve: 45 });
     expect(squad(2).map((unit) => unit.weaponId)).toEqual(['metralhadora-7mm', 'mauser-7mm', 'mauser-7mm', 'mauser-7mm']);
     expect(squad(3).map((unit) => unit.weaponId).filter((id) => id === 'fuzil-automatico-7mm')).toHaveLength(1);
-    expect(squad(6)[0]).toMatchObject({ weaponId: 'winchester-44', sidearmId: 'revolver', magazine: 9, reserve: 36 });
+    // faction-armies 3.1: the potreada carries three quarters of the issue in reserve.
+    expect(squad(6)[0]).toMatchObject({ weaponId: 'winchester-44', sidearmId: 'revolver', magazine: 9, reserve: 27 });
     expect(squad(6)[1]?.sidearmId).toBeUndefined();
   });
 

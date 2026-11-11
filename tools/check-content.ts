@@ -7,6 +7,7 @@ import {
   FIGURES,
   LOCALES,
   messages,
+  parseNameRegister,
   SOURCE_KEYS,
   validateChapters,
   validateCodexEntry,
@@ -14,9 +15,10 @@ import {
   validateCompendiumMedia,
   validateFigures,
   validateMissionCommander,
+  validateNameRegister,
   type MissionMetadata,
 } from '@prestes/content';
-import { SECTION_TYPES, validateSectionTypes, validateWeapons, WEAPONS } from '@prestes/shared';
+import { ARMIES, SECTION_TYPES, validateArmies, validateSectionTypes, validateWeapons, WEAPONS } from '@prestes/shared';
 
 const root = process.cwd();
 const errors: string[] = [];
@@ -121,6 +123,19 @@ for (const type of Object.values(SECTION_TYPES)) {
     }
   }
 }
+
+// faction-armies 2.4: every army is complete and named in every locale, and
+// every army and section type name is in the forces document's register.
+errors.push(...validateArmies());
+for (const army of Object.values(ARMIES)) {
+  for (const locale of LOCALES) {
+    for (const key of [army.nameKey, army.descriptionKey]) {
+      if (!(key in messages[locale])) errors.push(`${army.id}: ${locale} has no ${key}`);
+    }
+  }
+}
+const nameIds = [...Object.keys(ARMIES).map((id) => `army:${id}`), ...Object.keys(SECTION_TYPES).map((id) => `section:${id}`)];
+errors.push(...validateNameRegister(parseNameRegister(readFileSync(resolve(root, 'docs/history/FORCES.md'), 'utf8')), nameIds, SOURCE_KEYS));
 
 // author-game-maps 3.6: every battle map is an authored document; tools/check-maps.ts checks them.
 

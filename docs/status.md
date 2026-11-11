@@ -29,7 +29,7 @@ start, the rules and what each change decided:
 
 | Order | Change | Tasks | Lands |
 | --- | --- | --- | --- |
-| 1 | `faction-armies` | 4/18: research and the catalog done, approved by the owner 2026-11-11 (`catalog-proposal.md`); data and code not started | three armies (the Column, the legalist regulars, the patriotic battalions), period names for armies and sections, section types per army; starts with research into `docs/history/FORCES.md`, which also answers whether the police fought for the government |
+| 1 | `faction-armies` | 18/18: armies, 19 section types, successor table, map version 6, names and the Forças compendium section, values in the simulation, setup screen, editor presets and HUD done; `pnpm verify` green but the known `desk.spec` gap; hand check done; archived | three armies (the Column, the legalist regulars, the patriotic battalions), period names for armies and sections, section types per army; starts with research into `docs/history/FORCES.md`, which also answers whether the police fought for the government |
 | 2 | `soldier-animation-and-textures` | 16 | wound, carry and death clips, the crouch-walk and aim redone, blends, drawn uniform textures per army with variants |
 | 3 | `troop-thumbnails-and-panel` | 15 | a rendered thumbnail for every section type (roster, cards, panel), roster type cards, the troop panel redrawn as rows, gauges and alerts |
 | 4 | `biome-trees-and-plants` | 18 | the whole Refloreste tree suite by biome adapted to Prestes, bush families, more cacti and caatinga plants |
@@ -249,3 +249,13 @@ The desk replaces the bookmark shell.
 - The araucaria's crown reads as dark clumps without its candelabra shape
   (hand check pending).
 - The training-ground code is unused and still in the tree (see the plan).
+
+## faction-armies apply (2026-11-11)
+
+- Golden: the mixed-roster 3v3 on campo-de-provas 72e1ae4e -> 60476373 (the potreada's reserve, the migrated drawn preset); default battles unchanged.
+- Bundles: index JS 631,283 B of 680,000; three JS 602,238 B of 640,000; sim worker 210,620 B of 240,000.
+- `pnpm battle:report --armies` (mixed column on campo-de-provas): against the Forças legalistas the column loses most seeds, as it does against the same roster with neutral values; against two Voluntários and two Jagunços com Mauser it wins at heavy cost; against the mix it wins. Without automatic weapons any force loses 6 of 6, so the owner gave the Jagunços com Mauser an automatic rifle.
+- The owner lowered the machine-gun band of the battle report from 70% to 50% (`battle-lab` delta in the change).
+- Visual baselines re-recorded (HUD, orders column, sandbox panel, compendium); the top bar's "Leave" button in them dates from `65b1903`, not from this change.
+- Known e2e failure still open: `desk.spec.ts` label gap (since `6412ac9`).
+- Hand check (5.2, the owner, 2026-11-11): names and armies on the cards read right; card icons and the troop panel wait for `troop-thumbnails-and-panel`; the wire crossing went to `route-around-wire`.

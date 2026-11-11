@@ -1,3 +1,4 @@
+import { ARMIES } from './armies';
 import type { Vec2 } from './protocol';
 import { nearestWalkable } from './pathfinding';
 import { setActiveMap } from './maps/catalog';
@@ -156,11 +157,12 @@ export function validateMapRosters(map: BattleMap, options: { requirePresets?: b
     }
     for (const type of preset.sections) {
       if (!SECTION_TYPES[type]) errors.push(`${map.id}: enemy preset ${index + 1} has an unknown section: ${type}`);
-      else if (!SECTION_TYPES[type].sides.includes('legalist')) errors.push(`${map.id}: enemy preset ${index + 1} has ${type}, not a legalist section`);
+      else if (ARMIES[SECTION_TYPES[type].army].side !== 'legalist') errors.push(`${map.id}: enemy preset ${index + 1} has ${type}, not a section of an enemy army`);
     }
   });
   for (const side of ['column', 'legalist'] as const) {
-    for (const type of SECTION_TYPE_IDS) {
+    // A side fields only its armies' types.
+    for (const type of SECTION_TYPE_IDS.filter((id) => ARMIES[SECTION_TYPES[id].army].side === side)) {
       const full: Roster = { sections: Array.from({ length: ROSTER_MAX_SECTIONS }, () => type) };
       errors.push(...deployRoster(map, side, full).errors);
     }

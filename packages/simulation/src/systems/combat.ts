@@ -5,6 +5,8 @@ import {
   isLineBlocked,
   eyeHeightForStance,
   isPointInVision,
+  suppressionDivisor,
+  unitValues,
 } from '@prestes/shared';
 import type { DecidedBy, Outcome, SimEvent } from '@prestes/shared';
 import { TARGET_HYSTERESIS, targetScore } from '../tactical';
@@ -367,6 +369,8 @@ export function fire(ctx: SimContext, tick: number, events: SimEvent[]): void {
         underFireFactor *
         suppressFactor *
         woundAccuracyFactor(ctx, unit) *
+        // faction-armies 3.1: his army's and section's marksmanship.
+        unitValues(unit).accuracy *
         (burst ? burst.hitFactor : 1),
       0.05,
       0.95,
@@ -426,15 +430,17 @@ export function fire(ctx: SimContext, tick: number, events: SimEvent[]): void {
       weapon.suppression *
       (1 - targetCover * 0.3) *
       (unit.nonLethal ? 0.05 : 1);
-    target.suppression = clamp(target.suppression + suppressionGain, 0, 100);
+    // faction-armies 3.1: some men keep their heads up longer (the jagunços in cover).
+    target.suppression = clamp(target.suppression + suppressionGain / suppressionDivisor(target), 0, 100);
     for (const near of ctx.units) {
       if (near === target || near.faction !== target.faction || !near.alive || near.incapacitated) continue;
       if ((near.x - target.x) ** 2 + (near.y - target.y) ** 2 > SUPPRESSION_SPREAD ** 2) continue;
-      near.suppression = clamp(near.suppression + suppressionGain * 0.5, 0, 100);
+      near.suppression = clamp(near.suppression + (suppressionGain * 0.5) / suppressionDivisor(near), 0, 100);
     }
 
     if (hit) {
-      const moraleDamage = Math.round((unit.suppress ? 16 : 10) * weapon.suppression);
+      // faction-armies 3.1: morale falls at the rate his army and section define.
+      const moraleDamage = Math.round((unit.suppress ? 16 : 10) * weapon.suppression * unitValues(target).moraleLoss);
       if (unit.nonLethal) {
         target.morale = Math.max(25, target.morale - Math.round(moraleDamage * 0.5));
         continue;
@@ -479,15 +485,15 @@ export function fire(ctx: SimContext, tick: number, events: SimEvent[]): void {
             }
             const distance = Math.sqrt((ally.x - target.x) ** 2 + (ally.y - target.y) ** 2);
             if (distance <= 12) {
-              ally.morale = Math.max(0, ally.morale - 8);
-              ally.suppression = clamp(ally.suppression + 8, 0, 100);
+              ally.morale = Math.max(0, ally.morale - Math.round(8 * unitValues(ally).moraleLoss));
+              ally.suppression = clamp(ally.suppression + 8 / suppressionDivisor(ally), 0, 100);
             }
           }
         }
       }
     } else {
       const moraleDamage = Math.round(
-        (unit.suppress ? 4 : 2) * weapon.suppression * Math.max(0.3, 1 - targetCover * 0.5),
+        (unit.suppress ? 4 : 2) * weapon.suppression * Math.max(0.3, 1 - targetCover * 0.5) * unitValues(target).moraleLoss,
       );
       target.morale = Math.max(unit.nonLethal ? 25 : 0, target.morale - moraleDamage);
     }

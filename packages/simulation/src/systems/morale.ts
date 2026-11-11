@@ -1,4 +1,4 @@
-import { MAP_BOUNDS, MAX_MORALE, moraleStateFor, findPath } from '@prestes/shared';
+import { armyOfUnit, MAP_BOUNDS, MAX_MORALE, moraleStateFor, findPath, unitValues } from '@prestes/shared';
 import type { SimEvent, Vec2 } from '@prestes/shared';
 import { SUPPRESSION_COOLDOWN, clamp } from './model';
 import type { MutableUnit } from './model';
@@ -48,7 +48,9 @@ export function applyOfficerAura(ctx: SimContext): void {
         !ally.alive ||
         ally.dummy ||
         ally.routed ||
-        ally.faction !== officer.faction
+        ally.faction !== officer.faction ||
+        // faction-armies 3.2: an officer steadies only the men of his own army.
+        armyOfUnit(ally) !== armyOfUnit(officer)
       ) {
         continue;
       }
@@ -186,9 +188,11 @@ export function updateCohesion(ctx: SimContext): void {
         !other.incapacitated &&
         other.kind === 'officer' &&
         other.faction === unit.faction &&
+        armyOfUnit(other) === armyOfUnit(unit) &&
         (other.x - unit.x) ** 2 + (other.y - unit.y) ** 2 <= 12 * 12,
     );
-    const target = clamp(100 - Math.max(0, distance - 3) * 10 + (officerNear ? 15 : 0), 0, 100);
+    // faction-armies 3.1: a loose army never closes up beyond its own cohesion.
+    const target = clamp(100 - Math.max(0, distance - 3) * 10 + (officerNear ? 15 : 0), 0, unitValues(unit).cohesion);
     unit.cohesion += (target - unit.cohesion) * 0.12;
   }
 }

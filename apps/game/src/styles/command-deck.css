@@ -852,3 +852,14 @@
 .hud-ferry-icon {
   margin-right: 6px;
 }
+
+.section-army,
+.troop-heading small {
+  display: block;
+  font-size: 0.75em;
+  opacity: 0.75;
+}
+
+.troop-heading {
+  margin: 0 0 4px;
+}

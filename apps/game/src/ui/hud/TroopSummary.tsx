@@ -1,5 +1,5 @@
 import type { MessageKey } from '@prestes/content';
-import { trainingLoad, type CoverPoint, type UnitSnapshot } from '@prestes/shared';
+import { ARMIES, trainingLoad, type CoverPoint, type UnitSnapshot } from '@prestes/shared';
 import { Helmet } from '../icons';
 import type { Translate } from './orderMeta';
 import { positionName } from './positionName';
@@ -31,7 +31,17 @@ const pct = (value: number) => `${Math.round(Math.max(0, Math.min(1, value)) * 1
  */
 export function TroopSummary({ t, squadUnits, selectedIds, ammoFull, covers }: TroopSummaryProps) {
   const soldiers = [...squadUnits].filter((unit) => !unit.dummy).sort((left, right) => left.id - right.id);
+  // faction-armies 4.4: the section's name and its army above the helmets.
+  const sectionType = soldiers.find((unit) => unit.sectionType !== undefined)?.sectionType;
+  const army = soldiers.find((unit) => unit.army !== undefined)?.army;
   return (
+    <>
+      {sectionType || army ? (
+        <p className="troop-heading" data-testid="troop-heading">
+          {sectionType ? <strong data-testid="troop-section">{t(`section.${sectionType}.name` as MessageKey)}</strong> : null}
+          {army ? <small data-testid="troop-army">{t(ARMIES[army].nameKey as MessageKey)}</small> : null}
+        </p>
+      ) : null}
     <ul className="troop-helmets" data-testid="troop-helmets" aria-label={t('hud.windowSummary')}>
       {soldiers.map((unit) => {
         const tone = toneOf(unit, selectedIds.has(unit.id));
@@ -76,5 +86,6 @@ export function TroopSummary({ t, squadUnits, selectedIds, ammoFull, covers }: T
         );
       })}
     </ul>
+    </>
   );
 }

@@ -22,7 +22,7 @@ describe('objectives in the map document', () => {
     const parsed = parseMapDocument({ ...document, version: 4 });
     expect(parsed.ok).toBe(true);
     if (!parsed.ok) return;
-    expect(parsed.document.version).toBe(5);
+    expect(parsed.document.version).toBe(6);
     expect(compileMapDocument(parsed.document).objectives).toBeUndefined();
   });
 

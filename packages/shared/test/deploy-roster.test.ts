@@ -91,8 +91,10 @@ describe('map rosters', () => {
   });
 
   it('a broken preset fails the check', () => {
-    const broken: BattleMap = { ...PROVING, enemyForces: [{ sections: ['fuzileiros', 'fuzileiros', 'fuzileiros', 'esquadra-4'] }] };
+    const broken: BattleMap = { ...PROVING, enemyForces: [{ sections: ['infantaria-exercito', 'infantaria-exercito', 'brigada-militar', 'chefe-capangas'] }] };
     expect(validateMapRosters(broken)).toEqual(['campo-de-provas: enemy preset 1 is refused (over-men {"men":37,"max":33})']);
+    const column: BattleMap = { ...PROVING, enemyForces: [{ sections: ['infantaria-exercito', 'fuzileiros'] }] };
+    expect(validateMapRosters(column)).toEqual(['campo-de-provas: enemy preset 1 has fuzileiros, not a section of an enemy army']);
     expect(validateMapRosters({ ...PROVING, enemyForces: [] }, { requirePresets: true })).toEqual(['campo-de-provas: no enemy presets']);
   });
 

@@ -21,8 +21,8 @@ catalog SHALL hold at least:
   fuzil-metralhador;
 - for the Batalhões patrióticos: Chefe e capangas (a chief with a revolver
   and a Winchester and three men with Winchesters), Jagunços (six men with
-  Winchester .44 rifles, one also with a revolver), Jagunços com Mauser (six
-  riflemen), Voluntários (ten riflemen) and Cangaceiros (six riflemen, each
+  Winchester .44 rifles, one also with a revolver), Jagunços com Mauser (five
+  riflemen and an automatic rifle), Voluntários (ten riflemen) and Cangaceiros (six riflemen, each
   also with a revolver).
 
 A name that is a period term SHALL cite its source in the section's
@@ -58,8 +58,8 @@ with its preview and description. The player builds his force, of the
 Coluna Prestes, by adding, removing and ordering sections of that army. A
 roster SHALL hold at most 33 men and 6 sections, at most one command
 section, one machine-gun crew, one section of cangaceiros and two automatic
-rifles (Fogão com fuzil-metralhador and Guarnição de fuzil-metralhador
-together); the screen SHALL show the men used, the sections used and why an
+rifles (Fogão com fuzil-metralhador, Guarnição de fuzil-metralhador and
+Jagunços com Mauser together); the screen SHALL show the men used, the sections used and why an
 addition is refused. A default roster of three rifle sections of the army
 SHALL be one action away. The enemy SHALL be one of: "Sorteado" (a preset of
 the map drawn by seed, the default), a preset of the map chosen by name, or

@@ -11,6 +11,7 @@ import {
   SECTION_TYPES,
   getWeapon,
   isSectionTypeId,
+  unitValues,
   trainingLoad,
 } from '@prestes/shared';
 import type {
@@ -201,14 +202,15 @@ export function spawnTroop(
       hp: MAX_HP,
       weaponId,
       magazine: command.dummy ? 0 : load.magazine,
-      reserve: command.dummy ? 0 : load.reserve,
+      // faction-armies 3.1: a section's ammunition, morale and cohesion are its army's and type's.
+      reserve: command.dummy ? 0 : section?.ammunitionFactor !== undefined ? Math.round(load.reserve * section.ammunitionFactor) : load.reserve,
       ...(man?.sidearm ? { sidearmId: man.sidearm } : {}),
       ...(section ? { sectionType: section.id } : {}),
-      morale: MAX_MORALE,
+      morale: section ? unitValues({ sectionType: section.id }).morale : MAX_MORALE,
       alive: true,
       suppressed: false,
       suppression: 0,
-      cohesion: 100,
+      cohesion: section ? unitValues({ sectionType: section.id }).cohesion : 100,
       fatigue: 0,
       formation: 'line',
       orderDestination: null,

@@ -1,6 +1,6 @@
 import { Soldier as User } from '../icons';
 import type { MessageKey } from '@prestes/content';
-import type { Frame } from '@prestes/shared';
+import { ARMIES, type Frame } from '@prestes/shared';
 import { bar, type Translate } from './orderMeta';
 import { positionName } from './positionName';
 
@@ -62,6 +62,8 @@ export function SquadCards({
           const nameKey: MessageKey = sectionType
             ? (`section.${sectionType}.name` as MessageKey)
             : (sectionNames[squadId] ?? 'hud.squad2');
+          // faction-armies 4.4: the army the section belongs to, next to its name.
+          const army = units.find((unit) => unit.army !== undefined)?.army;
           const alive = units.filter((unit) => unit.alive && !unit.routed);
           const hp = alive.reduce((sum, unit) => sum + unit.hp, 0);
           const rounds = alive.reduce((sum, unit) => sum + unit.magazine + unit.reserve, 0);
@@ -98,6 +100,11 @@ export function SquadCards({
                 </span>
                 <span className="section-copy">
                   <strong data-testid={`squad-name-${squadId}`}>{t(nameKey)}</strong>
+                  {army ? (
+                    <small className="section-army" data-testid={`squad-army-${squadId}`}>
+                      {t(ARMIES[army].nameKey as MessageKey)}
+                    </small>
+                  ) : null}
                   <span>
                     {t('hud.alive')}: {alive.length}
                   </span>

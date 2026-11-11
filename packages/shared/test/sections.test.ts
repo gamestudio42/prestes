@@ -2,6 +2,11 @@ import { describe, expect, it } from 'vitest';
 import {
   canAdd,
   DEFAULT_ROSTER,
+  defaultRoster,
+  LEGALIST_SUCCESSORS,
+  migrateEnemyPreset,
+  migrateRoster,
+  rosterArmies,
   SECTION_TYPE_IDS,
   SECTION_TYPES,
   validateRoster,
@@ -12,16 +17,41 @@ import {
 
 describe('section catalog', () => {
   it('catalog is complete', () => {
-    expect(SECTION_TYPE_IDS).toEqual(['comando', 'esquadra-4', 'esquadra-5', 'fuzileiros', 'fuzil-metralhador', 'metralhadora', 'irregulares']);
+    expect(SECTION_TYPE_IDS).toHaveLength(19);
     expect(validateSectionTypes(SECTION_TYPES, Object.keys(WEAPONS))).toEqual([]);
     const men = Object.fromEntries(SECTION_TYPE_IDS.map((id) => [id, SECTION_TYPES[id].men.length]));
-    expect(men).toEqual({ comando: 4, 'esquadra-4': 4, 'esquadra-5': 5, fuzileiros: 11, 'fuzil-metralhador': 3, metralhadora: 4, irregulares: 5 });
+    expect(men).toEqual({
+      comando: 4,
+      fuzileiros: 11,
+      'esquadra-4': 4,
+      'esquadra-5': 5,
+      'fuzil-metralhador': 3,
+      metralhadora: 4,
+      irregulares: 5,
+      'veteranos-gauchos': 8,
+      'comando-companhia': 4,
+      'infantaria-exercito': 11,
+      'brigada-militar': 11,
+      provisorios: 8,
+      'metralhadora-legalista': 4,
+      'fuzil-metralhador-legalista': 3,
+      'chefe-capangas': 4,
+      jaguncos: 6,
+      'jaguncos-mauser': 6,
+      voluntarios: 10,
+      cangaceiros: 6,
+    });
     expect(SECTION_TYPES.comando.men[0]).toEqual({ role: 'officer', weapon: 'revolver' });
     expect(SECTION_TYPES.metralhadora.men[0]?.weapon).toBe('metralhadora-7mm');
     expect(SECTION_TYPES.metralhadora.speedFactor).toBe(0.85);
     expect(SECTION_TYPES.irregulares.speedFactor).toBe(1.1);
     expect(SECTION_TYPES.irregulares.men[0]?.sidearm).toBe('revolver');
-    for (const id of SECTION_TYPE_IDS) expect(SECTION_TYPES[id].sides).toEqual(['column', 'legalist']);
+    const byArmy = (army: string) => SECTION_TYPE_IDS.filter((id) => SECTION_TYPES[id].army === army);
+    expect(byArmy('coluna')).toEqual(['comando', 'fuzileiros', 'esquadra-4', 'esquadra-5', 'fuzil-metralhador', 'metralhadora', 'irregulares', 'veteranos-gauchos']);
+    expect(byArmy('legalista')).toHaveLength(6);
+    expect(byArmy('patriotico')).toHaveLength(5);
+    expect(SECTION_TYPES['chefe-capangas'].men[0]).toEqual({ role: 'officer', weapon: 'winchester-44', sidearm: 'revolver' });
+    expect(SECTION_TYPES.cangaceiros.men.every((man) => man.weapon === 'mauser-7mm' && man.sidearm === 'revolver')).toBe(true);
   });
 
   it('flags a broken type', () => {
@@ -56,8 +86,37 @@ describe('roster rules', () => {
   });
 
   it('a second command and a second machine gun are refused', () => {
-    expect(canAdd(roster('comando'), 'comando')).toEqual({ code: 'limit', values: { type: 'comando', max: 1 } });
-    expect(canAdd(roster('metralhadora'), 'metralhadora')).toEqual({ code: 'limit', values: { type: 'metralhadora', max: 1 } });
+    expect(canAdd(roster('comando'), 'comando')).toEqual({ code: 'limit', values: { type: 'command', max: 1 } });
+    expect(canAdd(roster('metralhadora'), 'metralhadora')).toEqual({ code: 'limit', values: { type: 'machine-gun', max: 1 } });
+    // In a mixed preset the limits hold across the armies.
+    expect(canAdd(roster('comando-companhia'), 'chefe-capangas')).toEqual({ code: 'limit', values: { type: 'command', max: 1 } });
+    expect(canAdd(roster('metralhadora-legalista'), 'metralhadora-legalista')).toEqual({ code: 'limit', values: { type: 'machine-gun', max: 1 } });
+  });
+
+  it('the patriotic automatic rifles count toward the limit of two', () => {
+    expect(SECTION_TYPES['jaguncos-mauser'].men.filter((man) => man.weapon === 'fuzil-automatico-7mm')).toHaveLength(1);
+    expect(canAdd(roster('jaguncos-mauser', 'jaguncos-mauser'), 'jaguncos-mauser', 'patriotico')).toEqual({ code: 'limit', values: { type: 'automatic-rifle', max: 2 } });
+  });
+
+  it('a second section of cangaceiros is refused', () => {
+    expect(canAdd(roster('cangaceiros'), 'cangaceiros', 'patriotico')).toEqual({ code: 'limit', values: { type: 'cangaceiros', max: 1 } });
+  });
+
+  it('the roster lists one army: a foreign section is refused', () => {
+    expect(validateRoster(roster('infantaria-exercito', 'jaguncos'), 'legalista').refusals).toEqual([
+      { code: 'foreign', values: { type: 'jaguncos', army: 'patriotico' } },
+    ]);
+    expect(canAdd(roster('infantaria-exercito'), 'fuzileiros', 'legalista')).toEqual({ code: 'foreign', values: { type: 'fuzileiros', army: 'coluna' } });
+    expect(canAdd(roster('fuzileiros'), 'fuzileiros', 'coluna')).toBeNull();
+    // Without an army (a map preset) the two enemy armies mix.
+    expect(validateRoster(roster('infantaria-exercito', 'jaguncos')).ok).toBe(true);
+    expect(rosterArmies(roster('jaguncos', 'infantaria-exercito'))).toEqual(['legalista', 'patriotico']);
+  });
+
+  it('each army has a default roster of three rifle sections', () => {
+    expect(defaultRoster('coluna')).toEqual(DEFAULT_ROSTER);
+    expect(defaultRoster('legalista').sections).toEqual(['infantaria-exercito', 'infantaria-exercito', 'infantaria-exercito']);
+    for (const army of ['coluna', 'legalista', 'patriotico'] as const) expect(validateRoster(defaultRoster(army), army).ok).toBe(true);
   });
 
   it('third automatic rifle is refused', () => {
@@ -65,5 +124,35 @@ describe('roster rules', () => {
     expect(validateRoster(two).ok).toBe(true);
     expect(canAdd(two, 'esquadra-5')).toEqual({ code: 'limit', values: { type: 'automatic-rifle', max: 2 } });
     expect(canAdd(roster('fuzil-metralhador', 'fuzil-metralhador'), 'fuzil-metralhador')).toEqual({ code: 'limit', values: { type: 'automatic-rifle', max: 2 } });
+  });
+});
+
+describe('successor table', () => {
+  const OLD_IDS = ['comando', 'esquadra-4', 'esquadra-5', 'fuzileiros', 'fuzil-metralhador', 'metralhadora', 'irregulares'];
+
+  it('maps every old id onto a legalist section', () => {
+    expect(Object.keys(LEGALIST_SUCCESSORS).sort()).toEqual([...OLD_IDS].sort());
+    for (const id of OLD_IDS) {
+      const successor = LEGALIST_SUCCESSORS[id]!;
+      expect(SECTION_TYPES[successor].army).toBe('legalista');
+    }
+    expect(LEGALIST_SUCCESSORS.fuzileiros).toBe('infantaria-exercito');
+    expect(LEGALIST_SUCCESSORS.metralhadora).toBe('metralhadora-legalista');
+  });
+
+  it('an old enemy preset becomes legalist; a new one is kept', () => {
+    expect(migrateEnemyPreset(OLD_IDS)).toEqual({
+      roster: { sections: OLD_IDS.map((id) => LEGALIST_SUCCESSORS[id]) },
+      changed: true,
+    });
+    expect(migrateEnemyPreset(['jaguncos', 'brigada-militar'])).toEqual({ roster: { sections: ['jaguncos', 'brigada-militar'] }, changed: false });
+    expect(migrateEnemyPreset(['lanceiros']).roster.sections).toEqual(['infantaria-exercito']);
+  });
+
+  it('a stored roster keeps its army; an unknown id becomes the rifle section', () => {
+    expect(migrateRoster(['fuzileiros', 'irregulares'], 'coluna')).toEqual({ roster: { sections: ['fuzileiros', 'irregulares'] }, changed: false });
+    expect(migrateRoster(['lanceiros'], 'coluna')).toEqual({ roster: { sections: ['fuzileiros'] }, changed: true });
+    expect(migrateRoster(['fuzileiros', 'irregulares'], 'legalista').roster.sections).toEqual(['infantaria-exercito', 'provisorios']);
+    expect(migrateRoster(['fuzileiros'], 'patriotico').roster.sections).toEqual(['voluntarios']);
   });
 });

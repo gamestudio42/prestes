@@ -53,9 +53,9 @@ export function buildTestMap(): EditableMap {
   // The enemy's forces when the player brings a roster: one drawn per battle.
   map.enemyForces = [
     // Three rifle sections first: the seeded draw of the e2e and the reports fields them (33 men, as before).
-    { sections: ['fuzileiros', 'fuzileiros', 'fuzileiros'] },
-    { sections: ['comando', 'metralhadora', 'fuzileiros', 'fuzileiros'] },
-    { sections: ['irregulares', 'irregulares', 'fuzileiros', 'esquadra-5', 'esquadra-4'] },
+    { sections: ['infantaria-exercito', 'infantaria-exercito', 'infantaria-exercito'] },
+    { sections: ['comando-companhia', 'metralhadora-legalista', 'infantaria-exercito', 'infantaria-exercito'] },
+    { sections: ['provisorios', 'provisorios', 'infantaria-exercito', 'fuzil-metralhador-legalista', 'fuzil-metralhador-legalista'] },
   ];
 
   // add-map-objectives 1.4 (design.md table): the crossings in the middle,

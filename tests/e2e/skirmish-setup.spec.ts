@@ -75,7 +75,7 @@ test('roster remembered', async ({ page }) => {
 
   await openSetup(page);
   await expect(page.getByTestId('map-option-campo-de-provas')).toHaveAttribute('aria-checked', 'true');
-  await expect(page.getByTestId('roster-row-0')).toContainText(/Metralhadora|Machine gun/);
+  await expect(page.getByTestId('roster-row-0')).toContainText(/Peça de metralhadora/);
   await expect(page.getByTestId('roster-row-1')).toContainText(/Comando|Command/);
   await expect(page.getByTestId('roster-row-2')).toHaveCount(0);
 });
@@ -88,10 +88,10 @@ test('enemy chosen: the test map with force C', async ({ page }) => {
   await expect(page.getByTestId('hud')).toBeVisible();
   await expect.poll(async () => (await units(page)).length).toBeGreaterThan(0);
   const legalists = (await units(page)).filter((unit) => unit.faction === 'legalist');
-  // Two irregular sections, a rifle section, a squad of five and a squad of four.
-  expect(legalists).toHaveLength(30);
+  // Two provisional sections, an army rifle section and two automatic-rifle squads.
+  expect(legalists).toHaveLength(33);
   expect(new Set(legalists.map((unit) => unit.squadId)).size).toBe(5);
-  expect(legalists.filter((unit) => unit.weaponId === 'winchester-44')).toHaveLength(10);
+  expect(legalists.filter((unit) => unit.weaponId === 'winchester-44')).toHaveLength(8);
 });
 
 test('enemy built: a second machine gun is refused', async ({ page }) => {
@@ -99,13 +99,23 @@ test('enemy built: a second machine gun is refused', async ({ page }) => {
   await page.getByTestId('enemy-built').check();
   await expect(page.getByTestId('enemy-roster-builder')).toBeVisible();
   await page.getByTestId('enemy-roster-remove-0').click();
-  await page.getByTestId('enemy-roster-add-metralhadora').click();
-  await expect(page.getByTestId('enemy-roster-refusal-metralhadora')).toContainText(/metralhadora|machine gun/);
-  await page.getByTestId('enemy-roster-add-metralhadora').click({ force: true });
+  await page.getByTestId('enemy-roster-add-metralhadora-legalista').click();
+  await expect(page.getByTestId('enemy-roster-refusal-metralhadora-legalista')).toContainText(/metralhadora|machine gun/);
+  await page.getByTestId('enemy-roster-add-metralhadora-legalista').click({ force: true });
   await expect(page.getByTestId('enemy-roster-row-3')).toHaveCount(0);
   // Choosing the map again keeps a built enemy.
   await page.getByTestId('map-option-campo-de-provas').click();
   await expect(page.getByTestId('enemy-roster-row-2')).toBeVisible();
+});
+
+// faction-armies 4.3: the enemy builder offers only the chosen army's types.
+test('enemy built: the patriotic army offers only its own types', async ({ page }) => {
+  await openSetup(page);
+  await page.getByTestId('enemy-built').check();
+  await expect(page.getByTestId('enemy-roster-add-infantaria-exercito')).toBeVisible();
+  await page.getByTestId('enemy-army-patriotico').check();
+  await expect(page.getByTestId('enemy-roster-add-jaguncos')).toBeVisible();
+  await expect(page.getByTestId('enemy-roster-add-infantaria-exercito')).toHaveCount(0);
 });
 
 // pre-battle-roster 5.2: the HUD names rostered troops and lists a mixed section's weapons.
@@ -119,13 +129,13 @@ test('weapon card shows the mix', async ({ page }) => {
   await expect(page.getByTestId('hud')).toBeVisible();
 
   await page.getByTestId('squad-1').click();
-  await expect(page.getByTestId('squad-name-1')).toContainText(/Esquadra de 5|Squad of 5/);
+  await expect(page.getByTestId('squad-name-1')).toContainText(/Fogão com fuzil-metralhador/);
   await expect(page.getByTestId('weapon-line-mauser-7mm')).toContainText('×4');
   await expect(page.getByTestId('weapon-line-fuzil-automatico-7mm')).toContainText('20/120');
   await expect(page.getByTestId('gun-state')).toHaveCount(0);
 
   await page.getByTestId('squad-2').click();
-  await expect(page.getByTestId('squad-name-2')).toContainText(/Metralhadora|Machine gun/);
+  await expect(page.getByTestId('squad-name-2')).toContainText(/Peça de metralhadora/);
   await expect(page.getByTestId('weapon-line-metralhadora-7mm')).toContainText('250/250');
   await expect(page.getByTestId('gun-state')).toContainText(/montando|pronta|em movimento|setting up|ready|moving/);
   await expect(page.getByTestId('gun-pool')).toContainText('750');
