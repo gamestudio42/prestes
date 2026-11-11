@@ -634,6 +634,136 @@ def prone_go_limp(p: Poser, t: float) -> None:
     p.swing("rifle", PRONE_RISE * (1 - t))
 
 
+# ------------------------------------------------- crouch, aim and reload
+# soldier-animation-and-textures 1.3.
+CROUCH_Z = -0.36
+# The crouch-walk's head stays under this share of the standing head height.
+CROUCH_HEAD_SHARE = 0.85
+
+
+def crouch_step(p: Poser, lead: str, trail: str) -> None:
+    """Crouch-walk contact: low, the chest over the knees, the rifle forward
+    at the ready; the lead knee reaches, the trailing one is nearly down."""
+    ready(p)
+    p.swing("chest", 24)
+    p.swing("head", -16)
+    p.swing("rifle", 92 - 18)
+    p.root(z=CROUCH_Z)
+    p.swing(f"thigh.{lead}", 80)
+    p.swing(f"shin.{lead}", -85)
+    p.swing(f"thigh.{trail}", 10)
+    p.swing(f"shin.{trail}", -105)
+
+
+def crouch_pass(p: Poser, lead: str, trail: str) -> None:
+    """Crouch-walk passing: the trailing leg swings through under the body."""
+    ready(p)
+    p.swing("chest", 24)
+    p.swing("head", -16)
+    p.swing("rifle", 92 - 18)
+    p.root(z=CROUCH_Z + 0.02)
+    p.swing(f"thigh.{lead}", 45)
+    p.swing(f"shin.{lead}", -95)
+    p.swing(f"thigh.{trail}", 55)
+    p.swing(f"shin.{trail}", -120)
+
+
+def lowered_prone(p: Poser) -> None:
+    """Prone with the rifle down off the cheek, the head up looking."""
+    prone(p)
+    p.swing("rifle", PRONE_RISE - 25)
+    p.swing("upper_arm.R", PRONE_ELBOW - 15)
+    p.swing("head", -30)
+
+
+def stance_pose(stance: str, aim: bool):
+    """The held pose of a stance, at the ready or in the aim."""
+    if stance == "stand":
+        return aim_arms if aim else ready
+    if stance == "crouch":
+        return lambda p: crouch(p, aim=aim)
+    return (lambda p: prone(p)) if aim else lowered_prone
+
+
+def recoil_pose(stance: str):
+    """The shot: the rifle kicks up and the shoulder is pushed back."""
+    if stance == "stand":
+        return lambda p: (aim_arms(p, 1.6), p.root(y=-0.03))
+    if stance == "crouch":
+        return lambda p: (crouch(p, aim=True), aim_arms(p, 1.6, lean=14), p.root(y=-0.03, z=-0.34))
+    return lambda p: (prone(p), p.swing("rifle", PRONE_RISE - 8), p.swing("chest", -PRONE_RISE + 4), p.swing("head", -36))
+
+
+def reload_pose(stance: str, phase: int):
+    """Loading the Mauser from a stripper clip: 0 rifle down and the bolt
+    back, 1 the left hand at the belt pouch, 2 the clip pressed in from
+    above, 3 the bolt closed."""
+    def pose(p: Poser) -> None:
+        stance_pose(stance, False)(p)
+        if stance == "prone":
+            p.swing("rifle", PRONE_RISE - 30)
+            p.side("rifle", AIM_YAW - 15)
+            p.swing("head", -20)
+        else:
+            p.swing("rifle", 60 if stance == "stand" else 55)
+            p.side("rifle", READY_YAW - 10)
+            p.swing("head", 12)
+        bolt = 50 if phase in (0, 1, 2) else 35
+        p.swing("forearm.R", bolt + (15 if phase == 0 else 0))
+        if phase == 1:
+            # The left hand drops to the pouch on the belt.
+            if stance == "prone":
+                p.swing("upper_arm.L", PRONE_ELBOW - 50)
+                p.swing("forearm.L", 70)
+            else:
+                p.swing("upper_arm.L", 10)
+                p.swing("forearm.L", 70)
+                p.side("upper_arm.L", -10)
+        elif phase == 2:
+            p.swing("upper_arm.L", (PRONE_ELBOW + 15) if stance == "prone" else 70)
+            p.swing("forearm.L", 80)
+    return pose
+
+
+def turn_step(stance: str, phase: int):
+    """Turning in the aim: the body comes round on small steps (the view
+    turns the root); `phase` 0 and 2 feet together, 1 and 3 one foot out."""
+    def pose(p: Poser) -> None:
+        stance_pose(stance, True)(p)
+        lift = 1 if phase in (1, 3) else 0
+        leg = "L" if phase == 1 else "R"
+        if stance == "stand":
+            p.swing(f"thigh.{leg}", 18 * lift)
+            p.swing(f"shin.{leg}", -30 * lift)
+            p.spread(f"thigh.{leg}", 10 * lift)
+            p.root(z=0.02 * lift)
+        else:
+            p.spread(f"thigh.{leg}", 14 * lift)
+            p.root(z=-0.34 + 0.03 * lift)
+    return pose
+
+
+def check_crouch_walk(rig) -> None:
+    """1.3: the crouch-walk's head stays under CROUCH_HEAD_SHARE of the
+    standing head height on every frame; the build fails otherwise."""
+    track = next(t for t in rig.animation_data.nla_tracks if t.name == "crouch-walk")
+    action = track.strips[0].action
+    standing = (rig.matrix_world @ rig.data.bones["head"].tail_local).z
+    for t in rig.animation_data.nla_tracks:
+        t.mute = True
+    rig.animation_data.action = action
+    highest = 0.0
+    for frame in range(int(action.frame_range[0]), int(action.frame_range[1]) + 1):
+        bpy.context.scene.frame_set(frame)
+        highest = max(highest, (rig.matrix_world @ rig.pose.bones["head"].tail).z)
+    rig.animation_data.action = None
+    for t in rig.animation_data.nla_tracks:
+        t.mute = False
+    print(f"crouch-walk head: highest {highest:.2f} m, standing {standing:.2f} m")
+    if highest > standing * CROUCH_HEAD_SHARE:
+        raise RuntimeError(f"crouch-walk head reaches {highest:.2f} m, over {CROUCH_HEAD_SHARE} of {standing:.2f} m")
+
+
 def build():
     reset()
     bpy.context.scene.render.fps = FPS
@@ -659,24 +789,27 @@ def build():
         (13, lambda p: run_float(p, "R", "L")),
     ])
     clip(rig, poser, "crouch-idle", [(1, lambda p: crouch(p)), (24, lambda p: crouch(p))], loop=False)
+    # Crouch-walk (1.3): low, rifle forward, a full four-key cycle.
     clip(rig, poser, "crouch-walk", [
-        (1, lambda p: (crouch(p), p.swing("thigh.L", 60), p.swing("thigh.R", 40))),
-        (10, lambda p: (crouch(p), p.swing("thigh.L", 40), p.swing("thigh.R", 60))),
+        (1, lambda p: crouch_step(p, "L", "R")),
+        (8, lambda p: crouch_pass(p, "L", "R")),
+        (15, lambda p: crouch_step(p, "R", "L")),
+        (22, lambda p: crouch_pass(p, "R", "L")),
     ])
     clip(rig, poser, "prone", [(1, lambda p: prone(p)), (24, lambda p: prone(p))], loop=False)
     clip(rig, poser, "crawl", [(1, lambda p: crawl(p, 1)), (16, lambda p: crawl(p, -1))])
     clip(rig, poser, "aim-stand", [(1, lambda p: aim_arms(p)), (24, lambda p: aim_arms(p))], loop=False)
-    clip(rig, poser, "fire-stand", [(1, lambda p: aim_arms(p)), (3, lambda p: aim_arms(p, 1)), (10, lambda p: aim_arms(p))], loop=False)
+    clip(rig, poser, "fire-stand", [(1, lambda p: aim_arms(p)), (3, recoil_pose("stand")), (10, lambda p: aim_arms(p))], loop=False)
     clip(rig, poser, "aim-crouch", [(1, lambda p: crouch(p, aim=True)), (24, lambda p: crouch(p, aim=True))], loop=False)
     clip(rig, poser, "fire-crouch", [
         (1, lambda p: crouch(p, aim=True)),
-        (3, lambda p: (crouch(p, aim=True), aim_arms(p, 1, lean=14))),
+        (3, recoil_pose("crouch")),
         (10, lambda p: crouch(p, aim=True)),
     ], loop=False)
     clip(rig, poser, "aim-prone", [(1, lambda p: prone(p)), (24, lambda p: prone(p))], loop=False)
     clip(rig, poser, "fire-prone", [
         (1, lambda p: prone(p)),
-        (3, lambda p: (prone(p), p.swing("rifle", PRONE_RISE - 6), p.swing("chest", -PRONE_RISE + 3))),
+        (3, recoil_pose("prone")),
         (10, lambda p: prone(p)),
     ], loop=False)
     clip(rig, poser, "hit", [(1, lambda p: hit(p, 0)), (4, lambda p: hit(p, 1)), (8, lambda p: hit(p, 0.85))], loop=False)
@@ -726,9 +859,24 @@ def build():
     clip(rig, poser, "death-crouch", [
         (1, lambda p: crouch_slump(p, 0)), (6, lambda p: crouch_slump(p, 1)), (14, corpse_face),
     ], loop=False)
+    # Raise into the aim, lower out of it, reload and turn, per stance (1.3).
+    for stance in ("stand", "crouch", "prone"):
+        clip(rig, poser, f"raise-{stance}", [(1, stance_pose(stance, False)), (8, stance_pose(stance, True))], loop=False)
+        clip(rig, poser, f"lower-{stance}", [(1, stance_pose(stance, True)), (10, stance_pose(stance, False))], loop=False)
+        clip(rig, poser, f"reload-{stance}", [
+            (1, stance_pose(stance, False)),
+            (6, reload_pose(stance, 0)),
+            (16, reload_pose(stance, 1)),
+            (28, reload_pose(stance, 2)),
+            (40, reload_pose(stance, 3)),
+            (48, stance_pose(stance, False)),
+        ], loop=False)
+    for stance in ("stand", "crouch"):
+        clip(rig, poser, f"aim-turn-{stance}", [(1, turn_step(stance, 0)), (5, turn_step(stance, 1)), (9, turn_step(stance, 2)), (13, turn_step(stance, 3))])
     clip(rig, poser, "death-prone", [
         (1, lambda p: prone_go_limp(p, 0)), (6, lambda p: prone_go_limp(p, 0.6)), (14, corpse_sprawl),
     ], loop=False)
 
+    check_crouch_walk(rig)
     poser.clear()
     return [save_and_export("soldier", "characters")]
