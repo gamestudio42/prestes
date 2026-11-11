@@ -224,6 +224,6 @@ latest. Goldens re-recorded. No saved data.
   120 s" (was 75: a section may march to a far objective out of range),
   through a MODIFIED battle-lab "Battle feel report" delta. The weapons
   test's stand-off exemption is gone: presets A, B and C all hold the gun's
-  bands. Report tests 16/16 (3 seeds, the enemy deployed, and mixed rosters
-  by preset).
+  bands. Report tests 13/13 (battle-feel 3, battle-maps 6 including the enemy
+  deployed, weapons 4); tests/simulation 19/19 with preview-cost.
 
