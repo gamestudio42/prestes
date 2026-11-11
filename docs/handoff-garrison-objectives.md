@@ -12,17 +12,21 @@ cold. Keep this file current as tasks close; delete it once
   (+15, ~19, -9); no main spec names a removed map any more (terrain
   hill and garrison scenario fixed after the sync); `openspec validate
   --specs` 23/23.
-- **Current change: add-map-objectives (14/18, started 2026-11-10).** Sections 1
-  (data) and 2 (simulation) are complete (1.1–1.4, 2.1–2.6), 4.1 is done (the
-  report's player plays the objectives; 15-minute clock; `decidedBy` and
-  objectives in the report; battle-lab band widened) and 3.1 is done
-  (`ObjectiveLayer`: `placeholder:flag` in the owner's colour, area outline at
-  tactical zoom, capture ring; screenshots reviewed; asset register row;
-  `paiolzinho` has no objectives yet). NEXT STEP: 3.2 (top bar `ObjectiveStrip`
-  and clock; tooltips; contested pulse; PT-BR and EN; e2e reads owner changes
-  through the strip); then 3.3 (setup screen time limit and objectives), 3.4
-  (end panel decided-by line and objectives table), 4.2 gates and 4.3 the
-  user's hand check. Work in small steps, commit each, and
+- **Current change: add-map-objectives (16/18, started 2026-11-10).** Only the
+  gates (4.2) and the user's hand check (4.3) are open. Sections 1 (data) and
+  2 (simulation) are complete (1.1–1.4, 2.1–2.6); 4.1 is done (the report's
+  player plays the objectives; 15-minute clock; `decidedBy` and objectives in
+  the report); 3.1–3.4 are done: the `ObjectiveLayer` (flag, outline, capture
+  ring), the top-bar objective strip and clock (localized tooltips, contested
+  pulse), the setup screen's time limit and objectives over the preview, and
+  the end panel's decided-by line and objectives table. NEXT STEP: 4.2
+  (`pnpm verify`, `pnpm e2e`, `openspec validate add-map-objectives
+  --type change --strict`); then 4.3, the user's hand check (play one battle
+  for the objectives on each battle map and write findings in
+  `docs/status.md`). Known e2e risk: the visual baselines and the editor
+  pixel-art screenshot were failing before this change (re-record only with
+  the user's ok). `paiolzinho` still has no objectives (`check:maps` warns);
+  the user will author them in the editor. Work in small steps, commit each, and
   update this file after each. Open points it inherits: defend
   and ambush still face the nearest enemy, seen or not (the AI's defend
   needs a facing of its own before fog can apply there).
@@ -145,7 +149,7 @@ deployment" can fail in the full parallel vitest run and passes alone.
 Other changes: machine-gun-fire-feedback 12/13 (only gates + the user's hand
 check), polish-menu-desk 31/35 (Aseprite sprites, needs the user's
 Aseprite window; task 6.6 done 2026-11-10: the open book redrawn in CSS, user approved; see its Apply note), retire-bootcamp archived 2026-11-10,
-add-map-objectives 14/18 (in progress) and video-tutorial-manual 0/19 (after
+add-map-objectives 16/18 (in progress) and video-tutorial-manual 0/19 (after
 author-game-maps).
 
 ### Built this session outside the task list (all asked by the user while authoring)
@@ -316,7 +320,7 @@ simulation (protocol, capture, clock and outcome, commander goals, goldens and
 deployment anchors — 2.1–2.6 done), 3.1–3.4 presentation
 (ObjectiveLayer,
 top-bar strip and clock, skirmish setup screen time limit and objectives,
-end panel — 3.1 done; 3.2–3.4 open), 4.1 battle report (done: the player plays the
+end panel — 3.1–3.4 done), 4.1 battle report (done: the player plays the
 objectives, 15-minute clock, `decidedBy` and objectives in the report, the
 battle-lab band widened to the limit and 120 s silence), 4.2 gates, 4.3
 the user's hand check.
@@ -369,5 +373,6 @@ the user's hand check.
 - 2026-11-10: add-map-objectives 2.6 done. The clock and the capture wait for `battle_started` (tested); the commander's deployment anchors include the objectives it holds with value 2 or more (`OBJECTIVE_ANCHOR_SCORE`; the church flag stands 5 m outside the default area, so the anchor is clamped clear of the boundary and the footprint, 18 m from the flag, inside the objective circle). Simulation 321/321; determinism unchanged (the golden runs open no deployment). Next: 3.1 (ObjectiveLayer).
 - 2026-11-10: add-map-objectives 4.1 done (user: the tests' player must have objectives). The report's player holds its line, then counterattacks when outnumbering the enemy or holding less objective value, the whole force to the objective of most value it does not hold; the report runs a 15-minute clock and gains `decidedBy` and the objectives (owner, value, capture time). Bands: ends within the limit, no silence over 120 s (MODIFIED battle-lab delta). Report tests 13/13 (battle-feel 3, battle-maps 6 including the enemy deployed, weapons 4); tests/simulation 19/19; weapons presets A/B/C hold the gun bands. Next: 3.1.
 - 2026-11-10: add-map-objectives 3.1 done. `ObjectiveLayer` (`packages/view3d/src/objective-layer.ts`): `placeholder:flag` per objective, cloth in the owner's colour (column khaki with a red band), two-frame wave, area outline at tactical zoom, capture ring filling with the taking side's progress; a flag on a building stands on its roof (the church). `InterpolatedFrame` carries `objectives` and `clock`; `SceneView` and the `GameCanvas` dev bridge (`objectiveMarks()`) wired; asset register row. view3d 75/75; e2e objectives.spec 1/1 with screenshots reviewed (church, bridge, houses). Seen: `paiolzinho` has no objectives (`check:maps` warns). Next: 3.2.
+- 2026-11-10: add-map-objectives 3.2–3.4 done. `ObjectiveSnapshot` carries the value and localized name; the top bar draws the objective strip (owner colour, value pips, contested pulse, localized tooltip) and the mm:ss clock; the setup screen saves a 15/20/30-minute `timeLimit` (forwarded to the worker through `GameClientOptions`) and lists the field's objectives with flags over its preview; the end panel shows draw, the decided-by line, the values and the objectives table. E2e objectives.spec 4/4 (flags/outline, strip owner change + clock + PT-BR tooltip, setup 15:00 + five objectives, fought to the clock with the table); locales 993 keys; setup-state and the simulation/view tests pass. Next: 4.2 gates.
 
 
