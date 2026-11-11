@@ -2,6 +2,8 @@ import { writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
+  objectiveCircle,
+  type Objective,
   boundsForSize,
   createEditableMap,
   defaultDeploymentArea,
@@ -54,6 +56,24 @@ export function buildTestMap(): EditableMap {
     { sections: ['fuzileiros', 'fuzileiros', 'fuzileiros'] },
     { sections: ['comando', 'metralhadora', 'fuzileiros', 'fuzileiros'] },
     { sections: ['irregulares', 'irregulares', 'fuzileiros', 'esquadra-5', 'esquadra-4'] },
+  ];
+
+  // add-map-objectives 1.4 (design.md table): the crossings in the middle,
+  // the church (highest value) on the legalist bank, so the column must cross.
+  const objective = (id: number, pt: string, en: string, x: number, y: number, radius: number, value: number, owner: Objective['owner']): Objective => ({
+    id,
+    name: { en, 'pt-BR': pt },
+    area: objectiveCircle({ x, y }, radius),
+    flag: { x, y },
+    value,
+    owner,
+  });
+  map.objectives = [
+    objective(1, 'Ponte', 'Bridge', 60, 7, 16, 2, 'neutral'),
+    objective(2, 'Vau', 'Ford', -56, 4, 16, 2, 'neutral'),
+    objective(3, 'Igreja', 'Church', 70, -40, 18, 3, 'legalist'),
+    objective(4, 'Trincheira', 'Trench', -45, -55, 18, 1, 'legalist'),
+    objective(5, 'Casario', 'Houses', -30, 60, 20, 1, 'column'),
   ];
 
   // Relief: the praça on a 2 m rise, a low ridge on the east flank.

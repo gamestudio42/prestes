@@ -3,10 +3,11 @@
   "ticks": 600,
   "hash": "0ae3084b",
   "battleMaps": {
-    "campo-de-provas": "74b2fd3e"
+    "campo-de-provas": "74b2fd3e",
+    "paiolzinho": "42a367fc"
   },
   "mixedRosters": {
     "campo-de-provas": "1b1e0d92"
   },
-  "reason": "bounds keep a man's room: no two men on one spot"
+  "reason": "golden for the user's paiolzinho map"
 }

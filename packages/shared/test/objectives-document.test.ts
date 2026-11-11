@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { compileMapDocument, createEditableMap, parseMapDocument, toMapDocument, validateEditableMap, type Objective } from '../src';
+import { battleMap, compileMapDocument, createEditableMap, DEFAULT_BATTLE_MAP, loadAuthoredMap, parseMapDocument, toMapDocument, validateEditableMap, type Objective } from '../src';
 
 // add-map-objectives 1.3: objectives in the map document (version 5).
 const BRIDGE: Objective = {
@@ -73,5 +73,20 @@ describe('objectives in the map check', () => {
   it('overlapping areas and a missing name are errors', () => {
     const unnamed = { ...at(3, 60, 0), name: { en: '', 'pt-BR': 'Sem nome' } };
     expect(codes([at(1, -5, 0), at(2, 5, 0), unnamed])).toEqual(['error:objectives-overlap', 'error:objective-name-missing']);
+  });
+});
+
+// add-map-objectives 1.4: the test map carries the design table's five.
+describe('the test map objectives', () => {
+  it('compiles with the bridge, ford, church, trench and houses', async () => {
+    await loadAuthoredMap(DEFAULT_BATTLE_MAP);
+    const objectives = battleMap(DEFAULT_BATTLE_MAP).objectives ?? [];
+    expect(objectives.map((objective) => `${objective.name['pt-BR']}:${objective.value}:${objective.owner}`)).toEqual([
+      'Ponte:2:neutral',
+      'Vau:2:neutral',
+      'Igreja:3:legalist',
+      'Trincheira:1:legalist',
+      'Casario:1:column',
+    ]);
   });
 });
