@@ -10,6 +10,21 @@ describe('battle report on the test map', () => {
     it(`${DEFAULT_BATTLE_MAP}, seed ${seed}: ends with an outcome`, async () => {
       const report = await battleReport(seed, 900, DEFAULT_BATTLE_MAP);
       expect(report.outcome, JSON.stringify(report)).not.toBe('none');
+      expect(report.decidedBy, JSON.stringify(report)).toBeDefined();
+      expect(report.seconds).toBeLessThanOrEqual(900);
+      expect(report.maxShotsPerTick).toBeLessThanOrEqual(8);
+    }, 300_000);
+  }
+});
+
+// add-map-objectives 4.1: the enemy deployed and garrisoned before the battle.
+describe('battle report on the test map, enemy deployed', () => {
+  for (const seed of [1922, 7, 42]) {
+    it(`${DEFAULT_BATTLE_MAP}, seed ${seed}: ends with an outcome`, async () => {
+      const report = await battleReport(seed, 900, DEFAULT_BATTLE_MAP, undefined, true);
+      expect(report.outcome, JSON.stringify(report)).not.toBe('none');
+      expect(report.decidedBy, JSON.stringify(report)).toBeDefined();
+      expect(report.seconds).toBeLessThanOrEqual(900);
       expect(report.maxShotsPerTick).toBeLessThanOrEqual(8);
     }, 300_000);
   }

@@ -1,13 +1,14 @@
 import { fileURLToPath } from 'node:url';
-import { battleMap, DEFAULT_BATTLE_MAP, hasBattleMap, loadAuthoredMap, type BattleMap, type BattleMapId, type BattleRosters, type Frame, type Roster, type UnitSnapshot, type WeaponId, getWeapon } from '../packages/shared/src';
+import { battleMap, DEFAULT_BATTLE_MAP, hasBattleMap, loadAuthoredMap, type BattleMap, type BattleMapId, type BattleRosters, type DecidedBy, type Frame, type Roster, type UnitSnapshot, type WeaponId, getWeapon } from '../packages/shared/src';
 import { SimulationEngine } from '../packages/simulation/src/engine';
 import { visible } from '../packages/simulation/src/systems/combat';
 
 /**
  * Battle feel report (battle-feel-3v3): runs the 3v3 headless with the
- * player holding his line and counterattacking once he outnumbers the enemy
- * (the game loop the playtests found), and measures how the fight plays.
- * Under fog of war the player knows only what his side sees.
+ * player holding his line, then counterattacking once he outnumbers the enemy
+ * or is behind on the objectives (the game loop the playtests found), and
+ * measures how the fight plays. Under fog of war the player knows only what
+ * his side sees; objective owners are public.
  */
 
 export interface BattleReport {
@@ -28,6 +29,16 @@ export interface BattleReport {
   bunching: number;
   /** Seconds until the player's side first sees an enemy (fog-of-war). */
   firstSight: number;
+  /** add-map-objectives 4.1: how the battle was decided, and the objectives at the end. */
+  decidedBy?: DecidedBy;
+  objectives: Array<{
+    id: number;
+    name: string;
+    value: number;
+    owner: 'neutral' | 'column' | 'legalist';
+    /** Seconds into the battle when the objective was last taken, or null. */
+    capturedAt: number | null;
+  }>;
   /** machine-gun-fire-feedback 1.1: rounds, bursts (aimed shots count as one each) and hits, per side and weapon. */
   weapons: Record<'column' | 'legalist', Partial<Record<WeaponId, WeaponFire>>>;
   /** Per side with a machine gun: share of the ticks its gunner had a target in sight and reach during which the gun was set. */
@@ -78,12 +89,54 @@ interface ScriptState {
   seenDown: Set<number>;
 }
 
+/** The objective owners as the frame carries them (public), over the map's values. */
+function ownersOf(frame: Frame): Map<number, 'neutral' | 'column' | 'legalist'> {
+  return new Map((frame.objectives ?? []).map((objective) => [objective.id, objective.owner]));
+}
+
+/** Each side's objective value at this frame. */
+function objectiveValuesOf(map: BattleMap, frame: Frame): { column: number; legalist: number } {
+  const owners = ownersOf(frame);
+  const values = { column: 0, legalist: 0 };
+  for (const objective of map.objectives ?? []) {
+    const owner = owners.get(objective.id) ?? objective.owner;
+    if (owner === 'column') values.column += objective.value;
+    else if (owner === 'legalist') values.legalist += objective.value;
+  }
+  return values;
+}
+
+/**
+ * add-map-objectives 4.1: the objective of most value the column does not
+ * hold (ties: nearest to `from`, then id). The player attacks objectives, not
+ * a fixed line, so a stand-off cannot win for him.
+ */
+function targetObjective(map: BattleMap, frame: Frame, from: { x: number; y: number }): { x: number; y: number } | null {
+  const owners = ownersOf(frame);
+  let best: { x: number; y: number; value: number; distance: number; id: number } | null = null;
+  for (const objective of map.objectives ?? []) {
+    const owner = owners.get(objective.id) ?? objective.owner;
+    if (owner === 'column') continue;
+    const distance = (objective.flag.x - from.x) ** 2 + (objective.flag.y - from.y) ** 2;
+    if (
+      best === null ||
+      objective.value > best.value ||
+      (objective.value === best.value &&
+        (distance < best.distance || (distance === best.distance && objective.id < best.id)))
+    ) {
+      best = { x: objective.flag.x, y: objective.flag.y, value: objective.value, distance, id: objective.id };
+    }
+  }
+  return best === null ? null : { x: best.x, y: best.y };
+}
+
 /**
  * The player's script, the 3v3's game loop: hold the section's own line,
  * break the enemy's attack, then counterattack once he clearly outnumbers the
- * enemy. Under fog of war he knows only what his side sees: he estimates the
- * enemy as 33 less the casualties he saw, attacks the nearest enemy he sees,
- * and with no one in sight advances on the enemy's line.
+ * enemy or he holds less objective value. Under fog of war he knows only what
+ * his side sees: he estimates the enemy as 33 less the casualties he saw,
+ * attacks the nearest enemy he sees, and with no one in sight goes for the
+ * objective of most value he does not hold.
  */
 function orderPlayer(engine: SimulationEngine, frame: Frame, state: ScriptState): void {
   const own = frame.units.filter((unit) => unit.faction === 'column' && fit(unit));
@@ -123,8 +176,12 @@ function orderPlayer(engine: SimulationEngine, frame: Frame, state: ScriptState)
     });
     return;
   }
-  if (!state.countering && own.length >= estimate * COUNTER_AT) state.countering = true;
+  const values = objectiveValuesOf(state.map, frame);
+  if (!state.countering && (own.length >= estimate * COUNTER_AT || values.column < values.legalist)) state.countering = true;
   if (!state.countering) return;
+  // add-map-objectives 4.1: the whole force goes for one objective, the most
+  // valuable he does not hold (a split force only lengthens the fight).
+  const objectiveGoal = targetObjective(state.map, frame, centroid(own));
   for (const squad of new Set(own.map((unit) => unit.squadId))) {
     const section = own.filter((unit) => unit.squadId === squad);
     const busy = section.some((unit) => {
@@ -136,7 +193,9 @@ function orderPlayer(engine: SimulationEngine, frame: Frame, state: ScriptState)
     if (busy) continue;
     const ids = section.map((unit) => unit.id);
     if (enemies.length === 0) {
-      engine.enqueue({ type: 'order', order: 'advance', unitIds: ids, to: enemyLine(state.map) });
+      // add-map-objectives 4.1: go for the objective of most value he does not
+      // hold; only when he holds them all does he look for the enemy's line.
+      engine.enqueue({ type: 'order', order: 'advance', unitIds: ids, to: objectiveGoal ?? enemyLine(state.map) });
       continue;
     }
     const centre = centroid(section);
@@ -150,6 +209,14 @@ function orderPlayer(engine: SimulationEngine, frame: Frame, state: ScriptState)
 /** Ticks between yields to the event loop (a test worker must keep answering its runner). */
 const YIELD_EVERY = 500;
 
+/**
+ * add-map-objectives 4.1: the report's battle runs with the 15-minute clock,
+ * so every run ends on the clock at the latest and the bands measure the
+ * game's own limit.
+ */
+export const REPORT_TIME_LIMIT_SECONDS = 900;
+const REPORT_TIME_LIMIT_TICKS = REPORT_TIME_LIMIT_SECONDS * 10;
+
 export async function battleReport(
   seed = 1922,
   maxSeconds = 900,
@@ -162,7 +229,15 @@ export async function battleReport(
   if (!hasBattleMap(mapId)) throw new Error(`unknown battle map ${mapId}`);
   await loadAuthoredMap(mapId);
   const map = battleMap(mapId);
-  const engine = new SimulationEngine({ seed, scenario: 'battle3v3', sandbox: true, battleMap: mapId, rosters, enemyDeployment });
+  const engine = new SimulationEngine({
+    seed,
+    scenario: 'battle3v3',
+    sandbox: true,
+    battleMap: mapId,
+    rosters,
+    enemyDeployment,
+    timeLimitTicks: REPORT_TIME_LIMIT_TICKS,
+  });
   let frame = engine.frame();
   const faction = new Map(frame.units.map((unit) => [unit.id, unit.faction]));
   const casualties = { column: 0, legalist: 0 };
@@ -174,6 +249,8 @@ export async function battleReport(
   let silenceStart = 0;
   let longestSilence = 0;
   let outcome: BattleReport['outcome'] = 'none';
+  let decidedBy: DecidedBy | undefined;
+  const capturedAt = new Map<number, number>();
   const script: ScriptState = { map, rostered: rosters !== undefined, countering: false, seenDown: new Set() };
   let firstSight = -1;
   const weapons: BattleReport['weapons'] = { column: {}, legalist: {} };
@@ -203,7 +280,11 @@ export async function battleReport(
         const side = faction.get(event.unitId);
         if (side === 'column' || side === 'legalist') casualties[side] += 1;
       }
-      if (event.type === 'outcome' && event.outcome !== 'playing') outcome = event.outcome;
+      if (event.type === 'outcome' && event.outcome !== 'playing') {
+        outcome = event.outcome;
+        decidedBy = event.decidedBy;
+      }
+      if (event.type === 'objective_taken') capturedAt.set(event.id, frame.tick / 10);
       if (event.type === 'unit_entered') {
         const side = faction.get(event.unitId);
         if (side === 'column' || side === 'legalist') garrison.entered[side] += 1;
@@ -234,10 +315,19 @@ export async function battleReport(
     }
   }
   const fallen = casualties.column + casualties.legalist;
+  const owners = new Map((frame.objectives ?? []).map((objective) => [objective.id, objective.owner]));
   return {
     seed,
     seconds: frame.tick / 10,
     outcome,
+    ...(decidedBy === undefined ? {} : { decidedBy }),
+    objectives: (map.objectives ?? []).map((objective) => ({
+      id: objective.id,
+      name: objective.name.en,
+      value: objective.value,
+      owner: owners.get(objective.id) ?? objective.owner,
+      capturedAt: capturedAt.get(objective.id) ?? null,
+    })),
     shots,
     casualties,
     shotsPerCasualty: fallen === 0 ? shots : Number((shots / fallen).toFixed(1)),
@@ -292,9 +382,10 @@ export const PRESET_SEEDS = [1922, 1924, 1925];
 /** The battle-lab feel bands (spec "Report within bands"); null when the report is inside them. */
 export function outsideBands(report: BattleReport): string | null {
   const misses: string[] = [];
-  if (report.seconds < 180 || report.seconds > 600) misses.push(`time ${report.seconds}s`);
+  // add-map-objectives 4.1: the battle must end within its own 15-minute clock.
+  if (report.seconds < 180 || report.seconds > REPORT_TIME_LIMIT_SECONDS) misses.push(`time ${report.seconds}s`);
   if (report.maxShotsPerTick > 8) misses.push(`shots/tick ${report.maxShotsPerTick}`);
-  if (report.longestSilence > 75) misses.push(`silence ${report.longestSilence}s`);
+  if (report.longestSilence > 120) misses.push(`silence ${report.longestSilence}s`);
   if (report.bunching >= 0.15) misses.push(`bunching ${report.bunching}`);
   // machine-gun-fire-feedback 2.4: the player's gun is set while it has a target.
   const gunSet = report.gunSetShare.column;
@@ -317,7 +408,7 @@ async function reportMaps(id: BattleMapId): Promise<BattleMap[]> {
 }
 
 async function presetTable(id: BattleMapId): Promise<void> {
-  console.log('| Map | Enemy | Player | Seed | Time (s) | Outcome | Cas. col/leg | Shots/cas. | Max shots/tick | Silence (s) | Bunching | MG rounds/bursts/hits | Gun set | Bands |');
+  console.log('| Map | Enemy | Player | Seed | Time (s) | Outcome | Decided | Cas. col/leg | Shots/cas. | Max shots/tick | Silence (s) | Bunching | MG rounds/bursts/hits | Gun set | Bands |');
   console.log('| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |');
   for (const map of await reportMaps(id)) {
     for (const [index, enemy] of (map.enemyForces ?? []).entries()) {
@@ -326,7 +417,7 @@ async function presetTable(id: BattleMapId): Promise<void> {
           const report = await battleReport(seed, 900, map.id, { column: player, legalist: enemy });
           const r = report;
           console.log(
-            `| ${map.id} | ${String.fromCharCode(65 + index)} | ${name} | ${seed} | ${r.seconds} | ${r.outcome} | ${r.casualties.column}/${r.casualties.legalist} | ${r.shotsPerCasualty} | ${r.maxShotsPerTick} | ${r.longestSilence} | ${r.bunching} | ${gunFire(r)} | ${r.gunSetShare.column ?? '-'} | ${outsideBands(r) ?? 'ok'} |`,
+            `| ${map.id} | ${String.fromCharCode(65 + index)} | ${name} | ${seed} | ${r.seconds} | ${r.outcome} | ${r.decidedBy ?? '-'} | ${r.casualties.column}/${r.casualties.legalist} | ${r.shotsPerCasualty} | ${r.maxShotsPerTick} | ${r.longestSilence} | ${r.bunching} | ${gunFire(r)} | ${r.gunSetShare.column ?? '-'} | ${outsideBands(r) ?? 'ok'} |`,
           );
         }
       }
@@ -336,14 +427,14 @@ async function presetTable(id: BattleMapId): Promise<void> {
 
 /** add-deployment-phase 4.1: every map, three seeds, the enemy where it starts and deployed on cover. */
 async function deploymentTable(id: BattleMapId): Promise<void> {
-  console.log('| Map | Enemy deployed | Seed | Time (s) | Outcome | Cas. col/leg | Shots/cas. | Max shots/tick | Silence (s) | Bunching | Bands |');
+  console.log('| Map | Enemy deployed | Seed | Time (s) | Outcome | Decided | Cas. col/leg | Shots/cas. | Max shots/tick | Silence (s) | Bunching | Bands |');
   console.log('| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |');
   for (const map of await reportMaps(id)) {
     for (const deployed of [false, true]) {
       for (const seed of PRESET_SEEDS) {
         const r = await battleReport(seed, 900, map.id, undefined, deployed);
         console.log(
-          `| ${map.id} | ${deployed ? 'yes' : 'no'} | ${seed} | ${r.seconds} | ${r.outcome} | ${r.casualties.column}/${r.casualties.legalist} | ${r.shotsPerCasualty} | ${r.maxShotsPerTick} | ${r.longestSilence} | ${r.bunching} | ${outsideBands(r) ?? 'ok'} |`,
+          `| ${map.id} | ${deployed ? 'yes' : 'no'} | ${seed} | ${r.seconds} | ${r.outcome} | ${r.decidedBy ?? '-'} | ${r.casualties.column}/${r.casualties.legalist} | ${r.shotsPerCasualty} | ${r.maxShotsPerTick} | ${r.longestSilence} | ${r.bunching} | ${outsideBands(r) ?? 'ok'} |`,
         );
       }
     }
@@ -352,14 +443,14 @@ async function deploymentTable(id: BattleMapId): Promise<void> {
 
 /** garrison-and-assault 3.4 / 5.1: every map, three seeds: who went in, and the assaults. */
 async function garrisonTable(id: BattleMapId): Promise<void> {
-  console.log('| Map | Seed | Time (s) | Outcome | Cas. col/leg | Entered col/leg | Assaults | Won col/leg | Bands |');
+  console.log('| Map | Seed | Time (s) | Outcome | Decided | Cas. col/leg | Entered col/leg | Assaults | Won col/leg | Bands |');
   console.log('| --- | --- | --- | --- | --- | --- | --- | --- | --- |');
   for (const map of await reportMaps(id)) {
     for (const seed of PRESET_SEEDS) {
       const r = await battleReport(seed, 900, map.id);
       const g = r.garrison;
       console.log(
-        `| ${map.id} | ${seed} | ${r.seconds} | ${r.outcome} | ${r.casualties.column}/${r.casualties.legalist} | ${g.entered.column}/${g.entered.legalist} | ${g.assaults} | ${g.assaultsWon.column}/${g.assaultsWon.legalist} | ${outsideBands(r) ?? 'ok'} |`,
+        `| ${map.id} | ${seed} | ${r.seconds} | ${r.outcome} | ${r.decidedBy ?? '-'} | ${r.casualties.column}/${r.casualties.legalist} | ${g.entered.column}/${g.entered.legalist} | ${g.assaults} | ${g.assaultsWon.column}/${g.assaultsWon.legalist} | ${outsideBands(r) ?? 'ok'} |`,
       );
     }
   }

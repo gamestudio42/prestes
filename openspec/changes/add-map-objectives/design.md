@@ -213,4 +213,17 @@ latest. Goldens re-recorded. No saved data.
   edge 18 m from the flag, inside the objective circle. The golden runs open
   no deployment, so `pnpm check:determinism` is unchanged. Simulation
   321/321.
+- 4.1 (2026-11-10, user: "nos testes que vc fizer o jogador precisa ter
+  objetivos"): the report's script counterattacks once it outnumbers the
+  enemy or holds less objective value, and sends the whole force to the
+  objective of most value it does not hold (ties nearest to the column
+  centroid, then id); the enemy's line only when it holds them all. The
+  report runs its own 15-minute clock so every battle ends, and gains
+  `decidedBy` and the objectives (owner, value, capture time). The bands move
+  to "ends within the 15-minute limit" (was 3-10 min) and "no silence over
+  120 s" (was 75: a section may march to a far objective out of range),
+  through a MODIFIED battle-lab "Battle feel report" delta. The weapons
+  test's stand-off exemption is gone: presets A, B and C all hold the gun's
+  bands. Report tests 16/16 (3 seeds, the enemy deployed, and mixed rosters
+  by preset).
 

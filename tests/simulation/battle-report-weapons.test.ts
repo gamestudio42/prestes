@@ -8,12 +8,12 @@ import { GUN_SET_BAND, MIXED_PLAYER, battleReport } from '../../tools/battle-rep
 /** author-game-maps 3.3: a battle this long (s) or longer is held to the gun's bands. */
 const LONG_BATTLE_SECONDS = 600;
 /**
- * author-game-maps 3.6 follow-up (user, 2026-11-10): since the bounds keep a
- * man's room, presets A and C end in a 900 s stand-off where the gun has few
- * enemies in sight (5-7 bursts, set 0.71-0.75 of its targeted time). Its burst
- * and set bands wait for objectives to move the column (add-map-objectives 4.1).
+ * add-map-objectives 4.1 (user, 2026-11-10): the report's player plays the
+ * objectives and the battle runs its own 15-minute clock, so the former
+ * stand-off of presets A and C is a battle now; every preset is held to the
+ * gun's bands.
  */
-const STAND_OFF_UNTIL_OBJECTIVES = new Set([0, 2]);
+const STAND_OFF_UNTIL_OBJECTIVES = new Set<number>();
 
 describe('battle report by weapon', () => {
   it('a roster without a gun reports no gun share', async () => {
