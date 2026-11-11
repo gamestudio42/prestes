@@ -308,8 +308,6 @@ screen.
   (the absent one; the campaign's spine).
 - Place: [`forte-copacabana`](../compendium/entries/forte-copacabana.md).
 - Event: [`revolt-1922`](../compendium/entries/revolt-1922.md).
-- Correction:
-  [`prestes-not-at-fort`](../compendium/entries/prestes-not-at-fort.md).
 - Weapon: [`mauser-7mm`](../compendium/entries/mauser-7mm.md).
 
 ## Outcome

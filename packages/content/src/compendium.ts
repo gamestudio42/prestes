@@ -113,8 +113,7 @@ const BASE: readonly CompendiumEntry[] = [
   { id: 'skirmish-forces', section: 'weapons', sourceRefs: [M], cite: 'Macaulay, pp. 54, 113, 152; the section types are a game organization', confidence: 'high', label: 'fictional' },
 
   // Known corrections (docs/history/TIMELINE.md)
-  { id: 'prestes-not-at-fort', section: 'corrections', sourceRefs: [M], cite: 'Macaulay, ch. II, pp. 37–38', confidence: 'high' },
-  { id: 'sao-paulo-separate', section: 'corrections', sourceRefs: [M], cite: 'Macaulay, ch. I–IV', confidence: 'high' },
+    { id: 'sao-paulo-separate', section: 'corrections', sourceRefs: [M], cite: 'Macaulay, ch. I–IV', confidence: 'high' },
   { id: 'miguel-costa-command', section: 'corrections', sourceRefs: [M], cite: 'Macaulay, ch. IV', confidence: 'high' },
   { id: 'historical-borders', section: 'corrections', sourceRefs: [M], cite: 'Macaulay, frontispiece map', confidence: 'high' },
   { id: 'macaulay-perspective', section: 'corrections', sourceRefs: [M], cite: 'docs/history/SOURCE_POLICY.md', confidence: 'high' },

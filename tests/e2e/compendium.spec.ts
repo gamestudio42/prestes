@@ -20,5 +20,5 @@ test('the compendium opens on a section and reads an entry with its sources', as
   await expect(page.getByTestId('book-sources').first()).toContainText('Macaulay');
 
   await page.getByTestId('book-ribbon-corrections').click();
-  await expect(page.getByTestId('codex-page')).toContainText('Prestes não estava no Forte');
+  await expect(page.getByTestId('codex-page')).toContainText('São Paulo 1924 foi outra frente');
 });

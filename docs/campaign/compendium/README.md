@@ -135,7 +135,6 @@ Every slot goes in the manifest at [`images.md`](images.md).
 | [`la-gaiba`](entries/la-gaiba.md)                       | places      | historical | 2           |
 | [`siqueira-campos`](entries/siqueira-campos.md)         | figures     | historical | 3           |
 | [`luis-carlos-prestes`](entries/luis-carlos-prestes.md) | figures     | historical | 4           |
-| [`prestes-not-at-fort`](entries/prestes-not-at-fort.md) | corrections | historical | 2           |
 | [`mauser-7mm`](entries/mauser-7mm.md)                   | weapons     | historical | 3           |
 
 ## Proposed new entries

@@ -204,23 +204,6 @@ export const COMPENDIUM_TEXT_PT_BR: Readonly<Record<string, CompendiumText>> = {
       },
     ],
   },
-  'prestes-not-at-fort': {
-    note: [
-      {
-        paragraphs: [
-          'Esta é uma correção, não uma especulação. Macaulay registra que Prestes era um jovem oficial engenheiro em 1922, que contraiu tifo em 13 de junho e que ainda estava de cama na casa da mãe na noite de 4 de julho. Tentou se vestir, desmaiou, e o levante seguiu sem ele. Os cadetes do Realengo foram recebidos a tiros na Vila Militar; o forte foi dominado em 6 de julho.',
-          'A correção importa porque a história costuma ser contada com Prestes no forte. A praia de 1922 pertence a Siqueira Campos e aos 18; a coluna é de Prestes. A febre é um acaso da história, não um álibi heroico, e a ausência dele não apaga os homens que saíram marchando pela praia.',
-          'O homem que perdeu 1922 tornou-se o homem pelo qual a coluna é lembrada.',
-        ],
-      },
-    ],
-    images: {
-      'portrait-1922': {
-        caption: 'Prestes no início dos anos 1920.',
-        credit: 'Autor desconhecido',
-      },
-    },
-  },
   'ramada-1925': {
     place: 'Perto de Palmeiras, Rio Grande do Sul',
     note: [

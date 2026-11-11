@@ -49,7 +49,6 @@ export const CAMPAIGN_CHAPTERS: readonly CampaignChapter[] = [
       'luis-carlos-prestes',
       'forte-copacabana',
       'revolt-1922',
-      'prestes-not-at-fort',
       'mauser-7mm',
     ],
     playable: false,

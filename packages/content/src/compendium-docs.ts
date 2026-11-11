@@ -201,17 +201,6 @@ export const DOC_ENTRY_META: Readonly<Record<string, DocEntryMeta>> = {
     confidence: 'high',
     sourceRefs: ['macaulay-1974', 'castro-2016', 'blanc-2024'],
   },
-  'prestes-not-at-fort': {
-    label: 'historical',
-    confidence: 'high',
-    sourceRefs: ['macaulay-1974'],
-    images: [
-      {
-        slot: 'portrait-1922',
-        path: 'apps/game/public/assets/compendium/luis-carlos-prestes/portrait-1922.png',
-      },
-    ],
-  },
   'ramada-1925': {
     label: 'historical',
     confidence: 'medium',
