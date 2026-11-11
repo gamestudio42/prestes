@@ -1,7 +1,9 @@
 ## Context
 
-- Battle maps are `BattleMap` data in `packages/shared/src/maps/`
-  (Vila Militar, Fazenda, Serra e Rio, Bairro). The engine's 3v3 ends in
+- Battle maps are authored map documents (`*.map.json` in
+  `packages/shared/src/maps/authored/`, loaded on demand and compiled to
+  `BattleMap`); the default is the test map `campo-de-provas`
+  (author-game-maps, archived 2026-11-10, removed the hand-written maps). The engine's 3v3 ends in
   `updateOutcome` (`systems/combat.ts`) when a side has no fit soldier.
 - The enemy commander (`systems/enemy-commander.ts`) holds its line, sends
   one more section when 1.4:1 ahead, attacks with all but one when quiet for
@@ -40,25 +42,21 @@ interface Objective {
 // BattleMap gains: objectives: Objective[]
 ```
 
-Objectives per map (positions in the map's frame; north is the legalist
-side):
+Objectives live in the map document (version 5); authors place them with
+the editor's objective tool. The test map's first five (positions in the
+map's frame; north is the legalist side; the river runs east-west at
+y ≈ 4-8, the column deploys at y ≈ 95, the legalists at y ≈ -75):
 
 | Map | Objective | Where | Value | Initial |
 | --- | --- | --- | --- | --- |
-| Vila Militar | Casa de treino | (24, 17) r 14 | 2 | neutral |
-| Vila Militar | Capela | (78, -52) r 14 | 1 | legalist |
-| Fazenda | Casa-sede | (140, 2) r 22 | 3 | neutral |
-| Fazenda | Engenho | (-152, 76) r 20 | 2 | column |
-| Fazenda | Encruzilhada | (24, 0) r 16 | 2 | neutral |
-| Fazenda | Trincheira do meio | (0, -80) r 18 | 1 | legalist |
-| Serra e Rio | Ponte | (20, 10) r 18 | 3 | neutral |
-| Serra e Rio | Vau | (-150, 6) r 18 | 2 | neutral |
-| Serra e Rio | Balsa (margem sul) | (130, 22) r 14 | 1 | column |
-| Serra e Rio | Morro do norte | (-90, -125) r 26 | 2 | legalist |
-| Bairro | Praça e matriz | (0, 0) r 26 | 3 | neutral |
-| Bairro | Fábrica | (134, -6) polygon of the yard | 2 | neutral |
-| Bairro | Armazéns da estação | (-90, -140) r 22 | 1 | legalist |
-| Bairro | Rua do comércio sul | (0, 66) r 16 | 1 | column |
+| campo-de-provas | Ponte | bridge (60, 7) r 16 | 2 | neutral |
+| campo-de-provas | Vau | ford (-56, 4) r 16 | 2 | neutral |
+| campo-de-provas | Igreja | church and tower (70, -40) r 18 | 3 | legalist |
+| campo-de-provas | Trincheira | fire trench (-45, -55) r 18 | 1 | legalist |
+| campo-de-provas | Casario | houses and sobrado (-30, 60) r 20 | 1 | column |
+
+The column must cross the river (bridge or ford) to reach the church, the
+highest value, so the battle cannot be won by standing off.
 
 Values are tuned by the battle report; positions are checked by the content
 check (reachable, no overlap, not in deep water, not inside a building's
@@ -139,7 +137,7 @@ the reason is logged.
 ### Historical method
 
 No historical claim: objectives are game devices placed on the maps'
-fictional landmarks. Names are period place words (casa-sede, engenho,
+fictional landmarks. Names are period place words (ponte, vau, igreja, casa-sede, engenho,
 vau, praça, matriz).
 
 ## Risks / Trade-offs

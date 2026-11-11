@@ -13,11 +13,11 @@ cold. Keep this file current as tasks close; delete it once
   hill and garrison scenario fixed after the sync); `openspec validate
   --specs` 23/23.
 - **Current change: add-map-objectives (1/17, started 2026-11-10).** 0.1
-  done (prerequisites already archived). NEXT STEP: the plan is stale (it
-  names the removed maps 31 times; see the note under 0.1 in its tasks.md).
-  Revise it with openspec-update-change before 1.1: objectives come from
-  map documents, the test map carries the first ones. Ask the user before
-  revising if unsure. Work in small steps and update this file after each. Open points it inherits: presets A and C of the test map end
+  done (prerequisites already archived). Plan revised 2026-11-10 for
+  authored maps (objectives in map document v5, editor tool, map check; the
+  test map's five objectives in design.md). NEXT STEP: task 1.1 (the
+  `Objective` type on `BattleMap`). Work in small steps, commit each, and
+  update this file after each. Open points it inherits: presets A and C of the test map end
   in a 900 s stand-off (objectives should move the column; the gun bands in
   battle-report-weapons wait for it, `STAND_OFF_UNTIL_OBJECTIVES`); defend
   and ambush still face the nearest enemy, seen or not (the AI's defend

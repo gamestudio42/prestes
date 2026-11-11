@@ -1,6 +1,6 @@
 ## Why
 
-After playing the Fazenda (2026-11-05) the user asked for objectives on the
+After playing the old Fazenda map (2026-11-05) the user asked for objectives on the
 maps: regions to capture and hold, marked by flags, in the style of the
 victory-location wargames (the user named Close Combat as the reference).
 Today a 3 vs 3 is won only by destroying the enemy, so open ground is
@@ -55,7 +55,7 @@ the praça) mean nothing to either side.
 - Depends on `add-battle-maps` (archived) and, for "a side breaks", on the
   decided-battle rule of `refine-battle-maps`; if it lands first, breaking
   is plain annihilation until then.
-- **Player fantasy**: a tenente sent to take the engenho and hold the road,
+- **Player fantasy**: a tenente sent to take the bridge and hold the church,
   weighing men against ground.
 - **Core loop**: read the objectives, plan, take, hold against the
   counterattack, decide when to push for the last one.
@@ -64,7 +64,8 @@ the praça) mean nothing to either side.
 - **Multi-perspective**: unchanged.
 - **Legal and ethical note**: the mechanic is a genre convention; no rules
   text, art or interface from another game is reproduced.
-- **MVP**: objectives on the three battle maps (and two on Vila Militar),
+- **MVP**: objectives in the map documents (editor tool, map check) and the
+  test map's five,
   capture, clock, victory by value, flags, strip, commander goals, end panel.
 - **Non-goals**: reinforcements tied to objectives, supply, points bought
   with objectives, a campaign map.
