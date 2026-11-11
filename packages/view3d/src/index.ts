@@ -28,6 +28,7 @@ export { TracerLayer } from './tracer-layer';
 export { PreviewLayer } from './preview-layer';
 
 export { TrainingLayer, type TrainingMarker } from './training-layer';
+export { ObjectiveLayer, type ObjectiveMark } from './objective-layer';
 
 
 

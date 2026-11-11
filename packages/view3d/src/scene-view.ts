@@ -27,6 +27,7 @@ import { CoverLayer } from './cover-layer';
 import { EffectsLayer } from './effects-layer';
 import { MarkerLayer } from './marker-layer';
 import { GarrisonLayer, type AssaultBarsState, type GarrisonBannerState } from './garrison-layer';
+import { ObjectiveLayer, type ObjectiveMark } from './objective-layer';
 import { loadEnvironmentAsset, type EnvironmentAsset } from './environment-models';
 import { PaintedGround, type GroundOverlay } from './painted-ground';
 import { terrainGradient, toon, toonGradient } from './materials';
@@ -123,6 +124,7 @@ export class SceneView {
   private readonly effects = new EffectsLayer();
   private readonly markers = new MarkerLayer();
   private readonly garrisonLayer = new GarrisonLayer();
+  private readonly objectiveLayer = new ObjectiveLayer();
   private readonly preview = new PreviewLayer();
   private battleMap: BattleMap | null;
   private mapLayer: BattleMapLayer | null = null;
@@ -243,6 +245,7 @@ export class SceneView {
       this.effects.group,
       this.markers.group,
       this.garrisonLayer.group,
+      this.objectiveLayer.group,
       this.preview.group,
       this.placementRoot,
       this.rangeRoot,
@@ -494,6 +497,11 @@ export class SceneView {
     };
   }
 
+  /** add-map-objectives 3.1: the flags, owners and capture drawn now (dev checks and screenshots). */
+  objectiveMarks(): ObjectiveMark[] {
+    return this.objectiveLayer.marks.map((mark) => ({ ...mark }));
+  }
+
   /** Centres the camera on a ground point (a new training station). */
   focusOn(x: number, y: number): void {
     this.rig.focusX = x;
@@ -645,6 +653,7 @@ export class SceneView {
     this.characters.updateGhosts(fogged.ghosts ?? [], this.rig.span);
     this.markers.update(fogged.markers ?? [], frame.tick, this.rig.span);
     this.garrisonLayer.update((frame as Frame).garrisons ?? [], frame.units, this.selectedUnits, this.rig.span, (frame as Frame).assaults ?? []);
+    this.objectiveLayer.update(frame, this.rig.span);
     this.paths.update(selectedOrders(frame.orders, this.selectedUnits), this.rig.span);
     if (frame.tick !== this.lastEventTick) {
       this.lastEventTick = frame.tick;
@@ -907,6 +916,7 @@ export class SceneView {
     this.effects.dispose();
     this.markers.dispose();
     this.garrisonLayer.dispose();
+    this.objectiveLayer.dispose();
     this.preview.dispose();
     this.post.dispose();
     disposeObject(this.scene);
@@ -1001,6 +1011,7 @@ export class SceneView {
     this.tracers.setView(camera.getWorldDirection(this.viewDirection), metresHigh / Math.max(1, this.post.target.height));
     this.tracers.update(delta);
     this.mapLayer?.tick(time / 1000, this.rig.span);
+    this.objectiveLayer.tick(time / 1000);
     // The marks' 10 s run from the battle's first frame.
     if (this.deployment && this.deploymentAreas) this.deployment.hold();
     if (this.deployment && this.lastFrame) this.deployment.update(time, (x, y) => this.groundToScreen(x, y));

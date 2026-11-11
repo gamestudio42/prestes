@@ -81,6 +81,8 @@ export const PALETTE = {
   pathWithdraw: 0xc56a4d,
   selection: 0xf0c97a,
   orderMarker: 0xd0a45c,
+  /** add-map-objectives 3.1: the neutral objective flag's cloth (off-white). */
+  objectiveNeutral: 0xe4dcc2,
   /** add-battle-maps: the ring of a soldier hidden in vegetation. */
   concealed: 0x8fc46a,
   /** refine-battle-maps 5.14: "Revelado": in the vegetation but given away by his shot. */

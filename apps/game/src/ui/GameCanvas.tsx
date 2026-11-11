@@ -166,6 +166,7 @@ export function GameCanvas({
         focusOn: (x: number, y: number) => scene.focusOn(x, y),
         view: () => scene.view(),
         garrisonMarks: () => scene.garrisonMarks(),
+    objectiveMarks: () => scene.objectiveMarks(),
         deploymentMarks: () => scene.deploymentMarksShown(),
         deploymentAreas: () => scene.deploymentAreasShown(),
         slotPreview: () => scene.slotPreviewState(),

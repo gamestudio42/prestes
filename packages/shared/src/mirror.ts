@@ -14,6 +14,9 @@ export interface InterpolatedFrame {
   /** garrison-and-assault: held positions and close fights, as the frame has them. */
   garrisons?: Frame['garrisons'];
   assaults?: Frame['assaults'];
+  /** add-map-objectives 3.1: the objectives and the battle clock, as the frame has them. */
+  objectives?: Frame['objectives'];
+  clock?: Frame['clock'];
 }
 
 /**
@@ -58,6 +61,8 @@ export class ClientMirror {
         ferries: current.ferries,
         ...(current.garrisons ? { garrisons: current.garrisons } : {}),
         ...(current.assaults ? { assaults: current.assaults } : {}),
+        ...(current.objectives ? { objectives: current.objectives } : {}),
+        ...(current.clock ? { clock: current.clock } : {}),
         units: current.units.map((unit) => ({ ...unit })),
       };
     }
@@ -75,6 +80,8 @@ export class ClientMirror {
       ferries: interpolateFerries(previous.ferries, current.ferries, clamped),
       ...(current.garrisons ? { garrisons: current.garrisons } : {}),
       ...(current.assaults ? { assaults: current.assaults } : {}),
+      ...(current.objectives ? { objectives: current.objectives } : {}),
+      ...(current.clock ? { clock: current.clock } : {}),
       units: current.units.map((unit) => {
         const previousUnit = previousById.get(unit.id);
         if (!previousUnit) {

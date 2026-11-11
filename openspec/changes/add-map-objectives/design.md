@@ -226,4 +226,14 @@ latest. Goldens re-recorded. No saved data.
   test's stand-off exemption is gone: presets A, B and C all hold the gun's
   bands. Report tests 13/13 (battle-feel 3, battle-maps 6 including the enemy
   deployed, weapons 4); tests/simulation 19/19 with preview-cost.
+- 3.1 (2026-11-10): `ObjectiveLayer` draws a `placeholder:flag` per objective: a
+  7 m pole with a cloth in the owner's colour (off-white neutral, the column's
+  khaki with a red band, the legalist blue), stepping between two wave angles;
+  a draped area outline at tactical zoom; a capture ring filling with the
+  taking side's progress. A flag whose point lies in a building footprint
+  stands on its roof (the church), so it is not hidden inside. `InterpolatedFrame`
+  carries the objectives and the clock now (the view reads them; 3.2 needs the
+  clock). Screenshots reviewed on the test map (church, bridge, houses);
+  `paiolzinho` has no objectives yet (`check:maps` warns), so nothing to
+  review there.
 
