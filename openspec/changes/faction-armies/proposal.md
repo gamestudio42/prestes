@@ -67,10 +67,9 @@ control.
 
 ### Modified Capabilities
 
-- `force-roster`: "Section types" and "Skirmish setup screen" change once
-  the research fixes the names and the per-army catalogs. Their deltas are
-  written at task 1.4, after the owner approves the catalog; until then this
-  change carries only the `armies` spec.
+- `force-roster`: "Section types" (the catalog becomes three catalogs, one
+  per army, with the approved names) and "Skirmish setup screen" (the
+  roster lists one army's types; the enemy is an army's preset or roster).
 
 ## Impact
 

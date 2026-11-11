@@ -1,9 +1,19 @@
 # Catalog proposal (task 1.3)
 
-Status: **awaiting the owner's approval.** Nothing below is in the game.
+Status: **approved by the owner on 2026-11-11**, with these decisions:
+
+1. The three army names stand.
+2. "Fogão" and "Potreada" are the column's rifle section and light group.
+3. Among the state forces only the Brigada Militar is a type of its own;
+   there is no generic "Milícia estadual".
+4. Cangaceiros are a section type of the Patriotic Battalions; the
+   hollow-nosed bullets stay out.
+5. The column does not start with less ammunition; that waits for a
+   difficulty selector, a later change.
+
 Sources are rows of `docs/history/FORCES.md` (Macaulay, book pages). A name
 marked *game organization* is not a period term for a unit of that size and
-will say so in its compendium note.
+says so in its compendium note.
 
 Names are given in Portuguese, as the roster would show them; the English
 catalog keeps the Portuguese term with a gloss in the description.
@@ -33,8 +43,8 @@ test, not a claim about history beyond the "why" column.
 | Irregulares | **Potreada** | 5 men, Winchester .44, one with a revolver | faster (1.1 as today), lower ammunition, weaker under fire than a fogão | **period term** | foraging parties of five to fifteen, who also took up Winchesters in Goiás (pp. 111, 151–152). They rode; the game has no horses yet, so they are shown on foot |
 | new | **Veteranos gaúchos** | 8 riflemen | higher morale and suppression resistance; standard ammunition | game organization | the Rio Grande men were the core that stayed (pp. 88, 112); the red ribbon on the hat marks them (pp. 44, 52) |
 
-Low ammunition for the whole army is an option worth testing: about 20,000
-cartridges for some 1,200 men in June 1925 (p. 113).
+The column was short of ammunition (about 20,000 cartridges for some 1,200
+men in June 1925, p. 113); the game does not model it yet (decision 5).
 
 ## Forças legalistas
 
@@ -43,9 +53,8 @@ cartridges for some 1,200 men in June 1925 (p. 113).
 | **Comando de companhia** | officer (revolver), bugler, 2 riflemen | officer aura; limit 1 | game organization | — |
 | **Infantaria do Exército** | 11 riflemen (Mauser 7 mm) | full ammunition; **lower morale** than a fogão | game organization for the section; the force is the federal army | regulars were unreliable against ex-comrades (pp. 91, 178, 192) |
 | **Brigada Militar** | 11 riflemen | full ammunition; baseline morale; good discipline | **period term** for the force (Rio Grande do Sul); the section is a game organization | pp. 48, 58, 82 |
-| **Milícia estadual** | 8 riflemen | full ammunition; baseline morale | game organization; "state militia" is Macaulay's term, the Portuguese names of the forces are an open question | pp. 71, 73, 90, 126 |
 | **Provisórios** | 8 men, Mauser and Winchester mixed | faster; good morale; less ammunition | period term in English ("provisionals"); the Portuguese form is an open question | pp. 48, 55, 81, 178 |
-| **Peça de metralhadora** | gunner + 3 loaders | as the column's; limit 2 | game organization | Klinger's Mineiro militia had eight machine guns (p. 134) |
+| **Peça de metralhadora** | gunner + 3 loaders | as the column's; limit 1, as in every roster | game organization | Klinger's Mineiro militia had eight machine guns (p. 134) |
 | **Guarnição de fuzil-metralhador** | gunner + 2 loaders | as the column's | game organization | assumed from the army's standard arms (`WEAPONS.md`); no page of its own |
 
 ## Batalhões patrióticos
@@ -56,25 +65,14 @@ cartridges for some 1,200 men in June 1925 (p. 113).
 | **Jagunços** | 6 men, Winchester .44, one with a revolver | fast; **high suppression resistance in cover**, low cohesion; less ammunition | **period term** ("jagunços") | bands of jagunços operating as Patriotic Battalions, more effective than regulars against the column (pp. 192, 228) |
 | **Jagunços com Mauser** | 6 men, Mauser 7 mm | as Jagunços, with the rifle's reach | game organization | federal arms were issued to them (pp. 189, 205) |
 | **Voluntários** | 10 men, Mauser 7 mm | full ammunition; **low morale**, break early | period term in English ("volunteers") | the São Paulo battalions of 1924 performed badly in the pursuit (pp. 70–71) |
+| **Cangaceiros** | 6 men, Mauser 7 mm, each with a revolver | fast; high morale; good shots; low cohesion; limit 1 | **period term**; their fighting the column is **dramatized** | Lampião and forty-nine men were commissioned into a Patriotic Battalion at Juazeiro in March 1926 and traded their Winchesters for army Mausers, but by Macaulay's account never fought the column (p. 191). The type names no person |
 
-Not proposed, for the owner to decide:
+Left out:
 
-- **Cangaceiros** as a section type. Lampião was invited into a Patriotic
-  Battalion (pp. 190–191), so there is a source; but it brings a named,
-  much-mythologised figure's band into the skirmish. The unused `cangaceiro`
-  faction already exists in the code.
-- **Hollow-nosed bullets** for the jagunços (p. 228) as a harsher wound
-  rule. Sourced, but a grim detail; left out unless asked for.
+- **Hollow-nosed bullets** for the jagunços (p. 228): sourced, but the owner
+  left the harsher wound rule out.
+- **A generic state militia type**: only the Brigada Militar, whose name the
+  source gives.
 - **Cavalry and lancers** (the gaúchos of 1924, pp. 52, 54; the federal
-  cavalry regiments). Out of this change's scope: the game has no horses.
-
-## Questions for the owner
-
-1. Do the three army names stand?
-2. For the column: is "Fogão" right as the rifle section's name, and
-   "Potreada" for the light Winchester group?
-3. For the regulars: one "Milícia estadual" type, or the Brigada Militar
-   and the São Paulo force as types of their own once their Portuguese
-   names are sourced?
-4. Cangaceiros and hollow-nosed bullets: in or out?
-5. Should the whole column start with less ammunition than its enemies?
+  cavalry regiments): the game has no horses.
+- **Less ammunition for the column**: waits for a difficulty selector.

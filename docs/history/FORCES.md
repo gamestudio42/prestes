@@ -93,3 +93,19 @@ Logged in `docs/campaign/open-questions.md`:
 - How a platoon or section of federal infantry or of a state militia was
   made up. Macaulay gives units and totals, not small-unit tables.
 - The strength and make-up of a typical Patriotic Battalion.
+
+## Lampião and the Patriotic Battalion
+
+For the Cangaceiros section type (the owner's decision of 2026-11-11).
+Macaulay, p. 191, confidence high: the leader of a Patriotic Battalion in
+Ceará invited the bandit Lampião to join it; Lampião reached Juazeiro with
+forty-nine men on 4 March 1926, was given a paper commissioning him a
+captain of the army reserve, exchanged his men's Winchesters for new army
+Mausers and rode out on 7 March, supposedly against the column. By
+Macaulay's account the cangaceiros soon gave up any such intention and went
+back to banditry, and the theatre commander had no control over them
+(p. 192). Macaulay distinguishes the cangaceiro, a full-time roving bandit,
+from the jagunço, a part-time gunman called to arms by his patron.
+
+For the game: the commissioning is historical; a cangaceiro section fighting
+the column is **dramatized** and labelled so. The section names no person.

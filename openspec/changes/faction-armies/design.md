@@ -65,8 +65,12 @@ new document version; the loader maps older presets to legalist regulars.
 Follows the versioning already used for v2 to v4.
 
 **D6. Stored rosters.** A roster saved by the setup screen is migrated on
-read by section type id; an id that no longer exists falls back to the
-army's default rifle section, and the screen says so once.
+read by section type id through a successor table (comando → Comando do
+destacamento, fuzileiros → Fogão, esquadra-4 → Meio fogão, esquadra-5 →
+Fogão com fuzil-metralhador, fuzil-metralhador → Guarnição, metralhadora →
+Peça, irregulares → Potreada); an id with no successor falls back to the
+army's rifle section, and the screen says so once. The same table maps the
+enemy presets of maps saved before this change onto the Forças legalistas.
 
 ## Risks / Trade-offs
 
@@ -78,8 +82,14 @@ army's default rifle section, and the screen says so once.
 - [Balance shifts when values differ by army] → the battle report runs per
   army pairing and its bands are reviewed in the same task.
 
-## Open Questions
+## Resolved by the research and the owner (2026-11-11)
 
-- Whether the federal army and the state police forces are one army with
-  different section types or the catalog needs a visible split: answered by
-  the research table (D3) and does not change the two-side design.
+- The federal army and the state forces are one army, the Forças
+  legalistas, with section types of their own; of the state forces only the
+  Brigada Militar is a type, since it is the one the source names.
+- Cangaceiros are a type of the Batalhões patrióticos, labelled dramatized:
+  the commissioning is documented, their fighting the column is not
+  (`FORCES.md`, p. 191). The existing unused `cangaceiro` faction is not
+  used for them; they are an army's section type on the legalist side (D1).
+- No ammunition handicap for the column; a difficulty selector is a later
+  change.

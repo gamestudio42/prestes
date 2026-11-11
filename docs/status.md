@@ -28,7 +28,7 @@ applied), in the order they should land:
 
 | Order | Change | Tasks | Lands |
 | --- | --- | --- | --- |
-| 1 | `faction-armies` | 2/15, waiting for the owner on the catalog (`catalog-proposal.md`) | three armies (the Column, the legalist regulars, the patriotic battalions), period names for armies and sections, section types per army; starts with research into `docs/history/FORCES.md`, which also answers whether the police fought for the government |
+| 1 | `faction-armies` | 4/15: research and the catalog done, approved by the owner 2026-11-11 (`catalog-proposal.md`); data and code not started | three armies (the Column, the legalist regulars, the patriotic battalions), period names for armies and sections, section types per army; starts with research into `docs/history/FORCES.md`, which also answers whether the police fought for the government |
 | 2 | `soldier-animation-and-textures` | 15 | wound, carry and death clips, the crouch-walk and aim redone, blends, drawn uniform textures per army with variants |
 | 3 | `troop-thumbnails-and-panel` | 14 | a rendered thumbnail for every section type (roster, cards, panel), roster type cards, the troop panel redrawn as rows, gauges and alerts |
 | 4 | `biome-trees-and-plants` | 17 | the whole Refloreste tree suite by biome adapted to Prestes, bush families, more cacti and caatinga plants |
