@@ -1,5 +1,6 @@
 import {
   DEFAULT_SPACING,
+  SLOT_ROOM,
   activeMapRuntime,
   averageAim,
   averageFacing,
@@ -267,6 +268,53 @@ function centroidOf(units: readonly MutableUnit[]): Vec2 {
   };
 }
 
+/** Ring offsets tried around a crowded point, nearest first, in a fixed order. */
+const ROOM_RINGS = [1.2, 2.4, 3.6];
+const ROOM_DIRECTIONS: readonly Vec2[] = [
+  { x: 1, y: 0 },
+  { x: -1, y: 0 },
+  { x: 0, y: 1 },
+  { x: 0, y: -1 },
+  { x: 0.7071, y: 0.7071 },
+  { x: -0.7071, y: 0.7071 },
+  { x: 0.7071, y: -0.7071 },
+  { x: -0.7071, y: -0.7071 },
+];
+
+/**
+ * Where the men around stand or are heading, except the ones being sent now
+ * (their old places are about to be left): a new place keeps a man's room
+ * from these and from the places already handed out in this call.
+ */
+function placesAround(ctx: SimContext, sent: ReadonlySet<number>, unit: MutableUnit): Vec2[] {
+  const places: Vec2[] = [];
+  for (const other of ctx.units) {
+    if (other === unit || sent.has(other.id) || !other.alive || other.routed || other.dummy || other.incapacitated) continue;
+    places.push({ x: other.x, y: other.y }, { x: other.targetX, y: other.targetY });
+  }
+  return places;
+}
+
+function crowdedAt(point: Vec2, taken: readonly Vec2[]): boolean {
+  return taken.some((other) => (other.x - point.x) ** 2 + (other.y - point.y) ** 2 < SLOT_ROOM * SLOT_ROOM);
+}
+
+/**
+ * The point, or the nearest open ring point around it that keeps a man's
+ * room (SLOT_ROOM) from every taken place: two rushes, or two snaps to the
+ * nearest open point, never put two men on one spot.
+ */
+function roomFor(ctx: SimContext, point: Vec2, taken: readonly Vec2[]): Vec2 {
+  if (!crowdedAt(point, taken)) return point;
+  for (const ring of ROOM_RINGS) {
+    for (const direction of ROOM_DIRECTIONS) {
+      const candidate = nearestOpenPoint(ctx, { x: point.x + direction.x * ring, y: point.y + direction.y * ring });
+      if (!crowdedAt(candidate, taken)) return candidate;
+    }
+  }
+  return point;
+}
+
 /** Whether any soldier of the team still has a long way to his slot (and marks the group as rushing). */
 function farFromSlots(team: readonly MutableUnit[], group: BoundingGroup): boolean {
   const far = team.some((unit) => {
@@ -290,10 +338,14 @@ export function assignBoundingDirect(
     units[0]?.formation ?? 'line',
     averageAim(units) ?? averageFacing(units),
   );
+  const sent = new Set(units.map((unit) => unit.id));
+  const assigned: Vec2[] = [];
   units.forEach((unit, index) => {
     // A slot inside a cover's clearance has no path; without this the soldier
     // would wait in cover forever while the rest of the team moves on.
-    const target = nearestOpenPoint(ctx, targets?.get(unit.id) ?? slots[index] ?? destination);
+    const open = nearestOpenPoint(ctx, targets?.get(unit.id) ?? slots[index] ?? destination);
+    const target = roomFor(ctx, open, [...assigned, ...placesAround(ctx, sent, unit)]);
+    assigned.push(target);
     unit.targetX = target.x;
     unit.targetY = target.y;
     unit.holdPosition = false;
@@ -353,6 +405,8 @@ export function assignBoundingAdvance(
   const headingX = destination.x - team.x;
   const headingY = destination.y - team.y;
   const headingLength = Math.sqrt(headingX * headingX + headingY * headingY);
+  const sent = new Set(units.map((unit) => unit.id));
+  const assigned: Vec2[] = [];
   for (const unit of units) {
     const currentDistance = Math.sqrt(
       (unit.x - destination.x) ** 2 + (unit.y - destination.y) ** 2,
@@ -425,7 +479,15 @@ export function assignBoundingAdvance(
     if (bestCover) {
       const claimed = claims.get(bestCover.id) ?? 0;
       claims.set(bestCover.id, claimed + 1);
-      best = placeAlongCover(ctx, bestCover, claimed, unit);
+      // The next free place along the cover: a place another man stands on or
+      // is heading for is skipped before the man is moved off the cover.
+      const taken = [...assigned, ...placesAround(ctx, sent, unit)];
+      const capacity = coverCapacity(bestCover);
+      for (let index = claimed; index < claimed + capacity && !best; index += 1) {
+        const place = placeAlongCover(ctx, bestCover, index, unit);
+        if (!crowdedAt(place, taken)) best = place;
+      }
+      best ??= placeAlongCover(ctx, bestCover, claimed, unit);
     }
     if (!best) {
       const length = Math.sqrt((destination.x - unit.x) ** 2 + (destination.y - unit.y) ** 2);
@@ -442,6 +504,8 @@ export function assignBoundingAdvance(
       unit.boundPhase = 'cover';
       continue;
     }
+    best = roomFor(ctx, best, [...assigned, ...placesAround(ctx, sent, unit)]);
+    assigned.push(best);
     // A rush is a short hop: on a battle map a walled-in point is given up
     // quickly instead of searching the whole town for a way in.
     const path = findPath(

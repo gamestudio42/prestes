@@ -125,6 +125,7 @@ export {
   PREVIEW_CONE_DEGREES,
   averageAim,
   averageFacing,
+  nearestKnownEnemyAt,
   isPointNearCover,
   PREVIEW_CONE_RADIUS,
   clampToRegion,

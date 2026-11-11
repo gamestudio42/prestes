@@ -6,11 +6,12 @@ import { battleReport } from '../../tools/battle-report';
 // beginning and an end. A silence up to 75 s is a section crossing the
 // 160 m between the lines out of range, not a stall.
 /**
- * garrison-and-assault (user, 2026-11-09): with the enemy garrisoning a
- * trench line at the start, these seeds run long or fall silent while the
- * scripted player leaves it be. Left to add-map-objectives (its task 4.1).
+ * garrison-and-assault (user, 2026-11-09) listed seeds 7 and 42 here, long or
+ * silent while the scripted player left a garrisoned trench be. Since the
+ * bounds keep a man's room (author-game-maps 3.6 follow-up, 2026-11-10) all
+ * three seeds hold the full bands on the test map, so the list is empty.
  */
-const LONG_UNTIL_OBJECTIVES = new Set([7, 42]);
+const LONG_UNTIL_OBJECTIVES = new Set<number>();
 
 describe('3v3 battle feel', () => {
   for (const seed of [1922, 7, 42]) {

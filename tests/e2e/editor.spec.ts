@@ -629,10 +629,12 @@ test('playtest starts the 3 vs 3 on the edited map and returns to the editor', a
   await dragGround(page, { x: -4, y: 0 }, { x: 4, y: 0 });
   // The first column section moves 30 m west; the battle must start it there.
   const before = (await state(page)).sections.column[0]!;
-  const moved = { x: before.x - 30, y: before.y };
   await tool(page, 'deployment');
-  await dragGround(page, before, moved);
-  expect((await state(page)).sections.column[0]).toEqual(moved);
+  await dragGround(page, before, { x: before.x - 30, y: before.y });
+  // author-game-maps 8: the drag moves the side's area; the section start is
+  // derived from the area again, so it moves 30 m west and y may re-round.
+  const moved = (await state(page)).sections.column[0]!;
+  expect(moved.x).toBe(before.x - 30);
   await page.getByTestId('editor-playtest').click();
   await page.waitForURL(/index\.html\?playtest=1/);
   await expect(page.getByTestId('hud')).toBeVisible();

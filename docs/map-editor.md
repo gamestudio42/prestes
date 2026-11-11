@@ -11,6 +11,17 @@ menu desk, choose the theodolite (**Map editor**); or start the dev server
   `<id>.map.json`), size, names and descriptions in both languages, use
   (skirmish or campaign), setting, source note, palette, base ground and
   water level.
+- **Slots** (author-game-maps): New and Open ask the slot first: one of the
+  eight campaign missions, in the campaign book's order, or a skirmish map.
+  A mission with a saved map shows "Jogar o mapa" / "Play the map" in the
+  campaign book (a 3 vs 3 on that map, default rosters, no scripting).
+- **The test map** `campo-de-provas` is the default battle map: a short
+  battle that exercises houses, a sobrado, a church with its tower, trench
+  lines, the ford and the bridge. Tests, the bench and the battle report run
+  on it.
+- **Time of day**: Map properties sets the hour (early morning to late
+  afternoon) and the sun's bearing; the editor view lights the map as the
+  battle will while you drag them.
 - **Sizes**: small 240 m, medium 400 m, large 640 m across. Changing the size
   in **Map properties** grows the map around its centre or crops it; objects
   that would fall outside are listed first and removed only if you confirm.

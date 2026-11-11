@@ -33,7 +33,7 @@ export interface BookRibbon {
 }
 
 export interface BookFrameProps {
-  /** The cover leather that tints the 9-slice frame (design D11). */
+  /** The cover leather of the narrow board around the pages (design D11). */
   cover: 'navy' | 'green';
   locale: Locale;
   book: Book;
@@ -53,9 +53,9 @@ export interface BookFrameProps {
 }
 
 /**
- * An open book: the 9-slice pixel-art frame tinted by the cover, ribbons on the
- * top edge, and a two-page spread laid over the parchment. Pages never scroll; text continues on the
- * next spread. The corner controls and the left and right arrow keys turn one
+ * An open book: one bound spread on a narrow cover board, its pages meeting at
+ * the gutter over stacked leaves, and bookmark ribbons hanging from the head.
+ * Pages never scroll; text continues on the next spread. The corner controls and the left and right arrow keys turn one
  * spread at a time.
  */
 export function BookFrame({

@@ -4,7 +4,17 @@
  * rounded corners. Shared page and cover styles live in book-menu.css.
  */
 .desk-screen {
-  --desk-book-width: min(1152px, calc(100vw - 48px), calc((100vh - 32px) * 1.5));
+  /*
+   * An open book is sized to its pages (polish-menu-desk 6.6): the span sets
+   * the page size (the pagination budget in bookPages.ts fits it at
+   * 1280 x 720), and the cover board and the stacked leaves wrap the pages.
+   */
+  --desk-book-span: min(1152px, calc(100vw - 48px), calc((100vh - 32px) * 1.5));
+  --book-page-w: calc(var(--desk-book-span) * 5 / 12);
+  --book-page-h: calc(var(--desk-book-span) * 13 / 24);
+  --book-board: 16px;
+  --book-leaves: 8px;
+  --desk-book-width: calc(var(--book-page-w) * 2 + (var(--book-board) + var(--book-leaves)) * 2);
   --desk-label-gap: 8px;
   /* One art pixel is --desk-scale screen pixels on every closed object. */
   --desk-scale: 2;
@@ -291,15 +301,19 @@
 
 /* --- Open books ----------------------------------------------------------- */
 /*
- * A two-page spread over the open-book sprite (polish-menu-desk, D10-D11). The
- * pages never scroll: text is flowed onto pages by bookPages.ts, and an e2e
- * check fails the build when a page overflows at 1280 x 720 or 1440 x 900.
+ * One bound spread on a narrow cover board (polish-menu-desk D10-D11, 6.6).
+ * The pages never scroll: text is flowed onto pages by bookPages.ts, and an
+ * e2e check fails the build when a page overflows at 1280 x 720 or
+ * 1440 x 900. Every step is one art pixel (2 px): no blur, no soft gradients.
  */
 .desk-book-frame {
+  --book-paper-light: #f6ecd4;
+  --book-spine: #8a7148;
+
   position: relative;
   width: var(--desk-book-width);
-  aspect-ratio: 3 / 2;
   max-width: none;
+  padding: var(--book-board) calc(var(--book-board) + var(--book-leaves)) calc(var(--book-board) + var(--book-leaves));
   font-family: var(--px-font);
 }
 
@@ -309,71 +323,55 @@
 }
 
 /*
- * The frame (design D11) is a 2x 9-slice of light, shade and gilt over the
- * cover leather, so one sprite serves both books: --book-cover tints it, navy
- * for the campaign and green for the compendium. The pages are parchment drawn
- * here, darkening in hard steps toward the gutter.
+ * The cover leather shows only as a narrow board around the page block, with a
+ * dark outer line and a one-pixel light rim: navy for the campaign, green for
+ * the compendium.
  */
 .desk-book-cover-navy {
   --book-cover: #2c3a52;
+  --book-cover-dark: #18202f;
+  --book-cover-light: #43567a;
 }
 
 .desk-book-cover-green {
   --book-cover: #2e6150;
+  --book-cover-dark: #17342a;
+  --book-cover-light: #468572;
 }
 
 .desk-book-board {
   position: absolute;
   inset: 0;
-  border: 32px solid transparent;
-  border-image: url('../assets/menu/desk/book-frame.png') 16 fill / 32px stretch;
-  background: var(--book-cover) border-box;
-  image-rendering: pixelated;
+  border: 2px solid var(--book-cover-dark);
+  background: var(--book-cover);
+  box-shadow:
+    inset 2px 2px 0 var(--book-cover-light),
+    inset -2px -2px 0 var(--book-cover-dark);
   filter: drop-shadow(8px 8px 0 rgba(8, 5, 2, 0.8));
 }
 
-.desk-book-page-left,
-.desk-book-page-right {
-  --page-edge: var(--book-paper-deep);
-}
-
-.desk-book-page-left {
-  background: linear-gradient(
-    90deg,
-    var(--book-paper) 0 92%,
-    var(--book-paper-shade) 92% 97%,
-    var(--page-edge) 97% 100%
-  );
-  box-shadow:
-    -2px 2px 0 var(--book-edge),
-    -4px 4px 0 var(--book-paper-shade),
-    -6px 6px 0 var(--book-edge);
-}
-
-.desk-book-page-right {
-  background: linear-gradient(
-    270deg,
-    var(--book-paper) 0 92%,
-    var(--book-paper-shade) 92% 97%,
-    var(--page-edge) 97% 100%
-  );
-  box-shadow:
-    2px 2px 0 var(--book-edge),
-    4px 4px 0 var(--book-paper-shade),
-    6px 6px 0 var(--book-edge);
-}
-
-/* The page boxes sit exactly over the blank parchment of the open frame. */
+/*
+ * The page block: two pages that meet at the gutter. Under the outer and
+ * bottom edges the leaves step out one art pixel at a time, cream and shadow
+ * in turn; under the spine the two stacks part in a small notch.
+ */
 .desk-book-pages {
-  position: absolute;
-  left: 6.25%;
-  right: 6.25%;
-  top: 9.375%;
-  bottom: 9.375%;
+  position: relative;
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 4.1667%;
+  grid-template-columns: var(--book-page-w) var(--book-page-w);
+  height: var(--book-page-h);
   color: var(--book-ink);
+}
+
+/* The fold: a thin spine line where the pages meet. */
+.desk-book-pages::after {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(50% - 1px);
+  width: 2px;
+  background: var(--book-spine);
+  content: '';
 }
 
 .desk-book-page {
@@ -386,15 +384,84 @@
   padding: 22px 26px 30px;
 }
 
+/*
+ * Each page is a step lighter at its outer edge, so the spread reads slightly
+ * curved, and darkens toward the spine (the ::before and ::after bands).
+ */
 .desk-book-page-left {
   padding-right: 34px;
+  background: linear-gradient(90deg, var(--book-paper-light) 0 6px, var(--book-paper) 6px);
+  box-shadow:
+    -2px 2px 0 var(--book-edge),
+    -4px 4px 0 var(--book-paper-shade),
+    -6px 6px 0 var(--book-edge),
+    -8px 8px 0 var(--book-paper-deep);
 }
 
 .desk-book-page-right {
   padding-left: 34px;
+  background: linear-gradient(270deg, var(--book-paper-light) 0 6px, var(--book-paper) 6px);
+  box-shadow:
+    2px 2px 0 var(--book-edge),
+    4px 4px 0 var(--book-paper-shade),
+    6px 6px 0 var(--book-edge),
+    8px 8px 0 var(--book-paper-deep);
+}
+
+/*
+ * The gutter shade in dithered steps, from the spine out: deep, deep and shade
+ * in a checker, shade, then shade and paper in a checker. A checker cell is
+ * one art pixel.
+ */
+.desk-book-page::before,
+.desk-book-page::after {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background-size: 100% 100%, 4px 4px;
+  pointer-events: none;
+  content: '';
+}
+
+.desk-book-page::before {
+  width: 10px;
+}
+
+.desk-book-page::after {
+  width: 16px;
+}
+
+.desk-book-page-left::before {
+  right: 0;
+  background-image:
+    linear-gradient(270deg, var(--book-paper-deep) 0 4px, transparent 4px),
+    repeating-conic-gradient(var(--book-paper-deep) 0 25%, var(--book-paper-shade) 0 50%);
+}
+
+.desk-book-page-left::after {
+  right: 10px;
+  background-image:
+    linear-gradient(270deg, var(--book-paper-shade) 0 8px, transparent 8px),
+    repeating-conic-gradient(var(--book-paper-shade) 0 25%, transparent 0 50%);
+}
+
+.desk-book-page-right::before {
+  left: 0;
+  background-image:
+    linear-gradient(90deg, var(--book-paper-deep) 0 4px, transparent 4px),
+    repeating-conic-gradient(var(--book-paper-deep) 0 25%, var(--book-paper-shade) 0 50%);
+}
+
+.desk-book-page-right::after {
+  left: 10px;
+  background-image:
+    linear-gradient(90deg, var(--book-paper-shade) 0 8px, transparent 8px),
+    repeating-conic-gradient(var(--book-paper-shade) 0 25%, transparent 0 50%);
 }
 
 .desk-book-page-body {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex: 1;
   flex-direction: column;
@@ -413,49 +480,72 @@
   text-align: center;
 }
 
-/* Ribbons hang from the top edge of the frame. */
+/*
+ * Bookmark ribbons come out of the page block at the head, beside the gutter,
+ * and hang over the top edge with forked ends. The active one hangs longer.
+ */
 .desk-book-ribbons {
   position: absolute;
-  top: 0;
-  right: 12%;
-  left: 8%;
+  right: calc(50% + 12px);
+  bottom: calc(100% - var(--book-board) - 10px);
+  z-index: 3;
   display: flex;
+  align-items: flex-end;
   gap: 4px;
-  height: 9.375%;
 }
 
 .desk-book-ribbon {
+  --ribbon-color: var(--book-accent);
+  --ribbon-dark: #5f2219;
+
   display: grid;
-  align-items: end;
+  align-items: start;
   justify-items: center;
-  min-width: 30px;
-  height: 70%;
-  padding: 0 6px 6px;
+  width: 20px;
+  height: 46px;
+  padding: 9px 0 0;
   border: 0;
-  background: var(--book-accent);
+  background: linear-gradient(90deg, var(--ribbon-color) 0 16px, var(--ribbon-dark) 16px);
   color: var(--px-parchment);
   font: 600 13px/1 var(--px-font);
-  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 82%, 0 100%);
+  /* A stepped V cut, three art pixels deep. */
+  clip-path: polygon(
+    0 0, 4px 0, 4px 2px, 6px 2px, 6px 4px, 8px 4px, 8px 6px, 12px 6px, 12px 4px, 14px 4px,
+    14px 2px, 16px 2px, 16px 0, 100% 0, 100% 100%, 0 100%
+  );
   cursor: pointer;
 }
 
 .desk-book-ribbon:nth-child(odd) {
-  background: var(--book-blue);
+  --ribbon-color: var(--book-blue);
+  --ribbon-dark: #252f45;
 }
 
-.desk-book-ribbon.active,
 .desk-book-ribbon:hover,
 .desk-book-ribbon:focus-visible {
-  height: 92%;
-  background: var(--px-gold);
-  color: var(--book-ink);
+  height: 50px;
   outline: none;
 }
 
-/* Corner controls on the bottom corners of the parchment. */
+.desk-book-ribbon.active {
+  --ribbon-color: var(--px-gold);
+  --ribbon-dark: #a8812f;
+
+  height: 62px;
+  color: var(--book-ink);
+}
+
+.desk-book-ribbon:focus-visible {
+  --ribbon-color: var(--px-gold);
+
+  color: var(--book-ink);
+}
+
+/* Corner controls on the bottom corners of the pages. */
 .desk-book-turn {
   position: absolute;
-  bottom: calc(9.375% + 4px);
+  bottom: calc(var(--book-board) + var(--book-leaves) + 4px);
+  z-index: 2;
   width: 36px;
   height: 26px;
   border: 2px solid var(--book-ink-soft);
@@ -466,11 +556,11 @@
 }
 
 .desk-book-turn-prev {
-  left: calc(6.25% + 8px);
+  left: calc(var(--book-board) + var(--book-leaves) + 8px);
 }
 
 .desk-book-turn-next {
-  right: calc(6.25% + 8px);
+  right: calc(var(--book-board) + var(--book-leaves) + 8px);
 }
 
 .desk-book-turn:hover:not(:disabled),
@@ -1582,13 +1672,19 @@
   }
 
   .desk-book-frame {
-    aspect-ratio: auto;
+    padding: 0;
   }
 
   .desk-book-page-left,
   .desk-book-page-right {
     background: none;
     box-shadow: none;
+  }
+
+  .desk-book-page::before,
+  .desk-book-page::after,
+  .desk-book-pages::after {
+    display: none;
   }
 
   /* The drawer stacks the pages, so they may grow; ribbons and corners follow. */
@@ -1603,7 +1699,10 @@
     margin-bottom: 4px;
   }
 
-  .desk-book-ribbon {
+  .desk-book-ribbon,
+  .desk-book-ribbon:hover,
+  .desk-book-ribbon:focus-visible,
+  .desk-book-ribbon.active {
     height: 28px;
   }
 
@@ -1617,6 +1716,7 @@
     display: flex;
     flex-direction: column;
     gap: 8px;
+    height: auto;
     padding: 38px 8px 8px;
     border: 2px solid var(--book-leather);
     background: var(--book-paper);

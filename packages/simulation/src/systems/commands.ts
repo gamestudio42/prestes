@@ -19,7 +19,7 @@ import { formationSlots } from '../tactical';
 import { clamp } from './model';
 import type { MutableUnit } from './model';
 import type { SimContext } from './context';
-import { nearestOpenPoint, nearestEnemyAt } from './geometry';
+import { nearestOpenPoint, nearestKnownEnemyAt } from './geometry';
 import { reflowFormation, reformInPlace } from './formations';
 import { queueUnitOrder } from './movement';
 import { spawnCover } from './cover';
@@ -473,7 +473,7 @@ export function applyCommand(
       { x: 0, y: 0 },
     );
     const enemy =
-      actionable.length > 1 ? nearestEnemyAt(ctx, center, actionable[0]!.faction) : null;
+      actionable.length > 1 ? nearestKnownEnemyAt(ctx, center, actionable[0]!.faction) : null;
     // With no enemy left, fall back against the way the section faces.
     const facingNow = averageFacing(actionable);
     const away = enemy
@@ -540,7 +540,7 @@ export function applyCommand(
   );
 
   const coverSlots = orderSlots(ctx, living, slots, {
-    threat: living[0] ? nearestEnemyAt(ctx, command.to, living[0].faction) : null,
+    threat: living[0] ? nearestKnownEnemyAt(ctx, command.to, living[0].faction) : null,
     facing: coverFacing ?? null,
     click: command.to,
   });
@@ -620,7 +620,7 @@ export function applyLineMove(
   };
   const slots = matchDestinations(living, lineFormationSlots(command.from, command.to, living.length));
   const coverSlots = orderSlots(ctx, living, slots, {
-    threat: living[0] ? nearestEnemyAt(ctx, center, living[0].faction) : null,
+    threat: living[0] ? nearestKnownEnemyAt(ctx, center, living[0].faction) : null,
     facing: lineDirection,
   });
   const finals = matchedDestinations(living, slots, coverSlots, center);
@@ -704,7 +704,7 @@ function haltIntoCover(ctx: SimContext, units: readonly MutableUnit[], facing: V
     living,
     living.map((unit) => ({ x: unit.x, y: unit.y })),
     {
-      threat: nearestEnemyAt(ctx, centre, living[0]!.faction),
+      threat: nearestKnownEnemyAt(ctx, centre, living[0]!.faction),
       facing: facing ?? averageAim(living) ?? averageFacing(living) ?? null,
       click: null,
       maxDistance: HALT_COVER_RADIUS,

@@ -10,12 +10,12 @@ import {
   setActiveMap,
   terrainHeightAt,
   terrainSurfaceAt,
-  VILA_MILITAR,
   waterAt,
 } from '../src';
+import { TEST_MAP } from './fixtures/test-map';
 
 // refine-map-editor 4.1: a bridge rests on its abutments.
-afterEach(() => setActiveMap(VILA_MILITAR));
+afterEach(() => setActiveMap(TEST_MAP));
 
 describe('bridges', () => {
   it('deck over a high bank: no ground through the deck, no step at the landings, men cross bank to bank', () => {

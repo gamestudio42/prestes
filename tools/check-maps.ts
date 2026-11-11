@@ -1,7 +1,7 @@
 import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { basename, dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { compileMapDocument, fromMapDocument, parseMapDocumentText, setActiveMap, validateEditableMap, validateMapRosters, validatePositions, VILA_MILITAR, type AuthoredMapEntry } from '../packages/shared/src';
+import { compileMapDocument, fromMapDocument, parseMapDocumentText, setActiveMap, validateEditableMap, validateMapRosters, validatePositions, type AuthoredMapEntry } from '../packages/shared/src';
 
 /**
  * add-map-editor: checks every authored map document in
@@ -96,7 +96,6 @@ export function checkAuthoredMaps(dir = AUTHORED_DIR): string[] {
       if (other) errors.push(`${file}: mission ${document.mission} already has the map ${other}`);
       else missions.set(document.mission, document.id);
     }
-    if (['vila-militar', 'fazenda', 'serra-rio', 'bairro'].includes(document.id)) errors.push(`${file}: id ${document.id} is a hand-written map's`);
     for (const problem of validateEditableMap(fromMapDocument(document))) {
       if (problem.severity === 'error') errors.push(`${file}: ${problem.code} ${JSON.stringify(problem.params)}`);
       // Warnings (masked vegetation, a cover gap) are shown and do not fail the check.
@@ -109,7 +108,6 @@ export function checkAuthoredMaps(dir = AUTHORED_DIR): string[] {
     // Its enemy presets are valid legalist rosters, and every section type deploys in every slot.
     for (const error of validateMapRosters(compiled)) errors.push(`${file}: ${error}`);
   }
-  setActiveMap(VILA_MILITAR);
   return errors;
 }
 

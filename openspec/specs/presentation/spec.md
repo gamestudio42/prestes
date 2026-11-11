@@ -6,35 +6,6 @@ shell that prove the presentation pipeline before historical content is produced
 
 ## Requirements
 
-### Requirement: Browser boot flow
-
-The game SHALL load in a supported desktop browser and reach a start screen with
-the game title, a final tagline, a language selector, an audio option, the codex
-and the bootcamp actions. When bootcamp progress exists the start screen SHALL
-offer Continue (resume the saved station) and Restart; otherwise it SHALL offer
-Start. The period kicker SHALL appear once.
-
-#### Scenario: Start screen loads
-
-- **WHEN** the player opens the built game in a browser
-- **THEN** the start screen appears without a fatal error and exposes the language
-  selector, the audio option and the codex
-
-#### Scenario: Continue saved progress
-
-- **WHEN** bootcamp progress exists and the player activates Continue
-- **THEN** the saved station opens at its checkpoint
-
-#### Scenario: Restart
-
-- **WHEN** bootcamp progress exists and the player activates Restart
-- **THEN** progress resets and station 1 opens
-
-#### Scenario: Start action reaches the graybox scene
-
-- **WHEN** the player activates the start action with no saved progress
-- **THEN** the scene loads and the HUD shell becomes visible
-
 ### Requirement: Low-poly graybox scene
 
 The scene SHALL render a period low-poly world with terrain, buildings and
@@ -625,33 +596,6 @@ The HUD SHALL show rescuer, casualty, phase and progress for an active rescue.
 - **WHEN** a rescue completes or fails
 - **THEN** the panel shows a localized completion or failure event
 
-### Requirement: Boot Camp entry and tutorial shell
-
-The start screen SHALL expose localized bootcamp actions. During the bootcamp, the
-HUD SHALL show the active station, its mandatory objectives with live progress,
-instructor text, failure or completion status and progression through the seven
-stations. The panel SHALL read only from frames and exercise state.
-
-#### Scenario: Start screen offers boot camp
-- **WHEN** the start screen is shown
-- **THEN** it offers a localized bootcamp action without replacing the existing
-  language and codex actions
-
-#### Scenario: Tutorial HUD is active
-- **WHEN** a bootcamp station is playing
-- **THEN** the HUD shows the station number and title, objectives, instructor text
-  and live progress
-
-#### Scenario: Feedback resolves through locales
-- **WHEN** the active locale changes
-- **THEN** bootcamp labels, objectives, failure and debrief update without
-  reloading the scene
-
-#### Scenario: Normal HUD is unchanged
-- **WHEN** the normal skirmish or sandbox session is played
-- **THEN** the exercise panel is absent and the existing orders HUD remains
-  available
-
 ### Requirement: Preview control
 
 The command bar SHALL expose a visible Preview toggle. It SHALL be off by
@@ -801,66 +745,6 @@ pointer or keyboard, using an accessible overflow when a region cannot fit.
 
 - **WHEN** the viewport is narrow
 - **THEN** groups wrap or move to overflow and every command remains reachable
-
-### Requirement: Mission objective HUD
-
-During the bootcamp exercise the HUD SHALL show the current phase, the active
-mission objectives, live objective progress, instructor text and phase progress.
-It SHALL NOT require the player to complete a permanent list of every HUD action.
-Optional drill hints SHALL be collapsible.
-
-#### Scenario: Objective cards
-
-- **WHEN** a phase is active
-- **THEN** the panel lists that phase's objectives with their current progress
-
-#### Scenario: Objective updates live
-
-- **WHEN** the simulation frame changes soldier positions, suppression or the phase
-  timer
-- **THEN** the objective values update from the frame
-
-#### Scenario: Optional drills
-
-- **WHEN** the player expands the drill hints
-- **THEN** the relevant commands are shown without gating phase progress
-
-### Requirement: Objective markers
-
-The scene SHALL render the active phase objective zones, enemy approach and
-fallback positions as localized, readable markers. Markers SHALL be presentation
-only and SHALL NOT create simulation cover or collision.
-
-#### Scenario: Zone marker
-
-- **WHEN** the current objective is a reach, secure or hold zone
-- **THEN** the scene shows a ring and translucent area at that zone
-
-#### Scenario: Approach marker
-
-- **WHEN** the hold phase starts
-- **THEN** the scene marks the expected enemy approach
-
-#### Scenario: Marker cleanup
-
-- **WHEN** a phase completes
-- **THEN** markers for the previous phase are removed
-
-### Requirement: Failure and debrief HUD
-
-The HUD SHALL show a localized failure reason and retry controls when the exercise
-fails, and a localized debrief with exercise values when it completes. Failure
-SHALL pause the simulation. The debrief SHALL offer replay and continue.
-
-#### Scenario: Failure
-
-- **WHEN** the hold phase fails
-- **THEN** the simulation pauses and the HUD shows the reason and retry actions
-
-#### Scenario: Debrief
-
-- **WHEN** the hold phase succeeds
-- **THEN** the simulation pauses and the HUD shows completion time and unit status
 
 ### Requirement: Distinct control icons
 
@@ -1336,48 +1220,6 @@ SHALL expose a localized accessible name and expanded state.
 - **WHEN** the player toggles sound or changes language from the compass
 - **THEN** the existing audio and locale behavior updates and the sound toggle does not start the menu music
 
-### Requirement: Skirmish map fan
-
-The skirmish object SHALL present the four battle maps as a perspective fan of
-folded map sheets, posed like a folded map on the desk, with soft fold creases.
-The fan SHALL carry the localized "Mapas"/"Maps" label below the art. The active
-sheet SHALL carry a printed legend strip that is part of the map art, with the
-localized name, description and deploy action. Each sheet SHALL be selectable;
-selecting a non-active sheet raises it, and activating the active sheet cycles
-to the next map. The deploy action SHALL start the 3v3 on the selected map, and
-the selected map SHALL survive a tidy desk or a return to the start screen
-during the session.
-
-#### Scenario: Fan shows every map
-
-- **WHEN** the player opens the map fan
-- **THEN** all four maps are reachable with their localized names and the "Mapas"/"Maps" label sits below the fan
-
-#### Scenario: Legend is part of the sheet
-
-- **WHEN** the player looks at the active map
-- **THEN** its name, description and deploy action are printed on the parchment strip that is part of the map sheet
-
-#### Scenario: Select a map
-
-- **WHEN** the player selects a sheet
-- **THEN** it comes to the front and its legend is shown
-
-#### Scenario: Cycle the fan
-
-- **WHEN** the player activates the active sheet
-- **THEN** the next map comes to the front with its legend
-
-#### Scenario: Start on the selected map
-
-- **WHEN** the player activates deploy
-- **THEN** the 3v3 starts on the selected map
-
-#### Scenario: Selected map survives
-
-- **WHEN** the player tidies the desk or returns to the start screen
-- **THEN** the selected map is still selected
-
 ### Requirement: Reference books dossier
 
 The reference pile SHALL be a closed desk icon labelled "Referências"/"References"
@@ -1454,3 +1296,84 @@ animations SHALL be disabled while every action remains available.
 
 - **WHEN** the player prefers reduced motion
 - **THEN** no open, page-turn or record-groove animation runs and every control still works
+
+### Requirement: Skirmish-first boot flow
+
+The game SHALL load in a supported desktop browser and reach a start screen with
+the game title, a final tagline, a language selector, an audio option, the codex
+and the skirmish action. The campaign page SHALL say, localized in PT-BR and EN,
+that the campaign and its manual are in preparation and SHALL lead to the
+skirmish page; it SHALL NOT offer a bootcamp. Saved bootcamp progress SHALL be
+ignored and cleared. The period kicker SHALL appear once.
+
+#### Scenario: Start screen loads
+
+- **WHEN** the player opens the built game in a browser
+- **THEN** the start screen appears without a fatal error and exposes the language
+  selector, the audio option and the codex
+
+#### Scenario: No bootcamp on the menu
+
+- **WHEN** the player opens any page of the book menu
+- **THEN** no bootcamp start, continue or restart action is offered
+
+#### Scenario: Old progress is cleared
+
+- **WHEN** the game loads with saved bootcamp progress in local storage
+- **THEN** the progress is removed and the menu shows no bootcamp action
+
+#### Scenario: Skirmish reaches the scene
+
+- **WHEN** the player starts the 3 vs 3 from the skirmish page
+- **THEN** the scene loads and the HUD shell becomes visible
+
+### Requirement: Skirmish map fan of authored maps
+
+The skirmish object SHALL present the saved skirmish maps (and, in
+development builds, the test map) as a perspective fan of folded map
+sheets, posed like a folded map on the desk, with soft fold creases; the
+fan SHALL hold any number of maps, from one up. The fan SHALL carry the
+localized "Mapas"/"Maps" label below the art. The active sheet SHALL carry
+a printed legend strip that is part of the map art, with the localized
+name, description and deploy action. Each sheet SHALL be selectable;
+selecting a non-active sheet raises it, and activating the active sheet
+cycles to the next map. The deploy action SHALL start the 3 vs 3 on the
+selected map, and the selected map SHALL survive a tidy desk or a return to
+the start screen during the session. With no map to show, the object SHALL
+show a single blank sheet reading "Nenhum mapa ainda — abra o editor" /
+"No maps yet — open the editor", with no deploy action.
+
+#### Scenario: Fan shows every saved map
+
+- **WHEN** the player opens the map fan with three skirmish maps saved
+- **THEN** all three maps are reachable with their localized names and the "Mapas"/"Maps" label sits below the fan
+
+#### Scenario: Empty fan
+
+- **WHEN** the player opens the map fan in the published game with no skirmish map saved
+- **THEN** a blank sheet says there are no maps yet and points to the editor, and nothing can be deployed
+
+#### Scenario: Legend is part of the sheet
+
+- **WHEN** the player looks at the active map
+- **THEN** its name, description and deploy action are printed on the parchment strip that is part of the map sheet
+
+#### Scenario: Select a map
+
+- **WHEN** the player selects a sheet
+- **THEN** it comes to the front and its legend is shown
+
+#### Scenario: Cycle the fan
+
+- **WHEN** the player activates the active sheet
+- **THEN** the next map comes to the front with its legend
+
+#### Scenario: Start on the selected map
+
+- **WHEN** the player activates deploy
+- **THEN** the 3 vs 3 starts on the selected map
+
+#### Scenario: Selected map survives
+
+- **WHEN** the player tidies the desk or returns to the start screen
+- **THEN** the selected map is still selected

@@ -8,9 +8,12 @@ type Bridge = {
 
 test.setTimeout(120_000);
 
-/** The long trench in the middle of the Vila Militar field (cover 9). */
-// author-game-maps 3.5: the test map's fire trench, at its middle.
-const TRENCH = { x: -45, y: -55 };
+/**
+ * A stone in the middle of the campo-de-provas field (cover 5022). Its slots
+ * guard north and south; the column comes up from the south, so the slots it
+ * can use are the ones that guard north, toward the enemy.
+ */
+const STONE = { x: -20, y: -12 };
 
 async function frame(page: Page): Promise<Frame> {
   return page.evaluate(() => (window as unknown as Bridge).__prestes!.frame()!);
@@ -40,7 +43,7 @@ async function screenOf(page: Page, point: Vec2): Promise<Vec2> {
   return screen!;
 }
 
-test('hovering the trench shows its slots and a click fills them', async ({ page }) => {
+test('hovering a stone shows its slots and a click fills the planned ones', async ({ page }) => {
   await page.goto('/');
   await page.getByTestId('open-skirmish').click();
   await page.getByTestId('start-battle-3v3').click();
@@ -54,36 +57,40 @@ test('hovering the trench shows its slots and a click fills them', async ({ page
     (next) => (window as unknown as Bridge).__prestes!.command(next),
     { type: 'hold_fire', unitIds: legalists, hold: true } as Command,
   );
-  // Walk the section close to the trench so the camera frames it.
+  // Walk the section up near the stone, out of reach of its slots, so the camera frames it.
   const ids = (await frame(page)).units
     .filter((unit) => unit.faction === 'column' && unit.squadId === 1 && unit.alive)
     .map((unit) => unit.id);
   await page.evaluate(
     (next) => (window as unknown as Bridge).__prestes!.command(next),
-    { type: 'move', unitIds: ids, to: { x: TRENCH.x, y: TRENCH.y + 10 } } as Command,
+    { type: 'move', unitIds: ids, to: { x: STONE.x, y: STONE.y + 28 } } as Command,
   );
   await stepRendered(page, 1800);
-  await page.evaluate(({ x, y }) => (window as unknown as { __prestesScene: { focusOn: (x: number, y: number) => void } }).__prestesScene.focusOn(x, y), TRENCH);
+  await page.evaluate(({ x, y }) => (window as unknown as { __prestesScene: { focusOn: (x: number, y: number) => void } }).__prestesScene.focusOn(x, y), STONE);
   await page.waitForTimeout(600);
 
-  const point = await screenOf(page, TRENCH);
+  const point = await screenOf(page, STONE);
   await page.getByTestId('game-canvas').hover({ position: point });
   const count = page.getByTestId('slot-count');
   await expect(count).toBeVisible();
-  // author-game-maps 3.5: the test map's trench has bays, so a piece holds a few men; all its slots are free.
   const total = Number(await count.getAttribute('data-total'));
-  expect(total).toBeGreaterThanOrEqual(3);
+  expect(total).toBeGreaterThanOrEqual(2);
   expect(Number(await count.getAttribute('data-free'))).toBe(total);
 
   await page.getByTestId('order-tab-movement').click();
   await page.getByTestId('order-move').click();
-  const again = await screenOf(page, TRENCH);
+  const again = await screenOf(page, STONE);
   await page.getByTestId('game-canvas').hover({ position: again });
-  await expect.poll(async () => Number(await count.getAttribute('data-planned'))).toBeGreaterThanOrEqual(total);
+  // author-game-maps 3.6: the preview plans as the order does, against the
+  // nearest enemy the column sees (or the way it faces). The count covers
+  // every planned slot, on the stone and on any cover near it.
+  await expect.poll(async () => Number(await count.getAttribute('data-planned'))).toBeGreaterThan(0);
+  const planned = Number(await count.getAttribute('data-planned'));
   await page.getByTestId('game-canvas').click({ position: again });
   await stepRendered(page, 400);
   const settled = await frame(page);
   const slotted = settled.units.filter((unit) => ids.includes(unit.id) && unit.slotId != null);
-  expect(slotted.length).toBeGreaterThanOrEqual(total);
+  // The order fills exactly the slots the preview planned, one man each.
+  expect(slotted.length).toBe(planned);
   expect(new Set(slotted.map((unit) => unit.slotId)).size).toBe(slotted.length);
 });

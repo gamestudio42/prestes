@@ -11,12 +11,12 @@ import {
   validateEditableMap,
   vegetationAt,
   VEGETATION_KINDS,
-  VILA_MILITAR,
   type EditableMap,
 } from '../src';
+import { TEST_MAP } from './fixtures/test-map';
 
 // refine-map-editor 3.1: one vegetation mask for the brush, the compiler and the check.
-afterEach(() => setActiveMap(VILA_MILITAR));
+afterEach(() => setActiveMap(TEST_MAP));
 
 const SCRUB = VEGETATION_KINDS.indexOf('scrub') + 1;
 const GRASS = VEGETATION_KINDS.indexOf('tall-grass') + 1;

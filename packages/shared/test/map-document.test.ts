@@ -23,13 +23,13 @@ import {
   validateEditableMap,
   vegetationAt,
   VEGETATION_KINDS,
-  VILA_MILITAR,
   activeMapRuntime,
   concealmentDistance,
   type EditableMap,
 } from '../src';
+import { TEST_MAP } from './fixtures/test-map';
 
-afterEach(() => setActiveMap(VILA_MILITAR));
+afterEach(() => setActiveMap(TEST_MAP));
 
 function flat(size: 'small' | 'medium' | 'large' = 'small'): EditableMap {
   return createEditableMap({ id: 'test-doc', size, name: { en: 'Test', 'pt-BR': 'Teste' } });

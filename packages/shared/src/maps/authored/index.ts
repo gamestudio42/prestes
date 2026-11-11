@@ -4,11 +4,11 @@ import type { AuthoredMapEntry, MapDocument } from '../document';
 /** What the menus know of every authored map, without loading it. */
 export const AUTHORED_MAP_INDEX: readonly AuthoredMapEntry[] = [
   {"id":"campo-de-provas","use":"test","size":"medium","name":{"en":"Proving ground (test map)","pt-BR":"Campo de provas (mapa de teste)"},"description":{"en":"Test map: houses, a sobrado, the church tower, a trench, a walled yard and a ford within reach.","pt-BR":"Mapa de teste: casas, sobrado, torre da igreja, trincheira, pátio murado e vau ao alcance."},"preview":true},
-  {"id":"fazenda-doc","use":"test","size":"medium","name":{"en":"Fazenda (editor proof)","pt-BR":"Fazenda (prova do editor)"},"description":{"en":"The Fazenda re-created in the map editor: two trench lines across pasture, cane on the west flank, corn under the casa-sede.","pt-BR":"A Fazenda refeita no editor de mapas: duas linhas de trincheira no pasto, cana no flanco oeste, milho sob a casa-sede."},"preview":false},
+  {"id":"paiolzinho","use":"skirmish","size":"small","name":{"en":"Paiolzinho","pt-BR":"Paiolzinho"},"description":{"en":"Litle farm with some plantation","pt-BR":"pequena fazenda com algumas plantações, fronteira entre franca SP"},"preview":true},
 ];
 
 /** Every authored map, loaded on demand (no map document is in the bundles). */
 export const AUTHORED_MAP_LOADERS: Readonly<Record<string, () => Promise<MapDocument>>> = {
   'campo-de-provas': () => import('./campo-de-provas.map.json').then((module) => module.default as unknown as MapDocument),
-  'fazenda-doc': () => import('./fazenda-doc.map.json').then((module) => module.default as unknown as MapDocument),
+  'paiolzinho': () => import('./paiolzinho.map.json').then((module) => module.default as unknown as MapDocument),
 };

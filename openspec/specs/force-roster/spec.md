@@ -84,7 +84,7 @@ it SHALL field a roster drawn from preset forces for the map, chosen by the
 battle seed, so the same seed fields the same enemy.
 
 #### Scenario: Six small sections deploy
-- **WHEN** a roster of six sections starts on Bairro
+- **WHEN** a roster of six sections starts on the test map (`campo-de-provas`)
 - **THEN** every soldier stands on walkable ground in the column's zone and six troop cards are shown
 
 #### Scenario: Enemy roster is deterministic

@@ -1,13 +1,12 @@
 {
   "seed": 1922,
   "ticks": 600,
-  "hash": "eaeae59f",
+  "hash": "0ae3084b",
   "battleMaps": {
-    "campo-de-provas": "1b9f568f",
-    "fazenda-doc": "62fab20d"
+    "campo-de-provas": "74b2fd3e"
   },
   "mixedRosters": {
-    "campo-de-provas": "de6f9b99"
+    "campo-de-provas": "1b1e0d92"
   },
-  "reason": "section starts derived from the deployment area (fazenda-doc only; the test map keeps its starts)"
+  "reason": "bounds keep a man's room: no two men on one spot"
 }

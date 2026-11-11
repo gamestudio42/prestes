@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import {
   allCoverSlots,
   buildTrenchLine,
@@ -17,12 +17,12 @@ import {
   terrainSurfaceAt,
   toMapDocument,
   trenchSlotCount,
-  VILA_MILITAR,
   type EditableMap,
   type TrenchLineDef,
 } from '../src';
 
-afterEach(() => setActiveMap(VILA_MILITAR));
+// Every case starts on flat open ground (the hand-written Vila Militar field it used is gone).
+beforeEach(() => setActiveMap(compileMapDocument(flat())));
 
 function flat(): EditableMap {
   return createEditableMap({ id: 'trench-doc', size: 'small', name: { en: 'Test', 'pt-BR': 'Teste' } });

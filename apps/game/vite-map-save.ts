@@ -57,9 +57,7 @@ export async function saveMapDocument(
   if (!parsed.ok) return { status: 400, body: { ok: false, reason: `${parsed.error} (${parsed.detail ?? ''})` } };
   const document = parsed.document;
   if (!shared.isValidMapId(document.id)) return { status: 400, body: { ok: false, reason: 'invalid-id' } };
-  if ((shared.BATTLE_MAP_IDS as readonly string[]).includes(document.id)) return { status: 409, body: { ok: false, reason: 'builtin-id' } };
   const problems = shared.validateEditableMap(shared.fromMapDocument(document));
-  shared.setActiveMap(shared.VILA_MILITAR);
   const errors = problems.filter((problem) => problem.severity === 'error');
   if (errors.length > 0) return { status: 422, body: { ok: false, reason: errors.map((problem) => problem.code).join(', ') } };
   const folder = dir ?? checks.AUTHORED_DIR;

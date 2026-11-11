@@ -1,15 +1,77 @@
-# Handoff: author-game-maps (current) → add-map-objectives
+# Handoff: author-game-maps (archived) → add-map-objectives (next)
 
 Written 2026-11-09 so any agent (or another AI model) can pick the work up
 cold. Keep this file current as tasks close; delete it once
 `add-map-objectives` is archived. The older sections below are history.
 
-## START HERE (updated 2026-11-10, end of the Opus session)
+## START HERE (updated 2026-11-10, end of day: author-game-maps archived)
 
-- Branch `refine-battle-maps`. Last commit `fd19887` holds everything up to
-  task 5.2. **Uncommitted:** section 8 (section starts from the deployment
-  area; see below). Commit only when the user asks; never push, merge,
-  rebase or force-push. The project stays local (no remote, no Pages).
+- **author-game-maps is archived** as
+  `openspec/changes/archive/2026-11-10-author-game-maps/` (36/36; the
+  user's hand check passed). Its deltas are synced into the main specs
+  (+15, ~19, -9); no main spec names a removed map any more (terrain
+  hill and garrison scenario fixed after the sync); `openspec validate
+  --specs` 23/23.
+- **Next change: add-map-objectives (0/17).** Read its proposal, design and
+  tasks first. Open points it inherits: presets A and C of the test map end
+  in a 900 s stand-off (objectives should move the column; the gun bands in
+  battle-report-weapons wait for it, `STAND_OFF_UNTIL_OBJECTIVES`); defend
+  and ambush still face the nearest enemy, seen or not (the AI's defend
+  needs a facing of its own before fog can apply there).
+- Other open work: machine-gun-fire-feedback 12/13 (gates + the user's hand
+  check), polish-menu-desk 31/35 (Aseprite sprites, needs the user),
+  video-tutorial-manual 0/19. Wish for later (user): each map as its own
+  object on the desk instead of the sheet fan.
+- The user's first map `paiolzinho` (skirmish, small) is in
+  `packages/shared/src/maps/authored/` with `apps/game/public/maps/
+  paiolzinho.png`, untracked; the desk-start-screen baseline now shows it.
+
+The notes below are from finalizing author-game-maps (history).
+
+- Branch `refine-battle-maps`. Last commit `46ae94b`. **Uncommitted, all
+  in the working tree:** polish-menu-desk 6.6 (open book in CSS), 3.6 (old
+  maps removed), the bound spacing fix, "seen enemies only" for cover slots,
+  section 7 closed, the retire-bootcamp archive. Commit only when the user
+  asks; never push, merge, rebase or force-push. The project stays local
+  (no remote, no Pages).
+- **Next steps to finalize author-game-maps (34/36; open: 5.4 and 6.3, the user's hand checks):**
+  1. (done 2026-11-10, see its Apply note) 6.0: MODIFIED deltas (full requirement text, map names replaced by the
+     test map `campo-de-provas` features, or REMOVED with a reason) for the
+     main-spec requirements that still name the removed maps and are not yet
+     in the change's deltas:
+     battle-maps: Authored map documents, Map bounds and pathfinding, Period
+     look of the battle maps, Roadside ditches, Trench lines in battle;
+     battle-lab: Large battle laboratory (default map is campo-de-provas),
+     A decided battle ends (test map, seeds 1922/7/42), The winning side
+     searches (Fazenda canefield);
+     force-roster: Mixed-force deployment (Bairro);
+     garrison: Enterable positions (Bairro scenario), Elevated positions
+     (Fazenda loft);
+     terrain: Ground material drawing (Fazenda snapshot), Map surfaces
+     (Vila Militar);
+     weapons: Training ammunition load (Vila Militar).
+     Already covered by deltas: battle-maps Proof/Fazenda/Serra e Rio/Bairro/
+     performance/shading/cover/catalog, battle-lab Map defensive lines.
+     Check: `grep -riE "vila-militar|vila militar|fazenda|serra-rio|bairro"
+     openspec/specs` after a dry sync; `openspec validate author-game-maps
+     --strict`.
+  2. (done 2026-11-10) 6.1 docs: docs/status.md, docs/map-editor.md (slots, time of day, the
+     test map), docs/architecture.md (maps loaded on demand).
+  3. 3.5 + 6.2: `pnpm verify`, `pnpm e2e`. Run 2026-11-10: the vitest step
+     of verify failed 6 tests on worker RPC timeouts under load (all 36 tests
+     of those files pass alone); build, bundle, determinism, tick budget
+     (1.8/1.3/1.4 ms of 4.5), `openspec validate --specs` and
+     `openspec validate author-game-maps --strict` pass. Full e2e: 116/122;
+     the editor playtest test was stale after section 8 (the start is derived
+     from the dragged area, y re-rounds) and is fixed (passes). Still failing,
+     were screenshots; re-recorded on the user's word (visual.spec), the editor
+     pixel art passes unchanged. 3.5 and 6.2 are done. Known failing: visual.spec
+     baselines (desk-start-screen and others) and the editor pixel-art
+     screenshot; re-record only with the user's ok or with the HUD session
+     (`local_ab470961-e164-4068-8fef-5d9a7672a40b`).
+  4. 5.4 done (user saw the thumbnail; wish for later: each map as its own
+     object on the desk instead of the sheet fan). 6.3 waits for the user's
+     word on garrisons, tower, assault and ford on the test map. Then archive with openspec-archive-change when asked.
 - Reply to the user in PT-BR; code, docs, specs and commits in English.
 - Another session (the HUD work) edits files in this tree at the same time
   (`scene-view.ts`, `editor.spec.ts`, `map-document.test.ts` changed on disk
@@ -19,7 +81,7 @@ cold. Keep this file current as tasks close; delete it once
   Do not paint in the editor inside the shared preview pane (its autosave
   overwrites the user's map); verify editor work with Playwright.
 
-### author-game-maps: 23/36 done
+### author-game-maps: 34/36 done
 
 Done on 2026-11-10: 2.2 (sandboxMaps; catalog test), 3.2 (determinism on
 the test map, golden `reason`), 3.4 (bench on the test map; the user chose a
@@ -38,16 +100,31 @@ Open, recommended order (each has a Status/Apply note in tasks.md):
    battles of 600 s or more (user decision).
 2. (done) **5.3 campaign book "Play the map"**. Its e2e fixture relabels
    `fazenda-doc`; switch it to `campo-de-provas` when 3.6 removes fazenda-doc.
-3. **3.6 remove the old maps** (NEXT; the full file inventory and a 6-step
-   plan are in the task's Status note in tasks.md; do it in one sitting so
-   the tree never stays broken) (`vila-militar`, `fazenda`, `serra-rio`,
-   `bairro`, `fazenda-doc.map.json`); worker bundle back under 200,000 B.
-   Then drop `fazenda-doc` from the goldens (`--update --reason`).
+3. (done 2026-11-10) **3.6 remove the old maps**: the four hand-written
+   maps and fazenda-doc are gone; worker 195,910 B under 200,000 B; goldens
+   `--reason "old maps removed"`; the 5.3 fixture relabels campo-de-provas.
+   Follow-up (user): men stacked on one spot during bounds; fixed in
+   bounding.ts (SLOT_ROOM between rush targets), battle-feel passes, goldens
+   re-recorded. The column now loses the default 3v3 on the test map and
+   presets A/C stand off (gun bands wait for objectives 4.1). Details in
+   design.md Apply findings (3.6 follow-up). Seen: e2e cover-slots
+   'hovering the trench ... a click fills them' fails (0 slotted, expects 3)
+   with or without this fix. Cause: the trench it clicks (-45,-55) is the
+   legalists' fire trench, its slots guard south (toward the column); the
+   sim's move plans slots against the true nearest enemy (north), so it takes
+   none, while the HUD preview (useOrders.ts, no threat) shows 3 planned.
+   Fixed (user: "seen enemies only"): sim and preview plan slots against
+   the nearest enemy the side sees (nearestKnownEnemyAt in geometry.ts and
+   shared/preview.ts); cover-slots now clicks the stone 5022 and passes.
+   Open point: defend/ambush still face the nearest enemy, seen or not (the
+   AI's defend stalls battles otherwise); battle-report-weapons preset B
+   now skips the gun checks (the gun never had a target). Details in
+   design.md Apply findings (3.6 follow-up: seen enemies only).
 4. **3.5 visual baselines**: visual.spec has failing baselines; re-record
    only in coordination with the HUD session
    (`local_ab470961-e164-4068-8fef-5d9a7672a40b`), or ask the user.
-5. **Section 7 bridges** (7.1 repro first, screenshots before/after to the
-   user).
+5. (closed 2026-11-10) **Section 7 bridges**: the user found the test map's
+   bridge fine and closed the section without the rework.
 6. **6.0 spec scenarios naming removed maps, 6.1 docs, 6.2 gates
    (`pnpm verify`, `pnpm e2e`, `openspec validate author-game-maps
    --strict`), 6.3 and 5.4 user hand checks** (mark only after the user
@@ -57,9 +134,8 @@ Known flake: `packages/simulation/test/deployment-orders.test.ts` "replay a
 deployment" can fail in the full parallel vitest run and passes alone.
 
 Other changes: machine-gun-fire-feedback 12/13 (only gates + the user's hand
-check), polish-menu-desk 30/35 (Aseprite sprites, needs the user's
-Aseprite window; new task 6.6: the user finds the open book look still bad,
-start with screenshots of both open books and review them with the user), retire-bootcamp complete (archive it when asked),
+check), polish-menu-desk 31/35 (Aseprite sprites, needs the user's
+Aseprite window; task 6.6 done 2026-11-10: the open book redrawn in CSS, user approved; see its Apply note), retire-bootcamp complete (archive it when asked),
 add-map-objectives 0/17 and video-tutorial-manual 0/19 (after
 author-game-maps).
 

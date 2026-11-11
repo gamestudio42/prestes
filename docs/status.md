@@ -76,10 +76,18 @@ relief view (height colours, shading, 1 m and 5 m contours), roads with
 ditches, rivers, ponds, bridges and ferries, walls and fences, a catalog of
 buildings, stones, trees, posts, covers and props that all count in battle,
 vegetation, deployment, a problem list, undo, autosave, import/export,
-playtest and (dev server) save to project. Proof map: `fazenda-doc`.
+playtest and (dev server) save to project. The test map `campo-de-provas`
+is the default battle map; maps are chosen by slot (eight campaign missions
+or skirmish), and each map carries its time of day and sun bearing
+(author-game-maps; the user's hand check on 2026-11-10 passed: garrisons,
+the tower, an assault and the ford on the test map, and their first map,
+`paiolzinho`, saved with a thumbnail and played; the section rings no
+longer show in the deployment phase; wish for later: each map as its own
+object on the desk instead of the sheet fan). The four hand-written maps (Vila Militar, Fazenda,
+Serra e Rio, Bairro) and the `fazenda-doc` proof map were removed.
 The menu desk carries a theodolite, under the map fan, that opens the editor.
-Campaign maps load on demand, so `fazenda-doc` weighs nothing in the game
-and worker bundles. Bundle budgets raised to the measured sizes: game JS
+Authored maps load on demand (`loadAuthoredMap`), so no map document weighs
+anything in the game and worker bundles (worker 195,910 B, budget 200,000 B). Bundle budgets raised to the measured sizes: game JS
 400 -> 510 KB, worker 110 -> 155 KB, menu CSS 85 -> 100 KB (the editor's map
 compiler is about 20 KB of it; the rest is the gramophone, compendium and desk
 menu work).

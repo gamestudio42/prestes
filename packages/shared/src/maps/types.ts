@@ -4,13 +4,8 @@ import type { Building } from '../world';
 import type { Roster } from '../sections';
 import type { TrenchLineDef } from './trench-lines';
 
-/** The hand-written maps. */
-export type BuiltinBattleMapId = 'vila-militar' | 'fazenda' | 'serra-rio' | 'bairro';
-
-/** A battle map id: a hand-written map's, or an authored map document's (add-map-editor). */
+/** A battle map id: an authored map document's (author-game-maps; the hand-written maps are gone). */
 export type BattleMapId = string;
-
-export const BATTLE_MAP_IDS: readonly BuiltinBattleMapId[] = ['vila-militar', 'fazenda', 'serra-rio', 'bairro'];
 
 export type VegetationKind = 'cane' | 'corn' | 'scrub' | 'tall-grass';
 

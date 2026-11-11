@@ -16,7 +16,7 @@ import {
   validateMissionCommander,
   type MissionMetadata,
 } from '@prestes/content';
-import { BATTLE_MAP_IDS, battleMaps, SECTION_TYPES, setActiveMap, validateBattleMap, validateDeploymentAreas, validateMapRosters, validatePositions, validateSectionTypes, validateWeapons, VILA_MILITAR, WEAPONS } from '@prestes/shared';
+import { SECTION_TYPES, validateSectionTypes, validateWeapons, WEAPONS } from '@prestes/shared';
 
 const root = process.cwd();
 const errors: string[] = [];
@@ -102,7 +102,6 @@ for (const image of COMPENDIUM_IMAGE_REGISTER) {
 }
 errors.push(...validateChapters());
 
-// add-battle-maps: every battle map's deployment is sound.
 // pre-battle-roster 1.1 and 1.3: every weapon is complete and named in every locale.
 errors.push(...validateWeapons());
 for (const weapon of Object.values(WEAPONS)) {
@@ -123,31 +122,7 @@ for (const type of Object.values(SECTION_TYPES)) {
   }
 }
 
-const maps = battleMaps();
-for (const map of maps) {
-  errors.push(...validateBattleMap(map));
-  // add-deployment-phase 1.1: each side's area holds its slots, is half walkable, and the two do not overlap.
-  errors.push(...validateDeploymentAreas(map));
-  errors.push(...validatePositions(map));
-  // pre-battle-roster 2.3: enemy presets are valid and any roster deploys on walkable ground.
-  errors.push(...validateMapRosters(map, { requirePresets: (BATTLE_MAP_IDS as readonly string[]).includes(map.id) }));
-  // refine-battle-maps 6.3: its pixel preview for the skirmish page (`pnpm maps:previews`).
-  if (!existsSync(resolve(root, `apps/game/public/maps/${map.id}.png`))) {
-    errors.push(`${map.id}: no preview apps/game/public/maps/${map.id}.png; run pnpm maps:previews`);
-  }
-  // Its name and description in every locale, and a compendium note for its setting.
-  // Authored maps (add-map-editor) carry their own text; tools/check-maps.ts checks them.
-  for (const locale of map.text ? [] : LOCALES) {
-    for (const key of [map.nameKey, map.descriptionKey]) {
-      if (!(key in messages[locale])) errors.push(`${map.id}: ${locale} has no ${key}`);
-    }
-  }
-  if ((!map.text || map.codexKey) && !COMPENDIUM.some((entry) => entry.id === map.codexKey)) {
-    errors.push(`${map.id}: no compendium entry ${map.codexKey}`);
-  }
-  if (!map.setting.sourceNote) errors.push(`${map.id}: no source note`);
-}
-setActiveMap(VILA_MILITAR);
+// author-game-maps 3.6: every battle map is an authored document; tools/check-maps.ts checks them.
 
 if (errors.length > 0) {
   for (const error of errors) {
@@ -157,5 +132,5 @@ if (errors.length > 0) {
 }
 
 console.log(
-  `Content check passed: ${FIGURES.length} figures, ${missions.length} missions, ${CAMPAIGN_CHAPTERS.length} chapters, ${COMPENDIUM.length} compendium entries, ${COMPENDIUM_IMAGE_REGISTER.length} images, ${SOURCE_KEYS.length} sources, ${maps.length} battle maps.`,
+  `Content check passed: ${FIGURES.length} figures, ${missions.length} missions, ${CAMPAIGN_CHAPTERS.length} chapters, ${COMPENDIUM.length} compendium entries, ${COMPENDIUM_IMAGE_REGISTER.length} images, ${SOURCE_KEYS.length} sources.`,
 );

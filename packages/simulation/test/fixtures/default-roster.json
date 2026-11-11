@@ -1,11 +1,11 @@
 {
- "vila-militar": [
+ "campo-de-provas": [
   [
    1,
    1,
    "column",
    -51,
-   90,
+   95,
    "mauser-7mm"
   ],
   [
@@ -13,7 +13,7 @@
    1,
    "column",
    -48.2,
-   90,
+   95,
    "mauser-7mm"
   ],
   [
@@ -21,7 +21,7 @@
    1,
    "column",
    -45.4,
-   90,
+   95,
    "mauser-7mm"
   ],
   [
@@ -29,7 +29,7 @@
    1,
    "column",
    -42.6,
-   90,
+   95,
    "mauser-7mm"
   ],
   [
@@ -37,7 +37,7 @@
    1,
    "column",
    -39.8,
-   90,
+   95,
    "mauser-7mm"
   ],
   [
@@ -45,7 +45,7 @@
    1,
    "column",
    -37,
-   90,
+   95,
    "mauser-7mm"
   ],
   [
@@ -53,7 +53,7 @@
    1,
    "column",
    -51,
-   92.8,
+   97.8,
    "mauser-7mm"
   ],
   [
@@ -61,7 +61,7 @@
    1,
    "column",
    -48.2,
-   92.8,
+   97.8,
    "mauser-7mm"
   ],
   [
@@ -69,7 +69,7 @@
    1,
    "column",
    -45.4,
-   92.8,
+   97.8,
    "mauser-7mm"
   ],
   [
@@ -77,7 +77,7 @@
    1,
    "column",
    -42.6,
-   92.8,
+   97.8,
    "mauser-7mm"
   ],
   [
@@ -85,7 +85,7 @@
    1,
    "column",
    -39.8,
-   92.8,
+   97.8,
    "mauser-7mm"
   ],
   [
@@ -93,7 +93,7 @@
    2,
    "column",
    -7,
-   90,
+   95,
    "mauser-7mm"
   ],
   [
@@ -101,7 +101,7 @@
    2,
    "column",
    -4.2,
-   90,
+   95,
    "mauser-7mm"
   ],
   [
@@ -109,7 +109,7 @@
    2,
    "column",
    -1.4,
-   90,
+   95,
    "mauser-7mm"
   ],
   [
@@ -117,7 +117,7 @@
    2,
    "column",
    1.4,
-   90,
+   95,
    "mauser-7mm"
   ],
   [
@@ -125,7 +125,7 @@
    2,
    "column",
    4.2,
-   90,
+   95,
    "mauser-7mm"
   ],
   [
@@ -133,7 +133,7 @@
    2,
    "column",
    7,
-   90,
+   95,
    "mauser-7mm"
   ],
   [
@@ -141,7 +141,7 @@
    2,
    "column",
    -7,
-   92.8,
+   97.8,
    "mauser-7mm"
   ],
   [
@@ -149,7 +149,7 @@
    2,
    "column",
    -4.2,
-   92.8,
+   97.8,
    "mauser-7mm"
   ],
   [
@@ -157,7 +157,7 @@
    2,
    "column",
    -1.4,
-   92.8,
+   97.8,
    "mauser-7mm"
   ],
   [
@@ -165,7 +165,7 @@
    2,
    "column",
    1.4,
-   92.8,
+   97.8,
    "mauser-7mm"
   ],
   [
@@ -173,7 +173,7 @@
    2,
    "column",
    4.2,
-   92.8,
+   97.8,
    "mauser-7mm"
   ],
   [
@@ -181,7 +181,7 @@
    3,
    "column",
    37,
-   90,
+   95,
    "mauser-7mm"
   ],
   [
@@ -189,7 +189,7 @@
    3,
    "column",
    39.8,
-   90,
+   95,
    "mauser-7mm"
   ],
   [
@@ -197,7 +197,7 @@
    3,
    "column",
    42.6,
-   90,
+   95,
    "mauser-7mm"
   ],
   [
@@ -205,7 +205,7 @@
    3,
    "column",
    45.4,
-   90,
+   95,
    "mauser-7mm"
   ],
   [
@@ -213,7 +213,7 @@
    3,
    "column",
    48.2,
-   90,
+   95,
    "mauser-7mm"
   ],
   [
@@ -221,7 +221,7 @@
    3,
    "column",
    51,
-   90,
+   95,
    "mauser-7mm"
   ],
   [
@@ -229,7 +229,7 @@
    3,
    "column",
    37,
-   92.8,
+   97.8,
    "mauser-7mm"
   ],
   [
@@ -237,7 +237,7 @@
    3,
    "column",
    39.8,
-   92.8,
+   97.8,
    "mauser-7mm"
   ],
   [
@@ -245,7 +245,7 @@
    3,
    "column",
    42.6,
-   92.8,
+   97.8,
    "mauser-7mm"
   ],
   [
@@ -253,7 +253,7 @@
    3,
    "column",
    45.4,
-   92.8,
+   97.8,
    "mauser-7mm"
   ],
   [
@@ -261,7 +261,7 @@
    3,
    "column",
    48.2,
-   92.8,
+   97.8,
    "mauser-7mm"
   ],
   [
@@ -269,7 +269,7 @@
    11,
    "legalist",
    -51,
-   -90,
+   -75,
    "mauser-7mm"
   ],
   [
@@ -277,7 +277,7 @@
    11,
    "legalist",
    -48.2,
-   -90,
+   -75,
    "mauser-7mm"
   ],
   [
@@ -285,7 +285,7 @@
    11,
    "legalist",
    -45.4,
-   -90,
+   -75,
    "mauser-7mm"
   ],
   [
@@ -293,7 +293,7 @@
    11,
    "legalist",
    -42.6,
-   -90,
+   -75,
    "mauser-7mm"
   ],
   [
@@ -301,7 +301,7 @@
    11,
    "legalist",
    -39.8,
-   -90,
+   -75,
    "mauser-7mm"
   ],
   [
@@ -309,7 +309,7 @@
    11,
    "legalist",
    -37,
-   -90,
+   -75,
    "mauser-7mm"
   ],
   [
@@ -317,7 +317,7 @@
    11,
    "legalist",
    -51,
-   -87.2,
+   -72.2,
    "mauser-7mm"
   ],
   [
@@ -325,7 +325,7 @@
    11,
    "legalist",
    -48.2,
-   -87.2,
+   -72.2,
    "mauser-7mm"
   ],
   [
@@ -333,7 +333,7 @@
    11,
    "legalist",
    -45.4,
-   -87.2,
+   -72.2,
    "mauser-7mm"
   ],
   [
@@ -341,7 +341,7 @@
    11,
    "legalist",
    -42.6,
-   -87.2,
+   -72.2,
    "mauser-7mm"
   ],
   [
@@ -349,7 +349,7 @@
    11,
    "legalist",
    -39.8,
-   -87.2,
+   -72.2,
    "mauser-7mm"
   ],
   [
@@ -357,7 +357,7 @@
    12,
    "legalist",
    -7,
-   -90,
+   -75,
    "mauser-7mm"
   ],
   [
@@ -365,7 +365,7 @@
    12,
    "legalist",
    -4.2,
-   -90,
+   -75,
    "mauser-7mm"
   ],
   [
@@ -373,7 +373,7 @@
    12,
    "legalist",
    -1.4,
-   -90,
+   -75,
    "mauser-7mm"
   ],
   [
@@ -381,7 +381,7 @@
    12,
    "legalist",
    1.4,
-   -90,
+   -75,
    "mauser-7mm"
   ],
   [
@@ -389,7 +389,7 @@
    12,
    "legalist",
    4.2,
-   -90,
+   -75,
    "mauser-7mm"
   ],
   [
@@ -397,7 +397,7 @@
    12,
    "legalist",
    7,
-   -90,
+   -75,
    "mauser-7mm"
   ],
   [
@@ -405,7 +405,7 @@
    12,
    "legalist",
    -7,
-   -87.2,
+   -72.2,
    "mauser-7mm"
   ],
   [
@@ -413,7 +413,7 @@
    12,
    "legalist",
    -4.2,
-   -87.2,
+   -72.2,
    "mauser-7mm"
   ],
   [
@@ -421,7 +421,7 @@
    12,
    "legalist",
    -1.4,
-   -87.2,
+   -72.2,
    "mauser-7mm"
   ],
   [
@@ -429,7 +429,7 @@
    12,
    "legalist",
    1.4,
-   -87.2,
+   -72.2,
    "mauser-7mm"
   ],
   [
@@ -437,7 +437,7 @@
    12,
    "legalist",
    4.2,
-   -87.2,
+   -72.2,
    "mauser-7mm"
   ],
   [
@@ -445,7 +445,7 @@
    13,
    "legalist",
    37,
-   -90,
+   -75,
    "mauser-7mm"
   ],
   [
@@ -453,7 +453,7 @@
    13,
    "legalist",
    39.8,
-   -90,
+   -75,
    "mauser-7mm"
   ],
   [
@@ -461,7 +461,7 @@
    13,
    "legalist",
    42.6,
-   -90,
+   -75,
    "mauser-7mm"
   ],
   [
@@ -469,7 +469,7 @@
    13,
    "legalist",
    45.4,
-   -90,
+   -75,
    "mauser-7mm"
   ],
   [
@@ -477,7 +477,7 @@
    13,
    "legalist",
    48.2,
-   -90,
+   -75,
    "mauser-7mm"
   ],
   [
@@ -485,7 +485,7 @@
    13,
    "legalist",
    51,
-   -90,
+   -75,
    "mauser-7mm"
   ],
   [
@@ -493,7 +493,7 @@
    13,
    "legalist",
    37,
-   -87.2,
+   -72.2,
    "mauser-7mm"
   ],
   [
@@ -501,7 +501,7 @@
    13,
    "legalist",
    39.8,
-   -87.2,
+   -72.2,
    "mauser-7mm"
   ],
   [
@@ -509,7 +509,7 @@
    13,
    "legalist",
    42.6,
-   -87.2,
+   -72.2,
    "mauser-7mm"
   ],
   [
@@ -517,7 +517,7 @@
    13,
    "legalist",
    45.4,
-   -87.2,
+   -72.2,
    "mauser-7mm"
   ],
   [
@@ -525,1597 +525,7 @@
    13,
    "legalist",
    48.2,
-   -87.2,
-   "mauser-7mm"
-  ]
- ],
- "fazenda": [
-  [
-   1,
-   1,
-   "column",
-   -51,
-   92,
-   "mauser-7mm"
-  ],
-  [
-   2,
-   1,
-   "column",
-   -48.2,
-   92,
-   "mauser-7mm"
-  ],
-  [
-   3,
-   1,
-   "column",
-   -45.4,
-   92,
-   "mauser-7mm"
-  ],
-  [
-   4,
-   1,
-   "column",
-   -42.6,
-   92,
-   "mauser-7mm"
-  ],
-  [
-   5,
-   1,
-   "column",
-   -39.8,
-   92,
-   "mauser-7mm"
-  ],
-  [
-   6,
-   1,
-   "column",
-   -37,
-   92,
-   "mauser-7mm"
-  ],
-  [
-   7,
-   1,
-   "column",
-   -51,
-   94.8,
-   "mauser-7mm"
-  ],
-  [
-   8,
-   1,
-   "column",
-   -48.2,
-   94.8,
-   "mauser-7mm"
-  ],
-  [
-   9,
-   1,
-   "column",
-   -45.4,
-   94.8,
-   "mauser-7mm"
-  ],
-  [
-   10,
-   1,
-   "column",
-   -42.6,
-   94.8,
-   "mauser-7mm"
-  ],
-  [
-   11,
-   1,
-   "column",
-   -39.8,
-   94.8,
-   "mauser-7mm"
-  ],
-  [
-   12,
-   2,
-   "column",
-   -7,
-   92,
-   "mauser-7mm"
-  ],
-  [
-   13,
-   2,
-   "column",
-   -4.2,
-   92,
-   "mauser-7mm"
-  ],
-  [
-   14,
-   2,
-   "column",
-   -1.4,
-   92,
-   "mauser-7mm"
-  ],
-  [
-   15,
-   2,
-   "column",
-   1.4,
-   92,
-   "mauser-7mm"
-  ],
-  [
-   16,
-   2,
-   "column",
-   4.2,
-   92,
-   "mauser-7mm"
-  ],
-  [
-   17,
-   2,
-   "column",
-   7,
-   92,
-   "mauser-7mm"
-  ],
-  [
-   18,
-   2,
-   "column",
-   -7,
-   94.8,
-   "mauser-7mm"
-  ],
-  [
-   19,
-   2,
-   "column",
-   -4.2,
-   94.8,
-   "mauser-7mm"
-  ],
-  [
-   20,
-   2,
-   "column",
-   -1.4,
-   94.8,
-   "mauser-7mm"
-  ],
-  [
-   21,
-   2,
-   "column",
-   1.4,
-   94.8,
-   "mauser-7mm"
-  ],
-  [
-   22,
-   2,
-   "column",
-   4.2,
-   94.8,
-   "mauser-7mm"
-  ],
-  [
-   23,
-   3,
-   "column",
-   37,
-   92,
-   "mauser-7mm"
-  ],
-  [
-   24,
-   3,
-   "column",
-   39.8,
-   92,
-   "mauser-7mm"
-  ],
-  [
-   25,
-   3,
-   "column",
-   42.6,
-   92,
-   "mauser-7mm"
-  ],
-  [
-   26,
-   3,
-   "column",
-   45.4,
-   92,
-   "mauser-7mm"
-  ],
-  [
-   27,
-   3,
-   "column",
-   48.2,
-   92,
-   "mauser-7mm"
-  ],
-  [
-   28,
-   3,
-   "column",
-   51,
-   92,
-   "mauser-7mm"
-  ],
-  [
-   29,
-   3,
-   "column",
-   37,
-   94.8,
-   "mauser-7mm"
-  ],
-  [
-   30,
-   3,
-   "column",
-   39.8,
-   94.8,
-   "mauser-7mm"
-  ],
-  [
-   31,
-   3,
-   "column",
-   42.6,
-   94.8,
-   "mauser-7mm"
-  ],
-  [
-   32,
-   3,
-   "column",
-   45.4,
-   94.8,
-   "mauser-7mm"
-  ],
-  [
-   33,
-   3,
-   "column",
-   48.2,
-   94.8,
-   "mauser-7mm"
-  ],
-  [
-   34,
-   11,
-   "legalist",
-   -51,
-   -94,
-   "mauser-7mm"
-  ],
-  [
-   35,
-   11,
-   "legalist",
-   -48.2,
-   -94,
-   "mauser-7mm"
-  ],
-  [
-   36,
-   11,
-   "legalist",
-   -45.4,
-   -94,
-   "mauser-7mm"
-  ],
-  [
-   37,
-   11,
-   "legalist",
-   -42.6,
-   -94,
-   "mauser-7mm"
-  ],
-  [
-   38,
-   11,
-   "legalist",
-   -39.8,
-   -94,
-   "mauser-7mm"
-  ],
-  [
-   39,
-   11,
-   "legalist",
-   -37,
-   -94,
-   "mauser-7mm"
-  ],
-  [
-   40,
-   11,
-   "legalist",
-   -51,
-   -91.2,
-   "mauser-7mm"
-  ],
-  [
-   41,
-   11,
-   "legalist",
-   -48.2,
-   -91.2,
-   "mauser-7mm"
-  ],
-  [
-   42,
-   11,
-   "legalist",
-   -45.4,
-   -91.2,
-   "mauser-7mm"
-  ],
-  [
-   43,
-   11,
-   "legalist",
-   -42.6,
-   -91.2,
-   "mauser-7mm"
-  ],
-  [
-   44,
-   11,
-   "legalist",
-   -39.8,
-   -91.2,
-   "mauser-7mm"
-  ],
-  [
-   45,
-   12,
-   "legalist",
-   -7,
-   -94,
-   "mauser-7mm"
-  ],
-  [
-   46,
-   12,
-   "legalist",
-   -4.2,
-   -94,
-   "mauser-7mm"
-  ],
-  [
-   47,
-   12,
-   "legalist",
-   -1.4,
-   -94,
-   "mauser-7mm"
-  ],
-  [
-   48,
-   12,
-   "legalist",
-   1.4,
-   -94,
-   "mauser-7mm"
-  ],
-  [
-   49,
-   12,
-   "legalist",
-   4.2,
-   -94,
-   "mauser-7mm"
-  ],
-  [
-   50,
-   12,
-   "legalist",
-   7,
-   -94,
-   "mauser-7mm"
-  ],
-  [
-   51,
-   12,
-   "legalist",
-   -7,
-   -91.2,
-   "mauser-7mm"
-  ],
-  [
-   52,
-   12,
-   "legalist",
-   -4.2,
-   -91.2,
-   "mauser-7mm"
-  ],
-  [
-   53,
-   12,
-   "legalist",
-   -1.4,
-   -91.2,
-   "mauser-7mm"
-  ],
-  [
-   54,
-   12,
-   "legalist",
-   1.4,
-   -91.2,
-   "mauser-7mm"
-  ],
-  [
-   55,
-   12,
-   "legalist",
-   4.2,
-   -91.2,
-   "mauser-7mm"
-  ],
-  [
-   56,
-   13,
-   "legalist",
-   37,
-   -94,
-   "mauser-7mm"
-  ],
-  [
-   57,
-   13,
-   "legalist",
-   39.8,
-   -94,
-   "mauser-7mm"
-  ],
-  [
-   58,
-   13,
-   "legalist",
-   42.6,
-   -94,
-   "mauser-7mm"
-  ],
-  [
-   59,
-   13,
-   "legalist",
-   45.4,
-   -94,
-   "mauser-7mm"
-  ],
-  [
-   60,
-   13,
-   "legalist",
-   48.2,
-   -94,
-   "mauser-7mm"
-  ],
-  [
-   61,
-   13,
-   "legalist",
-   51,
-   -94,
-   "mauser-7mm"
-  ],
-  [
-   62,
-   13,
-   "legalist",
-   37,
-   -91.2,
-   "mauser-7mm"
-  ],
-  [
-   63,
-   13,
-   "legalist",
-   39.8,
-   -91.2,
-   "mauser-7mm"
-  ],
-  [
-   64,
-   13,
-   "legalist",
-   42.6,
-   -91.2,
-   "mauser-7mm"
-  ],
-  [
-   65,
-   13,
-   "legalist",
-   45.4,
-   -91.2,
-   "mauser-7mm"
-  ],
-  [
-   66,
-   13,
-   "legalist",
-   48.2,
-   -91.2,
-   "mauser-7mm"
-  ]
- ],
- "serra-rio": [
-  [
-   1,
-   1,
-   "column",
-   -51,
-   96,
-   "mauser-7mm"
-  ],
-  [
-   2,
-   1,
-   "column",
-   -48.2,
-   96,
-   "mauser-7mm"
-  ],
-  [
-   3,
-   1,
-   "column",
-   -45.4,
-   96,
-   "mauser-7mm"
-  ],
-  [
-   4,
-   1,
-   "column",
-   -42.6,
-   96,
-   "mauser-7mm"
-  ],
-  [
-   5,
-   1,
-   "column",
-   -39.8,
-   96,
-   "mauser-7mm"
-  ],
-  [
-   6,
-   1,
-   "column",
-   -37,
-   96,
-   "mauser-7mm"
-  ],
-  [
-   7,
-   1,
-   "column",
-   -51,
-   98.8,
-   "mauser-7mm"
-  ],
-  [
-   8,
-   1,
-   "column",
-   -48.2,
-   98.8,
-   "mauser-7mm"
-  ],
-  [
-   9,
-   1,
-   "column",
-   -45.4,
-   98.8,
-   "mauser-7mm"
-  ],
-  [
-   10,
-   1,
-   "column",
-   -42.6,
-   98.8,
-   "mauser-7mm"
-  ],
-  [
-   11,
-   1,
-   "column",
-   -39.8,
-   98.8,
-   "mauser-7mm"
-  ],
-  [
-   12,
-   2,
-   "column",
-   -7,
-   96,
-   "mauser-7mm"
-  ],
-  [
-   13,
-   2,
-   "column",
-   -4.2,
-   96,
-   "mauser-7mm"
-  ],
-  [
-   14,
-   2,
-   "column",
-   -1.4,
-   96,
-   "mauser-7mm"
-  ],
-  [
-   15,
-   2,
-   "column",
-   1.4,
-   96,
-   "mauser-7mm"
-  ],
-  [
-   16,
-   2,
-   "column",
-   4.2,
-   96,
-   "mauser-7mm"
-  ],
-  [
-   17,
-   2,
-   "column",
-   7,
-   96,
-   "mauser-7mm"
-  ],
-  [
-   18,
-   2,
-   "column",
-   -7,
-   98.8,
-   "mauser-7mm"
-  ],
-  [
-   19,
-   2,
-   "column",
-   -4.2,
-   98.8,
-   "mauser-7mm"
-  ],
-  [
-   20,
-   2,
-   "column",
-   -1.4,
-   98.8,
-   "mauser-7mm"
-  ],
-  [
-   21,
-   2,
-   "column",
-   1.4,
-   98.8,
-   "mauser-7mm"
-  ],
-  [
-   22,
-   2,
-   "column",
-   4.2,
-   98.8,
-   "mauser-7mm"
-  ],
-  [
-   23,
-   3,
-   "column",
-   37,
-   96,
-   "mauser-7mm"
-  ],
-  [
-   24,
-   3,
-   "column",
-   39.8,
-   96,
-   "mauser-7mm"
-  ],
-  [
-   25,
-   3,
-   "column",
-   42.6,
-   96,
-   "mauser-7mm"
-  ],
-  [
-   26,
-   3,
-   "column",
-   45.4,
-   96,
-   "mauser-7mm"
-  ],
-  [
-   27,
-   3,
-   "column",
-   48.2,
-   96,
-   "mauser-7mm"
-  ],
-  [
-   28,
-   3,
-   "column",
-   51,
-   96,
-   "mauser-7mm"
-  ],
-  [
-   29,
-   3,
-   "column",
-   37,
-   98.8,
-   "mauser-7mm"
-  ],
-  [
-   30,
-   3,
-   "column",
-   39.8,
-   98.8,
-   "mauser-7mm"
-  ],
-  [
-   31,
-   3,
-   "column",
-   42.6,
-   98.8,
-   "mauser-7mm"
-  ],
-  [
-   32,
-   3,
-   "column",
-   45.4,
-   98.8,
-   "mauser-7mm"
-  ],
-  [
-   33,
-   3,
-   "column",
-   48.2,
-   98.8,
-   "mauser-7mm"
-  ],
-  [
-   34,
-   11,
-   "legalist",
-   -51,
-   -96,
-   "mauser-7mm"
-  ],
-  [
-   35,
-   11,
-   "legalist",
-   -48.2,
-   -96,
-   "mauser-7mm"
-  ],
-  [
-   36,
-   11,
-   "legalist",
-   -45.4,
-   -96,
-   "mauser-7mm"
-  ],
-  [
-   37,
-   11,
-   "legalist",
-   -42.6,
-   -96,
-   "mauser-7mm"
-  ],
-  [
-   38,
-   11,
-   "legalist",
-   -39.8,
-   -96,
-   "mauser-7mm"
-  ],
-  [
-   39,
-   11,
-   "legalist",
-   -37,
-   -96,
-   "mauser-7mm"
-  ],
-  [
-   40,
-   11,
-   "legalist",
-   -51,
-   -93.2,
-   "mauser-7mm"
-  ],
-  [
-   41,
-   11,
-   "legalist",
-   -48.2,
-   -93.2,
-   "mauser-7mm"
-  ],
-  [
-   42,
-   11,
-   "legalist",
-   -45.4,
-   -93.2,
-   "mauser-7mm"
-  ],
-  [
-   43,
-   11,
-   "legalist",
-   -42.6,
-   -93.2,
-   "mauser-7mm"
-  ],
-  [
-   44,
-   11,
-   "legalist",
-   -39.8,
-   -93.2,
-   "mauser-7mm"
-  ],
-  [
-   45,
-   12,
-   "legalist",
-   -7,
-   -96,
-   "mauser-7mm"
-  ],
-  [
-   46,
-   12,
-   "legalist",
-   -4.2,
-   -96,
-   "mauser-7mm"
-  ],
-  [
-   47,
-   12,
-   "legalist",
-   -1.4,
-   -96,
-   "mauser-7mm"
-  ],
-  [
-   48,
-   12,
-   "legalist",
-   1.4,
-   -96,
-   "mauser-7mm"
-  ],
-  [
-   49,
-   12,
-   "legalist",
-   4.2,
-   -96,
-   "mauser-7mm"
-  ],
-  [
-   50,
-   12,
-   "legalist",
-   7,
-   -96,
-   "mauser-7mm"
-  ],
-  [
-   51,
-   12,
-   "legalist",
-   -7,
-   -93.2,
-   "mauser-7mm"
-  ],
-  [
-   52,
-   12,
-   "legalist",
-   -4.2,
-   -93.2,
-   "mauser-7mm"
-  ],
-  [
-   53,
-   12,
-   "legalist",
-   -1.4,
-   -93.2,
-   "mauser-7mm"
-  ],
-  [
-   54,
-   12,
-   "legalist",
-   1.4,
-   -93.2,
-   "mauser-7mm"
-  ],
-  [
-   55,
-   12,
-   "legalist",
-   4.2,
-   -93.2,
-   "mauser-7mm"
-  ],
-  [
-   56,
-   13,
-   "legalist",
-   37,
-   -96,
-   "mauser-7mm"
-  ],
-  [
-   57,
-   13,
-   "legalist",
-   39.8,
-   -96,
-   "mauser-7mm"
-  ],
-  [
-   58,
-   13,
-   "legalist",
-   42.6,
-   -96,
-   "mauser-7mm"
-  ],
-  [
-   59,
-   13,
-   "legalist",
-   45.4,
-   -96,
-   "mauser-7mm"
-  ],
-  [
-   60,
-   13,
-   "legalist",
-   48.2,
-   -96,
-   "mauser-7mm"
-  ],
-  [
-   61,
-   13,
-   "legalist",
-   51,
-   -96,
-   "mauser-7mm"
-  ],
-  [
-   62,
-   13,
-   "legalist",
-   37,
-   -93.2,
-   "mauser-7mm"
-  ],
-  [
-   63,
-   13,
-   "legalist",
-   39.8,
-   -93.2,
-   "mauser-7mm"
-  ],
-  [
-   64,
-   13,
-   "legalist",
-   42.6,
-   -93.2,
-   "mauser-7mm"
-  ],
-  [
-   65,
-   13,
-   "legalist",
-   45.4,
-   -93.2,
-   "mauser-7mm"
-  ],
-  [
-   66,
-   13,
-   "legalist",
-   48.2,
-   -93.2,
-   "mauser-7mm"
-  ]
- ],
- "bairro": [
-  [
-   1,
-   1,
-   "column",
-   -67,
-   90,
-   "mauser-7mm"
-  ],
-  [
-   2,
-   1,
-   "column",
-   -64.2,
-   90,
-   "mauser-7mm"
-  ],
-  [
-   3,
-   1,
-   "column",
-   -61.4,
-   90,
-   "mauser-7mm"
-  ],
-  [
-   4,
-   1,
-   "column",
-   -58.6,
-   90,
-   "mauser-7mm"
-  ],
-  [
-   5,
-   1,
-   "column",
-   -55.8,
-   90,
-   "mauser-7mm"
-  ],
-  [
-   6,
-   1,
-   "column",
-   -53,
-   90,
-   "mauser-7mm"
-  ],
-  [
-   7,
-   1,
-   "column",
-   -67,
-   92.8,
-   "mauser-7mm"
-  ],
-  [
-   8,
-   1,
-   "column",
-   -64.2,
-   92.8,
-   "mauser-7mm"
-  ],
-  [
-   9,
-   1,
-   "column",
-   -61.4,
-   92.8,
-   "mauser-7mm"
-  ],
-  [
-   10,
-   1,
-   "column",
-   -58.6,
-   92.8,
-   "mauser-7mm"
-  ],
-  [
-   11,
-   1,
-   "column",
-   -55.8,
-   92.8,
-   "mauser-7mm"
-  ],
-  [
-   12,
-   2,
-   "column",
-   -7,
-   90,
-   "mauser-7mm"
-  ],
-  [
-   13,
-   2,
-   "column",
-   -4.2,
-   90,
-   "mauser-7mm"
-  ],
-  [
-   14,
-   2,
-   "column",
-   -1.4,
-   90,
-   "mauser-7mm"
-  ],
-  [
-   15,
-   2,
-   "column",
-   1.4,
-   90,
-   "mauser-7mm"
-  ],
-  [
-   16,
-   2,
-   "column",
-   4.2,
-   90,
-   "mauser-7mm"
-  ],
-  [
-   17,
-   2,
-   "column",
-   7,
-   90,
-   "mauser-7mm"
-  ],
-  [
-   18,
-   2,
-   "column",
-   -7,
-   92.8,
-   "mauser-7mm"
-  ],
-  [
-   19,
-   2,
-   "column",
-   -4.2,
-   92.8,
-   "mauser-7mm"
-  ],
-  [
-   20,
-   2,
-   "column",
-   -1.4,
-   92.8,
-   "mauser-7mm"
-  ],
-  [
-   21,
-   2,
-   "column",
-   1.4,
-   92.8,
-   "mauser-7mm"
-  ],
-  [
-   22,
-   2,
-   "column",
-   4.2,
-   92.8,
-   "mauser-7mm"
-  ],
-  [
-   23,
-   3,
-   "column",
-   53,
-   90,
-   "mauser-7mm"
-  ],
-  [
-   24,
-   3,
-   "column",
-   55.8,
-   90,
-   "mauser-7mm"
-  ],
-  [
-   25,
-   3,
-   "column",
-   58.6,
-   90,
-   "mauser-7mm"
-  ],
-  [
-   26,
-   3,
-   "column",
-   61.4,
-   90,
-   "mauser-7mm"
-  ],
-  [
-   27,
-   3,
-   "column",
-   64.2,
-   90,
-   "mauser-7mm"
-  ],
-  [
-   28,
-   3,
-   "column",
-   67,
-   90,
-   "mauser-7mm"
-  ],
-  [
-   29,
-   3,
-   "column",
-   53,
-   92.8,
-   "mauser-7mm"
-  ],
-  [
-   30,
-   3,
-   "column",
-   55.8,
-   92.8,
-   "mauser-7mm"
-  ],
-  [
-   31,
-   3,
-   "column",
-   58.6,
-   92.8,
-   "mauser-7mm"
-  ],
-  [
-   32,
-   3,
-   "column",
-   61.4,
-   92.8,
-   "mauser-7mm"
-  ],
-  [
-   33,
-   3,
-   "column",
-   64.2,
-   92.8,
-   "mauser-7mm"
-  ],
-  [
-   34,
-   11,
-   "legalist",
-   -67,
-   -92,
-   "mauser-7mm"
-  ],
-  [
-   35,
-   11,
-   "legalist",
-   -64.2,
-   -92,
-   "mauser-7mm"
-  ],
-  [
-   36,
-   11,
-   "legalist",
-   -61.4,
-   -92,
-   "mauser-7mm"
-  ],
-  [
-   37,
-   11,
-   "legalist",
-   -58.6,
-   -92,
-   "mauser-7mm"
-  ],
-  [
-   38,
-   11,
-   "legalist",
-   -55.8,
-   -92,
-   "mauser-7mm"
-  ],
-  [
-   39,
-   11,
-   "legalist",
-   -53,
-   -92,
-   "mauser-7mm"
-  ],
-  [
-   40,
-   11,
-   "legalist",
-   -67,
-   -89.2,
-   "mauser-7mm"
-  ],
-  [
-   41,
-   11,
-   "legalist",
-   -64.2,
-   -89.2,
-   "mauser-7mm"
-  ],
-  [
-   42,
-   11,
-   "legalist",
-   -61.4,
-   -89.2,
-   "mauser-7mm"
-  ],
-  [
-   43,
-   11,
-   "legalist",
-   -58.6,
-   -89.2,
-   "mauser-7mm"
-  ],
-  [
-   44,
-   11,
-   "legalist",
-   -55.8,
-   -89.2,
-   "mauser-7mm"
-  ],
-  [
-   45,
-   12,
-   "legalist",
-   -7,
-   -92,
-   "mauser-7mm"
-  ],
-  [
-   46,
-   12,
-   "legalist",
-   -4.2,
-   -92,
-   "mauser-7mm"
-  ],
-  [
-   47,
-   12,
-   "legalist",
-   -1.4,
-   -92,
-   "mauser-7mm"
-  ],
-  [
-   48,
-   12,
-   "legalist",
-   1.4,
-   -92,
-   "mauser-7mm"
-  ],
-  [
-   49,
-   12,
-   "legalist",
-   4.2,
-   -92,
-   "mauser-7mm"
-  ],
-  [
-   50,
-   12,
-   "legalist",
-   7,
-   -92,
-   "mauser-7mm"
-  ],
-  [
-   51,
-   12,
-   "legalist",
-   -7,
-   -89.2,
-   "mauser-7mm"
-  ],
-  [
-   52,
-   12,
-   "legalist",
-   -4.2,
-   -89.2,
-   "mauser-7mm"
-  ],
-  [
-   53,
-   12,
-   "legalist",
-   -1.4,
-   -89.2,
-   "mauser-7mm"
-  ],
-  [
-   54,
-   12,
-   "legalist",
-   1.4,
-   -89.2,
-   "mauser-7mm"
-  ],
-  [
-   55,
-   12,
-   "legalist",
-   4.2,
-   -89.2,
-   "mauser-7mm"
-  ],
-  [
-   56,
-   13,
-   "legalist",
-   53,
-   -92,
-   "mauser-7mm"
-  ],
-  [
-   57,
-   13,
-   "legalist",
-   55.8,
-   -92,
-   "mauser-7mm"
-  ],
-  [
-   58,
-   13,
-   "legalist",
-   58.6,
-   -92,
-   "mauser-7mm"
-  ],
-  [
-   59,
-   13,
-   "legalist",
-   61.4,
-   -92,
-   "mauser-7mm"
-  ],
-  [
-   60,
-   13,
-   "legalist",
-   64.2,
-   -92,
-   "mauser-7mm"
-  ],
-  [
-   61,
-   13,
-   "legalist",
-   67,
-   -92,
-   "mauser-7mm"
-  ],
-  [
-   62,
-   13,
-   "legalist",
-   53,
-   -89.2,
-   "mauser-7mm"
-  ],
-  [
-   63,
-   13,
-   "legalist",
-   55.8,
-   -89.2,
-   "mauser-7mm"
-  ],
-  [
-   64,
-   13,
-   "legalist",
-   58.6,
-   -89.2,
-   "mauser-7mm"
-  ],
-  [
-   65,
-   13,
-   "legalist",
-   61.4,
-   -89.2,
-   "mauser-7mm"
-  ],
-  [
-   66,
-   13,
-   "legalist",
-   64.2,
-   -89.2,
+   -72.2,
    "mauser-7mm"
   ]
  ]

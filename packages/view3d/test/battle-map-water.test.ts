@@ -1,10 +1,11 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import * as THREE from 'three';
-import { battleMap, distanceToPolyline, setActiveMap, VILA_MILITAR } from '@prestes/shared';
+import { battleMap, distanceToPolyline, setActiveMap } from '@prestes/shared';
 import { BattleMapLayer } from '../src/battle-map-layer';
+import { TEST_MAP } from '../../shared/test/fixtures/test-map';
 
 // refine-map-editor 4.2: water drawn inside traced outlines.
-afterEach(() => setActiveMap(VILA_MILITAR));
+afterEach(() => setActiveMap(TEST_MAP));
 
 describe('battle map water', () => {
   it('the test map stream is drawn inside its bank line', () => {

@@ -1,18 +1,11 @@
 import { setActiveTerrain } from '../terrain';
 import { setActiveMapRuntime } from './runtime';
 import type { BattleMap, BattleMapId } from './types';
-import { VILA_MILITAR } from './vila-militar';
-import { FAZENDA } from './fazenda';
-import { SERRA_RIO } from './serra-rio';
-import { BAIRRO } from './bairro';
 import { AUTHORED_MAP_INDEX, AUTHORED_MAP_LOADERS } from './authored';
 import { compileMapDocument, type AuthoredMapEntry, type MapDocument } from './document';
 
-/** The battle maps, in the order the menu lists them: the hand-written ones, then the authored. */
-const MAPS = new Map<BattleMapId, BattleMap>(
-  [VILA_MILITAR, FAZENDA, SERRA_RIO, BAIRRO].map((map) => [map.id, map]),
-);
-const BUILTIN = new Set<BattleMapId>(MAPS.keys());
+/** Authored maps compiled in this thread, by id. */
+const MAPS = new Map<BattleMapId, BattleMap>();
 /** Authored maps known in this thread, compiled on first use, once `loadAuthoredMap` fetched them. */
 const AUTHORED = new Map<BattleMapId, MapDocument>();
 /** Maps registered at run time (the editor's playtest), outside the menu's list. */
@@ -40,10 +33,9 @@ export function hasBattleMap(id: BattleMapId): boolean {
   return TRANSIENT.has(id) || MAPS.has(id) || AUTHORED.has(id) || id in AUTHORED_MAP_LOADERS;
 }
 
-/** The menu's maps: the hand-written ones, then the authored skirmish maps. */
+/** The menu's maps: the authored skirmish maps loaded in this thread. */
 export function battleMaps(): BattleMap[] {
-  const authored = [...AUTHORED.values()].filter((document) => document.use === 'skirmish' && !BUILTIN.has(document.id));
-  return [...[...BUILTIN].map((id) => MAPS.get(id)!), ...authored.map((document) => battleMap(document.id))];
+  return [...AUTHORED.values()].filter((document) => document.use === 'skirmish').map((document) => battleMap(document.id));
 }
 
 /**
@@ -82,10 +74,8 @@ export async function loadAuthoredMap(id: BattleMapId): Promise<MapDocument | nu
 /**
  * Registers a compiled map for this thread under its id (the editor's
  * playtest): it wins over a map of the same id until it is unregistered.
- * Hand-written ids cannot be replaced.
  */
 export function registerBattleMap(map: BattleMap): void {
-  if (BUILTIN.has(map.id)) throw new Error(`cannot replace the hand-written map ${map.id}`);
   TRANSIENT.set(map.id, map);
 }
 

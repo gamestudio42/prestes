@@ -1,22 +1,30 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeAll, describe, expect, it } from 'vitest';
 import {
-  BAIRRO,
-  battleMaps,
+  battleMap,
   createEditableMap,
+  DEFAULT_BATTLE_MAP,
   insideDeploymentArea,
+  loadAuthoredMap,
   MAP_DOCUMENT_VERSION,
   parseMapDocument,
   polygonsOverlap,
   setActiveMap,
   toMapDocument,
   validateDeploymentAreas,
-  VILA_MILITAR,
   type BattleMap,
 } from '../src';
 import { deploymentSlots } from '../src/deploy-roster';
 import { band } from '../src/maps/kit';
+import { TEST_MAP } from './fixtures/test-map';
 
-afterEach(() => setActiveMap(VILA_MILITAR));
+afterEach(() => setActiveMap(TEST_MAP));
+
+// author-game-maps 3.6: the test map (campo-de-provas) stands in for the removed hand-written maps.
+let PROVING: BattleMap;
+beforeAll(async () => {
+  await loadAuthoredMap(DEFAULT_BATTLE_MAP);
+  PROVING = battleMap(DEFAULT_BATTLE_MAP);
+});
 
 describe('deployment areas (add-deployment-phase 1.1)', () => {
   it('old document gets areas: each holds its three points and the two do not overlap', () => {
@@ -43,29 +51,29 @@ describe('deployment areas (add-deployment-phase 1.1)', () => {
     expect(polygonsOverlap(doc.deployment.column.area, doc.deployment.legalist.area)).toBe(false);
   });
 
-  it('every hand-written map passes', () => {
-    for (const map of battleMaps()) expect(validateDeploymentAreas(map), map.id).toEqual([]);
+  it('the test map and the test field pass', () => {
+    for (const map of [PROVING, TEST_MAP]) expect(validateDeploymentAreas(map), map.id).toEqual([]);
   });
 
   it('the content check fails a column area edited to overlap the legalist area, naming the map', () => {
     const map: BattleMap = {
-      ...BAIRRO,
-      deployment: { ...BAIRRO.deployment, column: { ...BAIRRO.deployment.column, area: band(-150, 150, -100, 150) } },
+      ...PROVING,
+      deployment: { ...PROVING.deployment, column: { ...PROVING.deployment.column, area: band(-150, 150, -100, 150) } },
     };
     const errors = validateDeploymentAreas(map);
-    expect(errors).toContain(`${BAIRRO.id}: the column and legalist deployment areas overlap`);
+    expect(errors).toContain(`${PROVING.id}: the column and legalist deployment areas overlap`);
   });
 
   it('fails a slot outside its area and an area that is mostly unwalkable', () => {
-    const slots = deploymentSlots(BAIRRO, 'column');
+    const slots = deploymentSlots(PROVING, 'column');
     const tight: BattleMap = {
-      ...BAIRRO,
-      deployment: { ...BAIRRO.deployment, column: { ...BAIRRO.deployment.column, area: band(slots[0]!.x - 5, slots[0]!.x + 5, slots[0]!.y - 5, slots[0]!.y + 5) } },
+      ...PROVING,
+      deployment: { ...PROVING.deployment, column: { ...PROVING.deployment.column, area: band(slots[0]!.x - 5, slots[0]!.x + 5, slots[0]!.y - 5, slots[0]!.y + 5) } },
     };
     expect(validateDeploymentAreas(tight).some((error) => error.includes('lies outside its deployment area'))).toBe(true);
     const blocked: BattleMap = {
       ...tight,
-      covers: [...BAIRRO.covers, {
+      covers: [...PROVING.covers, {
           id: 9999,
           kind: 'building',
           x: slots[0]!.x,

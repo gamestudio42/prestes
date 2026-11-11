@@ -60,7 +60,7 @@ export function deploymentSlots(map: BattleMap, side: Side): Vec2[] {
 /**
  * How far behind the front the rear slots stand: REAR_SLOT_DEPTH, or less
  * where the walkable field ends sooner behind a zone facing north or south
- * (the Vila Militar's zones stand 10 m from the edge of its ±100 m field).
+ * (a zone 10 m from the edge of the field).
  * A rear section's second rank (+y) must stay one cell inside the field.
  */
 function rearDepth(map: BattleMap, side: Side): number {

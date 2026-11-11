@@ -171,12 +171,12 @@ test('a locale switch keeps the same entry open', async ({ page }) => {
 
 // author-game-maps 5.3: a chapter whose mission has a map offers "Play the map".
 test('a mission with a map plays it; a chapter without one has no play action', async ({ page }) => {
-  // Fixture: the index holds a campaign map for "02 O Anel de Ferro" (the Fazenda proof, relabelled).
+  // Fixture: the index holds a campaign map for "02 O Anel de Ferro" (the test map, relabelled).
   await page.route(/\/maps\/authored\/index\.ts(\?.*)?$/, async (route) => {
     const response = await route.fetch();
     const original = await response.text();
     // Vite serves the generated module reformatted, so match loosely.
-    const body = original.replace(/("?id"?\s*:\s*"fazenda-doc"\s*,\s*"?use"?\s*:\s*)"test"/, '$1"campaign", mission: "anel-de-ferro"');
+    const body = original.replace(/("?id"?\s*:\s*"campo-de-provas"\s*,\s*"?use"?\s*:\s*)"test"/, '$1"campaign", mission: "anel-de-ferro"');
     if (body === original) throw new Error(`fixture not applied: ${original.slice(0, 400)}`);
     await route.fulfill({ response, body });
   });

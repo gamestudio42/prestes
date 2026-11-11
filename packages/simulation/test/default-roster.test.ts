@@ -1,12 +1,12 @@
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { battleMaps } from '@prestes/shared';
+import { DEFAULT_BATTLE_MAP, loadAuthoredMap } from '@prestes/shared';
 import { SimulationEngine } from '../src/engine';
 
 /**
- * pre-battle-roster 0.2: today's default 3 vs 3, pinned unit by unit on every
- * battle map. The default roster must reproduce it exactly, so every later
+ * pre-battle-roster 0.2: today's default 3 vs 3, pinned unit by unit on the
+ * test map (author-game-maps 3.6: the hand-written maps are gone). The default roster must reproduce it exactly, so every later
  * slice of the roster work proves it changes nothing for a player who does
  * not build a force. Re-record only for a deliberate change:
  * `PIN_DEFAULT_ROSTER=1 npx vitest run packages/simulation/test/default-roster.test.ts`.
@@ -27,8 +27,10 @@ function units(map: string): Pinned[string] {
   ]);
 }
 
+await loadAuthoredMap(DEFAULT_BATTLE_MAP);
+
 describe('default roster', () => {
-  const maps = battleMaps().map((map) => map.id);
+  const maps = [DEFAULT_BATTLE_MAP];
   const actual: Pinned = Object.fromEntries(maps.map((map) => [map, units(map)]));
   if (process.env.PIN_DEFAULT_ROSTER === '1' || !existsSync(FIXTURE)) {
     writeFileSync(FIXTURE, `${JSON.stringify(actual, null, 1)}\n`);

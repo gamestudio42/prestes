@@ -25,6 +25,7 @@ import {
   occupied,
   nearestEnemy,
   nearestEnemyAt,
+  nearestKnownEnemyAt,
   nearestOpenPoint,
   facingToward,
   clampToRegion,
@@ -88,7 +89,10 @@ export function applyTacticalOrder(
       command.order === 'disperse' ? Math.max(5, command.spacing ?? 0) : (command.spacing ?? DEFAULT_SPACING);
     const formationThreat =
       command.order === 'defend' || command.order === 'ambush'
-        ? nearestEnemyAt(ctx, command.to, units[0]!.faction)
+        ? // Defend and ambush face the nearest enemy, seen or not: with fog,
+          // the AI would otherwise defend facing away and battles stall
+          // (author-game-maps 3.6 follow-up, open point). The preview agrees.
+          nearestEnemyAt(ctx, command.to, units[0]!.faction)
         : null;
     // The player's facing wins over the direction of the nearest enemy.
     const formationFacing = command.facing ?? (formationThreat
@@ -108,7 +112,7 @@ export function applyTacticalOrder(
     const regionLimited = command.order === 'defend' || command.order === 'ambush';
     const coverSlots = takesCover
       ? orderSlots(ctx, units, slots, {
-          threat: formationThreat ?? nearestEnemyAt(ctx, command.to, units[0]!.faction),
+          threat: formationThreat ?? nearestKnownEnemyAt(ctx, command.to, units[0]!.faction),
           facing: coverFacing ?? null,
           click: command.to,
           region: regionLimited ? { center: command.to, radius: DEFEND_REGION_RADIUS } : null,

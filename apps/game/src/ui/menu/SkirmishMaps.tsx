@@ -33,7 +33,7 @@ export const mapThumbnail = (id: BattleMapId) => `${import.meta.env.BASE_URL}map
  */
 export function SkirmishMaps({ locale, maps, battleMap, onOpenSetup, onSelect }: SkirmishMapsProps) {
   const t = (key: MessageKey, values?: Readonly<Record<string, string | number>>) => translate(locale, key, values);
-  const art = DESK_ART.mapVilaMilitar;
+  const art = DESK_ART.mapSheet;
   const top = maps.find((map) => map.id === battleMap) ?? maps[0];
   // The chosen sheet is drawn last; the others keep their order underneath.
   const ordered = top ? [...maps.filter((map) => map.id !== top.id), top] : [];

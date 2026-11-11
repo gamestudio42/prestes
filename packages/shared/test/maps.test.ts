@@ -1,20 +1,14 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { findPath, isWalkable, nearestWalkable } from '../src/pathfinding';
 import { bakeMap, isDeepWater, MAP_BOUNDS, PATH_GRID, setActiveMapRuntime, waterAt } from '../src/maps/runtime';
-import { setActiveMap, validateBattleMap, VILA_MILITAR, type BattleMap } from '../src/maps';
+import { setActiveMap, validateBattleMap, type BattleMap } from '../src/maps';
 import { coverAgainst, EYE_HEIGHTS, isLineBlocked } from '../src/world';
 import { RIDGE_COVER, terrainHeightAt, terrainSlopeAt, terrainSpeedFactor, terrainSurfaceAt } from '../src/terrain';
 import { TEST_MAP } from './fixtures/test-map';
 
-afterEach(() => setActiveMap(VILA_MILITAR));
+afterEach(() => setActiveMap(TEST_MAP));
 
 describe('map bounds and pathfinding', () => {
-  it('feature maps keep the old extents', () => {
-    setActiveMap(VILA_MILITAR);
-    expect(MAP_BOUNDS).toEqual({ minX: -120, minY: -120, maxX: 120, maxY: 120 });
-    expect(PATH_GRID).toEqual({ min: -100, max: 100 });
-  });
-
   it('a battle map sets its own bounds and grid', () => {
     setActiveMap(TEST_MAP);
     expect(MAP_BOUNDS).toEqual(TEST_MAP.bounds);
@@ -135,8 +129,7 @@ describe('surfaces and speeds', () => {
 });
 
 describe('map validation', () => {
-  it('passes the catalog and the test map', () => {
-    expect(validateBattleMap(VILA_MILITAR)).toEqual([]);
+  it('passes the test map', () => {
     expect(validateBattleMap(TEST_MAP)).toEqual([]);
   });
 

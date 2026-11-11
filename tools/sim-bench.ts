@@ -113,7 +113,7 @@ const BATTLE_TICKS = 3000;
 
 // add-battle-maps: A* across a 400 m map with a river (the test field).
 if (!budgetOnly) {
-  const { findPath, setActiveMap, VILA_MILITAR } = await import('../packages/shared/src');
+  const { findPath, setActiveMap } = await import('../packages/shared/src');
   const { TEST_MAP } = await import('../packages/shared/test/fixtures/test-map');
   setActiveMap(TEST_MAP);
   findPath({ x: -150, y: 150 }, { x: 150, y: -150 }, []);
@@ -127,6 +127,5 @@ if (!budgetOnly) {
     for (const [from, to] of routes) findPath(from, to, []);
   }
   const ms = (performance.now() - start) / (5 * routes.length);
-  setActiveMap(VILA_MILITAR);
   console.log(JSON.stringify({ scenario: 'path-400m', msPerPath: Number(ms.toFixed(3)) }, null, 2));
 }

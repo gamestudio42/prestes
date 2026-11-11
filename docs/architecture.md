@@ -294,6 +294,12 @@ a body compacted to 5 m, then spreading to its own destination near the end.
 
 ## Map documents and the editor (add-map-editor)
 
+Every battle map is an authored document (author-game-maps 3.6 removed the
+hand-written maps). `authored/index.ts` is a light index; a document is its
+own chunk, fetched by `loadAuthoredMap(id)` before an engine or a scene is
+built, then `battleMap(id)` returns the compiled map. `DEFAULT_BATTLE_MAP` is
+the test map `campo-de-provas`; tests use it or the `test-field` fixture.
+
 Battle maps can also be authored as **map documents** (`*.map.json`,
 format `prestes-map` v3, `packages/shared/src/maps/document.ts`): an Int16
 height grid in centimetres every 2 m, 1 m paint (ground material) and

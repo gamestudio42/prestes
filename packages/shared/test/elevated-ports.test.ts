@@ -10,14 +10,14 @@ import {
   isLineBlocked,
   positionsFor,
   setActiveMap,
-  VILA_MILITAR,
   type Building,
   type CoverPoint,
 } from '../src';
+import { TEST_MAP } from './fixtures/test-map';
 
 // garrison-and-assault 1.3: upper floors and lofts, and sight from them.
 
-afterEach(() => setActiveMap(VILA_MILITAR));
+afterEach(() => setActiveMap(TEST_MAP));
 
 const TARGET_X = -44;
 

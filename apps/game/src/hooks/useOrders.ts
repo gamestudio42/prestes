@@ -16,6 +16,9 @@ import {
   coverAtPoint,
   coverSlotView,
   planCoverSlots,
+  averageAim,
+  averageFacing,
+  nearestKnownEnemyAt,
   type CoverSlotView,
   type FireControl,
   type FormationKind,
@@ -192,7 +195,11 @@ export function useOrders({
       for (const unit of frame.units) {
         if (unit.slotId != null && !selectedIds.includes(unit.id)) held.set(unit.slotId, unit.id);
       }
-      for (const slot of planCoverSlots(movers, anchors, frame.covers, { held, click: hoverPoint }).values()) {
+      // The simulation's move rule: the nearest enemy the side sees, else the
+      // way the movers aim or face (author-game-maps 3.6).
+      const threat = movers[0] ? nearestKnownEnemyAt(frame, hoverPoint, movers[0].faction) : null;
+      const facing = averageAim(movers) ?? averageFacing(movers) ?? null;
+      for (const slot of planCoverSlots(movers, anchors, frame.covers, { held, threat, facing, click: hoverPoint }).values()) {
         planned.add(slot.id);
       }
     }

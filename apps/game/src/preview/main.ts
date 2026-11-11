@@ -1,4 +1,4 @@
-import { battleMaps } from '@prestes/shared';
+import { battleMap, DEFAULT_BATTLE_MAP, loadAuthoredMap } from '@prestes/shared';
 import { SceneView } from '@prestes/view3d';
 
 /**
@@ -8,8 +8,8 @@ import { SceneView } from '@prestes/view3d';
  * input. `?map=<id>` picks the map; `window.__previewReady` turns true once
  * the scene's models have had time to load.
  */
-const id = new URLSearchParams(window.location.search).get('map') ?? 'fazenda';
-const map = battleMaps().find((entry) => entry.id === id);
+const id = new URLSearchParams(window.location.search).get('map') ?? DEFAULT_BATTLE_MAP;
+const map = (await loadAuthoredMap(id)) ? battleMap(id) : undefined;
 const container = document.getElementById('view');
 const host = window as unknown as { __previewReady?: boolean; __previewError?: string };
 

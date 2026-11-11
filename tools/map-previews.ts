@@ -2,7 +2,7 @@ import { spawn, type ChildProcess } from 'node:child_process';
 import { mkdirSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { chromium } from '@playwright/test';
-import { battleMaps } from '@prestes/shared';
+import { authoredMapIds, loadAuthoredMap } from '@prestes/shared';
 
 /**
  * refine-battle-maps 6.3: renders each battle map's pixel preview for the
@@ -44,7 +44,8 @@ async function ensureServer(): Promise<ChildProcess | null> {
 
 async function main(): Promise<void> {
   const wanted = process.argv.slice(2);
-  const maps = battleMaps().filter((map) => wanted.length === 0 || wanted.includes(map.id));
+  const ids = authoredMapIds().filter((id) => wanted.length === 0 || wanted.includes(id));
+  const maps = (await Promise.all(ids.map((id) => loadAuthoredMap(id)))).filter((document) => document !== null);
   if (maps.length === 0) throw new Error(`no battle map named ${wanted.join(', ')}`);
   mkdirSync(OUT, { recursive: true });
   const server = await ensureServer();

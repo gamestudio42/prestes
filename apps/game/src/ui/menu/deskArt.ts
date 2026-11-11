@@ -2,10 +2,7 @@ import campaignBookClosed from '../../assets/menu/desk/campaign-book-closed.png'
 import compendiumBookClosed from '../../assets/menu/desk/compendium-book-closed.png';
 import compassClosed from '../../assets/menu/desk/compass-closed.png';
 import compassOpen from '../../assets/menu/desk/compass-open.png';
-import mapBairro from '../../assets/menu/desk/map-bairro.png';
-import mapFazenda from '../../assets/menu/desk/map-fazenda.png';
-import mapSerraRio from '../../assets/menu/desk/map-serra-rio.png';
-import mapVilaMilitar from '../../assets/menu/desk/map-vila-militar.png';
+import mapSheet from '../../assets/menu/desk/map-sheet.png';
 import referencesBooks from '../../assets/menu/desk/references-books.png';
 import gramophoneBody from '../../assets/menu/desk/gramophone-body.png';
 import gramophoneGrooves from '../../assets/menu/desk/gramophone-grooves.png';
@@ -41,7 +38,7 @@ export const DESK_SCALE = 2;
  * (tools/aseprite/desk-cleanup.lua); the reference pile and the gramophone are
  * still the first rasterized versions; the compass is drawn by
  * tools/aseprite/desk-draw.lua; the open books are
- * a CSS 9-slice (book-frame.png in menu-desk.css). They are imported by
+ * drawn in CSS (menu-desk.css). They are imported by
  * Vite, so the built game carries them without a runtime path.
  */
 export const DESK_ART = {
@@ -49,10 +46,8 @@ export const DESK_ART = {
   compendiumClosed: { src: compendiumBookClosed, width: 128, height: 96 },
   compassClosed: { src: compassClosed, width: 64, height: 64 },
   compassOpen: { src: compassOpen, width: 64, height: 64 },
-  mapBairro: { src: mapBairro, width: 128, height: 120 },
-  mapFazenda: { src: mapFazenda, width: 128, height: 120 },
-  mapSerraRio: { src: mapSerraRio, width: 128, height: 120 },
-  mapVilaMilitar: { src: mapVilaMilitar, width: 128, height: 120 },
+  // The folded sheet every skirmish map is drawn on (the thumbnail lies over it).
+  mapSheet: { src: mapSheet, width: 128, height: 120 },
   referencesPile: { src: referencesBooks, width: 128, height: 80 },
   gramophoneBody: { src: gramophoneBody, width: 120, height: 160 },
   gramophoneGrooves: { src: gramophoneGrooves, width: 64, height: 32 },
@@ -60,14 +55,6 @@ export const DESK_ART = {
   // add-map-editor: drawn in code by tools/build-desk-theodolite.ts.
   theodolite: { src: theodolite, width: 64, height: 80 },
 } as const satisfies Record<string, DeskArt>;
-
-/** The sprite for each battle map's menu sheet. */
-export const MAP_ART: Record<string, DeskArt> = {
-  'vila-militar': DESK_ART.mapVilaMilitar,
-  fazenda: DESK_ART.mapFazenda,
-  'serra-rio': DESK_ART.mapSerraRio,
-  bairro: DESK_ART.mapBairro,
-};
 
 /** Closed sprites that are not yet drawn for the 2x desk standard. */
 export const PENDING_REDRAW = Object.entries(DESK_ART as Record<string, DeskArt>)

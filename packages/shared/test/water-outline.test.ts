@@ -8,13 +8,13 @@ import {
   setActiveMap,
   smoothCentreline,
   traceWaterOutlines,
-  VILA_MILITAR,
   waterAt,
   type Vec2,
 } from '../src';
+import { TEST_MAP } from './fixtures/test-map';
 
 // refine-map-editor 4.2: smoothed river centrelines, traced water outlines.
-afterEach(() => setActiveMap(VILA_MILITAR));
+afterEach(() => setActiveMap(TEST_MAP));
 
 function riverMap(points: Vec2[], kinds: ('deep' | 'ford')[] = ['deep']) {
   const map = createEditableMap({ id: 'river-doc', size: 'small', name: { en: 'R', 'pt-BR': 'R' } });

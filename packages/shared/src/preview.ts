@@ -250,19 +250,46 @@ export function formationSlots(
   });
 }
 
-function nearestEnemyAt(
+/**
+ * The nearest enemy the faction knows about, as the simulation picks it
+ * (nearestKnownEnemyAt): under fog of war only the enemies its side sees now
+ * count, so the preview and the order plan against the same man.
+ */
+export function nearestKnownEnemyAt(
   frame: Frame,
   point: Vec2,
   faction: UnitSnapshot['faction'],
 ): UnitSnapshot | null {
+  return nearestEnemyIn(frame, point, faction, true);
+}
+
+/**
+ * Defend and ambush still face the nearest enemy, seen or not, as the
+ * simulation does (author-game-maps 3.6 follow-up, open point).
+ */
+function nearestEnemyAt(frame: Frame, point: Vec2, faction: UnitSnapshot['faction']): UnitSnapshot | null {
+  return nearestEnemyIn(frame, point, faction, false);
+}
+
+function nearestEnemyIn(
+  frame: Frame,
+  point: Vec2,
+  faction: UnitSnapshot['faction'],
+  knownOnly: boolean,
+): UnitSnapshot | null {
+  const side = faction === 'column' || faction === 'legalist' ? faction : null;
+  const seen = knownOnly && frame.fog && side && frame.seen ? new Set(frame.seen[side]) : null;
   let best: UnitSnapshot | null = null;
   let bestDistance = Number.POSITIVE_INFINITY;
   for (const candidate of frame.units) {
     if (
       !candidate.alive ||
       candidate.routed ||
+      candidate.incapacitated ||
       candidate.dummy ||
-      candidate.faction === faction
+      candidate.faction === faction ||
+      (faction !== 'column' && candidate.faction === 'target') ||
+      (seen && !seen.has(candidate.id))
     ) {
       continue;
     }
@@ -332,7 +359,7 @@ function previewCoverSlots(
   const regionLimited = request.order === 'defend' || request.order === 'ambush';
   return planCoverSlots(units, anchorMap, request.frame.covers, {
     held,
-    threat: target ?? nearestEnemyAt(request.frame, center, units[0]!.faction),
+    threat: target ?? (regionLimited ? nearestEnemyAt : nearestKnownEnemyAt)(request.frame, center, units[0]!.faction),
     facing: line ? lineFacing(request.line!.from, request.line!.to) : (facing ?? null),
     click: line ? null : request.to,
     region: regionLimited ? { center: request.to, radius: DEFEND_REGION_RADIUS } : null,

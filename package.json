@@ -38,7 +38,6 @@
     "art": "tsx tools/build-art.ts",
     "check:maps": "tsx tools/check-maps.ts",
     "art:theodolite": "tsx tools/build-desk-theodolite.ts",
-    "map:fazenda-doc": "tsx tools/build-fazenda-doc.ts",
     "art:ground": "tsx tools/build-ground-atlas.ts"
   },
   "pnpm": {

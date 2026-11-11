@@ -116,12 +116,13 @@ roads, then water, then vegetation, as on hand-written maps.
 
 The view SHALL draw the ground of a painted map with each cell's material
 tile, sampled in world space with nearest filtering, and with a pixel
-dither at the boundary between two materials. The ground of hand-written
-maps SHALL keep its current look.
+dither at the boundary between two materials. Every battle map is an
+authored, painted map; the hand-written maps were removed
+(author-game-maps 3.6).
 
 #### Scenario: Hand-written look unchanged
-- **WHEN** the visual snapshot of the Fazenda is taken after this change
-- **THEN** it matches the snapshot taken before
+- **WHEN** the test map (`campo-de-provas`) is drawn
+- **THEN** each cell shows its material tile and two neighbouring materials meet in a pixel dither
 
 ### Requirement: Map heightfield
 
@@ -132,8 +133,8 @@ SHALL remain a pure function of position and map, used by both simulation
 and view. Maps without a heightfield SHALL keep the feature-based height.
 
 #### Scenario: Hill is high ground
-- **WHEN** a position on Serra e Rio is on a hill top
-- **THEN** its height is at least 12 m above the riverbank
+- **WHEN** an authored map raises a hill 12 m above its riverbank
+- **THEN** a position on the hill top samples at least 12 m above the riverbank
 
 #### Scenario: Smooth sampling
 - **WHEN** height is sampled at two points 0.1 m apart
@@ -186,9 +187,9 @@ have a speed factor. The starting factors SHALL be: dirt road 1.15, cobbles
 trench floor 0.6, ford 0.5. Slope SHALL still reduce speed as it does now.
 
 #### Scenario: Cane is slow
-- **WHEN** a section walks into the canefield from the pasture
+- **WHEN** a section walks into a canefield from the pasture
 - **THEN** its speed factor drops to 0.7 of pasture
 
 #### Scenario: Default map unchanged
-- **WHEN** the Vila Militar field is played
-- **THEN** its surfaces and speed factors are the current ones
+- **WHEN** a section crosses the test map's ford
+- **THEN** its speed factor is 0.5 of grass

@@ -1,10 +1,11 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import * as THREE from 'three';
-import { allCoverSlots, compileMapDocument, createEditableMap, setActiveMap, terrainHeightAt, VILA_MILITAR, battleMap } from '@prestes/shared';
+import { allCoverSlots, compileMapDocument, createEditableMap, setActiveMap, terrainHeightAt, battleMap } from '@prestes/shared';
 import { trenchWorks } from '../src/battle-map-layer';
+import { TEST_MAP } from '../../shared/test/fixtures/test-map';
 
 // refine-map-editor 2.4: trench lines are drawn by the map layer on the simulation's cut.
-afterEach(() => setActiveMap(VILA_MILITAR));
+afterEach(() => setActiveMap(TEST_MAP));
 
 function trenchMap() {
   const map = createEditableMap({ id: 'trench-view', size: 'small', name: { en: 'T', 'pt-BR': 'T' } });

@@ -40,8 +40,7 @@ describe('save to project', () => {
     expect(existsSync(resolve(dir, '..', '..', 'escape.map.json'))).toBe(false);
   });
 
-  it('refuses a built-in id, damaged JSON and a campaign map without its source note', async () => {
-    expect((await saveMapDocument(server, documentText({ id: 'fazenda' }), dir)).status).toBe(409);
+  it('refuses damaged JSON and a campaign map without its source note', async () => {
     expect((await saveMapDocument(server, '{ not json', dir)).status).toBe(400);
     const campaign = await saveMapDocument(server, documentText({ use: 'campaign' }), dir);
     expect(campaign.status).toBe(422);

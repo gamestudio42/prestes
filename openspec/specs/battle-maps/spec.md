@@ -10,11 +10,12 @@ map that shows the document pipeline carries a real battlefield.
 ### Requirement: Authored map documents
 
 A battle map SHALL be loadable from a versioned map document (the editor's
-file format) as well as from a hand-written definition. Compiling a document
-SHALL be a pure, deterministic step: the same document SHALL give the same
-battle map, bit for bit, in the simulation and the view threads. A compiled
-document SHALL obey every rule a hand-written map obeys (setting label,
-source note, deployment checks, localized name and description).
+file format); every battle map is authored (the hand-written maps were
+removed in author-game-maps 3.6). Compiling a document SHALL be a pure,
+deterministic step: the same document SHALL give the same battle map, bit
+for bit, in the simulation and the view threads. A compiled document SHALL
+carry a setting label, a source note, valid deployment areas and a localized
+name and description.
 
 #### Scenario: Deterministic compile
 - **WHEN** the same map document is compiled twice and the same 3v3 runs 1,000 ticks on each
@@ -25,19 +26,25 @@ source note, deployment checks, localized name and description).
 - **THEN** height, surface, water and cover sampled at the same position agree
 
 #### Scenario: Hand-written maps unchanged
-- **WHEN** the determinism check runs after this change
-- **THEN** the Vila Militar, Fazenda, Serra e Rio and Bairro goldens are unchanged
+- **WHEN** the determinism check runs
+- **THEN** the test map's (`campo-de-provas`) 3v3 and mixed-roster goldens match, or are re-recorded with a stated reason
 
 ### Requirement: Authored maps in the catalog
 
 Map documents in the project's authored maps folder SHALL be registered in
-the map catalog at build time and SHALL be offered on the skirmish page like
-the hand-written maps. The content check SHALL compile and validate every
-authored map and SHALL fail the check on any error.
+the map catalog at build time. The skirmish maps SHALL be offered on the
+skirmish page; campaign maps SHALL be reached through their chapter; the
+test map SHALL be offered only in development builds and the sandbox panel.
+The content check SHALL compile and validate every authored map and SHALL
+fail the check on any error.
 
 #### Scenario: Authored map on the menu
-- **WHEN** a valid `forte.map.json` is in the authored maps folder and the game is built
+- **WHEN** a valid skirmish map `forte.map.json` is in the authored maps folder and the game is built
 - **THEN** the skirmish page lists the map with its localized name
+
+#### Scenario: Campaign map stays off the skirmish page
+- **WHEN** a campaign map for "02 O Anel de Ferro" is in the authored maps folder
+- **THEN** the skirmish page does not list it and its chapter offers to play it
 
 #### Scenario: Broken authored map fails the check
 - **WHEN** an authored map's deployment zone is in deep water
@@ -58,18 +65,6 @@ large size, measured by the battle benchmark.
 #### Scenario: Large map budget
 - **WHEN** the benchmark runs a 3 vs 3 on the large proof map
 - **THEN** the mean tick time is under 4 ms
-
-### Requirement: Proof authored map
-
-The project SHALL ship one authored map that re-creates the Fazenda as a map
-document, to prove the document pipeline. It SHALL play with the same
-features as the hand-written Fazenda (roads, ditches, crops, buildings,
-trenches, deployment) and SHALL pass the map checks. The hand-written Fazenda
-SHALL stay the one the menu offers until the author chooses otherwise.
-
-#### Scenario: Proof map plays
-- **WHEN** the battle report runs on the proof map
-- **THEN** the battle ends with an outcome within the report's time band and no validation error
 
 ### Requirement: Map definition
 
@@ -94,27 +89,6 @@ fictional place) and a source note.
 - **WHEN** the content check runs
 - **THEN** every map has both deployment zones inside its bounds, on walkable ground, at least 160 m apart, with a walkable path between them
 
-### Requirement: Map catalog and choice
-
-The game SHALL offer the 3v3 on the Vila Militar field (the current map, the
-default), Fazenda, Serra e Rio and Bairro. The player SHALL choose the map on
-the start menu before the 3v3 starts and in the sandbox panel. Map names and
-one-line descriptions SHALL be localized in PT-BR and EN, through the locale
-catalog. The default map SHALL keep its current terrain, covers and
-determinism golden.
-
-#### Scenario: Choose a map
-- **WHEN** the player picks Serra e Rio on the start menu and starts the 3v3
-- **THEN** the battle starts on Serra e Rio with all 66 soldiers in its deployment zones
-
-#### Scenario: Default unchanged
-- **WHEN** the 3v3 starts without a map choice
-- **THEN** it runs on the Vila Militar field and its golden hash is unchanged
-
-#### Scenario: Localized names
-- **WHEN** the locale is PT-BR or EN
-- **THEN** each map's name and description shows in that language
-
 ### Requirement: Map bounds and pathfinding
 
 Each map SHALL define its own bounds. Movement orders, pathfinding and
@@ -124,80 +98,12 @@ outside the bounds, in deep water or inside buildings SHALL NOT be order
 targets.
 
 #### Scenario: Far corner reachable
-- **WHEN** a section is ordered to a walkable point near a corner of Fazenda
+- **WHEN** a section is ordered to a walkable point near a corner of the test map
 - **THEN** it finds a path and arrives there
 
 #### Scenario: Order into deep water
 - **WHEN** the player orders a section to a point in the river away from any crossing
 - **THEN** the order is refused or moved to the nearest walkable bank
-
-### Requirement: Fazenda map
-
-Fazenda SHALL be a 400 × 400 m rural map set on a coffee and sugarcane
-fazenda of the São Paulo and Paraná interior, 1924–1925 (historical
-setting, fictional place). It SHALL have: wide open pasture with fewer than
-one cover per 400 m² over most of the map; coffee rows; at least one
-cornfield and one canefield, each large enough to hide a section of eleven
-(at least 40 × 30 m); a farmhouse (casa-sede), a row of colonist houses, a
-sugar mill (engenho) with a chimney, a corral, wire and wooden fences and a
-dirt road; gentle rises; and a trench line with sandbagged bays and a
-communication trench for each side. Historical note: the 1924–1925 Paraná
-front was held from dug-in lines (`macaulay-1974`, ch. III, pp. 71, 82, 85);
-coffee and cane farms were typical of the São Paulo interior of the period
-(historical note).
-
-#### Scenario: Hidden flank through the cane
-- **WHEN** a player section crosses the canefield crouched, out of its edge rows, toward the enemy trench
-- **THEN** the enemy side does not see it until it is within the cane's concealment distance or leaves the cane
-
-#### Scenario: Open ground is dangerous
-- **WHEN** a section crosses the open pasture standing in sight of an enemy trench within 120 m
-- **THEN** the enemy sees it and can fire at it
-
-### Requirement: Serra e Rio map
-
-Serra e Rio SHALL be a 400 × 400 m highland map set in the river country of
-Goiás and Minas Gerais crossed by the column in 1925–1926 (historical
-setting, fictional place). A river SHALL cross the whole map between the two
-deployment zones and SHALL be crossable only at three points: a ford (vau), a
-wooden bridge and a cable ferry (balsa). The map SHALL have two hill masses
-with slopes that block sight and fire, large patches of tall grass (capim),
-cerrado scrub with low twisted trees, buriti palms along the banks and rock
-outcrops. Historical note: at the Verdinho Bridge outside Mineiros, Goiás, in June
-1925, the rearguard burned the bridge and waded the river, and the pursuers
-cut a ford with its timbers (`macaulay-1974`, pp. 122–124); ferries and boats
-served the southern crossings (pp. 74, 93).
-
-#### Scenario: Only three crossings
-- **WHEN** pathfinding searches from one deployment zone to the other
-- **THEN** every path found goes over the ford, the bridge or the ferry
-
-#### Scenario: Hill blocks sight
-- **WHEN** a hill crest lies between two soldiers that are otherwise in range and in each other's cone
-- **THEN** neither sees the other
-
-### Requirement: Bairro map
-
-Bairro SHALL be a 320 × 320 m urban map set in a working-class and factory
-quarter of São Paulo in July 1924 (historical setting, fictional place):
-blocks of terraced one- and two-storey houses, a brick factory with a
-chimney and a walled yard, a church on a square, cobbled streets with tram
-rails, gas lamp posts, a raised rail embankment and barricades of paving
-stones and sacks. Streets SHALL give long sight lines along their length;
-house blocks SHALL block sight and movement. Historical note: the São Paulo
-revolt of July 1924 was a separate front from the column (`macaulay-1974`,
-ch. I, pp. 4–6); shells of both sides caused civilian casualties and the
-loyalist bombardment from 12 July drove thousands of refugees from the city
-(pp. 10, 15). The map's codex note SHALL name the civilian cost; the map SHALL have
-no civilians.
-
-#### Scenario: Streets are fire lanes
-- **WHEN** a soldier stands at one end of a straight street and an enemy at the other within 120 m
-- **THEN** each can see the other along the street
-
-#### Scenario: Blocks break sight
-- **WHEN** a house block lies between two soldiers
-- **THEN** neither sees the other through it
 
 ### Requirement: Start view and deployment marks
 
@@ -232,14 +138,14 @@ and a missing preview SHALL fall back to the map's name only.
 ### Requirement: Period look of the battle maps
 
 Until the Blender kits exist, the battle maps' named placeholders SHALL read
-as 1920s Brazil: the Bairro's quintal walls as plastered brick with a coping
-and its fences as wooden boards; Fazenda fences as wire on posts; one-storey
-houses with a door on the street and tiled roofs; vendas with a wide door
-and an awning; the matriz with a façade and a tower; the coreto with a roof
-on posts; riverbanks with gravel and reeds. No real building, brand or shop name SHALL be shown.
+as 1920s Brazil: quintal walls as plastered brick with a coping and fences
+as wooden boards or wire on posts; one-storey houses with a door on the
+street and tiled roofs; vendas with a wide door and an awning; the matriz
+with a façade and a tower; the coreto with a roof on posts; riverbanks with
+gravel and reeds. No real building, brand or shop name SHALL be shown.
 
 #### Scenario: Walls read as walls
-- **WHEN** the Bairro is seen at tactical zoom
+- **WHEN** a walled yard on an authored map is seen at tactical zoom
 - **THEN** quintal walls are drawn as plastered walls and fences as board fences, not as stone blocks
 
 ### Requirement: Roadside ditches
@@ -249,53 +155,14 @@ their edges where the map says so: channels 0.8 m deep and 1.5 m wide sunk
 into the heightfield. A soldier in a ditch SHALL receive trench-like cover
 when crouched or prone against a threat outside it, SHALL move at the
 trench-floor speed along it, and SHALL be able to take a cover slot in it.
-The Fazenda's main road SHALL have a ditch on both sides for its whole
-length.
 
 #### Scenario: Cover in the ditch
-- **WHEN** a soldier lies prone in the Fazenda road ditch and an enemy fires from the open field
+- **WHEN** a soldier lies prone in a road ditch and an enemy fires from the open field
 - **THEN** he receives the ditch's cover
 
 #### Scenario: Slots along the ditch
-- **WHEN** a section is ordered to defend at the roadside
+- **WHEN** a section is ordered to defend at the roadside of a ditched road
 - **THEN** its men take slots in the ditch
-
-### Requirement: Cover density on attack axes
-
-Every battle map SHALL offer cover along each attack axis between the
-deployment zones: no straight stretch longer than 60 m on an axis SHALL be
-without a cover slot within 10 m of it. The map review tool SHALL check it.
-
-#### Scenario: Fazenda is no longer open
-- **WHEN** the map review tool measures the Fazenda's attack axes
-- **THEN** no gap longer than 60 m between cover slots is reported
-
-### Requirement: Terrain shading and water
-
-The heightfield ground SHALL be shaded without banding or faceted stripes on
-slopes: smooth normals, a toon ramp with soft steps on slopes, and a sun
-angle that models hills. Shallow water (fords) SHALL read as a gravel bar
-with stones and lighter, rippling water; deep water darker and calm; banks
-with gravel and reeds. On Serra e Rio the capim SHALL grow along the
-riverbanks and the veredas, with the buriti palms.
-
-#### Scenario: Ford reads as a ford
-- **WHEN** the Serra e Rio ford is seen from strategic zoom
-- **THEN** it is clearly lighter and stonier than the deep river around it
-
-#### Scenario: Grass by the river
-- **WHEN** the Serra e Rio vegetation is loaded
-- **THEN** most capim lies within 30 m of the river's banks
-
-### Requirement: Battle map performance budget
-
-With the default rosters, the 3 vs 3 SHALL run under 3 ms per tick on every
-battle map in the headless bench, and the view SHALL hold 30 frames per
-second at strategic zoom on the reference machine.
-
-#### Scenario: Bairro within budget
-- **WHEN** the bench runs 1,000 ticks of the 3 vs 3 on Bairro
-- **THEN** the mean tick time is under 3 ms
 
 ### Requirement: Crops and grass look
 
@@ -339,7 +206,7 @@ trench cover against threats behind him. Cover slots SHALL lie every 1.2 m
 along the fire step, facing the parapet. Movement along the floor SHALL be
 at the trench-floor speed, and men SHALL leave and enter a trench anywhere
 along it. A communication trench SHALL give the same cover from both sides
-and SHALL have no slots. The Fazenda's trench lines SHALL be built by the
+and SHALL have no slots. The test map's trench lines SHALL be built by the
 same rules.
 
 #### Scenario: Fire step protects forward
@@ -416,3 +283,94 @@ the areas of every map.
 #### Scenario: Content check
 - **WHEN** a hand-written map's column area is edited to overlap the legalist area
 - **THEN** `pnpm check:content` fails naming the map
+
+### Requirement: Time of day
+
+Every map document SHALL carry a time of day, from early morning to late
+afternoon, and a sun direction (the compass bearing the sun shines from).
+The battle view SHALL light the map with them: the sun's height follows the
+time of day (low in the morning and late afternoon, high at midday), the
+light warms toward the ends of the day, and the sun shines from the
+bearing. Maps without the fields SHALL light as midday from the north-east.
+The time of day SHALL change only the picture: the simulation, line of
+sight and the state hash SHALL NOT depend on it.
+
+#### Scenario: Low sun models the hills
+- **WHEN** a map is set to late afternoon with the sun from the west
+- **THEN** in battle the west faces of its hills are lit and the east faces darker, more than at midday
+
+#### Scenario: The hash ignores the time of day
+- **WHEN** the same battle is run on a map set to morning and then to late afternoon
+- **THEN** both runs give the same state hash
+
+### Requirement: Performance budget on the test map
+
+With the default rosters, the 3 vs 3 SHALL run under 3 ms per tick on the
+test map in the headless bench, garrisons included, and the view SHALL hold
+30 frames per second at strategic zoom on the reference machine.
+
+#### Scenario: Test map within budget
+- **WHEN** the bench runs 3,000 ticks of the 3 vs 3 on the test map
+- **THEN** the mean tick time is under 3 ms
+
+### Requirement: Terrain shading, water and sun
+
+The heightfield ground SHALL be shaded without banding or faceted stripes on
+slopes: smooth normals, a toon ramp with soft steps on slopes, and a sun
+from the map's time of day that models hills. Shallow water (fords) SHALL
+read as a gravel bar with stones and lighter, rippling water; deep water
+darker and calm; banks with gravel and reeds.
+
+#### Scenario: Ford reads as a ford
+- **WHEN** the test map's ford is seen from strategic zoom
+- **THEN** it is clearly lighter and stonier than the deep water around it
+
+### Requirement: Cover along attack axes
+
+Every skirmish map and the test map SHALL offer cover along each attack
+axis between the deployment areas: no straight stretch longer than 60 m on
+an axis SHALL be without a cover slot within 10 m of it. The map review
+tool SHALL check it and report it to the author; the editor's map check
+SHALL show it as a warning, not an error.
+
+#### Scenario: Test map is not open
+- **WHEN** the map review tool measures the test map's attack axes
+- **THEN** no gap longer than 60 m between cover slots is reported
+
+### Requirement: Map choice from authored maps
+
+The game SHALL offer the 3 vs 3 only on authored maps: the saved skirmish
+maps on the start menu and in the sandbox panel, and in development builds
+the test map too. With no skirmish map saved, the start menu SHALL say so
+and point to the editor instead of offering a battle. Map names and
+one-line descriptions SHALL be localized in PT-BR and EN, from the map
+documents. A 3 vs 3 started without a map choice (tests, tools, the
+sandbox's default) SHALL run on the test map.
+
+#### Scenario: Choose a map
+- **WHEN** the player picks a saved skirmish map on the start menu and starts the 3 vs 3
+- **THEN** the battle starts on that map with every soldier in its deployment areas
+
+#### Scenario: No maps yet
+- **WHEN** the published game has no skirmish map saved
+- **THEN** the start menu shows "Nenhum mapa ainda — abra o editor" / "No maps yet — open the editor" and no deploy action
+
+#### Scenario: Default is the test map
+- **WHEN** the 3 vs 3 starts without a map choice
+- **THEN** it runs on the test map
+
+#### Scenario: Localized names
+- **WHEN** the locale is PT-BR or EN
+- **THEN** each map's name and description shows in that language
+
+### Requirement: Enemy presets in the map document
+
+A map document SHALL be able to carry the legalist forces one of which is
+drawn when the player brings a roster (pre-battle-roster's map presets);
+without them the enemy fields the default roster. The map check SHALL refuse
+a preset that is not a valid legalist roster, and SHALL check that every
+section type deploys in every slot of both sides.
+
+#### Scenario: The test map's presets
+- **WHEN** the player brings a roster to the test map and leaves the enemy to chance
+- **THEN** the enemy fields one of the test map's three presets, the same one for the same seed

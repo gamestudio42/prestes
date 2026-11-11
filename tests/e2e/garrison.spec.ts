@@ -99,40 +99,38 @@ test('Ocupar, Sair and Assaltar speak Portuguese', async ({ page }) => {
 });
 
 // 4.3: an assault through the bridge shows its two bars over the position, then they go.
-// The column holds a house; a legalist section is walked to its door and assaults it.
+// A legalist section garrisons a house from the start; a column section (the
+// player's, which no commander re-orders) is walked to its door and assaults it.
 test('assault bars over the position for the fight, then gone', async ({ page }) => {
   test.setTimeout(300_000);
   await startTestMap(page);
   const start = await frame(page);
   await command(page, { type: 'hold_fire', unitIds: start.units.map((unit) => unit.id), hold: true });
-  const squad = start.units.filter((unit) => unit.faction === 'column' && unit.squadId === 1);
-  const centre = { x: squad.reduce((s, u) => s + u.x, 0) / squad.length, y: squad.reduce((s, u) => s + u.y, 0) / squad.length };
-  const map = testMap();
-  const positions = positionsFor({ buildings: map.buildings, covers: start.covers, garrisonYards: map.garrisonYards });
-  const house: PositionDef = positions
-    .filter((position) => position.kind === 'building' && position.capacity === 4)
-    .reduce((best, position) => ((position.x - centre.x) ** 2 + (position.y - centre.y) ** 2 < (best.x - centre.x) ** 2 + (best.y - centre.y) ** 2 ? position : best));
-  await command(page, { type: 'order', order: 'enter', unitIds: squad.map((unit) => unit.id), positionId: house.id });
+  // The enemy commander puts a section into a house early in the battle.
   await expect
     .poll(async () => {
       await step(page, 100);
-      return (await frame(page)).garrisons?.find((entry) => entry.positionId === house.id)?.unitIds.length ?? 0;
-    }, { timeout: 30_000 })
-    .toBe(4);
-  // The legalist section nearest the house (the bridge reads the unfogged frame).
-  const now = await frame(page);
-  const legalists = now.units.filter((unit) => unit.faction === 'legalist' && unit.alive && unit.garrison === undefined);
-  const nearest = legalists.reduce((best, unit) => ((unit.x - house.x) ** 2 + (unit.y - house.y) ** 2 < (best.x - house.x) ** 2 + (best.y - house.y) ** 2 ? unit : best));
-  const attackers = legalists.filter((unit) => unit.squadId === nearest.squadId).map((unit) => unit.id);
-  const door = house.entrances[0]!;
+      return (await frame(page)).garrisons?.some((entry) => entry.side === 'legalist' && entry.unitIds.length > 0) ?? false;
+    }, { timeout: 60_000 })
+    .toBe(true);
+  const held = (await frame(page)).garrisons!.find((entry) => entry.side === 'legalist' && entry.unitIds.length > 0)!;
+  const map = testMap();
+  const positions = positionsFor({ buildings: map.buildings, covers: start.covers, garrisonYards: map.garrisonYards });
+  const house = positions.find((position) => position.id === held.positionId)!;
+  const squad = (await frame(page)).units.filter((unit) => unit.faction === 'column' && unit.squadId === 1 && unit.alive);
+  const centre = { x: squad.reduce((s, u) => s + u.x, 0) / squad.length, y: squad.reduce((s, u) => s + u.y, 0) / squad.length };
+  const door = house.entrances.reduce((best, entrance) => ((entrance.x - centre.x) ** 2 + (entrance.y - centre.y) ** 2 < (best.x - centre.x) ** 2 + (best.y - centre.y) ** 2 ? entrance : best));
+  const attackers = squad.map((unit) => unit.id);
+  await command(page, { type: 'move', unitIds: attackers, to: door });
   await expect
     .poll(async () => {
-      await command(page, { type: 'move', unitIds: attackers, to: door });
-      await step(page, 200);
+      await step(page, 100);
       const men = (await frame(page)).units.filter((unit) => attackers.includes(unit.id) && unit.alive);
-      return men.filter((unit) => (unit.x - door.x) ** 2 + (unit.y - door.y) ** 2 < 12 * 12).length;
-    }, { timeout: 180_000 })
-    .toBeGreaterThan(1);
+      // The assault's own rule: the section's centre within 15 m of the door (ASSAULT_RANGE).
+      const middle = { x: men.reduce((s, u) => s + u.x, 0) / men.length, y: men.reduce((s, u) => s + u.y, 0) / men.length };
+      return men.length > 1 && (middle.x - door.x) ** 2 + (middle.y - door.y) ** 2 < 12 * 12;
+    }, { timeout: 120_000 })
+    .toBe(true);
   await command(page, { type: 'assault', unitIds: attackers, positionId: house.id });
   const bars = () => page.evaluate(() => (window as unknown as Bridge).__prestesScene!.garrisonMarks().assaults);
   await expect

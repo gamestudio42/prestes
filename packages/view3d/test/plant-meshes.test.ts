@@ -1,11 +1,12 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import * as THREE from 'three';
-import { compileMapDocument, createEditableMap, fromMapDocument, toMapDocument, setActiveMap, vegetationCell, VEGETATION_KINDS, VILA_MILITAR, type BattleMap } from '@prestes/shared';
+import { compileMapDocument, createEditableMap, fromMapDocument, toMapDocument, setActiveMap, vegetationCell, VEGETATION_KINDS, type BattleMap } from '@prestes/shared';
 import { BattleMapLayer } from '../src/battle-map-layer';
 import { clumpGeometry, plantGeometry, plantSpots, STRATEGIC_CLUMP_CAP } from '../src/plant-meshes';
+import { TEST_MAP } from '../../shared/test/fixtures/test-map';
 
 // refine-map-editor 3.2: plants are code-built meshes, corn in rows, capim as blades.
-afterEach(() => setActiveMap(VILA_MILITAR));
+afterEach(() => setActiveMap(TEST_MAP));
 
 function fieldMap(kind: 'corn' | 'tall-grass', density = 0): BattleMap {
   const map = createEditableMap({ id: 'plants', size: 'small', name: { en: 'P', 'pt-BR': 'P' } });

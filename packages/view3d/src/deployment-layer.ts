@@ -80,9 +80,15 @@ export class DeploymentLayer {
     }
   }
 
-  /** add-deployment-phase: the marks stay full while the phase lasts; their 10 s start when it ends. */
+  /**
+   * add-deployment-phase: the labels stay while the phase lasts; their 10 s
+   * start when it ends. The section rings are hidden for good (user,
+   * 2026-11-10): the phase draws the areas, and once sections are moved the
+   * rings would mark where they no longer stand.
+   */
   hold(): void {
     this.startedAt = null;
+    this.group.visible = false;
   }
 
   setLabels(labels: DeploymentLabels): void {

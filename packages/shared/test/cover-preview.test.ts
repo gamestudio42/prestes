@@ -9,13 +9,13 @@ import {
   DEPLOYMENT_SLOT_RADIUS,
   protectionClass,
   setActiveMap,
-  VILA_MILITAR,
   type EditableMap,
 } from '../src';
+import { TEST_MAP } from './fixtures/test-map';
 
 // refine-map-editor 6.1: the editor's cover preview counts the game's own slots.
 
-afterEach(() => setActiveMap(VILA_MILITAR));
+afterEach(() => setActiveMap(TEST_MAP));
 
 function field(): EditableMap {
   const map = createEditableMap({ id: 'cover', size: 'small', name: { en: 'C', 'pt-BR': 'C' } });

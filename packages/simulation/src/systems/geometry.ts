@@ -87,6 +87,33 @@ export function nearestEnemyAt(
   return nearest;
 }
 
+/**
+ * The nearest enemy the faction knows about: under fog of war only the enemies
+ * its side sees now count, so an order never plans against a man nobody has
+ * spotted. The HUD preview plans with the same rule (author-game-maps 3.6).
+ */
+export function nearestKnownEnemyAt(
+  ctx: SimContext,
+  point: { x: number; y: number },
+  faction: Faction,
+): MutableUnit | null {
+  const side = faction === 'column' || faction === 'legalist' ? faction : null;
+  if (!ctx.fog || !side) return nearestEnemyAt(ctx, point, faction);
+  const seen = ctx.vision.seen[side];
+  let nearest: MutableUnit | null = null;
+  let nearestDistance = Number.POSITIVE_INFINITY;
+  for (const candidate of ctx.units) {
+    if (!seen.has(candidate.id) || !candidate.alive || candidate.dummy || candidate.routed || candidate.incapacitated) continue;
+    if (candidate.faction === faction) continue;
+    const distance = (candidate.x - point.x) ** 2 + (candidate.y - point.y) ** 2;
+    if (distance < nearestDistance) {
+      nearest = candidate;
+      nearestDistance = distance;
+    }
+  }
+  return nearest;
+}
+
 export function facingToward(
   ctx: SimContext,
   from: { x: number; y: number },
