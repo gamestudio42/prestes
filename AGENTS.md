@@ -20,10 +20,14 @@ simulation in a Web Worker, Vitest, Playwright, GitHub Pages. Code and OpenSpec
 artifacts in English; English is the source language for player strings, with
 PT-BR and EN locales. License AGPL-3.0-or-later.
 
-The foundation exists: `apps/game` plus `packages/kernel`, `shared`, `simulation`,
-`view3d` and `content`. It is a visual prototype, not a playable game yet: orthographic camera, pixel post, original low-poly character proxies and movement paths. Durable specs
-live in `openspec/specs/`; the first change is archived under
-`openspec/changes/archive/2026-10-30-add-prestes-foundation/`.
+The code lives in `apps/game` plus `packages/kernel`, `shared`, `simulation`,
+`view3d` and `content`. The game is a playable skirmish on authored maps
+(deployment phase, objectives, fog of war, garrisons, rostered sections); the
+bootcamp is retired and the campaign is written but not playable. Battle maps
+are authored by the owner by hand in the in-game editor (`editor.html`): do
+not generate maps or hand-write them in code. Current state and the plan are
+in `docs/status.md`; durable specs live in `openspec/specs/`; finished
+changes are under `openspec/changes/archive/`.
 
 ## Layout
 
@@ -64,8 +68,9 @@ openspec archive
 
 ```bash
 pnpm install
-pnpm check       # typecheck, lint, tests, locale and content checks
-pnpm e2e         # Playwright smoke test
+pnpm check       # typecheck, lint, tests, locale, content and map checks
+pnpm verify      # the full local gate: check, build, budgets, determinism, OpenSpec, e2e
+pnpm e2e         # Playwright browser suite
 pnpm build       # static build in apps/game/dist
 pnpm sim         # headless deterministic run
 pnpm models      # export character source models to GLB
