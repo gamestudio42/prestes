@@ -6,23 +6,18 @@ task and delete the file once the last of these changes is archived.
 
 ## START HERE
 
-- **Branch `plan-art-factions-sound`**, working tree clean, same commit
-  line as `main` plus the planning commits. The old branch
-  `refine-battle-maps` still exists at an older commit and is not used.
-- **Nothing in the game changed in the planning session.** The only code
-  changes of 2026-11-11 are the fog fix for defend and ambush, the test
-  runner settings and the bundle budgets, all on `main` and described in
-  `docs/status.md` ("Fixes of 2026-11-11").
-- **UPDATE 2026-11-11 (later): `faction-armies` is at 16/18**, uncommitted on this branch; only the owner's hand check (5.2) and the archive are left. See the apply notes in its `tasks.md` and "faction-armies apply" in `docs/status.md`. The paragraph below is the earlier state.
-- **NEXT STEP: `faction-armies` task 2.1** (the army registry and `army` on
-  units). Tasks 1.1 to 1.4 are done: the research is in
-  `docs/history/FORCES.md`, the owner approved the catalog, and the
-  `force-roster` deltas are written. Read, in this order:
-  `openspec/changes/faction-armies/catalog-proposal.md` (the approved
-  table and the owner's five decisions), `design.md` (D1 two sides and three
-  armies, D5 no new map field, D6 the successor table), `tasks.md`.
-- The owner has **not** asked for the implementation yet. His last word was
-  "prepare todas as tasks e handoff". Start task 2.1 only when he asks.
+- **Branch `plan-art-factions-sound`.** Other sessions may have uncommitted
+  files in the checkout (map editor scale bar, `route-around-wire`, bush
+  concealment and area fire); never stage or commit them.
+- **`faction-armies` is done and archived** (`b9febe0`, archive `eab5426`,
+  `openspec/changes/archive/2026-11-11-faction-armies/`). Its specs are in
+  `openspec/specs/armies`, `force-roster` and `battle-lab`. The owner's hand
+  check and balance findings are in `docs/status.md` ("faction-armies apply").
+- **NEXT STEP: `soldier-animation-and-textures` task 0.1** (read the change,
+  check Blender and that `pnpm art` reproduces `soldier.glb`), then sections 1
+  and 2. Section 3 (uniform sets) can use the armies now.
+- The troop icons and detail panel come later, in `troop-thumbnails-and-panel`;
+  the owner wants the planned order kept.
 
 ## Rules of this repository
 
