@@ -5,6 +5,7 @@ import type { MutableUnit } from './model';
 import { applyCommand } from './commands';
 import { MARKER_TICKS, REMEMBER_TICKS, otherSide, type Side } from './vision';
 import { dealWithGarrison, garrisonOnDeploy, leaveIfLost } from './commander-positions';
+import { objectiveValues, type ObjectiveState } from './objectives';
 
 /**
  * The 3v3 battle's flow (battle-feel-3v3): the legalist commander and the rule
@@ -13,7 +14,7 @@ import { dealWithGarrison, garrisonOnDeploy, leaveIfLost } from './commander-pos
  */
 
 /** A withdrawn section that has stopped rallies: it defends where it stands and is never pulled back again. */
-export type SectionPlan = 'hold' | 'attack' | 'withdraw' | 'rallied' | 'garrison';
+export type SectionPlan = 'hold' | 'attack' | 'withdraw' | 'rallied' | 'garrison' | 'hold-objective';
 
 export interface BattleMemory {
   /** Each side's deployment line (centroid at the start): a fact of the map both sides know. */
@@ -42,6 +43,12 @@ export interface BattleMemory {
   readonly searching: Map<number, string>;
   /** Where the lost-contact rule last sent each section (it goes on from there). */
   readonly led: Map<number, Vec2>;
+  /** add-map-objectives D4: each section holding an objective of value 2 or more, by squad id. */
+  readonly objectiveGuards: Map<number, number>;
+  /** add-map-objectives D4: the last objective the player took, and when; cleared on retake or after 60 s. */
+  retake: { objectiveId: number; tick: number } | null;
+  /** add-map-objectives D4: each objective's owner as the commander last saw it (ownership is public). */
+  readonly objectiveOwners: Map<number, 'neutral' | 'column' | 'legalist'>;
 }
 
 export function createBattleMemory(): BattleMemory {
@@ -58,6 +65,9 @@ export function createBattleMemory(): BattleMemory {
     swept: { column: new Set(), legalist: new Set() },
     searching: new Map(),
     led: new Map(),
+    objectiveGuards: new Map(),
+    retake: null,
+    objectiveOwners: new Map(),
   };
 }
 
@@ -67,6 +77,10 @@ const THINK_EVERY = 10;
 const LOST_CONTACT_TICKS = 100;
 /** The commander counterattacks at this ratio of fit soldiers. */
 const ADVANTAGE = 1.4;
+/** add-map-objectives D4: a section has this long (ticks, 60 s) to be sent to retake a lost objective. */
+const RETAKE_TICKS = 600;
+/** add-map-objectives D4: with less than this left (ticks, 3 min) and less value, all but one section attacks. */
+const LAST_MINUTES_TICKS = 1800;
 /** With no shot for this long (ticks, 30 s), a holding commander goes looking. */
 const QUIET_TICKS = 300;
 /** A section this small, or mostly pinned, withdraws. */
@@ -132,8 +146,35 @@ function objectiveFor(
   // refine-battle-maps: nothing left to go on; search where he might be.
   const area = nextSearchArea(ctx, side, from, squadId, tick);
   if (area) return { to: { x: area.x, y: area.y } };
+  // add-map-objectives D4: with nothing to go on, attack the objective of most
+  // value not held (public information: no unseen man is ever a destination).
+  const goal = attackObjective(ctx, from);
+  if (goal) return { to: { x: goal.flag.x, y: goal.flag.y } };
   const deployment = ctx.battle.deployment.get(otherSide(side));
   return deployment ? { to: deployment } : null;
+}
+
+/**
+ * add-map-objectives D4: the objective of most value the legalists do not
+ * hold; ties go to the nearest to `from`, then to the lowest id. Objectives
+ * and owners are public, so this uses no fog.
+ */
+function attackObjective(ctx: SimContext, from: Vec2): ObjectiveState | null {
+  let best: ObjectiveState | null = null;
+  let bestDistance = Number.POSITIVE_INFINITY;
+  for (const objective of ctx.objectives) {
+    if (objective.owner === 'legalist') continue;
+    const distance = (objective.flag.x - from.x) ** 2 + (objective.flag.y - from.y) ** 2;
+    if (
+      best === null ||
+      objective.value > best.value ||
+      (objective.value === best.value && (distance < bestDistance || (distance === bestDistance && objective.id < best.id)))
+    ) {
+      best = objective;
+      bestDistance = distance;
+    }
+  }
+  return best;
 }
 
 /** A section within this distance (m) of a place has reached it. */
@@ -573,6 +614,15 @@ function commandLegalists(ctx: SimContext, tick: number, events: SimEvent[]): vo
       continue;
     }
     const pinned = section.filter((unit) => unit.state === 'pinned' || unit.state === 'panicked').length;
+    // add-map-objectives D4: a section holding an objective stays on it; a
+    // broken one withdraws and another takes the objective over.
+    if (plan === 'hold-objective') {
+      if (section.length < BROKEN_SECTION || pinned * 2 > section.length) {
+        issue(ctx, { type: 'withdraw', unitIds: ids }, tick, events);
+        plans.set(squadId, 'withdraw');
+      }
+      continue;
+    }
     if (plan !== 'rallied' && (section.length < BROKEN_SECTION || pinned * 2 > section.length)) {
       issue(ctx, { type: 'withdraw', unitIds: ids }, tick, events);
       plans.set(squadId, 'withdraw');
@@ -590,6 +640,11 @@ function commandLegalists(ctx: SimContext, tick: number, events: SimEvent[]): vo
       }
     }
   }
+
+  // add-map-objectives D4: one section on each objective of value 2 or more it
+  // holds, then retake one the player took, then the last three minutes.
+  assignObjectiveGuards(ctx, own, plans, tick, events);
+  retakeObjective(ctx, own, plans, tick, events);
 
   // With the advantage, one more section goes forward. When the field has
   // gone quiet he must find the enemy: he attacks with all but one section,
@@ -611,6 +666,153 @@ function commandLegalists(ctx: SimContext, tick: number, events: SimEvent[]): vo
     }
     if (quiet) ctx.battle.lastShotTick = tick;
   }
+
+  commitLastMinutes(ctx, own, plans, tick, events);
+}
+
+/** add-map-objectives D4: squared distance between two points. */
+function distanceTo(point: Vec2, target: Vec2): number {
+  return (point.x - target.x) ** 2 + (point.y - target.y) ** 2;
+}
+
+/**
+ * add-map-objectives D4: for each objective of value 2 or more the legalists
+ * hold, the nearest idle section defends at its flag; a guard that breaks is
+ * replaced on the next look.
+ */
+function assignObjectiveGuards(
+  ctx: SimContext,
+  own: Map<number, MutableUnit[]>,
+  plans: Map<number, SectionPlan>,
+  tick: number,
+  events: SimEvent[],
+): void {
+  const guards = ctx.battle.objectiveGuards;
+  for (const [squadId, objectiveId] of [...guards]) {
+    const objective = ctx.objectives.find((entry) => entry.id === objectiveId);
+    if (!own.has(squadId) || plans.get(squadId) !== 'hold-objective' || objective === undefined || objective.owner !== 'legalist') {
+      guards.delete(squadId);
+    }
+  }
+  const guarded = new Set(guards.values());
+  for (const objective of ctx.objectives) {
+    if (objective.owner !== 'legalist' || objective.value < 2 || guarded.has(objective.id)) continue;
+    const candidate = [...own]
+      .filter(([squadId]) => {
+        const plan = plans.get(squadId);
+        return (plan === 'hold' || plan === 'rallied') && !guards.has(squadId);
+      })
+      .sort(
+        (left, right) =>
+          distanceTo(centroid(left[1]), objective.flag) - distanceTo(centroid(right[1]), objective.flag) || left[0] - right[0],
+      )[0];
+    if (candidate === undefined) continue;
+    const [squadId, section] = candidate;
+    issue(
+      ctx,
+      { type: 'order', order: 'defend', unitIds: section.map((unit) => unit.id), to: { x: objective.flag.x, y: objective.flag.y } },
+      tick,
+      events,
+    );
+    plans.set(squadId, 'hold-objective');
+    guards.set(squadId, objective.id);
+    guarded.add(objective.id);
+  }
+}
+
+/**
+ * add-map-objectives D4: within 60 s of the player taking an objective, the
+ * nearest section that is not guarding or withdrawing goes to retake it.
+ */
+function retakeObjective(
+  ctx: SimContext,
+  own: Map<number, MutableUnit[]>,
+  plans: Map<number, SectionPlan>,
+  tick: number,
+  events: SimEvent[],
+): void {
+  const retake = ctx.battle.retake;
+  if (retake === null) return;
+  if (tick - retake.tick > RETAKE_TICKS) {
+    ctx.battle.retake = null;
+    return;
+  }
+  const objective = ctx.objectives.find((entry) => entry.id === retake.objectiveId);
+  if (objective === undefined || objective.owner === 'legalist') {
+    ctx.battle.retake = null;
+    return;
+  }
+  const pick = [...own]
+    .filter(([squadId]) => {
+      const plan = plans.get(squadId);
+      return plan !== 'garrison' && plan !== 'hold-objective' && plan !== 'withdraw';
+    })
+    .filter(([, section]) =>
+      section.every((unit) => unit.garrison === undefined && unit.entering === undefined && unit.assaulting === undefined),
+    )
+    .sort(
+      (left, right) =>
+        distanceTo(centroid(left[1]), objective.flag) - distanceTo(centroid(right[1]), objective.flag) || left[0] - right[0],
+    )[0];
+  if (pick === undefined) return;
+  const [squadId, section] = pick;
+  issue(
+    ctx,
+    { type: 'order', order: 'advance', unitIds: section.map((unit) => unit.id), to: { x: objective.flag.x, y: objective.flag.y } },
+    tick,
+    events,
+  );
+  plans.set(squadId, 'attack');
+  ctx.battle.retake = null;
+}
+
+/**
+ * add-map-objectives D4: in the last three minutes, holding less value, all
+ * but one section attacks (a section inside a position keeps back, else the
+ * weakest).
+ */
+function commitLastMinutes(
+  ctx: SimContext,
+  own: Map<number, MutableUnit[]>,
+  plans: Map<number, SectionPlan>,
+  tick: number,
+  events: SimEvent[],
+): void {
+  if (ctx.objectives.length === 0) return;
+  const remaining = ctx.timeLimitTicks - (tick - ctx.battleStartTick);
+  if (remaining >= LAST_MINUTES_TICKS || remaining <= 0) return;
+  const values = objectiveValues(ctx);
+  if (values.legalist >= values.column) return;
+  const inside = ([, section]: [number, MutableUnit[]]) =>
+    section.some((unit) => unit.garrison !== undefined || unit.entering !== undefined || unit.assaulting !== undefined);
+  const notAttacking = [...own].filter(([squadId]) => plans.get(squadId) !== 'attack');
+  if (notAttacking.length === 0) return;
+  // One section stays back: a section inside a position if there is one (it
+  // cannot be ordered out mid-fight), else the weakest mobile one.
+  const reserve = notAttacking.find(inside) ?? [...notAttacking].sort((left, right) => left[1].length - right[1].length || left[0] - right[0])[0];
+  for (const [squadId, section] of notAttacking) {
+    if (squadId === reserve![0] || inside([squadId, section])) continue;
+    if (goFor(ctx, 'legalist', section.map((unit) => unit.id), centroid(section), squadId, tick, events)) {
+      plans.set(squadId, 'attack');
+      ctx.battle.objectiveGuards.delete(squadId);
+    }
+  }
+}
+
+/**
+ * add-map-objectives D4: the player taking an objective is public, so the
+ * commander knows what it must retake (and for how long it still counts). It
+ * watches the owners rather than the events: objective capture runs after the
+ * commander in the tick, so the change is seen on the next look.
+ */
+function recordObjectiveLoss(ctx: SimContext, tick: number): void {
+  const owners = ctx.battle.objectiveOwners;
+  for (const objective of ctx.objectives) {
+    if (owners.get(objective.id) === 'legalist' && objective.owner === 'column') {
+      ctx.battle.retake = { objectiveId: objective.id, tick };
+    }
+    owners.set(objective.id, objective.owner);
+  }
 }
 
 export function updateBattleFlow(ctx: SimContext, tick: number, events: SimEvent[]): void {
@@ -623,6 +825,7 @@ export function updateBattleFlow(ctx: SimContext, tick: number, events: SimEvent
     }
   }
   recordContacts(ctx, tick, events);
+  recordObjectiveLoss(ctx, tick);
   if (tick % THINK_EVERY !== 0) return;
   for (const side of SIDES) sweep(ctx, side);
   fallBack(ctx, tick, events);

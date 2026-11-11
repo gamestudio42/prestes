@@ -101,24 +101,31 @@ describe('battle feel: the enemy commander', () => {
     // into a position near its line; the men it has no room for defend at it.
     const garrisoned = [11, 12, 13].filter((squad) => sectionOf(t, squad).some((unit) => unit.garrison !== undefined));
     expect(garrisoned).toHaveLength(1);
+    // add-map-objectives 2.4: one section is sent to the church objective (value 3).
+    const guarding = [11, 12, 13].filter((squad) => t.engine.battle.plans.get(squad) === 'hold-objective');
+    expect(guarding).toHaveLength(1);
     for (const squad of [11, 12, 13]) {
       const section = sectionOf(t, squad);
       expect(section.every((unit) => unit.currentOrder === 'defend' || unit.garrison !== undefined)).toBe(true);
-      // Behind a parapet, in a trench or inside: well above a crouch in the open.
+      // Behind a parapet, in a trench or inside: well above a crouch in the
+      // open. The guard is still walking to the church at this point.
+      if (guarding.includes(squad)) continue;
       expect(section.filter((unit) => unit.cover > 0.45).length).toBeGreaterThanOrEqual(squad === garrisoned[0] ? 4 : 8);
     }
     expect(t.events.some((event) => event.type === 'shot')).toBe(false);
   });
 
-  it('goes looking with all but one section when the player waits', () => {
+  it('goes looking with the sections it can spare when the player waits', () => {
     const t = battle();
     t.run(400);
-    // Under fog he sees no one: the two sections advance on the player's side.
+    // Under fog he sees no one: the section he can spare advances on the
+    // player's side; one holds the church objective and one a position near
+    // the line (add-map-objectives 2.4).
     const going = [11, 12, 13].filter((squad) =>
       sectionOf(t, squad).some((unit) => unit.currentOrder === 'attack' || unit.currentOrder === 'advance'),
     );
-    expect(going).toHaveLength(2);
-    expect([...t.engine.battle.plans.values()].filter((plan) => plan === 'attack')).toHaveLength(2);
+    expect(going).toHaveLength(1);
+    expect([...t.engine.battle.plans.values()].filter((plan) => plan === 'attack')).toHaveLength(1);
   });
 
   it('counts only the player soldiers he knows of (fog of war)', () => {

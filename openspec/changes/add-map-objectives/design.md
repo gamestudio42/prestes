@@ -178,7 +178,28 @@ latest. Goldens re-recorded. No saved data.
   seen as the first of its 1200 (the capture progress convention). Tests in
   `objectives-outcome.test.ts` (7: time limit, all held, loss restarts it,
   draw, broken, annihilation without objectives, the frame clock);
-  simulation 315/315; `pnpm check:determinism` unchanged (the 1000-tick runs
+  simulation 315/315;   `pnpm check:determinism` unchanged (the 1000-tick runs
   end before an objective outcome); eslint clean. Maps without objectives
   keep the annihilation rule and carry no clock.
+- 2.4 (2026-11-10): the commander plays the objectives. `ObjectiveState` carries
+  `flag`; `attackObjective` replaces the deployment-centroid fallback (after
+  the search areas) with the highest-value objective the legalists do not
+  hold (ties nearest, then id), using public ownership only. Guards: each held
+  value-2+ objective gets the nearest idle section, defending at its flag
+  (plan `hold-objective`); a broken guard withdraws and is replaced. Retake:
+  the commander watches owners, not events, because objective capture runs
+  after it in the tick; within 60 s the nearest free section is sent.
+  Last minutes (< 1800 ticks, less value): all attack but one, keeping a
+  garrisoned section if there is one (it cannot be ordered out mid-fight),
+  else the weakest. Reading of the spec: only a free section is sent to
+  retake (a guard or a garrison is not pulled off its job, as the design's
+  "nearest non-garrison section" says). Tests in `objectives-commander.test.ts`
+  (4); two battle-feel commander tests updated (the guard is not held to the
+  line's cover; he can spare one section to search). Simulation 319/319.
+  Seen: the report tests under `tests/simulation` now end `none` at their
+  900 s cap: the default 20-min clock is past the cap and the scripted player
+  does not play the objectives. 4.1 gives the report a limit and the bands.
+- 2.5 (2026-11-10): goldens re-recorded for the commander change (campo-de-provas
+  `b3e2538f`, mixed `9fa6a458`, paiolzinho unchanged); reason logged in
+  `tools/determinism-golden.json`.
 

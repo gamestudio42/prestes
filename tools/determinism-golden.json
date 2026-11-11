@@ -3,11 +3,11 @@
   "ticks": 600,
   "hash": "0ae3084b",
   "battleMaps": {
-    "campo-de-provas": "fbd31189",
+    "campo-de-provas": "b3e2538f",
     "paiolzinho": "42a367fc"
   },
   "mixedRosters": {
-    "campo-de-provas": "aad70c3d"
+    "campo-de-provas": "9fa6a458"
   },
-  "reason": "objectives hashed on maps with objectives (capture state); behaviour unchanged"
+  "reason": "the commander plays the objectives: garrison, attack by value, retake, last minutes (add-map-objectives 2.4)"
 }

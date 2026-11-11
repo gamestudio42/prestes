@@ -8,7 +8,7 @@ import { CAPTURE_TICKS, updateObjectives, type ObjectiveState } from '../src/sys
 const AREA = [{ x: -10, y: -10 }, { x: 10, y: -10 }, { x: 10, y: 10 }, { x: -10, y: 10 }];
 
 function setup(owner: ObjectiveState['owner'] = 'neutral') {
-  const objective: ObjectiveState = { id: 1, owner, progress: { column: 0, legalist: 0 }, contested: false, value: 2, area: AREA };
+  const objective: ObjectiveState = { id: 1, owner, progress: { column: 0, legalist: 0 }, contested: false, value: 2, flag: { x: 0, y: 0 }, area: AREA };
   const man = (id: number, faction: 'column' | 'legalist', x: number) => ({ id, faction, x, y: 0, alive: true, incapacitated: false, routed: false, dummy: false });
   const ctx = { objectives: [objective], units: [man(1, 'column', 50), man(2, 'legalist', 60)] };
   const events: SimEvent[] = [];

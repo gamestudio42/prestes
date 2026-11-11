@@ -10,7 +10,7 @@ import { ALL_HELD_TICKS, type ObjectiveState } from '../src/systems/objectives';
 const AREA = [{ x: -10, y: -10 }, { x: 10, y: -10 }, { x: 10, y: 10 }, { x: -10, y: 10 }];
 
 function objective(id: number, owner: ObjectiveState['owner'], value: number): ObjectiveState {
-  return { id, owner, progress: { column: 0, legalist: 0 }, contested: false, value, area: AREA };
+  return { id, owner, progress: { column: 0, legalist: 0 }, contested: false, value, flag: { x: 0, y: 0 }, area: AREA };
 }
 
 function setup(objectives: ObjectiveState[], timeLimitTicks: number) {

@@ -16,6 +16,8 @@ export interface ObjectiveState {
   progress: { column: number; legalist: number };
   contested: boolean;
   readonly value: number;
+  /** add-map-objectives D4: where the flag stands, the point the commanders send men to. */
+  readonly flag: Vec2;
   readonly area: readonly Vec2[];
 }
 
@@ -27,6 +29,7 @@ export function createObjectives(map: BattleMap | null): ObjectiveState[] {
     progress: { column: 0, legalist: 0 },
     contested: false,
     value: objective.value,
+    flag: { x: objective.flag.x, y: objective.flag.y },
     area: objective.area,
   }));
 }
