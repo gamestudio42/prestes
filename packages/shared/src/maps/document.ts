@@ -21,7 +21,7 @@ import { defaultDeploymentArea, sectionStartsFromArea } from './deployment-areas
 import { smoothCentreline } from './water-outline';
 import { detectWallYards, type YardWall } from './wall-yards';
 import type { Roster } from '../sections';
-import { DEFAULT_MAP_LIGHT, MAP_LIGHT_TIME, type BattleMap, type DeploymentZone, type HeightShape, type LocalizedText, type MapLight, type MapLine, type PropPlacement, type WaterArea } from './types';
+import { DEFAULT_MAP_LIGHT, MAP_LIGHT_TIME, type BattleMap, type DeploymentZone, type HeightShape, type LocalizedText, type MapLight, type Objective, type MapLine, type PropPlacement, type WaterArea } from './types';
 
 /**
  * The map editor's document (add-map-editor): raster layers (heights, paint,
@@ -32,7 +32,7 @@ import { DEFAULT_MAP_LIGHT, MAP_LIGHT_TIME, type BattleMap, type DeploymentZone,
  */
 
 export const MAP_DOCUMENT_FORMAT = 'prestes-map';
-export const MAP_DOCUMENT_VERSION = 4;
+export const MAP_DOCUMENT_VERSION = 5;
 
 /** Heights the editor allows (m). */
 export const MIN_HEIGHT = -12;
@@ -150,6 +150,8 @@ interface MapDocumentBody {
    * brings a roster (pre-battle-roster 2.3); absent = the default roster.
    */
   enemyForces?: Roster[];
+  /** add-map-objectives 1.3: regions to take and hold; absent = none. */
+  objectives?: Objective[];
   setting: { label: SettingLabel; sourceNote: string };
   codexKey?: string;
   palette: MapPalette;
@@ -310,6 +312,14 @@ const isPoints = (value: unknown, min: number): value is Vec2[] => Array.isArray
 const isText = (value: unknown): value is LocalizedText => isObject(value) && isString(value.en) && isString(value['pt-BR']);
 const isRaster = (value: unknown): value is EncodedRaster =>
   isObject(value) && value.encoding === 'rle-base64' && (value.type === 'i16' || value.type === 'u8') && isNumber(value.length) && isString(value.data);
+const isObjective = (value: unknown): value is Objective =>
+  isObject(value) &&
+  isNumber(value.id) &&
+  isText(value.name) &&
+  isPoints(value.area, 3) &&
+  isPoint(value.flag) &&
+  isNumber(value.value) &&
+  (value.owner === 'neutral' || value.owner === 'column' || value.owner === 'legalist');
 const isZone = (value: unknown): value is DeploymentZone => isObject(value) && isPoints(value.sections, 1) && isPoint(value.facing) && isPoints(value.area, 3);
 
 /**
@@ -324,12 +334,16 @@ const isZone = (value: unknown): value is DeploymentZone => isObject(value) && i
  *
  * 3 -> 4 (author-game-maps): `mission`, `light` and `enemyForces` are new
  * and optional; the document is only relabelled.
+ *
+ * 4 -> 5 (add-map-objectives): `objectives` is new and optional; a version 4
+ * map opens with none.
  */
 function migrate(document: Record<string, unknown>): Record<string, unknown> {
   let doc = document;
   if (doc.version === 1) doc = migrateV1(doc);
   if (doc.version === 2) doc = migrateV2(doc);
   if (doc.version === 3) doc = { ...doc, version: 4 };
+  if (doc.version === 4) doc = { ...doc, version: 5 };
   return doc;
 }
 
@@ -402,6 +416,7 @@ export function parseMapDocument(value: unknown): ParseResult {
   if (doc.mission !== undefined && !isString(doc.mission)) return fail('mission');
   if (doc.light !== undefined && !(isObject(doc.light) && isNumber(doc.light.time) && isNumber(doc.light.bearing))) return fail('light');
   if (doc.enemyForces !== undefined && !(Array.isArray(doc.enemyForces) && doc.enemyForces.every((roster) => isObject(roster) && Array.isArray(roster.sections) && roster.sections.every(isString)))) return fail('enemyForces');
+  if (doc.objectives !== undefined && !(Array.isArray(doc.objectives) && doc.objectives.every(isObjective))) return fail('objectives');
   if (!isObject(doc.setting) || !isString(doc.setting.label) || !isString(doc.setting.sourceNote)) return fail('setting');
   if (!['training-ground', 'historical-setting-fictional-place', 'reconstructed-historical-place'].includes(doc.setting.label)) return fail('setting');
   if (!['temperate', 'cerrado', 'caatinga', 'urban'].includes(doc.palette as string)) return fail('palette');
@@ -1029,6 +1044,18 @@ export function compileMapDocument(source: EditableMap | MapDocument): BattleMap
     palette: map.palette,
     light: mapLight(map.light),
     ...(map.enemyForces && map.enemyForces.length > 0 ? { enemyForces: map.enemyForces.map((roster) => ({ sections: [...roster.sections] })) } : {}),
+    ...(map.objectives && map.objectives.length > 0
+      ? {
+          objectives: map.objectives.map((objective) => ({
+            id: objective.id,
+            name: { ...objective.name },
+            area: objective.area.map((point) => ({ x: point.x, y: point.y })),
+            flag: { x: objective.flag.x, y: objective.flag.y },
+            value: Math.max(1, Math.min(3, Math.round(objective.value))),
+            owner: objective.owner,
+          })),
+        }
+      : {}),
   };
   noteCoverPieces(compiled, coverPieces);
   return compiled;

@@ -93,14 +93,14 @@ describe('map document', () => {
   // author-game-maps 1.1: mission slot, the test map's use, the time of day.
   it('a new map lights at midday from the north-east; a version 3 file loads with the defaults', () => {
     const document = toMapDocument(flat());
-    expect(document.version).toBe(4);
+    expect(document.version).toBe(5);
     expect(document.light).toEqual({ time: 12, bearing: 45 });
     const older: Partial<typeof document> = { ...document };
     delete older.light;
     const parsed = parseMapDocument({ ...older, version: 3 });
     expect(parsed.ok).toBe(true);
     if (!parsed.ok) return;
-    expect(parsed.document.version).toBe(4);
+    expect(parsed.document.version).toBe(5);
     expect(parsed.document.mission).toBeUndefined();
     expect(compileMapDocument(parsed.document).light).toEqual({ time: 12, bearing: 45 });
   });
