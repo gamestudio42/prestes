@@ -226,6 +226,28 @@ removes the resolved rows and keeps the open ones.
 - [ ] Which parts of the campaign book are read before the mission and which
       are read in the debrief?
 
+## Forces (`docs/history/FORCES.md`)
+
+- [x] Did the police fight for the government? Yes: the state militias (each
+      state's police and army at once) outnumbered the federal army in 1925,
+      and several fought the column; in São Paulo in July 1924 the state
+      militia split between the two sides. Macaulay, pp. 9–10, 19, 24, 71, 90.
+- [ ] What were the state forces called in Portuguese at the time, beyond the
+      Brigada Militar of Rio Grande do Sul (Macaulay, p. 48)? The São Paulo
+      force above all. Macaulay gives them in English as "state militia".
+- [ ] What were the gaúcho provisionals and the federal light infantry called
+      in Portuguese ("provisórios", "corpos provisórios", "caçadores")? Needs
+      a Portuguese-language source.
+- [ ] What did the federal army and each state militia wear in 1924–1927?
+      Macaulay describes only the gaúcho rebels' dress (pp. 44, 52) and says
+      one Patriotic Battalion was issued federal uniforms (p. 189).
+- [ ] How was a platoon or section of federal infantry or of a state militia
+      made up? Macaulay gives units and totals, not small-unit tables; the
+      game's section types for them are a game organization until a source
+      says otherwise.
+- [ ] How strong was a typical Patriotic Battalion, and how was it armed
+      beyond the one recorded shipment (Macaulay, p. 205)?
+
 ## Compendium and images
 
 - [ ] Which public-domain historical photos are available, and where?

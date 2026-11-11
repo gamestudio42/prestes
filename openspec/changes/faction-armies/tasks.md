@@ -1,8 +1,11 @@
 ## 1. Research and the catalog
 
-- [ ] 1.1 Read Macaulay for the government's forces and the column's organisation, phase by phase; write `docs/history/FORCES.md` (force, period name, phase and region, arms, source key and page, confidence) and register any new source in `SOURCES.md`; verify: every row has a source key and a page or chapter, and `pnpm check:content` passes
-- [ ] 1.2 Answer in `FORCES.md` whether and where the state police forces fought on the government's side and on the rebels', with pages; move what stays unconfirmed to `docs/campaign/open-questions.md`; verify: the owner's question of 2026-11-11 has a sourced answer or an open question, not a guess
+- [x] 1.1 Read Macaulay for the government's forces and the column's organisation, phase by phase; write `docs/history/FORCES.md` (force, period name, phase and region, arms, source key and page, confidence) and register any new source in `SOURCES.md`; verify: every row has a source key and a page or chapter, and `pnpm check:content` passes
+  - Apply note (2026-11-11): `docs/history/FORCES.md` written from Macaulay alone (text layer; pages checked against the running heads, not against the page images). No new source: `SOURCES.md` is unchanged. Blanc and the regional studies were not read. `pnpm check:content` passes.
+- [x] 1.2 Answer in `FORCES.md` whether and where the state police forces fought on the government's side and on the rebels', with pages; move what stays unconfirmed to `docs/campaign/open-questions.md`; verify: the owner's question of 2026-11-11 has a sourced answer or an open question, not a guess
+  - Apply note (2026-11-11): answered in `FORCES.md` ("Did the police fight for the government?", pp. 9–10, 19, 24, 71, 90) and ticked in `open-questions.md`; five questions the source does not settle (Portuguese names of the state forces and of the provisionals, uniforms, small-unit make-up, the strength of a Patriotic Battalion) are logged there.
 - [ ] 1.3 Propose the catalog: a table of section types per army (name, men, weapons, values, sourced or game organization) and the reviewed names of the present types; verify: the owner approves the table, and the approval is recorded in `docs/status.md`
+  - Apply note (2026-11-11): the table is in `catalog-proposal.md` in this change, awaiting the owner; the task stays open until he answers its five questions.
 - [ ] 1.4 Write the `force-roster` deltas ("Section types", "Skirmish setup screen") from the approved table with the `openspec-update-change` workflow; verify: `openspec validate faction-armies --type change --strict`
 
 ## 2. Data

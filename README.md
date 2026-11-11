@@ -90,6 +90,7 @@ supplies social and interior history. See:
 - [`docs/history/TIMELINE.md`](docs/history/TIMELINE.md)
 - [`docs/history/FIGURES.md`](docs/history/FIGURES.md)
 - [`docs/history/WEAPONS.md`](docs/history/WEAPONS.md)
+- [`docs/history/FORCES.md`](docs/history/FORCES.md)
 - [`docs/history/CHAPTER_SOURCES.md`](docs/history/CHAPTER_SOURCES.md)
 - [`docs/history/MACAULAY_NOTES.md`](docs/history/MACAULAY_NOTES.md)
 
