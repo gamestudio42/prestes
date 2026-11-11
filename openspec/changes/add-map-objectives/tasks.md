@@ -1,6 +1,8 @@
 ## 0. Prerequisites
 
-- [ ] 0.1 Archive `add-battle-maps` and `add-deployment-phase` (verify: `openspec validate --specs`)
+- [x] 0.1 Archive `add-battle-maps` and `add-deployment-phase` (verify: `openspec validate --specs`)
+  - Apply note (2026-11-10): both were already archived (2026-11-08-add-battle-maps, 2026-11-09-add-deployment-phase); `openspec validate --specs` 23/23.
+  - Plan is stale (2026-11-10): proposal, design, tasks and specs name the removed hand-written maps (Vila Militar, Fazenda, Serra e Rio, Bairro, the engenho) 31 times; author-game-maps (archived 2026-11-10) made every battle map an authored document and `campo-de-provas` the default. Before 1.1, revise the plan (openspec-update-change): objectives come from map documents (1.3 becomes the data source, 1.1 the type only), the test map carries the first objectives, tests and the battle report run on it, and the 4.1 bands cover the test map presets A-C (A and C stand off at 900 s without objectives).
 
 ## 1. Data
 
