@@ -12,6 +12,8 @@ export type {
   OrderKind,
   OrderPath,
   Outcome,
+  DecidedBy,
+  ObjectiveSnapshot,
   MoraleState,
   Posture,
   FireControl,
@@ -35,7 +37,7 @@ export type {
   WorkerRequest,
   WorkerResponse,
 } from './protocol';
-export { shotShown } from './protocol';
+export { shotShown, DEFAULT_TIME_LIMIT, TIME_LIMITS } from './protocol';
 export { ClientMirror, type InterpolatedFrame } from './mirror';
 
 export {

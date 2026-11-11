@@ -17,7 +17,8 @@
 
 ## 2. Simulation
 
-- [ ] 2.1 Protocol: start request `timeLimitTicks`; frame `objectives` and `clock`; events `objective_taken`, `objective_contested`; `Outcome` gains `draw` (verify: typecheck; host test)
+- [x] 2.1 Protocol: start request `timeLimitTicks`; frame `objectives` and `clock`; events `objective_taken`, `objective_contested`; `Outcome` gains `draw` (verify: typecheck; host test)
+  - Apply note (2026-11-10): packages/shared/src/protocol.ts: `Outcome` gains 'draw'; `DecidedBy`; `TIME_LIMITS` [9000, 12000, 18000] and `DEFAULT_TIME_LIMIT` 12000 (exported); `ObjectiveSnapshot` {id, owner, progress {column, legalist}, contested}; Frame `objectives?` and `clock?` {tick, limit}; the outcome event gains optional `decidedBy` and `values`; events `objective_taken` {id, side} and `objective_contested` {id}; start request `timeLimitTicks?`, passed by worker-host (10th factory argument) and sim.worker into `SimulationOptions.timeLimitTicks` (stored nowhere yet; 2.3 uses it). battle-report outcome type gains 'draw'. Test packages/simulation/test/objectives-protocol.test.ts (2/2). Seen: SandboxPanel's outcome label has no draw case yet (3.4).
 - [ ] 2.2 Capture system with presence, progress, contest and decay; hashed state (verify: tests "taking the bridge", "contested", "held without staying"; determinism test)
 - [ ] 2.3 Clock and outcome order with `decidedBy` and the objective summary in the end event (verify: tests "time runs out", "all objectives held", "draw")
 - [ ] 2.4 Commander goals: garrison value ≥ 2, attack by value, retake within 60 s, last-minutes push (verify: tests "retake" and "last minutes"; fog test that the commander does not target unseen men)

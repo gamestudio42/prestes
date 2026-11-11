@@ -22,6 +22,7 @@ export function createSimulationHost(
     battleMap?: BattleMapId,
     rosters?: BattleRosters,
     deployment?: boolean,
+    timeLimitTicks?: number,
   ) => SimulationEngine,
   port: PortLike,
 ): SimulationHost {
@@ -54,6 +55,7 @@ export function createSimulationHost(
           message.battleMap,
           rosters,
           message.deployment,
+          message.timeLimitTicks,
         );
         // The game never reads the state hash: frames to it go without one.
         port.postMessage({ type: 'ready', frame: engine.frame(GAME_FRAME) });

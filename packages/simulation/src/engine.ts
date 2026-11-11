@@ -133,6 +133,8 @@ export interface SimulationOptions {
    * untouched deployment equals a battle without one.
    */
   enemyDeployment?: boolean;
+  /** add-map-objectives: the battle's time limit in ticks; absent, DEFAULT_TIME_LIMIT (used from 2.3). */
+  timeLimitTicks?: number;
 }
 
 /** pre-battle-roster 3.2: the weapon a rostered battle names for a soldier (others carry the default). */

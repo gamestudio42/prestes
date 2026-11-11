@@ -14,7 +14,7 @@ export interface BattleReport {
   seed: number;
   /** Simulated seconds until the outcome (or the cap). */
   seconds: number;
-  outcome: 'victory' | 'defeat' | 'none';
+  outcome: 'victory' | 'defeat' | 'draw' | 'none';
   shots: number;
   casualties: { column: number; legalist: number };
   shotsPerCasualty: number;

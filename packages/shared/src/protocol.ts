@@ -115,7 +115,23 @@ export type Posture = 'balanced' | 'aggressive' | 'defensive' | 'protect-officer
 /** A section's fire control. */
 export type FireControl = 'free' | 'contact' | 'hold';
 
-export type Outcome = 'playing' | 'victory' | 'defeat';
+export type Outcome = 'playing' | 'victory' | 'defeat' | 'draw';
+
+/** add-map-objectives: how a battle was decided. */
+export type DecidedBy = 'annihilation' | 'broken' | 'all-objectives' | 'objectives' | 'draw';
+
+/** add-map-objectives: the battle's time limits (ticks at 10 a second): 15, 20 and 30 minutes. */
+export const TIME_LIMITS = [9000, 12000, 18000] as const;
+export const DEFAULT_TIME_LIMIT = 12000;
+
+/** add-map-objectives: an objective's state in the frame. */
+export interface ObjectiveSnapshot {
+  id: number;
+  owner: 'neutral' | 'column' | 'legalist';
+  /** Capture progress of each side, 0-100 ticks. */
+  progress: { column: number; legalist: number };
+  contested: boolean;
+}
 
 export type UnitRole = 'training-enemy';
 
@@ -351,7 +367,18 @@ export type SimEvent =
   | { type: 'unit_recovered'; tick: number; unitId: number }
   | { type: 'recon_report'; tick: number; unitId: number; enemyIds: number[] }
   | { type: 'order_interrupted'; tick: number; unitId: number; order: UnitOrder }
-  | { type: 'outcome'; tick: number; outcome: Outcome }
+  | {
+      type: 'outcome';
+      tick: number;
+      outcome: Outcome;
+      /** add-map-objectives: how it was decided, and each side's objective value at the end (battles with objectives). */
+      decidedBy?: DecidedBy;
+      values?: { column: number; legalist: number };
+    }
+  /** add-map-objectives: a side took an objective. */
+  | { type: 'objective_taken'; tick: number; id: number; side: 'column' | 'legalist' }
+  /** add-map-objectives: the first tick both sides stand in an objective. */
+  | { type: 'objective_contested'; tick: number; id: number }
   /**
    * refine-battle-maps: a broken side (under a fifth of its strength, no
    * contact for 60 s) falls back off the field; its fit men rout.
@@ -399,6 +426,10 @@ export interface Frame {
   garrisons?: readonly GarrisonSnapshot[];
   /** garrison-and-assault: the close fights under way, for the bars. */
   assaults?: readonly AssaultSnapshot[];
+  /** add-map-objectives: the objectives' owners and capture (maps with objectives). */
+  objectives?: readonly ObjectiveSnapshot[];
+  /** add-map-objectives: the battle clock: ticks since the battle started, and the limit. */
+  clock?: { tick: number; limit: number };
 }
 
 /** garrison-and-assault: a position and the men inside it. */
@@ -461,6 +492,8 @@ export type WorkerRequest =
       rosters?: BattleRosters;
       /** add-deployment-phase: open in the deployment phase (skirmishes); absent, the battle starts at once. */
       deployment?: boolean;
+      /** add-map-objectives: the battle's time limit (one of TIME_LIMITS); absent, DEFAULT_TIME_LIMIT. */
+      timeLimitTicks?: number;
     }
   | { type: 'command'; command: Command }
   | { type: 'step'; ticks: number };
