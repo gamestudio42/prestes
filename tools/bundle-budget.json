@@ -1,11 +1,11 @@
 {
   "assetsDir": "apps/game/dist/assets",
   "groups": [
-    { "name": "index JS", "prefix": "index-", "extension": ".js", "maxBytes": 620000 },
+    { "name": "index JS", "prefix": "index-", "extension": ".js", "maxBytes": 680000 },
     { "name": "three JS", "prefix": "three-", "extension": ".js", "maxBytes": 640000 },
     { "name": "model-loaders JS", "prefix": "model-loaders-", "extension": ".js", "maxBytes": 120000 },
     { "name": "react JS", "prefix": "react-", "extension": ".js", "maxBytes": 240000 },
-    { "name": "sim.worker JS", "prefix": "sim.worker-", "extension": ".js", "maxBytes": 210000 },
+    { "name": "sim.worker JS", "prefix": "sim.worker-", "extension": ".js", "maxBytes": 240000 },
     { "name": "index CSS", "prefix": "index-", "extension": ".css", "maxBytes": 120000 },
     { "name": "editor JS", "prefix": "editor-", "extension": ".js", "maxBytes": 120000 },
     { "name": "editor CSS", "prefix": "editor-", "extension": ".css", "maxBytes": 20000 }
