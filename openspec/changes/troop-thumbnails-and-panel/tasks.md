@@ -1,3 +1,7 @@
+## 0. Before starting
+
+- [ ] 0.1 Read `docs/handoff.md`, then this change's proposal, design and specs. Prerequisites: `faction-armies` section 2 for the full type list and `soldier-animation-and-textures` section 3 for the final uniforms; the tool (1.1, 1.2) and the panel (section 3) can be built before them and the thumbnails re-run after; verify: `docs/handoff.md` records which prerequisites were in place when the work started
+
 ## 1. Thumbnails
 
 - [ ] 1.1 Section render in `packages/view3d/src/thumbnails.ts`: a type's men in the army's uniform with their weapons, fixed camera and light; verify with a view test that a rifle section and a machine-gun section produce different pictures and that the gun's model is in the scene

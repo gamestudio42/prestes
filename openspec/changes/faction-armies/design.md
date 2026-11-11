@@ -60,9 +60,14 @@ simulation already has: starting morale, suppression resistance, accuracy,
 ammunition carried, speed factor, whether the section holds a formation.
 No new system is added for an army.
 
-**D5. Map document version.** Enemy presets gain an army per section in a
-new document version; the loader maps older presets to legalist regulars.
-Follows the versioning already used for v2 to v4.
+**D5. Map document version, with no new field.** A section type belongs
+to one army, so a roster's section ids already say which army each section
+is; enemy presets stay lists of ids. Document version 6 only migrates the
+ids of presets saved before this change through the successor table (D6).
+An `army` field per preset section was the first idea and was dropped as
+redundant. The column's seven present ids are kept for the column's types,
+so its saved rosters and the code that names them do not move; the enemy
+armies get new ids.
 
 **D6. Stored rosters.** A roster saved by the setup screen is migrated on
 read by section type id through a successor table (comando → Comando do

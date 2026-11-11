@@ -1,3 +1,7 @@
+## 0. Before starting
+
+- [ ] 0.1 On hold by the owner's word (2026-11-11): do not start until he asks. Then read `docs/handoff.md` and this change's proposal, design and spec, and re-check the page list against the game as it is that day; verify: the owner's go-ahead is recorded in `docs/status.md`
+
 ## 1. Content
 
 - [ ] 1.1 `packages/content/src/manual.ts`: the `MANUAL_PAGES` registry (twelve pages: ids, title and paragraph keys, orders, see-also compendium ids), exported from the package index; verify with a unit test that the ids are unique, the order is the spec's and every see-also id is a compendium entry

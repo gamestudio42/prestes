@@ -1,3 +1,7 @@
+## 0. Before starting
+
+- [ ] 0.1 Read `docs/handoff.md`, then this change's proposal, design and specs. Prerequisites: ffmpeg on the machine (as `tools/optimize-gramophone.ts` needs); keep the game muted (`prestes.audio.v1`) in the preview pane unless the task is to listen; the voice lines (5.1) wait for the forms of address in `docs/history/FORCES.md` and for the owner's review of the text; verify: `pnpm optimize:music` still runs
+
 ## 1. Mixer and the nearness rule
 
 - [ ] 1.1 A mixer with effects, ambience and voices buses under a master, the ducking side-chain, and the shot audio moved onto effects; verify with unit tests on a fake output that shots still play as before and that a priority voice lowers the other buses and releases within 1 s

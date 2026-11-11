@@ -20,20 +20,21 @@ are written in the campaign book, none playable; there is no save/load.
 | Change | State | What is left |
 | --- | --- | --- |
 | `polish-menu-desk` | 31/35 | the owner's Aseprite redraws: both closed books, the reference pile, the gramophone |
-| `add-field-manual` | proposed 2026-11-11, 0/10, on hold (the owner: not yet) | a Manual part in the book "A Coluna Prestes", twelve text pages; replaces the dropped `video-tutorial-manual` |
+| `add-field-manual` | proposed 2026-11-11, 0/11, on hold (the owner: not yet) | a Manual part in the book "A Coluna Prestes", twelve text pages; replaces the dropped `video-tutorial-manual` |
 | campaign maps | the owner's hand work | each campaign map is drawn by the owner in the editor, as the skirmish maps are; missions follow the maps |
 
-Planned on 2026-11-11 at the owner's request (proposals only, nothing
-applied), in the order they should land:
+Planned on 2026-11-11 at the owner's request, in the order they should
+land. No game code is applied yet; [`handoff.md`](handoff.md) says where to
+start, the rules and what each change decided:
 
 | Order | Change | Tasks | Lands |
 | --- | --- | --- | --- |
-| 1 | `faction-armies` | 4/15: research and the catalog done, approved by the owner 2026-11-11 (`catalog-proposal.md`); data and code not started | three armies (the Column, the legalist regulars, the patriotic battalions), period names for armies and sections, section types per army; starts with research into `docs/history/FORCES.md`, which also answers whether the police fought for the government |
-| 2 | `soldier-animation-and-textures` | 15 | wound, carry and death clips, the crouch-walk and aim redone, blends, drawn uniform textures per army with variants |
-| 3 | `troop-thumbnails-and-panel` | 14 | a rendered thumbnail for every section type (roster, cards, panel), roster type cards, the troop panel redrawn as rows, gauges and alerts |
-| 4 | `biome-trees-and-plants` | 17 | the whole Refloreste tree suite by biome adapted to Prestes, bush families, more cacti and caatinga plants |
-| 5 | `revise-buildings-and-stone` | 18 | every building modelled with openings that agree with the battle, new buildings, variants, rock kinds and built stone |
-| any time | `ambient-sound-and-voices` | 18 | the listening point, ambient beds, river/stream/pond, footsteps by ground, the commander's orders and the sections' answers (always clear), call-outs; the owner records the speech from a generated script |
+| 1 | `faction-armies` | 4/18: research and the catalog done, approved by the owner 2026-11-11 (`catalog-proposal.md`); data and code not started | three armies (the Column, the legalist regulars, the patriotic battalions), period names for armies and sections, section types per army; starts with research into `docs/history/FORCES.md`, which also answers whether the police fought for the government |
+| 2 | `soldier-animation-and-textures` | 16 | wound, carry and death clips, the crouch-walk and aim redone, blends, drawn uniform textures per army with variants |
+| 3 | `troop-thumbnails-and-panel` | 15 | a rendered thumbnail for every section type (roster, cards, panel), roster type cards, the troop panel redrawn as rows, gauges and alerts |
+| 4 | `biome-trees-and-plants` | 18 | the whole Refloreste tree suite by biome adapted to Prestes, bush families, more cacti and caatinga plants |
+| 5 | `revise-buildings-and-stone` | 19 | every building modelled with openings that agree with the battle, new buildings, variants, rock kinds and built stone |
+| any time | `ambient-sound-and-voices` | 19 | the listening point, ambient beds, river/stream/pond, footsteps by ground, the commander's orders and the sections' answers (always clear), call-outs; the owner records the speech from a generated script |
 
 Why this order: uniforms and thumbnails need the armies; thumbnails need
 the uniforms. Trees and buildings are independent of those and of each
@@ -49,6 +50,12 @@ Decisions of 2026-11-11 (the owner):
   code it meant to delete (`training-ground.ts`, `training-layer.ts`, the
   `training_phase` and `despawn_role` commands) is still in the tree.
 - `machine-gun-fire-feedback` passed the hand check and is archived.
+- The armies' catalog (`faction-armies` 1.3): the three army names stand
+  (Coluna Prestes, Forças legalistas, Batalhões patrióticos); Fogão and
+  Potreada for the column; only the Brigada Militar among the state forces;
+  cangaceiros in as a dramatized type, hollow-nosed bullets out; no
+  ammunition handicap for the column until a difficulty selector exists.
+- Section thumbnails are rendered from the 3D model, not hand-drawn.
 - Campaign and skirmish maps are authored by the owner by hand in the
   editor; no map is generated or hand-written in code.
 - Large files are split when a change touches them, not in a refactor of

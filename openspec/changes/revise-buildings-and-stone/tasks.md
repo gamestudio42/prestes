@@ -1,3 +1,7 @@
+## 0. Before starting
+
+- [ ] 0.1 Read `docs/handoff.md`, then this change's proposal, design and spec. Prerequisites: Blender for `art-src/blender/target_buildings.py`; the present buildings' openings must not move (goldens), so run `pnpm check:determinism` first as the baseline; verify: the baseline hashes are noted under this task
+
 ## 1. Choices
 
 - [ ] 1.1 Candidate list of new buildings (rural, town, military), each with a source or "generic period type", and of rock kinds with the regions they stand for; verify: the owner approves the lists, recorded in `docs/status.md`

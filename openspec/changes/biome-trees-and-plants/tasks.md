@@ -1,3 +1,7 @@
+## 0. Before starting
+
+- [ ] 0.1 Read `docs/handoff.md`, then this change's proposal, design and spec. Prerequisites: the Refloreste project on disk at `C:/projetos/Refloreste` (or `REFLORESTE` set) and Blender for `art-src/blender/target_trees.py`; never paint in the editor inside the shared preview pane (its autosave overwrites the owner's maps); verify: the tree target reproduces the present five trees before any change
+
 ## 1. Inventory and budgets
 
 - [ ] 1.1 List every Refloreste species with its adult, flowering and dead models, real height range and biome, and the candidate caatinga plants; verify: the owner confirms the list (species, forms, caatinga plants), recorded in `docs/status.md`

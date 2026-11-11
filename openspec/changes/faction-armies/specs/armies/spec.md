@@ -65,11 +65,13 @@ army SHALL be refused.
 
 ### Requirement: Enemy presets name their armies
 
-A battle map's enemy presets SHALL name the army of each section, and a
+Every section of a battle map's enemy preset SHALL be a section type of an
+enemy army, so the preset says which army each section belongs to, and a
 preset MAY mix the legalist regulars and the patriotic battalions. A map
 saved before armies existed SHALL load with its enemy sections as legalist
-regulars, mapped to that army's nearest type, and the map check SHALL report
-a preset that names an unknown army or a type outside its army.
+regulars, each mapped to that army's successor of its old type, and the map
+check SHALL report a preset holding an unknown section type or a type of
+the Column.
 
 #### Scenario: A mixed enemy
 - **WHEN** a preset holds two regular sections and one patriotic battalion section
