@@ -13,5 +13,5 @@ The 3v3 SHALL end in victory when every enemy soldier is dead, incapacitated or 
 - **THEN** a new 3v3 battle starts with all 66 soldiers on the same map and time limit
 
 #### Scenario: Decided on objectives
-- **WHEN** the clock runs out on the Fazenda with the column holding more value
+- **WHEN** the clock runs out on the test map with the column holding more value
 - **THEN** the battle ends in victory and the panel lists the objectives and values

@@ -2,21 +2,22 @@
 
 ### Requirement: Objectives on every battle map
 
-Each battle map SHALL define 3 to 5 objectives (the Vila Militar field 2),
-each with an id, a localized name (PT-BR and EN), an area (a circle of 12 to
-30 m or a polygon), a flag point inside it, a value of 1 to 3 and an initial
-owner: neutral, or the side whose deployment zone is nearer when it lies
-within 60 m of that zone. Objectives SHALL be data shared by the simulation
-and the view, and the content check SHALL verify that every objective is
-reachable from both zones and does not overlap another.
+Each skirmish and test map SHALL define 3 to 5 objectives in its map
+document, each with an id, a localized name (PT-BR and EN), an area (a
+circle of 12 to 30 m or a polygon), a flag point inside it, a value of 1 to
+3 and an initial owner: neutral, or the side whose deployment area is
+nearer when it lies within 60 m of that area. Objectives SHALL be data
+shared by the simulation and the view, and the map check SHALL verify that
+every objective is reachable from both deployment areas and does not
+overlap another.
 
-#### Scenario: Fazenda objectives
-- **WHEN** the Fazenda is loaded
-- **THEN** it has objectives at the casa-sede, the engenho, the road crossing and the central trench, with their values and owners
+#### Scenario: Test map objectives
+- **WHEN** the test map (`campo-de-provas`) is loaded
+- **THEN** it has objectives at the bridge, the ford, the church, the fire trench and the houses, with their values and owners
 
 #### Scenario: Content check
 - **WHEN** an objective is placed in deep water
-- **THEN** the content check reports it unreachable
+- **THEN** the map check reports it unreachable
 
 ### Requirement: Capture and hold
 
@@ -27,8 +28,8 @@ owner. An objective SHALL keep its owner when its holders leave, until the
 enemy takes it. Routed, incapacitated and garrisoned-elsewhere soldiers SHALL
 NOT count. Capture SHALL be deterministic.
 
-#### Scenario: Taking the engenho
-- **WHEN** a column section stands in the engenho objective for 10 s with no legalist inside
+#### Scenario: Taking the bridge
+- **WHEN** a column section stands in the bridge objective for 10 s with no legalist inside
 - **THEN** the objective's owner becomes the column
 
 #### Scenario: Contested
@@ -53,7 +54,7 @@ SHALL show each objective's owner and each side's value, and how the battle
 was decided.
 
 #### Scenario: Objectives shown before the battle
-- **WHEN** the player chooses the Fazenda on the setup screen
+- **WHEN** the player chooses the test map on the setup screen
 - **THEN** the screen lists its objectives with their values and initial owners and marks them on the preview
 
 #### Scenario: Time runs out
