@@ -52,10 +52,12 @@ export interface GameCanvasProps {
   onCameraAction?: (kind: 'pan' | 'zoom' | 'rotate') => void;
   onBandChange: (band: CameraBand) => void;
   onSelectUnits: (unitIds: number[], mode: SelectionMode) => void;
-  onPrimaryUnit: (unitId: number) => void;
-  onPrimaryGround: (point: Vec2, facing?: Vec2) => void;
-  onQuickUnit: (unitId: number) => void;
-  onQuickGround: (point: Vec2, facing?: Vec2) => void;
+  onPrimaryUnit: (unitId: number, queue?: boolean) => void;
+  /** refine-battle-controls: hands the scene to the app so the HUD can focus it. */
+  onSceneReady?: (scene: SceneView | null) => void;
+  onPrimaryGround: (point: Vec2, facing?: Vec2, queue?: boolean) => void;
+  onQuickUnit: (unitId: number, queue?: boolean) => void;
+  onQuickGround: (point: Vec2, facing?: Vec2, queue?: boolean) => void;
   onPrimaryLine: (from: Vec2, to: Vec2) => void;
   onQuickLine: (from: Vec2, to: Vec2) => void;
   onPreviewLine: (line: { from: Vec2; to: Vec2 } | null) => void;
@@ -114,6 +116,7 @@ export function GameCanvas({
   onQuickGround,
   onPrimaryLine,
   onQuickLine,
+  onSceneReady,
   onPreviewLine,
   onPreviewFacing,
   onPreviewGround,
@@ -158,6 +161,7 @@ export function GameCanvas({
     });
     scene.setTrainingMarkers(trainingMarkers);
     sceneRef.current = scene;
+    onSceneReady?.(scene);
     scene.setPostStrong(true);
     if (import.meta.env.DEV) {
       // Playwright hovers world points through this dev-only hook.
@@ -207,6 +211,7 @@ export function GameCanvas({
       cancelAnimationFrame(frameHandle);
       scene.dispose();
       sceneRef.current = null;
+      onSceneReady?.(null);
     };
   }, [client, trainingField, strategicField]);
 
@@ -317,7 +322,7 @@ export function GameCanvas({
       return;
     }
     if (unitId !== null) {
-      onQuickUnit(unitId);
+      onQuickUnit(unitId, event.shiftKey);
       return;
     }
     event.currentTarget.setPointerCapture?.(event.pointerId);
@@ -448,7 +453,7 @@ export function GameCanvas({
           onQuickGround(from, dragFacing(from, to));
         }
       } else if (to) {
-        onQuickGround(to);
+        onQuickGround(to, undefined, activeRightDrag.shift);
       }
       onPreviewLine(null);
       clearFacing();
@@ -468,7 +473,7 @@ export function GameCanvas({
         if (shift && lineMoveArmed) {
           onPrimaryLine(from, to);
         } else {
-          onPrimaryGround(from, dragFacing(from, to));
+          onPrimaryGround(from, dragFacing(from, to), shift);
         }
       }
       onPreviewLine(null);
@@ -484,11 +489,11 @@ export function GameCanvas({
     } else {
       const unitId = orderPick(scene, x, y);
       if (unitId !== null) {
-        onPrimaryUnit(unitId);
+        onPrimaryUnit(unitId, shift);
       } else if (pendingAction || aimPending) {
         const point = scene.screenToGround(x, y);
         if (point) {
-          onPrimaryGround(point);
+          onPrimaryGround(point, undefined, shift);
         }
       }
     }

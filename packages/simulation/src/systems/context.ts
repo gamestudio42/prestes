@@ -1,6 +1,7 @@
 import type { RNG } from '@prestes/kernel';
 import type {
   BattleMap,
+  Command,
   CommandEnvelope,
   CoverPoint,
   Outcome,
@@ -46,6 +47,8 @@ export interface SimContext {
   nextUnitId: number;
   nextSquadId: number;
   readonly orderManager: OrderManager;
+  /** refine-battle-controls: the orders each section queued with Shift, oldest first. */
+  readonly orderQueues: Map<number, Command[]>;
   readonly bounding: Map<number, BoundingGroup>;
   /** The 3v3 battle's commander plans and each section's last contact. */
   readonly battle: BattleMemory;

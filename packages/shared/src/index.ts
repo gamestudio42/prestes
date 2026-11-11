@@ -14,6 +14,7 @@ export type {
   Outcome,
   DecidedBy,
   ObjectiveSnapshot,
+  QueuedOrderSnapshot,
   MoraleState,
   Posture,
   FireControl,

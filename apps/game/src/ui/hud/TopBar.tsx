@@ -26,7 +26,8 @@ interface TopBarProps {
   onTogglePost: () => void;
   onToggleRoutes: () => void;
   onToggleSandbox: () => void;
-  onToggleCodex: () => void;
+  /** refine-battle-controls: leave the battle for the desk, after a confirmation. */
+  onLeave: () => void;
 }
 
 const SPEED_LABEL = { 1: '0.5x', 2: '1x', 4: '2x', 8: '4x' } as const;
@@ -49,7 +50,7 @@ export function TopBar({
   onTogglePost,
   onToggleRoutes,
   onToggleSandbox,
-  onToggleCodex,
+  onLeave,
 }: TopBarProps) {
   const bandKey =
     band === 'strategic' ? 'hud.strategic' : band === 'tactical' ? 'hud.tactical' : 'hud.transition';
@@ -155,15 +156,9 @@ export function TopBar({
         >
           <ICONS.sandbox aria-hidden="true" size={15} />
         </IconButton>
-        <IconButton
-          testId="codex-toggle"
-          label={t('hud.codex')}
-          description={t('hud.tip.codex')}
-          onClick={onToggleCodex}
-          className="hud-icon"
-        >
-          <ICONS.codex aria-hidden="true" size={15} />
-        </IconButton>
+        <button type="button" className="hud-leave" data-testid="leave-battle" onClick={onLeave}>
+          {t('hud.leave')}
+        </button>
         {deploying ? null : (
         <div className="speed-control">
           <IconButton

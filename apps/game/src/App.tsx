@@ -14,9 +14,8 @@ import {
   type MapDocument,
 } from '@prestes/shared';
 import { loadPlaytest } from './editor/persistence';
-import type { CameraBand } from '@prestes/view3d';
+import type { CameraBand, SceneView } from '@prestes/view3d';
 import { DEFAULT_SPEED, GameClient } from './client/GameClient';
-import { CodexPanel } from './ui/CodexPanel';
 import { FieldOverlays } from './ui/FieldOverlays';
 import { GameCanvas } from './ui/GameCanvas';
 import { Hud } from './ui/Hud';
@@ -47,7 +46,6 @@ export function App() {
     setBattleMapId(next.map);
   };
   const changeBattleMap = (map: BattleMapId): void => changeSetup(withMap(setup, map));
-  const [showCodex, setShowCodex] = useState(false);
   const [frame, setFrame] = useState<Frame | null>(null);
   const [band, setBand] = useState<CameraBand>('tactical');
   const [cameraRequest, setCameraRequest] = useState<{ band: CameraBand; nonce: number } | null>(
@@ -66,9 +64,19 @@ export function App() {
   } | null>(null);
 
   const clientRef = useRef<GameClient | null>(null);
+  // refine-battle-controls: the battle scene, for the HUD's centring control.
+  const sceneRef = useRef<SceneView | null>(null);
   // add-deployment-phase 3.1: the latest refused deployment order, shown for a few seconds.
   const [deploymentRefusal, setDeploymentRefusal] = useState<DeploymentRefusal | null>(null);
   const refusalTimer = useRef<number | null>(null);
+  // refine-battle-controls: a refused battle order (for example a full queue), shown briefly.
+  const [orderNotice, setOrderNotice] = useState<string | null>(null);
+  const orderNoticeTimer = useRef<number | null>(null);
+  const showOrderNotice = (reason: string): void => {
+    setOrderNotice(reason);
+    if (orderNoticeTimer.current !== null) window.clearTimeout(orderNoticeTimer.current);
+    orderNoticeTimer.current = window.setTimeout(() => setOrderNotice(null), 3000);
+  };
   const showDeploymentRefusal = (reason: DeploymentRefusal): void => {
     setDeploymentRefusal(reason);
     if (refusalTimer.current !== null) window.clearTimeout(refusalTimer.current);
@@ -237,6 +245,7 @@ export function App() {
         audioRef.current?.handleEvent(event);
         // add-deployment-phase 3.1: a refused deployment order says why, for a few seconds.
         if (event.type === 'command_rejected' && isDeploymentRefusal(event.reason)) showDeploymentRefusal(event.reason);
+        else if (event.type === 'command_rejected') showOrderNotice(event.reason);
       },
       onFrame: (next) => {
         setFrame(next);
@@ -273,6 +282,15 @@ export function App() {
     setSandboxTool(null);
     setSpeed(DEFAULT_SPEED);
     setStarted(false);
+  };
+
+  /** refine-battle-controls: centres the view on a section, keeping the zoom band. */
+  const handleCenterSquad = (squadId: number): void => {
+    const units = frame?.units.filter((unit) => unit.squadId === squadId && unit.alive && !unit.routed) ?? [];
+    if (units.length === 0) return;
+    const x = units.reduce((sum, unit) => sum + unit.x, 0) / units.length;
+    const y = units.reduce((sum, unit) => sum + unit.y, 0) / units.length;
+    sceneRef.current?.focusOn(x, y);
   };
 
   // The setup's forces go with its map; the editor's playtest map fields the default.
@@ -487,6 +505,9 @@ export function App() {
         onPreviewFacing={handlePreviewFacing}
         onPreviewGround={handlePreviewGround}
         onPreviewUnit={handlePreviewUnit}
+        onSceneReady={(scene) => {
+          sceneRef.current = scene;
+        }}
         onHover={(kind, x, y) => {
           setCursor(x > 0 && y > 0 ? { x, y } : null);
           setHoverHint(kind ? { kind, x, y } : null);
@@ -528,11 +549,13 @@ export function App() {
         onTogglePost={() => setPostStrong((value) => !value)}
         routesVisible={routesVisible}
         onToggleRoutes={() => setRoutesVisible((value) => !value)}
-        onToggleCodex={() => setShowCodex((open) => !open)}
         onToggleSandbox={handleToggleSandbox}
         onStartBattle={handleStartDeployedBattle}
         onResetDeployment={handleResetDeployment}
         deploymentRefusal={deploymentRefusal}
+        orderNotice={orderNotice}
+        onCenterSquad={handleCenterSquad}
+        onLeave={handleBackToMenu}
         />
       ) : null}
       {hudHidden ? (
@@ -581,11 +604,6 @@ export function App() {
           troopSection={troopSection}
           onTroopSection={setTroopSection}
         />
-      ) : null}
-      {showCodex ? (
-        <div className="overlay">
-          <CodexPanel locale={locale} onClose={() => setShowCodex(false)} />
-        </div>
       ) : null}
       {frame && frame.outcome !== 'playing' ? (
         <BattleEndPanel

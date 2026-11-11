@@ -1,0 +1,37 @@
+## 1. Queued orders
+
+- [x] 1.1 Protocol and engine: an optional `queue` flag on order-bearing commands, a per-section FIFO of at most three validated commands, applied when the section has no primary order; Halt and Escape clear it; the queue is hashed (verify: unit tests "shift appends", "runs in order", "halt clears", "invalid at activation", "queue limit"; `pnpm typecheck`)
+  - Apply note: `queue?: boolean` on move/order/attack/suppress/flank/withdraw/hold; `orderQueues` on the context and engine (FIFO of 3, keyed by section); `queueOrder` validates at enqueue (units, one section, live target, cap) and `applyQueuedOrders` applies the oldest when the section is idle, so activation validates again and drops an invalid order with its rejection; Halt clears the queue; the queue is in the frame (`queuedOrders`) and the hash. Tests `order-queue.test.ts` 6/6; typecheck clean.
+- [x] 1.2 HUD: Shift appends from the order board and from ground/target orders; the order status and section card show the queued orders as chips with localized names; a refused fourth order shows the localized reason (verify: e2e shifts two orders and reads both chips; `pnpm check:locales`)
+  - Apply note: Shift is read on the board click (it arms the next click) and on the ground/target click; a plain order still replaces. The Orders window lists the selected section's queued orders as chips (`order-queue`); a refused order shows the localized `rejection.*` notice (`order-notice`). E2E `battle-orders.spec.ts` queues two, reads two chips, fills the queue and checks the "three queued orders" notice; locales 1001 keys.
+- [x] 1.3 Determinism: re-record the goldens with the reason naming the queue (verify: `pnpm check:determinism --update --reason "..."` then `pnpm check:determinism`)
+  - Apply note: the queue is empty in the golden runs, so campo-de-provas and the mixed roster kept their hashes (`b3e2538f`/`9fa6a458`); no re-record was needed for the queue. Paiolzinho's golden was re-recorded with the wire work (2.2), against the author's map as it stands in the working tree; the golden and the map are deliberately left uncommitted together.
+
+## 2. Barbed wire
+
+- [x] 2.1 Compiled maps mark a wire-fence cover as wire; pathfinding crosses it with a speed penalty and no cover (verify: unit test a path through a wire line; shared pathfinding tests pass)
+  - Apply note: `CoverPoint.wire`; `compileMapDocument` sets it on `wire-fence` pieces (quality 0, no sight block); `isPointBlockedByCovers` skips wire, so the A* grid and the movement collision check cross it; `moveUnit` multiplies the pace by 0.55 while a soldier is on a wire. Shared test `wire-fence.test.ts` 3/3 (compiled flag and no cover; path through; a board fence still blocks).
+- [x] 2.2 Movement costs 3 health once per wire cover crossed, clamped to 1, with a `unit_hit` event; sight and fire ignore the wire (verify: unit tests "crossing costs health", "one loss per crossing", "never fatal", "fire through the wire"; goldens re-recorded once with the reason)
+  - Apply note: `moveUnit` calls `crossWire` on both position updates: entering a wire cover costs 3 health once (`WIRE_DAMAGE`), clamped at 1, and emits `unit_hit`; `coverAgainst` over the wire is 0 and the cover blocks no sight, so fire passes. Simulation test `wire-fence.test.ts` 2/2. Goldens re-recorded with the reason naming the wire rules and the author's paiolzinho map change (working tree, not committed).
+- [x] 2.3 View check: the existing wire meshes still draw and the cover flag does not change the look (verify: `packages/view3d` tests and a battle screenshot)
+  - Apply note: the view draws wires from the map's `fences` polylines, untouched by the cover flag; view3d tests 75/75; screenshot on `paiolzinho` at the wire line reviewed (posts and wire still drawn).
+
+## 3. Battle HUD controls
+
+- [x] 3.1 Camera centring: the canvas exposes a focus method; double-click on the Troop Summary centres the selected section, and double-click on a squad card selects and centres that section, keeping the zoom band (verify: e2e double-clicks both and reads the camera target through the scene bridge)
+  - Apply note: `GameCanvas` hands its scene to the app (`onSceneReady`); `App.handleCenterSquad` takes the section's living centroid and calls `SceneView.focusOn` (the band is untouched). The Troop Summary and the squad cards take a double-click, the card also selecting. E2E `battle-hud.spec.ts` reads the camera through the scene bridge and finds it on sections 2 and 3 (within 8 m).
+- [x] 3.2 Leave the battle: a top-bar control with a confirmation; confirm returns to the desk, cancel leaves the battle unchanged (verify: e2e both paths; localized labels in PT-BR and EN)
+  - Apply note: a `Leave` control in the top bar opens a confirmation dialog in the HUD; confirming calls the existing app handler (dispose, desk), cancelling changes nothing. Labels and texts in EN and PT-BR. E2E both paths pass.
+
+## 4. Codex and compendium
+
+- [x] 4.1 Remove the codex control and panel from the battle HUD, keeping the desk's compendium book (verify: e2e shows no codex control in a battle and the book still opens from the desk)
+  - Apply note: the top-bar codex button and the app's in-battle `CodexPanel` mount are gone; the desk's compendium book (`start-codex`) is untouched. E2E: no `codex-toggle` in a battle, `start-codex` visible on the desk.
+- [x] 4.2 Remove the `prestes-not-at-fort` correction entry: catalog entry, EN/PT-BR notes, the chapter link and the `docs/campaign/compendium/entries` file; the book keeps its sections and the other corrections (verify: `pnpm check:content`, the compendium validation test and the desk compendium e2e reading another correction pass; no tab or link points at the removed entry)
+  - Apply note: removed from the compendium catalog, the EN/PT-BR notes, `compendium-docs.ts`, the prologue chapter's links, the EN/PT-BR `compendium.prestes-not-at-fort.*` strings and the docs entry; the docs indexes (README, images, mission 01) lost their references. The corrections page keeps the other four corrections. `pnpm check:content` 40 entries/14 images; the compendium e2e now reads the São Paulo correction from the ribbon.
+- [x] 4.3 Confirm the prologue still plays as the Copacabana beach fight and the corrections remain in `docs/history` (verify: `rg -i "prestes-not-at-fort" packages apps docs/campaign` returns only history notes that are not player-facing; the campaign book opens on the prologue)
+  - Apply note: no `prestes-not-at-fort` reference remains under packages, apps or docs/campaign; the prologue is still the 1922 beach sortie (book 01) and the corrections stay in `docs/history` and `SOURCE_POLICY.md`. The desk book tests (campaign and compendium) pass.
+
+## 5. Close
+
+- [ ] 5.1 Gates: `pnpm check`, `pnpm e2e` and `openspec validate refine-battle-controls-and-content --type change --strict` (verify: all pass, or record the pre-existing failures with evidence)

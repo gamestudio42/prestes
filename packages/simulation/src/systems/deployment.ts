@@ -44,6 +44,11 @@ function unitIdsOf(command: Command): readonly number[] {
 export function applyDeploymentCommand(ctx: SimContext, envelope: CommandEnvelope, events: SimEvent[]): void {
   const command = envelope.command;
   const reject = (reason: RejectionReason) => events.push({ type: 'command_rejected', tick: ctx.tickCount, seq: envelope.seq, reason });
+  // refine-battle-controls: nothing is queued during deployment.
+  if ((command as { queue?: boolean }).queue === true) {
+    reject('not_during_deployment');
+    return;
+  }
   if (!placing(command)) {
     reject('not_during_deployment');
     return;

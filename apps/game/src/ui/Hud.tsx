@@ -14,6 +14,7 @@ import { CommandRow } from './hud/CommandRow';
 import { OrderBoard } from './hud/OrderBoard';
 import { SquadCards } from './hud/SquadCards';
 import { TopBar } from './hud/TopBar';
+import { orderLetter } from './hud/orderMeta';
 import { DeploymentBanner, type DeploymentRefusal } from './hud/DeploymentBanner';
 import { TroopSummary } from './hud/TroopSummary';
 import { WeaponCard } from './hud/WeaponCard';
@@ -67,7 +68,7 @@ export interface HudProps {
   onCancelOrder: () => void;
   onLocaleChange: (locale: Locale) => void;
 
-  onActivateOrder: (order: string, activation: OrderActivation) => void;
+  onActivateOrder: (order: string, activation: OrderActivation, queue?: boolean) => void;
   onPosture: (posture: Posture) => void;
   onFireControl: (mode: FireControl) => void;
   onSelectSquad: (squadId: number) => void;
@@ -81,7 +82,9 @@ export interface HudProps {
   onTogglePost: () => void;
   onToggleRoutes: () => void;
   onToggleSandbox: () => void;
-  onToggleCodex: () => void;
+  /** refine-battle-controls: centre the view on a section, and leave the battle. */
+  onCenterSquad: (squadId: number) => void;
+  onLeave: () => void;
   /** Units currently selected (their helmets are highlighted). */
   selectedUnitIds?: readonly number[];
   /** Rounds a soldier carries when full, for the ammunition bars. */
@@ -90,6 +93,8 @@ export interface HudProps {
   onStartBattle?: () => void;
   onResetDeployment?: () => void;
   deploymentRefusal?: DeploymentRefusal | null;
+  /** refine-battle-controls: a refused battle order, shown for a few seconds. */
+  orderNotice?: string | null;
 }
 
 export function Hud({
@@ -125,14 +130,18 @@ export function Hud({
   onTogglePost,
   onToggleRoutes,
   onToggleSandbox,
-  onToggleCodex,
+  onCenterSquad,
+  onLeave,
   selectedUnitIds = [],
   ammoFull = 20,
   onStartBattle,
   onResetDeployment,
   deploymentRefusal = null,
+  orderNotice = null,
 }: HudProps) {
   const [layout, setLayout] = useState<WindowLayout>(() => loadLayout(layoutStorage()));
+  // refine-battle-controls: the leave-battle confirmation.
+  const [leaveOpen, setLeaveOpen] = useState(false);
   const updateWindow = (id: WindowId) => (next: WindowState) =>
     setLayout((previous) => {
       const updated = { ...previous, [id]: next };
@@ -179,6 +188,8 @@ export function Hud({
   const waitingCount = aliveUnits.filter((unit) => unit.waitingFerry).length;
   const formation = aliveUnits[0]?.formation ?? 'line';
   const currentOrder = aliveUnits.find((unit) => unit.order !== null)?.order ?? null;
+  // refine-battle-controls: the orders Shift queued for this section.
+  const queuedOrders = (frame?.queuedOrders ?? []).filter((entry) => entry.squadId === selectedSquadId);
   const deploying = frame?.phase === 'deployment';
 
   return (
@@ -201,11 +212,16 @@ export function Hud({
         onTogglePost={onTogglePost}
         onToggleRoutes={onToggleRoutes}
         onToggleSandbox={onToggleSandbox}
-        onToggleCodex={onToggleCodex}
+        onLeave={() => setLeaveOpen(true)}
       />
 
       {deploying && onStartBattle && onResetDeployment ? (
         <DeploymentBanner t={t} refusal={deploymentRefusal} onStartBattle={onStartBattle} onReset={onResetDeployment} />
+      ) : null}
+      {orderNotice ? (
+        <div className="hud-notice" data-testid="order-notice" role="status">
+          {t(`rejection.${orderNotice}` as MessageKey)}
+        </div>
       ) : null}
 
       <div className="hud-windows" data-testid="squad-status">
@@ -227,6 +243,7 @@ export function Hud({
             controlBothSides={controlBothSides}
             battleMode={battleMode}
             onSelectSquad={onSelectSquad}
+            onCenterSquad={onCenterSquad}
           />
         </FloatingWindow>
 
@@ -240,13 +257,19 @@ export function Hud({
           restoreLabel={t('hud.windowRestore')}
           moveLabel={t('hud.windowMove')}
         >
-          <TroopSummary
-            t={t}
-            squadUnits={squadUnits}
-            selectedIds={new Set(selectedUnitIds)}
-            ammoFull={ammoFull}
-            covers={frame?.covers ?? []}
-          />
+          <div
+            onDoubleClick={() => onCenterSquad(selectedSquadId)}
+            data-testid="troop-summary"
+            title={t('hud.tip.center')}
+          >
+            <TroopSummary
+              t={t}
+              squadUnits={squadUnits}
+              selectedIds={new Set(selectedUnitIds)}
+              ammoFull={ammoFull}
+              covers={frame?.covers ?? []}
+            />
+          </div>
           <WeaponCard
             t={t}
             frame={frame}
@@ -285,6 +308,15 @@ export function Hud({
             onFormation={onFormation}
             t={t}
           />
+          {queuedOrders.length > 0 ? (
+            <ol className="order-queue" data-testid="order-queue" aria-label={t('hud.queuedOrders')}>
+              {queuedOrders.map((entry, index) => (
+                <li key={`${entry.squadId}-${index}`} data-testid={`order-queue-${index + 1}`}>
+                  {t(`hud.order${orderLetter(entry.order)}` as MessageKey)}
+                </li>
+              ))}
+            </ol>
+          ) : null}
           <CommandRow
             t={t}
             selectedCount={selectedCount}
@@ -302,6 +334,32 @@ export function Hud({
           />
         </FloatingWindow>
       </div>
+      {leaveOpen ? (
+        <div className="overlay" data-testid="leave-battle-dialog">
+          <section className="codex battle-end" role="dialog" aria-labelledby="leave-title">
+            <div className="tutorial-graduation">
+              <strong id="leave-title">{t('hud.leaveTitle')}</strong>
+              <p>{t('hud.leaveText')}</p>
+            </div>
+            <div className="battle-end-actions">
+              <button
+                type="button"
+                className="primary"
+                data-testid="leave-confirm"
+                onClick={() => {
+                  setLeaveOpen(false);
+                  onLeave();
+                }}
+              >
+                {t('hud.leaveConfirm')}
+              </button>
+              <button type="button" data-testid="leave-cancel" onClick={() => setLeaveOpen(false)}>
+                {t('hud.leaveCancel')}
+              </button>
+            </div>
+          </section>
+        </div>
+      ) : null}
     </>
   );
 }

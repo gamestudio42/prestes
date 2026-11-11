@@ -11,6 +11,8 @@ interface SquadCardsProps {
   controlBothSides: boolean;
   battleMode: boolean;
   onSelectSquad: (squadId: number) => void;
+  /** refine-battle-controls: a double-click selects and centres the section. */
+  onCenterSquad: (squadId: number) => void;
 }
 
 export function SquadCards({
@@ -20,6 +22,7 @@ export function SquadCards({
   controlBothSides,
   battleMode,
   onSelectSquad,
+  onCenterSquad,
 }: SquadCardsProps) {
   const squadIds =
     frame === null
@@ -80,6 +83,10 @@ export function SquadCards({
                 className="squad-select"
                 aria-pressed={selectedSquadId === squadId}
                 onClick={() => onSelectSquad(squadId)}
+                onDoubleClick={() => {
+                  onSelectSquad(squadId);
+                  onCenterSquad(squadId);
+                }}
                 data-testid={`squad-${squadId}`}
               >
                 <span

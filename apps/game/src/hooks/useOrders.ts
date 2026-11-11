@@ -83,6 +83,8 @@ export function useOrders({
   const [pendingOrder, setPendingOrder] = useState<OrderMode | null>(null);
   const [pendingTactical, setPendingTactical] = useState<TacticalOrder | null>(null);
   const [aimPending, setAimPending] = useState(false);
+  // refine-battle-controls: Shift pressed on the board arms the next click to queue.
+  const [queueNext, setQueueNext] = useState(false);
   const [lineDrag, setLineDrag] = useState<{ from: Vec2; to: Vec2 } | null>(null);
   const [facingDrag, setFacingDrag] = useState<{ from: Vec2; to: Vec2 } | null>(null);
   const lastBoundPhase = useRef<string | null>(null);
@@ -245,11 +247,11 @@ export function useOrders({
   }, [pendingTactical, selectedUnits.map((unit) => unit.garrison ?? '').join(','), positions]);
 
   /** Sends an order on a position (Ocupar, Assaltar), or keeps waiting when the click meant none. */
-  const sendPositionOrder = (order: 'enter' | 'assault', positionId: number | undefined): boolean => {
+  const sendPositionOrder = (order: 'enter' | 'assault', positionId: number | undefined, queue = false): boolean => {
     if (positionId === undefined || selectedIds.length === 0) return false;
     clientRef.current?.sendCommand(
       order === 'enter'
-        ? { type: 'order', order: 'enter', unitIds: selectedIds, positionId }
+        ? { type: 'order', order: 'enter', unitIds: selectedIds, positionId, ...(queue ? { queue: true } : {}) }
         : { type: 'assault', unitIds: selectedIds, positionId },
     );
     triggerOrderCallout(order, selectedIds);
@@ -442,11 +444,11 @@ export function useOrders({
     setAimPending(false);
   };
 
-  const handleTacticalOrder = (order: TacticalOrder): void => {
+  const handleTacticalOrder = (order: TacticalOrder, queue = false): void => {
     setPreviewEnabled(true);
     if (order === 'regroup' || order === 'protect-officer') {
       if (selectedIds.length > 0) {
-        clientRef.current?.sendCommand({ type: 'order', order, unitIds: selectedIds });
+        clientRef.current?.sendCommand({ type: 'order', order, unitIds: selectedIds, ...(queue ? { queue: true } : {}) });
         triggerOrderCallout(order, selectedIds);
       }
       setPendingTactical(null);
@@ -498,6 +500,7 @@ export function useOrders({
   const sendTroopTargetOrder = (
     kind: 'attack' | 'suppress' | 'flank' | 'pursue',
     target: { id: number; faction: string; squadId: number; x: number; y: number },
+    queue = false,
   ): void => {
     const members = (frame?.units ?? []).filter(
       (unit) =>
@@ -526,9 +529,10 @@ export function useOrders({
           order: 'pursue',
           unitIds,
           targetId,
+          ...(queue ? { queue: true } : {}),
         });
       } else {
-        clientRef.current?.sendCommand({ type: kind, unitIds, targetId });
+        clientRef.current?.sendCommand({ type: kind, unitIds, targetId, ...(queue ? { queue: true } : {}) });
       }
     }
     triggerOrderCallout(kind, selectedIds);
@@ -572,7 +576,9 @@ export function useOrders({
       )[0];
   };
 
-  const handleAttackUnit = (unitId: number): void => {
+  const handleAttackUnit = (unitId: number, queue = false): void => {
+    const queueOrder = queue || queueNext;
+    setQueueNext(false);
     const target =
       pendingTactical === 'rescue'
         ? frame?.units.find((entry) => entry.id === unitId)
@@ -610,7 +616,7 @@ export function useOrders({
       return;
     }
     if (pendingTactical === 'pursue') {
-      sendTroopTargetOrder('pursue', target);
+      sendTroopTargetOrder('pursue', target, queueOrder);
       setPendingTactical(null);
       return;
     }
@@ -621,6 +627,7 @@ export function useOrders({
           order: 'rescue',
           unitIds: selectedIds,
           targetId: target.id,
+          ...(queueOrder ? { queue: true } : {}),
         });
         triggerOrderCallout('rescue', selectedIds);
         setPendingTactical(null);
@@ -638,11 +645,13 @@ export function useOrders({
     }
     const type =
       pendingOrder === 'suppress' ? 'suppress' : pendingOrder === 'flank' ? 'flank' : 'attack';
-    sendTroopTargetOrder(type, target);
+    sendTroopTargetOrder(type, target, queueOrder);
     setPendingOrder(null);
   };
 
-  const handlePrimaryGround = (point: Vec2, facing?: Vec2): void => {
+  const handlePrimaryGround = (point: Vec2, facing?: Vec2, queue = false): void => {
+    const queueOrder = queue || queueNext;
+    setQueueNext(false);
     setFacingDrag(null);
     if (aimPending) {
       if (selectedIds.length > 0) {
@@ -654,7 +663,7 @@ export function useOrders({
     }
     // garrison-and-assault 4.1: Ocupar and Assaltar take the position clicked; Sair, the point.
     if (pendingTactical === 'enter') {
-      sendPositionOrder('enter', positionNear(positions, point, (position) => !enemyHeld(position))?.id);
+      sendPositionOrder('enter', positionNear(positions, point, (position) => !enemyHeld(position))?.id, queueOrder);
       return;
     }
     if (pendingTactical === 'assault') {
@@ -663,7 +672,7 @@ export function useOrders({
     }
     if (pendingTactical === 'exit') {
       if (selectedIds.length > 0) {
-        clientRef.current?.sendCommand({ type: 'order', order: 'exit', unitIds: selectedIds, to: point });
+        clientRef.current?.sendCommand({ type: 'order', order: 'exit', unitIds: selectedIds, to: point, ...(queueOrder ? { queue: true } : {}) });
         triggerOrderCallout('exit', selectedIds);
       }
       setPendingTactical(null);
@@ -680,6 +689,7 @@ export function useOrders({
           unitIds: selectedIds,
           to: point,
           ...dragOrder(facing),
+          ...(queueOrder ? { queue: true } : {}),
         });
       }
       triggerOrderCallout(pendingTactical, selectedIds);
@@ -706,13 +716,21 @@ export function useOrders({
       return;
     }
     if (pendingOrder === 'move' && selectedIds.length > 0) {
-      clientRef.current?.sendCommand({ type: 'move', unitIds: selectedIds, to: point, ...dragOrder(facing) });
+      clientRef.current?.sendCommand({
+        type: 'move',
+        unitIds: selectedIds,
+        to: point,
+        ...dragOrder(facing),
+        ...(queueOrder ? { queue: true } : {}),
+      });
       triggerOrderCallout('move', selectedIds);
       setPendingOrder(null);
     }
   };
 
-  const handleQuickGround = (point: Vec2, facing?: Vec2): void => {
+  const handleQuickGround = (point: Vec2, facing?: Vec2, queue = false): void => {
+    const queueOrder = queue || queueNext;
+    setQueueNext(false);
     setPendingOrder(null);
     setPendingTactical(null);
     setAimPending(false);
@@ -721,7 +739,13 @@ export function useOrders({
     if (selectedIds.length === 0) {
       return;
     }
-    clientRef.current?.sendCommand({ type: 'move', unitIds: selectedIds, to: point, ...dragOrder(facing) });
+    clientRef.current?.sendCommand({
+      type: 'move',
+      unitIds: selectedIds,
+      to: point,
+      ...dragOrder(facing),
+      ...(queueOrder ? { queue: true } : {}),
+    });
     triggerOrderCallout('move', selectedIds);
   };
 
@@ -766,7 +790,9 @@ export function useOrders({
     triggerOrderCallout('move', selectedIds);
   };
 
-  const handleQuickUnit = (unitId: number): void => {
+  const handleQuickUnit = (unitId: number, queue = false): void => {
+    const queueOrder = queue || queueNext;
+    setQueueNext(false);
     setPendingOrder(null);
     setPendingTactical(null);
     setAimPending(false);
@@ -778,7 +804,13 @@ export function useOrders({
     const selectedFaction = selectedUnits[0]?.faction ?? 'column';
     // A wounded comrade: the casualty drill (rescue) starts from him.
     if (target.faction === selectedFaction && target.incapacitated && selectedIds.length > 0) {
-      clientRef.current?.sendCommand({ type: 'order', order: 'rescue', unitIds: selectedIds, targetId: target.id });
+      clientRef.current?.sendCommand({
+        type: 'order',
+        order: 'rescue',
+        unitIds: selectedIds,
+        targetId: target.id,
+        ...(queueOrder ? { queue: true } : {}),
+      });
       triggerOrderCallout('rescue', selectedIds);
       return;
     }
@@ -786,18 +818,19 @@ export function useOrders({
       handleSelectUnit(unitId);
       return;
     }
-    sendTroopTargetOrder('attack', target);
+    sendTroopTargetOrder('attack', target, queueOrder);
   };
 
-  const handleActivateOrder = (order: string, _activation: string): void => {
+  const handleActivateOrder = (order: string, _activation: string, queue = false): void => {
     if (selectedIds.length === 0) {
       return;
     }
     if (order === 'withdraw') {
-      handleWithdraw();
+      handleWithdraw(queue);
       return;
     }
     if (order === 'hold') {
+      setQueueNext(false);
       // Halt clears every pending order (as Escape does), then stops the
       // section at once and takes cover; turning its front is Aim's job.
       setPendingOrder(null);
@@ -809,11 +842,12 @@ export function useOrders({
       return;
     }
     if (order === 'aim') {
+      setQueueNext(false);
       handleAim();
       return;
     }
     if (order === 'regroup') {
-      handleTacticalOrder('regroup');
+      handleTacticalOrder('regroup', queue);
       return;
     }
     if (
@@ -822,6 +856,7 @@ export function useOrders({
       order === 'flank' ||
       order === 'move'
     ) {
+      setQueueNext(queue);
       handleOrder(order);
       return;
     }
@@ -838,7 +873,8 @@ export function useOrders({
       order === 'exit' ||
       order === 'assault'
     ) {
-      handleTacticalOrder(order);
+      setQueueNext(queue);
+      handleTacticalOrder(order, queue);
     }
   };
 
@@ -889,9 +925,9 @@ export function useOrders({
     }
   };
 
-  const handleWithdraw = (): void => {
+  const handleWithdraw = (queue = false): void => {
     if (selectedIds.length > 0) {
-      clientRef.current?.sendCommand({ type: 'withdraw', unitIds: selectedIds });
+      clientRef.current?.sendCommand({ type: 'withdraw', unitIds: selectedIds, ...(queue ? { queue: true } : {}) });
       triggerOrderCallout('withdraw', selectedIds);
       setPendingOrder(null);
       setPendingTactical(null);
@@ -900,6 +936,7 @@ export function useOrders({
   };
 
   const handleHold = (): void => {
+    setQueueNext(false);
     if (selectedIds.length > 0) {
       clientRef.current?.sendCommand({ type: 'hold', unitIds: selectedIds });
       triggerOrderCallout('hold', selectedIds);

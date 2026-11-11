@@ -15,6 +15,7 @@ import {
   terrainSpeedFactor,
   findPath,
   isPointBlockedByCovers,
+  isPointInCover,
 } from '@prestes/shared';
 import type { Gait, SimEvent, Vec2 } from '@prestes/shared';
 import { FATIGUE_MARCH, FATIGUE_MAX, OPEN_POINT_DIRECTIONS, clamp } from './model';
@@ -198,6 +199,34 @@ function pathRemaining(unit: MutableUnit): number {
   return total;
 }
 
+/** refine-battle-controls: the health a barbed-wire crossing costs, and its pace. */
+const WIRE_DAMAGE = 3;
+const WIRE_SPEED = 0.55;
+
+/** Whether a barbed-wire cover covers this point. */
+function onWire(ctx: SimContext, x: number, y: number): boolean {
+  return ctx.covers.some((cover) => cover.wire === true && isPointInCover(x, y, cover, 0));
+}
+
+/**
+ * refine-battle-controls: entering a barbed-wire cover costs a little health
+ * once; the soldier is never brought below 1 health by it.
+ */
+function crossWire(
+  ctx: SimContext,
+  unit: MutableUnit,
+  fromX: number,
+  fromY: number,
+  tick: number,
+  events: SimEvent[],
+): void {
+  if (onWire(ctx, fromX, fromY) || !onWire(ctx, unit.x, unit.y)) return;
+  const hp = Math.max(1, unit.hp - WIRE_DAMAGE);
+  const damage = unit.hp - hp;
+  unit.hp = hp;
+  if (damage > 0) events.push({ type: 'unit_hit', tick, unitId: unit.id, damage, hp });
+}
+
 export function moveUnit(
   ctx: SimContext,
   unit: MutableUnit,
@@ -220,6 +249,8 @@ export function moveUnit(
   }
   if (giveUpStuck(unit, tick, events)) return;
 
+  const fromX = unit.x;
+  const fromY = unit.y;
   const point = unit.path[unit.pathIndex];
   if (!point) {
     unit.path = [];
@@ -256,7 +287,8 @@ export function moveUnit(
     (0.75 + 0.25 * (unit.cohesion / 100)) *
     (1 - (unit.fatigue / FATIGUE_MAX) * 0.25) *
     woundSpeedFactor(ctx, unit) *
-    groupSpeedFactor(ctx, unit);
+    groupSpeedFactor(ctx, unit) *
+    (onWire(ctx, unit.x, unit.y) ? WIRE_SPEED : 1);
   // Ease toward the gait, and slow before the last point so he stops on it.
   const brake = Math.sqrt(2 * GAIT_ACCELERATION * pathRemaining(unit));
   const target = Math.max(Math.min(wanted, brake), Math.min(wanted, 0.4));
@@ -269,6 +301,7 @@ export function moveUnit(
   if (distance <= step) {
     unit.x = point.x;
     unit.y = point.y;
+    crossWire(ctx, unit, fromX, fromY, tick, events);
     unit.pathIndex += 1;
     if (unit.pathIndex >= unit.path.length) {
       unit.path = [];
@@ -338,6 +371,7 @@ export function moveUnit(
   }
   unit.x = nextX;
   unit.y = nextY;
+  crossWire(ctx, unit, fromX, fromY, tick, events);
   unit.fatigue = Math.min(FATIGUE_MAX, unit.fatigue + FATIGUE_MARCH * GAIT_FATIGUE[gait]);
 }
 

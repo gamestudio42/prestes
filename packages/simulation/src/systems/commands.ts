@@ -14,7 +14,7 @@ import {
   activeMapRuntime,
   isDeepWater,
 } from '@prestes/shared';
-import type { Command, CommandEnvelope, RejectionReason, SimEvent, Vec2 } from '@prestes/shared';
+import type { Command, CommandEnvelope, QueuedOrderSnapshot, RejectionReason, SimEvent, UnitOrder, Vec2 } from '@prestes/shared';
 import { formationSlots } from '../tactical';
 import { clamp } from './model';
 import type { MutableUnit } from './model';
@@ -64,6 +64,135 @@ function walkableTarget(to: Vec2): Vec2 | null {
   return null;
 }
 
+/** refine-battle-controls: how many orders a section may keep behind its current one. */
+export const QUEUE_LIMIT = 3;
+
+type QueueableCommand = Extract<
+  Command,
+  { type: 'move' | 'attack' | 'suppress' | 'flank' | 'withdraw' | 'order' | 'hold' }
+>;
+
+/** refine-battle-controls: the commands Shift may append to a section's queue. */
+export function isQueueable(command: Command): command is QueueableCommand {
+  return (
+    command.type === 'move' ||
+    command.type === 'attack' ||
+    command.type === 'suppress' ||
+    command.type === 'flank' ||
+    command.type === 'withdraw' ||
+    command.type === 'order' ||
+    command.type === 'hold'
+  );
+}
+
+/** The order a command gives, for the frame's queued-order chips. */
+function orderOf(command: QueueableCommand): UnitOrder {
+  switch (command.type) {
+    case 'order':
+      return command.order;
+    case 'move':
+      return 'move';
+    case 'attack':
+      return 'attack';
+    case 'suppress':
+      return 'suppress';
+    case 'flank':
+      return 'flank';
+    case 'withdraw':
+      return 'withdraw';
+    case 'hold':
+      return 'hold';
+  }
+}
+
+/**
+ * refine-battle-controls: Shift validates the order and stores it behind the
+ * section's current one instead of applying it. A section holds at most
+ * QUEUE_LIMIT. The full validation runs again when the order becomes active.
+ */
+function queueOrder(ctx: SimContext, envelope: CommandEnvelope, tick: number, events: SimEvent[]): void {
+  const command = envelope.command as QueueableCommand;
+  const reject = (reason: RejectionReason) =>
+    events.push({ type: 'command_rejected', tick, seq: envelope.seq, reason });
+  if (command.unitIds.length === 0) {
+    reject('empty_units');
+    return;
+  }
+  const units = command.unitIds.map((id) => ctx.units.find((unit) => unit.id === id));
+  if (units.some((unit) => unit === undefined)) {
+    reject('unknown_unit');
+    return;
+  }
+  const squads = new Set(units.map((unit) => unit!.squadId));
+  if (squads.size !== 1) {
+    reject('invalid_state');
+    return;
+  }
+  if (command.type === 'attack' || command.type === 'suppress' || command.type === 'flank') {
+    const target = ctx.units.find((unit) => unit.id === command.targetId);
+    if (!target || !target.alive || target.incapacitated || target.routed) {
+      reject('invalid_target');
+      return;
+    }
+  }
+  const squadId = [...squads][0]!;
+  const queue = ctx.orderQueues.get(squadId) ?? [];
+  if (queue.length >= QUEUE_LIMIT) {
+    reject('queue_full');
+    return;
+  }
+  queue.push({ ...command, queue: false } as Command);
+  ctx.orderQueues.set(squadId, queue);
+}
+
+/** refine-battle-controls: the queued orders, for the frame. */
+export function queuedOrdersSnapshot(ctx: SimContext): QueuedOrderSnapshot[] {
+  const snapshot: QueuedOrderSnapshot[] = [];
+  for (const [squadId, queue] of ctx.orderQueues) {
+    for (const command of queue) {
+      const order = isQueueable(command) ? orderOf(command) : null;
+      if (order === null) continue;
+      const targetId =
+        command.type === 'attack' || command.type === 'suppress' || command.type === 'flank'
+          ? command.targetId
+          : command.type === 'order'
+            ? command.targetId
+            : undefined;
+      snapshot.push({ squadId, order, ...(targetId === undefined ? {} : { targetId }) });
+    }
+  }
+  return snapshot;
+}
+
+/**
+ * refine-battle-controls: when a section has no order of its own, the oldest
+ * queued order becomes active. A queued order that no longer validates is
+ * dropped by the normal command path, with its rejection, and the next waits.
+ */
+export function applyQueuedOrders(ctx: SimContext, tick: number, events: SimEvent[]): void {
+  if (ctx.orderQueues.size === 0) return;
+  for (const [squadId, queue] of [...ctx.orderQueues]) {
+    const section = ctx.units.filter(
+      (unit) => unit.squadId === squadId && unit.alive && !unit.routed && !unit.dummy && !unit.incapacitated,
+    );
+    if (section.length === 0) {
+      ctx.orderQueues.delete(squadId);
+      continue;
+    }
+    const idle = section.every(
+      (unit) => unit.currentOrder === null && unit.targetId === null && !unit.suppress && unit.path.length === 0 && unit.boundTeam === null,
+    );
+    if (!idle) continue;
+    const command = queue.shift();
+    if (command === undefined) {
+      ctx.orderQueues.delete(squadId);
+      continue;
+    }
+    if (queue.length === 0) ctx.orderQueues.delete(squadId);
+    applyCommand(ctx, { seq: -1, tick, command }, tick, events);
+  }
+}
+
 export function applyCommand(
   ctx: SimContext,
   envelope: CommandEnvelope,
@@ -76,6 +205,12 @@ export function applyCommand(
   }
   // add-deployment-phase: the phase's own commands mean nothing once the battle runs.
   if (command.type === 'start_battle' || command.type === 'reset_deployment') {
+    return;
+  }
+
+  // refine-battle-controls: Shift stores the order behind the current one.
+  if (isQueueable(command) && command.queue === true) {
+    queueOrder(ctx, envelope, tick, events);
     return;
   }
 
@@ -316,6 +451,11 @@ export function applyCommand(
   }
 
   if (command.type === 'hold') {
+    // refine-battle-controls: Halt clears the section's queue as well as its order.
+    for (const id of command.unitIds) {
+      const unit = ctx.units.find((entry) => entry.id === id);
+      if (unit) ctx.orderQueues.delete(unit.squadId);
+    }
     ctx.orders = ctx.orders.filter(
       (order) => !order.unitIds.some((id) => command.unitIds.includes(id)),
     );

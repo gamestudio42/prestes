@@ -288,7 +288,7 @@ export function isPointBlockedByCovers(
   covers: readonly CoverPoint[] = COVER_POINTS,
   margin = 0,
 ): boolean {
-  return someCoverNear(covers, x, y, (cover) => cover.blocksMovement && isPointInCover(x, y, cover, margin));
+  return someCoverNear(covers, x, y, (cover) => cover.blocksMovement && !cover.wire && isPointInCover(x, y, cover, margin));
 }
 
 /**

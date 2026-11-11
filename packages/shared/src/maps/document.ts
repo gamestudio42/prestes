@@ -953,6 +953,7 @@ export function compileMapDocument(source: EditableMap | MapDocument): BattleMap
         quality: info.wall ? (line.height >= 1.2 ? 0.4 : 0.35) : 0,
         blocksMovement: true,
         blocksSight: (info.wall || line.kind === 'board-fence' || line.kind === 'hedgerow') && line.height >= 1.75,
+        ...(line.kind === 'wire-fence' ? { wire: true } : {}),
         drawnBy: 'map',
       });
     }

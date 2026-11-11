@@ -84,7 +84,7 @@ import {
   cleanupOrders,
   clearArrivedOrders,
 } from './systems/orders';
-import { applyCommand } from './systems/commands';
+import { applyCommand, applyQueuedOrders, queuedOrdersSnapshot } from './systems/commands';
 import { createBattleMemory, updateBattleFlow } from './systems/enemy-commander';
 import { createObjectives, objectiveHashState, objectiveSnapshot, updateObjectives, type ObjectiveState } from './systems/objectives';
 import { createVisionState, seenSnapshot, updateVision } from './systems/vision';
@@ -187,6 +187,8 @@ export class SimulationEngine implements SimContext {
   nextUnitId = 1;
   nextSquadId = 10;
   readonly orderManager = new OrderManager();
+  /** refine-battle-controls: the orders each section queued with Shift. */
+  readonly orderQueues = new Map<number, Command[]>();
   readonly bounding = new Map<number, BoundingGroup>();
   readonly battle = createBattleMemory();
   readonly vision = createVisionState();
@@ -419,6 +421,9 @@ export class SimulationEngine implements SimContext {
       for (const envelope of this.queue.splice(0, this.queue.length)) {
         applyCommand(this, envelope, nextTick, events);
       }
+      // refine-battle-controls: a section with no order of its own takes the
+      // oldest queued one.
+      applyQueuedOrders(this, nextTick, events);
 
       maintainSlots(this);
       for (const unit of this.units) {
@@ -561,6 +566,7 @@ export class SimulationEngine implements SimContext {
       ...(this.objectives.length > 0
         ? { clock: { tick: this.tickCount - this.battleStartTick, limit: this.timeLimitTicks } }
         : {}),
+      ...(this.orderQueues.size > 0 ? { queuedOrders: queuedOrdersSnapshot(this) } : {}),
       hash: options?.hash === false ? '' : this.hashState(),
     };
   }
@@ -648,6 +654,8 @@ export class SimulationEngine implements SimContext {
         ...(this.assaults.size > 0 ? { assaults: [...this.assaults.values()] } : {}),
         // add-map-objectives: hashed on maps with objectives (capture state only).
         ...(this.objectives.length > 0 ? { objectives: objectiveHashState(this) } : {}),
+        // refine-battle-controls: the queued orders are state too.
+        ...(this.orderQueues.size > 0 ? { orderQueues: [...this.orderQueues] } : {}),
       }),
     );
   }

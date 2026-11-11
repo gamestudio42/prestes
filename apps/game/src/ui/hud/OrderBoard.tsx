@@ -27,7 +27,7 @@ interface OrderBoardProps {
   onHurry: (on: boolean) => void;
   formation: FormationKind;
   selectedCount: number;
-  onActivateOrder: (order: string, activation: OrderActivation) => void;
+  onActivateOrder: (order: string, activation: OrderActivation, queue?: boolean) => void;
   onPosture: (posture: Posture) => void;
   onFireControl: (mode: FireControl) => void;
   onStance: (stance: Stance) => void;
@@ -108,7 +108,7 @@ export function OrderBoard({
                     <button
                       type="button"
                       className={`action-button order-card ${active ? 'active' : ''}`}
-                      onClick={() => onActivateOrder(entry.id, entry.activation)}
+                      onClick={(event) => onActivateOrder(entry.id, entry.activation, event.shiftKey)}
                       disabled={selectedCount === 0}
                       aria-label={t(entry.labelKey)}
                       aria-pressed={active}

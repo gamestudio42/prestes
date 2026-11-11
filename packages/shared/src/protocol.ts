@@ -32,6 +32,8 @@ export interface CoverPoint {
   quality: number;
   blocksMovement: boolean;
   blocksSight: boolean;
+  /** refine-battle-controls: a barbed-wire fence: crossable, at a health cost. */
+  wire?: boolean;
   /**
    * add-map-editor: the map layer draws this cover as its object (a boulder,
    * a cart, a wall); the cover layer leaves it alone.
@@ -271,17 +273,19 @@ export type RejectionReason =
   /** garrison-and-assault: an exit point over 30 m from the position, or an assault from over 15 m. */
   | 'too_far'
   /** garrison-and-assault: an exit for men not inside, or an assault on a position the enemy does not hold. */
-  | 'not_garrisoned';
+  | 'not_garrisoned'
+  /** refine-battle-controls: a section already holds three queued orders. */
+  | 'queue_full';
 
 export type Command =
   /** `facing`: the way the section faces on arrival, formation kept. */
-  | { type: 'move'; unitIds: number[]; to: Vec2; facing?: Vec2; spacing?: number }
+  | { type: 'move'; unitIds: number[]; to: Vec2; facing?: Vec2; spacing?: number; queue?: boolean }
   | { type: 'stance'; unitIds: number[]; stance: Stance }
   | { type: 'formation'; unitIds: number[]; formation: FormationKind }
-  | { type: 'attack'; unitIds: number[]; targetId: number }
-  | { type: 'suppress'; unitIds: number[]; targetId: number }
-  | { type: 'flank'; unitIds: number[]; targetId: number }
-  | { type: 'withdraw'; unitIds: number[] }
+  | { type: 'attack'; unitIds: number[]; targetId: number; queue?: boolean }
+  | { type: 'suppress'; unitIds: number[]; targetId: number; queue?: boolean }
+  | { type: 'flank'; unitIds: number[]; targetId: number; queue?: boolean }
+  | { type: 'withdraw'; unitIds: number[]; queue?: boolean }
   | {
       type: 'order';
       order: TacticalOrder;
@@ -294,6 +298,8 @@ export type Command =
       spacing?: number;
       /** garrison-and-assault: the position an `enter` order goes into. */
       positionId?: number;
+      /** refine-battle-controls: Shift queues the order behind the current one. */
+      queue?: boolean;
     }
   /** garrison-and-assault: a close assault on an enemy-held position. */
   | { type: 'assault'; unitIds: number[]; positionId: number }
@@ -319,7 +325,7 @@ export type Command =
   | { type: 'reinforce'; faction: 'column' | 'legalist' }
   | { type: 'move_line'; unitIds: number[]; from: Vec2; to: Vec2 }
   /** Halt: stop and hold here, taking cover within reach; `facing` turns the section. */
-  | { type: 'hold'; unitIds: number[]; facing?: Vec2 }
+  | { type: 'hold'; unitIds: number[]; facing?: Vec2; queue?: boolean }
   | { type: 'hold_fire'; unitIds: number[]; hold: boolean }
   /** add-run-toggle: the section's pace, Run (true) or Walk (false). */
   | { type: 'hurry'; unitIds: number[]; hurry: boolean }
@@ -433,6 +439,15 @@ export interface Frame {
   objectives?: readonly ObjectiveSnapshot[];
   /** add-map-objectives: the battle clock: ticks since the battle started, and the limit. */
   clock?: { tick: number; limit: number };
+  /** refine-battle-controls: the orders queued with Shift, one entry per waiting order. */
+  queuedOrders?: readonly QueuedOrderSnapshot[];
+}
+
+/** refine-battle-controls: an order waiting behind a section's current one. */
+export interface QueuedOrderSnapshot {
+  squadId: number;
+  order: UnitOrder;
+  targetId?: number;
 }
 
 /** garrison-and-assault: a position and the men inside it. */
