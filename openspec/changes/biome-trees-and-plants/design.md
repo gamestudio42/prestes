@@ -1,0 +1,97 @@
+## Context
+
+See proposal.md. Observed:
+
+- `art-src/blender/target_trees.py` reads Refloreste models from
+  `REFLORESTE` (default `C:/projetos/Refloreste`), folder
+  `assets/vegetacao/<biome>/<species>/<biome>_<species>_adulta.glb`, and
+  adapts five entries through a `TREES` table (trunk and foliage level of
+  detail, crown clumps by k-means over the leaf cards, leaf colour,
+  flattening, height). It is not part of the default `pnpm art` run.
+- Refloreste has `amazonia` (açaí, andiroba, castanheira, seringueira,
+  sumaúma, tucumã), `cerrado` (aroeira, barbatimão, buriti, cagaita, ipê,
+  pequi) and `mata_atlantica` (araucária, erythrina, jequitibá, manacá,
+  palmito-juçara, pau-brasil, peroba), each with `bush` and `stump`;
+  species folders also hold `_adulta_florida` and `_morta` models (seen for
+  the pequi; to be listed per species at task 1.1). It has no caatinga.
+- The catalog (`packages/shared/src/maps/catalog-objects.ts`) has ten tree
+  entries; `tree-scatter.ts` has four biomes (`atlantic-edge`, `cerrado`,
+  `caatinga`, `pasture`) and their mixes.
+- `apps/game/public/models/trees.glb` is 328 KB.
+- An open point from 2026-11-09: the araucária's crown reads as dark clumps
+  without its candelabra shape.
+
+Boundary: the simulation reads catalog footprints and concealment as it
+does today; models are view-only. The low-poly pipeline stays script-built.
+
+## Goals / Non-Goals
+
+**Goals:**
+
+- One table row per species; adding a species is data, not code.
+- The species' identifying silhouette survives the adaptation.
+- Old maps unchanged, goldens unchanged.
+
+**Non-Goals:**
+
+- Importing Refloreste's Godot shaders, growth stages (`muda`) or wind.
+
+## Decisions
+
+**D1. Extend the table, add a crown method per species family.** The
+k-means clump crown suits broadleaf trees. Palms keep real fronds (as the
+buriti does). Tiered conifers (araucária) get a tier method: clumps grouped
+by height into whorls on bare branches, which also closes the open point.
+Buttressed giants (sumaúma) keep their trunk level of detail 0. The family
+is a column in the table.
+
+**D2. Size classes and budgets.** Bush, small tree (under 6 m), tree (6 to
+15 m), giant (over 15 m), each with a triangle budget measured from the
+five trees already adapted and fixed at task 1.2. The build fails over
+budget (spec).
+
+**D3. Split models by biome, load on demand.** `trees.glb` becomes one file
+per biome, loaded when a map uses a species of it (the map lists its object
+ids). A single file was considered: simpler, but every battle would pay for
+four biomes. The editor loads all of them.
+
+**D4. Level of detail at the strategic band.** A species gets a flat
+impostor crown (the existing strategic instancing for props) built by the
+same script, so a wooded large map stays in budget.
+
+**D5. Caatinga plants are authored in the Prestes kit.** New builders in
+`target_vegetation.py`, like the present mandacaru, xique-xique and
+macambira: columnar cacti from ribbed prisms, rosettes from blade fans.
+The species list is the owner's (task 1.1); the proposal's list is a
+candidate.
+
+**D6. Bushes are a family, not a species.** Per biome: three sizes, two
+shapes each, generated from the biome bush with different clump counts and
+flattening. Concealment by height reuses the stance rule the concealment
+system already has; the bush's height class is catalog data.
+
+**D7. Ids are stable.** Present ids (`tree-broad`, `cerrado-tree`, `bush`
+and so on) stay as aliases of the species they were (peroba, pequi, the
+cerrado bush), mapped on load, so saved maps and goldens do not move.
+
+**D8. Thorn patches slow movement through terrain data.** The low caatinga
+plants get a movement factor the same way vegetation kinds already slow a
+soldier; no new mechanic.
+
+## Risks / Trade-offs
+
+- [Refloreste is outside the repository; the build needs it on disk] → the
+  adapted `.glb` files are committed, as today; the build that reads
+  Refloreste stays an opt-in target and the docs say so.
+- [Twenty-odd species blow the frame budget] → D2, D3, D4 and the
+  performance scenario in the spec.
+- [Species look alike after flattening to low-poly] → a review sheet of all
+  species at the tactical band, approved by the owner before the catalog
+  entries land.
+- [The Amazon set is unused by the campaign] → it costs nothing at run time
+  under D3; it is kept because the owner asked for the whole suite.
+
+## Open Questions
+
+- Which flowering forms are worth a catalog entry (an ipê in flower is a
+  landmark; others may not read at this scale): decided on the review sheet.

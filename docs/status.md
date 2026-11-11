@@ -20,8 +20,26 @@ are written in the campaign book, none playable; there is no save/load.
 | Change | State | What is left |
 | --- | --- | --- |
 | `polish-menu-desk` | 31/35 | the owner's Aseprite redraws: both closed books, the reference pile, the gramophone |
-| `add-field-manual` | proposed 2026-11-11, 0/10 | a Manual part in the book "A Coluna Prestes", twelve text pages; replaces the dropped `video-tutorial-manual` |
+| `add-field-manual` | proposed 2026-11-11, 0/10, on hold (the owner: not yet) | a Manual part in the book "A Coluna Prestes", twelve text pages; replaces the dropped `video-tutorial-manual` |
 | campaign maps | the owner's hand work | each campaign map is drawn by the owner in the editor, as the skirmish maps are; missions follow the maps |
+
+Planned on 2026-11-11 at the owner's request (proposals only, nothing
+applied), in the order they should land:
+
+| Order | Change | Tasks | Lands |
+| --- | --- | --- | --- |
+| 1 | `faction-armies` | 15 | three armies (the Column, the legalist regulars, the patriotic battalions), period names for armies and sections, section types per army; starts with research into `docs/history/FORCES.md`, which also answers whether the police fought for the government |
+| 2 | `soldier-animation-and-textures` | 15 | wound, carry and death clips, the crouch-walk and aim redone, blends, drawn uniform textures per army with variants |
+| 3 | `troop-thumbnails-and-panel` | 14 | a rendered thumbnail for every section type (roster, cards, panel), roster type cards, the troop panel redrawn as rows, gauges and alerts |
+| 4 | `biome-trees-and-plants` | 17 | the whole Refloreste tree suite by biome adapted to Prestes, bush families, more cacti and caatinga plants |
+| 5 | `revise-buildings-and-stone` | 18 | every building modelled with openings that agree with the battle, new buildings, variants, rock kinds and built stone |
+| any time | `ambient-sound-and-voices` | 18 | the listening point, ambient beds, river/stream/pond, footsteps by ground, the commander's orders and the sections' answers (always clear), call-outs; the owner records the speech from a generated script |
+
+Why this order: uniforms and thumbnails need the armies; thumbnails need
+the uniforms. Trees and buildings are independent of those and of each
+other. Sound touches only the client and can run beside any of them; its
+voice lines wait for the board's final orders and for the forms of address
+the research fixes.
 
 Decisions of 2026-11-11 (the owner):
 

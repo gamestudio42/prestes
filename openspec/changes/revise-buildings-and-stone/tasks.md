@@ -1,0 +1,32 @@
+## 1. Choices
+
+- [ ] 1.1 Candidate list of new buildings (rural, town, military), each with a source or "generic period type", and of rock kinds with the regions they stand for; verify: the owner approves the lists, recorded in `docs/status.md`
+- [ ] 1.2 Review sheet of the seventeen present buildings as drawn today, with the features each should gain; verify: the owner marks the sheet
+
+## 2. Openings as one source
+
+- [ ] 2.1 `tools/export-openings.ts`: doors, windows, upper floors and towers of every catalog building to JSON for the art build; verify with a unit test against `openings.ts` for three buildings
+- [ ] 2.2 Explicit openings in shared data for buildings that declare them, beside the rule; verify with unit tests that a declared building's positions come from its declaration and the present buildings' positions are unchanged
+- [ ] 2.3 The model check: every exported building's opening markers and wall lines against the shared data (0.2 m), failing with the building and wall; verify with fixtures for a missing window, an extra door and a wall off its footprint
+
+## 3. Buildings
+
+- [ ] 3.1 The roof and feature library in `target_buildings.py` (gable, hip, lean-to, thatch, zinc; veranda, tower, chimney, plinth, frames); verify on the review sheet
+- [ ] 3.2 Rural buildings remodelled (farmhouse, barn, chapel, casa-sede, colonist-house, engenho, ferry-house); verify with the model check and the review sheet
+- [ ] 3.3 Town buildings remodelled (terraced-house, terraced-house-wide, sobrado, casa-terrea, venda, armazem, coreto, church, factory, warehouse); verify as 3.2
+- [ ] 3.4 The approved new buildings: builder, catalog row, openings, capacity, names in EN and PT-BR; verify with the model check, `pnpm check:content`, and a simulation test that a section enters, mans and is assaulted in one new building of each group
+- [ ] 3.5 Variants: atlas regions, the map document's `variant` (a new version that loads the older ones), the editor's picker; verify with the two-looks determinism test and a loader test of an older map
+- [ ] 3.6 The coded box buildings are removed and placement moves to `structures-layer.ts`; verify: `pnpm test`, the battle-map e2e and unchanged goldens
+
+## 4. Stone
+
+- [ ] 4.1 Rock kind builders and palettes, three sizes each, as a kind axis on the present stone ids; verify on the review sheet and with a unit test that cover and sight depend on size only
+- [ ] 4.2 Built stone: the dry stone wall line by rock kind, the corral, steps and retaining wall; verify with a view test of the wall on a slope and a simulation test of cover along it
+- [ ] 4.3 Names in EN and PT-BR, editor list grouped by kind with thumbnails; verify with `pnpm check:locales` and an editor e2e
+
+## 5. Gates
+
+- [ ] 5.1 Models split by group and loaded by what the map uses; strategic-band meshes; verify with the sixty-building performance e2e
+- [ ] 5.2 `docs/assets.md`: every building and stone with source and licence; verify: the register check passes
+- [ ] 5.3 `pnpm verify` and `openspec validate revise-buildings-and-stone --type change --strict`; verify: all pass, model sizes in `docs/status.md`
+- [ ] 5.4 Hand check by the owner: the two authored maps before and after, and a town built in the editor; findings in `docs/status.md`
