@@ -12,12 +12,12 @@ cold. Keep this file current as tasks close; delete it once
   (+15, ~19, -9); no main spec names a removed map any more (terrain
   hill and garrison scenario fixed after the sync); `openspec validate
   --specs` 23/23.
-- **Current change: add-map-objectives (1/17, started 2026-11-10).** 0.1
+- **Current change: add-map-objectives (8/18, started 2026-11-10).** 0.1
   done (prerequisites already archived). Plan revised 2026-11-10 for
   authored maps (objectives in map document v5, editor tool, map check; the
   test map's five objectives in design.md). 1.1 done (`Objective` in
   maps/types.ts). 1.3 done (document v5 `objectives`
-  and the editor objective tool; see its Apply note). 1.2 and 1.4 done (map check; the test map's five objectives, built by tools/make-test-map.ts). Section 1 (data) is complete. 2.1 done (protocol types; see its Apply note). 2.2 done (capture in systems/objectives.ts; goldens re-recorded). NEXT STEP: 2.3 (clock and outcome order: annihilation, broken, all objectives held 2 min, time limit by value, draw; `decidedBy` and values in the outcome event; frame `clock`). Work in small steps, commit each, and
+  and the editor objective tool; see its Apply note). 1.2 and 1.4 done (map check; the test map's five objectives, built by tools/make-test-map.ts). Section 1 (data) is complete. 2.1 done (protocol types; see its Apply note). 2.2 done (capture in systems/objectives.ts; goldens re-recorded). 2.3 done (clock and outcome order, `decidedBy`, `values` and the frame `clock`; see its Apply note and design.md Apply findings). NEXT STEP: 2.4 (commander goals: garrison value ≥ 2, attack by value, retake within 60 s, last-minutes push; tests "retake", "last minutes" and a fog test). Work in small steps, commit each, and
   update this file after each. Open points it inherits: presets A and C of the test map end
   in a 900 s stand-off (objectives should move the column; the gun bands in
   battle-report-weapons wait for it, `STAND_OFF_UNTIL_OBJECTIVES`); defend
@@ -25,11 +25,14 @@ cold. Keep this file current as tasks close; delete it once
   needs a facing of its own before fog can apply there).
 - Other open work: machine-gun-fire-feedback 12/13 (gates + the user's hand
   check), polish-menu-desk 31/35 (Aseprite sprites, needs the user),
-  video-tutorial-manual 0/19. Wish for later (user): each map as its own
+  video-tutorial-manual 0/19. retire-bootcamp is archived (2026-11-10).
+  Wish for later (user): each map as its own
   object on the desk instead of the sheet fan.
-- The user's first map `paiolzinho` (skirmish, small) is in
+- The user's first map `paiolzinho` (skirmish, small) is tracked in
   `packages/shared/src/maps/authored/` with `apps/game/public/maps/
-  paiolzinho.png`, untracked; the desk-start-screen baseline now shows it.
+  paiolzinho.png`; the desk-start-screen baseline shows it.
+- The `map-slots` spec's placeholder Purpose was written out 2026-11-10
+  (`openspec validate --specs` 23/23, no warning).
 
 The notes below are from finalizing author-game-maps (history).
 
@@ -138,8 +141,8 @@ deployment" can fail in the full parallel vitest run and passes alone.
 
 Other changes: machine-gun-fire-feedback 12/13 (only gates + the user's hand
 check), polish-menu-desk 31/35 (Aseprite sprites, needs the user's
-Aseprite window; task 6.6 done 2026-11-10: the open book redrawn in CSS, user approved; see its Apply note), retire-bootcamp complete (archive it when asked),
-add-map-objectives 0/17 and video-tutorial-manual 0/19 (after
+Aseprite window; task 6.6 done 2026-11-10: the open book redrawn in CSS, user approved; see its Apply note), retire-bootcamp archived 2026-11-10,
+add-map-objectives 8/18 (in progress) and video-tutorial-manual 0/19 (after
 author-game-maps).
 
 ### Built this session outside the task list (all asked by the user while authoring)
@@ -305,14 +308,15 @@ roofs, only the tower** (roof posts, `RoofDef` and "Ao telhado" removed);
 Read its `proposal.md`, `design.md`, specs and `tasks.md` first. Tasks:
 0.1 (archive prerequisites; add-battle-maps and add-deployment-phase are
 already archived, so verify with `openspec validate --specs` and mark),
-1.1–1.3 data and authored-map objectives (map document version 4), 2.1–2.6
-simulation (protocol, capture, clock and outcome, commander goals, goldens,
-clock starts at `battle_started`), 3.1–3.4 presentation (ObjectiveLayer,
+1.1–1.4 data and authored-map objectives (map document version 5), 2.1–2.6
+simulation (protocol, capture, clock and outcome — 2.1–2.3 done; 2.4
+commander goals, 2.5 goldens, 2.6 deployment anchors), 3.1–3.4 presentation
+(ObjectiveLayer,
 top-bar strip and clock, skirmish setup screen time limit and objectives,
-end panel), 4.1 battle report (**must** empty `STALLED_UNTIL_OBJECTIVES` in
-`tests/simulation/battle-maps-report.test.ts`, `LONG_UNTIL_OBJECTIVES` in
-`tests/simulation/battle-feel.test.ts` and restore the Bairro gun's 10
-bursts in `tests/simulation/battle-report-weapons.test.ts`), 4.2 gates, 4.3
+end panel), 4.1 battle report (empty `STAND_OFF_UNTIL_OBJECTIVES` in
+`tests/simulation/battle-report-weapons.test.ts` and restore the gun's 10
+bursts there — `LONG_UNTIL_OBJECTIVES` in `battle-feel.test.ts` is already
+empty and `STALLED_UNTIL_OBJECTIVES` no longer exists), 4.2 gates, 4.3
 the user's hand check.
 
 ## Progress log
@@ -358,3 +362,5 @@ the user's hand check.
 - 2026-11-09 River look: water stretches end flat (water-outline.ts insideEnds), the bed eases deep<->ford over FORD_TAPER 6 m (document.ts), three shoal bands on the deep side (battle-map-layer.ts shoals), ford colour 0x5f8381 at 0.55 opacity, gravel banks along fords too, smaller stones, no reed clumps. shared/view3d 271 and simulation 303 tests pass. Open question to the user: vegetation density per painted patch, look only or also concealment.
 
 - 2026-11-09: vegetation density per painted patch (normal/sparse/dense), the look only. Cell byte = kind | density<<4; compile strips it into raster.vegetationDensity; plant-meshes reads it. Editor select `prop-vegetation-density`. Recorded in design.md Apply findings.
+- 2026-11-10: add-map-objectives 2.3 done (clock, outcome order, `decidedBy`, `values`, frame `clock`; tests objectives-outcome 7/7, simulation 315/315, determinism unchanged, eslint clean). Also wrote out the `map-slots` spec Purpose (validate 23/23, no warning) and corrected this file's stale notes (7/18 -> 8/18, paiolzinho tracked, retire-bootcamp archived, 4.1 markers). Next: 2.4.
+

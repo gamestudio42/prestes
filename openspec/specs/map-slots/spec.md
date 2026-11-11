@@ -1,7 +1,10 @@
 # map-slots Specification
 
 ## Purpose
-TBD - created by archiving change author-game-maps. Update Purpose after archive.
+Gives every campaign chapter one authored map slot and holds the skirmish
+maps beside it: the editor's New and Open dialogs choose a slot, a slot holds
+at most one map, a mission plays the map saved for it, and the test map stays
+out of the player's map list.
 
 ## Requirements
 
