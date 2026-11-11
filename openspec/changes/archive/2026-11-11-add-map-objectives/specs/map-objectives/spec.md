@@ -1,3 +1,9 @@
+## Purpose
+
+Defines objectives as authored map data: capture and hold, the battle clock,
+victory by objective value, the HUD strip and flags, and the commander that
+plays them.
+
 ## ADDED Requirements
 
 ### Requirement: Objectives on every battle map

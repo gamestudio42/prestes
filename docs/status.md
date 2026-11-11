@@ -965,3 +965,11 @@ Last recorded manual run:
   objective-count warning. The same session played the queued orders, the
   wire crossings, the double-click centring, leaving the battle and the
   removed codex and found them working.
+
+## Open points
+
+- Defend and ambush still face the nearest enemy, seen or not; the AI's defend
+  needs a facing of its own before fog can apply there.
+- The desk e2e label-gap test fails at the base `6412ac9` (pre-existing). The
+  full parallel vitest run flakes on the long simulation files; they pass
+  alone, and `PRESTES_PREVIEW_GUARD=2` is needed on this machine.

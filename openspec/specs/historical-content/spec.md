@@ -153,9 +153,11 @@ localized title and text, at least one source reference and a confidence level
 (high, medium or low) taken from the project's history documents; events SHALL
 also have a date. Entries SHALL come only from material already sourced in
 `docs/history` (Macaulay as the baseline, with divergences recorded). The known
-historical corrections SHALL be shown as their own page. In the game the
-compendium SHALL be a pixel-art book with one tab per section, a list and a
-reading page that shows the source line and the confidence of the entry.
+historical corrections SHALL be shown as their own page, listing only the
+corrections to claims the game or its content makes; a correction for a claim
+the game does not make SHALL NOT be listed. In the game the compendium SHALL
+be a pixel-art book with one tab per section, a list and a reading page that
+shows the source line and the confidence of the entry.
 
 #### Scenario: Sections are filled from sourced material
 
@@ -172,6 +174,4 @@ reading page that shows the source line and the confidence of the entry.
 #### Scenario: Reading an entry
 
 - **WHEN** the player opens the Events tab and selects the 1922 revolt
-- **THEN** the page shows its date, text, source line and confidence, and the
-  correction that Prestes was not at the fort is reachable from the
-  corrections page
+- **THEN** the page shows its date, text, source line and confidence

@@ -112,6 +112,21 @@ conceals, or only paints the ground. Small rocks only cover a prone man; a
 boulder hides a standing one; posts and cacti stop no bullet; walls under
 1.2 m do not cover a standing man.
 
+## Objectives
+
+Every skirmish and test map needs 3 to 5 objectives. In the gameplay layer,
+choose the **objective** tool (key `J`) and click: a 16 m circle is placed
+with a flag at the point, named "Objetivo N"/"Objective N", value 1 and
+neutral. Select the flag or the area to edit, in the side panel, the PT-BR and
+EN names, the value (1 to 3), the radius (12 to 30 m) and the starting owner;
+drag moves the area and its flag together, `Delete` removes them, and every
+step is undoable.
+
+The check requires objectives reachable from both deployment areas, without
+overlap, with the flag out of deep water and out of a building footprint (the
+church's flag on its roof is allowed). The setup screen lists them and the
+battle draws their flags, outlines and capture rings.
+
 ## Checking and playing
 
 - **Check map** lists errors and warnings (missing names, sections off the
