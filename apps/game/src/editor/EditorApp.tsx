@@ -41,6 +41,8 @@ import {
   type TrenchParapet,
   type MapPalette,
   type MapProblem,
+  type Objective,
+  type ObjectiveOwner,
   type MapSize,
   type MapUse,
   type PositionDef,
@@ -58,7 +60,7 @@ import { LOCALES, translate, type Locale, type MessageKey } from '@prestes/conte
 import { loadLocale, saveLocale } from '../storage';
 import { autosave, exportDocument, listProjectMaps, loadLast, loadProjectMap, readDocumentFile, saveThumbnail, saveToProject, storePlaytest } from './persistence';
 import { missionLabel, OpenDialog, slotOf, SlotSelect, type Slot } from './MapSlots';
-import { EditorStore, replaceCommand, type SelectionItem, type ToolId } from './store';
+import { EditorStore, objectiveCircle, replaceCommand, type SelectionItem, type ToolId } from './store';
 import { editorBridge, type EditorBridge } from './test-bridge';
 import { EditorViewport, PROTECTION_COLORS, type CursorInfo } from './viewport';
 import { useThumbnails } from './thumbnails';
@@ -81,7 +83,7 @@ const TOOL_GROUPS: readonly { layer: string; tools: readonly ToolId[] }[] = [
   { layer: 'editor.layer.structures', tools: ['line', 'trench'] },
   { layer: 'editor.layer.objects', tools: ['place', 'trees'] },
   { layer: 'editor.layer.vegetation', tools: ['vegetation'] },
-  { layer: 'editor.layer.gameplay', tools: ['deployment'] },
+  { layer: 'editor.layer.gameplay', tools: ['deployment', 'objective'] },
 ];
 
 /**
@@ -110,6 +112,7 @@ const TOOL_KEYS: Record<ToolId, string> = {
   trees: 'Y',
   vegetation: 'P',
   deployment: 'K',
+  objective: 'J',
 };
 
 const OBJECT_GROUPS = ['building', 'stone', 'tree', 'post', 'cover', 'prop', 'decal'] as const;
@@ -125,6 +128,7 @@ function hintKey(tool: ToolId): string {
   if (tool === 'place') return 'editor.tool.hint.place';
   if (tool === 'trees') return 'editor.tool.hint.trees';
   if (tool === 'deployment') return 'editor.tool.hint.deployment';
+  if (tool === 'objective') return 'editor.tool.hint.objective';
   return 'editor.tool.hint.select';
 }
 
@@ -439,7 +443,7 @@ export function EditorApp(): ReactNode {
         <p className="editor-hint">{t(hintKey(tool))}</p>
         <ToolProperties store={store} t={t} />
         {view.cover ? <CoverPanel store={store} t={t} /> : null}
-        {tool === 'select' ? <SelectionPanel store={store} viewport={viewport.current} t={t} /> : null}
+        {tool === 'select' || tool === 'objective' ? <SelectionPanel store={store} viewport={viewport.current} t={t} /> : null}
         {settings.snap !== undefined && ['road', 'river', 'pond', 'line', 'bridge', 'ferry', 'place', 'select', 'deployment'].includes(tool) ? (
           <label>
             {t('editor.prop.snap')}
@@ -755,6 +759,12 @@ function SelectionPanel({ store, viewport, t }: { store: EditorStore; viewport: 
   const line = first.kind === 'line' && selection.length === 1 ? store.map.lines.find((item) => item.id === first.id) : undefined;
   const trench = first.kind === 'trench' && selection.length === 1 ? store.map.trenches.find((item) => item.id === first.id) : undefined;
   const river = first.kind === 'river' && selection.length === 1 ? store.map.rivers.find((item) => item.id === first.id) : undefined;
+  const objective = first.kind === 'objective' && selection.length === 1 ? (store.map.objectives ?? []).find((item) => item.id === first.id) : undefined;
+  // add-map-objectives 1.3: edits one objective in place (undoable like every vector edit).
+  const editObjective = (patch: (target: Objective) => Objective): void =>
+    store.editVector((draft) => {
+      draft.objectives = (draft.objectives ?? []).map((item) => (objective && item.id === objective.id ? patch(item) : item));
+    });
   // A selected point marks the stretches on either side of it.
   const nearPoint = (stretch: number): boolean => first.kind === 'river' && first.point !== undefined && (stretch === first.point || stretch === first.point - 1);
   return (
@@ -853,6 +863,35 @@ function SelectionPanel({ store, viewport, t }: { store: EditorStore; viewport: 
           <PositionFacts position={store.positionOf('trench', trench.id)} t={t} />
           <button type="button" data-testid="trench-flip" onClick={() => viewport?.flipTrenches([trench.id])}>{t('editor.trench.flip')}</button>
         </>
+      ) : null}
+      {objective ? (
+        <div data-testid="objective-props">
+          <label>
+            {t('editor.objective.namePt')}
+            <input type="text" data-testid="objective-name-pt" value={objective.name['pt-BR']} onChange={(event) => { const value = event.target.value; editObjective((item) => ({ ...item, name: { ...item.name, 'pt-BR': value } })); }} />
+          </label>
+          <label>
+            {t('editor.objective.nameEn')}
+            <input type="text" data-testid="objective-name-en" value={objective.name.en} onChange={(event) => { const value = event.target.value; editObjective((item) => ({ ...item, name: { ...item.name, en: value } })); }} />
+          </label>
+          <NumberField label={t('editor.objective.value')} value={objective.value} min={1} max={3} step={1} onChange={(value) => editObjective((item) => ({ ...item, value }))} />
+          <NumberField
+            label={t('editor.objective.radius')}
+            value={Math.round(Math.hypot(objective.area[0]!.x - objective.flag.x, objective.area[0]!.y - objective.flag.y))}
+            min={12}
+            max={30}
+            step={1}
+            onChange={(radius) => editObjective((item) => ({ ...item, area: objectiveCircle(item.flag, radius) }))}
+          />
+          <label>
+            {t('editor.objective.owner')}
+            <select data-testid="objective-owner" value={objective.owner} onChange={(event) => { const owner = event.target.value as ObjectiveOwner; editObjective((item) => ({ ...item, owner })); }}>
+              {(['neutral', 'column', 'legalist'] as const).map((owner) => (
+                <option key={owner} value={owner}>{t(`editor.objective.owner.${owner}`)}</option>
+              ))}
+            </select>
+          </label>
+        </div>
       ) : null}
       <div className="editor-row">
         {selection.some((item) => item.kind === 'object') ? <button type="button" onClick={() => viewport?.duplicateSelection()}>{t('editor.prop.duplicate')}</button> : null}

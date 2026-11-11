@@ -19,6 +19,7 @@ import {
   type TrenchParapet,
   type TreeBiome,
   type TreeDensity,
+  type Vec2,
 } from '@prestes/shared';
 
 /**
@@ -48,7 +49,8 @@ export type ToolId =
   | 'place'
   | 'trees'
   | 'vegetation'
-  | 'deployment';
+  | 'deployment'
+  | 'objective';
 
 export interface ToolSettings {
   size: number;
@@ -104,7 +106,20 @@ export type SelectionItem =
   | { kind: 'bridge' | 'ferry'; id: number; end?: 0 | 1 }
   | { kind: 'section'; side: 'column' | 'legalist'; index: number }
   /** add-deployment-phase 1.2: a side's deployment area, or one of its corners. */
-  | { kind: 'area'; side: 'column' | 'legalist'; point?: number };
+  | { kind: 'area'; side: 'column' | 'legalist'; point?: number }
+  /** add-map-objectives 1.3: an objective (area and flag move together). */
+  | { kind: 'objective'; id: number };
+
+/** add-map-objectives 1.3: a new objective's area is this circle (m), as a 16-gon. */
+export const OBJECTIVE_RADIUS = 16;
+
+/** A circle as a polygon, every 22.5 degrees, rounded to 0.1 m. */
+export function objectiveCircle(centre: Vec2, radius: number): Vec2[] {
+  return Array.from({ length: 16 }, (_, index) => {
+    const angle = (index / 16) * Math.PI * 2;
+    return { x: Math.round((centre.x + Math.cos(angle) * radius) * 10) / 10, y: Math.round((centre.y + Math.sin(angle) * radius) * 10) / 10 };
+  });
+}
 
 /** A dirty region of the map after an edit (metres); null is the whole map. */
 export type DirtyBox = { minX: number; minY: number; maxX: number; maxY: number } | null;
@@ -379,6 +394,8 @@ export class EditorStore {
         return item.index < this.map.deployment[item.side].sections.length;
       case 'area':
         return item.point === undefined || item.point < this.map.deployment[item.side].area.length;
+      case 'objective':
+        return (this.map.objectives ?? []).some((objective) => objective.id === item.id);
     }
   }
 

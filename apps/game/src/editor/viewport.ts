@@ -25,7 +25,7 @@ import {
 import { SceneView } from '@prestes/view3d';
 import { loadGraphicsSettings } from '../storage';
 import { fill, layerOf, sampleHeight, Stroke } from './brush';
-import { rasterCommand, type EditorStore, type SelectionItem } from './store';
+import { OBJECTIVE_RADIUS, objectiveCircle, rasterCommand, type EditorStore, type SelectionItem } from './store';
 
 /**
  * The editor's view (add-map-editor): the game's own SceneView showing the
@@ -50,6 +50,7 @@ const COLORS = {
   legalist: 0x4a7fd6,
   hatch: 0xa6d96a,
   port: 0xf4ead2,
+  objective: 0xf4ead2,
 };
 
 /** refine-map-editor 6.1: slot dots by what they protect (the panel's legend uses the same). */
@@ -458,6 +459,32 @@ export class EditorViewport {
       });
       return;
     }
+    if (tool === 'objective') {
+      // add-map-objectives 1.3: a click on an objective takes it (drag moves it); elsewhere places a new one.
+      const hit = this.objectiveAt(point);
+      if (hit) {
+        this.store.setSelection([hit]);
+        this.drag = { kind: 'move', start: point, current: point, items: [hit] };
+        return;
+      }
+      const snapped = this.snap(point);
+      let id = 0;
+      this.store.editVector((draft) => {
+        const objectives = [...(draft.objectives ?? [])];
+        id = this.store.nextId(objectives);
+        objectives.push({
+          id,
+          name: { en: `Objective ${id}`, 'pt-BR': `Objetivo ${id}` },
+          area: objectiveCircle(snapped, OBJECTIVE_RADIUS),
+          flag: { x: snapped.x, y: snapped.y },
+          value: 1,
+          owner: 'neutral',
+        });
+        draft.objectives = objectives;
+      });
+      this.store.setSelection([{ kind: 'objective', id }]);
+      return;
+    }
     if (tool === 'deployment' || tool === 'select') {
       const hit = this.hitTest(point, tool === 'deployment');
       if (hit) {
@@ -775,6 +802,18 @@ export class EditorViewport {
             }
             break;
           }
+          case 'objective': {
+            draft.objectives = (draft.objectives ?? []).map((objective) =>
+              objective.id === item.id
+                ? {
+                    ...objective,
+                    area: objective.area.map((corner) => ({ x: round(corner.x + dx), y: round(corner.y + dy) })),
+                    flag: { x: round(objective.flag.x + dx), y: round(objective.flag.y + dy) },
+                  }
+                : objective,
+            );
+            break;
+          }
           default: {
             const target = polylineOf(draft, item);
             if (!target) break;
@@ -804,6 +843,9 @@ export class EditorViewport {
             draft.ferries = draft.ferries.filter((entry) => entry.id !== item.id);
             break;
           case 'section':
+            break;
+          case 'objective':
+            draft.objectives = (draft.objectives ?? []).filter((objective) => objective.id !== item.id);
             break;
           case 'area': {
             // A corner goes while three remain; the area itself cannot be deleted.
@@ -844,6 +886,15 @@ export class EditorViewport {
   }
 
   // --- hit tests -------------------------------------------------------------
+
+  /** add-map-objectives 1.3: the objective whose flag is under the pointer, else the one whose area holds it. */
+  private objectiveAt(point: Vec2): SelectionItem | null {
+    const objectives = this.store.map.objectives ?? [];
+    const flag = objectives.find((objective) => Math.hypot(objective.flag.x - point.x, objective.flag.y - point.y) <= this.pick);
+    if (flag) return { kind: 'objective', id: flag.id };
+    const inside = objectives.find((objective) => insideDeploymentArea(objective.area as Vec2[], point.x, point.y));
+    return inside ? { kind: 'objective', id: inside.id } : null;
+  }
 
   private hitTest(point: Vec2, sectionsOnly: boolean): SelectionItem | null {
     const map = this.store.map;
@@ -1093,6 +1144,12 @@ export class EditorViewport {
         });
       }
     }
+    // add-map-objectives 1.3: each objective's area in its owner's colour, and its flag.
+    for (const objective of map.objectives ?? []) {
+      const colour = selected({ kind: 'objective', id: objective.id }) ? COLORS.selection : objective.owner === 'neutral' ? COLORS.objective : COLORS[objective.owner];
+      this.overlay.add(this.line(objective.area as Vec2[], colour, true));
+      this.overlay.add(this.marker(objective.flag, colour, pick * (tool === 'objective' ? 0.9 : 0.6)));
+    }
     this.drawCoverHover();
     // Drafts and the cursor.
     const drag = this.drag;
@@ -1205,6 +1262,8 @@ function itemPoint(map: EditableMap, item: SelectionItem): Vec2 | null {
       const ferry = map.ferries.find((entry) => entry.id === item.id);
       return ferry ? (item.end === 1 ? ferry.landingB : ferry.landingA) : null;
     }
+    case 'objective':
+      return (map.objectives ?? []).find((entry) => entry.id === item.id)?.flag ?? null;
     default: {
       const target = polylineOf(map, item);
       if (!target) return null;

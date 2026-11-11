@@ -776,3 +776,23 @@ test('painted ground, walls, fences and posts draw as pixel art', async ({ page 
   await settle(page);
   await expect(page.getByTestId('editor-viewport')).toHaveScreenshot('editor-painted-ground.png', { maxDiffPixelRatio: 0.02 });
 });
+
+// add-map-objectives 1.3: the objective tool places an objective, its fields edit it, undo takes it back.
+test('the objective tool places, names and removes an objective', async ({ page }) => {
+  await openEditor(page);
+  await newMap(page, 'teste-objetivo', 'small');
+  await tool(page, 'objective');
+  await clickGround(page, 10, -20);
+  const objectives = async () => ((await page.evaluate(() => (window as unknown as Bridge).__prestesEditor!.document())) as { objectives?: { name: { 'pt-BR': string }; owner: string; flag: { x: number; y: number } }[] }).objectives ?? [];
+  await expect.poll(async () => (await objectives()).length).toBe(1);
+  const placed = (await objectives())[0]!;
+  expect(Math.hypot(placed.flag.x - 10, placed.flag.y + 20)).toBeLessThan(2);
+  await page.getByTestId('objective-name-pt').fill('Ponte');
+  await page.getByTestId('objective-owner').selectOption('legalist');
+  await expect.poll(async () => (await objectives())[0]?.owner).toBe('legalist');
+  expect((await objectives())[0]!.name['pt-BR']).toBe('Ponte');
+  await page.getByTestId('editor-undo').click();
+  await expect.poll(async () => (await objectives())[0]?.owner).toBe('neutral');
+  await page.keyboard.press('Delete');
+  await expect.poll(async () => (await objectives()).length).toBe(0);
+});
