@@ -1020,8 +1020,8 @@
 
 /* --- Options compass ------------------------------------------------------ */
 .desk-options-screen {
-  width: min(760px, calc(100vw - 48px));
-  padding: 38px 46px 26px 26px;
+  width: min(560px, calc(100vw - 48px));
+  padding: 32px 40px 22px;
   border: 2px solid var(--book-ink);
   background: var(--book-paper);
   box-shadow: 6px 6px 0 rgba(8, 5, 2, 0.75);
@@ -1030,34 +1030,71 @@
 }
 
 .desk-options-header {
-  margin-bottom: 14px;
+  margin-bottom: 10px;
 }
 
-.desk-options-body {
+.desk-options-list {
   display: flex;
+  flex-direction: column;
+}
+
+.desk-options-row {
+  display: grid;
+  grid-template-columns: 26px minmax(0, 1fr) auto;
   align-items: center;
-  gap: 26px;
+  gap: 12px;
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 2px;
+  border: 0;
+  border-bottom: 1px dashed var(--book-edge);
+  background: transparent;
+  color: var(--book-ink);
+  font: 500 16px/1.25 var(--px-font);
+  text-align: left;
+  cursor: pointer;
 }
 
-.desk-options-art {
-  flex: none;
-  width: 192px;
-  height: 192px;
-  image-rendering: pixelated;
+.desk-options-row:last-child {
+  border-bottom: 0;
 }
 
-.desk-options-controls {
-  flex: 1;
-  min-width: 0;
+.desk-options-row:hover:not(:disabled),
+.desk-options-row:focus-visible {
+  background: rgba(142, 58, 44, 0.08);
+  color: var(--book-accent);
+  outline: none;
+}
+
+.desk-options-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--book-accent);
+}
+
+.desk-options-row:hover .desk-options-icon,
+.desk-options-row:focus-visible .desk-options-icon {
+  color: inherit;
 }
 
 /* refine-map-editor D4: when a graphics option takes effect. */
 .desk-options-note {
-  margin: 0 0 4px;
-  padding-left: 28px;
+  margin: 0;
+  padding: 0 2px 10px 38px;
+  border-bottom: 1px dashed var(--book-edge);
   color: var(--book-ink-soft);
-  font: 400 13px/1.3 var(--px-font);
+  font: 400 13px/1.35 var(--px-font);
   opacity: 0.8;
+}
+
+.desk-options-row.desk-language {
+  cursor: default;
+}
+
+.desk-options-row.desk-language:hover {
+  background: transparent;
+  color: var(--book-ink);
 }
 
 /* --- Skirmish map fan ----------------------------------------------------- */
@@ -1738,21 +1775,7 @@
 
   .desk-options-screen {
     width: 100%;
-    padding: 32px 40px 18px 16px;
-  }
-
-  .desk-options-body {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .desk-options-art {
-    width: 144px;
-    height: 144px;
-  }
-
-  .desk-options-controls {
-    width: 100%;
+    padding: 26px 24px 16px;
   }
 
   .desk-maps {
