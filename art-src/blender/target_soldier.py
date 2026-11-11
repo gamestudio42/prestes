@@ -415,6 +415,117 @@ def corpse(p: Poser) -> None:
     p.swing("rifle", -110)
 
 
+# ------------------------------------------------------------ wound clips
+# soldier-animation-and-textures 1.1. The hurt side is the right leg and the
+# left hand presses the wound on the right flank; the view mirrors nothing.
+LIMP_STRIDE = 0.7
+
+
+def hold_wound(p: Poser) -> None:
+    """The left hand presses the right flank, the body bent over the wound,
+    the rifle still slung."""
+    slung(p)
+    p.swing("chest", 16)
+    p.side("chest", -6)
+    p.swing("head", -6)
+    p.swing("upper_arm.L", 25)
+    p.swing("forearm.L", 95)
+    p.side("upper_arm.L", -35)
+
+
+def limp_plant(p: Poser) -> None:
+    """The good (left) leg steps out long; the hurt leg trails stiff."""
+    hold_wound(p)
+    p.swing("thigh.L", 26 * LIMP_STRIDE * STRIDE)
+    p.swing("shin.L", -8)
+    p.swing("thigh.R", -14 * LIMP_STRIDE * STRIDE)
+    p.swing("shin.R", -6)
+    p.root(z=0.0)
+
+
+def limp_load(p: Poser) -> None:
+    """Weight on the hurt leg: a short, stiff step, the body sags and leans
+    off it."""
+    hold_wound(p)
+    p.swing("thigh.R", 12 * LIMP_STRIDE * STRIDE)
+    p.swing("shin.R", -4)
+    p.swing("thigh.L", -10 * LIMP_STRIDE * STRIDE)
+    p.swing("shin.L", -35)
+    p.swing("chest", 22)
+    p.root(roll=-4, z=-0.05)
+
+
+def lying_wounded(p: Poser, writhe: float) -> None:
+    """On his side as `wounded`, hands at the wound; `writhe` 0..1 draws the
+    knees up and rolls him a little, so a man down is never still."""
+    wounded(p)
+    p.root(roll=90 - 8 * writhe, x=-0.85, z=0.12)
+    p.swing("thigh.L", 50 + 25 * writhe)
+    p.swing("shin.L", -70 - 20 * writhe)
+    p.swing("thigh.R", 30 + 15 * writhe)
+    p.swing("upper_arm.R", 40 + 20 * writhe)
+    p.swing("forearm.R", 80)
+    p.swing("upper_arm.L", 60 - 15 * writhe)
+    p.swing("forearm.L", 60 + 20 * writhe)
+    p.swing("head", 10 + 15 * writhe)
+
+
+def carry_arms(p: Poser) -> None:
+    """Fireman's carry: the man over the right shoulder, the right arm
+    round his legs, the left steadying him; the rifle slung."""
+    slung(p)
+    p.swing("chest", 18)
+    p.swing("head", -10)
+    p.swing("upper_arm.R", 70)
+    p.swing("forearm.R", 80)
+    p.swing("upper_arm.L", 55)
+    p.swing("forearm.L", 70)
+    p.side("upper_arm.L", LEFT_REACH)
+
+
+def carried(p: Poser, bob: float) -> None:
+    """Over the carrier's right shoulder, face down, the hips on the
+    shoulder: legs hang in front, the body and arms behind. Placed at the
+    carrier's origin by the view; `bob` follows the carrier's steps."""
+    p.root(pitch=-90, x=-0.2, y=-0.95, z=1.5 + 0.03 * bob)
+    p.swing("chest", 75)
+    p.swing("head", 20)
+    p.swing("thigh.L", 70)
+    p.swing("thigh.R", 64)
+    p.swing("shin.L", -30)
+    p.swing("shin.R", -24)
+    p.swing("upper_arm.L", 30 + 8 * bob)
+    p.swing("upper_arm.R", 24 - 8 * bob)
+    p.swing("rifle", -90)
+
+
+def kneel_treat(p: Poser, reach: float) -> None:
+    """Kneeling on the right knee beside a man on the ground, both hands down
+    at his wound; `reach` 0..1 works the hands."""
+    p.root(z=-0.42)
+    p.swing("thigh.L", 85)
+    p.swing("shin.L", -85)
+    p.swing("thigh.R", -5)
+    p.swing("shin.R", -100)
+    p.swing("chest", 40 + 8 * reach)
+    p.swing("head", 15)
+    p.swing("upper_arm.L", 70 + 10 * reach)
+    p.swing("forearm.L", 30)
+    p.swing("upper_arm.R", 65 + 10 * (1 - reach))
+    p.swing("forearm.R", 35)
+    p.shift("rifle", out=SLING_OUT, up=-0.32, back=SLING_BACK)
+    p.swing("rifle", -10)
+
+
+def treated(p: Poser, breath: float) -> None:
+    """On his back, still, being treated; only the chest and head move."""
+    corpse(p)
+    p.side("upper_arm.L", 30)
+    p.side("upper_arm.R", -25)
+    p.swing("chest", 2 * breath)
+    p.swing("head", 10 + 6 * breath)
+
+
 def build():
     reset()
     bpy.context.scene.render.fps = FPS
@@ -463,6 +574,34 @@ def build():
     clip(rig, poser, "hit", [(1, lambda p: hit(p, 0)), (4, lambda p: hit(p, 1)), (8, lambda p: hit(p, 0.85))], loop=False)
     clip(rig, poser, "wounded", [(1, wounded), (24, wounded)], loop=False)
     clip(rig, poser, "corpse", [(1, corpse), (24, corpse)], loop=False)
+    # Wound clips (1.1). The limp's cycle is longer than the walk's: the
+    # simulation moves a lightly or moderately wounded man slower.
+    clip(rig, poser, "limp", [
+        (1, limp_plant),
+        (9, lambda p: (hold_wound(p), p.swing("thigh.R", 0), p.root(z=0.02))),
+        (15, limp_load),
+        (21, lambda p: (hold_wound(p), p.swing("shin.L", -30), p.root(z=-0.02))),
+    ])
+    clip(rig, poser, "hold-wound", [(1, hold_wound), (24, lambda p: (hold_wound(p), p.swing("chest", 20))), (48, hold_wound)], loop=False)
+    clip(rig, poser, "lying-wounded", [
+        (1, lambda p: lying_wounded(p, 0)),
+        (18, lambda p: lying_wounded(p, 1)),
+        (30, lambda p: lying_wounded(p, 0.4)),
+    ])
+    clip(rig, poser, "carry", [
+        (1, lambda p: walk_a(p, carry_arms)),
+        (9, lambda p: walk_pass(p, carry_arms)),
+        (17, lambda p: walk_b(p, carry_arms)),
+        (25, lambda p: walk_pass_b(p, carry_arms)),
+    ])
+    clip(rig, poser, "carried", [
+        (1, lambda p: carried(p, 0)),
+        (9, lambda p: carried(p, 1)),
+        (17, lambda p: carried(p, 0)),
+        (25, lambda p: carried(p, 1)),
+    ])
+    clip(rig, poser, "kneel-treat", [(1, lambda p: kneel_treat(p, 0)), (16, lambda p: kneel_treat(p, 1))])
+    clip(rig, poser, "treated", [(1, lambda p: treated(p, 0)), (36, lambda p: treated(p, 1))])
 
     poser.clear()
     return [save_and_export("soldier", "characters")]
