@@ -12,12 +12,17 @@ cold. Keep this file current as tasks close; delete it once
   (+15, ~19, -9); no main spec names a removed map any more (terrain
   hill and garrison scenario fixed after the sync); `openspec validate
   --specs` 23/23.
-- **Current change: add-map-objectives (10/18, started 2026-11-10).** 0.1
-  done (prerequisites already archived). Plan revised 2026-11-10 for
-  authored maps (objectives in map document v5, editor tool, map check; the
-  test map's five objectives in design.md). 1.1 done (`Objective` in
-  maps/types.ts). 1.3 done (document v5 `objectives`
-  and the editor objective tool; see its Apply note). 1.2 and 1.4 done (map check; the test map's five objectives, built by tools/make-test-map.ts). Section 1 (data) is complete. 2.1 done (protocol types; see its Apply note). 2.2 done (capture in systems/objectives.ts; goldens re-recorded). 2.3 done (clock and outcome order, `decidedBy`, `values` and the frame `clock`; see its Apply note and design.md Apply findings). 2.4 done (commander: objective guards, attack by value, retake, last minutes; `objectives-commander.test.ts`). 2.5 done (goldens re-recorded, reason in determinism-golden.json). NEXT STEP: 2.6 (the clock and capture already start at `battle_started`; still to do: the commander's deployment anchors include its objectives, with the tests "clock waits for the deployment" and "enemy deploys on its objectives"). Work in small steps, commit each, and
+- **Current change: add-map-objectives (12/18, started 2026-11-10).** Section 1
+  (data) is complete: 1.1–1.4 (the `Objective` type, the map check, document
+  v5 with the editor objective tool, the test map's five objectives). Section 2
+  (simulation) is complete: 2.1 protocol, 2.2 capture, 2.3 clock and outcome
+  (`decidedBy`, `values`, frame `clock`), 2.4 commander goals (objective
+  guards, attack by value, retake, last minutes), 2.5 goldens re-recorded,
+  2.6 the clock and capture wait for `battle_started` and the deployment
+  anchors include the objectives. Each has its Apply note in tasks.md and a
+  bullet in design.md Apply findings. NEXT STEP: 3.1 (`ObjectiveLayer`: a
+  flagpole with the owner's colour, the area outline and the capture ring;
+  screenshot review on each map; asset register `placeholder:flag`). Work in small steps, commit each, and
   update this file after each. Open points it inherits: presets A and C of the test map end
   in a 900 s stand-off (objectives should move the column; the gun bands in
   battle-report-weapons wait for it, `STAND_OFF_UNTIL_OBJECTIVES`); defend
@@ -146,7 +151,7 @@ deployment" can fail in the full parallel vitest run and passes alone.
 Other changes: machine-gun-fire-feedback 12/13 (only gates + the user's hand
 check), polish-menu-desk 31/35 (Aseprite sprites, needs the user's
 Aseprite window; task 6.6 done 2026-11-10: the open book redrawn in CSS, user approved; see its Apply note), retire-bootcamp archived 2026-11-10,
-add-map-objectives 10/18 (in progress) and video-tutorial-manual 0/19 (after
+add-map-objectives 12/18 (in progress) and video-tutorial-manual 0/19 (after
 author-game-maps).
 
 ### Built this session outside the task list (all asked by the user while authoring)
@@ -313,8 +318,8 @@ Read its `proposal.md`, `design.md`, specs and `tasks.md` first. Tasks:
 0.1 (archive prerequisites; add-battle-maps and add-deployment-phase are
 already archived, so verify with `openspec validate --specs` and mark),
 1.1–1.4 data and authored-map objectives (map document version 5), 2.1–2.6
-simulation (protocol, capture, clock and outcome, commander goals and goldens
-— 2.1–2.5 done; 2.6 the deployment anchors on objectives), 3.1–3.4 presentation
+simulation (protocol, capture, clock and outcome, commander goals, goldens and
+deployment anchors — 2.1–2.6 done), 3.1–3.4 presentation
 (ObjectiveLayer,
 top-bar strip and clock, skirmish setup screen time limit and objectives,
 end panel), 4.1 battle report (empty `STAND_OFF_UNTIL_OBJECTIVES` in
@@ -368,5 +373,6 @@ the user's hand check.
 - 2026-11-09: vegetation density per painted patch (normal/sparse/dense), the look only. Cell byte = kind | density<<4; compile strips it into raster.vegetationDensity; plant-meshes reads it. Editor select `prop-vegetation-density`. Recorded in design.md Apply findings.
 - 2026-11-10: add-map-objectives 2.3 done (clock, outcome order, `decidedBy`, `values`, frame `clock`; tests objectives-outcome 7/7, simulation 315/315, determinism unchanged, eslint clean). Also wrote out the `map-slots` spec Purpose (validate 23/23, no warning) and corrected this file's stale notes (7/18 -> 8/18, paiolzinho tracked, retire-bootcamp archived, 4.1 markers). Next: 2.4.
 - 2026-11-10: add-map-objectives 2.4 and 2.5 done. The commander now guards held value-2+ objectives, attacks the highest-value objective it does not hold, retakes one the player took within 60 s and pushes in the last three minutes; `objectives-commander.test.ts` 4/4, simulation 319/319, goldens re-recorded (b3e2538f/9fa6a458). Seen: the `tests/simulation` report tests now end `none` at 900 s (20-min clock past the cap, scripted player ignores objectives) — 4.1's work. Next: 2.6.
+- 2026-11-10: add-map-objectives 2.6 done. The clock and the capture wait for `battle_started` (tested); the commander's deployment anchors include the objectives it holds with value 2 or more (`OBJECTIVE_ANCHOR_SCORE`; the church flag stands 5 m outside the default area, so the anchor is clamped clear of the boundary and the footprint, 18 m from the flag, inside the objective circle). Simulation 321/321; determinism unchanged (the golden runs open no deployment). Next: 3.1 (ObjectiveLayer).
 
 
