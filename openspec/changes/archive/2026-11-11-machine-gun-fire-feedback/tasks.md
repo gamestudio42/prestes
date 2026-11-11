@@ -30,5 +30,6 @@
 
 ## 6. Gates
 
-- [ ] 6.1 Run `pnpm check`, `pnpm check:determinism` and `pnpm e2e`; verify: all green, with the user's hand check of the gun's sound and tracers before archive
+- [x] 6.1 Run `pnpm check`, `pnpm check:determinism` and `pnpm e2e`; verify: all green, with the user's hand check of the gun's sound and tracers before archive
   - Apply note (2026-11-09): `pnpm check` green (656 tests; two earlier runs timed out on 20 s tests while another session ran battle reports on the same machine, and passed alone and on the rerun), `pnpm check:determinism` ok (3 x 11 golden unchanged, mixed-roster vila-militar and fazenda updated), `pnpm e2e` 111 passed. Left open for the user's hand check of the new sound and the thinner tracers.
+  - Apply note (2026-11-11): the user's hand check passed ("testes realizados, ok"). `pnpm verify`: check (784 tests), build, bundle budget, determinism, tick budget and `openspec validate --specs` pass; `pnpm e2e` 128 of 130: `desk.spec` label gap fails since the base `6412ac9` (outside this change) and `performance.spec` tactical frame budget measured 23.7 ms at the end of the loaded gate run and passes alone. The battle-lab delta was rewritten on top of the current main requirement (objectives, the 15-minute limit and the authored-map report came after it was written).
