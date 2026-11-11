@@ -12,26 +12,22 @@ cold. Keep this file current as tasks close; delete it once
   (+15, ~19, -9); no main spec names a removed map any more (terrain
   hill and garrison scenario fixed after the sync); `openspec validate
   --specs` 23/23.
-- **Current change: add-map-objectives (12/18, started 2026-11-10).** Section 1
-  (data) is complete: 1.1–1.4 (the `Objective` type, the map check, document
-  v5 with the editor objective tool, the test map's five objectives). Section 2
-  (simulation) is complete: 2.1 protocol, 2.2 capture, 2.3 clock and outcome
-  (`decidedBy`, `values`, frame `clock`), 2.4 commander goals (objective
-  guards, attack by value, retake, last minutes), 2.5 goldens re-recorded,
-  2.6 the clock and capture wait for `battle_started` and the deployment
-  anchors include the objectives. Each has its Apply note in tasks.md and a
-  bullet in design.md Apply findings. NEXT STEP: 3.1 (`ObjectiveLayer`: a
+- **Current change: add-map-objectives (13/18, started 2026-11-10).** Sections 1
+  (data) and 2 (simulation) are complete: 1.1–1.4, 2.1 protocol, 2.2 capture,
+  2.3 clock and outcome (`decidedBy`, `values`, frame `clock`), 2.4 commander
+  goals (objective guards, attack by value, retake, last minutes), 2.5 goldens,
+  2.6 deployment anchors and the clock/capture waiting for `battle_started`.
+  4.1 is also done (user, 2026-11-10: the tests' player must have objectives):
+  the report's player plays the objectives, the report runs a 15-minute clock
+  and gains `decidedBy` and objective owners/capture times; the battle-lab
+  "Battle feel report" band moves to "ends within the 15-minute limit, no
+  silence over 120 s" (MODIFIED delta). NEXT STEP: 3.1 (`ObjectiveLayer`: a
   flagpole with the owner's colour, the area outline and the capture ring;
-  screenshot review on each map; asset register `placeholder:flag`). Work in small steps, commit each, and
-  update this file after each. Open points it inherits: presets A and C of the test map end
-  in a 900 s stand-off (objectives should move the column; the gun bands in
-  battle-report-weapons wait for it, `STAND_OFF_UNTIL_OBJECTIVES`); defend
+  screenshot review on each map; asset register `placeholder:flag`); then
+  3.2-3.4, 4.2 gates and 4.3 the user's hand check. Work in small steps, commit each, and
+  update this file after each. Open points it inherits: defend
   and ambush still face the nearest enemy, seen or not (the AI's defend
-  needs a facing of its own before fog can apply there). New, for 4.1: after
-  2.4 the report tests under `tests/simulation` end `none` at their 900 s cap
-  (the default 20-min clock is past it and the scripted player does not play
-  the objectives); 4.1 must give the report a limit and the bands, and the
-  scripted counterattack should target the highest-value objective not held.
+  needs a facing of its own before fog can apply there).
 - Other open work: machine-gun-fire-feedback 12/13 (gates + the user's hand
   check), polish-menu-desk 31/35 (Aseprite sprites, needs the user),
   video-tutorial-manual 0/19. retire-bootcamp is archived (2026-11-10).
@@ -151,7 +147,7 @@ deployment" can fail in the full parallel vitest run and passes alone.
 Other changes: machine-gun-fire-feedback 12/13 (only gates + the user's hand
 check), polish-menu-desk 31/35 (Aseprite sprites, needs the user's
 Aseprite window; task 6.6 done 2026-11-10: the open book redrawn in CSS, user approved; see its Apply note), retire-bootcamp archived 2026-11-10,
-add-map-objectives 12/18 (in progress) and video-tutorial-manual 0/19 (after
+add-map-objectives 13/18 (in progress) and video-tutorial-manual 0/19 (after
 author-game-maps).
 
 ### Built this session outside the task list (all asked by the user while authoring)
@@ -322,10 +318,9 @@ simulation (protocol, capture, clock and outcome, commander goals, goldens and
 deployment anchors — 2.1–2.6 done), 3.1–3.4 presentation
 (ObjectiveLayer,
 top-bar strip and clock, skirmish setup screen time limit and objectives,
-end panel), 4.1 battle report (empty `STAND_OFF_UNTIL_OBJECTIVES` in
-`tests/simulation/battle-report-weapons.test.ts` and restore the gun's 10
-bursts there — `LONG_UNTIL_OBJECTIVES` in `battle-feel.test.ts` is already
-empty and `STALLED_UNTIL_OBJECTIVES` no longer exists), 4.2 gates, 4.3
+end panel — 3.1–3.4 open), 4.1 battle report (done: the player plays the
+objectives, 15-minute clock, `decidedBy` and objectives in the report, the
+battle-lab band widened to the limit and 120 s silence), 4.2 gates, 4.3
 the user's hand check.
 
 ## Progress log
@@ -374,5 +369,6 @@ the user's hand check.
 - 2026-11-10: add-map-objectives 2.3 done (clock, outcome order, `decidedBy`, `values`, frame `clock`; tests objectives-outcome 7/7, simulation 315/315, determinism unchanged, eslint clean). Also wrote out the `map-slots` spec Purpose (validate 23/23, no warning) and corrected this file's stale notes (7/18 -> 8/18, paiolzinho tracked, retire-bootcamp archived, 4.1 markers). Next: 2.4.
 - 2026-11-10: add-map-objectives 2.4 and 2.5 done. The commander now guards held value-2+ objectives, attacks the highest-value objective it does not hold, retakes one the player took within 60 s and pushes in the last three minutes; `objectives-commander.test.ts` 4/4, simulation 319/319, goldens re-recorded (b3e2538f/9fa6a458). Seen: the `tests/simulation` report tests now end `none` at 900 s (20-min clock past the cap, scripted player ignores objectives) — 4.1's work. Next: 2.6.
 - 2026-11-10: add-map-objectives 2.6 done. The clock and the capture wait for `battle_started` (tested); the commander's deployment anchors include the objectives it holds with value 2 or more (`OBJECTIVE_ANCHOR_SCORE`; the church flag stands 5 m outside the default area, so the anchor is clamped clear of the boundary and the footprint, 18 m from the flag, inside the objective circle). Simulation 321/321; determinism unchanged (the golden runs open no deployment). Next: 3.1 (ObjectiveLayer).
+- 2026-11-10: add-map-objectives 4.1 done (user: the tests' player must have objectives). The report's player holds its line, then counterattacks when outnumbering the enemy or holding less objective value, the whole force to the objective of most value it does not hold; the report runs a 15-minute clock and gains `decidedBy` and the objectives (owner, value, capture time). Bands: ends within the limit, no silence over 120 s (MODIFIED battle-lab delta). Report tests 16/16 (3 seeds, enemy deployed, mixed rosters); weapons presets A/B/C hold the gun bands. Next: 3.1.
 
 
