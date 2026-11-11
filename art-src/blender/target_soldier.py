@@ -526,6 +526,114 @@ def treated(p: Poser, breath: float) -> None:
     p.swing("head", 10 + 6 * breath)
 
 
+# ------------------------------------------------------------ death clips
+# soldier-animation-and-textures 1.2: deaths by stance and direction, each
+# ending held in one of four corpse poses (`corpse` on his back is kept for
+# the view of today).
+
+
+def corpse_face(p: Poser) -> None:
+    """Face down, head turned, arms under and beside him."""
+    p.root(pitch=-90, y=-0.9, z=0.1)
+    p.swing("head", -20)
+    p.side("head", 30)
+    p.side("upper_arm.L", 40)
+    p.swing("upper_arm.R", 20)
+    p.swing("forearm.R", 60)
+    p.spread("thigh.L", 10)
+    p.swing("thigh.R", 6)
+    p.swing("shin.R", -25)
+    p.swing("rifle", 110)
+
+
+def corpse_side(p: Poser) -> None:
+    """On his side, curled, the top arm fallen across the body."""
+    p.root(roll=90, x=-0.85, z=0.12)
+    p.swing("chest", 18)
+    p.swing("head", 12)
+    p.swing("thigh.L", 40)
+    p.swing("shin.L", -60)
+    p.swing("thigh.R", 20)
+    p.swing("shin.R", -35)
+    p.swing("upper_arm.L", 70)
+    p.swing("forearm.L", 30)
+    p.swing("upper_arm.R", 35)
+    p.swing("rifle", -90)
+
+
+def corpse_sprawl(p: Poser) -> None:
+    """Where he lay prone: flat, face in the dirt, arms out ahead, the rifle
+    fallen from his hands. Never higher than the prone pose."""
+    p.root(pitch=-90, y=-0.95, z=0.1)
+    p.swing("head", -10)
+    p.side("head", -25)
+    for side in ("L", "R"):
+        p.spread(f"thigh.{side}", 14)
+        p.swing(f"thigh.{side}", -4)
+        p.swing(f"shin.{side}", -6)
+    p.swing("upper_arm.R", 150)
+    p.swing("forearm.R", 10)
+    p.swing("upper_arm.L", 120)
+    p.spread("upper_arm.L", 25)
+    p.swing("rifle", 10)
+    p.side("rifle", 30)
+
+
+def fall_back(p: Poser, t: float) -> None:
+    """Thrown back by a shot from the front: knees give, the body tips back."""
+    hit(p, 1)
+    p.swing("thigh.L", 25 * t)
+    p.swing("shin.L", -60 * t)
+    p.swing("thigh.R", 15 * t)
+    p.swing("shin.R", -45 * t)
+    p.swing("chest", -20)
+    p.root(pitch=35 * t, y=0.25 * t, z=-0.25 * t)
+
+
+def fall_forward(p: Poser, t: float) -> None:
+    """Shot from behind: pitched forward, the arms going out to break the fall."""
+    slung(p)
+    p.swing("chest", 25 * t)
+    p.swing("head", 15 * t)
+    p.swing("upper_arm.L", 70 * t)
+    p.swing("upper_arm.R", 60 * t)
+    p.swing("forearm.R", 30)
+    p.swing("thigh.L", 30 * t)
+    p.swing("shin.L", -50 * t)
+    p.swing("rifle", 40 * t)
+    p.root(pitch=-40 * t, y=-0.3 * t, z=-0.15 * t)
+
+
+def fall_spin(p: Poser, t: float) -> None:
+    """Shot from the side: twisted round, the legs folding under him."""
+    hit(p, 1)
+    p.side("chest", 25 * t)
+    p.swing("thigh.L", 40 * t)
+    p.swing("shin.L", -80 * t)
+    p.swing("thigh.R", 30 * t)
+    p.swing("shin.R", -70 * t)
+    p.root(roll=40 * t, x=-0.3 * t, z=-0.35 * t)
+
+
+def crouch_slump(p: Poser, t: float) -> None:
+    """Killed crouching: the rifle drops and he folds forward over his knees."""
+    crouch(p)
+    p.swing("chest", 14 + 30 * t)
+    p.swing("head", 20 * t)
+    p.swing("rifle", 92 + 30 * t)
+    p.swing("upper_arm.R", 35 - 20 * t)
+    p.root(pitch=-25 * t, y=-0.15 * t, z=-0.34 - 0.1 * t)
+
+
+def prone_go_limp(p: Poser, t: float) -> None:
+    """Killed prone: the head drops and the arms slide forward; he stays down."""
+    prone(p)
+    p.root(pitch=-90, y=-0.95, z=0.13 - 0.03 * t)
+    p.swing("chest", -PRONE_RISE * (1 - t))
+    p.swing("head", -42 + 32 * t)
+    p.swing("rifle", PRONE_RISE * (1 - t))
+
+
 def build():
     reset()
     bpy.context.scene.render.fps = FPS
@@ -602,6 +710,25 @@ def build():
     ])
     clip(rig, poser, "kneel-treat", [(1, lambda p: kneel_treat(p, 0)), (16, lambda p: kneel_treat(p, 1))])
     clip(rig, poser, "treated", [(1, lambda p: treated(p, 0)), (36, lambda p: treated(p, 1))])
+    # Death clips (1.2), held on their last frame, and the corpse poses they end in.
+    clip(rig, poser, "corpse-face", [(1, corpse_face), (24, corpse_face)], loop=False)
+    clip(rig, poser, "corpse-side", [(1, corpse_side), (24, corpse_side)], loop=False)
+    clip(rig, poser, "corpse-sprawl", [(1, corpse_sprawl), (24, corpse_sprawl)], loop=False)
+    clip(rig, poser, "death-stand-front", [
+        (1, lambda p: hit(p, 0)), (4, lambda p: hit(p, 1)), (10, lambda p: fall_back(p, 1)), (18, corpse),
+    ], loop=False)
+    clip(rig, poser, "death-stand-back", [
+        (1, slung), (4, lambda p: fall_forward(p, 0.4)), (10, lambda p: fall_forward(p, 1)), (17, corpse_face),
+    ], loop=False)
+    clip(rig, poser, "death-stand-flank", [
+        (1, lambda p: hit(p, 0)), (4, lambda p: hit(p, 1)), (11, lambda p: fall_spin(p, 1)), (19, corpse_side),
+    ], loop=False)
+    clip(rig, poser, "death-crouch", [
+        (1, lambda p: crouch_slump(p, 0)), (6, lambda p: crouch_slump(p, 1)), (14, corpse_face),
+    ], loop=False)
+    clip(rig, poser, "death-prone", [
+        (1, lambda p: prone_go_limp(p, 0)), (6, lambda p: prone_go_limp(p, 0.6)), (14, corpse_sprawl),
+    ], loop=False)
 
     poser.clear()
     return [save_and_export("soldier", "characters")]

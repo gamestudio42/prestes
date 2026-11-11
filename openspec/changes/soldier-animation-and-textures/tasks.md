@@ -7,7 +7,8 @@
 
 - [x] 1.1 Wound clips in `target_soldier.py`: limp, hold-wound idle, lying-wounded loop, carry and carried, kneel-treat and treated; verify: the model exports them, and the review sheet shows each
   - Apply note (2026-11-11): seven clips in `target_soldier.py` (`limp`, `hold-wound`, `lying-wounded`, `carry`, `carried`, `kneel-treat`, `treated`); the right leg and flank are the hurt side. `carried` is placed at the carrier's origin, over his right shoulder; the view (2.1) sets the rescuer beside the treated man. Review frames in `docs/review/soldier-clips/`. `soldier.glb` 212,536 bytes.
-- [ ] 1.2 Death clips by stance and direction (standing front, back and flank; crouched; prone) ending in at least four corpse poses; verify on the review sheet and with a test that every death clip's last frame is one of the corpse poses
+- [x] 1.2 Death clips by stance and direction (standing front, back and flank; crouched; prone) ending in at least four corpse poses; verify on the review sheet and with a test that every death clip's last frame is one of the corpse poses
+  - Apply note (2026-11-11): `death-stand-front` ends on his back (`corpse`), `death-stand-back` and `death-crouch` face down (`corpse-face`), `death-stand-flank` on his side (`corpse-side`), `death-prone` flat with arms out (`corpse-sprawl`, never above prone height). `packages/view3d/test/soldier-death-clips.test.ts` reads the last keys of each death clip from `soldier.glb`. Review frames in `docs/review/soldier-clips/death-clips-2026-11-11.png`.
 - [ ] 1.3 Crouch-walk redone, raise-to-aim and settle per stance, recoil, reload per stance, aim turn; verify on the review sheet and with the head-height check of the crouch-walk
 - [ ] 1.4 Stride lengths keyed to the simulation's walk, crouch, limp and run speeds; verify with a unit test of clip durations and stride constants against the shared gait table
 
