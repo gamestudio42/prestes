@@ -1,5 +1,5 @@
 import type { Vec2 } from './protocol';
-import { COVER_POINTS, isLineBlockedForMovement, isPointBlockedByCovers } from './world';
+import { COVER_POINTS, isLineBlockedForMovement, isLineOnWire, isPointBlockedByCovers, isPointOnWire, WIRE_SPEED } from './world';
 import type { CoverPoint } from './protocol';
 import { activeMapGeneration, activeMapRuntime, FERRY_PATH_PENALTY, isDeepWater, PATH_GRID } from './maps/runtime';
 import { sameCovers } from './maps/cover-index';
@@ -31,6 +31,17 @@ const DIRECTIONS: ReadonlyArray<readonly [number, number]> = [
   [-1, -1],
 ];
 
+/**
+ * route-around-wire: the metres a route pays for each entry into barbed wire.
+ * A way round (a gap, the fence's end) at most this much longer than the way
+ * across is taken; a longer one is not, and the soldier crosses.
+ */
+export const WIRE_PATH_DETOUR = 25;
+/** A cell is on wire within the clearance blocking covers keep, so no grid step slips over a fence. */
+const WIRE_CELL_MARGIN = 0.8;
+/** A straight or smoothed leg must keep this far off the wire it does not cross. */
+const WIRE_LINE_MARGIN = 0.3;
+
 function cell(value: number): number {
   return Math.max(0, Math.min(SIZE - 1, Math.round(value - MIN)));
 }
@@ -41,7 +52,8 @@ function world(value: number): number {
 
 /**
  * Each cell's blocked state is worked out once and kept while the map and its
- * movement-blocking covers stay the same. 0 unknown, 1 open, 2 blocked.
+ * movement-blocking covers stay the same. 0 unknown, 1 open, 2 blocked,
+ * 3 open on barbed wire (route-around-wire).
  * refine-battle-maps: on every map; the feature maps (the training ground)
  * re-tested every cover for each cell A* visited.
  */
@@ -54,6 +66,8 @@ let blockedCache: {
   first: CoverPoint | undefined;
   last: CoverPoint | undefined;
   cells: Uint8Array;
+  /** Whether any cover is barbed wire: without, no wire test is made. */
+  wire: boolean;
 } | null = null;
 
 function prepareBlocked(covers: readonly CoverPoint[]): void {
@@ -77,6 +91,7 @@ function prepareBlocked(covers: readonly CoverPoint[]): void {
     first: covers[0],
     last: covers[covers.length - 1],
     cells: new Uint8Array(SIZE * SIZE),
+    wire: covers.some((cover) => cover.wire === true),
   };
 }
 
@@ -90,21 +105,40 @@ function blockedNow(x: number, y: number, covers: readonly CoverPoint[]): boolea
   return isPointBlockedByCovers(x, y, covers, 0.8);
 }
 
-function blocked(x: number, y: number, covers: readonly CoverPoint[]): boolean {
+function cellNow(x: number, y: number, covers: readonly CoverPoint[]): number {
+  if (blockedNow(x, y, covers)) return 2;
+  return blockedCache?.wire && isPointOnWire(x, y, covers, WIRE_CELL_MARGIN) ? 3 : 1;
+}
+
+/** A point's state: 1 open, 2 blocked, 3 open on wire; cached on grid cells. */
+function cellState(x: number, y: number, covers: readonly CoverPoint[]): number {
   if (x < MIN || x > MAX || y < MIN || y > MAX) {
-    return true;
+    return 2;
   }
   const cache = blockedCache;
   if (cache && Number.isInteger(x) && Number.isInteger(y)) {
     const index = (y - MIN) * SIZE + (x - MIN);
-    const known = cache.cells[index];
-    if (known === 1) return false;
-    if (known === 2) return true;
-    const result = blockedNow(x, y, covers);
-    cache.cells[index] = result ? 2 : 1;
+    const known = cache.cells[index]!;
+    if (known !== 0) return known;
+    const result = cellNow(x, y, covers);
+    cache.cells[index] = result;
     return result;
   }
-  return blockedNow(x, y, covers);
+  return cellNow(x, y, covers);
+}
+
+function blocked(x: number, y: number, covers: readonly CoverPoint[]): boolean {
+  return cellState(x, y, covers) === 2;
+}
+
+function onWire(x: number, y: number, covers: readonly CoverPoint[]): boolean {
+  return cellState(x, y, covers) === 3;
+}
+
+/** Whether a straight leg is open for a route: no blocking cover or deep water, and no wire. */
+function legOpen(a: Vec2, b: Vec2, covers: readonly CoverPoint[]): boolean {
+  if (isLineBlockedForMovement(a.x, a.y, b.x, b.y, covers, 0.8)) return false;
+  return !blockedCache?.wire || !isLineOnWire(a.x, a.y, b.x, b.y, covers, WIRE_LINE_MARGIN);
 }
 
 /**
@@ -370,7 +404,7 @@ function searchPath(
   if (blocked(target.x, target.y, covers)) {
     return [];
   }
-  if (!isLineBlockedForMovement(start.x, start.y, target.x, target.y, covers, 0.8)) {
+  if (legOpen(start, target, covers)) {
     return [{ ...target }];
   }
 
@@ -424,7 +458,11 @@ function searchPath(
       }
       const neighbour = ny * SIZE + nx;
       if (closed[neighbour] === stamp) continue;
-      const step = dx !== 0 && dy !== 0 ? Math.SQRT2 : 1;
+      let step = dx !== 0 && dy !== 0 ? Math.SQRT2 : 1;
+      // route-around-wire: entering wire costs a detour, walking on it its pace.
+      if (onWire(world(nx), world(ny), covers)) {
+        step = step / WIRE_SPEED + (onWire(world(cx), world(cy), covers) ? 0 : WIRE_PATH_DETOUR);
+      }
       const tentative = g(current) + step;
       if (tentative >= g(neighbour)) continue;
       parent[neighbour] = current;
@@ -455,15 +493,28 @@ function searchPath(
     }
   }
 
+  // route-around-wire: the path is smoothed run by run. A run on wire is kept
+  // as its first and last cell, where the search chose to cross; a leg in a
+  // run off wire never enters wire.
+  const wired = raw.map((point) => onWire(point.x, point.y, covers));
   const smoothed: Vec2[] = [];
   let anchor = start;
   let index = 0;
   while (index < raw.length) {
+    let end = index;
+    while (end + 1 < raw.length && wired[end + 1] === wired[index]) end += 1;
+    if (wired[index]) {
+      smoothed.push(raw[index]!);
+      if (end > index) smoothed.push(raw[end]!);
+      anchor = raw[end]!;
+      index = end + 1;
+      continue;
+    }
     let chosen = raw[index]!;
     let advanced = false;
-    for (let candidate = raw.length - 1; candidate >= index; candidate -= 1) {
+    for (let candidate = end; candidate >= index; candidate -= 1) {
       const point = raw[candidate]!;
-      if (!isLineBlockedForMovement(anchor.x, anchor.y, point.x, point.y, covers, 0.8)) {
+      if (legOpen(anchor, point, covers)) {
         chosen = point;
         index = candidate + 1;
         advanced = true;

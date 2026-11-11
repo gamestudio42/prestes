@@ -65,10 +65,14 @@ export {
   isLineBlocked,
   isPointBlockedByCovers,
   isLineBlockedForMovement,
+  isLineOnWire,
   isPointInCover,
+  isPointOnWire,
+  WIRE_SPEED,
 } from './world';
 
-export { crossesDeepWater, findPath, isWalkable, nearestWalkable } from './pathfinding';
+export { crossesDeepWater, findPath, isWalkable, nearestWalkable, WIRE_PATH_DETOUR } from './pathfinding';
+export { routeFor, sectionRoutes } from './section-routes';
 export * from './maps';
 
 export {

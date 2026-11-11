@@ -16,6 +16,7 @@ import {
   findPath,
   isPointBlockedByCovers,
   isPointInCover,
+  WIRE_SPEED,
 } from '@prestes/shared';
 import type { Gait, SimEvent, Vec2 } from '@prestes/shared';
 import { FATIGUE_MARCH, FATIGUE_MAX, OPEN_POINT_DIRECTIONS, clamp } from './model';
@@ -199,9 +200,8 @@ function pathRemaining(unit: MutableUnit): number {
   return total;
 }
 
-/** refine-battle-controls: the health a barbed-wire crossing costs, and its pace. */
+/** refine-battle-controls: the health a barbed-wire crossing costs (its pace, WIRE_SPEED, is shared with the pathfinder). */
 const WIRE_DAMAGE = 3;
-const WIRE_SPEED = 0.55;
 
 /** Whether a barbed-wire cover covers this point. */
 function onWire(ctx: SimContext, x: number, y: number): boolean {
@@ -326,6 +326,7 @@ export function moveUnit(
     if (detour.length > 0) {
       unit.path = detour;
       unit.pathIndex = 0;
+      refreshUnitOrder(ctx, unit, detour);
       return;
     }
     const order = unit.currentOrder ?? 'move';
@@ -356,6 +357,7 @@ export function moveUnit(
     if (detour.length > 0 && !detourNear && !sameWaypoint) {
       unit.path = detour;
       unit.pathIndex = 0;
+      refreshUnitOrder(ctx, unit, detour);
       return;
     }
     if (detour.length === 0) {
@@ -373,6 +375,15 @@ export function moveUnit(
   unit.y = nextY;
   crossWire(ctx, unit, fromX, fromY, tick, events);
   unit.fatigue = Math.min(FATIGUE_MAX, unit.fatigue + FATIGUE_MARCH * GAIT_FATIGUE[gait]);
+}
+
+/**
+ * route-around-wire D6: a soldier who takes a new route on the way keeps his
+ * drawn order on it, from where he stands. Order paths are not hashed.
+ */
+function refreshUnitOrder(ctx: SimContext, unit: MutableUnit, path: readonly Vec2[]): void {
+  const order = ctx.orders.find((candidate) => candidate.unitIds.length === 1 && candidate.unitIds[0] === unit.id);
+  if (order) order.points = [{ x: unit.x, y: unit.y }, ...path.map((point) => ({ ...point }))];
 }
 
 export function queueUnitOrder(

@@ -291,6 +291,31 @@ export function isPointBlockedByCovers(
   return someCoverNear(covers, x, y, (cover) => cover.blocksMovement && !cover.wire && isPointInCover(x, y, cover, margin));
 }
 
+/** refine-battle-controls: the pace a soldier keeps while on barbed wire. */
+export const WIRE_SPEED = 0.55;
+
+/** route-around-wire: whether a point lies on a barbed-wire cover, grown by the margin. */
+export function isPointOnWire(
+  x: number,
+  y: number,
+  covers: readonly CoverPoint[] = COVER_POINTS,
+  margin = 0,
+): boolean {
+  return someCoverNear(covers, x, y, (cover) => cover.wire === true && isPointInCover(x, y, cover, margin));
+}
+
+/** route-around-wire: whether the segment A-B enters a barbed-wire cover, grown by the margin. */
+export function isLineOnWire(
+  ax: number,
+  ay: number,
+  bx: number,
+  by: number,
+  covers: readonly CoverPoint[] = COVER_POINTS,
+  margin = 0,
+): boolean {
+  return someCoverAlong(covers, ax, ay, bx, by, (cover) => cover.wire === true && segmentCrossesCover(ax, ay, bx, by, cover, margin));
+}
+
 /**
  * Whether the segment A-B passes through the cover's footprint (a rotated
  * rectangle), clipped exactly in the cover's frame. It replaced a 32-point

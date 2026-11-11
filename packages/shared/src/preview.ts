@@ -1,4 +1,5 @@
 ﻿import { findPath } from './pathfinding';
+import { routeFor, sectionRoutes } from './section-routes';
 import { matchDestinations } from './assignment';
 import type {
   CoverPoint,
@@ -359,9 +360,6 @@ function previewCoverSlots(
   });
 }
 
-/** A soldier this close to his place (m) gets his own route rather than the section's. */
-const SECTION_ROUTE_MIN = 12;
-
 export function planOrderPreview(request: PreviewRequest): PreviewPlan | null {
   const unitIds = new Set(request.unitIds);
   const units = request.frame.units.filter(
@@ -443,26 +441,16 @@ export function planOrderPreview(request: PreviewRequest): PreviewPlan | null {
 
   const paths: PreviewPath[] = [];
   const cones: PreviewCone[] = [];
-  // Ground orders search one route per section, from its centre to the
-  // order's point; each soldier follows it at his offset and ends at his own
-  // place (movement-polish: one search per soldier cost 2 ms for three
-  // sections). A soldier close to his place walks straight in.
-  const sectionRoutes = new Map<number, Vec2[]>();
-  const sectionPath = (unit: UnitSnapshot, destination: Vec2): Vec2[] => {
-    const direct = (destination.x - unit.x) ** 2 + (destination.y - unit.y) ** 2;
-    if (direct < SECTION_ROUTE_MIN ** 2 || !request.to) {
-      return findPath({ x: unit.x, y: unit.y }, destination, request.frame.covers);
-    }
-    const centre = sectionCentres.get(unit.squadId) ?? { x: unit.x, y: unit.y };
-    let route = sectionRoutes.get(unit.squadId);
-    if (!route) {
-      route = findPath(centre, request.to, request.frame.covers);
-      sectionRoutes.set(unit.squadId, route);
-    }
-    if (route.length === 0) return [];
-    const offsetX = unit.x - centre.x;
-    const offsetY = unit.y - centre.y;
-    return [...route.slice(0, -1).map((point) => ({ x: point.x + offsetX, y: point.y + offsetY })), { ...destination }];
+  // route-around-wire D5: ground orders route the soldiers as the move does,
+  // with the simulation's own section routes (one search for a gathered
+  // body, shifted per soldier; a soldier whose shifted leg is blocked or
+  // would cross wire, or a scattered selection, searches his own).
+  let groundRoutes: (Vec2[] | null)[] | null = null;
+  const routedPath = (index: number, destinations: readonly Vec2[]): Vec2[] => {
+    groundRoutes ??= sectionRoutes(request.frame.covers, units, destinations);
+    const unit = units[index]!;
+    const destination = destinations[index]!;
+    return routeFor(groundRoutes[index], destination) ?? findPath({ x: unit.x, y: unit.y }, destination, request.frame.covers);
   };
   const sectionCentres = new Map<number, Vec2>();
   for (const squadId of new Set(units.map((unit) => unit.squadId))) {
@@ -499,6 +487,12 @@ export function planOrderPreview(request: PreviewRequest): PreviewPlan | null {
   } else {
     for (const [id, slot] of plannedSlots) coverSlots.set(id, slot);
   }
+  // Where each soldier would end: his cover slot or place in the full form,
+  // his formation slot in the quick form.
+  const groundDestinations = units.map((unit, index) => {
+    const final = !fast && hasDestination && GROUND_ORDERS.has(request.order) ? finals?.[index] : undefined;
+    return final ? { x: final.x, y: final.y } : (slots[index] ?? { x: unit.x, y: unit.y });
+  });
   units.forEach((unit, index) => {
     let destination = slots[index] ?? { x: unit.x, y: unit.y };
     let cover = false;
@@ -561,11 +555,7 @@ export function planOrderPreview(request: PreviewRequest): PreviewPlan | null {
         cover = final.slot !== null;
       }
     }
-    const path = hasDestination
-      ? fast
-        ? [{ ...destination }]
-        : sectionPath(unit, destination)
-      : [];
+    const path = hasDestination ? routedPath(index, groundDestinations) : [];
     const points = path.length > 0 ? [{ x: unit.x, y: unit.y }, ...path] : [];
     const slotId = coverSlots.get(unit.id)?.id;
     paths.push({ unitId: unit.id, points, destination, cover, ...(slotId === undefined ? {} : { slotId }) });
