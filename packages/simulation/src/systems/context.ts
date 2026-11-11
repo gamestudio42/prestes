@@ -12,6 +12,7 @@ import type { OrderManager } from '../order-manager';
 import type { ActiveOrder, BoundingGroup, MutableUnit } from './model';
 import type { BattleMemory } from './enemy-commander';
 import type { VisionState } from './vision';
+import type { ObjectiveState } from './objectives';
 import type { FerryState } from './ferry';
 import type { Garrison } from './garrison';
 import type { Assault } from './assault';
@@ -52,6 +53,8 @@ export interface SimContext {
   fog: boolean;
   /** fog-of-war: what each side sees and last saw of the other. */
   readonly vision: VisionState;
+  /** add-map-objectives: the battle map's objectives (none elsewhere). */
+  readonly objectives: ObjectiveState[];
   /** add-battle-maps: the battle map's ferries (none elsewhere). */
   readonly ferries: FerryState[];
   /** The battle map, or null on the training ground. */

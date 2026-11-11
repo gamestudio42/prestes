@@ -85,6 +85,7 @@ import {
 } from './systems/orders';
 import { applyCommand } from './systems/commands';
 import { createBattleMemory, updateBattleFlow } from './systems/enemy-commander';
+import { createObjectives, objectiveSnapshot, updateObjectives, type ObjectiveState } from './systems/objectives';
 import { createVisionState, seenSnapshot, updateVision } from './systems/vision';
 import { createFerries, ferrySnapshot, headingForLanding, heldByFerry, updateFerries } from './systems/ferry';
 import { defaultConcealedFire } from './systems/concealment';
@@ -194,6 +195,8 @@ export class SimulationEngine implements SimContext {
   readonly positionById: ReadonlyMap<number, PositionDef>;
   readonly garrisons = new Map<number, Garrison>();
   readonly assaults = new Map<number, Assault>();
+  /** add-map-objectives: the map's objectives; capture runs in the battle phase. */
+  readonly objectives: ObjectiveState[];
   /** pre-battle-roster 4.3: the machine-gun squads' belt pools (rostered battles with a gun only). */
   gunPools?: Record<number, number>;
   fog: boolean;
@@ -247,6 +250,7 @@ export class SimulationEngine implements SimContext {
     this.ferries = createFerries(this.battleMap?.ferries ?? []);
     const positions = createPositions(this.battleMap ? { ...this.battleMap, covers: this.covers } : null);
     this.positions = positions.positions;
+    this.objectives = createObjectives(this.battleMap);
     this.positionById = positions.byId;
     this.selectTerrain();
     this.rosters = this.battleMap ? resolveRosters(this.battleMap, options.rosters, this.rng) : undefined;
@@ -495,6 +499,7 @@ export class SimulationEngine implements SimContext {
       if (this.garrisons.size > 0) pinGarrisons(this, nextTick);
       updateFacing(this);
       if (this.battleMap?.height.kind === 'field') keepOffFordFloor(this);
+      if (this.objectives.length > 0) updateObjectives(this, nextTick, events);
       updateOutcome(this, nextTick, events);
     } else {
       this.queue.length = 0;
@@ -544,6 +549,7 @@ export class SimulationEngine implements SimContext {
       ...(this.hasDeployment ? { phase: this.phase } : {}),
       ...(this.garrisons.size > 0 ? { garrisons: garrisonSnapshot(this) } : {}),
       ...(this.assaults.size > 0 ? { assaults: assaultSnapshot(this) } : {}),
+      ...(this.objectives.length > 0 ? { objectives: objectiveSnapshot(this) } : {}),
       hash: options?.hash === false ? '' : this.hashState(),
     };
   }
@@ -628,6 +634,8 @@ export class SimulationEngine implements SimContext {
         // garrison-and-assault: hashed only while a position is held.
         ...(this.garrisons.size > 0 ? { garrisons: garrisonSnapshot(this) } : {}),
         ...(this.assaults.size > 0 ? { assaults: [...this.assaults.values()] } : {}),
+        // add-map-objectives: hashed on maps with objectives.
+        ...(this.objectives.length > 0 ? { objectives: objectiveSnapshot(this) } : {}),
       }),
     );
   }

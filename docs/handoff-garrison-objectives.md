@@ -17,7 +17,7 @@ cold. Keep this file current as tasks close; delete it once
   authored maps (objectives in map document v5, editor tool, map check; the
   test map's five objectives in design.md). 1.1 done (`Objective` in
   maps/types.ts). 1.3 done (document v5 `objectives`
-  and the editor objective tool; see its Apply note). 1.2 and 1.4 done (map check; the test map's five objectives, built by tools/make-test-map.ts). Section 1 (data) is complete. 2.1 done (protocol types; see its Apply note). NEXT STEP: 2.2 (capture system in the engine: presence, progress, contest, decay; hashed; tests "taking the bridge", "contested", "held without staying"). Work in small steps, commit each, and
+  and the editor objective tool; see its Apply note). 1.2 and 1.4 done (map check; the test map's five objectives, built by tools/make-test-map.ts). Section 1 (data) is complete. 2.1 done (protocol types; see its Apply note). 2.2 done (capture in systems/objectives.ts; goldens re-recorded). NEXT STEP: 2.3 (clock and outcome order: annihilation, broken, all objectives held 2 min, time limit by value, draw; `decidedBy` and values in the outcome event; frame `clock`). Work in small steps, commit each, and
   update this file after each. Open points it inherits: presets A and C of the test map end
   in a 900 s stand-off (objectives should move the column; the gun bands in
   battle-report-weapons wait for it, `STAND_OFF_UNTIL_OBJECTIVES`); defend
