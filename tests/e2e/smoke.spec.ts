@@ -80,9 +80,8 @@ test('boots, selects a section, gives orders, fights and toggles the post', asyn
   await page.getByTestId('post-mode').click();
   await expect(page.getByTestId('post-mode')).toContainText('Pós: Limpo');
 
-  await page.getByRole('button', { name: 'Códice' }).click();
-  await expect(page.getByTestId('codex')).toBeVisible();
-  await expect(page.getByTestId('codex-label-historical').first()).toHaveText('Histórico');
+  // refine-battle-controls 4.1: the battle HUD has no codex; the desk's compendium is its home.
+  await expect(page.getByRole('button', { name: 'Códice' })).toHaveCount(0);
 });
 
 

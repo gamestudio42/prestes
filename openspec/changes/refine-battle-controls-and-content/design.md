@@ -122,3 +122,16 @@ and labels are unchanged. No figure is added or made playable.
   test and the compendium e2e are updated, and the docs entry is removed.
 - No save data is involved; the setup's saved time limit from the previous
   change is untouched.
+
+
+## Apply findings
+
+- Shift queues on a click only: a Shift+drag keeps its old meanings (line move,
+  facing), so a player who drags still gets the line order.
+- The compendium scope was corrected during apply: the request is to drop the
+  correction for a claim the game never makes, not the corrections page; the
+  other four corrections stay, and the requirement now says the page lists only
+  corrections to claims the game makes.
+- The paiolzinho determinism golden was recorded against the author's map as it
+  stands in the working tree; the map and the golden are deliberately left
+  uncommitted together until the map settles.

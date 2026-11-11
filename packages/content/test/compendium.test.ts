@@ -54,7 +54,7 @@ describe('compendium', () => {
     const docIds = readdirSync(DOC_ENTRIES)
       .filter((file) => file.endsWith('.md'))
       .map((file) => file.replace(/\.md$/, ''));
-    expect(docIds.length).toBeGreaterThanOrEqual(20);
+    // refine-battle-controls 4.2: the prestes-not-at-fort entry is gone.\n    expect(docIds.length).toBeGreaterThanOrEqual(19);
     for (const id of docIds) {
       const entry = COMPENDIUM.find((candidate) => candidate.id === id);
       expect(entry, id).toBeDefined();
