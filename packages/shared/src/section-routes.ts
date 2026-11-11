@@ -1,5 +1,6 @@
 import type { CoverPoint, Vec2 } from './protocol';
 import { findPath } from './pathfinding';
+import { activeMapRuntime, isDeepWater } from './maps/runtime';
 import { isLineBlockedForMovement, isLineOnWire, isPointBlockedByCovers } from './world';
 
 // route-around-wire D5: shared by the simulation's moves and the order
@@ -146,4 +147,41 @@ export function routeFor(route: Vec2[] | null | undefined, destination: Vec2): V
   return Math.abs(last.x - destination.x) < 0.01 && Math.abs(last.y - destination.y) < 0.01
     ? route
     : null;
+}
+
+const OPEN_POINT_DIRECTIONS = [
+  { x: 1, y: 0 },
+  { x: -1, y: 0 },
+  { x: 0, y: 1 },
+  { x: 0, y: -1 },
+  { x: Math.SQRT1_2, y: Math.SQRT1_2 },
+  { x: -Math.SQRT1_2, y: Math.SQRT1_2 },
+  { x: Math.SQRT1_2, y: -Math.SQRT1_2 },
+  { x: -Math.SQRT1_2, y: -Math.SQRT1_2 },
+] as const;
+
+/**
+ * The nearest open point to `point` (out of cover's clearance and, on a
+ * battle map, deep water), searched on rings 0.5 m apart. Shared by the
+ * simulation's orders and the order preview (route-around-wire), so a
+ * soldier whose place is blocked is drawn going where he will go.
+ */
+export function nearestOpenPointOn(covers: readonly CoverPoint[], point: Vec2, maxRadius = 3): Vec2 {
+  const water = activeMapRuntime() !== null;
+  const blocked = (x: number, y: number) =>
+    isPointBlockedByCovers(x, y, covers, 0.8) ||
+    (water && (isDeepWater(x, y) || isDeepWater(x + 1, y) || isDeepWater(x - 1, y) || isDeepWater(x, y + 1) || isDeepWater(x, y - 1)));
+  if (!blocked(point.x, point.y)) {
+    return { ...point };
+  }
+  const reach = water ? Math.max(maxRadius, 14) : maxRadius;
+  for (let radius = 0.5; radius <= reach; radius += 0.5) {
+    for (const direction of OPEN_POINT_DIRECTIONS) {
+      const candidate = { x: point.x + direction.x * radius, y: point.y + direction.y * radius };
+      if (!blocked(candidate.x, candidate.y)) {
+        return candidate;
+      }
+    }
+  }
+  return { ...point };
 }

@@ -12,6 +12,8 @@ import {
   nearestTargetGroups,
   spreadTargetGroups,
   planOrderPreview,
+  planQueuedRoutes,
+  framedAt,
   dragSpacing,
   coverAtPoint,
   coverSlotView,
@@ -85,6 +87,25 @@ export function useOrders({
   const [aimPending, setAimPending] = useState(false);
   // refine-battle-controls: Shift pressed on the board arms the next click to queue.
   const [queueNext, setQueueNext] = useState(false);
+  // route-around-wire: Shift held, so the next order queues and previews from the queue's end.
+  const [shiftHeld, setShiftHeld] = useState(false);
+  useEffect(() => {
+    const down = (event: KeyboardEvent) => {
+      if (event.key === 'Shift') setShiftHeld(true);
+    };
+    const up = (event: KeyboardEvent) => {
+      if (event.key === 'Shift') setShiftHeld(false);
+    };
+    const blur = () => setShiftHeld(false);
+    window.addEventListener('keydown', down);
+    window.addEventListener('keyup', up);
+    window.addEventListener('blur', blur);
+    return () => {
+      window.removeEventListener('keydown', down);
+      window.removeEventListener('keyup', up);
+      window.removeEventListener('blur', blur);
+    };
+  }, []);
   const [lineDrag, setLineDrag] = useState<{ from: Vec2; to: Vec2 } | null>(null);
   const [facingDrag, setFacingDrag] = useState<{ from: Vec2; to: Vec2 } | null>(null);
   const lastBoundPhase = useRef<string | null>(null);
@@ -128,9 +149,31 @@ export function useOrders({
   const previewActive = Boolean(
     (previewEnabled || deploymentPreview) && !hudHidden && frame && previewOrder && (!needsTarget || hoverUnitId !== null),
   );
+  const latestFrame = useRef(frame);
+  latestFrame.current = frame;
+  // route-around-wire: the routes of the orders the selected section queued
+  // with Shift, each from where the one before ends. Recomputed when the
+  // queue, the selection or where its current orders end change.
+  const queuedKey = frame
+    ? JSON.stringify([
+        selectedIds,
+        (frame.queuedOrders ?? []).filter((entry) => selectedUnits.some((unit) => unit.squadId === entry.squadId)),
+        selectedIds.map((id) => {
+          const end = frame.orders.find((order) => order.unitIds.includes(id))?.points.at(-1);
+          return end ? `${Math.round(end.x)},${Math.round(end.y)}` : '';
+        }),
+      ])
+    : '';
+  const queued = useMemo(
+    () => (latestFrame.current && selectedIds.length > 0 ? planQueuedRoutes(latestFrame.current, selectedIds) : null),
+    [queuedKey],
+  );
+  // While Shift is held (or the order was armed with Shift), the order will
+  // queue: its preview starts where the section's current and queued orders end.
+  const queueing = shiftHeld || queueNext;
   const planKey = previewActive
     ? previewKey({
-        order: previewOrder!,
+        order: `${previewOrder!}${queueing ? '+queue' : ''}`,
         selected: selectedUnits,
         hoverPoint,
         hoverUnitId,
@@ -139,10 +182,9 @@ export function useOrders({
         dragKind: facingDrag ? 'facing' : lineDrag ? 'line' : null,
       })
     : null;
-  const latestFrame = useRef(frame);
-  latestFrame.current = frame;
   const previewPlan: PreviewPlan | null = useMemo(() => {
-    const frame = latestFrame.current;
+    const current = latestFrame.current;
+    const frame = current && queueing && queued ? framedAt(current, queued.ends) : current;
     return planKey !== null && frame && previewOrder
       ? planOrderPreview({
           frame,
@@ -168,7 +210,15 @@ export function useOrders({
           fast: previewOrder === 'move',
         })
       : null;
-  }, [planKey]);
+  }, [planKey, queuedKey]);
+
+  // route-around-wire: the queued routes are drawn with the preview.
+  const shownPlan: PreviewPlan | null = useMemo(() => {
+    if (hudHidden || !queued || queued.paths.length === 0) return previewPlan;
+    return previewPlan
+      ? { ...previewPlan, paths: [...queued.paths, ...previewPlan.paths] }
+      : { unitIds: queued.paths.map((path) => path.unitId), paths: queued.paths, cones: [], los: [] };
+  }, [previewPlan, queued, hudHidden]);
 
   // Cover slots under the cursor, and the ones the pending ground order would fill.
   const hoveredCoverId =
@@ -972,7 +1022,7 @@ export function useOrders({
     fireControl,
     posture,
     needsTarget,
-    previewPlan,
+    previewPlan: shownPlan,
     selectSquad,
     handleClearOrder,
     handlePreviewGround,

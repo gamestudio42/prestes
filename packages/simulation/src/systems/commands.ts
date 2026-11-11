@@ -158,7 +158,16 @@ export function queuedOrdersSnapshot(ctx: SimContext): QueuedOrderSnapshot[] {
           : command.type === 'order'
             ? command.targetId
             : undefined;
-      snapshot.push({ squadId, order, ...(targetId === undefined ? {} : { targetId }) });
+      // route-around-wire: a ground order's point, facing and spacing, for drawing its route.
+      const ground = command.type === 'move' || command.type === 'order' ? command : null;
+      snapshot.push({
+        squadId,
+        order,
+        ...(targetId === undefined ? {} : { targetId }),
+        ...(ground?.to ? { to: { ...ground.to } } : {}),
+        ...(ground?.facing ? { facing: { ...ground.facing } } : {}),
+        ...(ground?.spacing !== undefined ? { spacing: ground.spacing } : {}),
+      });
     }
   }
   return snapshot;

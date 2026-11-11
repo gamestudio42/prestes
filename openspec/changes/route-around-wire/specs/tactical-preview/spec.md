@@ -10,7 +10,9 @@ cross wire SHALL be drawn on the route he would search for himself, as the
 move does. The preview SHALL NOT draw a straight line through a building, a
 wall or a wire fence the move would go around, and SHALL draw the crossing
 where the move would cross. The same route SHALL be what the soldiers walk
-when the order is given at that point.
+when the order is given at that point. The orders a section queued with Shift
+SHALL be drawn too, each from where the order before it ends, and an order
+armed while Shift is held SHALL be previewed from where the queue ends.
 
 #### Scenario: Move preview goes through the near gap
 - **WHEN** a section is selected with Move armed and the pointer is beyond a wire fence that has a gap a few metres to the side
@@ -19,6 +21,14 @@ when the order is given at that point.
 #### Scenario: Move preview crosses where the move crosses
 - **WHEN** the pointer is beyond a wire fence whose only gap is far
 - **THEN** the drawn routes cross the wire, and the soldiers ordered there cross it at the drawn place
+
+#### Scenario: Queued orders show their routes
+- **WHEN** a section with an active move holds a move queued with Shift
+- **THEN** the queued move's routes are drawn from where the active move ends to the queued point, bent round what is in the way, and an order armed while Shift is held is previewed from where the queue ends
+
+#### Scenario: A blocked place goes to the open point
+- **WHEN** a soldier's place in the formation falls inside a cover's clearance
+- **THEN** his route is drawn to the open point nearest the order's point, where the move sends him
 
 #### Scenario: Move preview bends round a building
 - **WHEN** the pointer is beyond a building in the section's way

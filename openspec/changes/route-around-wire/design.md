@@ -189,6 +189,28 @@ and the preview alike. The determinism goldens do not move from this (the AI
 orders one section at a time); measured by running them with and without the
 grouping. The `formations` delta states it.
 
+### D8. Queued orders show their routes
+
+Found at the owner's hand check ("não vejo as linhas de planejamento usando
+o shift"): an order given with Shift waits in the section's queue and was
+shown only as a chip in the HUD; nothing was drawn on the map, and with Shift
+held the preview started from where the soldiers stand, not from where the
+queue ends. The frame's queued-order entries now carry a ground order's
+point, facing and spacing (view only; the hash reads the queue itself), and
+`planQueuedRoutes` in `@prestes/shared` plans each queued order with the
+move preview's own planner, from where the order before it ends (the active
+order's last point, then each queued route's end). The HUD hook draws those
+routes with the preview while the section is selected, and previews an
+order armed with Shift held from the queue's end. Recomputed only when the
+queue, the selection or the active orders' ends change.
+
+In the same check, three soldiers drew no route: their places in the
+formation fell inside a cover's clearance, where the move sends them to the
+open point nearest the order's point. That search moves to
+`nearestOpenPointOn` in `@prestes/shared`; the simulation's
+`nearestOpenPoint` calls it (same algorithm, the goldens do not move) and
+the preview applies the same fallback.
+
 ## Risks / Trade-offs
 
 - [The move preview now searches while the pointer moves, which the quick

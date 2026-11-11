@@ -1,5 +1,5 @@
 ﻿import { findPath } from './pathfinding';
-import { routeFor, sectionRoutes } from './section-routes';
+import { nearestOpenPointOn, routeFor, sectionRoutes } from './section-routes';
 import { matchDestinations } from './assignment';
 import type {
   CoverPoint,
@@ -446,11 +446,22 @@ export function planOrderPreview(request: PreviewRequest): PreviewPlan | null {
   // body, shifted per soldier; a soldier whose shifted leg is blocked or
   // would cross wire, or a scattered selection, searches his own).
   let groundRoutes: (Vec2[] | null)[] | null = null;
-  const routedPath = (index: number, destinations: readonly Vec2[]): Vec2[] => {
-    groundRoutes ??= sectionRoutes(request.frame.covers, units, destinations);
+  // As the move: a place in cover's clearance falls back to the open point
+  // nearest the order's point, and so does a place no route reaches.
+  const routedPath = (index: number, destinations: readonly Vec2[]): { path: Vec2[]; destination: Vec2 } => {
+    const covers = request.frame.covers;
+    groundRoutes ??= sectionRoutes(covers, units, destinations);
     const unit = units[index]!;
-    const destination = destinations[index]!;
-    return routeFor(groundRoutes[index], destination) ?? findPath({ x: unit.x, y: unit.y }, destination, request.frame.covers);
+    const from = { x: unit.x, y: unit.y };
+    let destination = destinations[index]!;
+    const fallback = request.to ? nearestOpenPointOn(covers, request.to) : destination;
+    if (isPointBlockedByCovers(destination.x, destination.y, covers, 0.8)) destination = fallback;
+    let path = routeFor(groundRoutes[index], destination) ?? findPath(from, destination, covers);
+    if (path.length === 0 && (destination.x !== fallback.x || destination.y !== fallback.y)) {
+      destination = fallback;
+      path = findPath(from, destination, covers);
+    }
+    return { path, destination };
   };
   const sectionCentres = new Map<number, Vec2>();
   for (const squadId of new Set(units.map((unit) => unit.squadId))) {
@@ -555,7 +566,12 @@ export function planOrderPreview(request: PreviewRequest): PreviewPlan | null {
         cover = final.slot !== null;
       }
     }
-    const path = hasDestination ? routedPath(index, groundDestinations) : [];
+    let path: Vec2[] = [];
+    if (hasDestination) {
+      const routed = routedPath(index, groundDestinations);
+      path = routed.path;
+      destination = routed.destination;
+    }
     const points = path.length > 0 ? [{ x: unit.x, y: unit.y }, ...path] : [];
     const slotId = coverSlots.get(unit.id)?.id;
     paths.push({ unitId: unit.id, points, destination, cover, ...(slotId === undefined ? {} : { slotId }) });
@@ -665,3 +681,63 @@ export function planOrderPreview(request: PreviewRequest): PreviewPlan | null {
 
 
 
+
+/**
+ * route-around-wire: where each selected soldier stands once his section's
+ * current order and every order it queued with Shift are done, and the routes
+ * of those queued orders, each from where the one before it ends. The queued
+ * routes are planned as the preview plans a move, so they are the routes the
+ * soldiers will be given when each order becomes active (as long as nothing
+ * changes on the way).
+ */
+export function planQueuedRoutes(
+  frame: Frame,
+  unitIds: readonly number[],
+): { paths: PreviewPath[]; ends: Map<number, Vec2> } {
+  const chosen = new Set(unitIds);
+  const units = frame.units.filter(
+    (unit) => chosen.has(unit.id) && unit.alive && !unit.routed && !unit.dummy && !unit.incapacitated,
+  );
+  const ends = new Map<number, Vec2>();
+  for (const unit of units) {
+    const order = frame.orders.find((candidate) => candidate.unitIds.includes(unit.id));
+    const last = order?.points[order.points.length - 1];
+    ends.set(unit.id, last ? { x: last.x, y: last.y } : { x: unit.x, y: unit.y });
+  }
+  const paths: PreviewPath[] = [];
+  const squads = new Set(units.map((unit) => unit.squadId));
+  for (const entry of frame.queuedOrders ?? []) {
+    if (!squads.has(entry.squadId)) continue;
+    const ids = units.filter((unit) => unit.squadId === entry.squadId).map((unit) => unit.id);
+    const plan = entry.to || entry.targetId !== undefined
+      ? planOrderPreview({
+          frame: framedAt(frame, ends),
+          unitIds: ids,
+          order: entry.order,
+          to: entry.to,
+          targetId: entry.targetId,
+          facing: entry.facing,
+          spacing: entry.spacing,
+          fast: true,
+        })
+      : null;
+    for (const path of plan?.paths ?? []) {
+      if (path.points.length < 2) continue;
+      paths.push(path);
+      ends.set(path.unitId, { ...path.destination });
+    }
+  }
+  return { paths, ends };
+}
+
+/** The frame with the given soldiers moved to their points (for planning from the end of a chain). */
+export function framedAt(frame: Frame, points: ReadonlyMap<number, Vec2>): Frame {
+  if (points.size === 0) return frame;
+  return {
+    ...frame,
+    units: frame.units.map((unit) => {
+      const point = points.get(unit.id);
+      return point ? { ...unit, x: point.x, y: point.y } : unit;
+    }),
+  };
+}

@@ -451,6 +451,10 @@ export interface QueuedOrderSnapshot {
   squadId: number;
   order: UnitOrder;
   targetId?: number;
+  /** route-around-wire: a ground order's point, facing and spacing, so the view can draw its route (not hashed). */
+  to?: Vec2;
+  facing?: Vec2;
+  spacing?: number;
 }
 
 /** garrison-and-assault: a position and the men inside it. */

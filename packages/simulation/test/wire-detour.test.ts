@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isLineBlockedForMovement, isLineOnWire, planOrderPreview, type CoverPoint, type SimEvent, type Vec2 } from '@prestes/shared';
+import { isLineBlockedForMovement, isLineOnWire, planOrderPreview, planQueuedRoutes, type CoverPoint, type SimEvent, type Vec2 } from '@prestes/shared';
 import { TEST_MAP } from '../../shared/test/fixtures/test-map';
 import { SimulationEngine } from '../src';
 
@@ -169,5 +169,35 @@ describe('several sections ordered together', () => {
         path.points.map((point) => [point.x.toFixed(1), point.y.toFixed(1)]),
       );
     }
+  });
+});
+
+describe('queued orders draw their routes', () => {
+  it('a Shift order is drawn from where the current order ends, round the near gap', () => {
+    const { engine, ids, start, fenceY } = battle(0);
+    // First a move along the near side of the fence, then a queued one across it.
+    const first = { x: start.x, y: fenceY + 4 };
+    const second = { x: start.x, y: fenceY - 20 };
+    engine.enqueue({ type: 'move', unitIds: ids, to: first });
+    engine.tick();
+    engine.enqueue({ type: 'move', unitIds: ids, to: second, queue: true });
+    const frame = engine.runTicks(1);
+    expect(frame.queuedOrders?.[0]?.to).toEqual(second);
+    const { paths, ends } = planQueuedRoutes(frame, ids);
+    expect(paths).toHaveLength(ids.length);
+    for (const path of paths) {
+      const order = frame.orders.find((candidate) => candidate.unitIds.includes(path.unitId))!;
+      // Starts where his current order ends, not where he stands.
+      expect(path.points[0]).toEqual(order.points.at(-1));
+      expect(wireLegs(path.points, frame.covers)).toBe(0);
+      expect(ends.get(path.unitId)).toEqual(path.destination);
+    }
+  });
+
+  it('a section with nothing queued draws no queued route', () => {
+    const { engine, ids, start } = battle(0);
+    engine.enqueue({ type: 'move', unitIds: ids, to: { x: start.x, y: start.y + 10 } });
+    const frame = engine.runTicks(2);
+    expect(planQueuedRoutes(frame, ids).paths).toEqual([]);
   });
 });

@@ -72,7 +72,7 @@ export {
 } from './world';
 
 export { crossesDeepWater, findPath, isWalkable, nearestWalkable, WIRE_PATH_DETOUR } from './pathfinding';
-export { routeFor, sectionRoutes } from './section-routes';
+export { nearestOpenPointOn, routeFor, sectionRoutes } from './section-routes';
 export * from './maps';
 
 export {
@@ -139,6 +139,8 @@ export {
   lineFacing,
   lineFormationSlots,
   planOrderPreview,
+  planQueuedRoutes,
+  framedAt,
   type PreviewCone,
   type PreviewPath,
   type PreviewPlan,
