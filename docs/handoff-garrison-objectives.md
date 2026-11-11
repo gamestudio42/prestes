@@ -17,7 +17,7 @@ cold. Keep this file current as tasks close; delete it once
   authored maps (objectives in map document v5, editor tool, map check; the
   test map's five objectives in design.md). 1.1 done (`Objective` in
   maps/types.ts). 1.3 done (document v5 `objectives`
-  and the editor objective tool; see its Apply note). NEXT STEP: 1.2 (map check), then 1.4 (the test map objectives). Work in small steps, commit each, and
+  and the editor objective tool; see its Apply note). 1.2 done (map check). NEXT STEP: 1.4 (the test map's five objectives, design.md table, saved in campo-de-provas.map.json). Work in small steps, commit each, and
   update this file after each. Open points it inherits: presets A and C of the test map end
   in a 900 s stand-off (objectives should move the column; the gun bands in
   battle-report-weapons wait for it, `STAND_OFF_UNTIL_OBJECTIVES`); defend

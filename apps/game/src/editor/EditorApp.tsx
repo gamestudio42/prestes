@@ -356,7 +356,7 @@ export function EditorApp(): ReactNode {
     if (problem.at) viewport.current?.centreOn(problem.at);
     const selection = problemSelection(problem);
     if (selection.length > 0) {
-      store.setTool(selection[0]!.kind === 'section' || selection[0]!.kind === 'area' ? 'deployment' : 'select');
+      store.setTool(selection[0]!.kind === 'section' || selection[0]!.kind === 'area' ? 'deployment' : selection[0]!.kind === 'objective' ? 'objective' : 'select');
       store.setSelection(selection);
     }
   };

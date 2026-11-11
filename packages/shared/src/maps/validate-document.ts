@@ -36,7 +36,12 @@ export type ProblemCode =
   | 'buildings-overlap'
   | 'bridge-not-over-water'
   | 'cover-gap'
-  | 'masked-vegetation';
+  | 'masked-vegetation'
+  | 'objective-count'
+  | 'objective-name-missing'
+  | 'objective-in-deep-water'
+  | 'objective-unreachable'
+  | 'objectives-overlap';
 
 export interface MapProblem {
   code: ProblemCode;
@@ -44,11 +49,13 @@ export interface MapProblem {
   params: Record<string, string | number>;
   at?: Vec2;
   /** What to select when the problem is chosen. */
-  target?: { kind: 'object' | 'section' | 'area' | 'bridge'; id: number | string };
+  target?: { kind: 'object' | 'section' | 'area' | 'bridge' | 'objective'; id: number | string };
 }
 
 /** Longest stretch without cover on the line between the zones (m) before a warning. */
 export const MAX_COVER_GAP = 60;
+/** add-map-objectives 1.2: a skirmish or test map holds this many objectives. */
+export const OBJECTIVE_COUNT = { min: 3, max: 5 } as const;
 
 function centroid(points: readonly Vec2[]): Vec2 {
   let x = 0;
@@ -230,5 +237,39 @@ export function validateEditableMap(map: EditableMap): MapProblem[] {
   // refine-map-editor D2: plants painted where nothing grows (the compiler clears them).
   const masked = maskedVegetation(map);
   if (masked.count > 0) add({ code: 'masked-vegetation', severity: 'warning', params: { count: masked.count }, ...(masked.at ? { at: masked.at } : {}) });
+  checkObjectives(map, compiled, add);
   return problems;
+}
+
+/**
+ * add-map-objectives 1.2: names in both languages, the flag on dry ground,
+ * a walkable point of each area reachable from both deployments, no two
+ * areas overlapping; a skirmish or test map holds 3-5 (a warning, so a map
+ * saved before objectives still loads).
+ */
+function checkObjectives(map: EditableMap, compiled: BattleMap, add: (problem: MapProblem) => void): void {
+  const objectives = map.objectives ?? [];
+  if (map.use !== 'campaign' && (objectives.length < OBJECTIVE_COUNT.min || objectives.length > OBJECTIVE_COUNT.max)) {
+    add({ code: 'objective-count', severity: 'warning', params: { count: objectives.length, min: OBJECTIVE_COUNT.min, max: OBJECTIVE_COUNT.max } });
+  }
+  const starts = [compiled.deployment.column.sections[0], compiled.deployment.legalist.sections[0]].filter((point): point is Vec2 => Boolean(point));
+  objectives.forEach((objective, index) => {
+    const target = { kind: 'objective' as const, id: objective.id };
+    const at = objective.flag;
+    for (const language of ['pt-BR', 'en'] as const) {
+      if (!objective.name[language].trim()) add({ code: 'objective-name-missing', severity: 'error', params: { language, id: objective.id }, at, target });
+    }
+    if (isDeepWater(at.x, at.y)) add({ code: 'objective-in-deep-water', severity: 'error', params: { name: objective.name['pt-BR'] }, at, target });
+    // The flag, else the first walkable corner or the middle: the place men walk to.
+    const candidates = [at, centroid(objective.area), ...objective.area];
+    const goal = candidates.find((point) => !isDeepWater(point.x, point.y) && !isPointBlockedByCovers(point.x, point.y, compiled.covers, 0));
+    if (!goal || starts.some((start) => findPath(start, goal, compiled.covers).length === 0)) {
+      add({ code: 'objective-unreachable', severity: 'error', params: { name: objective.name['pt-BR'] }, at, target });
+    }
+    for (const other of objectives.slice(index + 1)) {
+      if (polygonsOverlap(objective.area, other.area)) {
+        add({ code: 'objectives-overlap', severity: 'error', params: { a: objective.name['pt-BR'], b: other.name['pt-BR'] }, at, target });
+      }
+    }
+  });
 }

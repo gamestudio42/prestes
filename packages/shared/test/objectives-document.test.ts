@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { compileMapDocument, createEditableMap, parseMapDocument, toMapDocument, type Objective } from '../src';
+import { compileMapDocument, createEditableMap, parseMapDocument, toMapDocument, validateEditableMap, type Objective } from '../src';
 
 // add-map-objectives 1.3: objectives in the map document (version 5).
 const BRIDGE: Objective = {
@@ -43,5 +43,35 @@ describe('objectives in the map document', () => {
     const parsed = parseMapDocument(withObjectives([{ ...BRIDGE, value: 7 }]));
     if (!parsed.ok) throw new Error(parsed.error);
     expect(compileMapDocument(parsed.document).objectives![0]!.value).toBe(3);
+  });
+});
+
+// add-map-objectives 1.2: the map check's objective rules.
+describe('objectives in the map check', () => {
+  const at = (id: number, x: number, y: number, radius = 10): Objective => ({
+    ...BRIDGE,
+    id,
+    name: { en: `O${id}`, 'pt-BR': `O${id}` },
+    area: [{ x: x - radius, y: y - radius }, { x: x + radius, y: y - radius }, { x: x + radius, y: y + radius }, { x: x - radius, y: y + radius }],
+    flag: { x, y },
+  });
+  const codes = (objectives?: Objective[]) => {
+    const map = createEditableMap({ id: 'objectives-check', size: 'small', name: { en: 'Test', 'pt-BR': 'Teste' } });
+    return validateEditableMap(objectives ? { ...map, objectives } : map)
+      .filter((problem) => problem.code.startsWith('objective'))
+      .map((problem) => `${problem.severity}:${problem.code}`);
+  };
+
+  it('three objectives apart pass', () => {
+    expect(codes([at(1, -60, 0), at(2, 0, 0), at(3, 60, 0)])).toEqual([]);
+  });
+
+  it('too few is a warning, a map without any still loads', () => {
+    expect(codes()).toEqual(['warning:objective-count']);
+  });
+
+  it('overlapping areas and a missing name are errors', () => {
+    const unnamed = { ...at(3, 60, 0), name: { en: '', 'pt-BR': 'Sem nome' } };
+    expect(codes([at(1, -5, 0), at(2, 5, 0), unnamed])).toEqual(['error:objectives-overlap', 'error:objective-name-missing']);
   });
 });
