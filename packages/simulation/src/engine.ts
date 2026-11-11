@@ -24,6 +24,7 @@ import {
   getWeapon,
   reloadMagazine,
   SUPPRESSION_DECAY,
+  DEFAULT_TIME_LIMIT,
 } from '@prestes/shared';
 import type {
   BattlePhase,
@@ -197,6 +198,12 @@ export class SimulationEngine implements SimContext {
   readonly assaults = new Map<number, Assault>();
   /** add-map-objectives: the map's objectives; capture runs in the battle phase. */
   readonly objectives: ObjectiveState[];
+  /** add-map-objectives D3: the battle's time limit in ticks. */
+  readonly timeLimitTicks: number;
+  /** add-map-objectives D3: the tick the battle started (0 without a deployment phase). */
+  battleStartTick = 0;
+  /** add-map-objectives D3: the tick each side first held every objective. */
+  readonly allHeldSince: { column: number | null; legalist: number | null } = { column: null, legalist: null };
   /** pre-battle-roster 4.3: the machine-gun squads' belt pools (rostered battles with a gun only). */
   gunPools?: Record<number, number>;
   fog: boolean;
@@ -251,6 +258,7 @@ export class SimulationEngine implements SimContext {
     const positions = createPositions(this.battleMap ? { ...this.battleMap, covers: this.covers } : null);
     this.positions = positions.positions;
     this.objectives = createObjectives(this.battleMap);
+    this.timeLimitTicks = options.timeLimitTicks ?? DEFAULT_TIME_LIMIT;
     this.positionById = positions.byId;
     this.selectTerrain();
     this.rosters = this.battleMap ? resolveRosters(this.battleMap, options.rosters, this.rng) : undefined;
@@ -550,6 +558,9 @@ export class SimulationEngine implements SimContext {
       ...(this.garrisons.size > 0 ? { garrisons: garrisonSnapshot(this) } : {}),
       ...(this.assaults.size > 0 ? { assaults: assaultSnapshot(this) } : {}),
       ...(this.objectives.length > 0 ? { objectives: objectiveSnapshot(this) } : {}),
+      ...(this.objectives.length > 0
+        ? { clock: { tick: this.tickCount - this.battleStartTick, limit: this.timeLimitTicks } }
+        : {}),
       hash: options?.hash === false ? '' : this.hashState(),
     };
   }
@@ -567,6 +578,7 @@ export class SimulationEngine implements SimContext {
       if (command.type === 'noop') continue;
       if (command.type === 'start_battle') {
         this.phase = 'battle';
+        this.battleStartTick = this.tickCount;
         events.push({ type: 'battle_started', tick: this.tickCount });
       } else if (command.type === 'reset_deployment') {
         this.resetDeployment();

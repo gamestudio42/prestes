@@ -6,11 +6,12 @@ import {
   eyeHeightForStance,
   isPointInVision,
 } from '@prestes/shared';
-import type { Outcome, SimEvent } from '@prestes/shared';
+import type { DecidedBy, Outcome, SimEvent } from '@prestes/shared';
 import { TARGET_HYSTERESIS, targetScore } from '../tactical';
 import { CONCEALED_CONTACT_RADIUS, CONTACT_RADIUS, AMBUSH_RADIUS, AWARENESS_RANGE, SUPPRESS_FIRE_INTERVAL, clamp } from './model';
 import type { MutableUnit } from './model';
 import type { SimContext } from './context';
+import { ALL_HELD_TICKS, objectiveValues } from './objectives';
 import { nearestEnemy } from './geometry';
 import { woundAccuracyFactor } from './casualties';
 import { markUnderFire, shooterOf } from './fire-reaction';
@@ -643,16 +644,78 @@ export function updateOutcome(ctx: SimContext, tick: number, events: SimEvent[])
   const legalistAlive = ctx.units.some(
     (unit) => unit.faction === 'legalist' && unit.alive && !unit.routed && !unit.incapacitated,
   );
-  const next: Outcome = !columnAlive
-    ? 'defeat'
-    : !ctx.opposition
-      ? 'playing'
-      : !legalistAlive
-        ? 'victory'
-        : 'playing';
+  const hasObjectives = ctx.objectives.length > 0;
+  const values = hasObjectives ? objectiveValues(ctx) : undefined;
+
+  // add-map-objectives D3: a side holding every objective starts (and keeps)
+  // its two minutes here; losing one clears it.
+  if (hasObjectives) {
+    for (const side of ['column', 'legalist'] as const) {
+      const holdsAll = ctx.objectives.every((objective) => objective.owner === side);
+      if (!holdsAll) ctx.allHeldSince[side] = null;
+      else if (ctx.allHeldSince[side] === null) ctx.allHeldSince[side] = tick;
+    }
+  }
+
+  let next: Outcome = 'playing';
+  let decidedBy: DecidedBy | undefined;
+  const columnBroken = ctx.battle.fellBack.has('column');
+  const legalistBroken = ctx.battle.fellBack.has('legalist');
+
+  // A side that fell back off the field is the broken one; reporting
+  // `broken` keeps the reason when its last fit men also rout (annihilation
+  // would otherwise be chosen first and `broken` would never be reported).
+  if (columnBroken) {
+    next = 'defeat';
+    decidedBy = 'broken';
+  } else if (!columnAlive) {
+    next = 'defeat';
+    decidedBy = 'annihilation';
+  } else if (legalistBroken) {
+    next = 'victory';
+    decidedBy = 'broken';
+  } else if (!ctx.opposition) {
+    next = 'playing';
+  } else if (!legalistAlive) {
+    next = 'victory';
+    decidedBy = 'annihilation';
+  } else if (
+    hasObjectives &&
+    ctx.allHeldSince.column !== null &&
+    // The tick the side was first seen holding all counts as the first of the two minutes.
+    tick - ctx.allHeldSince.column + 1 >= ALL_HELD_TICKS
+  ) {
+    next = 'victory';
+    decidedBy = 'all-objectives';
+  } else if (
+    hasObjectives &&
+    ctx.allHeldSince.legalist !== null &&
+    tick - ctx.allHeldSince.legalist + 1 >= ALL_HELD_TICKS
+  ) {
+    next = 'defeat';
+    decidedBy = 'all-objectives';
+  } else if (hasObjectives && tick - ctx.battleStartTick >= ctx.timeLimitTicks) {
+    if (values!.column > values!.legalist) {
+      next = 'victory';
+      decidedBy = 'objectives';
+    } else if (values!.legalist > values!.column) {
+      next = 'defeat';
+      decidedBy = 'objectives';
+    } else {
+      next = 'draw';
+      decidedBy = 'draw';
+    }
+  }
+
   if (next !== ctx.outcome) {
     ctx.outcome = next;
-    events.push({ type: 'outcome', tick, outcome: next });
+    events.push({
+      type: 'outcome',
+      tick,
+      outcome: next,
+      ...(decidedBy ? { decidedBy } : {}),
+      ...(values ? { values } : {}),
+    });
   }
 }
 

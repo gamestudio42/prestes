@@ -55,6 +55,12 @@ export interface SimContext {
   readonly vision: VisionState;
   /** add-map-objectives: the battle map's objectives (none elsewhere). */
   readonly objectives: ObjectiveState[];
+  /** add-map-objectives D3: the battle's time limit in ticks. */
+  readonly timeLimitTicks: number;
+  /** add-map-objectives D3: the tick the battle started (0 without a deployment phase). */
+  battleStartTick: number;
+  /** add-map-objectives D3: the tick each side first held every objective, cleared when it loses one. */
+  readonly allHeldSince: { column: number | null; legalist: number | null };
   /** add-battle-maps: the battle map's ferries (none elsewhere). */
   readonly ferries: FerryState[];
   /** The battle map, or null on the training ground. */

@@ -5,6 +5,8 @@ import type { SimContext } from './context';
 export const CAPTURE_TICKS = 100;
 /** Progress lost each tick while nobody stands in the objective. */
 export const CAPTURE_DECAY = 2;
+/** add-map-objectives D3: ticks a side must hold every objective to win (2 min). */
+export const ALL_HELD_TICKS = 1200;
 
 type Side = 'column' | 'legalist';
 
@@ -13,6 +15,7 @@ export interface ObjectiveState {
   owner: 'neutral' | Side;
   progress: { column: number; legalist: number };
   contested: boolean;
+  readonly value: number;
   readonly area: readonly Vec2[];
 }
 
@@ -23,8 +26,19 @@ export function createObjectives(map: BattleMap | null): ObjectiveState[] {
     owner: objective.owner,
     progress: { column: 0, legalist: 0 },
     contested: false,
+    value: objective.value,
     area: objective.area,
   }));
+}
+
+/** add-map-objectives D3: each side's total objective value (0 without objectives). */
+export function objectiveValues(ctx: SimContext): { column: number; legalist: number } {
+  const values = { column: 0, legalist: 0 };
+  for (const objective of ctx.objectives) {
+    if (objective.owner === 'column') values.column += objective.value;
+    else if (objective.owner === 'legalist') values.legalist += objective.value;
+  }
+  return values;
 }
 
 /**

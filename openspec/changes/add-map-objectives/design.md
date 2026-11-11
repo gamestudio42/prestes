@@ -161,3 +161,24 @@ latest. Goldens re-recorded. No saved data.
 
 - Whether the player may choose "annihilation only" (no objectives) on the
   skirmish setup screen; deferrable, a flag in the start request.
+
+## Apply findings
+
+- 2.3 (2026-11-10): `updateOutcome` now runs the full order for maps with
+  objectives (a side that fell back, no fit soldier, every objective held for
+  2 min, the time limit by value, a draw) and records `decidedBy` and the
+  final `values` on the outcome event. `ObjectiveState` gained `value`;
+  `objectiveValues(ctx)` totals it per side. The clock is
+  `tickCount - battleStartTick`, `battleStartTick` set by `start_battle`, and
+  the frame carries `clock` on maps with objectives (not hashed: it derives
+  from the tick). Reading of the spec: a side that fell back reports
+  `broken` even though its last fit men also rout and the design's
+  annihilation-first order would name `annihilation`; with the literal order
+  `broken` could never be reported. All-held counts the tick it was first
+  seen as the first of its 1200 (the capture progress convention). Tests in
+  `objectives-outcome.test.ts` (7: time limit, all held, loss restarts it,
+  draw, broken, annihilation without objectives, the frame clock);
+  simulation 315/315; `pnpm check:determinism` unchanged (the 1000-tick runs
+  end before an objective outcome); eslint clean. Maps without objectives
+  keep the annihilation rule and carry no clock.
+
