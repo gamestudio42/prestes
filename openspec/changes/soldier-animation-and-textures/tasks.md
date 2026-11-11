@@ -1,6 +1,7 @@
 ## 0. Before starting
 
-- [ ] 0.1 Read `docs/handoff.md`, then this change's proposal, design and spec. Prerequisite: `faction-armies` section 2 (the armies and their uniform set ids) for section 3 here; sections 1 and 2 (clips and view) can start without it. Blender must be on the machine for `pnpm art`; verify: `pnpm art` runs for the soldier target and reproduces the present `soldier.glb`
+- [x] 0.1 Read `docs/handoff.md`, then this change's proposal, design and spec. Prerequisite: `faction-armies` section 2 (the armies and their uniform set ids) for section 3 here; sections 1 and 2 (clips and view) can start without it. Blender must be on the machine for `pnpm art`; verify: `pnpm art` runs for the soldier target and reproduces the present `soldier.glb`
+  - Apply note (2026-11-11): Blender 5.2 found; `pnpm art soldier` rebuilt `apps/game/public/models/soldier.glb` byte for byte (sha1 d9a1e3f). `faction-armies` is archived, so section 3 may start.
 
 ## 1. Clips in the kit
 
