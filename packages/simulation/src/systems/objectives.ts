@@ -103,3 +103,21 @@ export function objectiveSnapshot(ctx: SimContext): ObjectiveSnapshot[] {
     name: objective.name,
   }));
 }
+
+/**
+ * add-map-objectives 3.2: the capture state the engine hashes. Names and values
+ * are static map data, so they stay out of the hash (frames still carry them).
+ */
+export function objectiveHashState(ctx: SimContext): Array<{
+  id: number;
+  owner: 'neutral' | Side;
+  progress: { column: number; legalist: number };
+  contested: boolean;
+}> {
+  return ctx.objectives.map((objective) => ({
+    id: objective.id,
+    owner: objective.owner,
+    progress: { ...objective.progress },
+    contested: objective.contested,
+  }));
+}

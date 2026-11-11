@@ -86,7 +86,7 @@ import {
 } from './systems/orders';
 import { applyCommand } from './systems/commands';
 import { createBattleMemory, updateBattleFlow } from './systems/enemy-commander';
-import { createObjectives, objectiveSnapshot, updateObjectives, type ObjectiveState } from './systems/objectives';
+import { createObjectives, objectiveHashState, objectiveSnapshot, updateObjectives, type ObjectiveState } from './systems/objectives';
 import { createVisionState, seenSnapshot, updateVision } from './systems/vision';
 import { createFerries, ferrySnapshot, headingForLanding, heldByFerry, updateFerries } from './systems/ferry';
 import { defaultConcealedFire } from './systems/concealment';
@@ -646,8 +646,8 @@ export class SimulationEngine implements SimContext {
         // garrison-and-assault: hashed only while a position is held.
         ...(this.garrisons.size > 0 ? { garrisons: garrisonSnapshot(this) } : {}),
         ...(this.assaults.size > 0 ? { assaults: [...this.assaults.values()] } : {}),
-        // add-map-objectives: hashed on maps with objectives.
-        ...(this.objectives.length > 0 ? { objectives: objectiveSnapshot(this) } : {}),
+        // add-map-objectives: hashed on maps with objectives (capture state only).
+        ...(this.objectives.length > 0 ? { objectives: objectiveHashState(this) } : {}),
       }),
     );
   }

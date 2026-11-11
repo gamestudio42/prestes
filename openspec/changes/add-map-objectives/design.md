@@ -248,4 +248,13 @@ latest. Goldens re-recorded. No saved data.
   owner change through the strip, localised tooltip, 15:00 clock, five
   objectives and flags before the battle, and a battle ended on the clock with
   the objectives table.
+- 4.2 (2026-11-10): gates. The objectives' `value` and `name` are static map data,
+  so the engine now hashes only the capture state (`objectiveHashState`); the
+  goldens remain `b3e2538f`/`9fa6a458`. The worker bundle grew to 203,395 B for
+  the objectives code, so its budget is 210,000 B. `pnpm verify` passes every
+  step except `pnpm e2e` (125/127): the desk label-gap test fails at the
+  change's base too (checked in a clean worktree at `6412ac9`), and the
+  tactical tooltip test is a hover flake (passes alone). The preview-cost test
+  needs the documented `PRESTES_PREVIEW_GUARD=2` on this machine under the
+  full parallel run (≈2.9 ms vs 2 ms alone), a load effect, not a regression.
 
