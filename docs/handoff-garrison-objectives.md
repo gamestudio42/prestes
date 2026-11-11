@@ -12,24 +12,37 @@ cold. Keep this file current as tasks close; delete it once
   (+15, ~19, -9); no main spec names a removed map any more (terrain
   hill and garrison scenario fixed after the sync); `openspec validate
   --specs` 23/23.
-- **Current change: add-map-objectives (16/18, started 2026-11-10).** Only the
-  gates (4.2) and the user's hand check (4.3) are open. Sections 1 (data) and
-  2 (simulation) are complete (1.1–1.4, 2.1–2.6); 4.1 is done (the report's
-  player plays the objectives; 15-minute clock; `decidedBy` and objectives in
-  the report); 3.1–3.4 are done: the `ObjectiveLayer` (flag, outline, capture
-  ring), the top-bar objective strip and clock (localized tooltips, contested
-  pulse), the setup screen's time limit and objectives over the preview, and
-  the end panel's decided-by line and objectives table. NEXT STEP: 4.2
-  (`pnpm verify`, `pnpm e2e`, `openspec validate add-map-objectives
-  --type change --strict`); then 4.3, the user's hand check (play one battle
-  for the objectives on each battle map and write findings in
-  `docs/status.md`). Known e2e risk: the visual baselines and the editor
-  pixel-art screenshot were failing before this change (re-record only with
-  the user's ok). `paiolzinho` still has no objectives (`check:maps` warns);
-  the user will author them in the editor. Work in small steps, commit each, and
+- **Current change: add-map-objectives (17/18, started 2026-11-10).** Only
+  4.3, the user's hand check, is open. Everything else is done: data (1.1–1.4),
+  simulation (2.1–2.6), the presentation (3.1–3.4: flags/outline/ring, strip
+  and clock, setup time limit and objectives, end panel), the report with a
+  player that plays the objectives (4.1) and the gates (4.2: check, build,
+  bundle, determinism, tick budget and validate pass; e2e 125/127, with the
+  desk label-gap failure proven pre-existing at `6412ac9` and a tactical
+  tooltip flake that passes alone). NEXT STEP: 4.3, the user plays one battle
+  for the objectives on each battle map and writes findings in
+  `docs/status.md`, then the change can be archived. The user will author the
+  objectives of `paiolzinho` in the editor (see "Authoring objectives" below)
+  before that check. Work in small steps, commit each, and
   update this file after each. Open points it inherits: defend
   and ambush still face the nearest enemy, seen or not (the AI's defend
   needs a facing of its own before fog can apply there).
+
+## Authoring objectives (for the user)
+
+1. Open the editor (the desk's theodolite, or `pnpm dev` and
+   `/editor.html`), then **Open** the map.
+2. Gameplay layer, tool **objective** (`J`): a click places a 16 m circle with
+   the flag at the point, named "Objetivo N"/"Objective N", value 1, neutral.
+3. Select it (click the flag or inside) to edit the PT-BR and EN names, the
+   value (1–3), the radius (12–30 m) and the starting owner; drag moves area
+   and flag; `Delete` removes; all undoable.
+4. A skirmish or test map needs 3 to 5 objectives, reachable from both
+   deployment areas, not overlapping, the flag out of deep water and out of a
+   building footprint (the church's flag is on the building, which the check
+   allows).
+5. Save (autosave) and run `pnpm check:maps`; the setup screen then lists them
+   and the game draws their flags.
 - Other open work: machine-gun-fire-feedback 12/13 (gates + the user's hand
   check), polish-menu-desk 31/35 (Aseprite sprites, needs the user),
   video-tutorial-manual 0/19. retire-bootcamp is archived (2026-11-10).
@@ -149,7 +162,7 @@ deployment" can fail in the full parallel vitest run and passes alone.
 Other changes: machine-gun-fire-feedback 12/13 (only gates + the user's hand
 check), polish-menu-desk 31/35 (Aseprite sprites, needs the user's
 Aseprite window; task 6.6 done 2026-11-10: the open book redrawn in CSS, user approved; see its Apply note), retire-bootcamp archived 2026-11-10,
-add-map-objectives 16/18 (in progress) and video-tutorial-manual 0/19 (after
+add-map-objectives 17/18 (in progress) and video-tutorial-manual 0/19 (after
 author-game-maps).
 
 ### Built this session outside the task list (all asked by the user while authoring)
@@ -322,7 +335,7 @@ deployment anchors — 2.1–2.6 done), 3.1–3.4 presentation
 top-bar strip and clock, skirmish setup screen time limit and objectives,
 end panel — 3.1–3.4 done), 4.1 battle report (done: the player plays the
 objectives, 15-minute clock, `decidedBy` and objectives in the report, the
-battle-lab band widened to the limit and 120 s silence), 4.2 gates, 4.3
+battle-lab band widened to the limit and 120 s silence), 4.2 gates done, 4.3
 the user's hand check.
 
 ## Progress log
@@ -376,3 +389,5 @@ the user's hand check.
 - 2026-11-10: add-map-objectives 3.2–3.4 done. `ObjectiveSnapshot` carries the value and localized name; the top bar draws the objective strip (owner colour, value pips, contested pulse, localized tooltip) and the mm:ss clock; the setup screen saves a 15/20/30-minute `timeLimit` (forwarded to the worker through `GameClientOptions`) and lists the field's objectives with flags over its preview; the end panel shows draw, the decided-by line, the values and the objectives table. E2e objectives.spec 4/4 (flags/outline, strip owner change + clock + PT-BR tooltip, setup 15:00 + five objectives, fought to the clock with the table); locales 993 keys; setup-state and the simulation/view tests pass. Next: 4.2 gates.
 
 
+
+- 2026-11-10: add-map-objectives 4.2 done (17/18). `openspec validate --strict` passes; `pnpm verify` passes check, build, bundle (worker budget to 210 KB for the objectives code), determinism (only capture state hashed, goldens unchanged), tick budget and validate; `pnpm e2e` 125/127, with the desk label-gap test failing at the base `6412ac9` too (pre-existing) and a tactical tooltip flake that passes alone. On this machine `pnpm check` needs `PRESTES_PREVIEW_GUARD=2` under the full parallel run (the preview test passes alone under its 2 ms budget). Only 4.3 remains: the user hand check, after authoring `paiolzinho` objectives.
