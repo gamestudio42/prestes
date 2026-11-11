@@ -128,6 +128,24 @@ export interface MapLight {
 }
 
 export const DEFAULT_MAP_LIGHT: MapLight = { time: 12, bearing: 45 };
+
+/** add-map-objectives: who holds an objective at the start. */
+export type ObjectiveOwner = 'neutral' | 'column' | 'legalist';
+
+/**
+ * add-map-objectives 1.1: a region to take and hold, from the map document.
+ * The area is a polygon (a circle is stored as one); the flag stands at
+ * `flag`, inside it.
+ */
+export interface Objective {
+  id: number;
+  name: LocalizedText;
+  area: readonly Vec2[];
+  flag: Vec2;
+  /** 1 to 3. */
+  value: number;
+  owner: ObjectiveOwner;
+}
 export const MAP_LIGHT_TIME = { min: 6, max: 18 } as const;
 
 export interface BattleMap {
@@ -213,4 +231,6 @@ export interface BattleMap {
    * player brings a roster (built-in maps). Absent: the default roster.
    */
   enemyForces?: readonly Roster[];
+  /** add-map-objectives: the map's objectives (absent or empty: none). */
+  objectives?: readonly Objective[];
 }

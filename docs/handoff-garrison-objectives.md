@@ -15,8 +15,9 @@ cold. Keep this file current as tasks close; delete it once
 - **Current change: add-map-objectives (1/17, started 2026-11-10).** 0.1
   done (prerequisites already archived). Plan revised 2026-11-10 for
   authored maps (objectives in map document v5, editor tool, map check; the
-  test map's five objectives in design.md). NEXT STEP: task 1.1 (the
-  `Objective` type on `BattleMap`). Work in small steps, commit each, and
+  test map's five objectives in design.md). 1.1 done (`Objective` in
+  maps/types.ts). NEXT STEP: 1.3 (document v5 `objectives`, compiler,
+  migration; then the editor tool), then 1.2 (map check), 1.4 (test map). Work in small steps, commit each, and
   update this file after each. Open points it inherits: presets A and C of the test map end
   in a 900 s stand-off (objectives should move the column; the gun bands in
   battle-report-weapons wait for it, `STAND_OFF_UNTIL_OBJECTIVES`); defend

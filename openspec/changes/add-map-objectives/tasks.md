@@ -6,7 +6,8 @@
 
 ## 1. Data
 
-- [ ] 1.1 `Objective` type and `objectives` on `BattleMap` (id, area polygon, flag point, value 1-3, initial owner, EN and PT-BR names carried by the document); no hand-written map data (verify: typecheck)
+- [x] 1.1 `Objective` type and `objectives` on `BattleMap` (id, area polygon, flag point, value 1-3, initial owner, EN and PT-BR names carried by the document); no hand-written map data (verify: typecheck)
+  - Apply note (2026-11-10): `ObjectiveOwner` and `Objective` (id, name LocalizedText, area polygon, flag, value, owner) in packages/shared/src/maps/types.ts; `BattleMap.objectives?` (absent or empty: none). Not yet filled by the compiler (1.3) or used anywhere. Typecheck clean.
 - [ ] 1.2 Map check (`check:maps` and the editor's problem list): reachable from both deployment areas, no overlap, not in deep water or inside a footprint (except the flag), 3-5 per skirmish or test map, names in both languages (verify: unit test with a broken document; `pnpm check:maps`)
 - [ ] 1.3 Objectives in authored maps: map document version 5 with `objectives` (version 4 files open with none) (area polygon, flag point, value, initial owner, EN and PT-BR names); the editor's objective tool in the gameplay layers; the map check applies 1.2's rules (verify: editor e2e places an objective and the playtest shows its flag; migration unit test; locale check)
 - [ ] 1.4 The test map's objectives (design.md table): Ponte, Vau, Igreja, Trincheira, Casario, saved in `campo-de-provas.map.json` (verify: `pnpm check:maps`; compile test lists the five)
