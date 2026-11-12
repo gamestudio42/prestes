@@ -151,11 +151,6 @@ canvas {
   box-shadow: inset 2px 2px 0 rgba(8, 5, 2, 0.6);
 }
 
-/* Pixel text sizes do not fit two-word station labels on one line. */
-.tutorial-chapter strong {
-  white-space: nowrap;
-}
-
 /* Pixel icons: a slice of the sheet as an alpha mask over the text colour. */
 .pixel-icon {
   display: inline-block;

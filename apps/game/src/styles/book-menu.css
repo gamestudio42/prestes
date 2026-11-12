@@ -46,63 +46,6 @@
   pointer-events: none;
 }
 
-.menu-vignette {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background:
-    radial-gradient(ellipse at center, rgba(18, 13, 8, 0) 45%, rgba(18, 13, 8, 0.7) 100%),
-    rgba(18, 13, 8, 0.2);
-}
-
-/* Leather boards with a gold rule and stepped gold corners. */
-.book-cover {
-  position: relative;
-  z-index: 2;
-  height: min(640px, calc(100vh - 48px));
-  min-height: 420px;
-  padding: 14px 14px 20px;
-  background: var(--book-leather);
-  box-shadow:
-    inset 0 0 0 2px var(--book-leather-dark),
-    inset 0 0 0 4px var(--book-leather-light),
-    inset 0 0 0 6px var(--book-leather-dark),
-    6px 6px 0 rgba(8, 5, 2, 0.75);
-}
-
-.book-cover::before,
-.book-cover::after {
-  content: '';
-  position: absolute;
-  width: 12px;
-  height: 12px;
-  background: var(--px-gold);
-  clip-path: polygon(0 0, 100% 0, 100% 4px, 4px 4px, 4px 100%, 0 100%);
-  pointer-events: none;
-}
-
-.book-cover::before {
-  top: 2px;
-  left: 2px;
-}
-
-.book-cover::after {
-  right: 2px;
-  bottom: 2px;
-  transform: rotate(180deg);
-}
-
-.book-page {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  min-height: 0;
-  color: var(--book-ink);
-  font-size: 16px;
-  line-height: 1.45;
-}
-
 /* Each page darkens in hard steps toward the gutter; stacked page edges show
    as stripes on the outer side and along the bottom. */
 .book-page-left {
@@ -131,57 +74,6 @@
     6px 6px 0 var(--book-edge);
 }
 
-.book-page-body {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  min-height: 0;
-  overflow: auto;
-  padding: 28px 36px 8px;
-  scrollbar-width: thin;
-  scrollbar-color: var(--book-edge) transparent;
-}
-
-.book-page-left .book-page-body {
-  padding-right: 44px;
-}
-
-.book-page-right .book-page-body {
-  padding-left: 44px;
-}
-
-.book-folio {
-  margin: 0;
-  padding: 6px 36px 12px;
-  color: var(--book-ink-soft);
-  font-size: 12px;
-  text-align: center;
-}
-
-.book-title {
-  text-align: center;
-}
-
-.book-title .eyebrow {
-  margin: 0 0 4px;
-  color: var(--book-accent);
-  font-size: 13px;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-}
-
-.book-title h1 {
-  margin: 0;
-  color: var(--book-ink);
-  font-size: clamp(48px, 7vw, 84px);
-  font-weight: 600;
-  line-height: 1;
-  letter-spacing: 4px;
-  text-shadow: 3px 3px 0 var(--book-paper-deep);
-  white-space: nowrap;
-}
-
 .book-plate {
   align-self: center;
   width: min(100%, 320px);
@@ -191,73 +83,15 @@
   image-rendering: pixelated;
 }
 
-.book-heading {
-  margin: 0;
-  padding-bottom: 6px;
-  border-bottom: 2px dashed var(--book-edge);
-  color: var(--book-ink);
-  font-size: 26px;
-  font-weight: 600;
-  line-height: 1.1;
-}
-
-.book-epigraph {
-  margin: auto 0 0;
-  color: var(--book-accent);
-  font-size: 14px;
-  font-style: italic;
-  text-align: center;
-}
-
-/* Page-turn buttons. */
-.book-turn {
-  width: 32px;
-  height: 28px;
-  border: 2px solid var(--book-ink-soft);
-  background: var(--book-paper-shade);
-  color: var(--book-ink);
-  font-size: 12px;
-  cursor: pointer;
-}
-
-.book-turn:hover:not(:disabled),
-.book-turn:focus-visible {
-  border-color: var(--book-accent);
-  background: var(--book-accent);
-  color: var(--px-parchment);
-  outline: none;
-}
-
-.book-turn:disabled {
-  opacity: 0.35;
-  cursor: default;
-}
-
 @media (max-width: 820px) {
   .start-screen.menu-screen {
     place-items: start center;
     overflow: auto;
   }
 
-  .book-cover {
-    height: auto;
-    min-height: 0;
-  }
-
   .book-page-left,
   .book-page-right {
     background: var(--book-paper);
     box-shadow: 0 2px 0 var(--book-edge);
-  }
-
-  .book-page-body,
-  .book-page-left .book-page-body,
-  .book-page-right .book-page-body {
-    overflow: visible;
-    padding: 20px 18px 6px;
-  }
-
-  .book-title h1 {
-    white-space: normal;
   }
 }

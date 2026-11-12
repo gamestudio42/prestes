@@ -21,19 +21,6 @@
   --hud-radius-sm: 6px;
 }
 
-.start-card {
-  border-radius: 0;
-  border-color: var(--hud-border);
-  background:
-    repeating-linear-gradient(0deg, rgba(234, 216, 181, 0.02) 0 1px, transparent 1px 4px),
-    rgba(24, 17, 11, 0.92);
-}
-
-.start-card h1 {
-  font-family: var(--px-font);
-  letter-spacing: 0;
-}
-
 .hud-top {
   position: absolute;
   top: 0;
@@ -87,20 +74,6 @@
   font-size: 10px;
   font-weight: 400;
   letter-spacing: 0;
-}
-
-.stat-rail {
-  gap: 13px;
-  color: var(--hud-dim);
-  font-size: 10px;
-  letter-spacing: 0;
-  text-transform: uppercase;
-  white-space: nowrap;
-}
-
-.stat-rail > span + span {
-  padding-left: 13px;
-  border-left: 1px solid rgba(109, 81, 48, 0.45);
 }
 
 .camera-rail {
@@ -270,28 +243,6 @@
 .post-button:hover {
   border-color: var(--hud-gold);
   color: var(--hud-paper);
-}
-
-.orders-panel {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 10;
-  display: block;
-  padding: 10px 16px 12px;
-  background:
-    linear-gradient(180deg, rgba(25, 17, 11, 0.12), rgba(17, 11, 7, 0.92) 25%, rgba(13, 8, 5, 0.98));
-  border-top: 0;
-  box-shadow: var(--px-shadow);
-  font-size: 12px;
-}
-
-.hud-deck {
-  display: grid;
-  grid-template-columns: minmax(300px, 348px) minmax(420px, 1fr) minmax(300px, 344px);
-  gap: 10px;
-  align-items: stretch;
 }
 
 .squad-cluster {
@@ -553,28 +504,6 @@
   color: var(--hud-dim);
 }
 
-.status-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 0;
-  overflow: hidden;
-  white-space: nowrap;
-}
-
-.status-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  color: var(--hud-dim);
-  font-size: 10px;
-  letter-spacing: 0;
-}
-
-.status-chip svg {
-  color: var(--hud-gold);
-}
-
 .status-details {
   display: grid;
   gap: 1px;
@@ -583,22 +512,6 @@
   color: var(--hud-faint);
   font-size: 10px;
   line-height: 1.25;
-}
-
-.command-row {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  min-height: 34px;
-  margin-top: 8px;
-  padding: 4px 12px;
-  background:
-    repeating-linear-gradient(0deg, rgba(234, 216, 181, 0.014) 0 1px, transparent 1px 4px),
-    var(--hud-panel-soft);
-  border: 1px solid var(--hud-border-soft);
-  border-radius: 0;
-  overflow: visible;
 }
 
 .formation-control {
@@ -623,36 +536,6 @@
   font-size: 10px;
   letter-spacing: 0;
   text-transform: uppercase;
-}
-
-.stance-control {
-  display: inline-flex;
-  gap: 2px;
-  padding-left: 8px;
-  border-left: 1px solid rgba(109, 81, 48, 0.45);
-}
-
-.stance-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 29px;
-  height: 29px;
-  border: 1px solid var(--hud-border-soft);
-  border-radius: 0;
-  background: rgba(15, 10, 6, 0.3);
-  color: var(--hud-dim);
-}
-
-.stance-button:hover {
-  border-color: var(--hud-gold);
-  color: var(--hud-paper);
-}
-
-.stance-button.active {
-  border-color: var(--hud-gold);
-  background: #3c2a18;
-  color: var(--hud-gold-bright);
 }
 
 .hud-selection,
@@ -791,11 +674,6 @@
   background:
     repeating-linear-gradient(0deg, rgba(234, 216, 181, 0.018) 0 1px, transparent 1px 4px),
     rgba(29, 20, 13, 0.97);
-}
-
-.tutorial-panel {
-  top: 70px;
-  width: min(310px, calc(100vw - 32px));
 }
 
 /* add-battle-maps: the section's soldiers hidden in the crops or the grass. */
