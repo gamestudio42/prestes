@@ -447,19 +447,24 @@ export function planOrderPreview(request: PreviewRequest): PreviewPlan | null {
   // would cross wire, or a scattered selection, searches his own).
   let groundRoutes: (Vec2[] | null)[] | null = null;
   // As the move: a place in cover's clearance falls back to the open point
-  // nearest the order's point, and so does a place no route reaches.
+  // nearest the order's point, and so does a place no route reaches. The
+  // open point is searched once, and only when a soldier needs it.
+  let openPoint: Vec2 | null = null;
   const routedPath = (index: number, destinations: readonly Vec2[]): { path: Vec2[]; destination: Vec2 } => {
     const covers = request.frame.covers;
     groundRoutes ??= sectionRoutes(covers, units, destinations);
     const unit = units[index]!;
     const from = { x: unit.x, y: unit.y };
-    let destination = destinations[index]!;
-    const fallback = request.to ? nearestOpenPointOn(covers, request.to) : destination;
-    if (isPointBlockedByCovers(destination.x, destination.y, covers, 0.8)) destination = fallback;
+    const planned = destinations[index]!;
+    const fallback = (): Vec2 => (request.to ? (openPoint ??= nearestOpenPointOn(covers, request.to)) : planned);
+    let destination = isPointBlockedByCovers(planned.x, planned.y, covers, 0.8) ? fallback() : planned;
     let path = routeFor(groundRoutes[index], destination) ?? findPath(from, destination, covers);
-    if (path.length === 0 && (destination.x !== fallback.x || destination.y !== fallback.y)) {
-      destination = fallback;
-      path = findPath(from, destination, covers);
+    if (path.length === 0) {
+      const open = fallback();
+      if (destination.x !== open.x || destination.y !== open.y) {
+        destination = open;
+        path = findPath(from, destination, covers);
+      }
     }
     return { path, destination };
   };

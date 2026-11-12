@@ -127,6 +127,17 @@ function cellState(x: number, y: number, covers: readonly CoverPoint[]): number 
   return cellNow(x, y, covers);
 }
 
+/** A grid cell's state by its grid coordinates: one cache read in the search loop. */
+function gridState(gx: number, gy: number, covers: readonly CoverPoint[]): number {
+  const cache = blockedCache;
+  if (cache && Number.isInteger(MIN)) {
+    const index = gy * SIZE + gx;
+    const known = cache.cells[index]!;
+    if (known !== 0) return known;
+  }
+  return cellState(world(gx), world(gy), covers);
+}
+
 function blocked(x: number, y: number, covers: readonly CoverPoint[]): boolean {
   return cellState(x, y, covers) === 2;
 }
@@ -445,14 +456,18 @@ function searchPath(
     closed[current] = stamp;
     const cx = current % SIZE;
     const cy = Math.floor(current / SIZE);
+    const currentG = g(current);
+    // route-around-wire: read once per expansion, not once per neighbour.
+    let currentOnWire: boolean | null = null;
 
     for (const [dx, dy] of DIRECTIONS) {
       const nx = cx + dx;
       const ny = cy + dy;
       if (nx < 0 || nx >= SIZE || ny < 0 || ny >= SIZE) continue;
-      if (blocked(world(nx), world(ny), covers)) continue;
+      const state = gridState(nx, ny, covers);
+      if (state === 2) continue;
       if (dx !== 0 && dy !== 0) {
-        if (blocked(world(cx + dx), world(cy), covers) || blocked(world(cx), world(cy + dy), covers)) {
+        if (gridState(cx + dx, cy, covers) === 2 || gridState(cx, cy + dy, covers) === 2) {
           continue;
         }
       }
@@ -460,10 +475,11 @@ function searchPath(
       if (closed[neighbour] === stamp) continue;
       let step = dx !== 0 && dy !== 0 ? Math.SQRT2 : 1;
       // route-around-wire: entering wire costs a detour, walking on it its pace.
-      if (onWire(world(nx), world(ny), covers)) {
-        step = step / WIRE_SPEED + (onWire(world(cx), world(cy), covers) ? 0 : WIRE_PATH_DETOUR);
+      if (state === 3) {
+        currentOnWire ??= gridState(cx, cy, covers) === 3;
+        step = step / WIRE_SPEED + (currentOnWire ? 0 : WIRE_PATH_DETOUR);
       }
-      const tentative = g(current) + step;
+      const tentative = currentG + step;
       if (tentative >= g(neighbour)) continue;
       parent[neighbour] = current;
       gScore[neighbour] = tentative;
