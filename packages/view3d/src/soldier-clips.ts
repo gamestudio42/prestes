@@ -19,18 +19,57 @@ export type SoldierClip =
   | 'fire-prone'
   | 'hit'
   | 'wounded'
-  | 'corpse';
+  | 'corpse'
+  // soldier-animation-and-textures 1.1-1.3.
+  | 'limp'
+  | 'hold-wound'
+  | 'lying-wounded'
+  | 'carry'
+  | 'carried'
+  | 'kneel-treat'
+  | 'treated'
+  | DeathClip
+  | 'corpse-face'
+  | 'corpse-side'
+  | 'corpse-sprawl'
+  | `raise-${AimStance}`
+  | `lower-${AimStance}`
+  | `reload-${AimStance}`
+  | 'aim-turn-stand'
+  | 'aim-turn-crouch';
+
+export type AimStance = 'stand' | 'crouch' | 'prone';
+export type DeathClip = 'death-stand-front' | 'death-stand-back' | 'death-stand-flank' | 'death-crouch' | 'death-prone';
+/** Where the killing shot came from, against the way he faced. */
+export type ShotSide = 'front' | 'back' | 'flank';
 
 export type SoldierOutfit = 'column' | 'legalist' | 'officer';
 
 /** Clips that hold their last pose instead of looping. */
-export const HELD_CLIPS: ReadonlySet<SoldierClip> = new Set([
+export const HELD_CLIPS: ReadonlySet<SoldierClip> = new Set<SoldierClip>([
   'hit',
   'fire-stand',
   'fire-crouch',
   'fire-prone',
   'wounded',
   'corpse',
+  'corpse-face',
+  'corpse-side',
+  'corpse-sprawl',
+  'death-stand-front',
+  'death-stand-back',
+  'death-stand-flank',
+  'death-crouch',
+  'death-prone',
+  'raise-stand',
+  'raise-crouch',
+  'raise-prone',
+  'lower-stand',
+  'lower-crouch',
+  'lower-prone',
+  'reload-stand',
+  'reload-crouch',
+  'reload-prone',
 ]);
 
 export interface ClipState {
@@ -53,6 +92,14 @@ export interface ClipState {
    * even when no target is marked, instead of shouldering it each time.
    */
   engaged?: boolean;
+  /** 2.1: he carries the man he is rescuing (the casualty is `being-carried`). */
+  carrying?: boolean;
+  /** 2.1: a rescuer kneels over him, treating his wound. */
+  treated?: boolean;
+  /** 2.1: the death clip chosen when he was seen to fall; absent, the plain corpse. */
+  death?: SoldierClip;
+  /** 1.3: halted and aiming, his body is still coming round to the target. */
+  turning?: boolean;
 }
 
 /**
@@ -74,7 +121,7 @@ export const READY_ORDERS: ReadonlySet<UnitSnapshot['order']> = new Set<UnitSnap
 ]);
 
 type ClipUnit = Pick<UnitSnapshot, 'alive' | 'incapacitated' | 'routed' | 'stance' | 'targetId'> &
-  Partial<Pick<UnitSnapshot, 'order' | 'suppression' | 'boundTeam'>>;
+  Partial<Pick<UnitSnapshot, 'order' | 'suppression' | 'boundTeam' | 'wound' | 'soldierState' | 'magazine' | 'reserve'>>;
 
 /** At the ready: a contact order, bounding, or under fire. */
 export function atTheReady(unit: ClipUnit): boolean {
@@ -87,20 +134,34 @@ export function atTheReady(unit: ClipUnit): boolean {
 
 /** The clip a soldier plays for its snapshot and what it is doing. */
 export function soldierClip(unit: ClipUnit, state: ClipState): SoldierClip {
+  // A death clip cuts in at once, without the stagger first; it begins struck.
+  if (!unit.alive && state.death) return state.death;
   if (state.hit) return 'hit';
   if (!unit.alive) return 'corpse';
-  if (unit.incapacitated) return 'wounded';
+  if (unit.soldierState === 'being-carried') return 'carried';
+  if (unit.incapacitated) return state.treated ? 'treated' : 'lying-wounded';
+  if (unit.soldierState === 'treating') return 'kneel-treat';
+  if (state.carrying) return 'carry';
   const aiming = unit.targetId !== null || state.engaged === true;
+  // He has rounds in reserve and none in the weapon: the reload of his stance.
+  const reloading = unit.magazine === 0 && (unit.reserve ?? 0) > 0 && !state.firing;
   if (unit.stance === 'prone') {
     if (state.moving) return 'crawl';
     if (state.firing) return 'fire-prone';
+    if (reloading) return 'reload-prone';
     return aiming ? 'aim-prone' : 'prone';
   }
   if (unit.stance === 'crouched') {
     if (state.moving) return 'crouch-walk';
     if (state.firing) return 'fire-crouch';
+    if (reloading) return 'reload-crouch';
+    if (aiming && state.turning) return 'aim-turn-crouch';
     return aiming ? 'aim-crouch' : 'crouch-idle';
   }
+  // The lightly and moderately wounded limp and, halted with nothing to do,
+  // hold the wound.
+  const limping = unit.wound === 'light' || unit.wound === 'moderate';
+  if (limping && state.moving) return 'limp';
   const ready = state.ready ?? atTheReady(unit);
   // Only the simulation's run gait runs: a hitch in the frame positions can
   // spike the measured speed, and the legs must not answer it.
@@ -109,8 +170,73 @@ export function soldierClip(unit: ClipUnit, state: ClipState): SoldierClip {
   }
   if (state.moving) return ready ? 'walk-ready' : 'walk';
   if (state.firing) return 'fire-stand';
+  if (reloading) return 'reload-stand';
+  if (aiming && state.turning) return 'aim-turn-stand';
   if (aiming) return 'aim-stand';
+  if (limping) return 'hold-wound';
   return ready ? 'idle-ready' : 'idle';
+}
+
+/**
+ * The side the killing shot came from: within 60 degrees of where he faced
+ * is the front, beyond 120 the back, the rest a flank.
+ */
+export function shotSide(facingX: number, facingY: number, dx: number, dy: number): ShotSide {
+  const facing = Math.hypot(facingX, facingY);
+  const toward = Math.hypot(dx, dy);
+  if (facing < 1e-6 || toward < 1e-6) return 'front';
+  const cos = (facingX * dx + facingY * dy) / (facing * toward);
+  if (cos >= 0.5) return 'front';
+  if (cos <= -0.5) return 'back';
+  return 'flank';
+}
+
+/** The death clip for his stance and the side the shot came from (1.2). */
+export function deathClip(stance: UnitSnapshot['stance'], side: ShotSide): DeathClip {
+  if (stance === 'prone') return 'death-prone';
+  if (stance === 'crouched') return 'death-crouch';
+  return side === 'front' ? 'death-stand-front' : side === 'back' ? 'death-stand-back' : 'death-stand-flank';
+}
+
+/** How long the raise into the aim and the lowering out of it play (ms). */
+export const RAISE_MS = (7 / 24) * 1000;
+export const LOWER_MS = (9 / 24) * 1000;
+
+const AIM_STANCES: Readonly<Record<string, 'stand' | 'crouch'>> = {
+  'aim-stand': 'stand',
+  'fire-stand': 'stand',
+  'aim-crouch': 'crouch',
+  'fire-crouch': 'crouch',
+  'aim-turn-stand': 'stand',
+  'aim-turn-crouch': 'crouch',
+};
+const AT_EASE: Readonly<Record<string, 'stand' | 'crouch'>> = {
+  'idle-ready': 'stand',
+  idle: 'stand',
+  'hold-wound': 'stand',
+  'crouch-idle': 'crouch',
+};
+
+/**
+ * 1.3: the rifle is raised into the aim before the first shot and lowered
+ * after it, standing and crouched (prone, the rest pose already holds the
+ * rifle at the cheek). Runs after `steadyClip` on its result.
+ */
+export function aimTransition(current: SoldierClip | null, since: number, wanted: SoldierClip, now: number): SoldierClip {
+  const aimStance = AIM_STANCES[wanted];
+  if (aimStance) {
+    const raise: SoldierClip = `raise-${aimStance}`;
+    if (current === raise) return now - since < RAISE_MS ? raise : wanted;
+    if (current !== null && AIM_STANCES[current] === aimStance) return wanted;
+    return current === null ? wanted : raise;
+  }
+  const easeStance = AT_EASE[wanted];
+  if (easeStance && current !== null) {
+    const lower: SoldierClip = `lower-${easeStance}`;
+    if (current === lower) return now - since < LOWER_MS ? lower : wanted;
+    if (AIM_STANCES[current] === easeStance) return lower;
+  }
+  return wanted;
 }
 
 /** The column wears the slouch hat and khaki; legalists olive and the kepi. */
@@ -166,13 +292,25 @@ export function holdReady(readyUntil: number, now: number, wantsReady: boolean, 
 export const MIN_CLIP_MS = 600;
 
 /** Clips that cut in at once: a shot, a hit, a fall. */
-const URGENT: ReadonlySet<SoldierClip> = new Set([
+const URGENT: ReadonlySet<SoldierClip> = new Set<SoldierClip>([
   'hit',
   'fire-stand',
   'fire-crouch',
   'fire-prone',
   'wounded',
   'corpse',
+  'death-stand-front',
+  'death-stand-back',
+  'death-stand-flank',
+  'death-crouch',
+  'death-prone',
+  'lying-wounded',
+  'carried',
+  'carry',
+  'kneel-treat',
+  'treated',
+  'raise-stand',
+  'raise-crouch',
 ]);
 
 /**

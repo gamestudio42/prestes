@@ -16,7 +16,8 @@
 
 ## 2. View
 
-- [ ] 2.1 Clip choice in `soldier-clips.ts` for wound, carry, treatment, reload and death (direction from the frame's events); verify with unit tests, one per scenario of the wound, death and crouch requirements
+- [x] 2.1 Clip choice in `soldier-clips.ts` for wound, carry, treatment, reload and death (direction from the frame's events); verify with unit tests, one per scenario of the wound, death and crouch requirements
+  - Apply note (2026-11-11): `soldierClip` chooses `limp` and `hold-wound` (light or moderate wound, standing), `lying-wounded`, `carried`, `carry` (the rescuer whose casualty is `being-carried`), `kneel-treat` and `treated` (the target of a `treating` rescuer), `reload-*` (magazine empty, rounds in reserve), `aim-turn-*` and the death clip; `aimTransition` puts `raise-` before the aim and `lower-` after it, standing and crouched (prone rests at the cheek). The death side comes from the last `shot` event that hit him (the snapshot carries no shooter): `shotSide` (front within 60 degrees, back beyond 120) and `deathClip`. A man seen already dead gets the plain corpse. The carried man takes his carrier's facing; the rescuer kneels 0.6 m to the side. Tests in `soldier-clips-wounds.test.ts`, one per scenario; determinism golden matches; the battle runs in the preview with no console errors.
 - [ ] 2.2 Death and corpse variants from the soldier id and death tick; verify with a unit test that the same inputs give the same pose and that four poses occur over a battle's dead
 - [ ] 2.3 Cross-fade between clips in `SoldierInstance`, deaths cut; verify with a unit test of the fade times and the frame budget e2e
 - [ ] 2.4 The build fails when the view asks for a clip the model lacks; verify by removing a clip name in a test fixture

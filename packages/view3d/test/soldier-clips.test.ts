@@ -31,7 +31,7 @@ describe('soldierClip', () => {
 
   it('shows the dead and the wounded before anything else', () => {
     expect(soldierClip({ ...base, alive: false }, { moving: true, firing: true })).toBe('corpse');
-    expect(soldierClip({ ...base, incapacitated: true }, { moving: true, firing: false })).toBe('wounded');
+    expect(soldierClip({ ...base, incapacitated: true }, { moving: true, firing: false })).toBe('lying-wounded');
   });
 
   it('picks the stance variant of walk, fire, aim and idle', () => {

@@ -5,6 +5,9 @@ import {
   isMoving,
   holdReady,
   soldierClip,
+  aimTransition,
+  deathClip,
+  shotSide,
   soldierOutfit,
   steadyClip,
   turnToward,
@@ -81,7 +84,18 @@ interface CharacterView {
   /** The clip playing and since when (ms). */
   clip: SoldierClip | null;
   clipSince: number;
+  /** Alive at the last update (a death seen happening gets a death clip). */
+  alive: boolean;
+  /** Where the last shot that hit him came from (simulation metres). */
+  shotFrom: { x: number; y: number } | null;
+  /** soldier-animation 2.1: the death clip chosen when he fell. */
+  death?: SoldierClip;
 }
+
+/** How far the rescuer kneels to the side of the man he treats (model metres). */
+const TREAT_OFFSET = 0.6;
+/** Halted and aiming, a body still this far from its target angle is turning (radians). */
+const TURNING_ANGLE = 0.15;
 
 function factionColor(faction: Faction): number {
   return PALETTE.factions[faction];
@@ -316,10 +330,22 @@ export class CharacterLayer {
     this.lastEventTick = frame.tick;
     const shooters = new Set<number>();
     const struck = new Set<number>();
+    const hitFrom = new Map<number, { x: number; y: number }>();
     for (const event of fresh ? frame.events : []) {
       if (event.type === 'shot') shooters.add(event.source);
+      if (event.type === 'shot' && event.hit && event.target >= 0) hitFrom.set(event.target, { x: event.x, y: event.y });
       if (event.type === 'unit_hit') struck.add(event.unitId);
     }
+    // 2.1: who carries whom, and who is being treated.
+    const states = new Map(frame.units.map((unit) => [unit.id, unit.soldierState]));
+    const carrierOf = new Map<number, number>();
+    const treated = new Set<number>();
+    for (const unit of frame.units) {
+      if (unit.rescueTargetId === null) continue;
+      if (states.get(unit.rescueTargetId) === 'being-carried') carrierOf.set(unit.rescueTargetId, unit.id);
+      if (unit.soldierState === 'treating') treated.add(unit.rescueTargetId);
+    }
+    const carrying = new Set(carrierOf.values());
     const scale = unitScaleForSpan(span) * 1.25;
     const seen = new Set<number>();
     let proxyIndex = 0;
@@ -351,6 +377,8 @@ export class CharacterLayer {
           hitUntil: 0,
           engagedUntil: 0,
           down: !unit.alive || unit.incapacitated,
+          alive: unit.alive,
+          shotFrom: null,
         };
         this.views.set(unit.id, view);
       }
@@ -365,6 +393,14 @@ export class CharacterLayer {
       view.lastX = unit.x;
       view.lastY = unit.y;
 
+      const from = hitFrom.get(unit.id);
+      if (from) view.shotFrom = from;
+      if (view.alive && !unit.alive && !unit.routed) {
+        // Seen to die: the clip of his stance and the side the shot came from.
+        const side = view.shotFrom ? shotSide(unit.facingX, unit.facingY, view.shotFrom.x - unit.x, view.shotFrom.y - unit.y) : 'front';
+        view.death = deathClip(unit.stance, side);
+      }
+      view.alive = unit.alive;
       const down = !unit.alive || unit.incapacitated;
       if (struck.has(unit.id) || (down && !view.down)) {
         view.hitUntil = now + (down ? 260 : 320);
@@ -421,9 +457,14 @@ export class CharacterLayer {
       marks.root.visible = !useProxy && !unit.routed;
       marks.root.position.set(unit.x, terrainHeightAt(unit.x, unit.y), unit.y);
       marks.root.scale.setScalar(scale);
-      const desiredAngle = Math.atan2(-unit.facingX, -unit.facingY);
+      // A carried man faces the way his carrier does: he lies over his shoulder.
+      const carrier = carrierOf.has(unit.id) ? this.views.get(carrierOf.get(unit.id)!) : undefined;
+      const desiredAngle = carrier ? carrier.facingAngle : Math.atan2(-unit.facingX, -unit.facingY);
       // The body turns at a man's pace, not in a snap (order-tempo-and-facing).
-      view.facingAngle = turnToward(view.facingAngle, desiredAngle, seconds);
+      view.facingAngle = carrier ? desiredAngle : turnToward(view.facingAngle, desiredAngle, seconds);
+      let behind = desiredAngle - view.facingAngle;
+      behind = Math.atan2(Math.sin(behind), Math.cos(behind));
+      const turning = Math.abs(behind) > TURNING_ANGLE;
       marks.root.rotation.y = view.facingAngle;
       if (useProxy) {
         if (!unit.alive) {
@@ -516,15 +557,22 @@ export class CharacterLayer {
           firing: now < view.fireUntil,
           hit: now < view.hitUntil,
           engaged: now < view.engagedUntil,
+          carrying: carrying.has(unit.id),
+          treated: treated.has(unit.id),
+          turning: !view.moving && turning,
+          ...(view.death ? { death: view.death } : {}),
         });
-        // Hold a clip a moment so the pose does not flick back and forth.
-        const clip = steadyClip(view.clip, view.clipSince, wanted, now);
+        // Hold a clip a moment so the pose does not flick back and forth; the
+        // rifle is raised into the aim and lowered out of it (1.3).
+        const clip = aimTransition(view.clip, view.clipSince, steadyClip(view.clip, view.clipSince, wanted, now), now);
         if (clip !== view.clip) {
           view.clip = clip;
           view.clipSince = now;
         }
         const authored = CLIP_SPEED[clip];
         view.soldier.play(clip, authored ? walkTimeScale(view.speed, authored) : 1);
+        // The rescuer kneels beside the man he treats, not on him.
+        view.soldier.root.position.x = clip === 'kneel-treat' ? TREAT_OFFSET : 0;
         view.soldier.update(seconds);
         view.weapons?.apply(unit.weaponId, unit.gunSet === true, unit.alive && !unit.incapacitated && !unit.routed);
         marks.ring.visible = unit.alive && !unit.routed && !unit.incapacitated;
