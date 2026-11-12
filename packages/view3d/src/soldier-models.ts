@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { clipFade, HELD_CLIPS, type SoldierClip, type SoldierOutfit } from './soldier-clips';
+import { clipFade, HELD_CLIPS, missingClips, type SoldierClip, type SoldierOutfit } from './soldier-clips';
 import { toonGradient } from './materials';
 
 /**
@@ -41,6 +41,9 @@ export async function loadSoldierAsset(base = './models/'): Promise<SoldierAsset
     const map = pixelTexture(await textureLoader.loadAsync(`${base}textures/soldier-${outfit}.png`));
     materials[outfit] = new THREE.MeshToonMaterial({ map, gradientMap: toonGradient() });
   }
+  const missing = missingClips(gltf.animations.map((clip) => clip.name));
+  // A test fails the build on this; at run time the soldier just holds his pose.
+  if (missing.length > 0) console.error(`soldier.glb lacks clips: ${missing.join(', ')}`);
   return {
     scene: gltf.scene,
     clips: new Map(gltf.animations.map((clip) => [clip.name, clip])),

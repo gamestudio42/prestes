@@ -43,6 +43,31 @@ export type DeathClip = 'death-stand-front' | 'death-stand-back' | 'death-stand-
 /** Where the killing shot came from, against the way he faced. */
 export type ShotSide = 'front' | 'back' | 'flank';
 
+/**
+ * 2.4: every clip the view may ask for, in the order of the type above. The
+ * check below fails the build when the model lacks one of them.
+ */
+export const SOLDIER_CLIPS = [
+  'idle', 'walk', 'idle-ready', 'walk-ready', 'run', 'crouch-idle', 'crouch-walk', 'prone', 'crawl',
+  'aim-stand', 'fire-stand', 'aim-crouch', 'fire-crouch', 'aim-prone', 'fire-prone', 'hit', 'wounded', 'corpse',
+  'limp', 'hold-wound', 'lying-wounded', 'carry', 'carried', 'kneel-treat', 'treated',
+  'death-stand-front', 'death-stand-back', 'death-stand-flank', 'death-crouch', 'death-prone',
+  'corpse-face', 'corpse-side', 'corpse-sprawl',
+  'raise-stand', 'raise-crouch', 'raise-prone', 'lower-stand', 'lower-crouch', 'lower-prone',
+  'reload-stand', 'reload-crouch', 'reload-prone', 'aim-turn-stand', 'aim-turn-crouch',
+] as const satisfies readonly SoldierClip[];
+
+/** A clip of the type missing from SOLDIER_CLIPS fails to compile here. */
+type Unlisted = Exclude<SoldierClip, (typeof SOLDIER_CLIPS)[number]>;
+const everyClipListed: [Unlisted] extends [never] ? true : Unlisted = true;
+void everyClipListed;
+
+/** The clips the view asks for that a model's animation names lack. */
+export function missingClips(names: Iterable<string>): SoldierClip[] {
+  const have = new Set(names);
+  return SOLDIER_CLIPS.filter((clip) => !have.has(clip));
+}
+
 export type SoldierOutfit = 'column' | 'legalist' | 'officer';
 
 /** Clips that hold their last pose instead of looping. */

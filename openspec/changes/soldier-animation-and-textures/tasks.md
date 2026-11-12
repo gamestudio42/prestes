@@ -22,7 +22,8 @@
   - Apply note (2026-11-11): `deathVariant(id, tick)` is FNV-1a of the id and the `unit_died` tick (a local copy of the kernel's hash: view3d does not depend on the kernel). A standing man picks between the plain fall and a twist for each shot side; crouched and prone men keep their own clip. `DEATH_POSE` names each clip's end pose (held to the model by `soldier-death-clips.test.ts`). A man first seen already dead has no tick in the view: `corpsePose` uses his id alone (sprawled if prone). Tests in `soldier-clips-wounds.test.ts`.
 - [x] 2.3 Cross-fade between clips in `SoldierInstance`, deaths cut; verify with a unit test of the fade times and the frame budget e2e
   - Apply note (2026-11-11): `clipFade` gives every change a fixed 0.2 s cross-fade (it was 0.3 s, and 0.5 s into a fall) and 0 into a death or corpse pose; `SoldierInstance.play` stops the other actions and starts a death at once. Tests in `soldier-clips-wounds.test.ts`; `performance.spec.ts` passes (tactical and strategic spans).
-- [ ] 2.4 The build fails when the view asks for a clip the model lacks; verify by removing a clip name in a test fixture
+- [x] 2.4 The build fails when the view asks for a clip the model lacks; verify by removing a clip name in a test fixture
+  - Apply note (2026-11-11): `SOLDIER_CLIPS` lists every clip of the `SoldierClip` type (a clip left out does not compile) and `missingClips` names those a model lacks; `soldier-model-clips.test.ts` fails `pnpm check` on the real `soldier.glb` and catches a fixture without `limp`. At run time the loader logs the missing clips.
 
 ## 3. Textures
 
