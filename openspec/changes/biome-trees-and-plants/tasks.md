@@ -14,9 +14,12 @@
 
 - [x] 2.1 `target_trees.py`: one table row per species with its family (broadleaf, palm, tiered conifer, giant), the tier crown method, and the araucária rebuilt with it; verify: the review sheet shows the araucária's candelabra and the owner closes the open point
   - Done 2026-11-12: families in the table; the tiered crown cuts the low branches, bends the rest upward and sets flat tufts at the tips; araucária 714 triangles; sheet `docs/review/biome-trees/araucaria-2.1.png`; the owner approved it, closing the 2026-11-09 open point.
-- [ ] 2.2 Atlantic forest species adapted and exported; verify on the review sheet and by the budget check
-- [ ] 2.3 Cerrado species adapted and exported; verify as 2.2
-- [ ] 2.4 Amazon species adapted and exported; verify as 2.2
+- [x] 2.2 Atlantic forest species adapted and exported; verify on the review sheet and by the budget check
+  - Done 2026-11-12: seven species in `trees-mata-atlantica.glb` (389-1080 triangles); sheet `docs/review/biome-trees/mata-atlantica-2.2-2.4.png`.
+- [x] 2.3 Cerrado species adapted and exported; verify as 2.2
+  - Done 2026-11-12: six species in `trees-cerrado.glb` (541-729 triangles); sheet `docs/review/biome-trees/cerrado-2.2-2.4.png`.
+- [x] 2.4 Amazon species adapted and exported; verify as 2.2
+  - Done 2026-11-12: six species in `trees-amazonia.glb` (562-1092 triangles; palms collapsed to fit); sheet `docs/review/biome-trees/amazonia-2.2-2.4.png`.
 - [ ] 2.5 Stumps, dead trees and the flowering forms chosen in 1.1; verify as 2.2
 - [ ] 2.6 Bush families per biome, three sizes and two shapes each; verify on the review sheet
 - [ ] 2.7 Caatinga cacti, thorn plants, trees and shrubs in `target_vegetation.py`; verify on the review sheet and by the budget check
