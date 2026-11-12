@@ -44,7 +44,11 @@ for entry in entries:
     before = set(bpy.data.objects)
     bpy.ops.import_scene.gltf(filepath=path)
     new = [obj for obj in bpy.data.objects if obj not in before]
-    keep = next(obj for obj in new if obj.type == "MESH" and obj.name.split(".")[0] == node)
+    meshes = [obj for obj in new if obj.type == "MESH"]
+    # Blender suffixes a repeated name (".001"); match the node by its base name.
+    keep = next((obj for obj in meshes if obj.name.rsplit(".", 1)[0] == node or obj.name == node), None)
+    if keep is None:
+        raise SystemExit(f"{node} not found in {path}: {sorted(obj.name for obj in meshes)}")
     for obj in new:
         if obj is not keep:
             bpy.data.objects.remove(obj, do_unlink=True)

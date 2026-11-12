@@ -47,10 +47,10 @@ LEAF_ARAUCARIA = (0.20, 0.40, 0.17)
 #   dead       the trunk alone (dead forms and stumps); `trunk="auto"` takes the
 #              most detailed LOD that fits the budget
 TREES = {
-    "tree-broad": dict(path="mata_atlantica/peroba/mata_atlantica_peroba_adulta.glb", family="broadleaf", trunk=1, foliage=0, clumps=26, leaf=LEAF, flat=0.8, height=8.0),
-    "tree-araucaria": dict(path="mata_atlantica/araucaria/mata_atlantica_araucaria_adulta.glb", family="tiered", trunk=1, foliage=0, clumps=28, tiers=4, bare=0.4, lift=0.35, cap=2.6, leaf=LEAF_ARAUCARIA, flat=0.3, height=14.0),
-    "buriti": dict(path="cerrado/buriti/cerrado_buriti_adulta.glb", family="palm", trunk=0, foliage=1, clumps=0, leaf=LEAF, flat=1.0, height=12.0),
-    "cerrado-tree": dict(path="cerrado/pequi/cerrado_pequi_adulta.glb", family="broadleaf", trunk=1, foliage=0, clumps=18, leaf=LEAF, flat=0.8, height=6.0),
+    "tree-broad": dict(path="mata_atlantica/peroba/mata_atlantica_peroba_adulta.glb", family="broadleaf", trunk=1, foliage=0, clumps=26, leaf=LEAF, flat=0.8, height=6.0),
+    "tree-araucaria": dict(path="mata_atlantica/araucaria/mata_atlantica_araucaria_adulta.glb", family="tiered", trunk=1, foliage=0, clumps=28, tiers=4, bare=0.4, lift=0.35, cap=2.6, leaf=LEAF_ARAUCARIA, flat=0.3, height=9.0),
+    "buriti": dict(path="cerrado/buriti/cerrado_buriti_adulta.glb", family="palm", trunk=0, foliage=1, clumps=0, leaf=LEAF, flat=1.0, height=8.0),
+    "cerrado-tree": dict(path="cerrado/pequi/cerrado_pequi_adulta.glb", family="broadleaf", trunk=1, foliage=0, clumps=18, leaf=LEAF, flat=0.8, height=4.5),
     "bush": dict(path="cerrado/bush/cerrado_bush_adulta.glb", family="bush", trunk=None, foliage=0, clumps=8, leaf=LEAF, flat=0.75, height=1.3, width=2.6),
 }
 
@@ -88,27 +88,27 @@ def species(biome: str, folder: str, family: str, height: float, leaf, **extra):
 
 TREES.update({
     # Atlantic forest
-    "araucaria": species("mata_atlantica", "araucaria", "tiered", 14.0, LEAF_ARAUCARIA, clumps=32, tiers=4, bare=0.4, lift=0.35, cap=2.6, flat=0.3),
-    "mulungu": species("mata_atlantica", "erythrina", "broadleaf", 8.0, LEAF_ATLANTIC),
-    "jequitiba": species("mata_atlantica", "jequitiba", "giant", 13.0, LEAF_ATLANTIC, flat=0.7),
-    "manaca": species("mata_atlantica", "manaca", "broadleaf", 5.0, LEAF_ATLANTIC),
-    "palmito-jucara": species("mata_atlantica", "palmito_jucara", "palm", 8.0, LEAF_ATLANTIC),
-    "pau-brasil": species("mata_atlantica", "pau_brasil", "broadleaf", 10.0, LEAF_ATLANTIC),
-    "peroba": species("mata_atlantica", "peroba", "broadleaf", 8.0, LEAF_ATLANTIC),
+    "araucaria": species("mata_atlantica", "araucaria", "tiered", 9.0, LEAF_ARAUCARIA, clumps=32, tiers=4, bare=0.4, lift=0.35, cap=2.6, flat=0.3),
+    "mulungu": species("mata_atlantica", "erythrina", "broadleaf", 6.0, LEAF_ATLANTIC),
+    "jequitiba": species("mata_atlantica", "jequitiba", "giant", 8.5, LEAF_ATLANTIC, flat=0.7),
+    "manaca": species("mata_atlantica", "manaca", "broadleaf", 4.0, LEAF_ATLANTIC),
+    "palmito-jucara": species("mata_atlantica", "palmito_jucara", "palm", 6.0, LEAF_ATLANTIC),
+    "pau-brasil": species("mata_atlantica", "pau_brasil", "broadleaf", 7.0, LEAF_ATLANTIC),
+    "peroba": species("mata_atlantica", "peroba", "broadleaf", 6.0, LEAF_ATLANTIC),
     # Cerrado
-    "aroeira": species("cerrado", "aroeira", "broadleaf", 7.0, LEAF_CERRADO),
-    "barbatimao": species("cerrado", "barbatimao", "broadleaf", 4.0, LEAF_CERRADO),
-    "buriti-adult": species("cerrado", "buriti", "palm", 12.0, LEAF_CERRADO),
-    "cagaita": species("cerrado", "cagaita", "broadleaf", 4.0, LEAF_CERRADO),
-    "ipe": species("cerrado", "ipe", "broadleaf", 8.0, LEAF_CERRADO),
-    "pequi": species("cerrado", "pequi", "broadleaf", 6.0, LEAF_CERRADO),
+    "aroeira": species("cerrado", "aroeira", "broadleaf", 5.0, LEAF_CERRADO),
+    "barbatimao": species("cerrado", "barbatimao", "broadleaf", 3.0, LEAF_CERRADO),
+    "buriti-adult": species("cerrado", "buriti", "palm", 8.0, LEAF_CERRADO),
+    "cagaita": species("cerrado", "cagaita", "broadleaf", 3.0, LEAF_CERRADO),
+    "ipe": species("cerrado", "ipe", "broadleaf", 6.0, LEAF_CERRADO),
+    "pequi": species("cerrado", "pequi", "broadleaf", 4.5, LEAF_CERRADO),
     # Amazon
-    "acai": species("amazonia", "acai", "palm", 10.0, LEAF_AMAZON),
-    "andiroba": species("amazonia", "andiroba", "giant", 12.0, LEAF_AMAZON),
-    "castanheira": species("amazonia", "castanheira", "giant", 13.0, LEAF_AMAZON, flat=0.7),
-    "seringueira": species("amazonia", "seringueira", "broadleaf", 11.0, LEAF_AMAZON),
-    "sumauma": species("amazonia", "sumauma", "giant", 14.0, LEAF_AMAZON, flat=0.55),
-    "tucuma": species("amazonia", "tucuma", "palm", 9.0, LEAF_AMAZON),
+    "acai": species("amazonia", "acai", "palm", 7.0, LEAF_AMAZON),
+    "andiroba": species("amazonia", "andiroba", "giant", 8.0, LEAF_AMAZON),
+    "castanheira": species("amazonia", "castanheira", "giant", 8.5, LEAF_AMAZON, flat=0.7),
+    "seringueira": species("amazonia", "seringueira", "broadleaf", 7.5, LEAF_AMAZON),
+    "sumauma": species("amazonia", "sumauma", "giant", 9.0, LEAF_AMAZON, flat=0.55),
+    "tucuma": species("amazonia", "tucuma", "palm", 6.0, LEAF_AMAZON),
 })
 
 # biome-trees-and-plants 2.5: dead forms (every adult), one stump per biome and
@@ -155,8 +155,9 @@ for _name, _legacy in LEGACY_ADULTS.items():
     _dead["height"] = TREES[_legacy]["height"]
     TREES[f"{_name.replace('-adult', '')}-dead"] = _dead
 
-# No tree over 14 m (owner, 2026-11-12: no giant trees on the battle maps).
-MAX_TREE_HEIGHT = 14.0
+# No tree over 9 m, about five soldiers (owner, 2026-11-12: no giant trees,
+# then lower again beside the 1.75 m soldier on the review sheet).
+MAX_TREE_HEIGHT = 9.0
 for _name, _spec in TREES.items():
     assert _spec["height"] <= MAX_TREE_HEIGHT, f"{_name}: {_spec['height']} m, over {MAX_TREE_HEIGHT} m"
 

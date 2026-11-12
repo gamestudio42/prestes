@@ -14,8 +14,8 @@ Amazon, each biome's stump, and the dead and flowering forms Refloreste
 provides as separate entries. Every species SHALL have a localized name in
 PT-BR and EN (the common Brazilian name in both, with an English gloss in
 EN where one exists), a biome, a height at battle scale and a thumbnail in
-the editor. No tree SHALL stand taller than 14 m (owner, 2026-11-12: no
-giant trees on the battle maps); within that, species keep their real order
+the editor. No tree SHALL stand taller than 9 m, about five soldiers (owner,
+2026-11-12: no giant trees on the battle maps); within that, species keep their real order
 of size, so a tall forest tree stands over a small cerrado tree. The content check SHALL fail for a
 catalog species without a model, a name in both locales or a biome.
 
@@ -33,11 +33,11 @@ the editor as outside the column's main route.
 
 #### Scenario: Heights are plausible
 - **WHEN** a sumaúma and a manacá stand beside a 1.75 m soldier
-- **THEN** the sumaúma is among the tallest trees in the catalog, no taller than 14 m, and the manacá is a small tree
+- **THEN** the sumaúma is among the tallest trees in the catalog, no taller than 9 m, and the manacá is a small tree
 
 #### Scenario: No giant trees
 - **WHEN** the content check reads the catalog
-- **THEN** it fails for any tree taller than 14 m and names it
+- **THEN** it fails for any tree taller than 9 m and names it
 
 ### Requirement: Species are adapted to the Prestes look
 

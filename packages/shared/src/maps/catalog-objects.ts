@@ -92,13 +92,14 @@ export const CATALOG_OBJECTS: readonly CatalogObject[] = [
   item('outcrop', 'stone', 4, 1.6, 1.8, SOLID_STONE),
   item('lajedo-slab', 'stone', 5, 4, 0.4, SOLID_STONE, { paints: 'lajedo' }),
   item('stone-pile', 'stone', 1.1, 1, 0.9, SOLID_STONE),
-  // Trees and plants (cerrado, mata, caatinga).
-  item('tree-broad', 'tree', 0.35, 0.35, 8, { kind: 'solid', cover: 'stone' }, { concealRadius: 0 }),
-  item('tree-araucaria', 'tree', 0.3, 0.3, 14, THIN),
+  // Trees and plants (cerrado, mata, caatinga). Battle scale, no tree over 9 m (biome-trees-and-plants D5c).
+  item('tree-broad', 'tree', 0.35, 0.35, 6, { kind: 'solid', cover: 'stone' }, { concealRadius: 0 }),
+  item('tree-araucaria', 'tree', 0.3, 0.3, 9, THIN),
   item('tree-pine', 'tree', 0.25, 0.25, 9, THIN),
-  // 6 m, an adult pequi's lower range (hand check 2026-11-09: 4 m looked small by the houses).
-  item('cerrado-tree', 'tree', 0.2, 0.2, 6, THIN, { concealRadius: 1.6 }),
-  item('buriti', 'tree', 0.3, 0.3, 12, THIN),
+  // 4.5 m (owner 2026-11-12, biome-trees-and-plants: all trees lower beside a soldier, the
+  // tallest 9 m; the 2026-11-09 hand check had found 4 m small by the houses).
+  item('cerrado-tree', 'tree', 0.2, 0.2, 4.5, THIN, { concealRadius: 1.6 }),
+  item('buriti', 'tree', 0.3, 0.3, 8, THIN),
   item('juazeiro', 'tree', 0.35, 0.35, 6, { kind: 'solid', cover: 'stone' }, { concealRadius: 2.5 }),
   item('mandacaru', 'tree', 0.3, 0.3, 4, THIN),
   item('xique-xique', 'tree', 1.5, 1.5, 1.1, { kind: 'foliage' }),

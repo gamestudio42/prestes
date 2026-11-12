@@ -74,13 +74,16 @@ for every species; flowering forms only for the ipê-amarelo, mulungu,
 manacá-da-serra and pau-brasil.
 
 **D5c. Battle scale, no giants (owner, 2026-11-12).** Real heights put
-the sumaúma at 38 m, far over the maps and the camera; no tree stands over
-14 m. Species keep their order of size: araucária, jequitibá, castanheira
-and sumaúma at 13-14 m, the forest trees 8-12 m, the cerrado trees 4-8 m.
-The four species already in maps keep their legacy ids and heights
-(araucária `tree-araucaria` 14 m, peroba `tree-broad` 8 m, pequi
-`cerrado-tree` 6 m, buriti 12 m) and are those species' adults, with no
-second row. The giant size class stays in the budget table, unused.
+the sumaúma at 38 m, far over the maps and the camera. A first cut to 14 m
+was still too tall beside the soldier on the review sheet, so no tree
+stands over 9 m, about five soldiers. Species keep their order of size:
+araucária and sumaúma 9 m, jequitibá and castanheira 8.5, the forest trees
+6-8, the cerrado trees 3-6, the bush 1.3. The four species already in maps
+keep their legacy ids, lowered with the rest (araucária `tree-araucaria`
+14 → 9 m, peroba `tree-broad` 8 → 6, pequi `cerrado-tree` 6 → 4.5, buriti
+12 → 8), and are those species' adults, with no second row. The battle
+does not change: a solid object blocks sight from 1.75 m up, and every tree
+stays over that. The giant size class stays in the budget table, unused.
 
 **D5d. Soldiers under the canopy.** A wood must not swallow the player's
 men. Each frame the view tests, per crown instance, whether it covers one of

@@ -270,19 +270,21 @@ The owner left the fit to Claude ("ajustar para que encaixe bem no jogo").
 Inventory: `docs/review/biome-trees/species-inventory.md` (19 Refloreste
 trees, a bush and a stump per biome, each tree adult, flowering and dead).
 
-- Heights (revised the same day, owner: "não quero árvores gigantes"):
-  battle scale, no tree over 14 m, species in their real order of size. The
-  species already in maps are their legacy ids: araucária `tree-araucaria`
-  14 m, peroba `tree-broad` 8 m, pequi `cerrado-tree` 6 m, buriti 12 m.
-- Atlantic forest: araucária 14, jequitibá 13, pau-brasil 10, mulungu 8,
-  palmito-juçara 8, peroba 8, manacá-da-serra 5.
-- Cerrado: buriti 12, ipê-amarelo 8, aroeira 7, pequi 6, barbatimão 4,
-  cagaita 4.
-- Amazon (outside the Column's main route): sumaúma 14, castanheira 13,
-  andiroba 12, seringueira 11, açaí 10, tucumã 9.
-- Caatinga, built in the Prestes kit: mandacaru 5, facheiro 5, xique-xique 1,
-  coroa-de-frade 0.4, palmatória 2, macambira 0.8 (thorn patch); juazeiro 7,
-  umbuzeiro 6, catingueira 6, jurema-preta 4.
+- Heights (revised twice the same day, owner: "não quero árvores
+  gigantes", then lower beside the soldier on the sheet): no tree over 9 m,
+  species in their real order of size. The species already in maps are
+  their legacy ids, lowered too: araucária `tree-araucaria` 9 m, peroba
+  `tree-broad` 6 m, pequi `cerrado-tree` 4.5 m, buriti 8 m (only the view
+  changes; trees block sight from 1.75 m up either way).
+- Atlantic forest: araucária 9, jequitibá 8.5, pau-brasil 7, mulungu 6,
+  palmito-juçara 6, peroba 6, manacá-da-serra 4.
+- Cerrado: buriti 8, ipê-amarelo 6, aroeira 5, pequi 4.5, barbatimão 3,
+  cagaita 3.
+- Amazon (outside the Column's main route): sumaúma 9, castanheira 8.5,
+  andiroba 8, seringueira 7.5, açaí 7, tucumã 6.
+- Caatinga, built in the Prestes kit: mandacaru 4, facheiro 4, xique-xique 1,
+  coroa-de-frade 0.4, palmatória 2, macambira 0.8 (thorn patch); juazeiro 5,
+  umbuzeiro 4.5, catingueira 4.5, jurema-preta 3.5.
 - Soldiers under trees: crowns over the player's own men turn see-through
   and a hidden man shows his outline (new requirement, task 4.1b). The aroeira (aroeira-do-sertão)
   is listed in the caatinga too, sharing its model. Quipá and umburana left

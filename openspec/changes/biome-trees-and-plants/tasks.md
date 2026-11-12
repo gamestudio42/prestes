@@ -20,8 +20,8 @@
   - Done 2026-11-12: six species in `trees-cerrado.glb` (541-729 triangles); sheet `docs/review/biome-trees/cerrado-2.2-2.4.png`.
 - [x] 2.4 Amazon species adapted and exported; verify as 2.2
   - Done 2026-11-12: six species in `trees-amazonia.glb` (562-1092 triangles; palms collapsed to fit); sheet `docs/review/biome-trees/amazonia-2.2-2.4.png`.
-- [x] 2.4b Heights cut to battle scale, no tree over 14 m (owner, 2026-11-12: no giant trees); the species already in maps (araucária 14, peroba 8, pequi 6, buriti 12 m) are the legacy ids, not new rows; verify: the build and the review sheets, and the content check fails a tree over 14 m
-  - Done 2026-11-12: every tree at 14 m or under; the araucária, peroba, pequi and buriti adults are the legacy ids; the model check fails a tree over 14 m; sheet `docs/review/biome-trees/battle-scale-2.4b.png`.
+- [x] 2.4b Heights cut to battle scale, no tree over 9 m (owner, 2026-11-12: no giant trees, then lower); the species already in maps are the legacy ids, lowered too (araucária 9, peroba 6, pequi 4.5, buriti 8 m), not new rows; verify: the build and the review sheets, and the content check fails a tree over 9 m
+  - Done 2026-11-12: every tree at 9 m or under (a first cut to 14 m was still too tall); the araucária, peroba, pequi and buriti adults are the legacy ids, lowered in the catalog too; the model check fails a tree over 9 m; sheet `docs/review/biome-trees/battle-scale-9m.png`.
 - [x] 2.5 Stumps, dead trees and the flowering forms chosen in 1.1; verify as 2.2
   - Done 2026-11-12 (Sonnet subagent, reviewed): a dead form for each of the 19 species, a stump per biome, flowering ipê-amarelo, mulungu, manacá and pau-brasil; on the same sheet.
 - [ ] 2.6 Bush families per biome, three sizes and two shapes each; verify on the review sheet
