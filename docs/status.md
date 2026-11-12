@@ -381,3 +381,44 @@ trees, a bush and a stump per biome, each tree adult, flowering and dead).
   in that shot, so no soldier baseline needed re-recording).
 - Review sheets: `docs/review/soldier-clips/` (README lists them and the
   rough points). Owner's hand check (4.3, 2026-11-12): approved, "esta otimo".
+
+## revise-buildings-and-stone candidates (1.1, 2026-11-12, awaiting the owner)
+
+Determinism baseline before any change (0.1): seed 1922 0ae3084b;
+campo-de-provas 3v3 94b68f47; paiolzinho 3v3 06d97225; mixed-roster
+60476373. Sources are Macaulay page numbers (book pages), paraphrased;
+"generic" means a generic period type with no source of its own.
+
+- Buildings, rural: wattle-and-daub house (generic), thatched ranch
+  (generic), stone corral (Macaulay p. 111, a ranch corral), flour house
+  (generic), wayside cross with a cemetery wall (generic).
+- Buildings, town: railway station (pp. 9-10, 44, 199), telegraph office
+  (p. 202), jail (pp. 161, 165), town hall, school, market shed and water
+  tank (generic).
+- Buildings, military: barracks block (pp. 4, 9), guardhouse, depot
+  (generic).
+- Rock kinds (three sizes each): granite boulders (the southern and eastern
+  ranges), basalt of the southern plateau (Rio Grande and Paraná, where the
+  march began), sandstone ledges (Mato Grosso and Paraná basin), quartzite
+  and canga of the Goiás and Minas plateaus, river cobbles (any river), the
+  caatinga's granite lajedo.
+- Waterside: dugout canoe and motor launch (p. 75), raft (pp. 56, 76, 169,
+  180), river barge (pp. 22, 24, 139, 155), a boat for horses (p. 75),
+  canoa de tolda, jangada, boat turned over, drying line with a net, fish
+  traps, landing stage, mooring posts (generic).
+- Farm: ox cart (pp. 102, 125: the government convoy's carts of
+  ammunition), broken tractor (generic: no mention in Macaulay), plough,
+  cane press, coffee sacks, hen house, pigsty, cart wheel, millstone
+  (generic).
+- Town: broken-down motor car and lorry (automobiles pp. 43-58, the
+  government's lorries pp. 101-110), square bench, fountain, market stall,
+  fuel drums, street sign, kiosk (generic).
+- The Column's camp and train: officers' tents with a field cot and a
+  hammock (pp. 142-143), saddles (pp. 51, 141), pack saddles for the mules
+  (pp. 93, 143), barrels (p. 110, a barrel pontoon), ammunition boxes,
+  campfire with its pot, rifle stack, horse line (pp. 93, 111), the aid tent
+  of the kit, a poncho lean-to (generic), and a 75 mm field gun left behind
+  (pp. 93-95).
+- Fences and walls: rail fence (tronqueira), bamboo or taquara fence, wattle
+  fence (pau-a-pique), adobe wall, whitewashed wall with a coping, iron
+  railing (generic).

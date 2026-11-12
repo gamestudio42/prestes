@@ -1,6 +1,7 @@
 ## 0. Before starting
 
-- [ ] 0.1 Read `docs/handoff.md`, then this change's proposal, design and spec. Prerequisites: Blender for `art-src/blender/target_buildings.py`; the present buildings' openings must not move (goldens), so run `pnpm check:determinism` first as the baseline; verify: the baseline hashes are noted under this task
+- [x] 0.1 Read `docs/handoff.md`, then this change's proposal, design and spec. Prerequisites: Blender for `art-src/blender/target_buildings.py`; the present buildings' openings must not move (goldens), so run `pnpm check:determinism` first as the baseline; verify: the baseline hashes are noted under this task
+  - Baseline 2026-11-12: seed 1922 `0ae3084b`; campo-de-provas 3v3 `94b68f47`; paiolzinho 3v3 `06d97225`; mixed-roster `60476373`. Blender 5.2 present.
 
 ## 1. Choices
 
