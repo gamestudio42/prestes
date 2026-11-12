@@ -11,6 +11,7 @@ interface Bridge {
       events: Array<{ type: string; side?: string; x?: number; y?: number; radius?: number; area?: boolean; source?: number }>;
       units: Array<{ id: number; faction: string; squadId: number; alive: boolean; x: number; y: number; areaFire?: { x: number; y: number; radius: number } }>;
       seen?: { column: number[] };
+      phase?: string;
     } | null;
   };
   __prestesScene?: {
@@ -26,8 +27,20 @@ async function startBattle(page: Page): Promise<void> {
   await page.getByTestId('map-option-campo-de-provas').click();
   await page.getByTestId('start-battle-3v3').click();
   await expect(page.getByTestId('hud')).toBeVisible();
+  await expect(page.getByTestId('start-battle')).toBeVisible();
+  // No tick passes in deployment: pause there, so the battle always starts
+  // from its first tick however long the page took to get here.
+  await page.evaluate(() => (window as unknown as Bridge).__prestes!.step(0));
   await page.getByTestId('start-battle').click();
-  await expect.poll(() => page.evaluate(() => (window as unknown as Bridge).__prestes?.frame()?.units.length ?? 0)).toBe(66);
+  await page.evaluate(() => (window as unknown as Bridge).__prestes!.step(1));
+  await expect
+    .poll(() =>
+      page.evaluate(() => {
+        const frame = (window as unknown as Bridge).__prestes!.frame();
+        return frame?.phase !== 'deployment' && frame?.units.length === 66 ? frame.tick : -1;
+      }),
+    )
+    .toBeGreaterThan(-1);
 }
 
 test('Area fire: armed on the board, laid on a "?" and fired into', async ({ page }) => {
@@ -37,7 +50,6 @@ test('Area fire: armed on the board, laid on a "?" and fired into', async ({ pag
   // rifle reach and leaves a "?" (out of reach the men hold their fire).
   await page.evaluate(() => {
     const bridge = (window as unknown as Bridge).__prestes!;
-    bridge.step(0);
     for (const [squad, x] of [[1, -40], [2, 0], [3, 40]] as const) {
       const ids = bridge.frame()!.units.filter((unit) => unit.faction === 'column' && unit.squadId === squad && unit.alive).map((unit) => unit.id);
       bridge.command({ type: 'move', unitIds: ids, to: { x, y: -20 } });
