@@ -40,5 +40,6 @@
 
 - [x] 4.1 `pnpm art` review sheet committed for the owner's review; `docs/assets.md` updated; verify: the register lists the model, clips and textures with their licence
   - Apply note (2026-11-11): the review sheets of each task are in `docs/review/soldier-clips/` with a README listing them and the known rough points; `docs/assets.md` lists the model, its clips, the eighteen uniform atlases and the blood overlay under CC-BY-4.0, with the placeholders under "Uniform sets".
-- [ ] 4.2 `pnpm verify` and `openspec validate soldier-animation-and-textures --type change --strict`; verify: all pass, model and texture sizes in `docs/status.md`
+- [x] 4.2 `pnpm verify` and `openspec validate soldier-animation-and-textures --type change --strict`; verify: all pass, model and texture sizes in `docs/status.md`
+  - Apply note (2026-11-12): run on a clean worktree of 991f1fc: every step passes but e2e, whose 3 failures are not from this change (desk label gap, area-fire spec failing on its own commit, battle-hud baseline differing only in the HUD). `openspec validate --strict` passes. Sizes and details in `docs/status.md` ("soldier-animation-and-textures apply").
 - [ ] 4.3 Hand check by the owner in a skirmish: the wounded, the dead, the crouch-walk, the aim and the uniforms; findings in `docs/status.md`

@@ -30,7 +30,7 @@ start, the rules and what each change decided:
 | Order | Change | Tasks | Lands |
 | --- | --- | --- | --- |
 | 1 | `faction-armies` | 18/18: armies, 19 section types, successor table, map version 6, names and the Forças compendium section, values in the simulation, setup screen, editor presets and HUD done; `pnpm verify` green but the known `desk.spec` gap; hand check done; archived | three armies (the Column, the legalist regulars, the patriotic battalions), period names for armies and sections, section types per army; starts with research into `docs/history/FORCES.md`, which also answers whether the police fought for the government |
-| 2 | `soldier-animation-and-textures` | 16 | wound, carry and death clips, the crouch-walk and aim redone, blends, drawn uniform textures per army with variants |
+| 2 | `soldier-animation-and-textures` | 16/18 (4.2 done; owner hand check 4.3 open) | wound, carry and death clips, the crouch-walk and aim redone, blends, drawn uniform textures per army with variants |
 | 3 | `troop-thumbnails-and-panel` | 15 | a rendered thumbnail for every section type (roster, cards, panel), roster type cards, the troop panel redrawn with one figure per soldier (helmet = cover, body = health, cartridge clip = ammunition), gauges and alerts |
 | 3b | `redo-battle-hud` | 17 | the battle HUD redone from the owner's reference (`referencias para hud/`): wood and leather frames drawn in Aseprite, docked panels that only collapse, the status row moved, contour and cover layers in the strategic view (off by default) |
 | 4 | `biome-trees-and-plants` | 18 | the whole Refloreste tree suite by biome adapted to Prestes, bush families, more cacti and caatinga plants |
@@ -263,3 +263,23 @@ The desk replaces the bookmark shell.
 - Visual baselines re-recorded (HUD, orders column, sandbox panel, compendium); the top bar's "Leave" button in them dates from `65b1903`, not from this change.
 - Known e2e failure still open: `desk.spec.ts` label gap (since `6412ac9`).
 - Hand check (5.2, the owner, 2026-11-11): names and armies on the cards read right; card icons and the troop panel wait for `troop-thumbnails-and-panel`; the wire crossing went to `route-around-wire`.
+
+## soldier-animation-and-textures apply (2026-11-12)
+
+- Clips: 44 in `soldier.glb` (`SOLDIER_CLIPS`; the build test fails if one is
+  missing): wound, carry and treatment; five deaths by stance and direction
+  ending in four corpse poses; crouch-walk, raise, lower, recoil, reloads and
+  aim turns per stance. Moving clips are keyed to `CLIP_GAIT_SPEED` (walk
+  0.85 m steps at 1.8 a second; the old walk skated).
+- Sizes: `soldier.glb` 354,072 bytes (was 212,536 before this change);
+  eighteen uniform atlases, 128 x 128, 41,417 bytes together (about 2.3 KB
+  each; the test budget is 8 KB per atlas).
+- Verify on a clean worktree of 991f1fc (CI=1, its own e2e server): check
+  (897 tests), build, bundle budget, determinism, tick budget and openspec
+  pass; e2e 126 passed, 3 failed, none from this change: `desk.spec` label
+  gap (known before), `area-fire.spec` (fails on its own commit a5603eb in a
+  clean tree; reported to its session) and the `battle-hud` baseline (only
+  the HUD differs: the area-fire button and the top bar; the 3D view is not
+  in that shot, so no soldier baseline needed re-recording).
+- Review sheets: `docs/review/soldier-clips/` (README lists them and the
+  rough points). Left: the owner's hand check in a skirmish (4.3).
