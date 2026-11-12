@@ -9,15 +9,16 @@ task and delete the file once the last of these changes is archived.
 - **Branch `plan-art-factions-sound`.** Other sessions may have uncommitted
   files in the checkout; never stage or commit them. Commit with explicit
   paths (`git commit -- <paths>`): other sessions stage files too.
-- **Done and archived:** `faction-armies` (2026-11-11) and
-  `soldier-animation-and-textures` (2026-11-12, archive
-  `openspec/changes/archive/2026-11-12-soldier-animation-and-textures/`, spec
-  `openspec/specs/soldier-art`). The owner approved the soldiers in a
-  skirmish ("esta otimo"). Results and sizes in `docs/status.md`.
-- **IN PROGRESS: `troop-thumbnails-and-panel`** (started 2026-11-12 with both
-  prerequisites archived; section 1 done: `pnpm thumbs`). `redo-battle-hud`
-  is being applied in parallel by another session and already draws the
-  soldier figures; section 3 of this change builds on its `SoldierFigure`.
+- **Done and archived:** `faction-armies` (2026-11-11),
+  `soldier-animation-and-textures` (2026-11-12, spec
+  `openspec/specs/soldier-art`) and `troop-thumbnails-and-panel`
+  (2026-11-12, archive
+  `openspec/changes/archive/2026-11-12-troop-thumbnails-and-panel/`, spec
+  `openspec/specs/troop-panel`; `pnpm thumbs` renders the section
+  thumbnails). The owner approved each by hand. Results and sizes in
+  `docs/status.md`.
+- **Next:** `biome-trees-and-plants`. `redo-battle-hud` is applied in
+  parallel by another session.
 - Known e2e failures not from these changes: `desk.spec` label gap,
   `area-fire.spec` (fails on its own commit in a clean tree; its session was
   told), the `battle-hud` baseline (waits for the HUD session).
@@ -83,9 +84,9 @@ with a task 0.1 of prerequisites.
 
 | Order | Change | Tasks | State | Needs from the owner |
 | --- | --- | --- | --- | --- |
-| 1 | `faction-armies` | 4/18 | planning done, code not started | the go-ahead; the hand check (5.2) |
-| 2 | `soldier-animation-and-textures` | 0/16 | planned | review of the clip and uniform sheets (4.1), the hand check (4.3) |
-| 3 | `troop-thumbnails-and-panel` | 0/15 | planned (soldier figures instead of rows, approved 2026-11-11) | the hand check (4.3) |
+| 1 | `faction-armies` | 18/18 | archived 2026-11-11 | nothing |
+| 2 | `soldier-animation-and-textures` | 18/18 | archived 2026-11-12 | nothing |
+| 3 | `troop-thumbnails-and-panel` | 15/15 | archived 2026-11-12 | nothing |
 | 3b | `redo-battle-hud` | 12/17 | applied ahead of 3 at the owner's request (2026-11-12) | the art pass (1.2), the soldier figures on the card (3.1, after 3), baselines (5.1), gates and hand check (5.2, 5.3) |
 | any time | `remove-sandbox-panel` | 6/7 | applied 2026-11-11 | nothing; the `battle-hud` baseline re-record (2.5) waits for the compass and area-fire work to be committed |
 | 4 | `biome-trees-and-plants` | 0/18 | planned | the species and caatinga list (1.1), the review sheet, the hand check (5.3) |

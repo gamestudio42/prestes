@@ -31,7 +31,7 @@ start, the rules and what each change decided:
 | --- | --- | --- | --- |
 | 1 | `faction-armies` | 18/18: armies, 19 section types, successor table, map version 6, names and the Forças compendium section, values in the simulation, setup screen, editor presets and HUD done; `pnpm verify` green but the known `desk.spec` gap; hand check done; archived | three armies (the Column, the legalist regulars, the patriotic battalions), period names for armies and sections, section types per army; starts with research into `docs/history/FORCES.md`, which also answers whether the police fought for the government |
 | 2 | `soldier-animation-and-textures` | 18/18, archived | wound, carry and death clips, the crouch-walk and aim redone, blends, drawn uniform textures per army with variants |
-| 3 | `troop-thumbnails-and-panel` | 14/15: thumbnails, roster cards, troop panel, gauges and alerts done; verify run (see below); owner's hand check pending | a rendered thumbnail for every section type (roster, cards, panel), roster type cards, the troop panel redrawn with one figure per soldier (helmet = cover, body = health, cartridge clip = ammunition), gauges and alerts |
+| 3 | `troop-thumbnails-and-panel` | 15/15, archived | a rendered thumbnail for every section type (roster, cards, panel), roster type cards, the troop panel redrawn with one figure per soldier (helmet = cover, body = health, cartridge clip = ammunition), gauges and alerts |
 | 3b | `redo-battle-hud` | 17 | the battle HUD redone from the owner's reference (`referencias para hud/`): wood and leather frames drawn in Aseprite, docked panels that only collapse, the status row moved, contour and cover layers in the strategic view (off by default) |
 | 4 | `biome-trees-and-plants` | 18 | the whole Refloreste tree suite by biome adapted to Prestes, bush families, more cacti and caatinga plants |
 | 5 | `revise-buildings-and-stone` | 19 | every building modelled with openings that agree with the battle, new buildings, variants, rock kinds and built stone |
@@ -285,6 +285,7 @@ The desk replaces the bookmark shell.
   (tactical 19.4 and 24.4 ms before, 22.7 to 27.9 ms after; strategic 17.4
   before, 17.8 after; budget 16.7) on this machine with other sessions
   running.
+- Owner's hand check (4.3, 2026-11-12): approved.
 
 ## soldier-animation-and-textures apply (2026-11-12)
 
