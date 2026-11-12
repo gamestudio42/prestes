@@ -1,4 +1,5 @@
 import {
+  IN_COVER,
   DEFEND_REGION_RADIUS,
   FIRE_RANGE,
   averageAim,
@@ -663,7 +664,7 @@ export function beginWithdraw(ctx: SimContext, unit: MutableUnit): void {
     };
     if (isPointBlockedByCovers(candidate.x, candidate.y, ctx.covers, 0.8)) continue;
     const cover = coverAgainst(candidate.x, candidate.y, enemy.x, enemy.y, 'crouched', ctx.covers);
-    if (cover < 0.25) continue;
+    if (cover < IN_COVER) continue;
     const path = findPath({ x: unit.x, y: unit.y }, candidate, ctx.covers);
     if (path.length === 0) continue;
     const distance = Math.sqrt((unit.x - candidate.x) ** 2 + (unit.y - candidate.y) ** 2);

@@ -219,5 +219,6 @@ export { FogView, GHOST_TICKS, MARKER_SHOW_TICKS } from './fog-view';
 export type { FogExtras, FogGhost, FogMarker } from './fog-view';
 
 export * from './sections';
+export * from './bands';
 export * from './armies';
 export * from './deploy-roster';

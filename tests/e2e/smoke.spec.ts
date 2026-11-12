@@ -25,8 +25,9 @@ test('boots, selects a section, gives orders, fights and toggles the post', asyn
   await expect(page.getByTestId('portrait-placeholder')).toHaveCount(3);
   await expect(page.getByTestId('weapon-value')).toContainText('Fuzil Mauser 7 mm');
   await expect(page.getByTestId('weapon-card')).toContainText(/\d+\/\d+/);
-  await expect(page.getByTestId('morale-state')).toContainText('Estado: Firme');
-  await expect(page.getByTestId('morale-state')).toContainText(/Cobertura: \d+%/);
+  // troop-thumbnails-and-panel 3.3: the state and cover are the troop panel's gauges.
+  await expect(page.getByTestId('gauge-morale')).toContainText('Firme');
+  await expect(page.getByTestId('gauge-cover')).toContainText(/Cobertura\s*\d+/);
   await expect(page.getByTestId('app')).not.toHaveAttribute('data-tick', '0', { timeout: 5000 });
   await expect(page.getByTestId('hud')).not.toContainText('Tick');
   // refine-battle-maps 6.1: the battle opens at tactical span on the first section.

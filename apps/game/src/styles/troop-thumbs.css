@@ -66,3 +66,71 @@
 .app.game [data-window='summary'] .troop-order {
   font-weight: 600;
 }
+
+/* troop-thumbnails-and-panel 3.4: alerts above the figures. */
+.app.game [data-window='summary'] .troop-alerts {
+  display: grid;
+  gap: 2px;
+  margin: 2px 0;
+  padding: 0;
+  list-style: none;
+}
+
+.app.game [data-window='summary'] .troop-alert {
+  padding: 1px 6px;
+  border-left: 4px solid #a83a24;
+  background: rgba(168, 58, 36, 0.14);
+  color: #6e1f12;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* 3.3: four named gauges, the band edges ticked from shared data. */
+.app.game [data-window='summary'] .troop-gauges {
+  display: grid;
+  grid-template-columns: auto minmax(60px, 1fr) 2.5em auto;
+  align-items: center;
+  gap: 2px 6px;
+  margin: 4px 0 2px;
+  padding: 0;
+  list-style: none;
+  font-size: 12px;
+}
+
+.app.game [data-window='summary'] .troop-gauge {
+  display: contents;
+}
+
+.app.game [data-window='summary'] .troop-gauge-bar {
+  position: relative;
+  height: 8px;
+  border: 1px solid rgba(42, 26, 14, 0.6);
+  background: rgba(255, 245, 220, 0.4);
+}
+
+.app.game [data-window='summary'] .troop-gauge-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: #6a5232;
+}
+
+.app.game [data-window='summary'] .gauge-suppression .troop-gauge-fill {
+  background: #a83a24;
+}
+
+.app.game [data-window='summary'] .troop-gauge-tick {
+  position: absolute;
+  top: -2px;
+  bottom: -2px;
+  width: 1px;
+  background: #2a1a0e;
+}
+
+.app.game [data-window='summary'] .troop-gauge-value {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.app.game [data-window='summary'] .troop-gauge-word {
+  font-weight: 600;
+}

@@ -4,7 +4,7 @@ import { sectionThumbnail } from '../sectionThumbnail';
 import { SoldierFigure, type CoverClass, type HealthClass } from './SoldierFigure';
 import { orderLetter, type Translate } from './orderMeta';
 import { positionName } from './positionName';
-import { figureLook, orderSoldiers, soldierPlaces, troopHeader } from './troopPanel';
+import { figureLook, orderSoldiers, soldierPlaces, troopAlerts, troopGauges, troopHeader, type GaugeId } from './troopPanel';
 import '../../styles/troop-thumbs.css';
 
 interface TroopSummaryProps {
@@ -35,6 +35,13 @@ const COVER_KEY: Record<CoverClass, MessageKey> = {
   inside: 'hud.coverInside',
 };
 
+const GAUGE_LABEL: Record<GaugeId, MessageKey> = {
+  morale: 'hud.morale',
+  cover: 'hud.cover',
+  cohesion: 'hud.cohesion',
+  suppression: 'hud.suppression',
+};
+
 const HEALTH_KEY: Record<HealthClass, MessageKey> = {
   fit: 'health.fit',
   wounded: 'health.wounded',
@@ -53,6 +60,8 @@ export function TroopSummary({ t, squadUnits, selectedIds, ammoFull, covers, cur
   const soldiers = orderSoldiers(squadUnits);
   const places = soldierPlaces(squadUnits);
   const header = troopHeader(squadUnits, currentOrder);
+  const alerts = troopAlerts(squadUnits);
+  const gauges = troopGauges(squadUnits);
   const orderKey = currentOrder === null ? 'hud.orderNone' : (`hud.order${orderLetter(currentOrder)}` as MessageKey);
   return (
     <>
@@ -80,6 +89,16 @@ export function TroopSummary({ t, squadUnits, selectedIds, ammoFull, covers, cur
             </p>
           </div>
         </div>
+      ) : null}
+      {/* 3.4: what needs the player now; no space at all when there is nothing. */}
+      {alerts.length > 0 ? (
+        <ul className="troop-alerts" data-testid="troop-alerts" role="status">
+          {alerts.map((alert) => (
+            <li key={alert.id} className={`troop-alert alert-${alert.id}`} data-testid={`alert-${alert.id}`}>
+              {t(alert.key, alert.count !== undefined ? { count: alert.count } : undefined)}
+            </li>
+          ))}
+        </ul>
       ) : null}
       <ul className="troop-helmets" data-testid="troop-helmets" aria-label={t('hud.windowSummary')}>
         {soldiers.map((unit) => {
@@ -121,6 +140,24 @@ export function TroopSummary({ t, squadUnits, selectedIds, ammoFull, covers, cur
           );
         })}
       </ul>
+      {/* 3.3: the section's condition as four named gauges, band edges from shared data. */}
+      {soldiers.length > 0 ? (
+        <ul className="troop-gauges" data-testid="troop-gauges">
+          {gauges.map((gauge) => (
+            <li key={gauge.id} className={`troop-gauge gauge-${gauge.id}`} data-testid={`gauge-${gauge.id}`} data-band={gauge.band} data-value={gauge.value} title={t(`hud.tip.${gauge.id}` as MessageKey)}>
+              <span className="troop-gauge-label">{t(GAUGE_LABEL[gauge.id])}</span>
+              <span className="troop-gauge-bar" aria-hidden="true">
+                <span className="troop-gauge-fill" style={{ width: `${Math.max(0, Math.min(100, gauge.value))}%` }} />
+                {gauge.ticks.map((tick) => (
+                  <span key={tick} className="troop-gauge-tick" style={{ left: `${tick}%` }} />
+                ))}
+              </span>
+              <span className="troop-gauge-value">{gauge.value}</span>
+              <span className="troop-gauge-word">{t(gauge.word)}</span>
+            </li>
+          ))}
+        </ul>
+      ) : null}
     </>
   );
 }

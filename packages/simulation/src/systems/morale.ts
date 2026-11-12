@@ -1,4 +1,4 @@
-import { armyOfUnit, MAP_BOUNDS, MAX_MORALE, moraleStateFor, findPath, unitValues } from '@prestes/shared';
+import { armyOfUnit, IN_COVER, MAP_BOUNDS, MAX_MORALE, moraleStateFor, findPath, unitValues } from '@prestes/shared';
 import type { SimEvent, Vec2 } from '@prestes/shared';
 import { SUPPRESSION_COOLDOWN, clamp } from './model';
 import type { MutableUnit } from './model';
@@ -144,7 +144,7 @@ export function updateSoldierStates(ctx: SimContext): void {
       unit.soldierState = 'attacking';
     } else if (unit.hp < 35) {
       unit.soldierState = 'wounded';
-    } else if (unit.cover >= 0.25) {
+    } else if (unit.cover >= IN_COVER) {
       unit.soldierState = 'in-cover';
     } else {
       unit.soldierState = 'idle';
@@ -219,7 +219,7 @@ export function updateMoraleStates(ctx: SimContext): void {
       unit.panicTicks = 5;
     }
     if (next === 'pinned') {
-      unit.stance = unit.cover >= 0.25 ? 'crouched' : 'prone';
+      unit.stance = unit.cover >= IN_COVER ? 'crouched' : 'prone';
     } else if (unit.state === 'pinned') {
       unit.stanceLocked = false;
     }
@@ -339,7 +339,7 @@ export function reactToSuppression(ctx: SimContext): void {
     if (unit.suppressionCooldown > 0) {
       continue;
     }
-    if (unit.cover >= 0.25) {
+    if (unit.cover >= IN_COVER) {
       if (pinned || !unit.stanceLocked) {
         unit.stance = 'crouched';
       }

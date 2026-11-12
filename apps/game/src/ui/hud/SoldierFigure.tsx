@@ -1,4 +1,4 @@
-import type { UnitSnapshot } from '@prestes/shared';
+import { coverBand, type UnitSnapshot } from '@prestes/shared';
 import type { ReactElement } from 'react';
 
 /**
@@ -16,9 +16,8 @@ export type HealthClass = 'fit' | 'wounded' | 'badly' | 'down' | 'dead';
 /** Cover the soldier has (unit cover is 0..1); a man inside a position counts as inside. */
 export function coverClassOf(unit: UnitSnapshot): CoverClass {
   if (unit.garrison !== undefined) return 'inside';
-  if (unit.cover >= 0.5) return 'good';
-  if (unit.cover >= 0.15) return 'light';
-  return 'none';
+  // troop-thumbnails-and-panel 3.3: the shared bands, the simulation's own line for "in cover".
+  return coverBand(unit.cover);
 }
 
 export function healthClassOf(unit: UnitSnapshot): HealthClass {

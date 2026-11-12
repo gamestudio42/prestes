@@ -1,8 +1,6 @@
-import { CoverIcon as BrickWall, Health as Heart, Cohesion as Link2, Settings as Settings2, Suppression as Zap } from '../icons';
 import type { MessageKey } from '@prestes/content';
 import type { Frame, UnitSnapshot } from '@prestes/shared';
 import { Rifle as RifleIcon } from '../icons';
-import { Tooltip } from '../Tooltip';
 import { orderLetter, type Translate } from './orderMeta';
 import { gunStateLabel, mainWeapon, weaponLines } from './weaponLines';
 
@@ -28,31 +26,13 @@ export function WeaponCard({
   const listed = lines.length > 1 || lines.some((line) => line.gunSet !== undefined);
   // machine-gun-fire-feedback 3.2: a gun crew whose gun has no fit man left to serve it.
   const noGunner = gunPool !== undefined && aliveUnits.length > 0 && !lines.some((line) => line.gunSet !== undefined);
-  const coverValue =
-    aliveUnits.length === 0
-      ? 0
-      : aliveUnits.reduce((sum, unit) => sum + unit.cover, 0) / aliveUnits.length;
-  const cohesionValue =
-    aliveUnits.length === 0
-      ? 0
-      : aliveUnits.reduce((sum, unit) => sum + unit.cohesion, 0) / aliveUnits.length;
   const fatigueValue =
     aliveUnits.length === 0
       ? 0
       : aliveUnits.reduce((sum, unit) => sum + unit.fatigue, 0) / aliveUnits.length;
-  const suppressionValue =
-    aliveUnits.length === 0
-      ? 0
-      : aliveUnits.reduce((sum, unit) => sum + unit.suppression, 0) / aliveUnits.length;
-  const state =
-    aliveUnits.find((unit) => unit.state === 'panicked')?.state ??
-    aliveUnits.find((unit) => unit.state === 'pinned')?.state ??
-    aliveUnits.find((unit) => unit.state === 'suppressed')?.state ??
-    (aliveUnits.length === 0 && squadUnits.some((unit) => unit.routed) ? 'routed' : 'steady');
   const rescuer = aliveUnits.find((unit) => unit.rescueTargetId !== null);
   const interrupted = frame?.events.find((event) => event.type === 'order_interrupted');
   const reconContacts = aliveUnits.find((unit) => unit.reconContacts > 0)?.reconContacts ?? 0;
-  const stateKey = `state.${state}` as MessageKey;
   const weaponKey = weapon ? (`weapon.${weapon.weaponId}.name` as MessageKey) : null;
   const magazine = aliveUnits.reduce((sum, unit) => sum + unit.magazine, 0);
   const reserve = aliveUnits.reduce((sum, unit) => sum + unit.reserve, 0);
@@ -114,45 +94,10 @@ export function WeaponCard({
             ) : null}
           </ul>
         ) : null}
-        <div className="status-row">
-          <Tooltip title={t(stateKey)} description={t('hud.tip.morale')}>
-            <span className="status-chip">
-              <Heart aria-hidden="true" size={13} />
-              {t(stateKey)}
-            </span>
-          </Tooltip>
-          <Tooltip title={`${t('hud.cover')} ${Math.round(coverValue * 100)}%`} description={t('hud.tip.cover')}>
-            <span className="status-chip">
-              <BrickWall aria-hidden="true" size={13} />
-              {Math.round(coverValue * 100)}%
-            </span>
-          </Tooltip>
-          <Tooltip title={`${t('hud.cohesion')} ${Math.round(cohesionValue)}%`} description={t('hud.tip.cohesion')}>
-            <span className="status-chip">
-              <Link2 aria-hidden="true" size={13} />
-              {Math.round(cohesionValue)}%
-            </span>
-          </Tooltip>
-          <Tooltip title={`${t('hud.suppression')} ${Math.round(suppressionValue)}`} description={t('hud.tip.suppression')}>
-            <span className="status-chip">
-              <Zap aria-hidden="true" size={13} />
-              {Math.round(suppressionValue)}
-            </span>
-          </Tooltip>
-          <Tooltip title={t('hud.noEquipment')} description={t('hud.tip.equipment')}>
-            <span className="status-chip">
-              <Settings2 aria-hidden="true" size={13} />
-              {t('hud.noEquipment')}
-            </span>
-          </Tooltip>
-        </div>
         <div className="status-details">
-          <span data-testid="morale-state">
-            {t('hud.state')}: {t(stateKey)} · {t('hud.cover')}: {Math.round(coverValue * 100)}%
-          </span>
+          {/* troop-thumbnails-and-panel 3.3: state, cover and cohesion are the panel's gauges now. */}
           <span>
-            {t('hud.cohesion')}: {Math.round(cohesionValue)}% · {t('hud.fatigue')}: {Math.round(fatigueValue)} ·{' '}
-            {t('hud.wound')}: {t(`wound.${wound}` as MessageKey)}
+            {t('hud.fatigue')}: {Math.round(fatigueValue)} · {t('hud.wound')}: {t(`wound.${wound}` as MessageKey)}
           </span>
           {reconContacts > 0 ? (
             <span data-testid="recon-status">

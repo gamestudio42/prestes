@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { SectionTypeId, UnitSnapshot, WeaponId } from '../../packages/shared/src';
-import { conditionOf, figureLook, orderSoldiers, soldierPlaces, troopHeader } from '../../apps/game/src/ui/hud/troopPanel';
+import { COHESION_CLOSE, COHESION_LOOSE, GOOD_COVER, IN_COVER, PANIC_MORALE, PINNED_MORALE, PINNED_SUPPRESSION, SUPPRESSED_MORALE, SUPPRESSION_THRESHOLD, type SectionTypeId, type UnitSnapshot, type WeaponId } from '../../packages/shared/src';
+import { conditionOf, figureLook, orderSoldiers, soldierPlaces, troopAlerts, troopGauges, troopHeader } from '../../apps/game/src/ui/hud/troopPanel';
 
 // troop-thumbnails-and-panel 3.1-3.2: the troop panel's header, figures and order.
 
@@ -23,6 +23,10 @@ const man = (id: number, over: Partial<UnitSnapshot> = {}, squadId = 1, sectionT
     morale: 80,
     magazine: 5,
     reserve: 45,
+    suppression: 0,
+    cohesion: 100,
+    soldierState: 'idle',
+    rescueTargetId: null,
     ...over,
   }) as UnitSnapshot;
 
@@ -58,7 +62,8 @@ describe('soldier figures (3.2)', () => {
   it('cover in the helmet: prone in a trench is good cover, the open none, inside a position inside', () => {
     expect(figureLook(man(1, { cover: 0.6, stance: 'prone' }), 50).cover).toBe('good');
     expect(figureLook(man(2), 50).cover).toBe('none');
-    expect(figureLook(man(3, { cover: 0.2 }), 50).cover).toBe('light');
+    expect(figureLook(man(3, { cover: 0.3 }), 50).cover).toBe('light');
+    expect(figureLook(man(5, { cover: 0.2 }), 50).cover).toBe('none');
     expect(figureLook(man(4, { garrison: 7 }), 50).cover).toBe('inside');
   });
 
@@ -106,5 +111,66 @@ describe('soldier figures (3.2)', () => {
     expect(orderSoldiers(units).map((unit) => unit.id)).toEqual([2, 1, 3, 4, 5, 6]);
     // A fallen leader goes with the casualties.
     expect(orderSoldiers([man(1, { kind: 'officer', alive: false }), man(2)]).map((unit) => unit.id)).toEqual([2, 1]);
+  });
+});
+
+describe('troop gauges (3.3)', () => {
+  it('each gauge has its value and the word for its band', () => {
+    const gauges = troopGauges([man(1, { state: 'suppressed', morale: 45, cover: 0.3, cohesion: 55, suppression: 40 })]);
+    expect(gauges.map((gauge) => [gauge.id, gauge.value, gauge.word])).toEqual([
+      ['morale', 45, 'state.suppressed'],
+      ['cover', 30, 'hud.coverLight'],
+      ['cohesion', 55, 'hud.band.cohesion.loose'],
+      ['suppression', 40, 'hud.band.suppression.under-fire'],
+    ]);
+  });
+
+  it('the words follow the shared thresholds, edges included', () => {
+    const band = (over: Partial<UnitSnapshot>, id: string) => troopGauges([man(1, over)]).find((gauge) => gauge.id === id)!.band;
+    expect(band({ cover: IN_COVER - 0.01 }, 'cover')).toBe('none');
+    expect(band({ cover: IN_COVER }, 'cover')).toBe('light');
+    expect(band({ cover: GOOD_COVER }, 'cover')).toBe('good');
+    expect(band({ suppression: SUPPRESSION_THRESHOLD - 1 }, 'suppression')).toBe('calm');
+    expect(band({ suppression: SUPPRESSION_THRESHOLD }, 'suppression')).toBe('under-fire');
+    expect(band({ suppression: PINNED_SUPPRESSION }, 'suppression')).toBe('pinned-down');
+    expect(band({ cohesion: COHESION_CLOSE }, 'cohesion')).toBe('close');
+    expect(band({ cohesion: COHESION_LOOSE - 1 }, 'cohesion')).toBe('scattered');
+    // Morale's word is the simulation's own state; its ticks are the shared morale lines.
+    expect(band({ state: 'pinned' }, 'morale')).toBe('pinned');
+    expect(troopGauges([man(1)])[0]!.ticks).toEqual([PANIC_MORALE, PINNED_MORALE, SUPPRESSED_MORALE]);
+  });
+});
+
+describe('troop alerts (3.4)', () => {
+  it('nothing to report: a fit, supplied section not under fire', () => {
+    expect(troopAlerts([man(1), man(2)])).toEqual([]);
+  });
+
+  it('each alert, most urgent first', () => {
+    const units = [
+      man(1, { magazine: 0, reserve: 0, state: 'pinned' }),
+      man(2, { alive: true, incapacitated: true, soldierState: 'incapacitated' }),
+      man(3),
+    ];
+    expect(troopAlerts(units).map((alert) => [alert.id, alert.count])).toEqual([
+      ['no-ammo', 1],
+      ['pinned', undefined],
+      ['casualty', 1],
+    ]);
+    expect(troopAlerts([man(1, { state: 'panicked' })]).map((alert) => alert.id)).toEqual(['panicked']);
+  });
+
+  it('a man being rescued is not waiting', () => {
+    const units = [man(2, { incapacitated: true, soldierState: 'incapacitated' }), man(3, { rescueTargetId: 2 })];
+    expect(troopAlerts(units)).toEqual([]);
+  });
+
+  it('a gun without a gunner', () => {
+    const crew = (gunnerDown: boolean) => [
+      man(31, gunnerDown ? { incapacitated: true, soldierState: 'being-carried' } : { gunSet: true }, 5, 'metralhadora', 'metralhadora-7mm'),
+      man(32, {}, 5, 'metralhadora'),
+    ];
+    expect(troopAlerts(crew(false))).toEqual([]);
+    expect(troopAlerts(crew(true)).map((alert) => alert.id)).toEqual(['no-gunner']);
   });
 });
