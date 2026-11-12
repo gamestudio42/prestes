@@ -106,7 +106,6 @@ export const ICONS = {
   clear: pixelIcon('control-clear'),
   preview: pixelIcon('control-preview'),
   codex: pixelIcon('ui-codex'),
-  sandbox: pixelIcon('ui-sandbox'),
 } as const satisfies Record<string, PixelIconComponent>;
 
 export type IconId = keyof typeof ICONS;

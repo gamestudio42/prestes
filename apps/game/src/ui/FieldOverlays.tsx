@@ -1,25 +1,22 @@
 import { Crosshair, CoverIcon as Shield, Health } from './icons';
 import { translate, type Locale } from '@prestes/content';
 import type { CoverSlotView } from '@prestes/shared';
-import type { PlacementPreview } from '@prestes/view3d';
 
 interface FieldOverlaysProps {
   locale: Locale;
   needsTarget: boolean;
   hoverUnitId: number | null;
   cursor: { x: number; y: number } | null;
-  placementPreview: PlacementPreview | null;
   hoverHint: { kind: 'cover' | 'target' | 'rescue'; x: number; y: number } | null;
   slotView?: CoverSlotView | null;
 }
 
-/** Cursor-following overlays: target reticle, placement status and cover/target hint. */
+/** Cursor-following overlays: target reticle, free slots and cover/target hint. */
 export function FieldOverlays({
   locale,
   needsTarget,
   hoverUnitId,
   cursor,
-  placementPreview,
   hoverHint,
   slotView = null,
 }: FieldOverlaysProps) {
@@ -33,15 +30,6 @@ export function FieldOverlays({
       >
         <Crosshair aria-hidden="true" size={22} />
         <span>{translate(locale, 'hud.needsTarget')}</span>
-      </div>
-    ) : null}
-    {placementPreview ? (
-      <div
-        className={`placement-status ${placementPreview.valid ? 'valid' : 'invalid'}`}
-        data-testid="placement-status"
-      >
-        {translate(locale, placementPreview.valid ? 'hud.placementValid' : 'hud.placementInvalid')}
-        {' · '}{Math.round((placementPreview.rotation * 180) / Math.PI) % 360}°
       </div>
     ) : null}
     {slotView && slotView.total > 0 && cursor ? (

@@ -118,11 +118,6 @@
   }
 }
 
-.sandbox-panel {
-  z-index: 30;
-  max-height: calc(100vh - 190px);
-}
-
 .order-board {
   display: flex;
   flex-direction: column;
@@ -584,33 +579,6 @@
   max-width: 100%;
   overflow-wrap: anywhere;
   color: #f1e5cc;
-}
-
-.placement-status {
-  position: fixed;
-  left: 50%;
-  top: 58px;
-  z-index: 8;
-  transform: translateX(-50%);
-  padding: 6px 12px;
-  border: 1px solid rgba(208, 164, 92, 0.6);
-  border-radius: 0;
-  background: rgba(25, 18, 11, 0.9);
-  color: var(--hud-paper);
-  font: 600 10px var(--px-font);
-  letter-spacing: 0;
-  text-transform: uppercase;
-  pointer-events: none;
-}
-
-.placement-status.invalid {
-  border-color: #b95642;
-  color: #f0a28f;
-}
-
-.placement-status.valid {
-  border-color: #7fbf6a;
-  color: #b8e3a5;
 }
 
 .tutorial-dialogue {

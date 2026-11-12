@@ -9,7 +9,10 @@ interface Unit {
   faction: string;
 }
 interface Bridge {
-  __prestes?: { frame: () => { units: Unit[]; fog?: boolean } | null };
+  __prestes?: {
+    frame: () => { units: Unit[]; fog?: boolean } | null;
+    command: (command: { type: 'fog'; enabled: boolean }) => void;
+  };
   __prestesScene?: {
     shown: () => number[];
     pick: (x: number, y: number) => number | null;
@@ -53,11 +56,17 @@ test('the 3 vs 3 starts under fog: no enemy drawn or pickable', async ({ page })
   expect(picked).toBeNull();
 });
 
-test('the sandbox toggle lifts the fog', async ({ page }) => {
+// remove-sandbox-panel: the fog switch is a development test-bridge command now.
+test('the test bridge lifts the fog', async ({ page }) => {
   await start3v3(page);
-  await page.getByTestId('sandbox-toggle').click();
-  await expect(page.getByTestId('sandbox-fog')).toHaveAttribute('aria-pressed', 'true');
-  await page.getByTestId('sandbox-fog').click();
-  await expect(page.getByTestId('sandbox-fog')).toHaveAttribute('aria-pressed', 'false');
+  await expect.poll(() => page.evaluate(() => (window as unknown as Bridge).__prestes?.frame()?.fog)).toBe(true);
+  await page.evaluate(() => (window as unknown as Bridge).__prestes!.command({ type: 'fog', enabled: false }));
   await expect.poll(async () => (await legalists(page)).shown).toBe(33);
+});
+
+test('the battle offers no sandbox', async ({ page }) => {
+  await start3v3(page);
+  await expect(page.getByTestId('sandbox-toggle')).toHaveCount(0);
+  await page.keyboard.press('F1');
+  await expect(page.getByTestId('sandbox-panel')).toHaveCount(0);
 });

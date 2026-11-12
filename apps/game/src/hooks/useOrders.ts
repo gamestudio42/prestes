@@ -3,9 +3,7 @@ import {
   useMemo,
   useRef,
   useState,
-  type Dispatch,
   type MutableRefObject,
-  type SetStateAction,
 } from 'react';
 import { ORDER_CATALOG, translate, type Locale } from '@prestes/content';
 import {
@@ -28,7 +26,6 @@ import {
   type Frame,
   type Posture,
   type PreviewPlan,
-  type SectionTypeId,
   type Stance,
   type TacticalOrder,
   type Vec2,
@@ -36,26 +33,17 @@ import {
 import { previewKey } from './previewKey';
 import { pickSuspectedContact } from './suspectedContact';
 import { battleMap as mapById, deploymentSlotView, positionNear, positionsFor, type BattleMapId, type DeploymentSlotView, type PositionDef } from '@prestes/shared';
-import type { OrderCallout, PlacementPreview } from '@prestes/view3d';
+import type { OrderCallout } from '@prestes/view3d';
 import type { GameClient } from '../client/GameClient';
 import type { SelectionMode } from '../ui/GameCanvas';
 import type { OrderMode } from '../ui/Hud';
-import type { SandboxTool } from '../ui/SandboxPanel';
 
 interface OrderOptions {
   frame: Frame | null;
   locale: Locale;
   clientRef: MutableRefObject<GameClient | null>;
-  speed: 0 | 1 | 2 | 4 | 8;
   hudHidden: boolean;
   controlBothSides: boolean;
-  setControlBothSides: Dispatch<SetStateAction<boolean>>;
-  sandboxTool: SandboxTool | null;
-  /** pre-battle-roster 5.3: the section type a placed troop is made of. */
-  troopSection: SectionTypeId | null;
-  placementPreview: PlacementPreview | null;
-  placementRotation: number;
-  setPlacementPoint: Dispatch<SetStateAction<Vec2 | null>>;
 }
 
 /**
@@ -72,15 +60,8 @@ export function useOrders({
   frame,
   locale,
   clientRef,
-  speed,
   hudHidden,
   controlBothSides,
-  setControlBothSides,
-  sandboxTool,
-  troopSection,
-  placementPreview,
-  placementRotation,
-  setPlacementPoint,
 }: OrderOptions) {
   const [selectedSquadId, setSelectedSquadId] = useState(1);
   const [selectedUnitIds, setSelectedUnitIds] = useState<number[]>([]);
@@ -432,7 +413,6 @@ export function useOrders({
 
   const handlePreviewGround = (point: Vec2 | null): void => {
     setHoverPoint(point);
-    setPlacementPoint(sandboxTool ? point : null);
     if (point) {
       setHoverUnitId(null);
     }
@@ -479,15 +459,6 @@ export function useOrders({
         )
         .map((unit) => unit.id),
     );
-  };
-
-  const handleToggleControlBothSides = (): void => {
-    const next = !controlBothSides;
-    setControlBothSides(next);
-    if (!next && selectedSquadId !== 1) {
-      setSelectedSquadId(1);
-      selectSquad(1);
-    }
   };
 
   const handleOrder = (mode: OrderMode): void => {
@@ -764,25 +735,6 @@ export function useOrders({
       setPendingTactical(null);
       return;
     }
-    if (sandboxTool) {
-      if (!placementPreview?.valid) {
-        return;
-      }
-      const section = troopSection ? { section: troopSection } : {};
-      const command =
-        sandboxTool === 'enemy-troop'
-          ? { type: 'spawn_troop' as const, to: point, faction: 'legalist' as const, count: 11, rotation: placementRotation, ...section }
-          : sandboxTool === 'command-troop'
-            ? { type: 'spawn_troop' as const, to: point, faction: 'column' as const, count: 3, rotation: placementRotation, ...section }
-            : sandboxTool === 'dummy'
-              ? { type: 'spawn_dummy' as const, to: point, rotation: placementRotation }
-              : { type: 'spawn_cover' as const, kind: sandboxTool, to: point, rotation: placementRotation };
-      clientRef.current?.sendCommand(command);
-      if (speed === 0) {
-        clientRef.current?.step(1);
-      }
-      return;
-    }
     if (pendingOrder === 'move' && selectedIds.length > 0) {
       clientRef.current?.sendCommand({
         type: 'move',
@@ -1051,7 +1003,6 @@ export function useOrders({
     handleClearOrder,
     handlePreviewGround,
     handlePreviewUnit,
-    handleToggleControlBothSides,
     handleSelectSquad,
     handleSelectUnits,
     handleAttackUnit,

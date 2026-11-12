@@ -20,7 +20,7 @@ import {
   type ProtectionClass,
   type UnitSnapshot,
   type FogExtras,
-  troopFormationOffsets, type MapLight } from '@prestes/shared';
+  type MapLight } from '@prestes/shared';
 import { CameraRig, STRATEGIC_TILT, TACTICAL_SPAN, type CameraBand } from './camera-rig';
 import { CharacterLayer } from './character-layer';
 import { CoverLayer } from './cover-layer';
@@ -50,14 +50,6 @@ export interface OrderCallout {
   troopText: string;
 }
 
-export type PlacementKind =
-  | 'sandbag'
-  | 'stone'
-  | 'trench'
-  | 'dummy'
-  | 'enemy-troop'
-  | 'command-troop';
-
 /** add-deployment-phase D5: a piece's slot count over the ground. */
 export interface SlotBadge {
   x: number;
@@ -65,13 +57,6 @@ export interface SlotBadge {
   text: string;
 }
 
-export interface PlacementPreview {
-  kind: PlacementKind;
-  x: number;
-  y: number;
-  rotation: number;
-  valid: boolean;
-}
 
 export interface SceneViewOptions {
   container: HTMLElement;
@@ -141,7 +126,6 @@ export class SceneView {
   private world: WorldLayer;
   private disposed = false;
   private selectedUnits: readonly number[] = [];
-  private readonly placementRoot = new THREE.Group();
   /** garrison-and-assault 4.1: the ring Sair's point must fall in. */
   private readonly rangeRoot = new THREE.Group();
   private rangeRing: { x: number; y: number; radius: number } | null = null;
@@ -247,7 +231,6 @@ export class SceneView {
       this.garrisonLayer.group,
       this.objectiveLayer.group,
       this.preview.group,
-      this.placementRoot,
       this.rangeRoot,
       this.targetRoot,
     );
@@ -281,73 +264,6 @@ export class SceneView {
     this.animate(0);
   }
 
-  setPlacementPreview(preview: PlacementPreview | null): void {
-    this.placementRoot.clear();
-    if (!preview) {
-      return;
-    }
-    const color = preview.valid ? 0x7fbf6a : 0xbf5f4a;
-    const material = new THREE.MeshBasicMaterial({
-      color,
-      transparent: true,
-      opacity: 0.42,
-      depthWrite: false,
-    });
-    const outline = new THREE.LineBasicMaterial({
-      color,
-      transparent: true,
-      opacity: 0.9,
-      depthWrite: false,
-    });
-    const addGhost = (x: number, z: number, radius: number, height: number): void => {
-      const mesh = new THREE.Mesh(new THREE.CylinderGeometry(radius, radius, height, 6), material);
-      mesh.position.set(x, terrainHeightAt(x, z) + height / 2, z);
-      this.placementRoot.add(mesh);
-    };
-    const rotation = preview.rotation;
-    if (preview.kind === 'enemy-troop' || preview.kind === 'command-troop') {
-      const count = preview.kind === 'enemy-troop' ? 11 : 3;
-      const columns = preview.kind === 'enemy-troop' ? 6 : 3;
-      for (const offset of troopFormationOffsets(count, columns, 2.4, rotation)) {
-        addGhost(preview.x + offset.x, preview.y + offset.y, 0.3, 1.6);
-      }
-      return;
-    }
-    const dimensions =
-      preview.kind === 'stone'
-        ? { width: 3.6, depth: 1.0, height: 1.8 }
-        : preview.kind === 'trench'
-          ? { width: 4.8, depth: 2.4, height: 0.3 }
-          : preview.kind === 'dummy'
-            ? { width: 0.8, depth: 0.8, height: 1.1 }
-            : { width: 3.4, depth: 0.8, height: 0.9 };
-    const mesh = new THREE.Mesh(
-      new THREE.BoxGeometry(dimensions.width, dimensions.height, dimensions.depth),
-      material,
-    );
-    mesh.position.set(
-      preview.x,
-      terrainHeightAt(preview.x, preview.y) + dimensions.height / 2,
-      preview.y,
-    );
-    mesh.rotation.y = -rotation;
-    this.placementRoot.add(mesh);
-    const points = [
-      new THREE.Vector3(-dimensions.width / 2, 0, -dimensions.depth / 2),
-      new THREE.Vector3(dimensions.width / 2, 0, -dimensions.depth / 2),
-      new THREE.Vector3(dimensions.width / 2, 0, dimensions.depth / 2),
-      new THREE.Vector3(-dimensions.width / 2, 0, dimensions.depth / 2),
-      new THREE.Vector3(-dimensions.width / 2, 0, -dimensions.depth / 2),
-    ].map((point) => {
-      const rotated = point.applyAxisAngle(new THREE.Vector3(0, 1, 0), -rotation);
-      return rotated.setY(terrainHeightAt(preview.x, preview.y) + 0.05);
-    });
-    this.placementRoot.add(
-      new THREE.Line(new THREE.BufferGeometry().setFromPoints(points), outline).translateX(
-        preview.x,
-      ).translateZ(preview.y),
-    );
-  }
   setTargetUnits(unitIds: readonly number[]): void {
     this.targetRoot.clear();
     const frame = this.lastFrame;

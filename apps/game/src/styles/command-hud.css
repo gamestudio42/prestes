@@ -15,8 +15,7 @@
 
 .hud-eyebrow,
 .tutorial-hint,
-.order-status-line.muted,
-.sandbox-panel dt {
+.order-status-line.muted {
   color: #a78e69;
 }
 
@@ -27,7 +26,6 @@
 .secondary,
 .order-button,
 .tutorial-panel,
-.sandbox-panel,
 .order-status {
   background: #21170f;
   border-color: #5b4632;
@@ -60,15 +58,13 @@
   background: rgba(22, 15, 10, 0.72);
 }
 
-.tutorial-panel,
-.sandbox-panel {
+.tutorial-panel {
   background: rgba(24, 16, 10, 0.97);
   border-color: #6b5136;
 }
 
 .tutorial-objective,
 .tutorial-feedback,
-.sandbox-panel,
 .tutorial-actions .secondary {
   color: #dfc9a6;
 }
@@ -372,8 +368,7 @@
   text-transform: uppercase;
 }
 
-.tutorial-panel,
-.sandbox-panel {
+.tutorial-panel {
   top: 64px;
   background:
     repeating-linear-gradient(0deg, rgba(234, 217, 184, 0.018) 0 1px, transparent 1px 4px),
@@ -447,8 +442,7 @@
     padding-top: 0;
   }
 
-  .tutorial-panel,
-  .sandbox-panel {
+  .tutorial-panel {
     top: 88px;
   }
 }

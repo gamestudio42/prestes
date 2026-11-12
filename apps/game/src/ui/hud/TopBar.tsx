@@ -3,7 +3,6 @@ import type { Locale } from '@prestes/content';
 import type { ObjectiveSnapshot } from '@prestes/shared';
 import type { CameraBand } from '@prestes/view3d';
 import { IconButton } from './IconButton';
-import { ICONS } from './orderMeta';
 import type { Translate } from './orderMeta';
 
 interface TopBarProps {
@@ -13,7 +12,6 @@ interface TopBarProps {
   postStrong: boolean;
   routesVisible: boolean;
   speed: 0 | 1 | 2 | 4 | 8;
-  sandboxOpen: boolean;
   /** add-deployment-phase 3.1: no time passes in deployment, so the speed controls are hidden. */
   deploying?: boolean;
   /** add-map-objectives 3.2: the objectives and the battle clock, on maps with objectives. */
@@ -25,7 +23,6 @@ interface TopBarProps {
   onTogglePause: () => void;
   onTogglePost: () => void;
   onToggleRoutes: () => void;
-  onToggleSandbox: () => void;
   /** refine-battle-controls: leave the battle for the desk, after a confirmation. */
   onLeave: () => void;
 }
@@ -39,7 +36,6 @@ export function TopBar({
   postStrong,
   routesVisible,
   speed,
-  sandboxOpen,
   deploying = false,
   objectives = [],
   clock,
@@ -49,7 +45,6 @@ export function TopBar({
   onTogglePause,
   onTogglePost,
   onToggleRoutes,
-  onToggleSandbox,
   onLeave,
 }: TopBarProps) {
   const bandKey =
@@ -146,16 +141,6 @@ export function TopBar({
             <option value="pt-BR">{t('language.ptBR')}</option>
           </select>
         </label>
-        <IconButton
-          testId="sandbox-toggle"
-          label={t('hud.sandbox')}
-          description={t('hud.tip.sandbox')}
-          onClick={onToggleSandbox}
-          active={sandboxOpen}
-          className="hud-icon"
-        >
-          <ICONS.sandbox aria-hidden="true" size={15} />
-        </IconButton>
         <button type="button" className="hud-leave" data-testid="leave-battle" onClick={onLeave}>
           {t('hud.leave')}
         </button>

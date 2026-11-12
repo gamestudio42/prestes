@@ -21,7 +21,7 @@ async function startFromMenu(page: Page): Promise<void> {
     .toBe(66);
 }
 
-/** Puts every legalist out of action through the sandbox command. */
+/** Puts every legalist out of action through the test bridge's incapacitate command. */
 async function breakTheEnemy(page: Page): Promise<void> {
   await page.evaluate(() => {
     const bridge = (window as unknown as Bridge).__prestes!;

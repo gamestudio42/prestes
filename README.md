@@ -61,8 +61,8 @@ pnpm models     # export character source models to GLB
   compendium "A Coluna Prestes", reference pile, gramophone, options compass,
   map sheets, roster builder); the battle HUD (orders board, formation
   selector, section cards, deployment banner, objectives, opt-in order
-  previews, queued orders, pause/speed); the F1 sandbox lab; and the map
-  editor (`editor.html`), where every battle map is authored.
+  previews, queued orders, pause/speed); and the map editor
+  (`editor.html`), where every battle map and test situation is authored.
 
 ## Design references
 

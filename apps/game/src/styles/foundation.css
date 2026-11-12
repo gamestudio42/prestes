@@ -1,4 +1,4 @@
-/* Base reset, controls, early HUD rails, codex, sandbox panel, selection and tutorial objectives. */
+/* Base reset, controls, early HUD rails, codex, selection and tutorial objectives. */
 :root {
   color-scheme: dark;
   font-family: var(--px-font);
@@ -495,140 +495,12 @@ select {
   }
 }
 
-.sandbox-panel {
-  position: absolute;
-  top: 112px;
-  left: 16px;
-  z-index: 5;
-  width: min(360px, calc(100vw - 32px));
-  max-height: calc(100vh - 190px);
-  overflow: auto;
-  padding: 10px;
-  color: #d9d2b6;
-  font-size: 12px;
-  background: rgba(12, 15, 11, 0.96);
-  border: 1px solid #6b7a58;
-  box-shadow: var(--px-shadow);
-}
-
-.sandbox-panel header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  padding-bottom: 8px;
-  color: #f0e6c4;
-  font-family: var(--px-font);
-  font-size: 14px;
-  letter-spacing: 0;
-  text-transform: uppercase;
-  border-bottom: 1px solid #3a4433;
-}
-
-.sandbox-panel header > span {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
 .icon-button {
   padding: 4px 6px;
 }
 
-.sandbox-panel h3 {
-  margin: 10px 0 6px;
-  color: #b8c29c;
-  font-size: 12px;
-  letter-spacing: 0;
-  text-transform: uppercase;
-}
-
-.sandbox-panel dl {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 4px 8px;
-  margin: 0;
-}
-
-.sandbox-panel dl > div {
-  min-width: 0;
-  padding: 4px 6px;
-  background: #171c14;
-  border: 1px solid #2b3325;
-}
-
-.sandbox-panel dt {
-  color: #8f9a7c;
-  font-size: 10px;
-  letter-spacing: 0;
-  text-transform: uppercase;
-}
-
-.sandbox-panel dd {
-  margin: 2px 0 0;
-  color: #f0e6c4;
-  font-variant-numeric: tabular-nums;
-}
-
-.sandbox-tool-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 5px;
-}
-
-.sandbox-tool-grid .secondary {
-  justify-content: flex-start;
-  padding: 6px 8px;
-  font-size: 12px;
-}
-
-.sandbox-hint {
-  margin: 6px 0 0;
-  color: #b8c29c;
-  font-size: 12px;
-  line-height: 1.35;
-}
-
-.sandbox-actions {
-  display: flex;
-  gap: 6px;
-  margin-top: 10px;
-}
-
-.sandbox-actions .secondary {
-  flex: 1;
-  justify-content: center;
-  font-size: 12px;
-  text-transform: uppercase;
-}
-
 @media (max-width: 760px) {
-  .sandbox-panel {
-    top: 112px;
-    left: 8px;
-    width: calc(100vw - 16px);
-    max-height: calc(100vh - 220px);
-  }
-}
 
-.sandbox-counts {
-  margin: 8px 0 0;
-  padding: 4px 6px;
-  color: #8f9a7c;
-  font-size: 12px;
-  letter-spacing: 0;
-  text-transform: uppercase;
-  background: #171c14;
-  border: 1px solid #2b3325;
-}
-
-.sandbox-error {
-  margin: 8px 0 0;
-  padding: 4px 6px;
-  color: #e0b0a2;
-  font-size: 12px;
-  background: #2a1a16;
-  border: 1px solid #7a4a3f;
 }
 
 .selection-box {
@@ -875,10 +747,3 @@ select {
   pointer-events: auto;
 }
 
-/* add-battle-maps: the sandbox's battlefield choice. */
-.sandbox-map {
-  display: grid;
-  gap: 4px;
-  margin-bottom: 8px;
-  font-size: 12px;
-}

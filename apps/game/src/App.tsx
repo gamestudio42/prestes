@@ -19,15 +19,13 @@ import { DEFAULT_SPEED, GameClient } from './client/GameClient';
 import { FieldOverlays } from './ui/FieldOverlays';
 import { GameCanvas } from './ui/GameCanvas';
 import { Hud } from './ui/Hud';
-import { SandboxPanel } from './ui/SandboxPanel';
 import { StartScreenDesk } from './ui/menu/StartScreenDesk';
-import { battleRosters, loadSetup, saveSetup, withMap, type SkirmishSetup } from './ui/menu/setupState';
+import { battleRosters, loadSetup, saveSetup, type SkirmishSetup } from './ui/menu/setupState';
 import { BattleEndPanel } from './ui/BattleEndPanel';
 import { clearBootcampProgress, loadLocale, loadRoutesVisible, saveLocale, saveRoutesVisible } from './storage';
 import { useAudio } from './hooks/useAudio';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { useOrders } from './hooks/useOrders';
-import { useSandbox } from './hooks/useSandbox';
 import { useTestBridge } from './hooks/useTestBridge';
 import { isDeploymentRefusal, type DeploymentRefusal } from './ui/hud/DeploymentBanner';
 
@@ -45,7 +43,6 @@ export function App() {
     saveSetup(next);
     setBattleMapId(next.map);
   };
-  const changeBattleMap = (map: BattleMapId): void => changeSetup(withMap(setup, map));
   const [frame, setFrame] = useState<Frame | null>(null);
   const [band, setBand] = useState<CameraBand>('tactical');
   const [cameraRequest, setCameraRequest] = useState<{ band: CameraBand; nonce: number } | null>(
@@ -117,19 +114,8 @@ export function App() {
   const { audioRef, audioMuted, handleToggleAudio } = useAudio();
   // machine-gun-fire-feedback 4.2: a burst's rounds keep their spacing at the game speed.
   useEffect(() => audioRef.current?.setSpeed(speed), [audioRef, speed]);
-  const {
-    sandboxOpen,
-    setSandboxOpen,
-    sandboxTool,
-    setSandboxTool,
-    setPlacementPoint,
-    placementRotation,
-    controlBothSides,
-    setControlBothSides,
-    placementPreview,
-    troopSection,
-    setTroopSection,
-  } = useSandbox(frame);
+  // remove-sandbox-panel D1: both-sides control, set only by tests through the bridge.
+  const [controlBothSides, setControlBothSides] = useState(false);
   const {
     selectedSquadId,
     setSelectedSquadId,
@@ -145,7 +131,6 @@ export function App() {
     setPreviewEnabled,
     hoverUnitId,
     targetUnitIds,
-    selectedUnits,
     selectedIds,
     fireControl,
     posture,
@@ -157,7 +142,6 @@ export function App() {
     handleClearOrder,
     handlePreviewGround,
     handlePreviewUnit,
-    handleToggleControlBothSides,
     handleSelectSquad,
     handleSelectUnits,
     handleAttackUnit,
@@ -180,31 +164,21 @@ export function App() {
     frame,
     locale,
     clientRef,
-    speed,
     hudHidden,
     controlBothSides,
-    setControlBothSides,
-    sandboxTool,
-    troopSection,
-    placementPreview,
-    placementRotation,
-    setPlacementPoint,
   });
   selectedCountRef.current = selectedIds.length;
   useKeyboardShortcuts({
     controlBothSides,
     selectedSquadId,
-    sandboxTool,
     setHudHidden,
-    setSandboxOpen,
-    setSandboxTool,
     setPendingOrder,
     setPendingTactical,
     setAimPending,
     onRegroup: handleRegroup,
     onToggleHurry: () => handleHurry(!hurry),
   });
-  useTestBridge(clientRef, setSpeed);
+  useTestBridge(clientRef, setSpeed, setControlBothSides);
 
   // The player's last order, shown over his officer.
   const [callout, setCallout] = useState<typeof orderCallout>(null);
@@ -278,8 +252,6 @@ export function App() {
     clientRef.current = null;
     setFrame(null);
     setSelectedUnitIds([]);
-    setSandboxOpen(false);
-    setSandboxTool(null);
     setSpeed(DEFAULT_SPEED);
     setStarted(false);
   };
@@ -321,7 +293,6 @@ export function App() {
     setSelectedUnitIds([]);
     setSelectedSquadId(1);
     setControlBothSides(false);
-    setSandboxTool(null);
     setPendingOrder(null);
     setPendingTactical(null);
     setAimPending(false);
@@ -357,15 +328,6 @@ export function App() {
   const handleBackToEditor = (): void => {
     window.location.href = './editor.html';
   };
-  const handleResetSandbox = (): void => {
-    clientRef.current?.reset();
-    setFrame(null);
-    selectionInitialized.current = false;
-    setSelectedUnitIds([]);
-    setSpeed(DEFAULT_SPEED);
-    clientRef.current?.setSpeed(DEFAULT_SPEED);
-    setSandboxTool(null);
-  };
 
   const handleSetSpeed = (next: 0 | 1 | 2 | 4 | 8): void => {
     setSpeed(next);
@@ -376,69 +338,9 @@ export function App() {
     handleSetSpeed(speed === 0 ? resumeSpeed.current : 0);
   };
 
-  const handleStep = (): void => {
-    handleSetSpeed(0);
-    clientRef.current?.step(1);
-  };
-
-  const handleAdvance = (ticks: number): void => {
-    handleSetSpeed(0);
-    clientRef.current?.step(ticks);
-  };
-
   const handleCameraBand = (next: CameraBand): void => {
     cameraNonce.current += 1;
     setCameraRequest({ band: next, nonce: cameraNonce.current });
-  };
-
-  const handleToggleSandbox = (): void => {
-    if (sandboxOpen) {
-      setSandboxTool(null);
-    }
-    setSandboxOpen(!sandboxOpen);
-  };
-
-  const handleIncapacitate = (unitId: number): void => {
-    clientRef.current?.sendCommand({ type: 'incapacitate', targetId: unitId });
-    if (speed === 0) {
-      clientRef.current?.step(1);
-    }
-  };
-
-  const handleRescueCasualty = (unitId: number): void => {
-    if (!frame) {
-      return;
-    }
-    const selectedFaction = selectedUnits[0]?.faction ?? 'column';
-    const rescuerIds = frame.units
-      .filter(
-        (unit) =>
-          unit.id !== unitId &&
-          unit.faction === selectedFaction &&
-          unit.alive &&
-          !unit.routed &&
-          !unit.incapacitated &&
-          !unit.dummy,
-      )
-      .map((unit) => unit.id);
-    if (rescuerIds.length > 0) {
-      clientRef.current?.sendCommand({
-        type: 'order',
-        order: 'rescue',
-        unitIds: rescuerIds,
-        targetId: unitId,
-      });
-      if (speed === 0) {
-        clientRef.current?.step(1);
-      }
-    }
-  };
-
-  const handleReinforce = (faction: 'column' | 'legalist'): void => {
-    clientRef.current?.sendCommand({ type: 'reinforce', faction });
-    if (speed === 0) {
-      clientRef.current?.step(1);
-    }
   };
 
   const client = clientRef.current;
@@ -477,7 +379,7 @@ export function App() {
         slotMarkers={deploymentSlots?.markers ?? slotView?.markers}
         slotBadges={deploymentSlots?.pieces.map((piece) => ({ x: piece.at.x, y: piece.at.y, text: `${piece.free}/${piece.total}` }))}
         aimPending={aimPending}
-        pendingAction={pendingOrder !== null || pendingTactical !== null || aimPending || sandboxTool !== null}
+        pendingAction={pendingOrder !== null || pendingTactical !== null || aimPending}
         lineMoveArmed={pendingOrder === 'move'}
         locale={locale}
         groundOrderArmed={
@@ -486,7 +388,6 @@ export function App() {
             ['advance', 'defend', 'ambush', 'disperse', 'recon', 'reserve', 'enter', 'exit', 'assault'].includes(pendingTactical))
         }
         orderCallout={callout}
-        placementPreview={placementPreview}
         rangeRing={exitRing}
         targetUnitIds={targetUnitIds}
         selectedUnitIds={selectedUnitIds}
@@ -532,7 +433,6 @@ export function App() {
         posture={posture}
         fireControl={fireControl}
         battleMode
-        sandboxOpen={sandboxOpen}
         onCancelOrder={handleClearOrder}
         onLocaleChange={handleLocaleChange}
         onActivateOrder={handleActivateOrder}
@@ -549,7 +449,6 @@ export function App() {
         onTogglePost={() => setPostStrong((value) => !value)}
         routesVisible={routesVisible}
         onToggleRoutes={() => setRoutesVisible((value) => !value)}
-        onToggleSandbox={handleToggleSandbox}
         onStartBattle={handleStartDeployedBattle}
         onResetDeployment={handleResetDeployment}
         deploymentRefusal={deploymentRefusal}
@@ -574,37 +473,9 @@ export function App() {
         needsTarget={needsTarget}
         hoverUnitId={hoverUnitId}
         cursor={cursor}
-        placementPreview={placementPreview}
         hoverHint={hoverHint}
         slotView={slotView}
       />
-      {!hudHidden && sandboxOpen ? (
-        <SandboxPanel
-          locale={locale}
-          frame={frame}
-          selectedSquadId={selectedSquadId}
-          tool={sandboxTool}
-          controlBothSides={controlBothSides}
-          onAdvance={handleAdvance}
-          onReinforce={handleReinforce}
-          onToggleControlBothSides={handleToggleControlBothSides}
-          onToggleFog={() => clientRef.current?.sendCommand({ type: 'fog', enabled: frame?.fog !== true })}
-          onStartBattle3v3={handleStartBattle3v3}
-          battleMap={battleMapId}
-          onBattleMapChange={changeBattleMap}
-          onClose={() => {
-            setSandboxOpen(false);
-            setSandboxTool(null);
-          }}
-          onIncapacitate={handleIncapacitate}
-          onRescueCasualty={handleRescueCasualty}
-          onReset={handleResetSandbox}
-          onStep={handleStep}
-          onTool={setSandboxTool}
-          troopSection={troopSection}
-          onTroopSection={setTroopSection}
-        />
-      ) : null}
       {frame && frame.outcome !== 'playing' ? (
         <BattleEndPanel
           locale={locale}

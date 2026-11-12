@@ -31,9 +31,11 @@ start, the rules and what each change decided:
 | --- | --- | --- | --- |
 | 1 | `faction-armies` | 18/18: armies, 19 section types, successor table, map version 6, names and the Forças compendium section, values in the simulation, setup screen, editor presets and HUD done; `pnpm verify` green but the known `desk.spec` gap; hand check done; archived | three armies (the Column, the legalist regulars, the patriotic battalions), period names for armies and sections, section types per army; starts with research into `docs/history/FORCES.md`, which also answers whether the police fought for the government |
 | 2 | `soldier-animation-and-textures` | 16 | wound, carry and death clips, the crouch-walk and aim redone, blends, drawn uniform textures per army with variants |
-| 3 | `troop-thumbnails-and-panel` | 15 | a rendered thumbnail for every section type (roster, cards, panel), roster type cards, the troop panel redrawn as rows, gauges and alerts |
+| 3 | `troop-thumbnails-and-panel` | 15 | a rendered thumbnail for every section type (roster, cards, panel), roster type cards, the troop panel redrawn with one figure per soldier (helmet = cover, body = health, cartridge clip = ammunition), gauges and alerts |
+| 3b | `redo-battle-hud` | 17 | the battle HUD redone from the owner's reference (`referencias para hud/`): wood and leather frames drawn in Aseprite, docked panels that only collapse, the status row moved, contour and cover layers in the strategic view (off by default) |
 | 4 | `biome-trees-and-plants` | 18 | the whole Refloreste tree suite by biome adapted to Prestes, bush families, more cacti and caatinga plants |
 | 5 | `revise-buildings-and-stone` | 19 | every building modelled with openings that agree with the battle, new buildings, variants, rock kinds and built stone |
+| any time | `remove-sandbox-panel` | 6/7 applied 2026-11-11 | the sandbox panel, F1 and its button removed; tests use the development test bridge; waits for the `battle-hud` baseline re-record once the compass and area-fire work is committed |
 | any time | `ambient-sound-and-voices` | 19 | the listening point, ambient beds, river/stream/pond, footsteps by ground, the commander's orders and the sections' answers (always clear), call-outs; the owner records the speech from a generated script |
 
 Why this order: uniforms and thumbnails need the armies; thumbnails need
@@ -50,6 +52,8 @@ Decisions of 2026-11-11 (the owner):
   code it meant to delete (`training-ground.ts`, `training-layer.ts`, the
   `training_phase` and `despawn_role` commands) is still in the tree.
 - `machine-gun-fire-feedback` passed the hand check and is archived.
+- The battle HUD is redone from the owner's reference (`redo-battle-hud`, approved): panels docked, collapse only (no drag or resize); the soldier figure goes into `troop-thumbnails-and-panel`; the art is drawn in Aseprite and may start from the reference image; the bottom strip is decoration only.
+- The sandbox is retired ("hoje temos editor de mapa"): `remove-sandbox-panel`, applied the same day.
 - The armies' catalog (`faction-armies` 1.3): the three army names stand
   (Coluna Prestes, Forças legalistas, Batalhões patrióticos); Fogão and
   Potreada for the column; only the Brigada Militar among the state forces;

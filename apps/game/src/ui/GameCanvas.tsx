@@ -3,7 +3,6 @@ import { type CommanderBalloon,
   SceneView,
   type CameraBand,
   type OrderCallout,
-  type PlacementPreview,
   type TrainingMarker,
   type SlotBadge,
 } from '@prestes/view3d';
@@ -42,7 +41,6 @@ export interface GameCanvasProps {
   strategicField?: boolean;
   trainingMarkers?: readonly TrainingMarker[];
   orderCallout?: OrderCallout | null;
-  placementPreview?: PlacementPreview | null;
   /** garrison-and-assault 4.1: Sair's 30 m ring, while the order waits for its point. */
   rangeRing?: { x: number; y: number; radius: number } | null;
   /** add-deployment-phase 3.1: draw both deployment areas (the phase is on). */
@@ -102,7 +100,6 @@ export function GameCanvas({
   strategicField = false,
   trainingMarkers = [],
   orderCallout = null,
-  placementPreview = null,
   rangeRing = null,
   deploymentAreas = false,
   targetUnitIds = [],
@@ -214,10 +211,6 @@ export function GameCanvas({
       onSceneReady?.(null);
     };
   }, [client, trainingField, strategicField]);
-
-  useEffect(() => {
-    sceneRef.current?.setPlacementPreview(placementPreview);
-  }, [placementPreview]);
 
   useEffect(() => {
     sceneRef.current?.setRangeRing(rangeRing);

@@ -7,6 +7,7 @@ declare global {
       command: (command: Command) => void;
       step: (ticks: number) => void;
       frame: () => Frame | null;
+      bothSides: (on: boolean) => void;
     };
   }
 }
@@ -59,8 +60,8 @@ test('controls both sides with reinforcements and exercises combat commands', as
   // the fight run on between commands.
   await page.evaluate(() => window.__prestes?.step(0));
 
-  await page.keyboard.press('F1');
-  await page.getByTestId('sandbox-both-sides').click();
+  // remove-sandbox-panel D1: both-sides control comes from the development test bridge.
+  await page.evaluate(() => window.__prestes?.bothSides(true));
   await page.waitForFunction(() => Boolean(window.__prestes?.frame()));
   await page.evaluate(() => window.__prestes?.step(0));
   await page.evaluate(() => {
@@ -71,10 +72,13 @@ test('controls both sides with reinforcements and exercises combat commands', as
   });
 
   for (let index = 0; index < 2; index += 1) {
-    await page.getByTestId('sandbox-reinforce-column').click();
-    await page.getByTestId('sandbox-reinforce-legalist').click();
+    await page.evaluate(() => {
+      window.__prestes?.command({ type: 'reinforce', faction: 'column' });
+      window.__prestes?.step(1);
+      window.__prestes?.command({ type: 'reinforce', faction: 'legalist' });
+      window.__prestes?.step(1);
+    });
   }
-  await page.getByTestId('sandbox-close').click();
   await page.getByTestId('squad-3').click();
   await expect(page.getByTestId('squad-3')).toHaveAttribute('aria-pressed', 'true');
   // Reinforcements join the existing sections (11 + 2 in the 3rd).

@@ -1,8 +1,6 @@
 export {
   SceneView,
   type OrderCallout,
-  type PlacementKind,
-  type PlacementPreview,
   type SlotBadge,
 } from './scene-view';
 export type { CommanderBalloon } from './scene-view';

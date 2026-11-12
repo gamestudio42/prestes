@@ -82,7 +82,9 @@ with a task 0.1 of prerequisites.
 | --- | --- | --- | --- | --- |
 | 1 | `faction-armies` | 4/18 | planning done, code not started | the go-ahead; the hand check (5.2) |
 | 2 | `soldier-animation-and-textures` | 0/16 | planned | review of the clip and uniform sheets (4.1), the hand check (4.3) |
-| 3 | `troop-thumbnails-and-panel` | 0/15 | planned | the hand check (4.3) |
+| 3 | `troop-thumbnails-and-panel` | 0/15 | planned (soldier figures instead of rows, approved 2026-11-11) | the hand check (4.3) |
+| 3b | `redo-battle-hud` | 1/17 | approved 2026-11-11; after 3 | the hand check (5.3) |
+| any time | `remove-sandbox-panel` | 6/7 | applied 2026-11-11 | nothing; the `battle-hud` baseline re-record (2.5) waits for the compass and area-fire work to be committed |
 | 4 | `biome-trees-and-plants` | 0/18 | planned | the species and caatinga list (1.1), the review sheet, the hand check (5.3) |
 | 5 | `revise-buildings-and-stone` | 0/19 | planned | the lists of new buildings and rock kinds (1.1), the marked sheet (1.2), the hand check (5.4) |
 | any time | `ambient-sound-and-voices` | 0/19 | planned | the sound source list (3.1), the review of the Portuguese lines (5.1), **the recordings** (5.6), the hand check (6.3) |
@@ -126,8 +128,19 @@ wounded; the same for every army.
 **troop-thumbnails-and-panel.** The owner chose thumbnails **rendered from
 the 3D model**, built ahead by a tool and committed, not rendered at run
 time and not hand-drawn (a hand-drawn portrait can replace a file later).
-The troop panel becomes one row per soldier with words, labelled bars,
-named gauges and alerts; bands come from shared data.
+The troop panel shows one figure per soldier (the owner's design,
+2026-11-11: helmet colour = cover in four classes, body colour = health, a
+five-round cartridge clip under him = ammunition, marks for wounded, pinned
+and routed), named gauges and alerts; bands come from shared data.
+
+**redo-battle-hud.** From the owner's reference
+`referencias para hud/Interface de comando da Coluna Prestes.png` (side by
+side with today's HUD in `referencias para hud/comparacao/`). Docked panels
+that only collapse (Orders and Troop summary down, Troops up), no drag or
+resize; art drawn in Aseprite, which may start from the reference (the
+owner allowed it); ornaments are decoration only; contour and cover layers
+in the strategic view, off at every battle start; it frames the troop panel
+of `troop-thumbnails-and-panel` and does not redraw it.
 
 **biome-trees-and-plants.** The whole Refloreste suite (Atlantic forest,
 cerrado, Amazon: nineteen species, bushes, stumps, dead and flowering

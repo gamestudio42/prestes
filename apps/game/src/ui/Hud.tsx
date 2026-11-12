@@ -66,7 +66,6 @@ export interface HudProps {
   posture: Posture;
   fireControl: FireControl;
   battleMode: boolean;
-  sandboxOpen: boolean;
   onCancelOrder: () => void;
   onLocaleChange: (locale: Locale) => void;
 
@@ -83,7 +82,6 @@ export interface HudProps {
   onTogglePause: () => void;
   onTogglePost: () => void;
   onToggleRoutes: () => void;
-  onToggleSandbox: () => void;
   /** refine-battle-controls: centre the view on a section, and leave the battle. */
   onCenterSquad: (squadId: number) => void;
   onLeave: () => void;
@@ -115,7 +113,6 @@ export function Hud({
   posture,
   fireControl,
   battleMode,
-  sandboxOpen,
   onCancelOrder,
   onLocaleChange,
   onActivateOrder,
@@ -131,7 +128,6 @@ export function Hud({
   onTogglePause,
   onTogglePost,
   onToggleRoutes,
-  onToggleSandbox,
   onCenterSquad,
   onLeave,
   selectedUnitIds = [],
@@ -203,7 +199,6 @@ export function Hud({
         postStrong={postStrong}
         routesVisible={routesVisible}
         speed={speed}
-        sandboxOpen={sandboxOpen}
         deploying={deploying}
         objectives={frame?.objectives ?? []}
         {...(frame?.clock ? { clock: frame.clock } : {})}
@@ -213,7 +208,6 @@ export function Hud({
         onTogglePause={onTogglePause}
         onTogglePost={onTogglePost}
         onToggleRoutes={onToggleRoutes}
-        onToggleSandbox={onToggleSandbox}
         onLeave={() => setLeaveOpen(true)}
       />
 

@@ -125,13 +125,3 @@ test('orders window as a column matches the baseline', async ({ page }) => {
   await expect(page.getByTestId('window-orders')).toHaveAttribute('data-orientation', 'vertical');
   await expect(page).toHaveScreenshot('orders-column.png', { ...SCREENSHOT, mask: liveNumbers(page) });
 });
-
-test('sandbox panel matches the baseline', async ({ page }) => {
-  await openPausedHud(page);
-  await page.keyboard.press('F1');
-  await expect(page.getByTestId('sandbox-panel')).toBeVisible();
-  await expect(page).toHaveScreenshot('sandbox-panel.png', {
-    ...SCREENSHOT,
-    mask: [...liveNumbers(page), page.getByTestId('sandbox-panel').locator('dl, .sandbox-inspector')],
-  });
-});
