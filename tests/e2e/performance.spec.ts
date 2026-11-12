@@ -195,3 +195,73 @@ test('a dense wood of biome trees stays within the frame budget at tactical and 
     expect(result.mean).toBeLessThan(BUDGET_MS);
   }
 });
+
+// biome-trees-and-plants 5.2 (spec "Trees stay inside the frame budget"): a large
+// map with a third of its ground under the Atlantic forest mix, both camera bands.
+test('a large map a third under the Atlantic forest mix stays within the frame budget', async ({ page }) => {
+  test.setTimeout(420_000);
+  await page.goto('/editor.html');
+  const gpu = await renderer(page);
+  test.skip(/swiftshader|llvmpipe|software|none/i.test(gpu), `no GPU for the probe (${gpu})`);
+  await expect(page.getByTestId('editor-viewport')).toHaveAttribute('data-ready', 'true');
+  const editor = (fn: string, ...args: number[]) =>
+    page.evaluate(([name, values]) => {
+      const bridge = (window as unknown as EditorBridge).__prestesEditor! as unknown as Record<string, (...a: number[]) => unknown>;
+      return bridge[name as string]!(...(values as number[]));
+    }, [fn, args] as const);
+  await page.getByTestId('editor-new').click();
+  await page.getByTestId('map-id').fill('mata-grande');
+  await page.getByTestId('map-size').selectOption('large');
+  await page.getByTestId('map-name-en').fill('Large wood');
+  await page.getByTestId('map-name-pt').fill('Mata grande');
+  await page.getByTestId('map-submit').click();
+  await page.waitForTimeout(1000);
+  await editor('topDown');
+  // The whole map in view (the editor's camera is turned 45 degrees).
+  await editor('look', 0, -100, 1000);
+  // The camera eases to its frame: wait until a ground point stops moving.
+  let last = '';
+  await expect
+    .poll(async () => {
+      const now = JSON.stringify(await editor('toScreen', 0, 0));
+      const still = now === last;
+      last = now;
+      return still;
+    }, { intervals: [500] })
+    .toBe(true);
+  await page.locator('[data-tool="trees"]').click();
+  await page.getByTestId('tree-mode-scatter').click();
+  await page.getByTestId('tree-biome').selectOption('atlantic-edge');
+  await page.getByTestId('tree-density').selectOption('dense');
+  // The brush keys go to the viewport, not the density list.
+  await page.getByTestId('tree-mix-hint').click();
+  for (let press = 0; press < 40; press += 1) await page.keyboard.press(']');
+  // Rows 54 m apart under a 64 m brush: the northern third, 640 x 226 m.
+  for (const y of [-300, -246, -192, -138]) {
+    const a = (await editor('toScreen', -300, y)) as { x: number; y: number };
+    const b = (await editor('toScreen', 300, y)) as { x: number; y: number };
+    const box = await page.getByTestId('editor-viewport').boundingBox();
+    for (const point of [a, b]) {
+      expect(point.x).toBeGreaterThan(box!.x);
+      expect(point.x).toBeLessThan(box!.x + box!.width);
+      expect(point.y).toBeGreaterThan(box!.y);
+      expect(point.y).toBeLessThan(box!.y + box!.height);
+    }
+    await page.mouse.move(a.x, a.y);
+    await page.mouse.down();
+    await page.mouse.move(b.x, b.y, { steps: 40 });
+    await page.mouse.up();
+  }
+  const trees = await page.evaluate(() => (window as unknown as EditorBridge).__prestesEditor!.state().objects.length);
+  expect(trees).toBeGreaterThan(5000);
+  for (const [band, x, y, span] of [['tactical', 0, -220, 60], ['strategic', 0, -100, 400]] as const) {
+    await editor('look', x, y, span);
+    await page.waitForTimeout(3000);
+    const result = await sampleFrames(page);
+    test.info().annotations.push({
+      type: 'frame-time',
+      description: `large map, ${trees} trees, ${band}, ${gpu}: mean ${result.mean.toFixed(2)} ms, p95 ${result.p95.toFixed(2)} ms, ${result.frames} frames`,
+    });
+    expect(result.mean).toBeLessThan(BUDGET_MS);
+  }
+});

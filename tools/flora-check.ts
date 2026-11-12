@@ -43,6 +43,22 @@ export function floraProblems(
   return problems;
 }
 
+/**
+ * biome-trees-and-plants 5.1: every species and every tree model file is in
+ * the asset register (`docs/assets.md`), with its source and licence row.
+ */
+export function floraRegisterProblems(catalog: readonly CatalogObject[], files: readonly string[], register: string): string[] {
+  const problems: string[] = [];
+  const species = new Set(catalog.filter((entry) => entry.biome && entry.species).map((entry) => entry.species!));
+  for (const name of [...species].sort()) if (!register.includes(`\`${name}\``)) problems.push(`species ${name} is not in docs/assets.md`);
+  // The register names the files one by one or as `trees{,-cerrado,...}.glb`.
+  const grouped = [...register.matchAll(/trees\{([^}]*)\}\.glb/g)].flatMap((match) => match[1]!.split(','));
+  for (const file of files) {
+    if (!register.includes(`${file}.glb`) && !grouped.includes(file.replace(/^trees/, ''))) problems.push(`${file}.glb is not in docs/assets.md`);
+  }
+  return problems;
+}
+
 export const FLORA_FILES = ['trees', 'trees-mata-atlantica', 'trees-cerrado', 'trees-amazonia', 'trees-caatinga'];
 
 /** Reads the tree model files the game ships. */

@@ -1,6 +1,6 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
-import { floraProblems, readModelHeights } from './flora-check';
+import { FLORA_FILES, floraProblems, floraRegisterProblems, readModelHeights } from './flora-check';
 import { SECTION_THUMBS_DIR, sectionThumbProblems } from './section-thumbs-hash';
 import {
   CAMPAIGN_CHAPTERS,
@@ -162,6 +162,8 @@ errors.push(...validateNameRegister(parseNameRegister(readFileSync(resolve(root,
 errors.push(
   ...floraProblems(CATALOG_OBJECTS, await readModelHeights(), (key) => LOCALES.filter((locale) => !(key in messages[locale]))),
 );
+// 5.1: every species and tree model file in the asset register.
+errors.push(...floraRegisterProblems(CATALOG_OBJECTS, FLORA_FILES, readFileSync(resolve(root, 'docs/assets.md'), 'utf8')));
 
 if (errors.length > 0) {
   for (const error of errors) {

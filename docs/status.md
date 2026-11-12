@@ -286,9 +286,9 @@ trees, a bush and a stump per biome, each tree adult, flowering and dead).
   coroa-de-frade 0.4, palmatória 2, macambira 0.8 (thorn patch); juazeiro 5,
   umbuzeiro 4.5, catingueira 4.5, jurema-preta 3.5.
 - Soldiers under trees: crowns over the player's own men turn see-through
-  and a hidden man shows his outline (new requirement, task 4.1b). The aroeira (aroeira-do-sertão)
-  is listed in the caatinga too, sharing its model. Quipá and umburana left
-  out. The caatinga bush family is the marmeleiro.
+  and a hidden man shows his outline (new requirement, task 4.1b). The aroeira
+  stays in the cerrado only (planned for the caatinga too, left out of its
+  mix at 4.2). Quipá and umburana left out. The caatinga bush family is the marmeleiro.
 - Forms: every species' dead form (cheap, 8-259 triangles at the source)
   and its stump per biome; flowering forms only where the flowers read at
   battle scale: ipê-amarelo, mulungu, manacá-da-serra and pau-brasil.
