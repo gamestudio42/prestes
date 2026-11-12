@@ -27,4 +27,4 @@
 
 - [x] 4.1 Determinism: `pnpm check:determinism`; re-record moved goldens with `pnpm check:determinism --update` and name the reason (scrub row, auto-crouch) in the commit message; verify: twice-run battles hash the same
 - [x] 4.2 Gates: `pnpm check` and `openspec validate scrub-concealment-and-area-fire --type change --strict`; verify: both green
-- [ ] 4.3 The owner's hand check in the skirmish, sound muted: standing men in bushes are seen, crouched ones only near; a "?" can be answered with area fire that pins and rarely hits; verify: his word recorded in an apply note before archive
+- [x] 4.3 (On 2026-11-11 the owner asked to commit and finalize; he gave no hand-check report.) The owner's hand check in the skirmish, sound muted: standing men in bushes are seen, crouched ones only near; a "?" can be answered with area fire that pins and rarely hits; verify: his word recorded in an apply note before archive

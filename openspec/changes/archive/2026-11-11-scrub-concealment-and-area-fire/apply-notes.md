@@ -51,3 +51,5 @@
 - The timing test `preview-cost` failed once under load during `pnpm check`
   and passed when run alone (the route-around-wire session is editing the
   preview in the same checkout).
+- 4.3: the owner said "pode comitar e finalizar" (2026-11-11) without
+  reporting a hand check. Committed as a5603eb and archived.
