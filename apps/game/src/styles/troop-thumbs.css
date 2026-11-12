@@ -6,7 +6,8 @@
   border: 1px solid var(--book-edge);
 }
 
-.roster-type {
+/* Scoped one level up: this file can load before skirmish-setup.css. */
+.roster-types .roster-type {
   flex-direction: row;
   align-items: flex-start;
   gap: 8px;
@@ -25,7 +26,7 @@
   min-width: 0;
 }
 
-.roster-row {
+.roster-rows .roster-row {
   grid-template-columns: 24px minmax(0, 1fr) auto repeat(3, 28px);
 }
 

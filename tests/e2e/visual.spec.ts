@@ -93,6 +93,8 @@ test('3v3 HUD matches the baseline', async ({ page }) => {
       page.getByTestId('weapon-card').locator('.status-row'),
       page.getByTestId('weapon-card').locator('.status-details'),
       page.getByTestId('squad-status').locator('.mini-bar'),
+      // troop-thumbnails-and-panel 4.1: the gauges move with the ticks run before the pause.
+      page.getByTestId('troop-gauges'),
     ],
   });
 });
@@ -116,6 +118,7 @@ const liveNumbers = (page: Page) => [
   page.getByTestId('weapon-card').locator('.status-row'),
   page.getByTestId('weapon-card').locator('.status-details'),
   page.getByTestId('squad-status').locator('.mini-bar'),
+  page.getByTestId('troop-gauges'),
 ];
 
 test('orders window as a column matches the baseline', async ({ page }) => {
@@ -123,4 +126,18 @@ test('orders window as a column matches the baseline', async ({ page }) => {
   await openPausedHud(page);
   await expect(page.getByTestId('window-orders')).toHaveAttribute('data-minimized', 'false');
   await expect(page).toHaveScreenshot('orders-column.png', { ...SCREENSHOT, mask: liveNumbers(page) });
+});
+
+// troop-thumbnails-and-panel 4.1: the roster builder's type cards with their pictures.
+test('skirmish roster builder matches the baseline', async ({ page }) => {
+  await page.addInitScript(() => window.localStorage.removeItem('prestes.roster.v1'));
+  await page.goto('/');
+  await page.getByTestId('open-skirmish').click();
+  await expect(page.getByTestId('skirmish-setup')).toBeVisible();
+  await expect
+    .poll(() => page.getByTestId('roster-thumb-metralhadora').evaluate((node: HTMLImageElement) => node.naturalWidth))
+    .toBeGreaterThan(0);
+  await page.mouse.move(0, 0);
+  await stableFonts(page);
+  await expect(page.getByTestId('roster-builder')).toHaveScreenshot('roster-builder.png', SCREENSHOT);
 });
