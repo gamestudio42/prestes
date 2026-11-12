@@ -897,3 +897,11 @@
 .app.game .battle-compass .compass-tick {
   fill: #efdcb4;
 }
+
+/* add-map-editor's "Back to the editor" during a playtest: below the top bar
+   and the order prompt, which now span the screen's top (it sat under the
+   action rail and took no clicks). */
+.app.game .playtest-back {
+  top: calc(132px * var(--hud-k));
+  z-index: 17;
+}
