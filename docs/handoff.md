@@ -14,8 +14,10 @@ task and delete the file once the last of these changes is archived.
   `openspec/changes/archive/2026-11-12-soldier-animation-and-textures/`, spec
   `openspec/specs/soldier-art`). The owner approved the soldiers in a
   skirmish ("esta otimo"). Results and sizes in `docs/status.md`.
-- **NEXT STEP: `troop-thumbnails-and-panel`**, then `redo-battle-hud` (both
-  approved by the owner, in that order; see the top of each `tasks.md`).
+- **IN PROGRESS: `troop-thumbnails-and-panel`** (started 2026-11-12 with both
+  prerequisites archived; section 1 done: `pnpm thumbs`). `redo-battle-hud`
+  is being applied in parallel by another session and already draws the
+  soldier figures; section 3 of this change builds on its `SoldierFigure`.
 - Known e2e failures not from these changes: `desk.spec` label gap,
   `area-fire.spec` (fails on its own commit in a clean tree; its session was
   told), the `battle-hud` baseline (waits for the HUD session).

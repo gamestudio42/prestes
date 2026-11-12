@@ -1,5 +1,6 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { SECTION_THUMBS_DIR, sectionThumbProblems } from './section-thumbs-hash';
 import {
   CAMPAIGN_CHAPTERS,
   COMPENDIUM,
@@ -147,6 +148,10 @@ for (const army of Object.values(ARMIES)) {
     }
   }
 }
+// troop-thumbnails-and-panel 1.3: every section type has its thumbnail,
+// drawn from today's men, model and uniforms, and the set is registered.
+errors.push(...sectionThumbProblems(root));
+if (!assetsRegister.includes(SECTION_THUMBS_DIR)) errors.push(`section thumbnails: ${SECTION_THUMBS_DIR} not in docs/assets.md`);
 const nameIds = [...Object.keys(ARMIES).map((id) => `army:${id}`), ...Object.keys(SECTION_TYPES).map((id) => `section:${id}`)];
 errors.push(...validateNameRegister(parseNameRegister(readFileSync(resolve(root, 'docs/history/FORCES.md'), 'utf8')), nameIds, SOURCE_KEYS));
 

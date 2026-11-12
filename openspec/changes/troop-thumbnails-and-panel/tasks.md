@@ -2,13 +2,13 @@ Approved by the owner on 2026-11-11 ("Aprovo as três", with redo-battle-hud and
 
 ## 0. Before starting
 
-- [ ] 0.1 Read `docs/handoff.md`, then this change's proposal, design and specs. Prerequisites: `faction-armies` section 2 for the full type list and `soldier-animation-and-textures` section 3 for the final uniforms; the tool (1.1, 1.2) and the panel (section 3) can be built before them and the thumbnails re-run after; verify: `docs/handoff.md` records which prerequisites were in place when the work started
+- [x] 0.1 (2026-11-12: `faction-armies` and `soldier-animation-and-textures` both archived, so the thumbnails are the final ones. `redo-battle-hud` went first at the owner's request and already draws `SoldierFigure` (helmet by cover, body by health, clip, bandage/pinned/routed marks) in `TroopSummary`; section 3 builds on it, leader mark and gauges still here) Read `docs/handoff.md`, then this change's proposal, design and specs. Prerequisites: `faction-armies` section 2 for the full type list and `soldier-animation-and-textures` section 3 for the final uniforms; the tool (1.1, 1.2) and the panel (section 3) can be built before them and the thumbnails re-run after; verify: `docs/handoff.md` records which prerequisites were in place when the work started
 
 ## 1. Thumbnails
 
-- [ ] 1.1 Section render in `packages/view3d/src/thumbnails.ts`: a type's men in the army's uniform with their weapons, fixed camera and light; verify with a view test that a rifle section and a machine-gun section produce different pictures and that the gun's model is in the scene
-- [ ] 1.2 `tools/section-thumbs.ts` and `pnpm thumbs`: render every type headless and write `apps/game/public/assets/sections/<type>.png` with its hash file; verify: two runs give identical files, and every catalog type has an image
-- [ ] 1.3 Content check: a missing image or a stale hash fails and names the type; `docs/assets.md` lists the set; verify with a unit test of both failures and `pnpm check:content`
+- [x] 1.1 (`sectionComposition`, `buildSectionScene`, `renderSectionThumbnails`; `packages/view3d/test/section-thumbnails.test.ts`. Pixels are checked by the tool's run, the view test compares the posed scenes) Section render in `packages/view3d/src/thumbnails.ts`: a type's men in the army's uniform with their weapons, fixed camera and light; verify with a view test that a rifle section and a machine-gun section produce different pictures and that the gun's model is in the scene
+- [x] 1.2 (96 x 96, 19 types, 128 KB; two runs byte-identical) `tools/section-thumbs.ts` and `pnpm thumbs`: render every type headless and write `apps/game/public/assets/sections/<type>.png` with its hash file; verify: two runs give identical files, and every catalog type has an image
+- [x] 1.3 (`tools/section-thumbs-hash.ts`, hash of the men, `soldier.glb` and the army's uniform textures; `tests/tools/section-thumbs.test.ts`; assets row added) Content check: a missing image or a stale hash fails and names the type; `docs/assets.md` lists the set; verify with a unit test of both failures and `pnpm check:content`
 
 ## 2. Roster builder
 
