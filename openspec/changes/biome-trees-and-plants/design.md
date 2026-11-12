@@ -66,6 +66,13 @@ entries but no builder yet (found at task 1.1), so every caatinga builder
 is new. The species list is fixed at task 1.1 and recorded in
 `docs/status.md`.
 
+**D5b. Forms in the editor's menu (owner, 2026-11-12).** The adult,
+flowering and dead forms stay separate catalog entries (maps mix them
+freely), but the editor's object menu shows one tile per species with an
+Adult / Flowering / Dead switch, so the list does not triple. Dead forms
+for every species; flowering forms only for the ipê-amarelo, mulungu,
+manacá-da-serra and pau-brasil.
+
 **D6. Bushes are a family, not a species.** Per biome: three sizes, two
 shapes each, generated from the biome bush with different clump counts and
 flattening. Concealment by height reuses the stance rule the concealment
