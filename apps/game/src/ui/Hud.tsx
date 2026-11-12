@@ -22,6 +22,16 @@ import { WeaponCard } from './hud/WeaponCard';
 import { hasSuspectedContact } from '../hooks/suspectedContact';
 import { loadDocks, saveDocks, toggleDock, type DockId, type DockLayout } from './dockLayout';
 import bottomStrip from '../assets/hud/bottom-strip.png';
+import drapeOrders from '../assets/hud/drape-orders.png';
+import flagLeft from '../assets/hud/flag-left.png';
+import postLeft from '../assets/hud/post-left.png';
+import tuftLeft from '../assets/hud/tuft-left.png';
+import groundLeft from '../assets/hud/ground-left.png';
+
+/** redo-battle-hud: decoration cut from the owner's reference; takes no clicks. */
+const ornament = (src: string, className: string) => (
+  <img className={`hud-ornament ${className}`} src={src} alt="" aria-hidden="true" draggable={false} />
+);
 
 const layoutStorage = (): Storage | null => {
   try {
@@ -281,7 +291,16 @@ export function Hud({
         aimPending={aimPending}
         onCancelOrder={onCancelOrder}
       />
+      <div className="hud-ornaments hud-ornaments-back" aria-hidden="true">
+        {ornament(flagLeft, 'hud-flag-left')}
+        {ornament(postLeft, 'hud-post-left')}
+        {docks.orders ? null : ornament(drapeOrders, 'hud-drape-orders')}
+        {docks.summary ? null : ornament(groundLeft, 'hud-ground-left')}
+      </div>
       <img className="hud-bottom-strip" src={bottomStrip} alt="" aria-hidden="true" draggable={false} />
+      <div className="hud-ornaments hud-ornaments-front" aria-hidden="true">
+        {ornament(tuftLeft, 'hud-tuft-left')}
+      </div>
       {leaveOpen ? (
         <div className="overlay" data-testid="leave-battle-dialog">
           <section className="codex battle-end" role="dialog" aria-labelledby="leave-title">

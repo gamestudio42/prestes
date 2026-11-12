@@ -44,6 +44,8 @@ test('HUD panels are docked, collapse toward their edge and stay collapsed after
   for (const id of ['troops', 'summary', 'orders']) {
     await expect(page.getByTestId(`window-${id}`)).toHaveAttribute('data-minimized', 'false');
   }
+  // The troop selector keeps the reference's height whatever the number of sections.
+  expect(Math.round(troops.height)).toBe(428);
   // No drag handle, no resize grip.
   await expect(page.locator('[data-testid$="-resize"]')).toHaveCount(0);
 
@@ -126,9 +128,9 @@ test('the strategic band offers contour and cover layers, off at the start', asy
   // Back to tactical hides them; strategic again restores them.
   await page.getByTestId('camera-tactical').click();
   await expect(page.getByTestId('map-layers')).toHaveCount(0);
-  expect(await layers()).toEqual({ contours: false, cover: false, coverSlots: 0 });
+  await expect.poll(layers).toEqual({ contours: false, cover: false, coverSlots: 0 });
   await page.getByTestId('camera-strategic').click();
-  expect(await layers()).toEqual(shown);
+  await expect.poll(layers).toEqual(shown);
 });
 
 test('the troop summary draws a soldier figure per man: cover helmet, health body, five-round clip', async ({ page }) => {

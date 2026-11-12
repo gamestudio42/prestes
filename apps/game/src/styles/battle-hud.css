@@ -26,7 +26,9 @@
 .app.game .hud-top,
 .app.game .hud-docks,
 .app.game .order-prompt,
-.app.game .hud-bottom-strip {
+.app.game .hud-bottom-strip,
+.app.game .hud-ornaments,
+.app.game .battle-compass {
   zoom: var(--hud-k);
   font-family: var(--kit-font);
   font-weight: 600;
@@ -419,9 +421,23 @@
 
 /* --- Troops: the tall list, top left ------------------------------------ */
 .app.game [data-window='troops'] {
-  flex: 0 1 auto;
+  /* The owner (2026-11-12): always the same size; more sections scroll. */
+  flex: none;
   width: 314px;
+  height: 428px;
   margin-left: 24px;
+}
+
+.app.game [data-window='troops'].collapsed {
+  height: auto;
+}
+
+.app.game [data-window='troops'] .docked-panel-body {
+  flex: 1;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: #9a6a38 #1a120b;
 }
 
 .app.game [data-window='troops'] .squad-stack {
@@ -794,4 +810,95 @@
   .app.game .hud-top .hud-drape {
     display: none;
   }
+}
+
+/* The owner's second review (2026-11-12): seat the panels in their corners
+   as the reference does: the post and flag beside Troops, the drape beside
+   Orders, grass tufts at the bottom left, a soft shadow under each frame. */
+.app.game .hud-ornaments {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+}
+
+.app.game .hud-ornaments-back {
+  z-index: 14;
+}
+
+.app.game .hud-ornaments-front {
+  z-index: 16;
+}
+
+.app.game .hud-ornament {
+  position: absolute;
+  pointer-events: none;
+}
+
+.app.game .hud-flag-left {
+  left: 0;
+  top: 60px;
+}
+
+.app.game .hud-post-left {
+  left: 0;
+  top: 268px;
+}
+
+.app.game .hud-drape-orders {
+  right: 213px;
+  top: 154px;
+}
+
+.app.game .hud-tuft-left {
+  left: 0;
+  bottom: 0;
+}
+
+.app.game .hud-ground-left {
+  left: 0;
+  bottom: 0;
+}
+
+.app.game .docked-panel,
+.app.game .hud-top .hud-rail,
+.app.game .hud-top .hud-actions {
+  filter: drop-shadow(0 3px 0 rgba(10, 6, 2, 0.45)) drop-shadow(0 0 6px rgba(10, 6, 2, 0.35));
+}
+
+/* The compass in the reference's brass bezel, hung from the action rail. */
+.app.game .battle-compass {
+  top: 52px;
+  right: 0;
+  width: 84px;
+  height: 100px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: url('../assets/hud/compass-bezel.png') no-repeat;
+  box-shadow: none;
+}
+
+.app.game .battle-compass:hover,
+.app.game .battle-compass:focus-visible {
+  border: 0;
+  filter: brightness(1.15);
+}
+
+.app.game .battle-compass svg {
+  width: 56px;
+  height: 56px;
+  margin: 33px 0 0 17px;
+}
+
+.app.game .battle-compass .compass-ring {
+  stroke: none;
+}
+
+.app.game .battle-compass .compass-north {
+  fill: #d0502f;
+}
+
+.app.game .battle-compass .compass-south,
+.app.game .battle-compass .compass-tick {
+  fill: #efdcb4;
 }

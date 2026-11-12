@@ -49,6 +49,30 @@ PIECES = {
     'drape-left': ((574, 0, 724, 58), None, [], True),
     'drape-right': ((962, 0, 1072, 56), None, [], True),
     'bottom-strip': ((900, 784, 1790, 878), None, [], True),
+    # 2026-11-12, the owner's second review ("falta a bussola, os matinhos e
+    # encaixar melhor os menus nos cantos"): the compass bezel, the grass
+    # tufts at the bottom left, the post and flag beside Troops, the drape
+    # beside Orders.
+    'compass-bezel': ((1706, 52, 1790, 152), None, [((1723, 85, 1779, 141), 'disk', 'smooth')], 'grass+field'),
+    # Cut wide enough to run under the Troops frame and overlapping each
+    # other, so the dark leaves behind them leave no hole (the owner,
+    # 2026-11-12: "parece que tem um buraco no hud").
+    'flag-left': ((0, 60, 46, 276), None, [], 'grass'),
+    'post-left': ((0, 268, 46, 535), None, [], 'grass+field'),
+    'drape-orders': ((1540, 160, 1590, 445), None, [], 'grass'),
+    'tuft-left': ((0, 740, 20, 878), None, [], 'field'),
+    # The ground under the summary card: moss, stones and the tufts by the canteen.
+    'ground-left': ((0, 786, 660, 878), None, [], 'field'),
+}
+# Edges where a piece's box cuts through grass that runs on in the
+# reference (the owner, 2026-11-12: "as pontas das folhas ... corta muito
+# seco"): the leaves there are thinned into ragged blade tips instead of a
+# straight cut. Side ('l', 'r', 'b') and depth in pixels.
+FRINGE = {
+    'bottom-strip': [('l', 34)],
+    'summary': [('r', 22)],
+    'ground-left': [('r', 40)],
+    'tuft-left': [('r', 8)],
 }
 # The summary's title plate on its own, for the collapsed card (cut after painting out).
 PLATE = ('summary-plate', (88, 18, 400, 66))
@@ -62,6 +86,18 @@ def greenish(rgb: np.ndarray) -> np.ndarray:
     r, g, b = (rgb[..., i].astype(int) for i in range(3))
     lum = (r + g + b) // 3
     return ((g > r + 6) & (g > b + 10)) | ((lum < 48) & (g >= r - 2))
+
+
+def grass(rgb: np.ndarray) -> np.ndarray:
+    """Lit map grass only: the dark outlines of cloth and wood stop the flood."""
+    r, g, b = (rgb[..., i].astype(int) for i in range(3))
+    return (g > r + 6) & (g > b + 10) & ((r + g + b) // 3 > 50)
+
+
+def field(rgb: np.ndarray) -> np.ndarray:
+    """The dark green field behind the tufts."""
+    r, g, b = (rgb[..., i].astype(int) for i in range(3))
+    return ((r + g + b) // 3 < 58) & (g >= r - 4)
 
 
 def flood_from_border(mask: np.ndarray) -> np.ndarray:
@@ -127,6 +163,10 @@ def rule_mask(rgb: np.ndarray, rule: str) -> np.ndarray:
     lum = luminance(rgb.astype(float))
     if rule == 'all':
         return np.ones(lum.shape, bool)
+    if rule == 'disk':
+        h, w = lum.shape
+        yy, xx = np.mgrid[0:h, 0:w]
+        return ((xx - (w - 1) / 2) / (w / 2)) ** 2 + ((yy - (h - 1) / 2) / (h / 2)) ** 2 <= 1
     if rule == 'light':
         base = np.median(lum)
         return dilate(lum > base + 45, 2)
@@ -188,12 +228,47 @@ def fill_texture(rgb: np.ndarray, mask: np.ndarray) -> None:
         fill_smooth(rgb, todo)
 
 
-def cut(source: np.ndarray, box, paint, clear) -> Image.Image:
+def fringe(rgb: np.ndarray, alpha: np.ndarray, side: str, depth: int, seed: int) -> None:
+    """Thins the leaves along one edge into blade tips: each blade keeps a
+    tapering spike towards the edge, the gaps between them clear."""
+    if side in ('l', 'r'):
+        along, across = rgb.shape[0], rgb.shape[1]
+    else:
+        along, across = rgb.shape[1], rgb.shape[0]
+    rng = np.random.default_rng(seed)
+    reach = np.full(along, depth, float)  # how far in from the edge leaves are cleared
+    pos = 0
+    while pos < along:
+        width = int(rng.integers(3, 8))
+        tip = depth * float(rng.uniform(0.05, 0.75))
+        for k in range(width):
+            t = abs(k - (width - 1) / 2) / max(1, width / 2)  # 0 at the blade's spine
+            reach[min(along - 1, pos + k)] = min(reach[min(along - 1, pos + k)], tip + (depth - tip) * t * t)
+        pos += width + int(rng.integers(0, 4))
+    r, g, b = (rgb[..., i].astype(int) for i in range(3))
+    leafy = (g >= r - 6) & (g > b + 4)  # grass and moss, not leather or brass
+    for i in range(along):
+        cut_to = int(round(reach[i] + rng.uniform(-1, 1)))
+        for j in range(min(across, max(0, cut_to))):
+            y, x = {'l': (i, j), 'r': (i, across - 1 - j), 'b': (across - 1 - j, i)}[side]
+            if leafy[y, x]:
+                alpha[y, x] = 0
+
+
+def cut(source: np.ndarray, box, paint, clear, edges=()) -> Image.Image:
     x0, y0, x1, y1 = box
     rgb = source[y0:y1, x0:x1].copy()
     alpha = np.full(rgb.shape[:2], 255, np.uint8)
     if clear:
-        alpha = np.where(flood_from_border(greenish(rgb)), 0, 255).astype(np.uint8)
+        tests = {True: greenish, 'grass': grass, 'field': field}
+        background = np.zeros(rgb.shape[:2], bool)
+        for name in ([clear] if clear is True else clear.split('+')):
+            background |= tests[name](rgb)
+        alpha = np.where(flood_from_border(background), 0, 255).astype(np.uint8)
+        alpha = drop_specks(alpha)
+    for index, (side, depth) in enumerate(edges):
+        fringe(rgb, alpha, side, depth, seed=x0 * 31 + y0 + index)
+    if edges:
         alpha = drop_specks(alpha)
     for (rx0, ry0, rx1, ry1), rule, fill in paint:
         sub = rgb[ry0 - y0:ry1 - y0, rx0 - x0:rx1 - x0]
@@ -206,6 +281,10 @@ def cut(source: np.ndarray, box, paint, clear) -> Image.Image:
             tile = np.concatenate([np.concatenate([patch, patch[:, ::-1]], 1), np.concatenate([patch[::-1], patch[::-1, ::-1]], 1)], 0)
             reps = (sub.shape[0] // tile.shape[0] + 1, sub.shape[1] // tile.shape[1] + 1, 1)
             sub[...] = np.tile(tile, reps)[: sub.shape[0], : sub.shape[1]]
+        elif rule == 'disk':
+            # The dial painted out to its own dark face: the game's rose turns on it.
+            lum = luminance(sub.astype(float))
+            sub[mask] = np.median(sub[mask & (lum <= np.median(lum[mask]))], axis=0).astype(np.uint8)
         elif rule == 'all':
             # A flat fill in the region's darker tone: live content covers it.
             lum = luminance(sub.astype(float))
@@ -223,7 +302,7 @@ def main() -> None:
     source = np.asarray(Image.open(reference).convert('RGB'))
     pieces = []
     for name, (box, insets, paint, clear) in PIECES.items():
-        piece = cut(source, box, paint, clear)
+        piece = cut(source, box, paint, clear, FRINGE.get(name, ()))
         pieces.append((name, piece, insets))
         if name == 'summary':
             plate_name, crop = PLATE
