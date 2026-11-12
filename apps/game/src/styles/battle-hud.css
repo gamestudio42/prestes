@@ -884,10 +884,15 @@
   filter: brightness(1.15);
 }
 
+/* Pinned on the dial's centre (1751, 113 in the reference): a button
+   centres its content vertically, which pushed the rose low. */
 .app.game .battle-compass svg {
+  position: absolute;
+  top: 33px;
+  left: 17px;
   width: 56px;
   height: 56px;
-  margin: 33px 0 0 17px;
+  margin: 0;
 }
 
 .app.game .battle-compass .compass-ring {
