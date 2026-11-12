@@ -39,8 +39,8 @@ describe('menu desk sprites', () => {
 
   it('sizes a closed box from the sprite, as a ratio of the desk scale', () => {
     expect(deskArtStyle(DESK_ART.campaignClosed)).toEqual({
-      '--art-w': 112,
-      '--art-h': 105,
+      '--art-w': 128,
+      '--art-h': 96,
       '--art-ratio': 1,
       '--art-trim': 0,
     });

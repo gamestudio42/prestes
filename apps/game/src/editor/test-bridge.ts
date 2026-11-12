@@ -55,6 +55,10 @@ export interface EditorBridge {
   topDown: () => void;
   /** Points the camera at a ground point with this span (m). */
   look: (x: number, y: number, span: number) => void;
+  /** The on-screen scale bar: its length (m), its width (CSS px) and the view's metres per CSS px. */
+  scaleBar: () => { length: number; pixels: number; metresPerPixel: number } | null;
+  /** The thumbnail the editor would save now (a PNG data URL). */
+  thumbnail: () => string | null;
   /** The live viewport, for debugging from the console. */
   viewport: () => EditorViewport | null;
 }
@@ -126,6 +130,11 @@ export function editorBridge(store: EditorStore, viewport: () => EditorViewport 
       store.updateView({ topDown: true });
       viewport()?.frameMap();
     },
+    scaleBar: () => {
+      const bar = viewport()?.scaleBar;
+      return bar ? { length: bar.length, pixels: bar.pixels, metresPerPixel: bar.metresPerPixel } : null;
+    },
+    thumbnail: () => viewport()?.snapshot() ?? null,
     look: (x, y, span) => {
       const camera = viewport()?.view.camera;
       if (!camera) return;

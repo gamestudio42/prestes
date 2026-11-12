@@ -2,7 +2,8 @@ import { lazy, Suspense, useEffect, useState } from 'react';
 import { loadSkirmishMaps, type BattleMap } from '@prestes/shared';
 import type { Locale } from '@prestes/content';
 import { useGramophone } from '../../hooks/useGramophone';
-import campTable from '../../assets/menu/camp-table.png';
+import { MarchingScene } from '../MarchingScene';
+import { PixelVideo } from '../PixelVideo';
 import { MenuDesk } from './MenuDesk';
 // The setup screen opens on demand: its own chunk keeps the start screen's bundle within budget.
 const SkirmishSetup = lazy(() =>
@@ -10,8 +11,7 @@ const SkirmishSetup = lazy(() =>
 );
 import { withMap, type SkirmishSetup as Setup } from './setupState';
 
-/** The camp table's art size (tools/menu/camp_pieces.py); CSS covers the view with it. */
-const CAMP_TABLE = { width: 887, height: 442 } as const;
+const VIDEO_SRC = `${import.meta.env.BASE_URL}video/menu-book.mp4`;
 
 export interface StartScreenDeskProps {
   locale: Locale;
@@ -27,8 +27,8 @@ export interface StartScreenDeskProps {
 }
 
 /**
- * The start screen (camp-tent-menu): a camp table under a tent at dusk, with
- * the menu laid out on it as draggable period objects.
+ * The start screen: the pixel scene and the gramophone, with the menu laid out
+ * as draggable period objects on a desk.
  */
 export function StartScreenDesk({
   locale,
@@ -42,6 +42,7 @@ export function StartScreenDesk({
 }: StartScreenDeskProps) {
   const [setupOpen, setSetupOpen] = useState(false);
   const gramophone = useGramophone({ muted: audioMuted, onEnableSound: onToggleAudio });
+  const [videoFailed, setVideoFailed] = useState(false);
   // author-game-maps 5.2: the authored skirmish maps; the test map only on the dev server.
   const [maps, setMaps] = useState<readonly BattleMap[]>([]);
   useEffect(() => {
@@ -63,15 +64,17 @@ export function StartScreenDesk({
 
   return (
     <main className="start-screen menu-screen desk-screen" data-testid="start-screen">
-      <img
-        className="menu-scene camp-scene"
-        src={campTable}
-        width={CAMP_TABLE.width}
-        height={CAMP_TABLE.height}
-        alt=""
-        draggable={false}
-        data-testid="camp-scene"
-      />
+      {videoFailed ? (
+        <MarchingScene className="menu-scene" />
+      ) : (
+        <PixelVideo
+          src={VIDEO_SRC}
+          width={320}
+          className="menu-scene"
+          onError={() => setVideoFailed(true)}
+        />
+      )}
+      <div className="menu-vignette" aria-hidden="true" />
 
       <MenuDesk
         locale={locale}

@@ -31,6 +31,8 @@ export const editorPtBR: Record<keyof typeof editorEn, string> = {
   'editor.thumbnail.hint': 'Enquadre o mapa movendo e aproximando a vista; o centro dela vira a figura do mapa na mesa.',
   'editor.thumbnail.ok': 'Miniatura salva: {file}',
   'editor.thumbnail.saveFirst': 'Salve o mapa no projeto primeiro, depois salve a miniatura.',
+  'editor.scale.heading': '0 a {length} m',
+  'editor.scale.metres': '{value} m',
   'editor.slot': 'Vaga',
   'editor.slot.skirmish': 'Mapa de escaramuça',
   'editor.slot.test': 'Mapa de teste',

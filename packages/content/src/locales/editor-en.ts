@@ -29,6 +29,8 @@ export const editorEn = {
   'editor.thumbnail.hint': 'Frame the map with pan and zoom; the centre of the view becomes the map picture on the desk.',
   'editor.thumbnail.ok': 'Thumbnail saved: {file}',
   'editor.thumbnail.saveFirst': 'Save the map to the project first, then save its thumbnail.',
+  'editor.scale.heading': '0 to {length} m',
+  'editor.scale.metres': '{value} m',
   'editor.slot': 'Slot',
   'editor.slot.skirmish': 'Skirmish map',
   'editor.slot.test': 'Test map',

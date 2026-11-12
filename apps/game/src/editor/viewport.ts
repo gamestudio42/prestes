@@ -25,6 +25,7 @@ import {
 import { SceneView } from '@prestes/view3d';
 import { loadGraphicsSettings } from '../storage';
 import { fill, layerOf, sampleHeight, Stroke } from './brush';
+import { chooseScaleBar, drawScaleBar, EDITOR_SCALE_STYLE, scaleBarBox, THUMBNAIL_SCALE_STYLE, type ScaleBar, type ScaleBarText } from './scale-bar';
 import { OBJECTIVE_RADIUS, objectiveCircle, rasterCommand, type EditorStore, type SelectionItem } from './store';
 
 /**
@@ -60,6 +61,11 @@ export const PROTECTION_COLORS: Record<ProtectionClass, number> = {
   prone: 0xe8743b,
 };
 
+/** The scale bar's widest length on screen (CSS px) and in the 256 px thumbnail. */
+const SCALE_BAR_MAX_PX = 240;
+const THUMBNAIL_SIZE = 256;
+const THUMBNAIL_SCALE_BAR_MAX_PX = 100;
+
 /** Above this camera span the cover badges cluster per 50 m cell (strategic span). */
 const BADGE_CLUSTER_SPAN = 160;
 
@@ -83,6 +89,10 @@ export class EditorViewport {
   private readonly coverLayer = new THREE.Group();
   private coverFor: BattleMap | null = null;
   private readonly labels: HTMLDivElement;
+  private readonly scaleCanvas: HTMLCanvasElement;
+  private scaleKey = '';
+  /** The scale bar now on screen (for the test bridge). */
+  scaleBar: (ScaleBar & { metresPerPixel: number }) | null = null;
   private readonly sectionLabels: HTMLDivElement[] = [];
   private readonly badgeLabels: HTMLDivElement[] = [];
   private cursor: Vec2 | null = null;
@@ -98,6 +108,8 @@ export class EditorViewport {
     private readonly container: HTMLElement,
     private readonly store: EditorStore,
     private readonly sectionText: (side: 'column' | 'legalist', index: number) => string,
+    /** The scale bar's words, in the editor's language. */
+    private readonly scaleText: () => ScaleBarText,
   ) {
     this.draftTool = store.tool;
     this.view = new SceneView({ container, battleMap: store.compiled, strategicField: true, maxSpanFactor: 2.5, antialias: loadGraphicsSettings().smoothEdges });
@@ -109,6 +121,14 @@ export class EditorViewport {
     this.labels = document.createElement('div');
     this.labels.className = 'editor-labels';
     container.appendChild(this.labels);
+    this.scaleCanvas = document.createElement('canvas');
+    this.scaleCanvas.className = 'editor-scale-bar';
+    this.scaleCanvas.dataset.testid = 'editor-scale-bar';
+    container.appendChild(this.scaleCanvas);
+    // Drawn before the pixel font loads, the bar is drawn again once it has.
+    void document.fonts?.ready.then(() => {
+      this.scaleKey = '';
+    });
     const canvas = container.querySelector('canvas')!;
     canvas.addEventListener('pointerdown', this.onPointerDown);
     canvas.addEventListener('pointermove', this.onPointerMove);
@@ -139,6 +159,7 @@ export class EditorViewport {
     this.store.onMapChanged = null;
     this.view.dispose();
     this.labels.remove();
+    this.scaleCanvas.remove();
   }
 
   /** Centres on a point (a problem in the list). */
@@ -157,7 +178,12 @@ export class EditorViewport {
     this.coverLayer.visible = false;
     this.labels.style.visibility = 'hidden';
     try {
-      return this.view.snapshot(256);
+      // The thumbnail carries its own scale bar, sized for the picture, in its bottom-left corner.
+      return this.view.snapshot(THUMBNAIL_SIZE, (context, metresPerPixel) => {
+        const bar = chooseScaleBar(metresPerPixel, THUMBNAIL_SCALE_BAR_MAX_PX);
+        const box = scaleBarBox(bar, THUMBNAIL_SCALE_STYLE);
+        drawScaleBar(context, bar, 4, THUMBNAIL_SIZE - box.height - 4, THUMBNAIL_SCALE_STYLE, this.scaleText());
+      });
     } finally {
       this.overlay.visible = true;
       this.coverLayer.visible = true;
@@ -984,8 +1010,38 @@ export class EditorViewport {
     }
     this.placeLabels();
     this.placeBadges();
+    this.drawScaleBar();
     this.frame = requestAnimationFrame(this.tick);
   };
+
+  /** Redraws the on-screen scale bar when the zoom, the view's height or the language changes. */
+  private drawScaleBar(): void {
+    const height = this.container.clientHeight;
+    if (height <= 0) return;
+    const metresPerPixel = this.view.camera.span / height;
+    const bar = chooseScaleBar(metresPerPixel, SCALE_BAR_MAX_PX);
+    const text = this.scaleText();
+    const ratio = Math.max(1, Math.round(window.devicePixelRatio || 1));
+    const key = `${bar.length}|${bar.pixels.toFixed(1)}|${ratio}|${text.heading(bar.length)}`;
+    if (key === this.scaleKey) return;
+    this.scaleKey = key;
+    this.scaleBar = { ...bar, metresPerPixel };
+    const style = { ...EDITOR_SCALE_STYLE, unit: ratio };
+    const scaled = { ...bar, pixels: bar.pixels * ratio };
+    const box = scaleBarBox(scaled, style);
+    const canvas = this.scaleCanvas;
+    canvas.width = box.width;
+    canvas.height = box.height;
+    canvas.style.width = `${box.width / ratio}px`;
+    canvas.style.height = `${box.height / ratio}px`;
+    canvas.dataset.length = String(bar.length);
+    canvas.dataset.pixels = bar.pixels.toFixed(2);
+    canvas.dataset.metresPerPixel = metresPerPixel.toFixed(4);
+    const context = canvas.getContext('2d');
+    if (!context) return;
+    context.clearRect(0, 0, box.width, box.height);
+    drawScaleBar(context, scaled, 0, 0, style, text);
+  }
 
   private placeLabels(): void {
     const map = this.store.map;

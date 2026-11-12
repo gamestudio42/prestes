@@ -124,6 +124,15 @@
   overflow: hidden;
 }
 
+/* The scale bar along the bottom of the view; its length follows the zoom. */
+.editor-scale-bar {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  pointer-events: none;
+  image-rendering: pixelated;
+}
+
 .editor-label {
   position: absolute;
   left: 0;

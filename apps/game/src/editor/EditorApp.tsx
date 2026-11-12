@@ -218,7 +218,15 @@ export function EditorApp(): ReactNode {
   // The viewport lives outside React.
   useEffect(() => {
     if (!container.current) return undefined;
-    const view = new EditorViewport(container.current, store, (side, index) => `${tRef.current(`editor.side.${side}`)} · ${tRef.current('editor.section', { n: index + 1 })}`);
+    const view = new EditorViewport(
+      container.current,
+      store,
+      (side, index) => `${tRef.current(`editor.side.${side}`)} · ${tRef.current('editor.section', { n: index + 1 })}`,
+      () => ({
+        heading: (length) => tRef.current('editor.scale.heading', { length }),
+        metres: (value) => tRef.current('editor.scale.metres', { value }),
+      }),
+    );
     view.onCursor = setCursor;
     viewport.current = view;
     let cancelled = false;

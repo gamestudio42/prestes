@@ -1052,9 +1052,10 @@ export class SceneView {
   /**
    * author-game-maps: the view as the player framed it, as a square PNG data
    * URL of `size` pixels (the centre of the view, cropped). Renders a frame
-   * first so the drawing buffer holds it when it is read.
+   * first so the drawing buffer holds it when it is read. `decorate` draws
+   * on the picture before it is encoded, told the metres per picture pixel.
    */
-  snapshot(size = 256): string {
+  snapshot(size = 256, decorate?: (context: CanvasRenderingContext2D, metresPerPixel: number) => void): string {
     this.post.render(this.renderer, this.scene, this.rig.camera);
     const source = this.renderer.domElement;
     const side = Math.min(source.width, source.height);
@@ -1064,6 +1065,9 @@ export class SceneView {
     const context = canvas.getContext('2d')!;
     context.imageSmoothingEnabled = false;
     context.drawImage(source, (source.width - side) / 2, (source.height - side) / 2, side, side, 0, 0, size, size);
+    // The orthographic view spans `span` metres over the canvas height; across the
+    // screen that holds at any tilt, so a horizontal scale bar is exact.
+    decorate?.(context, ((this.rig.span / source.height) * side) / size);
     return canvas.toDataURL('image/png');
   }
 

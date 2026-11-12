@@ -41,7 +41,7 @@ export interface DeskSize {
 export const DESK_LAYOUT_KEY = 'prestes.menu.desk.v1';
 /** Distance from each viewport edge, in px. */
 export const DESK_MARGIN = 12;
-/** Positions sit on a 2 px grid (the art pixel at the reference size). */
+/** The desk art is drawn at 2x, so positions sit on a 2 px grid. */
 export const DESK_GRID = 2;
 
 const snap = (value: number) => Math.round(value / DESK_GRID) * DESK_GRID;
@@ -63,59 +63,27 @@ export function clampDesk(position: DeskPosition, size: DeskSize, view: DeskSize
 }
 
 /**
- * camp-tent-menu: the camp table drawing the start screen covers, in art
- * pixels, and where the cover crops it (the sky gives way first when the
- * view is wider than the drawing). The desk objects are drawn at the same
- * scale as the table, so they keep the sizes of the owner's layout.
+ * Default places, as fractions of the space left after the object's size. The
+ * books and the reference pile sit on the left, the maps at the centre, the
+ * compass at the upper right clear of the map fan's active sheet, and the
+ * gramophone at the lower right, so a closed desk reads at a glance.
  */
-export const CAMP_SCENE = { w: 887, h: 442, anchorX: 0.5, anchorY: 0.82 } as const;
-
-export interface SceneTransform {
-  /** Screen px per art pixel. */
-  scale: number;
-  /** Where the drawing's top-left corner lands, in screen px. */
-  x: number;
-  y: number;
-}
-
-/** How the camp table covers a view: its scale and its top-left corner. */
-export function sceneTransform(view: DeskSize): SceneTransform {
-  const scale = Math.max(view.w / CAMP_SCENE.w, view.h / CAMP_SCENE.h);
-  return {
-    scale,
-    x: (view.w - CAMP_SCENE.w * scale) * CAMP_SCENE.anchorX,
-    y: (view.h - CAMP_SCENE.h * scale) * CAMP_SCENE.anchorY,
-  };
-}
-
-/**
- * Default places, from the owner's layout (`referencias para hud/Menu
- * Pixelado de São Paulo 1923.png`, 1776 x 886, two reference pixels per art
- * pixel): the centre and the top of each object's art. The map pile is placed
- * by its top card; `lead` is the room the object keeps above its art, in art
- * pixels (the pile's loose cards).
- */
-const DEFAULT_SPOTS: Record<DeskObjectId, { cx: number; top: number; lead?: number }> = {
-  maps: { cx: 760, top: 135, lead: 28 },
-  references: { cx: 400, top: 380 },
-  compendium: { cx: 197, top: 535 },
-  campaign: { cx: 708, top: 498 },
-  gramophone: { cx: 1062, top: 392 },
-  // Nudged 35 reference px down from the drawing so its lid clears the glasses' label.
-  options: { cx: 1438, top: 460 },
-  // add-map-editor: the field glasses that open the map editor.
-  editor: { cx: 1352, top: 240 },
+const DEFAULT_SPOTS: Record<DeskObjectId, { x: number; y: number }> = {
+  campaign: { x: 0.03, y: 0.02 },
+  compendium: { x: 0.03, y: 0.98 },
+  references: { x: 0.03, y: 0.5 },
+  options: { x: 0.74, y: 0.02 },
+  maps: { x: 0.42, y: 0.28 },
+  gramophone: { x: 0.86, y: 0.6 },
+  // add-map-editor: the theodolite that opens the map editor, under the map fan, above the hint.
+  editor: { x: 0.5, y: 0.85 },
 };
-
-/** Reference pixels per art pixel in the owner's layout. */
-const REFERENCE_PX = 2;
 
 export function defaultDeskPosition(id: DeskObjectId, size: DeskSize, view: DeskSize): DeskPosition {
   const spot = DEFAULT_SPOTS[id];
-  const scene = sceneTransform(view);
-  const cx = scene.x + (spot.cx / REFERENCE_PX) * scene.scale;
-  const top = scene.y + (spot.top / REFERENCE_PX - (spot.lead ?? 0)) * scene.scale;
-  return clampDesk({ x: cx - size.w / 2, y: top }, size, view);
+  const freeX = Math.max(0, view.w - size.w);
+  const freeY = Math.max(0, view.h - size.h);
+  return clampDesk({ x: freeX * spot.x, y: freeY * spot.y }, size, view);
 }
 
 export function loadDesk(storage: Pick<Storage, 'getItem'> | null | undefined): DeskLayout {

@@ -139,7 +139,7 @@ test('the compass turns smooth edges off, and the choice holds over a reload', a
   expect(await battleEdges(page)).toEqual({ antialias: false, samples: 0 });
 });
 
-test('the field glasses open the map editor', async ({ page }) => {
+test('the theodolite opens the map editor', async ({ page }) => {
   await expect(page.getByTestId('menu-mark-editor')).toContainText('Map editor');
   await page.getByTestId('menu-mark-editor').click();
   await expect(page).toHaveURL(/editor\.html$/);
@@ -208,10 +208,7 @@ test('drags an object, remembers the position and tidies the desk', async ({ pag
 // polish-menu-desk: closed sprites drawn off the 2x standard (none at present).
 const PENDING_REDRAW: string[] = [];
 
-// camp-tent-menu: the objects are drawn at the camp table's scale (the cover
-// scale of its 887 x 442 drawing), so they keep the owner's layout sizes.
-test('every closed object is drawn at the camp table scale', async ({ page }) => {
-  const sceneScale = await page.evaluate(() => Math.max(window.innerWidth / 887, window.innerHeight / 442));
+test('every closed object is drawn at a whole scale of its sprite, 2x as standard', async ({ page }) => {
   const sprites = await page.evaluate(() =>
     [...document.querySelectorAll<HTMLElement>('.desk-art-box')].map((box) => {
       const art = box.querySelector<HTMLElement>(
@@ -231,9 +228,8 @@ test('every closed object is drawn at the camp table scale', async ({ page }) =>
     ['campaign', 'compendium', 'editor', 'gramophone', 'maps', 'options', 'references'].sort(),
   );
   for (const sprite of sprites) {
-    const scale = (sceneScale * sprite.scale) / 2;
-    expect(Math.abs(sprite.boxW - sprite.w * scale), sprite.id).toBeLessThanOrEqual(1);
-    expect(Math.abs(sprite.boxH - sprite.h * scale), sprite.id).toBeLessThanOrEqual(1);
+    expect(sprite.boxW, sprite.id).toBe(sprite.w * sprite.scale);
+    expect(sprite.boxH, sprite.id).toBe(sprite.h * sprite.scale);
     if (!PENDING_REDRAW.includes(sprite.id)) expect(sprite.scale, sprite.id).toBe(2);
   }
 });
@@ -256,12 +252,9 @@ test('a held object lifts one art pixel and drops back on release', async ({ pag
   const art = page.locator('[data-desk-object="campaign"] .desk-object-art-closed');
   const resting = await art.evaluate((element) => getComputedStyle(element).filter);
 
-  // camp-tent-menu: one art pixel is the camp table's scale, so the lift and the shadows follow it.
-  const px = await page.evaluate(() => Math.max(window.innerWidth / 887, window.innerHeight / 442));
   const held = await holdCampaign(page);
-  const lift = Number(/^0px (-[\d.]+)px$/.exec(held.translate)?.[1]);
-  expect(Math.abs(lift + px)).toBeLessThan(0.01);
-  expect(held.filter).toContain(`${+(px * 3).toFixed(3)}`.slice(0, 3));
+  expect(held.translate).toBe('0px -2px');
+  expect(held.filter).toContain('6px 6px');
 
   await page.mouse.up();
   await page.waitForTimeout(120);
@@ -271,24 +264,23 @@ test('a held object lifts one art pixel and drops back on release', async ({ pag
   }));
   expect(dropped.translate).toBe('none');
   expect(dropped.filter).toBe(resting);
-  expect(resting).toContain(`${+(px * 2).toFixed(3)}`.slice(0, 3));
+  expect(resting).toContain('4px 4px');
 });
 
 test('under reduced motion a held object does not lift', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   const held = await holdCampaign(page);
   expect(held.translate).toBe('none');
-  expect(held.filter).toContain('drop-shadow');
+  expect(held.filter).toContain('6px 6px');
   await page.mouse.up();
 });
 
 test('opening and closing an object keeps its desk position', async ({ page }) => {
   const compendium = page.getByTestId('start-codex');
   const start = await compendium.boundingBox();
-  // camp-tent-menu: the reference pile's label lies over the book's top edge, so hold it low.
-  await page.mouse.move(start!.x + 80, start!.y + start!.height - 70);
+  await page.mouse.move(start!.x + 80, start!.y + 100);
   await page.mouse.down();
-  await page.mouse.move(start!.x + 230, start!.y + start!.height - 90, { steps: 8 });
+  await page.mouse.move(start!.x + 260, start!.y - 40, { steps: 8 });
   await page.mouse.up();
   const placed = await compendium.boundingBox();
   const stored = await page.evaluate((key) => window.localStorage.getItem(key), DESK_KEY);
@@ -414,11 +406,10 @@ test('the default arrangement places all seven objects in view and apart', async
       expect(box.y + box.height, id).toBeLessThanOrEqual(viewport.height);
       boxes[id] = box;
     }
-    // The reference pile touches no other object.
+    // The reference pile lies between the books and touches no other object.
     const pile = boxes.references!;
     for (const [id, box] of Object.entries(boxes)) {
-      // camp-tent-menu: in the owner's layout the green book's corner lies under the pile's label.
-      if (id === 'references' || id === 'compendium') continue;
+      if (id === 'references') continue;
       const apart =
         pile.x + pile.width <= box.x ||
         box.x + box.width <= pile.x ||
@@ -426,18 +417,17 @@ test('the default arrangement places all seven objects in view and apart', async
         box.y + box.height <= pile.y;
       expect(apart, `references and ${id} at ${viewport.width}x${viewport.height}`).toBe(true);
     }
-    // camp-tent-menu: the owner's layout puts the pile above both books.
-    expect(pile.y).toBeLessThan(boxes.campaign!.y);
+    expect(pile.y).toBeGreaterThan(boxes.campaign!.y);
     expect(pile.y).toBeLessThan(boxes.compendium!.y);
-    // add-map-editor: the field glasses touch no other object either.
-    const glasses = boxes.editor!;
+    // add-map-editor: the theodolite touches no other object either.
+    const theodolite = boxes.editor!;
     for (const [id, box] of Object.entries(boxes)) {
       if (id === 'editor') continue;
       const apart =
-        glasses.x + glasses.width <= box.x ||
-        box.x + box.width <= glasses.x ||
-        glasses.y + glasses.height <= box.y ||
-        box.y + box.height <= glasses.y;
+        theodolite.x + theodolite.width <= box.x ||
+        box.x + box.width <= theodolite.x ||
+        theodolite.y + theodolite.height <= box.y ||
+        box.y + box.height <= theodolite.y;
       expect(apart, `editor and ${id} at ${viewport.width}x${viewport.height}`).toBe(true);
     }
   }
