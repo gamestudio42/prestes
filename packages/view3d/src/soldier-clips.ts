@@ -1,4 +1,4 @@
-import { CLIP_GAIT_SPEED, type UnitSnapshot } from '@prestes/shared';
+import { ARMIES, CLIP_GAIT_SPEED, type UniformSetId, type UnitSnapshot } from '@prestes/shared';
 
 /** Clip names exported by art-src/blender/target_soldier.py. */
 export type SoldierClip =
@@ -68,7 +68,16 @@ export function missingClips(names: Iterable<string>): SoldierClip[] {
   return SOLDIER_CLIPS.filter((clip) => !have.has(clip));
 }
 
-export type SoldierOutfit = 'column' | 'legalist' | 'officer';
+/** 3.2: a uniform set per army, for the rank and file and for officers. */
+export type SoldierOutfit = `${UniformSetId}-${'troop' | 'officer'}`;
+export const SOLDIER_OUTFITS: readonly SoldierOutfit[] = [
+  'coluna-troop',
+  'coluna-officer',
+  'legalista-troop',
+  'legalista-officer',
+  'patriotico-troop',
+  'patriotico-officer',
+];
 
 /** Clips that hold their last pose instead of looping. */
 export const HELD_CLIPS: ReadonlySet<SoldierClip> = new Set<SoldierClip>([
@@ -315,10 +324,18 @@ export function aimTransition(current: SoldierClip | null, since: number, wanted
   return wanted;
 }
 
-/** The column wears the slouch hat and khaki; legalists olive and the kepi. */
-export function soldierOutfit(unit: Pick<UnitSnapshot, 'kind' | 'faction'>): SoldierOutfit {
-  if (unit.kind === 'officer') return 'officer';
-  return unit.faction === 'column' ? 'column' : 'legalist';
+/**
+ * 3.2: the uniform of his army (from his section type, or his side when he has
+ * none), the officer's set for an officer.
+ */
+export function soldierOutfit(unit: Pick<UnitSnapshot, 'kind' | 'faction'> & Partial<Pick<UnitSnapshot, 'army'>>): SoldierOutfit {
+  const army = unit.army ?? (unit.faction === 'column' ? 'coluna' : 'legalista');
+  return `${ARMIES[army].uniform}-${unit.kind === 'officer' ? 'officer' : 'troop'}`;
+}
+
+/** Which hat an outfit wears: the kepi for the legalist army, else the brimmed hat. */
+export function wearsKepi(outfit: SoldierOutfit): boolean {
+  return outfit.startsWith('legalista-');
 }
 
 /**

@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { clipFade, HELD_CLIPS, missingClips, type SoldierClip, type SoldierOutfit } from './soldier-clips';
+import { clipFade, HELD_CLIPS, missingClips, SOLDIER_OUTFITS, wearsKepi, type SoldierClip, type SoldierOutfit } from './soldier-clips';
 import { toonGradient } from './materials';
 
 /**
@@ -16,7 +16,7 @@ export interface SoldierAsset {
   clone: (source: THREE.Object3D) => THREE.Object3D;
 }
 
-const OUTFITS: readonly SoldierOutfit[] = ['column', 'legalist', 'officer'];
+const OUTFITS = SOLDIER_OUTFITS;
 
 function pixelTexture(texture: THREE.Texture): THREE.Texture {
   texture.magFilter = THREE.NearestFilter;
@@ -66,8 +66,8 @@ export class SoldierInstance {
       if (!mesh.isMesh) return;
       mesh.material = asset.materials[outfit];
       mesh.frustumCulled = false;
-      if (mesh.name.startsWith('Kepi')) mesh.visible = outfit !== 'column';
-      if (mesh.name.startsWith('Slouch')) mesh.visible = outfit === 'column';
+      if (mesh.name.startsWith('Kepi')) mesh.visible = wearsKepi(outfit);
+      if (mesh.name.startsWith('Slouch')) mesh.visible = !wearsKepi(outfit);
     });
     this.mixer = new THREE.AnimationMixer(this.root);
     for (const [name, clip] of asset.clips) {

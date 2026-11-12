@@ -2,7 +2,7 @@
 
 Draws three small atlases in the sepia palette and writes their region index:
 
-  soldier-<outfit>.png  128 x 128  same layout per outfit (column, legalist, officer)
+  soldier-<outfit>.png  128 x 128  same layout per outfit (<army uniform>-troop and -officer)
   environment.png  128 x 128 16 x 16 swatches: plaster, tile, timber, stone...
   effects.png      64 x 16   8 x 8 sprite frames: muzzle, smoke, dust, splinter
   regions.json     swatch name -> [x, y, w, h] in pixels, per atlas
@@ -75,16 +75,36 @@ def cloth(base, dark, seam_every=4):
     return paint
 
 
+CREAM = (214, 200, 166)
+CREAM_DARK = (176, 160, 124)
+
+# soldier-animation-and-textures 3.2: a uniform set per army (the army's
+# `uniform` in packages/shared/src/armies.ts), for the rank and file and for
+# officers. Sources in docs/history/FORCES.md; details without a source are
+# listed as placeholders in docs/assets.md.
 OUTFITS = {
-    # The column: worn khaki, red scarf, slouch hat, bandolier.
-    "column": dict(tunic=(KHAKI, KHAKI_DARK), trousers=(KHAKI_DARK, BROWN), hat=(TAN, MID),
-                   scarf=(RED, RED_DARK), puttees=(SAND, TAN)),
-    # Legalists: army olive uniform and kepi.
-    "legalist": dict(tunic=(OLIVE, OLIVE_DARK), trousers=(OLIVE_DARK, DARK), hat=(OLIVE_DARK, DARK),
-                     scarf=(OLIVE, OLIVE_DARK), puttees=(OLIVE_DARK, DARK)),
-    # The instructor: officer's tunic with a gold collar, kepi, dark boots.
-    "officer": dict(tunic=(KHAKI, KHAKI_DARK), trousers=(MID, BROWN), hat=(KHAKI_DARK, BROWN),
-                    scarf=(GOLD, TAN), puttees=(INK, DARK)),
+    # The column: worn khaki, the red scarf of the 1924 rebels (Macaulay p. 44),
+    # slouch hat, bandolier. Khaki and the hat are placeholders.
+    "coluna-troop": dict(tunic=(KHAKI, KHAKI_DARK), trousers=(KHAKI_DARK, BROWN), hat=(TAN, MID),
+                         scarf=(RED, RED_DARK), puttees=(SAND, TAN)),
+    # Its officers: a better-kept tunic, the scarf, dark boots (placeholder).
+    "coluna-officer": dict(tunic=(SAND, KHAKI), trousers=(MID, BROWN), hat=(KHAKI_DARK, BROWN),
+                           scarf=(RED, RED_DARK), puttees=(INK, DARK)),
+    # Federal army and state militias: olive uniform and kepi (placeholder:
+    # the uniforms of 1924-1927 are an open question in FORCES.md).
+    "legalista-troop": dict(tunic=(OLIVE, OLIVE_DARK), trousers=(OLIVE_DARK, DARK), hat=(OLIVE_DARK, DARK),
+                            scarf=(OLIVE, OLIVE_DARK), puttees=(OLIVE_DARK, DARK)),
+    # Legalist officers: the same olive, gold buttons and badge, dark boots.
+    "legalista-officer": dict(tunic=(OLIVE, OLIVE_DARK), trousers=(OLIVE_DARK, DARK), hat=(OLIVE_DARK, DARK),
+                              scarf=(GOLD, TAN), puttees=(INK, DARK)),
+    # Patriotic battalions: the allied chiefs' jagunços in their own clothes
+    # (Macaulay p. 189; Franklin's own men had federal uniforms). Pale cotton,
+    # leather hat and leather sandals are placeholders.
+    "patriotico-troop": dict(tunic=(CREAM, CREAM_DARK), trousers=(MID, BROWN), hat=(BROWN, DARK),
+                             scarf=(TAN, MID), puttees=(MID, BROWN), boots=(BROWN, DARK)),
+    # Their chiefs: a dark civilian jacket and the leather hat (placeholder).
+    "patriotico-officer": dict(tunic=(DARK, INK), trousers=(BROWN, DARK), hat=(BROWN, DARK),
+                               scarf=(CREAM, CREAM_DARK), puttees=(INK, DARK), boots=(DARK, INK)),
 }
 
 
@@ -214,9 +234,12 @@ def crown(base, dark):
 
 
 OUTFIT_DETAIL = {
-    "column": dict(button=MID, band=RED_DARK, badge=None, moustache=True),
-    "legalist": dict(button=METAL_LIGHT, band=DARK, badge=METAL_LIGHT, moustache=False),
-    "officer": dict(button=GOLD, band=BROWN, badge=GOLD, moustache=True),
+    "coluna-troop": dict(button=MID, band=RED_DARK, badge=None, moustache=True, buckle=GOLD),
+    "coluna-officer": dict(button=GOLD, band=RED_DARK, badge=None, moustache=True, buckle=GOLD),
+    "legalista-troop": dict(button=METAL_LIGHT, band=DARK, badge=METAL_LIGHT, moustache=False, buckle=METAL_LIGHT),
+    "legalista-officer": dict(button=GOLD, band=RED_DARK, badge=GOLD, moustache=True, buckle=GOLD),
+    "patriotico-troop": dict(button=CREAM_DARK, band=DARK, badge=None, moustache=True, buckle=METAL),
+    "patriotico-officer": dict(button=METAL_LIGHT, band=INK, badge=None, moustache=True, buckle=METAL_LIGHT),
 }
 
 
@@ -247,9 +270,10 @@ def soldier_atlas(outfit: str) -> Atlas:
     y = 3 * n
     atlas.swatch("skin", 0, y, n, n, noise(SKIN, SKIN_DARK, 0.1))
     atlas.swatch("face", n, y, n, n, face(SKIN, SKIN_DARK, INK, detail["moustache"]))
-    atlas.swatch("boots", 2 * n, y, n, n, layered(DARK, INK, wear(dust, 0.0, 4, dust)))
+    boots, boots_dark = colours.get("boots", (DARK, INK))
+    atlas.swatch("boots", 2 * n, y, n, n, layered(boots, boots_dark, wear(dust, 0.0, 4, dust)))
     atlas.swatch("leather", 3 * n, y, n, n, lambda i, j, rng: GOLD if (i % 5 == 2 and j % 6 == 2) else (shade(BROWN, 12) if rng.random() < 0.08 else BROWN))
-    atlas.swatch("belt-front", 4 * n, y, n, n, belt(BROWN, METAL_LIGHT if outfit == "legalist" else GOLD, DARK))
+    atlas.swatch("belt-front", 4 * n, y, n, n, belt(BROWN, detail["buckle"], DARK))
     atlas.swatch("rifle.wood", 5 * n, y, n, n, lambda i, j, rng: WOOD_DARK if j % 5 == 0 else WOOD)
     atlas.swatch("rifle.metal", 6 * n, y, n, n, noise(METAL, METAL_LIGHT, 0.15))
     atlas.swatch("blood", 7 * n, y, n, n, noise(RED_DARK, (80, 28, 22), 0.3))

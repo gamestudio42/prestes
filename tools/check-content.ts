@@ -127,6 +127,16 @@ for (const type of Object.values(SECTION_TYPES)) {
 // faction-armies 2.4: every army is complete and named in every locale, and
 // every army and section type name is in the forces document's register.
 errors.push(...validateArmies());
+// soldier-animation-and-textures 3.2: every army has a uniform set for its
+// rank and file and its officers, drawn and registered in docs/assets.md.
+const assetsRegister = readFileSync(resolve(root, 'docs/assets.md'), 'utf8');
+for (const army of Object.values(ARMIES)) {
+  for (const rank of ['troop', 'officer']) {
+    const texture = `soldier-${army.uniform}-${rank}.png`;
+    if (!existsSync(resolve(root, 'apps/game/public/models/textures', texture))) errors.push(`${army.id}: no uniform texture ${texture}`);
+  }
+  if (!assetsRegister.includes(`uniform set ${army.uniform}`)) errors.push(`${army.id}: uniform set ${army.uniform} not in docs/assets.md`);
+}
 for (const army of Object.values(ARMIES)) {
   for (const locale of LOCALES) {
     for (const key of [army.nameKey, army.descriptionKey]) {

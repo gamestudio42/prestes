@@ -74,9 +74,13 @@ describe('ready carry', () => {
 
 describe('soldierOutfit', () => {
   it('dresses officers, the column and the legalists apart', () => {
-    expect(soldierOutfit({ kind: 'officer', faction: 'column' })).toBe('officer');
-    expect(soldierOutfit({ kind: 'rifleman', faction: 'column' } as never)).toBe('column');
-    expect(soldierOutfit({ kind: 'rifleman', faction: 'legalist' } as never)).toBe('legalist');
+    expect(soldierOutfit({ kind: 'officer', faction: 'column' })).toBe('coluna-officer');
+    expect(soldierOutfit({ kind: 'rifleman', faction: 'column' } as never)).toBe('coluna-troop');
+    expect(soldierOutfit({ kind: 'rifleman', faction: 'legalist' } as never)).toBe('legalista-troop');
+    // 3.2: the army, not only the side, dresses him.
+    expect(soldierOutfit({ kind: 'rifleman', faction: 'legalist', army: 'patriotico' } as never)).toBe('patriotico-troop');
+    expect(soldierOutfit({ kind: 'officer', faction: 'legalist', army: 'patriotico' })).toBe('patriotico-officer');
+    expect(soldierOutfit({ kind: 'officer', faction: 'legalist', army: 'legalista' })).toBe('legalista-officer');
   });
 });
 
@@ -171,6 +175,6 @@ describe('enemy soldiers animate like the player\'s (battle-feel-3v3)', () => {
     expect(soldierClip({ ...legalist, stance: 'prone', targetId: 7 }, still)).toBe('aim-prone');
     expect(soldierClip({ ...legalist, stance: 'prone', targetId: 7 }, { moving: false, firing: true })).toBe('fire-prone');
     expect(soldierClip({ ...legalist, stance: 'crouched', targetId: 7 }, still)).toBe('aim-crouch');
-    expect(soldierOutfit(legalist)).toBe('legalist');
+    expect(soldierOutfit(legalist)).toBe('legalista-troop');
   });
 });
