@@ -83,9 +83,13 @@ araucária and sumaúma 9 m, jequitibá and castanheira 8.5, the forest trees
 6-8, the cerrado trees 3-6, the bush 1.3. The four species already in maps
 keep their legacy ids, lowered with the rest (araucária `tree-araucaria`
 14 → 9 m, peroba `tree-broad` 8 → 6, pequi `cerrado-tree` 6 → 4.5, buriti
-12 → 8), and are those species' adults, with no second row. The battle
-does not change: a solid object blocks sight from 1.75 m up, and every tree
-stays over that. The giant size class stays in the budget table, unused.
+12 → 8), and are those species' adults, with no second row. Thin trunks
+change only the view. A solid trunk's cover keeps the tree's height for
+sight lines, so the lower peroba (8 → 6 m) and juazeiro (6 → 5 m) no longer
+cut a line passing between the old and the new height: the paiolzinho
+determinism golden moved at 5.2 (5a549b2e → 06d97225), accepted by the
+owner (2026-11-12: the battle uses the height the player sees). The giant
+size class stays in the budget table, unused.
 
 **D5d. Soldiers under the canopy.** A wood must not swallow the player's
 men. Each frame the view tests, per crown instance, whether it covers one of

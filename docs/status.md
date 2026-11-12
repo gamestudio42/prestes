@@ -296,6 +296,27 @@ trees, a bush and a stump per biome, each tree adult, flowering and dead).
   juazeiro have catalog entries but no builder yet; all caatinga builders
   are new.
 
+## biome-trees-and-plants verify (5.2, 2026-11-12)
+
+- `pnpm verify`: check, build, bundle budget, determinism, tick budget and
+  `openspec validate --strict` pass. e2e: 145 passed, 1 failed:
+  `editor-scale-bar.spec.ts` (the desk map print), another session's
+  uncommitted work, not this change.
+- Determinism: the paiolzinho golden moved 5a549b2e → 06d97225. The lower
+  peroba (8 → 6 m) and juazeiro (6 → 5 m) are solid trunks, whose cover
+  keeps the tree's height for sight lines; the owner accepted the battle
+  change (D5c corrected).
+- Model files: `trees.glb` 331 KB, `trees-mata-atlantica.glb` 947 KB,
+  `trees-cerrado.glb` 671 KB, `trees-amazonia.glb` 761 KB,
+  `trees-caatinga.glb` 339 KB (uncompressed; a map loads only its biomes').
+- Frame time (RTX 3050): a wood of 1069 Amazon trees 2.7 ms tactical, 2.5 ms
+  strategic; a large map with its northern third under the Atlantic forest
+  mix (6278 trees) 1.8 ms tactical, 0.97 ms strategic. The section probe
+  swings between runs on this machine (5.9 and 23.9 ms with no code change).
+- Open for the owner's hand check (5.3): the pequi at 4.5 m beside the
+  houses; the castanheira's strategic stand-in reads greyish; the English
+  glosses of manacá, andiroba, coroa-de-frade and palmatória.
+
 ## troop-thumbnails-and-panel verify (2026-11-12)
 
 - Sizes: 19 section thumbnails in `apps/game/public/assets/sections/`,

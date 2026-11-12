@@ -115,7 +115,7 @@ renamed SHALL be mapped to its new id on load.
 
 #### Scenario: An older map
 - **WHEN** `paiolzinho` as saved today is loaded after this change
-- **THEN** its trees stand where they stood, the map check passes and its determinism golden is unchanged
+- **THEN** its trees stand where they stood and the map check passes; its determinism golden changes only where a lowered solid trunk no longer cuts a sight line (owner, 2026-11-12)
 
 ### Requirement: Trees stay inside the frame budget
 
