@@ -270,21 +270,21 @@ The owner left the fit to Claude ("ajustar para que encaixe bem no jogo").
 Inventory: `docs/review/biome-trees/species-inventory.md` (19 Refloreste
 trees, a bush and a stump per biome, each tree adult, flowering and dead).
 
-- Heights: inside each species' real adult range, in its lower part so the
-  battle view stays readable; the sumaúma is the tallest, the manacá a small
-  tree. Refloreste's models are rescaled (several run over their own range).
-  The five ids already in maps (`tree-broad` 8 m, `tree-araucaria` 14 m,
-  `buriti` 12 m, `cerrado-tree` 6 m, `bush` 1.3 m) keep their heights, so
-  existing maps play the same.
-- Atlantic forest: araucária 22, mulungu 10, jequitibá 32, manacá-da-serra
-  6, palmito-juçara 10, pau-brasil 14, peroba-rosa 22.
-- Cerrado: aroeira 8, barbatimão 4, buriti 18, cagaita 5, ipê-amarelo 10,
-  pequi 7.
-- Amazon (outside the Column's main route): açaí 14, andiroba 25,
-  castanheira 32, seringueira 22, sumaúma 38, tucumã 12.
+- Heights (revised the same day, owner: "não quero árvores gigantes"):
+  battle scale, no tree over 14 m, species in their real order of size. The
+  species already in maps are their legacy ids: araucária `tree-araucaria`
+  14 m, peroba `tree-broad` 8 m, pequi `cerrado-tree` 6 m, buriti 12 m.
+- Atlantic forest: araucária 14, jequitibá 13, pau-brasil 10, mulungu 8,
+  palmito-juçara 8, peroba 8, manacá-da-serra 5.
+- Cerrado: buriti 12, ipê-amarelo 8, aroeira 7, pequi 6, barbatimão 4,
+  cagaita 4.
+- Amazon (outside the Column's main route): sumaúma 14, castanheira 13,
+  andiroba 12, seringueira 11, açaí 10, tucumã 9.
 - Caatinga, built in the Prestes kit: mandacaru 5, facheiro 5, xique-xique 1,
   coroa-de-frade 0.4, palmatória 2, macambira 0.8 (thorn patch); juazeiro 7,
-  umbuzeiro 6, catingueira 6, jurema-preta 4. The aroeira (aroeira-do-sertão)
+  umbuzeiro 6, catingueira 6, jurema-preta 4.
+- Soldiers under trees: crowns over the player's own men turn see-through
+  and a hidden man shows his outline (new requirement, task 4.1b). The aroeira (aroeira-do-sertão)
   is listed in the caatinga too, sharing its model. Quipá and umburana left
   out. The caatinga bush family is the marmeleiro.
 - Forms: every species' dead form (cheap, 8-259 triangles at the source)

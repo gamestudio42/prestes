@@ -13,8 +13,10 @@ the owner's Refloreste project for the Atlantic forest, the cerrado and the
 Amazon, each biome's stump, and the dead and flowering forms Refloreste
 provides as separate entries. Every species SHALL have a localized name in
 PT-BR and EN (the common Brazilian name in both, with an English gloss in
-EN where one exists), a biome, a height inside the species' real adult
-range and a thumbnail in the editor. The content check SHALL fail for a
+EN where one exists), a biome, a height at battle scale and a thumbnail in
+the editor. No tree SHALL stand taller than 14 m (owner, 2026-11-12: no
+giant trees on the battle maps); within that, species keep their real order
+of size, so a tall forest tree stands over a small cerrado tree. The content check SHALL fail for a
 catalog species without a model, a name in both locales or a biome.
 
 Historical note: the biomes the column crossed are recorded in
@@ -31,7 +33,11 @@ the editor as outside the column's main route.
 
 #### Scenario: Heights are plausible
 - **WHEN** a sumaúma and a manacá stand beside a 1.75 m soldier
-- **THEN** the sumaúma is the tallest tree in the catalog and the manacá is a small tree, each inside its recorded range
+- **THEN** the sumaúma is among the tallest trees in the catalog, no taller than 14 m, and the manacá is a small tree
+
+#### Scenario: No giant trees
+- **WHEN** the content check reads the catalog
+- **THEN** it fails for any tree taller than 14 m and names it
 
 ### Requirement: Species are adapted to the Prestes look
 
@@ -120,3 +126,21 @@ and the strategic camera bands.
 #### Scenario: A wooded large map
 - **WHEN** the performance check runs on a large map with a third of its ground under the Atlantic forest mix
 - **THEN** the mean frame time is inside the budget in both camera bands
+
+### Requirement: Soldiers stay visible under trees
+
+A soldier under a tree crown SHALL stay visible and selectable from the
+battle camera. A crown between the camera and one of the player's soldiers,
+or close over one, SHALL turn see-through while it hides him, and come back
+when he leaves; trunks stay solid. A soldier still hidden by foliage SHALL
+show his outline in his side's colour. Enemy soldiers SHALL NOT be revealed
+by this: a crown fades only over the player's own men, and an enemy under a
+crown is shown only as fog of war allows.
+
+#### Scenario: A section in a wood
+- **WHEN** the player's section moves into a dense Atlantic forest stand at the tactical camera band
+- **THEN** the crowns over its men turn see-through, every man can be seen and clicked, and the crowns elsewhere stay solid
+
+#### Scenario: The enemy in the same wood
+- **WHEN** an enemy section hides in the same stand
+- **THEN** the crowns over it stay solid and it is shown only as the fog of war allows

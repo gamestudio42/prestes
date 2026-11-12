@@ -20,6 +20,7 @@
   - Done 2026-11-12: six species in `trees-cerrado.glb` (541-729 triangles); sheet `docs/review/biome-trees/cerrado-2.2-2.4.png`.
 - [x] 2.4 Amazon species adapted and exported; verify as 2.2
   - Done 2026-11-12: six species in `trees-amazonia.glb` (562-1092 triangles; palms collapsed to fit); sheet `docs/review/biome-trees/amazonia-2.2-2.4.png`.
+- [ ] 2.4b Heights cut to battle scale, no tree over 14 m (owner, 2026-11-12: no giant trees); the species already in maps (araucária 14, peroba 8, pequi 6, buriti 12 m) are the legacy ids, not new rows; verify: the build and the review sheets, and the content check fails a tree over 14 m
 - [ ] 2.5 Stumps, dead trees and the flowering forms chosen in 1.1; verify as 2.2
 - [ ] 2.6 Bush families per biome, three sizes and two shapes each; verify on the review sheet
 - [ ] 2.7 Caatinga cacti, thorn plants, trees and shrubs in `target_vegetation.py`; verify on the review sheet and by the budget check
@@ -33,6 +34,7 @@
 ## 4. View and editor
 
 - [ ] 4.1 Models split per biome and loaded by the map's species; strategic-band impostors; verify with a view test that a caatinga map does not request the Atlantic forest file, and the wooded-map performance e2e
+- [ ] 4.1b Soldiers stay visible under trees: crowns over or hiding the player's own soldiers turn see-through (trunks solid), a soldier still hidden shows his outline, enemies are not revealed; verify with a view test of which crowns fade, a Playwright check that a soldier in a wood can be clicked, and the wooded-map performance e2e
 - [ ] 4.2 Biome mixes, the Amazon edge, and the trees tool's list grouped by biome with thumbnails; verify with unit tests of the mixes and the determinism of a stroke, and an editor e2e that scatters a cerrado stroke
 
 ## 5. Gates

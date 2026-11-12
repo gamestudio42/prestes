@@ -73,6 +73,25 @@ Adult / Flowering / Dead switch, so the list does not triple. Dead forms
 for every species; flowering forms only for the ipê-amarelo, mulungu,
 manacá-da-serra and pau-brasil.
 
+**D5c. Battle scale, no giants (owner, 2026-11-12).** Real heights put
+the sumaúma at 38 m, far over the maps and the camera; no tree stands over
+14 m. Species keep their order of size: araucária, jequitibá, castanheira
+and sumaúma at 13-14 m, the forest trees 8-12 m, the cerrado trees 4-8 m.
+The four species already in maps keep their legacy ids and heights
+(araucária `tree-araucaria` 14 m, peroba `tree-broad` 8 m, pequi
+`cerrado-tree` 6 m, buriti 12 m) and are those species' adults, with no
+second row. The giant size class stays in the budget table, unused.
+
+**D5d. Soldiers under the canopy.** A wood must not swallow the player's
+men. Each frame the view tests, per crown instance, whether it covers one of
+the player's soldiers seen from the camera (a ray from the camera to the
+soldier's chest, plus a radius over his head) and fades that crown with a
+screen-door dither (no sorting of transparent foliage); trunks stay solid.
+A soldier still behind foliage gets an outline in his side's colour, drawn
+over the crowns. Only the player's own men count, so the fade never shows
+an enemy that the fog of war hides. A considered alternative, cutting all
+crowns to trunks near the cursor, hides the wood's shape and was dropped.
+
 **D6. Bushes are a family, not a species.** Per biome: three sizes, two
 shapes each, generated from the biome bush with different clump counts and
 flattening. Concealment by height reuses the stance rule the concealment
