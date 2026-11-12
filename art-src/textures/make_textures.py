@@ -309,9 +309,12 @@ def environment_atlas() -> Atlas:
         return paint
 
     def tile(i, j, rng):
-        if j % 4 == 0:
-            return RED_DARK
-        return (154, 82, 56) if ((i + (j // 4) * 2) % 6) else RED_DARK
+        # Clay canal tiles: soft course shadows, capa and canal stripes.
+        if j % 4 == 3:
+            return (136, 72, 50)
+        if i % 4 in (0, 1):
+            return (166, 92, 62) if rng.random() > 0.08 else (154, 82, 56)
+        return (154, 82, 56) if rng.random() > 0.08 else (146, 78, 54)
 
     def timber(i, j, rng):
         if i % 5 == 0:
@@ -388,9 +391,10 @@ def environment_atlas() -> Atlas:
         return GOLD if rng.random() > 0.45 else SAND if rng.random() > 0.3 else (150, 120, 70)
 
     def zinc(i, j, rng):
-        if i % 4 == 0:
-            return METAL
-        return METAL_LIGHT if rng.random() > 0.12 else (150, 150, 140)
+        # Corrugated sheet: a light and a shaded rib in turn, a few rust specks.
+        if rng.random() < 0.05:
+            return (150, 120, 96)
+        return METAL_LIGHT if i % 2 == 0 else (164, 166, 158)
 
     def brick(i, j, rng):
         row = j // 4
@@ -410,11 +414,14 @@ def environment_atlas() -> Atlas:
         return (66, 104, 76) if j % 3 else (52, 84, 60)
 
     def tile_old(i, j, rng):
-        if j % 4 == 0:
-            return DARK
-        if rng.random() < 0.18:
-            return (96, 88, 60)
-        return (128, 70, 50) if ((i + (j // 4) * 2) % 6) else RED_DARK
+        # Weathered tiles: the same courses, browner, with moss and soot.
+        if j % 4 == 3:
+            return (108, 62, 46)
+        if rng.random() < 0.12:
+            return (104, 92, 62)
+        if i % 4 in (0, 1):
+            return (138, 80, 56)
+        return (124, 70, 50)
 
     swatches = [
         ("plaster", plaster(PAPER, LIGHT)),
