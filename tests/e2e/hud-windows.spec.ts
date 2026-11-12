@@ -199,3 +199,34 @@ test('the troop panel header and figures: picture, order, counts, leader, wound 
   await expect(dug).toHaveAttribute('data-cover', 'good');
   await expect(dug).toHaveAttribute('title', /Rifleman|Loader|Gunner|Bugler|Fuzileiro|Municiador|Atirador|Corneteiro/);
 });
+
+// troop-thumbnails-and-panel 3.6: a section of eleven fits without scrolling at 1280 x 720.
+for (const locale of ['en', 'pt-BR'] as const) {
+  test(`eleven figures fit the troop panel at 1280 x 720 (${locale})`, async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 720 });
+    await page.addInitScript((value) => {
+      window.localStorage.setItem('prestes.locale', value);
+      window.localStorage.removeItem('prestes.hud.docks.v1');
+    }, locale);
+    await page.goto('/');
+    await start(page);
+    // The default roster's first section is the eleven-man Fogão.
+    const figures = page.locator('[data-testid^="helmet-"]');
+    await expect(figures).toHaveCount(11);
+    const row = page.getByTestId('troop-helmets');
+    const overflow = await row.evaluate((element) => ({ height: element.scrollHeight - element.clientHeight, width: element.scrollWidth - element.clientWidth }));
+    expect(overflow).toEqual({ height: 0, width: 0 });
+    const box = (await row.boundingBox())!;
+    for (const figure of await figures.all()) {
+      const at = (await figure.boundingBox())!;
+      expect(at.x + at.width).toBeLessThanOrEqual(box.x + box.width + 1);
+      expect(at.y + at.height).toBeLessThanOrEqual(box.y + box.height + 1);
+      expect(at.y + at.height).toBeLessThanOrEqual(720);
+    }
+    // The gauges and the header stay on screen with them.
+    const gauges = (await page.getByTestId('troop-gauges').boundingBox())!;
+    expect(gauges.y + gauges.height).toBeLessThanOrEqual(720);
+    // The figure row scrolls inside itself when it is taller than its room.
+    expect(await row.evaluate((element) => getComputedStyle(element).overflowY)).toBe('auto');
+  });
+}

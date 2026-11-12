@@ -60,7 +60,6 @@ export const ptBR: Record<MessageKey, string> = {
   'hud.invalidCommand': 'Enviar comando inválido',
   'hud.moveColumn': 'Mover seção',
   'hud.commandBar': 'Barra de comando',
-  'hud.portraitPlaceholder': 'Retrato de seção placeholder',
   'hud.placeholderTag': 'placeholder',
   'hud.orderMove': 'Mover',
   'hud.orderAttack': 'Atacar',

@@ -134,3 +134,15 @@
 .app.game [data-window='summary'] .troop-gauge-word {
   font-weight: 600;
 }
+
+/* 3.5: the section card's picture fills the old portrait box. */
+.app.game [data-window='troops'] img.section-portrait {
+  object-fit: contain;
+  background: #2a1d12;
+}
+
+/* 3.6: eleven men in a row; a larger selection scrolls inside the row, not over the map. */
+.app.game [data-window='summary'] .troop-helmets {
+  max-height: 104px;
+  overflow-y: auto;
+}

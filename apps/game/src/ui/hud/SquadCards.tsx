@@ -1,8 +1,9 @@
-import { Soldier as User } from '../icons';
 import type { MessageKey } from '@prestes/content';
 import { ARMIES, type Frame } from '@prestes/shared';
 import { bar, type Translate } from './orderMeta';
 import { positionName } from './positionName';
+import { sectionThumbnail } from '../sectionThumbnail';
+import '../../styles/troop-thumbs.css';
 
 interface SquadCardsProps {
   t: Translate;
@@ -91,13 +92,15 @@ export function SquadCards({
                 }}
                 data-testid={`squad-${squadId}`}
               >
-                <span
-                  className="section-portrait"
-                  title={t('hud.portraitPlaceholder')}
-                  data-testid="portrait-placeholder"
-                >
-                  <User aria-hidden="true" size={17} />
-                </span>
+                {/* troop-thumbnails-and-panel 3.5: the section type's picture in place of the placeholder. */}
+                <img
+                  className="section-portrait section-thumb"
+                  src={sectionThumbnail(sectionType ?? (units[0]?.faction === 'legalist' ? 'infantaria-exercito' : 'fuzileiros'))}
+                  alt=""
+                  width={50}
+                  height={50}
+                  data-testid={`section-thumb-${squadId}`}
+                />
                 <span className="section-copy">
                   <strong data-testid={`squad-name-${squadId}`}>{t(nameKey)}</strong>
                   {army ? (

@@ -126,7 +126,7 @@ export function SoldierFigure({ cover, health, ammo, mark, selected, leader = fa
         <path d="M1.5 0 L2.1 1.2 L3.4 1.3 L2.4 2.1 L2.8 3.4 L1.5 2.7 L0.2 3.4 L0.6 2.1 L-0.4 1.3 L0.9 1.2 Z" transform="translate(0.5 0.15) scale(1.3)" fill="#e2b54a" stroke={INK} strokeWidth={0.3} data-mark="leader" />
       ) : null}
       {mark === 'pinned' ? (
-        <path d="M5 0 L9 0 L7 2 Z" fill="#e8743b" stroke={INK} strokeWidth={0.4} data-mark="pinned" />
+        <path d="M4 0 L10 0 L7 3 Z" fill={INK} stroke="#f1ead8" strokeWidth={0.5} data-mark="pinned" />
       ) : null}
       {mark === 'routed' ? <path d="M11 0 L11 5 M11 0 L14 1 L11 2" stroke="#f1ead8" strokeWidth={0.8} data-mark="routed" /> : null}
       {/* The clip: five cartridges on a strip, brass when full, empty slots dark. */}

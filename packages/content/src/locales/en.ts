@@ -59,7 +59,6 @@ export const en = {
   'hud.invalidCommand': 'Send invalid command',
   'hud.moveColumn': 'Move section',
   'hud.commandBar': 'Command bar',
-  'hud.portraitPlaceholder': 'Section portrait placeholder',
   'hud.placeholderTag': 'placeholder',
   'hud.orderMove': 'Move',
   'hud.orderAttack': 'Attack',
