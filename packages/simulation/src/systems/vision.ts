@@ -37,7 +37,7 @@ export interface VisionState {
   /** Where each side last saw each enemy soldier. */
   readonly lastSeen: Record<Side, Map<number, Sighting>>;
   /** Unseen fire each side has heard: the marker and where the shot really came from. */
-  readonly heard: Record<Side, Array<{ x: number; y: number; fromX: number; fromY: number; tick: number }>>;
+  readonly heard: Record<Side, Array<{ x: number; y: number; fromX: number; fromY: number; tick: number; radius: number }>>;
   /**
    * garrison-and-assault 3.3: the enemy garrisons each side knows of, by
    * position id: `occupied` once fired on from it unseen, `counted` once a
@@ -97,7 +97,8 @@ export function unseenFireMarker(
   }
   const x = shooter.x + offsetX * radius;
   const y = shooter.y + offsetY * radius;
-  heard.push({ x, y, fromX: shooter.x, fromY: shooter.y, tick });
+  // scrub-concealment-and-area-fire D4: the radius sizes an area-fire disc laid on this marker.
+  heard.push({ x, y, fromX: shooter.x, fromY: shooter.y, tick, radius });
   // garrison-and-assault 3.3: fire from a position tells the side under it that the position is held.
   if (shooter.garrison !== undefined && !ctx.vision.garrisons[listener].has(shooter.garrison)) {
     ctx.vision.garrisons[listener].set(shooter.garrison, 'occupied');

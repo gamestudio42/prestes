@@ -93,4 +93,20 @@ describe('the player\'s view under fog of war', () => {
     const out = view.apply(frame(1, [unit(1, 'column'), unit(40, 'legalist')], []));
     expect(out.units).toHaveLength(2);
   });
+
+  // scrub-concealment-and-area-fire.
+  it("keeps the player's area-fire disc and strips the enemy's", () => {
+    const view = new FogView('column');
+    const disc = { x: 0, y: 0, radius: 6 };
+    const out = view.apply(frame(1, [unit(1, 'column', { areaFire: disc }), unit(40, 'legalist', { areaFire: disc })], [40]));
+    expect(out.units.find((entry) => entry.id === 1)!.areaFire).toEqual(disc);
+    expect(out.units.find((entry) => entry.id === 40)!.areaFire).toBeUndefined();
+  });
+
+  it("drops an unseen enemy's area round that left no marker; keeps the player's own", () => {
+    const view = new FogView('column');
+    const shot = (source: number) => ({ type: 'shot' as const, tick: 1, source, target: -1, x: 0, y: 0, x2: 5, y2: 5, hit: false, area: true as const });
+    const out = view.apply(frame(1, [unit(1, 'column'), unit(40, 'legalist')], [], [shot(40), shot(1)]));
+    expect(out.events.filter((event) => event.type === 'shot').map((event) => event.type === 'shot' && event.source)).toEqual([1]);
+  });
 });

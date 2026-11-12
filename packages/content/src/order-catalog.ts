@@ -26,6 +26,8 @@ export const ORDER_CATALOG: readonly OrderDefinition[] = [
   { id: 'hold', category: 'movement', activation: 'immediate', labelKey: 'hud.orderHold', tipKey: 'hud.tip.hold' },
   { id: 'attack', category: 'fire', activation: 'target', labelKey: 'hud.orderAttack', tipKey: 'hud.tip.attack' },
   { id: 'suppress', category: 'fire', activation: 'target', labelKey: 'hud.orderSuppress', tipKey: 'hud.tip.suppress' },
+  // scrub-concealment-and-area-fire: fire into the area of a "?" or a lost enemy.
+  { id: 'area-fire', category: 'fire', activation: 'target', labelKey: 'hud.orderAreaFire', tipKey: 'hud.tip.areaFire' },
   { id: 'flank', category: 'fire', activation: 'target', labelKey: 'hud.orderFlank', tipKey: 'hud.tip.flank' },
   { id: 'aim', category: 'fire', activation: 'direction', labelKey: 'hud.orderFace', tipKey: 'hud.tip.face' },
   { id: 'defend', category: 'position', activation: 'area', labelKey: 'hud.orderDefend', tipKey: 'hud.tip.defend' },

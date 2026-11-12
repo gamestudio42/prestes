@@ -92,7 +92,7 @@ import { createBattleMemory, updateBattleFlow } from './systems/enemy-commander'
 import { createObjectives, objectiveHashState, objectiveSnapshot, updateObjectives, type ObjectiveState } from './systems/objectives';
 import { createVisionState, seenSnapshot, updateVision } from './systems/vision';
 import { createFerries, ferrySnapshot, headingForLanding, heldByFerry, updateFerries } from './systems/ferry';
-import { defaultConcealedFire } from './systems/concealment';
+import { defaultConcealedFire, settleLowInScrub } from './systems/concealment';
 import type { FerryState } from './systems/ferry';
 import { createPositions, garrisonSnapshot, pinGarrisons, updateGarrisons, type Garrison } from './systems/garrison';
 import { assaultSnapshot, updateAssaults, type Assault } from './systems/assault';
@@ -506,6 +506,7 @@ export class SimulationEngine implements SimContext {
       fire(this, nextTick, events);
       updatePursuit(this, nextTick, events);
       updateBattleFlow(this, nextTick, events);
+      settleLowInScrub(this);
       defaultConcealedFire(this);
       updateOfficerLoss(this, nextTick, events);
       applyOfficerAura(this);

@@ -159,6 +159,88 @@ describe('concealment', () => {
     expect(section.some((unit) => unit.fireOnContact)).toBe(false);
   });
 
+  // scrub-concealment-and-area-fire D1: scrub is x 40..80, y 120..160 on the test map.
+  it('standing in scrub: seen from 100 m', () => {
+    const t = field();
+    // East of the scrub, on open pasture, looking west.
+    t.place(t.observer, 160, 140, 0);
+    t.observer.facingX = -1;
+    t.place(t.enemy, 60, 140, -1);
+    t.enemy.stance = 'standing';
+    expect(t.look()).toBe(true);
+  });
+
+  it('crouched in scrub: hidden at 60 m, seen at 45 m', () => {
+    const t = field();
+    t.place(t.enemy, 60, 140, -1);
+    t.enemy.stance = 'crouched';
+    t.place(t.observer, 120, 140, 0);
+    t.observer.facingX = -1;
+    expect(t.look()).toBe(false);
+    t.observer.x = 105;
+    t.observer.targetX = 105;
+    expect(t.look()).toBe(true);
+  });
+
+  it('prone in scrub: hidden at 35 m, seen at 25 m', () => {
+    const t = field();
+    t.place(t.enemy, 70, 140, -1);
+    t.enemy.stance = 'prone';
+    t.place(t.observer, 105, 140, 0);
+    t.observer.facingX = -1;
+    expect(t.look()).toBe(false);
+    t.observer.x = 95;
+    t.observer.targetX = 95;
+    expect(t.look()).toBe(true);
+  });
+
+  it('running in the scrub: a crouched man seen at 90 m', () => {
+    const t = field();
+    t.place(t.observer, 150, 140, 0);
+    t.observer.facingX = -1;
+    t.place(t.enemy, 60, 140, -1);
+    t.enemy.stance = 'crouched';
+    expect(t.look()).toBe(false);
+    t.enemy.path = [{ x: 60, y: 150 }];
+    t.enemy.gait = 'run';
+    expect(t.look()).toBe(true);
+  });
+
+  // scrub-concealment-and-area-fire D2.
+  for (const faction of ['column', 'legalist'] as const) {
+    it(`a ${faction} section settling in the bushes crouches and is concealed`, () => {
+      const t = field();
+      t.engine.runTicks(1);
+      const squadId = t.engine.units.find((unit) => unit.faction === faction)!.squadId;
+      const section = t.engine.units.filter((unit) => unit.faction === faction && unit.squadId === squadId && unit.alive);
+      section.forEach((unit, index) => {
+        t.place(unit, 44 + (index % 6) * 6, 125 + Math.floor(index / 6) * 6, 1);
+        unit.stance = 'standing';
+        unit.stanceLocked = false;
+        unit.path = [];
+      });
+      t.engine.runTicks(2);
+      expect(section.every((unit) => unit.stance === 'crouched')).toBe(true);
+      const shown = t.engine.runTicks(1).units;
+      expect(shown.filter((unit) => section.some((man) => man.id === unit.id)).every((unit) => unit.concealed)).toBe(true);
+    });
+  }
+
+  it("the player's stance is kept in the bushes", () => {
+    const t = field();
+    t.engine.runTicks(1);
+    const section = t.engine.units.filter((unit) => unit.faction === 'column' && unit.squadId === 1 && unit.alive);
+    section.forEach((unit, index) => {
+      t.place(unit, 44 + (index % 6) * 6, 125 + Math.floor(index / 6) * 6, 1);
+      unit.path = [];
+    });
+    t.engine.enqueue({ type: 'stance', unitIds: section.map((unit) => unit.id), stance: 'standing' });
+    t.engine.runTicks(3);
+    expect(section.every((unit) => unit.stance === 'standing')).toBe(true);
+    const shown = t.engine.frame().units.filter((unit) => section.some((man) => man.id === unit.id));
+    expect(shown.some((unit) => unit.concealed)).toBe(false);
+  });
+
   it('running in the corn: seen at 14 m', () => {
     const t = field();
     t.place(t.observer, 60, 30, 1);

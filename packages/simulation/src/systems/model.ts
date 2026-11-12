@@ -194,6 +194,11 @@ export interface MutableUnit {
   elevation?: number;
   /** garrison-and-assault 1.5: the church whose tower he is in; its walls do not hide him nor his view. */
   inTower?: number;
+  /**
+   * scrub-concealment-and-area-fire: the disc he fires into and the tick the
+   * order ends; absent otherwise, so a battle without it hashes as before.
+   */
+  areaFire?: { x: number; y: number; radius: number; untilTick: number };
   reconContacts: number;
   rescueTargetId: number | null;
   rescueQueue: number[];

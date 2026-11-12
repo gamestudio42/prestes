@@ -23,6 +23,7 @@ import {
   nearestKnownEnemyAt,
   type CoverSlotView,
   type FireControl,
+  type FogExtras,
   type FormationKind,
   type Frame,
   type Posture,
@@ -33,6 +34,7 @@ import {
   type Vec2,
 } from '@prestes/shared';
 import { previewKey } from './previewKey';
+import { pickSuspectedContact } from './suspectedContact';
 import { battleMap as mapById, deploymentSlotView, positionNear, positionsFor, type BattleMapId, type DeploymentSlotView, type PositionDef } from '@prestes/shared';
 import type { OrderCallout, PlacementPreview } from '@prestes/view3d';
 import type { GameClient } from '../client/GameClient';
@@ -132,7 +134,8 @@ export function useOrders({
   const posture = selectedUnits[0]?.posture ?? 'balanced';
   // garrison-and-assault 4.1: Ocupar, Sair and Assaltar have no path preview.
   const positionOrder = pendingTactical === 'enter' || pendingTactical === 'exit' || pendingTactical === 'assault';
-  const previewOrder = positionOrder
+  // scrub-concealment-and-area-fire: Area fire has no path preview either.
+  const previewOrder = positionOrder || pendingOrder === 'area-fire'
     ? null
     : (pendingTactical ?? pendingOrder ?? (aimPending ? 'aim' : facingDrag || lineDrag ? 'move' : null));
   const needsTarget =
@@ -641,6 +644,10 @@ export function useOrders({
       handleSelectUnit(unitId);
       return;
     }
+    // scrub-concealment-and-area-fire: Area fire is laid on suspected contacts, not on seen men.
+    if (pendingOrder === 'area-fire') {
+      return;
+    }
     if (
       pendingTactical &&
       ['advance', 'defend', 'ambush', 'disperse', 'recon', 'reserve', 'exit'].includes(pendingTactical)
@@ -709,6 +716,17 @@ export function useOrders({
       }
       triggerOrderCallout('aim', selectedIds);
       setAimPending(false);
+      return;
+    }
+    // scrub-concealment-and-area-fire: Area fire takes the "?" or ghost clicked;
+    // a click on bare ground sends nothing and keeps the order armed.
+    if (pendingOrder === 'area-fire') {
+      const contact = pickSuspectedContact(frame as (Frame & FogExtras) | null, point);
+      if (contact && selectedIds.length > 0) {
+        clientRef.current?.sendCommand({ type: 'area_fire', unitIds: selectedIds, to: contact });
+        triggerOrderCallout('area-fire', selectedIds);
+        setPendingOrder(null);
+      }
       return;
     }
     // garrison-and-assault 4.1: Ocupar and Assaltar take the position clicked; Sair, the point.
@@ -908,6 +926,12 @@ export function useOrders({
     ) {
       setQueueNext(queue);
       handleOrder(order);
+      return;
+    }
+    // scrub-concealment-and-area-fire: armed, then a "?" or a ghost is clicked (never queued).
+    if (order === 'area-fire') {
+      setQueueNext(false);
+      handleOrder('area-fire');
       return;
     }
     if (

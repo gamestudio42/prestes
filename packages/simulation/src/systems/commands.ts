@@ -30,6 +30,21 @@ import { applyTacticalOrder, assignFlankPaths, beginWithdraw } from './orders';
 import { spawnDummy, spawnTroop, setTrainingPhase, despawnRole, reinforce } from './spawning';
 import { orderEnter, orderExit, releaseForOrder } from './garrison';
 import { orderAssault } from './assault';
+import { endAreaFire, orderAreaFire } from './area-fire';
+
+/** scrub-concealment-and-area-fire D6: the commands that are another order and end area fire. */
+const ENDS_AREA_FIRE: ReadonlySet<Command['type']> = new Set([
+  'move',
+  'move_line',
+  'attack',
+  'suppress',
+  'flank',
+  'withdraw',
+  'order',
+  'hold',
+  'face',
+  'assault',
+]);
 
 /**
  * A ground point an order may go to on a battle map: inside the bounds and
@@ -309,6 +324,15 @@ export function applyCommand(
     return;
   }
   const actionable = resolution.actionable;
+
+  // scrub-concealment-and-area-fire: area fire on a suspected contact; any other order ends it.
+  if (command.type === 'area_fire') {
+    orderAreaFire(ctx, actionable, command.to, tick, (reason) => reject(ctx, tick, envelope.seq, reason, events));
+    return;
+  }
+  if (ENDS_AREA_FIRE.has(command.type)) {
+    for (const unit of actionable) endAreaFire(unit);
+  }
 
   // garrison-and-assault: in and out of positions; ground orders take men out first.
   if (command.type === 'order' && command.order === 'enter') {

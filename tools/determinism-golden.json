@@ -4,10 +4,10 @@
   "hash": "0ae3084b",
   "battleMaps": {
     "campo-de-provas": "94b68f47",
-    "paiolzinho": "468bf801"
+    "paiolzinho": "5a549b2e"
   },
   "mixedRosters": {
     "campo-de-provas": "60476373"
   },
-  "reason": "the author authored objectives on the paiolzinho map"
+  "reason": "paiolzinho moved: route-around-wire (detours round wire) and scrub-concealment-and-area-fire (scrub conceals only a low man; sections settling in scrub crouch)"
 }

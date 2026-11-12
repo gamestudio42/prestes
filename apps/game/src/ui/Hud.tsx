@@ -2,6 +2,7 @@ import { translate, type Locale, type MessageKey, type OrderActivation } from '@
 import type { CameraBand } from '@prestes/view3d';
 import type {
   FireControl,
+  FogExtras,
   FormationKind,
   Frame,
   Posture,
@@ -18,6 +19,7 @@ import { orderLetter } from './hud/orderMeta';
 import { DeploymentBanner, type DeploymentRefusal } from './hud/DeploymentBanner';
 import { TroopSummary } from './hud/TroopSummary';
 import { WeaponCard } from './hud/WeaponCard';
+import { hasSuspectedContact } from '../hooks/suspectedContact';
 import {
   coversTitle,
   defaultPosition,
@@ -46,7 +48,7 @@ const layoutStorage = (): Storage | null => {
   }
 };
 
-export type OrderMode = 'move' | 'attack' | 'suppress' | 'flank';
+export type OrderMode = 'move' | 'attack' | 'suppress' | 'flank' | 'area-fire';
 
 export interface HudProps {
   locale: Locale;
@@ -299,6 +301,7 @@ export function Hud({
             stance={stance}
             formation={formation}
             selectedCount={selectedCount}
+            areaFireReady={hasSuspectedContact(frame as (Frame & FogExtras) | null)}
             onActivateOrder={onActivateOrder}
             onPosture={onPosture}
             onFireControl={onFireControl}

@@ -13,7 +13,8 @@ export const VEGETATION: Readonly<
 > = {
   cane: { height: 2.5, conceal: { standing: 10, crouched: 6, prone: 4 } },
   corn: { height: 2.0, conceal: { standing: 15, crouched: 8, prone: 5 } },
-  scrub: { height: 1.6, conceal: { standing: 40, crouched: 15, prone: 8 } },
+  // scrub-concealment-and-area-fire D1: only a man who keeps low is hidden, and only farther off.
+  scrub: { height: 1.6, conceal: { standing: null, crouched: 50, prone: 30 } },
   'tall-grass': { height: 1.0, conceal: { standing: null, crouched: 40, prone: 12 } },
 };
 

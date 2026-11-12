@@ -87,7 +87,13 @@ export class FogView {
 
     const shown = (unit: UnitSnapshot) =>
       unit.faction !== this.enemy || seen.has(unit.id) || this.seenDown.has(unit.id);
-    const units = frame.units.filter(shown);
+    // scrub-concealment-and-area-fire: an enemy's area-fire disc is his own business.
+    const units = frame.units.filter(shown).map((unit) => {
+      if (unit.faction !== this.enemy || unit.areaFire === undefined) return unit;
+      const rest = { ...unit };
+      delete rest.areaFire;
+      return rest;
+    });
 
     if (fresh) {
       const nowShown = new Map(units.map((unit) => [unit.id, unit]));
@@ -114,7 +120,7 @@ export class FogView {
       ...frame,
       units,
       ...(frame.garrisons ? { garrisons: this.garrisons(frame.garrisons) } : {}),
-      events: this.events(frame.events, seen),
+      events: this.events(frame.events, seen, frame.units),
       ghosts: [...this.ghosts.values()],
       markers: this.markers,
     };
@@ -134,9 +140,10 @@ export class FogView {
   }
 
   /** An unseen enemy's shot starts at its marker and names no shooter. */
-  private events(events: readonly SimEvent[], seen: ReadonlySet<number>): SimEvent[] {
-    return events.map((event) => {
-      if (event.type !== 'shot' || seen.has(event.source)) return event;
+  private events(events: readonly SimEvent[], seen: ReadonlySet<number>, all: readonly UnitSnapshot[]): SimEvent[] {
+    const enemy = (id: number) => all.some((unit) => unit.id === id && unit.faction === this.enemy);
+    return events.flatMap((event) => {
+      if (event.type !== 'shot' || seen.has(event.source)) return [event];
       const marker = events.find(
         (entry) =>
           entry.type === 'unseen_fire' &&
@@ -144,8 +151,12 @@ export class FogView {
           entry.target === event.target &&
           entry.tick === event.tick,
       );
-      if (!marker || marker.type !== 'unseen_fire') return event;
-      return { ...event, source: -1, x: marker.x, y: marker.y };
+      if (!marker || marker.type !== 'unseen_fire') {
+        // scrub-concealment-and-area-fire: an unseen enemy's area fire that
+        // left no marker (no one of ours in its disc) gives nothing away.
+        return event.area && enemy(event.source) ? [] : [event];
+      }
+      return [{ ...event, source: -1, x: marker.x, y: marker.y }];
     });
   }
 }

@@ -27,6 +27,8 @@ interface OrderBoardProps {
   onHurry: (on: boolean) => void;
   formation: FormationKind;
   selectedCount: number;
+  /** scrub-concealment-and-area-fire: a "?" or a ghost is shown to fire at. */
+  areaFireReady: boolean;
   onActivateOrder: (order: string, activation: OrderActivation, queue?: boolean) => void;
   onPosture: (posture: Posture) => void;
   onFireControl: (mode: FireControl) => void;
@@ -74,6 +76,7 @@ export function OrderBoard({
   onHurry,
   formation,
   selectedCount,
+  areaFireReady,
   onActivateOrder,
   onPosture,
   onFireControl,
@@ -99,17 +102,23 @@ export function OrderBoard({
                   pendingTactical === entry.id ||
                   (entry.id === 'aim' && aimPending) ||
                   currentOrder === entry.id;
+                // scrub-concealment-and-area-fire: Area fire needs a suspected contact on the map.
+                const unavailable = entry.id === 'area-fire' && !areaFireReady;
                 return (
                   <Tooltip
                     key={entry.id}
                     title={t(entry.labelKey)}
-                    description={`${t(entry.tipKey)} · ${t(ACTIVATION_LABEL[entry.activation])}`}
+                    description={
+                      unavailable
+                        ? `${t(entry.tipKey)} · ${t('hud.areaFireUnavailable')}`
+                        : `${t(entry.tipKey)} · ${t(ACTIVATION_LABEL[entry.activation])}`
+                    }
                   >
                     <button
                       type="button"
                       className={`action-button order-card ${active ? 'active' : ''}`}
                       onClick={(event) => onActivateOrder(entry.id, entry.activation, event.shiftKey)}
-                      disabled={selectedCount === 0}
+                      disabled={selectedCount === 0 || unavailable}
                       aria-label={t(entry.labelKey)}
                       aria-pressed={active}
                       data-testid={`order-${entry.id === 'aim' ? 'face' : entry.id}`}

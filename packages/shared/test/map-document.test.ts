@@ -257,6 +257,16 @@ describe('every object affects the battle', () => {
     expect(vegetationAt(0.5, 0.5)).toBe('scrub');
   });
 
+  // scrub-concealment-and-area-fire D1: a bush conceals as painted scrub.
+  it('behind a bush: only a man who keeps low is hidden, beyond 50 m crouched or 30 m prone', () => {
+    withObject('bush');
+    expect(vegetationAt(0, 0)).toBe('scrub');
+    expect(concealmentDistance(activeMapRuntime(), 0, 0, 'standing', false)).toBeNull();
+    expect(concealmentDistance(activeMapRuntime(), 0, 0, 'crouched', false)).toBe(50);
+    expect(concealmentDistance(activeMapRuntime(), 0, 0, 'prone', false)).toBe(30);
+    expect(concealmentDistance(activeMapRuntime(), 0, 0, 'crouched', true)).toBe(100);
+  });
+
   it('a painted cornfield conceals a crouched man from 8 m and a standing one from 15 m', () => {
     const map = flat();
     const side = 240;

@@ -1,4 +1,4 @@
-import { activeMapRuntime, concealmentDistance, REVEAL_RADIUS, REVEAL_TICKS } from '@prestes/shared';
+import { activeMapRuntime, concealmentDistance, REVEAL_RADIUS, REVEAL_TICKS, runtimeVegetationAt } from '@prestes/shared';
 import type { SimContext } from './context';
 import type { MutableUnit } from './model';
 
@@ -43,8 +43,8 @@ export function hiddenByVegetation(ctx: SimContext, observer: MutableUnit, targe
  * contact), so a long shot does not give it away. Once it has opened fire it
  * fires freely while it stays there; leaving the vegetation lifts the rule.
  */
-export function defaultConcealedFire(ctx: SimContext): void {
-  if (!activeMapRuntime()) return;
+/** The fit men of each side's sections, in unit order. */
+function fitSections(ctx: SimContext): MutableUnit[][] {
   const sections = new Map<string, MutableUnit[]>();
   for (const unit of ctx.units) {
     if (!unit.alive || unit.incapacitated || unit.routed || unit.dummy) continue;
@@ -54,7 +54,12 @@ export function defaultConcealedFire(ctx: SimContext): void {
     if (list) list.push(unit);
     else sections.set(key, [unit]);
   }
-  for (const section of sections.values()) {
+  return [...sections.values()];
+}
+
+export function defaultConcealedFire(ctx: SimContext): void {
+  if (!activeMapRuntime()) return;
+  for (const section of fitSections(ctx)) {
     const moving = section.some((unit) => unit.path.length > 0);
     const hidden = section.filter(
       (unit) => concealmentDistance(activeMapRuntime(), unit.x, unit.y, unit.stance, false) !== null,
@@ -68,6 +73,27 @@ export function defaultConcealedFire(ctx: SimContext): void {
       } else if (!moving && unit.autoContact === undefined && !unit.fireControlSet && !unit.holdFire && !unit.fireOnContact) {
         unit.fireOnContact = true;
         unit.autoContact = 'armed';
+      }
+    }
+  }
+}
+
+/**
+ * scrub-concealment-and-area-fire D2: scrub hides only a man who keeps low,
+ * so a section that halts in it (no man moving, most of them inside) crouches
+ * every standing man there whose stance the player has not set. A stance the
+ * player chose is kept. The same for both sides.
+ */
+export function settleLowInScrub(ctx: SimContext): void {
+  const runtime = activeMapRuntime();
+  if (!runtime) return;
+  for (const section of fitSections(ctx)) {
+    if (section.some((unit) => unit.path.length > 0)) continue;
+    const inScrub = section.filter((unit) => runtimeVegetationAt(runtime, unit.x, unit.y) === 'scrub');
+    if (inScrub.length * 2 <= section.length) continue;
+    for (const unit of inScrub) {
+      if (unit.stance === 'standing' && !unit.stanceLocked && unit.state !== 'pinned' && unit.garrison === undefined) {
+        unit.stance = 'crouched';
       }
     }
   }

@@ -21,6 +21,14 @@ import { VISION_RANGE, unseenFireMarker } from './vision';
 import { hiddenByVegetation, revealShooter } from './concealment';
 import { drawBelt, feedingGun, gunReady } from './machine-gun';
 import { facingDefender, garrisonCover } from './garrison';
+import {
+  AREA_FIRE_ACCURACY,
+  AREA_FIRE_MARGIN,
+  AREA_FIRE_SUPPRESSION,
+  AREA_SELF_DEFENCE,
+  endAreaFire,
+  updateAreaFire,
+} from './area-fire';
 
 /**
  * Ambush and fire on contact hold their fire beyond their radius: the shooter
@@ -60,6 +68,17 @@ export function acquireTargets(ctx: SimContext): void {
       continue;
     }
     if (unit.reserveMode || unit.recon) {
+      continue;
+    }
+    // scrub-concealment-and-area-fire D6: a man firing into an area picks no
+    // target, unless an enemy shows inside it or comes within 15 m of him.
+    if (unit.areaFire !== undefined) {
+      const sighted = areaFireSighting(ctx, unit);
+      if (!sighted) continue;
+      endAreaFire(unit);
+      unit.targetId = sighted.id;
+      unit.targetLocked = false;
+      engaged.set(sighted.id, (engaged.get(sighted.id) ?? 0) + 1);
       continue;
     }
     if (
@@ -268,8 +287,11 @@ function beyondSightSpotted(ctx: SimContext, shooter: MutableUnit, target: Mutab
 }
 
 export function fire(ctx: SimContext, tick: number, events: SimEvent[]): void {
+  updateAreaFire(ctx, tick);
   for (const unit of ctx.units) {
     const weapon = getWeapon(unit.weaponId);
+    // scrub-concealment-and-area-fire D7: area fire is an explicit order, fired under any fire control.
+    const area = unit.areaFire !== undefined && unit.targetId === null;
     if (
       !weapon ||
       !unit.alive ||
@@ -280,10 +302,10 @@ export function fire(ctx: SimContext, tick: number, events: SimEvent[]): void {
       unit.incapacitated ||
       unit.state === 'panicked' ||
       unit.state === 'pinned' ||
-      unit.holdFire ||
+      (unit.holdFire && !area) ||
       unit.reload > 0 ||
       unit.cooldown > 0 ||
-      unit.targetId === null ||
+      (unit.targetId === null && !area) ||
       unit.ferryId !== undefined ||
       // pre-battle-roster 4.3: a gun not yet set does not fire; its loaders feed it.
       !gunReady(unit) ||
@@ -297,6 +319,10 @@ export function fire(ctx: SimContext, tick: number, events: SimEvent[]): void {
       if (unit.reserve > 0) {
         unit.reload = weapon.reloadTicks;
       }
+      continue;
+    }
+    if (area) {
+      areaFireRound(ctx, unit, weapon, tick, events);
       continue;
     }
     const aimedFor =
@@ -439,65 +465,273 @@ export function fire(ctx: SimContext, tick: number, events: SimEvent[]): void {
     }
 
     if (hit) {
-      // faction-armies 3.1: morale falls at the rate his army and section define.
-      const moraleDamage = Math.round((unit.suppress ? 16 : 10) * weapon.suppression * unitValues(target).moraleLoss);
-      if (unit.nonLethal) {
-        target.morale = Math.max(25, target.morale - Math.round(moraleDamage * 0.5));
-        continue;
-      }
-      const spread = weapon.damageMax - weapon.damageMin;
-      const base = unit.suppress
-        ? Math.max(1, Math.round(weapon.damageMin * 0.5))
-        : weapon.damageMin;
-      const extra = unit.suppress ? Math.round(spread * 0.5) : spread;
-      const damage = base + Math.floor(ctx.rng.nextFloat() * (extra + 1));
-      // Two or three hits put a man down: whether he falls wounded or dead is
-      // drawn when he goes down (a man already severely wounded dies).
-      const severe = target.wound === 'severe';
-      target.hp = Math.max(0, target.hp - damage);
-      target.morale = Math.max(0, target.morale - moraleDamage);
-      events.push({ type: 'unit_hit', tick, unitId: target.id, damage, hp: target.hp });
-      if (target.hp === 0) {
-        target.targetId = null;
-        target.path = [];
-        target.pathIndex = 0;
-        if (target.dummy) {
-          target.alive = false;
-          events.push({ type: 'unit_died', tick, unitId: target.id });
-        } else if (severe || ctx.rng.nextFloat() < FATAL_SHARE) {
-          target.alive = false;
-          target.routed = false;
-          target.soldierState = 'dead';
-          target.wound = 'fatal';
-          target.currentOrder = null;
-          events.push({ type: 'unit_died', tick, unitId: target.id });
-        } else {
-          target.incapacitated = true;
-          target.soldierState = 'incapacitated';
-          target.wound = 'severe';
-          target.currentOrder = null;
-          events.push({ type: 'unit_incapacitated', tick, unitId: target.id });
-        }
-        if (!target.dummy) {
-          for (const ally of ctx.units) {
-            if (!ally.alive || ally.faction !== target.faction || ally.id === target.id) {
-              continue;
-            }
-            const distance = Math.sqrt((ally.x - target.x) ** 2 + (ally.y - target.y) ** 2);
-            if (distance <= 12) {
-              ally.morale = Math.max(0, ally.morale - Math.round(8 * unitValues(ally).moraleLoss));
-              ally.suppression = clamp(ally.suppression + 8 / suppressionDivisor(ally), 0, 100);
-            }
-          }
-        }
-      }
+      applyHit(ctx, unit, target, weapon, unit.suppress, tick, events);
     } else {
-      const moraleDamage = Math.round(
-        (unit.suppress ? 4 : 2) * weapon.suppression * Math.max(0.3, 1 - targetCover * 0.5) * unitValues(target).moraleLoss,
-      );
-      target.morale = Math.max(unit.nonLethal ? 25 : 0, target.morale - moraleDamage);
+      applyMissMorale(unit, target, weapon, targetCover, unit.suppress);
     }
   }
+}
+
+type Weapon = NonNullable<ReturnType<typeof getWeapon>>;
+
+/**
+ * A round that hits: damage, morale, and the man going down. `reduced` is
+ * suppressive or area fire (half damage, more morale lost).
+ */
+function applyHit(
+  ctx: SimContext,
+  unit: MutableUnit,
+  target: MutableUnit,
+  weapon: Weapon,
+  reduced: boolean,
+  tick: number,
+  events: SimEvent[],
+): void {
+  // faction-armies 3.1: morale falls at the rate his army and section define.
+  const moraleDamage = Math.round((reduced ? 16 : 10) * weapon.suppression * unitValues(target).moraleLoss);
+  if (unit.nonLethal) {
+    target.morale = Math.max(25, target.morale - Math.round(moraleDamage * 0.5));
+    return;
+  }
+  const spread = weapon.damageMax - weapon.damageMin;
+  const base = reduced
+    ? Math.max(1, Math.round(weapon.damageMin * 0.5))
+    : weapon.damageMin;
+  const extra = reduced ? Math.round(spread * 0.5) : spread;
+  const damage = base + Math.floor(ctx.rng.nextFloat() * (extra + 1));
+  // Two or three hits put a man down: whether he falls wounded or dead is
+  // drawn when he goes down (a man already severely wounded dies).
+  const severe = target.wound === 'severe';
+  target.hp = Math.max(0, target.hp - damage);
+  target.morale = Math.max(0, target.morale - moraleDamage);
+  events.push({ type: 'unit_hit', tick, unitId: target.id, damage, hp: target.hp });
+  if (target.hp === 0) {
+    target.targetId = null;
+    target.path = [];
+    target.pathIndex = 0;
+    if (target.dummy) {
+      target.alive = false;
+      events.push({ type: 'unit_died', tick, unitId: target.id });
+    } else if (severe || ctx.rng.nextFloat() < FATAL_SHARE) {
+      target.alive = false;
+      target.routed = false;
+      target.soldierState = 'dead';
+      target.wound = 'fatal';
+      target.currentOrder = null;
+      events.push({ type: 'unit_died', tick, unitId: target.id });
+    } else {
+      target.incapacitated = true;
+      target.soldierState = 'incapacitated';
+      target.wound = 'severe';
+      target.currentOrder = null;
+      events.push({ type: 'unit_incapacitated', tick, unitId: target.id });
+    }
+    if (!target.dummy) {
+      for (const ally of ctx.units) {
+        if (!ally.alive || ally.faction !== target.faction || ally.id === target.id) {
+          continue;
+        }
+        const distance = Math.sqrt((ally.x - target.x) ** 2 + (ally.y - target.y) ** 2);
+        if (distance <= 12) {
+          ally.morale = Math.max(0, ally.morale - Math.round(8 * unitValues(ally).moraleLoss));
+          ally.suppression = clamp(ally.suppression + 8 / suppressionDivisor(ally), 0, 100);
+        }
+      }
+    }
+  }
+}
+
+/** The morale a round that misses takes from the man it was fired at. */
+function applyMissMorale(unit: MutableUnit, target: MutableUnit, weapon: Weapon, targetCover: number, reduced: boolean): void {
+  const moraleDamage = Math.round(
+    (reduced ? 4 : 2) * weapon.suppression * Math.max(0.3, 1 - targetCover * 0.5) * unitValues(target).moraleLoss,
+  );
+  target.morale = Math.max(unit.nonLethal ? 25 : 0, target.morale - moraleDamage);
+}
+
+/** scrub-concealment-and-area-fire: an enemy a man's area fire can reach. */
+function areaEnemy(unit: MutableUnit, other: MutableUnit): boolean {
+  return (
+    other.alive &&
+    !other.incapacitated &&
+    !other.routed &&
+    !other.dummy &&
+    other.faction !== unit.faction &&
+    other.faction !== 'civilian' &&
+    (unit.faction === 'column' || other.faction !== 'target')
+  );
+}
+
+/** Rounds of area fire are aimed this high above the ground (m), for the line of fire. */
+const AREA_AIM_HEIGHT = 1;
+/** Points of the disc a shooter tries for a line before looking again. */
+const AREA_AIM_TRIES = 3;
+
+/**
+ * scrub-concealment-and-area-fire D6: the nearest enemy a man firing into an
+ * area sees inside its disc, or within AREA_SELF_DEFENCE of himself.
+ */
+function areaFireSighting(ctx: SimContext, unit: MutableUnit): MutableUnit | null {
+  const disc = unit.areaFire!;
+  let best: MutableUnit | null = null;
+  let bestDistance = Number.POSITIVE_INFINITY;
+  for (const other of ctx.units) {
+    if (!areaEnemy(unit, other)) continue;
+    const distance = (other.x - unit.x) ** 2 + (other.y - unit.y) ** 2;
+    const inDisc = (other.x - disc.x) ** 2 + (other.y - disc.y) ** 2 <= disc.radius * disc.radius;
+    if (!inDisc && distance > AREA_SELF_DEFENCE * AREA_SELF_DEFENCE) continue;
+    if (distance >= bestDistance || !visible(ctx, unit, other)) continue;
+    best = other;
+    bestDistance = distance;
+  }
+  return best;
+}
+
+/**
+ * scrub-concealment-and-area-fire D5: one round of area fire. Aimed at a
+ * seeded point of the disc, it rolls against the enemy in the disc nearest
+ * that point at AREA_FIRE_ACCURACY of the aimed chance (never above it), does
+ * reduced damage on a hit, and puts half a missed round's suppression on
+ * every enemy in the disc and AREA_FIRE_MARGIN beyond. It spends the round,
+ * gives the shooter away and leaves an unseen-fire marker like any shot.
+ */
+function areaFireRound(ctx: SimContext, unit: MutableUnit, weapon: Weapon, tick: number, events: SimEvent[]): void {
+  const disc = unit.areaFire!;
+  const range = engageRange(ctx, unit);
+  const toDisc = Math.sqrt((disc.x - unit.x) ** 2 + (disc.y - unit.y) ** 2);
+  if (toDisc > range) {
+    unit.cooldown = LOOK_AGAIN_TICKS;
+    return;
+  }
+  // A point in the disc the shooter has a line to: the "?" is laid off the
+  // true shooter, so its centre may sit behind a crest or a wall while part of
+  // the disc is open. Each try draws a point by rejection (no trigonometry in
+  // the simulation); with no line to any of them he looks again later.
+  const eye = eyeHeightForStance(unit.stance) + (unit.elevation ?? 0);
+  let aim: { x: number; y: number } | null = null;
+  for (let tryIndex = 0; tryIndex < AREA_AIM_TRIES && aim === null; tryIndex += 1) {
+    let offsetX = 0;
+    let offsetY = 0;
+    for (let attempt = 0; attempt < 8; attempt += 1) {
+      offsetX = ctx.rng.nextFloat() * 2 - 1;
+      offsetY = ctx.rng.nextFloat() * 2 - 1;
+      if (offsetX * offsetX + offsetY * offsetY <= 1) break;
+    }
+    const x = disc.x + offsetX * disc.radius;
+    const y = disc.y + offsetY * disc.radius;
+    const blocked = isLineBlocked(
+      unit.x,
+      unit.y,
+      x,
+      y,
+      ctx.covers,
+      ctx.sightObstacles,
+      eye,
+      AREA_AIM_HEIGHT,
+      unit.inTower,
+      undefined,
+      true,
+    );
+    if (!blocked) aim = { x, y };
+  }
+  if (aim === null) {
+    unit.cooldown = LOOK_AGAIN_TICKS;
+    return;
+  }
+  const aimX = aim.x;
+  const aimY = aim.y;
+  const burst = weapon.fire !== 'aimed' ? weapon.burst : undefined;
+  const burstStart = burst !== undefined && (unit.burstLeft ?? 0) <= 0;
+  if (burstStart) {
+    unit.burstLeft = burst.rounds[0] + Math.floor(ctx.rng.nextFloat() * (burst.rounds[1] - burst.rounds[0] + 1));
+  }
+
+  let candidate: MutableUnit | null = null;
+  let nearest = Number.POSITIVE_INFINITY;
+  for (const other of ctx.units) {
+    if (!areaEnemy(unit, other)) continue;
+    if ((other.x - disc.x) ** 2 + (other.y - disc.y) ** 2 > disc.radius * disc.radius) continue;
+    const distance = (other.x - aimX) ** 2 + (other.y - aimY) ** 2;
+    if (distance < nearest) {
+      candidate = other;
+      nearest = distance;
+    }
+  }
+  let hit = false;
+  let candidateCover = 0;
+  if (candidate) {
+    candidateCover =
+      garrisonCover(ctx, candidate) ?? coverAgainst(candidate.x, candidate.y, unit.x, unit.y, candidate.stance, ctx.covers);
+    const chance = areaHitChance(ctx, unit, candidate, candidateCover);
+    hit = ctx.rng.nextFloat() < chance;
+  }
+
+  events.push({
+    type: 'shot',
+    tick,
+    source: unit.id,
+    target: candidate?.id ?? -1,
+    x: unit.x,
+    y: unit.y,
+    x2: hit && candidate ? candidate.x : aimX,
+    y2: hit && candidate ? candidate.y : aimY,
+    hit,
+    ...(burst ? { burstStart } : {}),
+    area: true,
+  });
+  if (candidate) {
+    const marker = unseenFireMarker(ctx, unit, candidate, tick);
+    if (marker) events.push(marker);
+    markUnderFire(ctx, unit, candidate);
+  }
+  revealShooter(ctx, unit, tick);
+  unit.magazine -= 1;
+  unit.lastShotTick = tick;
+  unit.cooldown = weapon.fireIntervalTicks;
+  if (burst) {
+    unit.burstLeft = (unit.burstLeft ?? 1) - 1;
+    if (unit.magazine === 0) unit.burstLeft = 0;
+    if (unit.burstLeft > 0) unit.cooldown = burst.gapTicks;
+  }
+  if (unit.magazine === 0) drawBelt(ctx, unit);
+  if (unit.magazine === 0 && unit.reserve > 0) {
+    unit.reload = weapon.reloadTicks;
+  }
+
+  const reach = disc.radius + AREA_FIRE_MARGIN;
+  for (const other of ctx.units) {
+    if (!areaEnemy(unit, other)) continue;
+    if ((other.x - disc.x) ** 2 + (other.y - disc.y) ** 2 > reach * reach) continue;
+    const cover =
+      other === candidate
+        ? candidateCover
+        : (garrisonCover(ctx, other) ?? coverAgainst(other.x, other.y, unit.x, unit.y, other.stance, ctx.covers));
+    const gain = 12 * weapon.suppression * (1 - cover * 0.3) * AREA_FIRE_SUPPRESSION * (unit.nonLethal ? 0.05 : 1);
+    other.suppression = clamp(other.suppression + gain / suppressionDivisor(other), 0, 100);
+  }
+
+  if (candidate) {
+    if (hit) applyHit(ctx, unit, candidate, weapon, true, tick, events);
+    else applyMissMorale(unit, candidate, weapon, candidateCover, false);
+  }
+}
+
+/**
+ * scrub-concealment-and-area-fire D5: a round of area fire's chance to hit
+ * the man it rolls against: the weapon's accuracy, the range, his cover, the
+ * shooter's marksmanship and burst, times AREA_FIRE_ACCURACY, capped there.
+ */
+export function areaHitChance(ctx: SimContext, unit: MutableUnit, target: MutableUnit, targetCover: number): number {
+  const weapon = getWeapon(unit.weaponId);
+  if (!weapon) return 0;
+  const distance = Math.sqrt((target.x - unit.x) ** 2 + (target.y - unit.y) ** 2);
+  const rangeFactor = Math.max(0.25, 1 - (distance / engageRange(ctx, unit)) * 0.55);
+  const burst = weapon.fire !== 'aimed' ? weapon.burst : undefined;
+  return clamp(
+    weapon.accuracy * rangeFactor * (1 - targetCover) * unitValues(unit).accuracy * (burst ? burst.hitFactor : 1) * AREA_FIRE_ACCURACY,
+    0,
+    AREA_FIRE_ACCURACY,
+  );
 }
 
 /** Recon sweep: degrees each way and the cycle in ticks (4 s). */
@@ -521,6 +755,10 @@ export function updateFacing(ctx: SimContext): void {
         dx = target.x - unit.x;
         dy = target.y - unit.y;
       }
+    } else if (unit.areaFire !== undefined) {
+      // scrub-concealment-and-area-fire: he faces the area he fires into.
+      dx = unit.areaFire.x - unit.x;
+      dy = unit.areaFire.y - unit.y;
     } else if (unit.path.length > 0) {
       const point = unit.path[unit.pathIndex];
       if (point) {

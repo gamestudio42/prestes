@@ -652,6 +652,8 @@ export class SceneView {
     const fogged = frame as (Frame | InterpolatedFrame) & FogExtras;
     this.characters.updateGhosts(fogged.ghosts ?? [], this.rig.span);
     this.markers.update(fogged.markers ?? [], frame.tick, this.rig.span);
+    // scrub-concealment-and-area-fire: the discs the player's men fire into.
+    this.markers.updateAreaFire(frame.units);
     this.garrisonLayer.update((frame as Frame).garrisons ?? [], frame.units, this.selectedUnits, this.rig.span, (frame as Frame).assaults ?? []);
     this.objectiveLayer.update(frame, this.rig.span);
     this.paths.update(selectedOrders(frame.orders, this.selectedUnits), this.rig.span);

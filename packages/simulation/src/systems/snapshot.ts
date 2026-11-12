@@ -62,6 +62,10 @@ export function snapshotUnits(ctx: SimContext): UnitSnapshot[] {
       ...(unit.garrison !== undefined ? { garrison: unit.garrison } : {}),
       ...(unit.entering !== undefined ? { entering: unit.entering } : {}),
       ...(unit.elevation ? { elevation: unit.elevation } : {}),
+      // scrub-concealment-and-area-fire: the disc he fires into.
+      ...(unit.areaFire !== undefined
+        ? { areaFire: { x: unit.areaFire.x, y: unit.areaFire.y, radius: unit.areaFire.radius } }
+        : {}),
       role: unit.role,
       nonLethal: unit.nonLethal,
       ...(battleMap && unit.alive && isConcealed(ctx, unit) ? { concealed: true } : {}),

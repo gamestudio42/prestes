@@ -392,6 +392,8 @@ export function isLineBlocked(
   /** garrison-and-assault 1.5: a cover either end stands inside (a man in the matriz's tower), not in the way. */
   ignoreA?: number,
   ignoreB?: number,
+  /** scrub-concealment-and-area-fire D5: a line of fire, which crops do not stop. */
+  throughCrops = false,
 ): boolean {
   const startHeight = terrainHeightAt(ax, ay) + eyeHeight;
   const endHeight = terrainHeightAt(bx, by) + targetEyeHeight;
@@ -427,7 +429,7 @@ export function isLineBlocked(
       return true;
     }
   }
-  if (runtime && cropBlocksLine(runtime, ax, ay, startHeight, bx, by, endHeight)) {
+  if (runtime && !throughCrops && cropBlocksLine(runtime, ax, ay, startHeight, bx, by, endHeight)) {
     return true;
   }
   return false;

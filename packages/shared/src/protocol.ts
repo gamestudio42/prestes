@@ -84,6 +84,8 @@ export type UnitOrder =
   | OrderKind
   | 'attack'
   | 'suppress'
+  /** scrub-concealment-and-area-fire: firing into the area of a suspected contact. */
+  | 'area-fire'
   | 'aim'
   | 'hold'
   | 'flee'
@@ -230,6 +232,15 @@ export interface UnitSnapshot {
   gunState?: GunState;
   /** machine-gun-fire-feedback 3.1: ticks of set-up left while setting up (0 once set). */
   gunSetupLeft?: number;
+  /** scrub-concealment-and-area-fire: the disc he is firing into, while area fire lasts. */
+  areaFire?: AreaFireDisc;
+}
+
+/** scrub-concealment-and-area-fire: the ground an area-fire order is laid on. */
+export interface AreaFireDisc {
+  x: number;
+  y: number;
+  radius: number;
 }
 
 /** machine-gun-fire-feedback 3.1: what a machine gun is doing. */
@@ -278,7 +289,9 @@ export type RejectionReason =
   /** garrison-and-assault: an exit for men not inside, or an assault on a position the enemy does not hold. */
   | 'not_garrisoned'
   /** refine-battle-controls: a section already holds three queued orders. */
-  | 'queue_full';
+  | 'queue_full'
+  /** scrub-concealment-and-area-fire: area fire on a point near no contact the side holds. */
+  | 'no_suspected_contact';
 
 export type Command =
   /** `facing`: the way the section faces on arrival, formation kept. */
@@ -288,6 +301,8 @@ export type Command =
   | { type: 'attack'; unitIds: number[]; targetId: number; queue?: boolean }
   | { type: 'suppress'; unitIds: number[]; targetId: number; queue?: boolean }
   | { type: 'flank'; unitIds: number[]; targetId: number; queue?: boolean }
+  /** scrub-concealment-and-area-fire: fire into the area of a suspected contact at `to`. */
+  | { type: 'area_fire'; unitIds: number[]; to: Vec2 }
   | { type: 'withdraw'; unitIds: number[]; queue?: boolean }
   | {
       type: 'order';
@@ -370,6 +385,12 @@ export type SimEvent =
        * one sound per burst). Absent for aimed fire.
        */
       burstStart?: boolean;
+      /**
+       * scrub-concealment-and-area-fire: a round of area fire. `x2/y2` is its
+       * aim point in the disc (the man's place on a hit); `target` the man it
+       * rolled against, or -1 when the disc held no one.
+       */
+      area?: true;
     }
   | { type: 'unit_hit'; tick: number; unitId: number; damage: number; hp: number }
   | { type: 'unit_died'; tick: number; unitId: number }

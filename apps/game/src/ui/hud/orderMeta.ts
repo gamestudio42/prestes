@@ -22,6 +22,8 @@ export function orderLetter(order: UnitOrder): string {
       return 'Attack';
     case 'suppress':
       return 'Suppress';
+    case 'area-fire':
+      return 'AreaFire';
     case 'flank':
       return 'Flank';
     case 'aim':
@@ -68,6 +70,8 @@ export function orderLetter(order: UnitOrder): string {
 export const ICONS = {
   attack: pixelIcon('order-attack'),
   suppress: pixelIcon('order-suppress'),
+  // scrub-concealment-and-area-fire: a named placeholder until the owner's art pass.
+  'area-fire': pixelIcon('order-area-fire'),
   move: pixelIcon('order-move'),
   withdraw: pixelIcon('order-withdraw'),
   hold: pixelIcon('order-hold'),

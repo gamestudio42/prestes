@@ -31,6 +31,7 @@ export type {
   UnitOrder,
   UnitRole,
   UnitSnapshot,
+  AreaFireDisc,
   TrainingPhaseSetup,
   WoundSeverity,
   Vec2,
