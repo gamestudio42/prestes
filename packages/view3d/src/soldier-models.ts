@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { HELD_CLIPS, type SoldierClip, type SoldierOutfit } from './soldier-clips';
+import { clipFade, HELD_CLIPS, type SoldierClip, type SoldierOutfit } from './soldier-clips';
 import { toonGradient } from './materials';
 
 /**
@@ -83,11 +83,15 @@ export class SoldierInstance {
     next.timeScale = timeScale;
     if (clip === this.current) return;
     const previous = this.current ? this.actions.get(this.current) : undefined;
-    // From the stagger to the ground the blend is the fall itself: slower.
-    const falling = this.current === 'hit' && (clip === 'corpse' || clip === 'wounded' || clip === 'lying-wounded');
-    const fade = falling ? 0.5 : 0.3;
-    next.reset().setEffectiveWeight(1).fadeIn(fade).play();
-    previous?.fadeOut(fade);
+    // soldier-animation 2.3: a fixed short cross-fade; a death cuts in at once.
+    const fade = clipFade(clip);
+    if (fade === 0) {
+      for (const action of this.actions.values()) if (action !== next) action.stop();
+      next.reset().setEffectiveWeight(1).play();
+    } else {
+      next.reset().setEffectiveWeight(1).fadeIn(fade).play();
+      previous?.fadeOut(fade);
+    }
     this.current = clip;
   }
 

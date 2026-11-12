@@ -339,6 +339,17 @@ export function holdReady(readyUntil: number, now: number, wantsReady: boolean, 
   return readyUntil;
 }
 
+/** 2.3: every change of clip cross-fades over this fixed time (seconds). */
+export const CLIP_FADE_SECONDS = 0.2;
+
+/**
+ * The cross-fade into `to` (seconds): fixed for every change, none into a
+ * death or a corpse pose, which start at once (a death begins struck).
+ */
+export function clipFade(to: SoldierClip): number {
+  return to.startsWith('death-') || to === 'corpse' || to.startsWith('corpse-') ? 0 : CLIP_FADE_SECONDS;
+}
+
 /** A clip plays at least this long (ms) before an ordinary change. */
 export const MIN_CLIP_MS = 600;
 

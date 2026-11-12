@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CLIP_SPEED, DEATH_POSE, LOWER_MS, RAISE_MS, aimTransition, corpsePose, deathClip, deathVariant, shotSide, soldierClip, steadyClip } from '../src/soldier-clips';
+import { CLIP_FADE_SECONDS, CLIP_SPEED, clipFade, DEATH_POSE, LOWER_MS, RAISE_MS, aimTransition, corpsePose, deathClip, deathVariant, shotSide, soldierClip, steadyClip } from '../src/soldier-clips';
 
 /**
  * soldier-animation-and-textures 2.1: one test per scenario of the wound,
@@ -123,5 +123,21 @@ describe('death and corpse variants (2.2)', () => {
     const fronts = new Set(Array.from({ length: 20 }, (_, id) => deathClip('standing', 'front', deathVariant(id, 900))));
     expect(fronts).toEqual(new Set(['death-stand-front', 'death-stand-flank']));
     expect(new Set(Array.from({ length: 20 }, (_, id) => deathClip('prone', 'back', deathVariant(id, 900))))).toEqual(new Set(['death-prone']));
+  });
+});
+
+describe('clips blend (2.3)', () => {
+  it('every change cross-fades over a fixed time between 0.1 and 0.25 s', () => {
+    for (const clip of ['walk', 'limp', 'aim-stand', 'raise-stand', 'lying-wounded', 'carry', 'reload-prone'] as const) {
+      expect(clipFade(clip)).toBe(CLIP_FADE_SECONDS);
+    }
+    expect(CLIP_FADE_SECONDS).toBeGreaterThanOrEqual(0.1);
+    expect(CLIP_FADE_SECONDS).toBeLessThanOrEqual(0.25);
+  });
+
+  it('a death starts at once', () => {
+    for (const clip of ['death-stand-front', 'death-stand-back', 'death-stand-flank', 'death-crouch', 'death-prone', 'corpse', 'corpse-side'] as const) {
+      expect(clipFade(clip)).toBe(0);
+    }
   });
 });
