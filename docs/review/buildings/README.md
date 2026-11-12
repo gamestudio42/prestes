@@ -53,3 +53,5 @@ Roofs: hip, half-hip, gable (tile, old tile), thatch, zinc, lean-to and
 platband. Features: cornice, dado band, worn plaster, framed windows with
 shutters, doors with a step, alpendre/veranda on posts, chimney, awning,
 sign board, iron balcony, bell gable with cross, bell tower, steps, piles.
+
+Approved by the owner, 2026-11-12.
