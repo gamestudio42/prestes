@@ -5,7 +5,8 @@
 
 ## 1. Inventory and budgets
 
-- [ ] 1.1 List every Refloreste species with its adult, flowering and dead models, real height range and biome, and the candidate caatinga plants; verify: the owner confirms the list (species, forms, caatinga plants), recorded in `docs/status.md`
+- [x] 1.1 List every Refloreste species with its adult, flowering and dead models, real height range and biome, and the candidate caatinga plants; verify: the owner confirms the list (species, forms, caatinga plants), recorded in `docs/status.md`
+  - Done 2026-11-12: the owner left the fit to Claude; list and heights in `docs/status.md`, inventory in `docs/review/biome-trees/species-inventory.md`.
 - [x] 1.2 Size classes and triangle budgets measured from the five trees already adapted; the build fails over budget; verify with a build test on a fixture over budget
   - Done 2026-11-12: `tools/tree-budgets.ts` (bush under 2 m 300, small tree under 6 m 600, tree to 15 m 800, giant 1200); `pnpm models` fails naming the species and count; `tests/tools/tree-budgets.test.ts`.
 

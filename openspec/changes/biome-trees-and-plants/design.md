@@ -60,10 +60,11 @@ impostor crown (the existing strategic instancing for props) built by the
 same script, so a wooded large map stays in budget.
 
 **D5. Caatinga plants are authored in the Prestes kit.** New builders in
-`target_vegetation.py`, like the present mandacaru, xique-xique and
-macambira: columnar cacti from ribbed prisms, rosettes from blade fans.
-The species list is the owner's (task 1.1); the proposal's list is a
-candidate.
+`target_vegetation.py`: columnar cacti from ribbed prisms, rosettes from
+blade fans. The mandacaru, xique-xique, macambira and juazeiro have catalog
+entries but no builder yet (found at task 1.1), so every caatinga builder
+is new. The species list is fixed at task 1.1 and recorded in
+`docs/status.md`.
 
 **D6. Bushes are a family, not a species.** Per biome: three sizes, two
 shapes each, generated from the biome bush with different clump counts and

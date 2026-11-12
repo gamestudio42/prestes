@@ -264,6 +264,36 @@ The desk replaces the bookmark shell.
 - Known e2e failure still open: `desk.spec.ts` label gap (since `6412ac9`).
 - Hand check (5.2, the owner, 2026-11-11): names and armies on the cards read right; card icons and the troop panel wait for `troop-thumbnails-and-panel`; the wire crossing went to `route-around-wire`.
 
+## biome-trees-and-plants species list (1.1, 2026-11-12)
+
+The owner left the fit to Claude ("ajustar para que encaixe bem no jogo").
+Inventory: `docs/review/biome-trees/species-inventory.md` (19 Refloreste
+trees, a bush and a stump per biome, each tree adult, flowering and dead).
+
+- Heights: inside each species' real adult range, in its lower part so the
+  battle view stays readable; the sumaúma is the tallest, the manacá a small
+  tree. Refloreste's models are rescaled (several run over their own range).
+  The five ids already in maps (`tree-broad` 8 m, `tree-araucaria` 14 m,
+  `buriti` 12 m, `cerrado-tree` 6 m, `bush` 1.3 m) keep their heights, so
+  existing maps play the same.
+- Atlantic forest: araucária 22, mulungu 10, jequitibá 32, manacá-da-serra
+  6, palmito-juçara 10, pau-brasil 14, peroba-rosa 22.
+- Cerrado: aroeira 8, barbatimão 4, buriti 18, cagaita 5, ipê-amarelo 10,
+  pequi 7.
+- Amazon (outside the Column's main route): açaí 14, andiroba 25,
+  castanheira 32, seringueira 22, sumaúma 38, tucumã 12.
+- Caatinga, built in the Prestes kit: mandacaru 5, facheiro 5, xique-xique 1,
+  coroa-de-frade 0.4, palmatória 2, macambira 0.8 (thorn patch); juazeiro 7,
+  umbuzeiro 6, catingueira 6, jurema-preta 4. The aroeira (aroeira-do-sertão)
+  is listed in the caatinga too, sharing its model. Quipá and umburana left
+  out. The caatinga bush family is the marmeleiro.
+- Forms: every species' dead form (cheap, 8-259 triangles at the source)
+  and its stump per biome; flowering forms only where the flowers read at
+  battle scale: ipê-amarelo, mulungu, manacá-da-serra and pau-brasil.
+- Correction to design D5: the mandacaru, xique-xique, macambira and
+  juazeiro have catalog entries but no builder yet; all caatinga builders
+  are new.
+
 ## troop-thumbnails-and-panel verify (2026-11-12)
 
 - Sizes: 19 section thumbnails in `apps/game/public/assets/sections/`,
