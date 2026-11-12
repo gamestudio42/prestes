@@ -60,7 +60,8 @@ cleaner mode.
 
 The player HUD SHALL display the active camera band and a selection summary, and
 SHALL read only from the client mirror. The current tick, active path count and
-outcome SHALL be shown in the sandbox inspector, not in the player HUD. The HUD
+outcome SHALL NOT be shown in the player HUD; tests read them from the frame
+through the development test bridge. The HUD
 SHALL use Barlow / Barlow Condensed and Lucide icons.
 
 #### Scenario: HUD follows the simulation
@@ -70,9 +71,9 @@ SHALL use Barlow / Barlow Condensed and Lucide icons.
 
 #### Scenario: Debug readouts live in the sandbox
 
-- **WHEN** the sandbox panel is open
-- **THEN** it shows the current tick, active path count and outcome, and the
-  player top rail does not
+- **WHEN** a battle runs
+- **THEN** the player top rail shows no tick, path count or outcome readout,
+  and the development test bridge returns them in the frame
 
 #### Scenario: HUD action becomes a command
 
@@ -670,8 +671,7 @@ available.
 
 #### Scenario: Existing HUD controls remain
 
-- **WHEN** the player uses Preview, Hide HUD, speed, stance, formation, orders,
-  sandbox or codex
+- **WHEN** the player uses Preview, Hide HUD, speed, stance, formation or orders
 - **THEN** the control remains reachable and performs the same command as before
 
 ### Requirement: Period low-poly HUD styling
@@ -773,7 +773,7 @@ pointer or keyboard, using an accessible overflow when a region cannot fit.
 Every order, posture, stance and HUD control SHALL use one icon from a single
 icon map pointing at a slice of the pixel icon sheet, and no two controls that
 are visible at the same time SHALL share a slice. Icons SHALL match their
-meaning and the period: the codex a book, the sandbox a tool, Hold Fire a
+meaning and the period: the codex a book, Hold Fire a
 no-fire mark, the preview toggle an icon that differs from recon and ambush.
 Icons SHALL take the colour of their control's state.
 
@@ -808,7 +808,7 @@ rendered.
 ### Requirement: Command deck composition
 
 The HUD SHALL follow the command-deck composition: a top rail with brand, camera
-band control, language, codex, sandbox, pause, speed and post controls; a
+band control, language, pause, speed and post controls; a
 bottom-left squad card with portrait, name, alive count and health, ammunition and
 morale bars; a central order board with Fire, Movement and Troop sectors that
 list every order button; a posture, stance, Hold Fire, alternating movement and

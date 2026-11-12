@@ -66,7 +66,7 @@ systems can be checked in a short battle. Within the deployment areas'
 reach it SHALL hold at least a house, a sobrado and a church with its
 tower, a trench line, a walled yard, a stream with a ford, open ground
 crossed by cover lines, and open room for objectives. It SHALL be listed
-only in development builds and in the sandbox panel, never in the
+only in development builds, never in the
 published skirmish list. The determinism goldens, the battle reports, the
 benchmarks and the end-to-end suites SHALL run on it; it SHALL be editable
 in the editor like any map.

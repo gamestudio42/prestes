@@ -34,7 +34,7 @@ name and description.
 Map documents in the project's authored maps folder SHALL be registered in
 the map catalog at build time. The skirmish maps SHALL be offered on the
 skirmish page; campaign maps SHALL be reached through their chapter; the
-test map SHALL be offered only in development builds and the sandbox panel.
+test map SHALL be offered only in development builds.
 The content check SHALL compile and validate every authored map and SHALL
 fail the check on any error.
 
@@ -345,12 +345,11 @@ SHALL show it as a warning, not an error.
 ### Requirement: Map choice from authored maps
 
 The game SHALL offer the 3 vs 3 only on authored maps: the saved skirmish
-maps on the start menu and in the sandbox panel, and in development builds
+maps on the start menu, and in development builds
 the test map too. With no skirmish map saved, the start menu SHALL say so
 and point to the editor instead of offering a battle. Map names and
 one-line descriptions SHALL be localized in PT-BR and EN, from the map
-documents. A 3 vs 3 started without a map choice (tests, tools, the
-sandbox's default) SHALL run on the test map.
+documents. A 3 vs 3 started without a map choice (tests, tools) SHALL run on the test map.
 
 #### Scenario: Choose a map
 - **WHEN** the player picks a saved skirmish map on the start menu and starts the 3 vs 3

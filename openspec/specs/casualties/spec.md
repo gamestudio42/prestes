@@ -102,5 +102,5 @@ visually distinguishable.
 - **THEN** the view shows the casualty attached to the rescuer rather than walking independently
 
 #### Scenario: Sandbox casualty drill
-- **WHEN** the sandbox incapacitates the selected soldier
+- **WHEN** a test incapacitates the selected soldier through the development test bridge
 - **THEN** the soldier enters the incapacitated state deterministically and a rescue can be assigned without combat randomness
