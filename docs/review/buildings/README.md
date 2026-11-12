@@ -39,3 +39,17 @@ loft, which the model must show.
 | 15 | church (igreja matriz) | box; tower | the bell tower, a pediment façade, front steps, tall side windows |
 | 16 | factory (fábrica) | box; storey | brick walls, a row of gable roofs, a tall chimney, the upper floor's windows |
 | 17 | warehouse (galpão) | box; storey | zinc gable roof, sliding doors, a rail-side platform |
+
+## Roof and feature library (3.1)
+
+`sheet-kit.png` shows the library in `art-src/blender/buildings_kit.py`,
+one sample per roof form and feature, with the battle's openings of a real
+building where the sample is one (from `art-src/blender/openings.json`).
+Rendered from the tactical angle toward the street face by:
+
+    blender -b --factory-startup -P art-src/blender/review_buildings_kit.py -- <out_dir>
+
+Roofs: hip, half-hip, gable (tile, old tile), thatch, zinc, lean-to and
+platband. Features: cornice, dado band, worn plaster, framed windows with
+shutters, doors with a step, alpendre/veranda on posts, chimney, awning,
+sign board, iron balcony, bell gable with cross, bell tower, steps, piles.

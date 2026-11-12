@@ -382,6 +382,40 @@ def environment_atlas() -> Atlas:
         r = rng.random()
         return LEAF_DARK if r < 0.35 else LEAF if r < 0.85 else LEAF_LIGHT
 
+    def thatch(i, j, rng):
+        if j % 3 == 0 and rng.random() < 0.6:
+            return TAN
+        return GOLD if rng.random() > 0.45 else SAND if rng.random() > 0.3 else (150, 120, 70)
+
+    def zinc(i, j, rng):
+        if i % 4 == 0:
+            return METAL
+        return METAL_LIGHT if rng.random() > 0.12 else (150, 150, 140)
+
+    def brick(i, j, rng):
+        row = j // 4
+        offset = 3 if row % 2 else 0
+        if j % 4 == 3 or (i + offset) % 6 == 5:
+            return LIGHT
+        return (150, 72, 50) if rng.random() > 0.2 else RED_DARK
+
+    def worn(i, j, rng):
+        # Whitewash flaking off the adobe under it, worst near the ground.
+        patch = (i * 7 + j * 3) % 11 < 2 or (j > 10 and rng.random() < 0.3)
+        return SAND if patch else (PAPER if rng.random() > 0.06 else LIGHT)
+
+    def shutter(i, j, rng):
+        if i in (0, S - 1) or j in (0, S - 1):
+            return (40, 64, 48)
+        return (66, 104, 76) if j % 3 else (52, 84, 60)
+
+    def tile_old(i, j, rng):
+        if j % 4 == 0:
+            return DARK
+        if rng.random() < 0.18:
+            return (96, 88, 60)
+        return (128, 70, 50) if ((i + (j // 4) * 2) % 6) else RED_DARK
+
     swatches = [
         ("plaster", plaster(PAPER, LIGHT)),
         ("plaster.shade", plaster(LIGHT, SAND)),
@@ -405,6 +439,19 @@ def environment_atlas() -> Atlas:
         ("flag", noise(RED, RED_DARK, 0.15)),
         ("ink", noise(INK, DARK, 0.1)),
         ("hay", hay),
+        # revise-buildings-and-stone 3.1: roofs, washes and fittings of the
+        # 1920s interior (appended: the swatches above keep their cells).
+        ("thatch", thatch),
+        ("zinc", zinc),
+        ("brick", brick),
+        ("wash.ochre", plaster((214, 170, 92), (182, 138, 70))),
+        ("wash.blue", plaster((170, 190, 196), (136, 158, 166))),
+        ("wash.rose", plaster((214, 168, 150), (180, 134, 118))),
+        ("plaster.worn", worn),
+        ("trim", noise((128, 70, 46), (104, 54, 36), 0.12)),
+        ("shutter", shutter),
+        ("iron", noise((46, 44, 40), (70, 68, 62), 0.15)),
+        ("tile.old", tile_old),
     ]
     for index, (name, paint) in enumerate(swatches):
         x, y = cell(index)
