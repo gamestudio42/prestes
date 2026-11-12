@@ -60,8 +60,10 @@ impostor crown (the existing strategic instancing for props) built by the
 same script, so a wooded large map stays in budget.
 
 **D5. Caatinga plants are authored in the Prestes kit.** New builders in
-`target_vegetation.py`: columnar cacti from ribbed prisms, rosettes from
-blade fans. The mandacaru, xique-xique, macambira and juazeiro have catalog
+`target_caatinga.py` (moved out of `target_vegetation.py` at task 2.7, so
+they share the trees' vertex-coloured, flat-shaded look instead of the
+textured atlas, and write `trees-caatinga.glb` with the caatinga bushes):
+columnar cacti from ribbed prisms, rosettes from blade fans. The mandacaru, xique-xique, macambira and juazeiro have catalog
 entries but no builder yet (found at task 1.1), so every caatinga builder
 is new. The species list is fixed at task 1.1 and recorded in
 `docs/status.md`.

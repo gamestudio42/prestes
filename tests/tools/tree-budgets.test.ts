@@ -42,7 +42,7 @@ describe('tree triangle budgets', () => {
     const read = async (name: string) => meshTriangles(await new NodeIO().read(fileURLToPath(new URL(`../../apps/game/public/models/${name}`, import.meta.url))));
     expect(await read('trees.glb')).toHaveLength(5);
     // 2.2-2.5: Refloreste's adult trees, their dead forms, stumps and four flowering forms, one file per biome.
-    const counts = { 'trees-mata-atlantica.glb': 16, 'trees-cerrado.glb': 12, 'trees-amazonia.glb': 13 };
+    const counts = { 'trees-mata-atlantica.glb': 22, 'trees-cerrado.glb': 18, 'trees-amazonia.glb': 19, 'trees-caatinga.glb': 16 };
     for (const [file, count] of Object.entries({ 'trees.glb': 5, ...counts })) {
       const meshes = await read(file);
       expect(meshes, file).toHaveLength(count);

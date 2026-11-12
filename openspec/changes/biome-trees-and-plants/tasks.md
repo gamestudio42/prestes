@@ -24,8 +24,10 @@
   - Done 2026-11-12: every tree at 9 m or under (a first cut to 14 m was still too tall); the araucária, peroba, pequi and buriti adults are the legacy ids, lowered in the catalog too; the model check fails a tree over 9 m; sheet `docs/review/biome-trees/battle-scale-9m.png`.
 - [x] 2.5 Stumps, dead trees and the flowering forms chosen in 1.1; verify as 2.2
   - Done 2026-11-12 (Sonnet subagent, reviewed): a dead form for each of the 19 species, a stump per biome, flowering ipê-amarelo, mulungu, manacá and pau-brasil; on the same sheet.
-- [ ] 2.6 Bush families per biome, three sizes and two shapes each; verify on the review sheet
-- [ ] 2.7 Caatinga cacti, thorn plants, trees and shrubs in `target_vegetation.py`; verify on the review sheet and by the budget check
+- [x] 2.6 Bush families per biome, three sizes and two shapes each; verify on the review sheet
+  - Done 2026-11-12 (Sonnet subagent, reviewed): `bush-<biome>-<knee|waist|head>-<a|b>` in each Refloreste biome's file (100-200 triangles); the caatinga's marmeleiro family in `trees-caatinga.glb` (2.7); sheet `docs/review/biome-trees/bushes-2.6.png`.
+- [x] 2.7 Caatinga cacti, thorn plants, trees and shrubs in `target_vegetation.py`; verify on the review sheet and by the budget check
+  - Done 2026-11-12: `art-src/blender/target_caatinga.py` (design D5), `trees-caatinga.glb`: mandacaru, facheiro, xique-xique, coroa-de-frade, palmatória, macambira, juazeiro, umbuzeiro, catingueira, jurema-preta and the marmeleiro bushes (32-420 triangles); sheet `docs/review/biome-trees/caatinga-2.7.png`.
 
 ## 3. Catalog and battle data
 

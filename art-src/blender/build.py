@@ -3,7 +3,8 @@
   blender -b --factory-startup -P art-src/blender/build.py -- [targets...]
 
 Targets: smoke, soldier, buildings, fortifications, vegetation, props
-(no target: all). Each target saves an editable .blend and a .glb in
+(no target: all); `trees` (reads the Refloreste project) and `caatinga`
+(the caatinga plants) run only when named. Each target saves an editable .blend and a .glb in
 art-src/characters or art-src/environment; `pnpm models` then prepares them
 for the game.
 """

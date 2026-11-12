@@ -155,6 +155,22 @@ for _name, _legacy in LEGACY_ADULTS.items():
     _dead["height"] = TREES[_legacy]["height"]
     TREES[f"{_name.replace('-adult', '')}-dead"] = _dead
 
+# biome-trees-and-plants 2.6: bush families. Per biome three sizes (knee-,
+# waist- and head-high) and two shapes each: a round, b wider and flatter. A
+# bush is the biome's Refloreste bush as clumps, no trunk, spread to `width`.
+BUSH_BIOMES = (("mata-atlantica", "mata_atlantica", LEAF_ATLANTIC), ("cerrado", "cerrado", LEAF_CERRADO), ("amazonia", "amazonia", LEAF_AMAZON))
+# size -> height, then per shape (a, b): width, clumps, flattening
+BUSH_SIZES = {
+    "knee": (0.5, (("a", 1.2, 5, 0.75), ("b", 1.6, 6, 0.5))),
+    "waist": (1.0, (("a", 1.8, 7, 0.75), ("b", 2.4, 8, 0.5))),
+    "head": (1.8, (("a", 2.4, 9, 0.75), ("b", 3.0, 10, 0.5))),
+}
+for _id, _folder, _leaf in BUSH_BIOMES:
+    for _size, (_height, _shapes) in BUSH_SIZES.items():
+        for _shape, _width, _clumps, _flat in _shapes:
+            TREES[f"bush-{_id}-{_size}-{_shape}"] = species(
+                _folder, "bush", "bush", _height, _leaf, trunk=None, clumps=_clumps, flat=_flat, width=_width)
+
 # No tree over 9 m, about five soldiers (owner, 2026-11-12: no giant trees,
 # then lower again beside the 1.75 m soldier on the review sheet).
 MAX_TREE_HEIGHT = 9.0
