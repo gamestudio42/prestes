@@ -80,3 +80,5 @@ telegraph office, jail, town hall, school, market shed, water tank.
 Military: barracks block, guardhouse, depot. The stone corral and the
 cemetery wall are built stone and walls (4.2, 5.3), the wayside cross an
 object (5.1). Sources are noted on each catalog row.
+
+Approved by the owner, 2026-11-12.
