@@ -330,6 +330,55 @@ def hug(ground: Image.Image, box, card: Image.Image, card_box, seed: int) -> Ima
     return Image.fromarray(reference, 'RGBA')
 
 
+def drop_leaves(piece: Image.Image, keep) -> Image.Image:
+    """Clears what the reference left around a prop (leaves, map), except where
+    keep(ys, xs, leafy) says the prop itself is (the owner, 2026-11-12: "as bordas")."""
+    rgba = np.asarray(piece).copy()
+    ys, xs = np.mgrid[0:rgba.shape[0], 0:rgba.shape[1]]
+    r, g, b = (rgba[..., i].astype(int) for i in range(3))
+    leafy = (g >= r - 6) & (g > b + 4)
+    rgba[..., 3][~keep(ys, xs, leafy)] = 0
+    rgba[..., 3] = drop_specks(rgba[..., 3])
+    return Image.fromarray(rgba, 'RGBA')
+
+
+TIDY = {
+    # The cloth hangs to row 150; below it only the pole (x 30 on) stays.
+    'drape-orders': lambda ys, xs, leafy: (ys < 150) | ((xs >= 30) & ~leafy),
+    # The brass ring (centre 45, 61; outer radius ~39) and its hanger above.
+    'compass-bezel': lambda ys, xs, leafy: ((ys - 61) ** 2 + (xs - 45) ** 2 <= 40 ** 2) | (ys < 22),
+}
+
+
+# The strip's own beam top, and the props that stand above it (bedroll, box).
+STRIP_LEDGE = 17
+STRIP_PROPS = ((0, 40), (40, 172), (574, 682))
+
+
+def tidy_strip(strip: Image.Image, seed: int) -> Image.Image:
+    """Above the strip's beam the reference shows the map and the foot of the
+    Orders panel (the owner, 2026-11-12: "ainda tem um resto do outro menu");
+    only the props and the grass on the beam stay, the grass in blade tips."""
+    rgba = np.asarray(strip).copy()
+    rgb, alpha = rgba[..., :3], rgba[..., 3].copy()
+    r, g, b = (rgb[..., i].astype(int) for i in range(3))
+    leafy = (g >= r - 6) & (g > b + 4)
+    props = np.zeros(alpha.shape[1], bool)
+    for x0, x1 in STRIP_PROPS:
+        props[x0:x1] = True
+    top = np.zeros(alpha.shape, bool)
+    top[:STRIP_LEDGE] = True
+    alpha[top & ~props[None, :] & ~leafy] = 0
+    beam = alpha.copy()
+    fringe(rgb, beam, 't', STRIP_LEDGE, seed)
+    alpha[top & ~props[None, :]] = beam[top & ~props[None, :]]
+    alpha[:STRIP_LEDGE, STRIP_PROPS[-1][1]:] = 0  # under the Orders panel: map only, no grass
+    alpha = drop_specks(alpha)
+    alpha[-12:, STRIP_PROPS[1][0]:] = 255  # it sits on the screen's bottom edge: no notches
+    rgba[..., 3] = alpha
+    return Image.fromarray(rgba, 'RGBA')
+
+
 def main() -> None:
     reference, out = Path(sys.argv[1]), Path(sys.argv[2])
     out.mkdir(parents=True, exist_ok=True)
@@ -342,6 +391,10 @@ def main() -> None:
         if name == 'ground-left':
             card = next(p for n, p, _ in pieces if n == 'summary')
             piece = hug(piece, box, card, PIECES['summary'][0], seed=7)
+        if name in TIDY:
+            piece = drop_leaves(piece, TIDY[name])
+        if name == 'bottom-strip':
+            piece = tidy_strip(piece, seed=11)
         pieces.append((name, piece, insets))
         if name == 'summary':
             plate_name, crop = PLATE
