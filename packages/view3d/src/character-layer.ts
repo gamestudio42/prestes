@@ -12,6 +12,8 @@ import {
   shotSide,
   soldierOutfit,
   uniformVariant,
+  woundSide,
+  type WoundSide,
   steadyClip,
   turnToward,
   walkTimeScale,
@@ -93,6 +95,8 @@ interface CharacterView {
   shotFrom: { x: number; y: number } | null;
   /** soldier-animation 2.1: the death clip chosen when he fell. */
   death?: SoldierClip;
+  /** 3.4: the side of his wound, fixed when he is first seen wounded. */
+  woundSide?: WoundSide | null;
 }
 
 /** How far the rescuer kneels to the side of the man he treats (model metres). */
@@ -408,6 +412,11 @@ export class CharacterLayer {
         view.death = deathClip(unit.stance, side, deathVariant(unit.id, diedOn.get(unit.id) ?? frame.tick));
       }
       view.alive = unit.alive;
+      // 3.4: the side of his wound, from the shot that gave it.
+      const wounded = unit.wound !== 'none' || unit.incapacitated;
+      if (wounded && !view.woundSide) {
+        view.woundSide = woundSide(unit.id, unit.facingX, unit.facingY, view.shotFrom ? view.shotFrom.x - unit.x : undefined, view.shotFrom ? view.shotFrom.y - unit.y : undefined);
+      } else if (!wounded) view.woundSide = null;
       const down = !unit.alive || unit.incapacitated;
       if (struck.has(unit.id) || (down && !view.down)) {
         view.hitUntil = now + (down ? 260 : 320);
@@ -580,6 +589,7 @@ export class CharacterLayer {
         view.soldier.play(clip, authored ? walkTimeScale(view.speed, authored) : 1);
         // The rescuer kneels beside the man he treats, not on him.
         view.soldier.root.position.x = clip === 'kneel-treat' ? TREAT_OFFSET : 0;
+        view.soldier.setWound(view.woundSide ?? null);
         view.soldier.update(seconds);
         view.weapons?.apply(unit.weaponId, unit.gunSet === true, unit.alive && !unit.incapacitated && !unit.routed);
         marks.ring.visible = unit.alive && !unit.routed && !unit.incapacitated;

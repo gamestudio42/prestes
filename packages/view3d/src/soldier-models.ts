@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { clipFade, HELD_CLIPS, missingClips, SOLDIER_OUTFITS, UNIFORM_VARIANTS, wearsKepi, type SoldierClip, type SoldierOutfit } from './soldier-clips';
+import { clipFade, HELD_CLIPS, missingClips, SOLDIER_OUTFITS, UNIFORM_VARIANTS, wearsKepi, type SoldierClip, type WoundSide, type SoldierOutfit } from './soldier-clips';
 import { toonGradient } from './materials';
 
 /**
@@ -58,12 +58,19 @@ export async function loadSoldierAsset(base = './models/'): Promise<SoldierAsset
   };
 }
 
+/** 3.4: the blood patch: a thin slab on the side of the tunic (metres, bone space). */
+const BLOOD_OFFSET = 0.195;
+const BLOOD_GEOMETRY = new THREE.BoxGeometry(0.02, 0.15, 0.13);
+const BLOOD_MATERIAL = new THREE.MeshBasicMaterial({ color: 0x6e2820 });
+
 /** One soldier: a skinned clone, its mixer and the clip it is playing. */
 export class SoldierInstance {
   readonly root: THREE.Object3D;
   private readonly mixer: THREE.AnimationMixer;
   private readonly actions = new Map<string, THREE.AnimationAction>();
   private current: SoldierClip | null = null;
+  /** 3.4: the blood on the side of his wound, made when first needed. */
+  private blood: THREE.Mesh | null = null;
 
   constructor(asset: SoldierAsset, outfit: SoldierOutfit, variant = 0) {
     this.root = asset.clone(asset.scene);
@@ -102,6 +109,32 @@ export class SoldierInstance {
       previous?.fadeOut(fade);
     }
     this.current = clip;
+  }
+
+  /**
+   * 3.4: blood on his tunic on the side of his wound (+1 his right, -1 his
+   * left), or none. It rides on the chest bone, so it follows every clip.
+   */
+  setWound(side: WoundSide | null): void {
+    if (side === null) {
+      if (this.blood) this.blood.visible = false;
+      return;
+    }
+    if (!this.blood) {
+      const chest = this.root.getObjectByName('chest');
+      if (!chest) return;
+      this.blood = new THREE.Mesh(BLOOD_GEOMETRY, BLOOD_MATERIAL);
+      this.blood.name = 'blood-overlay';
+      chest.add(this.blood);
+    }
+    // Bone space: x across the body, y up the chest from the waist.
+    this.blood.position.set(side * BLOOD_OFFSET, 0.1, 0.02);
+    this.blood.visible = true;
+  }
+
+  /** The side his blood shows on, or null (tests and dev checks). */
+  get woundSide(): WoundSide | null {
+    return this.blood?.visible ? (this.blood.position.x > 0 ? 1 : -1) : null;
   }
 
   /** The clip of a fire burst restarts on each shot. */

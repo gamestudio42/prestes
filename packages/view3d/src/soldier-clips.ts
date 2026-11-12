@@ -333,6 +333,19 @@ export function soldierOutfit(unit: Pick<UnitSnapshot, 'kind' | 'faction'> & Par
   return `${ARMIES[army].uniform}-${unit.kind === 'officer' ? 'officer' : 'troop'}`;
 }
 
+/** 3.4: the side of the body a wound is on: +1 his right, -1 his left. */
+export type WoundSide = 1 | -1;
+
+/**
+ * 3.4: the side of his body that faced the shot (`dx, dy` toward the
+ * shooter); with no shot seen, a side by his id. His right is (-fy, fx) in
+ * map coordinates, the model's +x.
+ */
+export function woundSide(id: number, facingX: number, facingY: number, dx?: number, dy?: number): WoundSide {
+  if (dx === undefined || dy === undefined || (dx === 0 && dy === 0)) return fnv1a(`wound:${id}`) % 2 === 0 ? 1 : -1;
+  return dx * -facingY + dy * facingX >= 0 ? 1 : -1;
+}
+
 /** 3.3: each uniform set comes in this many variants. */
 export const UNIFORM_VARIANTS = 3;
 
