@@ -30,7 +30,7 @@ start, the rules and what each change decided:
 | Order | Change | Tasks | Lands |
 | --- | --- | --- | --- |
 | 1 | `faction-armies` | 18/18: armies, 19 section types, successor table, map version 6, names and the Forças compendium section, values in the simulation, setup screen, editor presets and HUD done; `pnpm verify` green but the known `desk.spec` gap; hand check done; archived | three armies (the Column, the legalist regulars, the patriotic battalions), period names for armies and sections, section types per army; starts with research into `docs/history/FORCES.md`, which also answers whether the police fought for the government |
-| 2 | `soldier-animation-and-textures` | 16/18 (4.2 done; owner hand check 4.3 open) | wound, carry and death clips, the crouch-walk and aim redone, blends, drawn uniform textures per army with variants |
+| 2 | `soldier-animation-and-textures` | 18/18, archived | wound, carry and death clips, the crouch-walk and aim redone, blends, drawn uniform textures per army with variants |
 | 3 | `troop-thumbnails-and-panel` | 15 | a rendered thumbnail for every section type (roster, cards, panel), roster type cards, the troop panel redrawn with one figure per soldier (helmet = cover, body = health, cartridge clip = ammunition), gauges and alerts |
 | 3b | `redo-battle-hud` | 17 | the battle HUD redone from the owner's reference (`referencias para hud/`): wood and leather frames drawn in Aseprite, docked panels that only collapse, the status row moved, contour and cover layers in the strategic view (off by default) |
 | 4 | `biome-trees-and-plants` | 18 | the whole Refloreste tree suite by biome adapted to Prestes, bush families, more cacti and caatinga plants |
@@ -282,4 +282,4 @@ The desk replaces the bookmark shell.
   the HUD differs: the area-fire button and the top bar; the 3D view is not
   in that shot, so no soldier baseline needed re-recording).
 - Review sheets: `docs/review/soldier-clips/` (README lists them and the
-  rough points). Left: the owner's hand check in a skirmish (4.3).
+  rough points). Owner's hand check (4.3, 2026-11-12): approved, "esta otimo".

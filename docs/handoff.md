@@ -7,17 +7,18 @@ task and delete the file once the last of these changes is archived.
 ## START HERE
 
 - **Branch `plan-art-factions-sound`.** Other sessions may have uncommitted
-  files in the checkout (map editor scale bar, `route-around-wire`, bush
-  concealment and area fire); never stage or commit them.
-- **`faction-armies` is done and archived** (`b9febe0`, archive `eab5426`,
-  `openspec/changes/archive/2026-11-11-faction-armies/`). Its specs are in
-  `openspec/specs/armies`, `force-roster` and `battle-lab`. The owner's hand
-  check and balance findings are in `docs/status.md` ("faction-armies apply").
-- **NEXT STEP: `soldier-animation-and-textures` task 0.1** (read the change,
-  check Blender and that `pnpm art` reproduces `soldier.glb`), then sections 1
-  and 2. Section 3 (uniform sets) can use the armies now.
-- The troop icons and detail panel come later, in `troop-thumbnails-and-panel`;
-  the owner wants the planned order kept.
+  files in the checkout; never stage or commit them. Commit with explicit
+  paths (`git commit -- <paths>`): other sessions stage files too.
+- **Done and archived:** `faction-armies` (2026-11-11) and
+  `soldier-animation-and-textures` (2026-11-12, archive
+  `openspec/changes/archive/2026-11-12-soldier-animation-and-textures/`, spec
+  `openspec/specs/soldier-art`). The owner approved the soldiers in a
+  skirmish ("esta otimo"). Results and sizes in `docs/status.md`.
+- **NEXT STEP: `troop-thumbnails-and-panel`**, then `redo-battle-hud` (both
+  approved by the owner, in that order; see the top of each `tasks.md`).
+- Known e2e failures not from these changes: `desk.spec` label gap,
+  `area-fire.spec` (fails on its own commit in a clean tree; its session was
+  told), the `battle-hud` baseline (waits for the HUD session).
 
 ## Rules of this repository
 
