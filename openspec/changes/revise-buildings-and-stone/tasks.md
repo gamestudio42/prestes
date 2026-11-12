@@ -5,7 +5,7 @@
 
 ## 1. Choices
 
-- [ ] 1.1 Candidate list of new buildings (rural, town, military), each with a source or "generic period type"; of rock kinds with the regions they stand for; of waterside, farm, town and camp objects (the tractor and the camp objects with a source or "generic period type"); and of new fences and walls; verify: the owner approves the lists, recorded in `docs/status.md`
+- [x] 1.1 Candidate list of new buildings (rural, town, military), each with a source or "generic period type"; of rock kinds with the regions they stand for; of waterside, farm, town and camp objects (the tractor and the camp objects with a source or "generic period type"); and of new fences and walls; verify: the owner approves the lists, recorded in `docs/status.md`
 - [ ] 1.2 Review sheet of the seventeen present buildings as drawn today, with the features each should gain; verify: the owner marks the sheet
 
 ## 2. Openings as one source

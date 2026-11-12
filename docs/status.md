@@ -382,7 +382,7 @@ trees, a bush and a stump per biome, each tree adult, flowering and dead).
 - Review sheets: `docs/review/soldier-clips/` (README lists them and the
   rough points). Owner's hand check (4.3, 2026-11-12): approved, "esta otimo".
 
-## revise-buildings-and-stone candidates (1.1, 2026-11-12, awaiting the owner)
+## revise-buildings-and-stone candidates (1.1, approved by the owner 2026-11-12)
 
 Determinism baseline before any change (0.1): seed 1922 0ae3084b;
 campo-de-provas 3v3 94b68f47; paiolzinho 3v3 06d97225; mixed-roster
