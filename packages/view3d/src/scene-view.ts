@@ -1137,7 +1137,7 @@ function surfaceColor(surface: TerrainSurface, palette?: BattleMap['palette']): 
   if (surface === 'mud') return PALETTE.mud;
   if (surface === 'crop') return PALETTE.fieldSoil;
   if (surface === 'tall-grass') return PALETTE.capim;
-  if (surface === 'scrub') return PALETTE.cerrado;
+  if (surface === 'scrub' || surface === 'thorns') return PALETTE.cerrado;
   if (surface === 'ford' || surface === 'water') return PALETTE.riverbed;
   if (surface === 'trench-floor') return PALETTE.terrainTrench;
   if (surface === 'bridge') return PALETTE.riverbed;

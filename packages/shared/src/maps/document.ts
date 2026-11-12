@@ -6,6 +6,7 @@ import {
   lineKind,
   solidBlocksSight,
   solidQuality,
+  type BushClass,
   type CatalogObject,
   type LineKind,
 } from './catalog-objects';
@@ -650,6 +651,12 @@ function offsetPolyline(points: readonly Vec2[], offset: number): Vec2[] {
 }
 
 const SCRUB = VEGETATION_KINDS.indexOf('scrub') + 1;
+/** biome-trees-and-plants D4: what a foliage object stamps, by the bush's height class. */
+const BUSH_VEGETATION: Readonly<Record<BushClass, number>> = {
+  knee: VEGETATION_KINDS.indexOf('low-bush') + 1,
+  waist: SCRUB,
+  head: VEGETATION_KINDS.indexOf('thicket') + 1,
+};
 
 /** The cover a catalog object gives, or null (buildings and foliage handled apart). */
 function objectCover(entry: CatalogObject, object: DocObject, id: number): CoverPoint | null {
@@ -801,6 +808,8 @@ export function compileMapDocument(source: EditableMap | MapDocument): BattleMap
     if (vegetationDensity[index]) anyDensity = true;
   }
   const objectConcealed = new Uint8Array(vegetation.length);
+  // Cells under a thorn patch (macambira): their surface becomes thorns, below the roads.
+  const thorny = new Uint8Array(vegetation.length);
   const stampMaterial = (index: number, material: GroundMaterialId): void => {
     paint[index] = groundMaterialIndex(material);
   };
@@ -923,12 +932,15 @@ export function compileMapDocument(source: EditableMap | MapDocument): BattleMap
       case 'decal':
         footprintCells((index) => stampMaterial(index, entry.footprint.kind === 'decal' ? entry.footprint.material : map.baseMaterial));
         continue;
-      case 'foliage':
+      case 'foliage': {
+        const kind = BUSH_VEGETATION[entry.bushClass ?? 'waist'];
         footprintCells((index) => {
           if (!vegetation[index]) objectConcealed[index] = 1;
-          vegetation[index] = SCRUB;
+          vegetation[index] = kind;
+          if (entry.thorns) thorny[index] = 1;
         });
         break;
+      }
       default: {
         const cover = objectCover(entry, object, coverId);
         if (cover) {
@@ -1003,7 +1015,7 @@ export function compileMapDocument(source: EditableMap | MapDocument): BattleMap
   // Surfaces: painted material, then roads (water and bridges go over in the bake).
   const surfaces = new Uint8Array(side * side);
   for (let index = 0; index < surfaces.length; index += 1) {
-    const surface = roadSurface.get(index) ?? groundMaterial(paint[index]!).surface;
+    const surface = roadSurface.get(index) ?? (thorny[index] ? 'thorns' : groundMaterial(paint[index]!).surface);
     surfaces[index] = SURFACES.indexOf(surface);
   }
 

@@ -101,7 +101,8 @@ function scrub(simple = false): Tri[] {
   return triangles;
 }
 
-const BUILDERS: Readonly<Record<VegetationKind, (simple?: boolean) => Tri[]>> = { corn, cane, 'tall-grass': capim, scrub };
+// The bushes' kinds sit under placed bush models, which the plant layer leaves alone; drawn as scrub if ever painted.
+const BUILDERS: Readonly<Record<VegetationKind, (simple?: boolean) => Tri[]>> = { corn, cane, 'tall-grass': capim, scrub, 'low-bush': scrub, thicket: scrub };
 
 const plantGeometries = new Map<string, THREE.BufferGeometry>();
 
@@ -165,6 +166,8 @@ export const PLANT_LOOK: Readonly<
   cane: { along: 0.55, across: 1.2, rows: true, colors: [PALETTE.cane, PALETTE.caneLight], sway: 0.03, size: 1 },
   'tall-grass': { along: 1.0, across: 1.0, rows: false, colors: [PALETTE.capim, PALETTE.grassLight, PALETTE.hay], sway: 0.05, size: 1 },
   scrub: { along: 2.6, across: 2.6, rows: false, colors: [PALETTE.scrub, PALETTE.leafDark, PALETTE.leaf], sway: 0.01, size: 1 },
+  'low-bush': { along: 2.6, across: 2.6, rows: false, colors: [PALETTE.scrub, PALETTE.leafDark, PALETTE.leaf], sway: 0.01, size: 0.5 },
+  thicket: { along: 2.6, across: 2.6, rows: false, colors: [PALETTE.scrub, PALETTE.leafDark, PALETTE.leaf], sway: 0.01, size: 1.3 },
 };
 
 /** At strategic span each kind shows at most this many clumps. */

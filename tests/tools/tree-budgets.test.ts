@@ -31,10 +31,10 @@ describe('tree triangle budgets', () => {
     expect(treeBudgetProblems(over, heightOf)).toEqual(['buriti: 801 triangles, over the tree budget of 800']);
     expect(treeBudgetProblems(meshTriangles(fixture('bush', 299)), heightOf)).toEqual([]);
     expect(treeBudgetProblems([{ name: 'nao-existe', triangles: 10 }], heightOf)).toEqual(['nao-existe: no height, so no size class']);
-    // A species not in the catalog yet is classed by its own height.
-    expect(treeBudgetProblems([{ name: 'sumauma', triangles: 700, height: 9 }], heightOf)).toEqual([]);
+    // A tree not in the catalog is classed by its own height.
+    expect(treeBudgetProblems([{ name: 'jatoba', triangles: 700, height: 9 }], heightOf)).toEqual([]);
     // No giant trees: over 9 m fails, naming the tree.
-    expect(treeBudgetProblems([{ name: 'sumauma', triangles: 700, height: 14 }], heightOf)).toEqual(['sumauma: 14.0 m, over the 9 m limit']);
+    expect(treeBudgetProblems([{ name: 'jatoba', triangles: 700, height: 14 }], heightOf)).toEqual(['jatoba: 14.0 m, over the 9 m limit']);
     expect(treeBudgetProblems([{ name: 'cagaita', triangles: 700, height: 5 }], heightOf)).toEqual(['cagaita: 700 triangles, over the small-tree budget of 600']);
   });
 

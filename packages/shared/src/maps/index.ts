@@ -18,6 +18,7 @@ export {
   runtimeWaterAt,
   SURFACES,
   VEGETATION_KINDS,
+  PAINTED_VEGETATION_KINDS,
   VEGETATION_DENSITIES,
   vegetationCell,
   vegetationKindOf,

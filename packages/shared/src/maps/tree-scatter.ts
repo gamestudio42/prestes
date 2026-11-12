@@ -1,5 +1,5 @@
 import type { Vec2 } from '../protocol';
-import { CATALOG_OBJECTS, catalogObject } from './catalog-objects';
+import { CATALOG_OBJECTS, catalogObject, isListed } from './catalog-objects';
 import { mapSide, type DocObject, type EditableMap } from './document';
 import { distanceToPolyline } from './geometry';
 import { growableCell } from './growth-mask';
@@ -51,7 +51,7 @@ export const BIOME_MIX: Record<TreeBiome, readonly { type: string; weight: numbe
 
 /** The catalog's tree group: the species the tool offers one by one. */
 export function treeSpecies(): string[] {
-  return CATALOG_OBJECTS.filter((entry) => entry.group === 'tree').map((entry) => entry.id);
+  return CATALOG_OBJECTS.filter((entry) => entry.group === 'tree' && isListed(entry)).map((entry) => entry.id);
 }
 
 export function isTreeObject(object: Pick<DocObject, 'type'>): boolean {

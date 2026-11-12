@@ -49,9 +49,14 @@ export const SURFACES: readonly TerrainSurface[] = [
   'bridge',
   'water',
   'sand',
+  // biome-trees-and-plants 3.2, appended: a raster cell stores the index.
+  'thorns',
 ];
 
-export const VEGETATION_KINDS: readonly VegetationKind[] = ['cane', 'corn', 'scrub', 'tall-grass'];
+// Appended only: a raster cell stores its kind's index + 1.
+export const VEGETATION_KINDS: readonly VegetationKind[] = ['cane', 'corn', 'scrub', 'tall-grass', 'low-bush', 'thicket'];
+/** The kinds the vegetation brush paints; the bushes' kinds come from placed bushes only. */
+export const PAINTED_VEGETATION_KINDS: readonly VegetationKind[] = ['cane', 'corn', 'scrub', 'tall-grass'];
 
 /**
  * author-game-maps: a painted vegetation cell holds its kind (1-based, low

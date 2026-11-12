@@ -297,6 +297,36 @@ describe('every object affects the battle', () => {
     expect(concealmentDistance(activeMapRuntime(), 0, 0, 'crouched', true)).toBe(100);
   });
 
+  // biome-trees-and-plants D4: a bush hides by its height class.
+  it('bush height classes: knee hides only the prone, waist the low, head every stance', () => {
+    const distances = (type: string) => {
+      withObject(type);
+      return (['standing', 'crouched', 'prone'] as const).map((stance) => concealmentDistance(activeMapRuntime(), 0, 0, stance, false));
+    };
+    expect(distances('bush-cerrado-knee-a')).toEqual([null, null, 30]);
+    expect(distances('bush-amazonia-waist-b')).toEqual([null, 50, 30]);
+    expect(distances('bush-caatinga-head-a')).toEqual([40, 25, 15]);
+    // A painted brush never lays the bushes' own kinds.
+    expect(VEGETATION_KINDS.slice(0, 4)).toEqual(['cane', 'corn', 'scrub', 'tall-grass']);
+  });
+
+  it('thorns slow: a macambira patch is thorny ground, slower than scrub, and still conceals', () => {
+    withObject('macambira');
+    expect(terrainSurfaceAt(0, 0)).toBe('thorns');
+    expect(surfaceSpeed('thorns')).toBeLessThan(surfaceSpeed('scrub'));
+    expect(vegetationAt(0, 0)).toBe('scrub');
+    expect(terrainSurfaceAt(5, 5)).not.toBe('thorns');
+  });
+
+  it('wide trunks stand solid, slim ones thin; dead trees lose the crown', () => {
+    expect(catalogObject('sumauma')?.footprint).toEqual({ kind: 'solid', cover: 'stone' });
+    expect(catalogObject('acai')?.footprint).toEqual({ kind: 'thin' });
+    expect(catalogObject('manaca')?.concealRadius).toBe(1.2);
+    expect(catalogObject('manaca-dead')?.concealRadius).toBeUndefined();
+    expect(catalogObject('ipe-flowering')).toMatchObject({ species: 'ipe', form: 'flowering', biome: 'cerrado' });
+    expect(catalogObject('tree-broad')).toMatchObject({ species: 'peroba', form: 'adult' });
+  });
+
   it('a painted cornfield conceals a crouched man from 8 m and a standing one from 15 m', () => {
     const map = flat();
     const side = 240;

@@ -16,6 +16,10 @@ export const VEGETATION: Readonly<
   // scrub-concealment-and-area-fire D1: only a man who keeps low is hidden, and only farther off.
   scrub: { height: 1.6, conceal: { standing: null, crouched: 50, prone: 30 } },
   'tall-grass': { height: 1.0, conceal: { standing: null, crouched: 40, prone: 12 } },
+  // biome-trees-and-plants D4: a knee-high bush hides only a man lying down; a head-high
+  // thicket hides him whatever he does, and better the lower he keeps. Waist-high is scrub.
+  'low-bush': { height: 0.5, conceal: { standing: null, crouched: null, prone: 30 } },
+  thicket: { height: 1.8, conceal: { standing: 40, crouched: 25, prone: 15 } },
 };
 
 /** A sight line through more than this much tall crop (m) below its top is cut. */

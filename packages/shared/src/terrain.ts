@@ -24,7 +24,9 @@ export type TerrainSurface =
   | 'bridge'
   | 'water'
   // add-map-editor: painted sand.
-  | 'sand';
+  | 'sand'
+  // biome-trees-and-plants 3.2: a thorn patch (macambira) under its plants.
+  | 'thorns';
 
 export interface TerrainFeature {
   id: string;
@@ -167,6 +169,8 @@ const SURFACE_SPEED: Readonly<Record<TerrainSurface, number>> = {
   crop: 0.7,
   'tall-grass': 0.9,
   scrub: 0.8,
+  // Picking a way through spiny bromeliads: slower than scrub, faster than a ford.
+  thorns: 0.55,
   mud: 0.6,
   ford: 0.5,
   'trench-floor': 0.6,

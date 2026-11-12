@@ -28,7 +28,8 @@ import {
   surfaceSpeed,
   toMapDocument,
   validateEditableMap,
-  VEGETATION_KINDS,
+  PAINTED_VEGETATION_KINDS,
+  isListed,
   type CatalogObject,
   type EditableMap,
   type GroundMaterialId,
@@ -638,7 +639,7 @@ function ToolProperties({ store, t }: { store: EditorStore; t: T }): ReactNode {
         {t('editor.prop.vegetation')}
         <select data-testid="prop-vegetation" value={settings.vegetation} onChange={(event) => set({ vegetation: Number(event.target.value) })}>
           <option value={0}>{t('editor.vegetation.none')}</option>
-          {VEGETATION_KINDS.map((kind, index) => (
+          {PAINTED_VEGETATION_KINDS.map((kind, index) => (
             <option key={kind} value={index + 1}>{t(`editor.vegetation.${kind}`)}</option>
           ))}
         </select>
@@ -740,7 +741,7 @@ function ToolProperties({ store, t }: { store: EditorStore; t: T }): ReactNode {
         {OBJECT_GROUPS.map((group) => (
           <details key={group} open={entry?.group === group}>
             <summary>{t(`editor.group.${group}`)}</summary>
-            {CATALOG_OBJECTS.filter((object) => object.group === group).map((object) => (
+            {CATALOG_OBJECTS.filter((object) => object.group === group && isListed(object)).map((object) => (
               <button key={object.id} type="button" data-object={object.id} aria-pressed={settings.objectType === object.id} onClick={() => set({ objectType: object.id })}>
                 {t(object.nameKey)}
               </button>

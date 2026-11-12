@@ -7,7 +7,8 @@ import type { TrenchLineDef } from './trench-lines';
 /** A battle map id: an authored map document's (author-game-maps; the hand-written maps are gone). */
 export type BattleMapId = string;
 
-export type VegetationKind = 'cane' | 'corn' | 'scrub' | 'tall-grass';
+// biome-trees-and-plants 3.2: 'low-bush' and 'thicket' come only from bushes (knee and head high).
+export type VegetationKind = 'cane' | 'corn' | 'scrub' | 'tall-grass' | 'low-bush' | 'thicket';
 
 /** A closed polygon, in map coordinates (x east, y south). */
 export type Polygon = readonly Vec2[];

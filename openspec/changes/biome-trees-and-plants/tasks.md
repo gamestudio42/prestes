@@ -31,9 +31,9 @@
 
 ## 3. Catalog and battle data
 
-- [ ] 3.1 Catalog entries for every species: footprint, sight, concealment radius or height class, biome; old ids kept as aliases mapped on load; verify with unit tests of the aliases and that `campo-de-provas` and `paiolzinho` load unchanged with their goldens
-- [ ] 3.2 Bush concealment by height class and the thorn patches' movement factor; verify with simulation tests of the bush and thorn scenarios
-- [ ] 3.3 Names in EN and PT-BR for every species and bush; the content check for model, names and biome; verify with `pnpm check:locales`, `pnpm check:content`
+- [x] 3.1 Catalog entries for every species: footprint, sight, concealment radius or height class, biome, species and form (D5b); the old ids are their species' adults (tree-broad the peroba, cerrado-tree the pequi), so no aliases are needed; entries the view cannot draw yet stay out of the editor until 4.1; verify with unit tests of the footprints and forms, a check that every catalog height matches its model, and that `campo-de-provas` and `paiolzinho` load unchanged with their goldens
+- [x] 3.2 Bush concealment by height class and the thorn patches' movement factor; verify with simulation tests of the bush and thorn scenarios
+- [x] 3.3 Names in EN and PT-BR for every species and bush; the content check for model, names and biome; verify with `pnpm check:locales`, `pnpm check:content`
 
 ## 4. View and editor
 

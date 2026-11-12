@@ -1,5 +1,6 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { floraProblems, readModelHeights } from './flora-check';
 import { SECTION_THUMBS_DIR, sectionThumbProblems } from './section-thumbs-hash';
 import {
   CAMPAIGN_CHAPTERS,
@@ -19,7 +20,7 @@ import {
   validateNameRegister,
   type MissionMetadata,
 } from '@prestes/content';
-import { ARMIES, SECTION_TYPES, validateArmies, validateSectionTypes, validateWeapons, WEAPONS } from '@prestes/shared';
+import { ARMIES, CATALOG_OBJECTS, SECTION_TYPES, validateArmies, validateSectionTypes, validateWeapons, WEAPONS } from '@prestes/shared';
 
 const root = process.cwd();
 const errors: string[] = [];
@@ -156,6 +157,11 @@ const nameIds = [...Object.keys(ARMIES).map((id) => `army:${id}`), ...Object.key
 errors.push(...validateNameRegister(parseNameRegister(readFileSync(resolve(root, 'docs/history/FORCES.md'), 'utf8')), nameIds, SOURCE_KEYS));
 
 // author-game-maps 3.6: every battle map is an authored document; tools/check-maps.ts checks them.
+
+// biome-trees-and-plants 3.1, 3.3: every tree and plant has its model, height, names and biome.
+errors.push(
+  ...floraProblems(CATALOG_OBJECTS, await readModelHeights(), (key) => LOCALES.filter((locale) => !(key in messages[locale]))),
+);
 
 if (errors.length > 0) {
   for (const error of errors) {
