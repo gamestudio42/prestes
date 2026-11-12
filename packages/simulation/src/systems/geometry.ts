@@ -3,7 +3,6 @@ import {
   clampToRegion as clampPointToRegion,
   eyeHeightForStance,
   isLineBlocked,
-  isPointBlockedByCovers,
 } from '@prestes/shared';
 import type { Faction, Stance, Vec2 } from '@prestes/shared';
 import type { MutableUnit } from './model';
