@@ -61,3 +61,5 @@ Approved by the owner, 2026-11-12.
 `sheet-rural.png` sets the seven rural buildings before and after, front
 and back, as the battle draws them; the single pictures are in `after/`.
 All seven pass the model check (`pnpm check:content`).
+
+Approved by the owner, 2026-11-12.

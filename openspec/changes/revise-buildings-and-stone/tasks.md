@@ -17,7 +17,7 @@
 ## 3. Buildings
 
 - [x] 3.1 The roof and feature library in `buildings_kit.py` (gable, hip, lean-to, thatch, zinc; veranda, tower, chimney, plinth, frames); verify on the review sheet
-- [ ] 3.2 Rural buildings remodelled (farmhouse, barn, chapel, casa-sede, colonist-house, engenho, ferry-house); verify with the model check and the review sheet
+- [x] 3.2 Rural buildings remodelled (farmhouse, barn, chapel, casa-sede, colonist-house, engenho, ferry-house); verify with the model check and the review sheet
 - [ ] 3.3 Town buildings remodelled (terraced-house, terraced-house-wide, sobrado, casa-terrea, venda, armazem, coreto, church, factory, warehouse); verify as 3.2
 - [ ] 3.4 The approved new buildings: builder, catalog row, openings, capacity, names in EN and PT-BR; verify with the model check, `pnpm check:content`, and a simulation test that a section enters, mans and is assaulted in one new building of each group
 - [ ] 3.5 Variants: atlas regions, the map document's `variant` (a new version that loads the older ones), the editor's picker; verify with the two-looks determinism test and a loader test of an older map
