@@ -15,7 +15,7 @@ fourteen are boxes drawn in code. Doors, windows, upper floors and the
 church tower are battle data (`packages/shared/src/maps/openings.ts`) and
 do not move; the model is fitted to them.
 
-## Features each building could gain (for the owner to mark)
+## Features each building gains (approved by the owner, 2026-11-12)
 
 All of the 1920s interior of Brazil. "Upper" is the battle's upper floor or
 loft, which the model must show.

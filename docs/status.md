@@ -429,3 +429,6 @@ corrugated asbestos appears.
 - Fences and walls: rail fence (tronqueira), bamboo or taquara fence, wattle
   fence (pau-a-pique), adobe wall, whitewashed wall with a coping, iron
   railing (generic).
+- Review sheet (1.2): `docs/review/buildings/sheet-before.png`; the owner
+  approved the suggested features of all seventeen buildings as listed in
+  `docs/review/buildings/README.md` (2026-11-12).
