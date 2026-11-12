@@ -125,7 +125,9 @@ it SHALL give no cover and SHALL NOT change where men can move.
 Historical note: the Column crossed the Paraná with about 1,500 men, 600
 horses and mules and three 75 mm guns, later abandoned
 (`docs/history/FORCES.md`, Macaulay pp. 87-89); each camp object's catalog
-note says whether it is a documented or a generic period type. The sea
+note says whether it is a documented or a generic period type. Every
+object SHALL be of a type in use in Brazil in the 1920s (motor vehicles of
+the Ford T and TT kind, fuel in tins, no concrete or plastic). The sea
 objects are for skirmish maps.
 
 #### Scenario: A canoe on the bank

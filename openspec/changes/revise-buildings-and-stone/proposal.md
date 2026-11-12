@@ -48,8 +48,9 @@ the art kit already has an aid tent the catalog does not offer.
   net, fish traps, a wooden landing stage (trapiche) and mooring posts.
 - **Farm objects**: a broken tractor, an ox cart, a plough, a cane press,
   coffee sacks, a hen house, a pigsty, a cart wheel and a millstone.
-- **Town objects**: a broken-down motor car, a square bench, a fountain, a
-  market stall, fuel drums, a street sign and a kiosk.
+- **Town objects**: a broken-down motor car and lorry (Ford T and TT
+  types), a square bench, a fountain, a market stall, kerosene and petrol
+  tins in their crates, an enamelled street sign and a kiosk.
 - **The Column's camp and train**: canvas tents (a ridge tent, a bell tent,
   the aid tent the kit already has, a poncho lean-to), carts and pack
   saddles, barrels and ammunition boxes, a campfire with its pot, a rifle
@@ -88,7 +89,8 @@ with about 1,500 men, 600 horses and mules and three 75 mm guns, later
 hidden in Mato Grosso (`docs/history/FORCES.md`, Macaulay pp. 87-89); the
 river boats, the horse line and the abandoned gun rest on that, and each
 camp object's note says whether it is documented or a generic period type.
-The Column never reached the sea: the sea objects are for skirmish maps.
+Every object is of the 1920s in the interior of Brazil: no steel fuel
+drums, concrete, plastic or later vehicles. The Column never reached the sea: the sea objects are for skirmish maps.
 The tractor is a 1910s imported type (the Fordson, sold in Brazil from
 about 1917) and needs a source in task 1.1 or is marked a generic period
 type. Buildings follow Brazilian rural, small-town and

@@ -387,7 +387,11 @@ trees, a bush and a stump per biome, each tree adult, flowering and dead).
 Determinism baseline before any change (0.1): seed 1922 0ae3084b;
 campo-de-provas 3v3 94b68f47; paiolzinho 3v3 06d97225; mixed-roster
 60476373. Sources are Macaulay page numbers (book pages), paraphrased;
-"generic" means a generic period type with no source of its own.
+"generic" means a generic period type with no source of its own. Every
+item is of the 1920s in the interior of Brazil (owner, 2026-11-12): motor
+vehicles are Ford T and TT types, fuel comes in tins in wooden crates (no
+steel drums), lighting is oil or carbide, and no concrete, plastic or
+corrugated asbestos appears.
 
 - Buildings, rural: wattle-and-daub house (generic), thatched ranch
   (generic), stone corral (Macaulay p. 111, a ranch corral), flour house
@@ -407,12 +411,14 @@ campo-de-provas 3v3 94b68f47; paiolzinho 3v3 06d97225; mixed-roster
   canoa de tolda, jangada, boat turned over, drying line with a net, fish
   traps, landing stage, mooring posts (generic).
 - Farm: ox cart (pp. 102, 125: the government convoy's carts of
-  ammunition), broken tractor (generic: no mention in Macaulay), plough,
+  ammunition), broken tractor of the Fordson type, imported from about 1917 and rare
+  outside the large São Paulo estates (generic: no mention in Macaulay), plough,
   cane press, coffee sacks, hen house, pigsty, cart wheel, millstone
   (generic).
-- Town: broken-down motor car and lorry (automobiles pp. 43-58, the
-  government's lorries pp. 101-110), square bench, fountain, market stall,
-  fuel drums, street sign, kiosk (generic).
+- Town: broken-down motor car and lorry of the Ford T and TT types
+  (automobiles pp. 43-58, the government's lorries pp. 101-110), square
+  bench, fountain, market stall, kerosene and petrol tins in their wooden
+  crates, enamelled street sign, kiosk (generic).
 - The Column's camp and train: officers' tents with a field cot and a
   hammock (pp. 142-143), saddles (pp. 51, 141), pack saddles for the mules
   (pp. 93, 143), barrels (p. 110, a barrel pontoon), ammunition boxes,
