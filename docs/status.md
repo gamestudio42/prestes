@@ -275,8 +275,8 @@ The desk replaces the bookmark shell.
   change, strict) pass.
 - Bundle budget fails on index CSS: 135,659 B against 120,000 B. It was
   already 132,159 B at dafdf14, after the battle HUD redo; this change adds
-  about 3.2 KB. Raising the limit or trimming the legacy HUD sheets is the
-  owner's call.
+  about 3.2 KB. The owner raised the limit to 140,000 B (2026-11-12); the
+  working tree with other sessions' uncommitted CSS builds to 137,896 B.
 - e2e: 133 passed, 4 failed, none from this change: the `desk.spec` label
   gap (known before); `editor.spec` playtest, where the HUD top bar's
   actions cover "Back to the editor" (redo-battle-hud layout); and the two
