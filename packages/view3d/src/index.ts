@@ -31,7 +31,7 @@ export { ObjectiveLayer, type ObjectiveMark } from './objective-layer';
 
 
 export { BattleMapLayer, propPreview } from './battle-map-layer';
-export { renderThumbnails } from './thumbnails';
+export { buildSectionScene, renderSectionThumbnails, renderThumbnails, sectionComposition, type SectionFigure } from './thumbnails';
 export { DEPLOYMENT_MARK_SECONDS, type DeploymentLabels } from './deployment-layer';
 export { PaintedGround, GROUND_CHUNK, type GroundOverlay } from './painted-ground';
 export { groundAtlasPixels } from './ground-atlas';
