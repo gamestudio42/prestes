@@ -362,6 +362,18 @@
   color: #fff;
 }
 
+/* biome-trees-and-plants 4.2: the species grouped by biome. */
+.editor-tree-group {
+  display: contents;
+}
+
+.editor-tree-group h5 {
+  grid-column: 1 / -1;
+  margin: 6px 0 2px;
+  font-size: 11px;
+  opacity: 0.8;
+}
+
 .editor-tree-species {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));

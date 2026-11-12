@@ -3,6 +3,8 @@ import {
   BIOME_MIX,
   CATALOG_OBJECTS,
   catalogObject,
+  FLORA_BIOMES,
+  speciesForms,
   PROTECTION_CLASSES,
   type CoverPiece,
   TREE_BIOMES,
@@ -742,13 +744,21 @@ function ToolProperties({ store, t }: { store: EditorStore; t: T }): ReactNode {
           <details key={group} open={entry?.group === group}>
             <summary>{t(`editor.group.${group}`)}</summary>
             {CATALOG_OBJECTS.filter((object) => object.group === group && isListed(object)).map((object) => (
-              <button key={object.id} type="button" data-object={object.id} aria-pressed={settings.objectType === object.id} onClick={() => set({ objectType: object.id })}>
+              // D5b: one tile per species; its forms are chosen with the switch below.
+              <button
+                key={object.id}
+                type="button"
+                data-object={object.id}
+                aria-pressed={settings.objectType === object.id || (!!object.species && entry?.species === object.species)}
+                onClick={() => set({ objectType: object.id })}
+              >
                 {t(object.nameKey)}
               </button>
             ))}
           </details>
         ))}
       </div>,
+      ...formSwitch(settings.objectType, t, (objectType) => set({ objectType })),
       <NumberField key="rotation" label={t('editor.prop.rotation')} value={settings.rotation} min={0} max={359} step={settings.rotateStep ? 15 : 1} onChange={(rotation) => set({ rotation })} />,
       <NumberField key="scale" label={t('editor.prop.scale')} value={settings.scale} min={0.5} max={2} step={0.1} onChange={(scale) => set({ scale })} />,
       <Check key="step" label={t('editor.prop.rotateStep')} checked={settings.rotateStep} onChange={(rotateStep) => set({ rotateStep })} />,
@@ -978,7 +988,14 @@ function TreeFields({ store, t }: { store: EditorStore; t: T }): ReactNode {
       {settings.treeMode === 'scatter' ? <p className="editor-hint" data-testid="tree-mix-hint">{t('editor.trees.mixHint')}</p> : null}
       {settings.treeMode !== 'erase' ? (
         <div className="editor-tree-species" role="listbox" aria-label={t('editor.prop.treeSpecies')}>
-          {species.map((id) => {
+          {/* biome-trees-and-plants 4.2: the species by biome; the trees of no biome last. */}
+          {[...FLORA_BIOMES, null].map((biome) => {
+            const group = species.filter((id) => (catalogObject(id)!.biome ?? null) === biome);
+            if (group.length === 0) return null;
+            return (
+              <div key={biome ?? 'other'} className="editor-tree-group" role="group" data-biome={biome ?? 'other'} aria-label={biome ? t(`editor.biome.${biome}`) : undefined}>
+                {biome ? <h5>{t(`editor.biome.${biome}`)}</h5> : null}
+          {group.map((id) => {
             const entry = catalogObject(id)!;
             const picture = pictures.get(entry.model);
             const chosen = settings.treeMode === 'single' ? settings.treeSpecies === id : inMix.has(id);
@@ -1002,10 +1019,32 @@ function TreeFields({ store, t }: { store: EditorStore; t: T }): ReactNode {
               </button>
             );
           })}
+              </div>
+            );
+          })}
         </div>
       ) : null}
     </>
   );
+}
+
+/**
+ * biome-trees-and-plants D5b: the Adult / Flowering / Dead switch for a
+ * species with more than one form; nothing for any other object.
+ */
+function formSwitch(objectType: string, t: T, choose: (objectType: string) => void): ReactNode[] {
+  const forms = speciesForms(objectType);
+  const kinds = (['adult', 'flowering', 'dead'] as const).filter((form) => forms[form]);
+  if (kinds.length < 2) return [];
+  return [
+    <div key="form" className="editor-segmented" role="radiogroup" aria-label={t('editor.prop.treeForm')} data-testid="object-form">
+      {kinds.map((form) => (
+        <button key={form} type="button" role="radio" aria-checked={forms[form] === objectType} data-testid={`object-form-${form}`} onClick={() => choose(forms[form]!)}>
+          {t(`editor.form.${form}`)}
+        </button>
+      ))}
+    </div>,
+  ];
 }
 
 /** The name of a cover piece in the panel. */

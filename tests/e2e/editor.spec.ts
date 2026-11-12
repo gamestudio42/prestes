@@ -501,8 +501,11 @@ async function cerradoGrove(page: Page): Promise<{ id: number; type: string; x: 
   await dragGround(page, { x: -10, y: 10 }, { x: 10, y: 10 });
   const objects = (await state(page)).objects;
   expect(objects.length).toBeGreaterThan(before);
-  return objects.filter((object) => ['cerrado-tree', 'buriti', 'bush'].includes(object.type));
+  return objects.filter((object) => CERRADO.includes(object.type));
 }
+
+/** biome-trees-and-plants 4.2: the cerrado mix's species and bushes. */
+const CERRADO = ['cerrado-tree', 'buriti', 'aroeira', 'barbatimao', 'cagaita', 'ipe', 'bush-cerrado-knee-a', 'bush-cerrado-waist-b', 'bush-cerrado-head-a'];
 
 test('scatter a cerrado grove: cerrado trees inside the stroke, 2 m apart, none in the water', async ({ page }) => {
   const trees = await cerradoGrove(page);
@@ -521,7 +524,39 @@ test('scatter a cerrado grove: cerrado trees inside the stroke, 2 m apart, none 
   await expect(page.locator('[data-thumbnail="cerrado-tree"]')).toBeVisible();
   // One stroke is one undo step.
   await page.keyboard.press('Control+z');
-  expect((await state(page)).objects.filter((object) => object.type === 'cerrado-tree' || object.type === 'buriti' || object.type === 'bush')).toHaveLength(0);
+  expect((await state(page)).objects.filter((object) => CERRADO.includes(object.type))).toHaveLength(0);
+});
+
+// biome-trees-and-plants 4.2, D5b: the species list by biome, and one tile per species with its forms.
+test('the trees tool lists species by biome; the object menu switches a species between its forms', async ({ page }) => {
+  await openEditor(page);
+  await tool(page, 'trees');
+  await page.getByTestId('tree-mode-scatter').click();
+  for (const biome of ['mata-atlantica', 'cerrado', 'amazonia', 'caatinga']) await expect(page.locator(`[data-biome="${biome}"]`)).toBeVisible();
+  await expect(page.locator('[data-biome="cerrado"] [data-tree="ipe"]')).toBeVisible();
+  await expect(page.locator('[data-biome="amazonia"] [data-tree="sumauma"]')).toBeVisible();
+  // The dead and flowering forms are not tiles of their own.
+  await expect(page.locator('[data-tree="ipe-dead"]')).toHaveCount(0);
+  await page.getByTestId('tree-biome').selectOption('amazon-edge');
+  await expect(page.locator('[data-tree="acai"]')).toHaveAttribute('aria-selected', 'true');
+  await expect(page.locator('[data-tree="ipe"]')).toHaveAttribute('aria-selected', 'false');
+
+  await tool(page, 'place');
+  await expect(page.locator('[data-object="ipe-flowering"]')).toHaveCount(0);
+  await page.locator('[data-object="ipe"]').evaluate((button) => ((button.closest('details') as HTMLDetailsElement).open = true));
+  await page.locator('[data-object="ipe"]').click();
+  await expect(page.getByTestId('object-form-adult')).toHaveAttribute('aria-checked', 'true');
+  await page.getByTestId('object-form-flowering').click();
+  await expect(page.locator('[data-object="ipe"]')).toHaveAttribute('aria-pressed', 'true');
+  await clickGround(page, 10, 10);
+  await page.getByTestId('object-form-dead').click();
+  await clickGround(page, 20, 10);
+  const types = (await state(page)).objects.map((object) => object.type);
+  expect(types).toEqual(expect.arrayContaining(['ipe-flowering', 'ipe-dead']));
+  // A species with one form shows no switch.
+  await page.locator('[data-object="rock-small"]').evaluate((button) => ((button.closest('details') as HTMLDetailsElement).open = true));
+  await page.locator('[data-object="rock-small"]').click();
+  await expect(page.getByTestId('object-form')).toHaveCount(0);
 });
 
 // author-game-maps: in scatter mode the author picks the species; the biome only fills the starting list.

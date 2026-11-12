@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
   BIOME_MIX,
+  catalogObject,
+  MIX_BIOME,
+  TREE_BIOMES,
   scatterMix,
   createEditableMap,
   isTreeObject,
@@ -82,6 +85,41 @@ describe('tree scatter', () => {
     const species = treeSpecies();
     for (const mix of Object.values(BIOME_MIX)) for (const entry of mix) expect(species).toContain(entry.type);
   });
+
+  // biome-trees-and-plants 4.2: a mix per biome, the Amazon edge among them.
+  it('each biome mix draws only its own species', () => {
+    expect(TREE_BIOMES).toContain('amazon-edge');
+    for (const biome of TREE_BIOMES) {
+      const own = MIX_BIOME[biome];
+      if (!own) continue;
+      for (const entry of BIOME_MIX[biome]) expect(catalogObject(entry.type)?.biome, `${biome}: ${entry.type}`).toBe(own);
+    }
+  });
+
+  it('a cerrado stroke plants only cerrado species, in about the mix proportions', () => {
+    const map = createEditableMap({ id: 'chapada', size: 'large', name: { en: 'C', 'pt-BR': 'C' } });
+    const scatter = new TreeScatter(map, { radius: 30, biome: 'cerrado', density: 'dense', seed: 11 });
+    for (let y = -90; y <= 90; y += 30) for (let x = -150; x <= 150; x += 15) scatter.dab(x, y);
+    const counts = new Map<string, number>();
+    for (const tree of scatter.trees) counts.set(tree.type, (counts.get(tree.type) ?? 0) + 1);
+    expect(scatter.trees.length).toBeGreaterThan(500);
+    const total = BIOME_MIX.cerrado.reduce((sum, entry) => sum + entry.weight, 0);
+    for (const entry of BIOME_MIX.cerrado) {
+      const share = (counts.get(entry.type) ?? 0) / scatter.trees.length;
+      expect(Math.abs(share - entry.weight / total), entry.type).toBeLessThan(0.05);
+    }
+    expect([...counts.keys()].every((type) => catalogObject(type)?.biome === 'cerrado')).toBe(true);
+  });
+
+  it('the same stroke twice, with the same seed, plants the same species at the same points', () => {
+    const plant = () => {
+      const scatter = new TreeScatter(flat(), { radius: 12, biome: 'amazon-edge', density: 'dense', seed: treeStrokeSeed('beira', 3) });
+      for (let x = -60; x <= 60; x += 6) scatter.dab(x, -40);
+      return scatter.trees;
+    };
+    expect(plant().length).toBeGreaterThan(10);
+    expect(plant()).toEqual(plant());
+  });
 });
 
 // author-game-maps: the author chooses the scatter's species; the biome only fills the starting list.
@@ -90,7 +128,7 @@ describe('chosen species', () => {
     expect(scatterMix('atlantic-edge')).toBe(BIOME_MIX['atlantic-edge']);
     expect(scatterMix('atlantic-edge', [])).toBe(BIOME_MIX['atlantic-edge']);
     expect(scatterMix('atlantic-edge', ['tree-broad', 'buriti'])).toEqual([
-      { type: 'tree-broad', weight: 5 },
+      { type: 'tree-broad', weight: 4 },
       { type: 'buriti', weight: 1 },
     ]);
   });

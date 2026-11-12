@@ -249,6 +249,19 @@ export function catalogObject(id: string): CatalogObject | null {
   return BY_ID.get(id) ?? null;
 }
 
+/**
+ * biome-trees-and-plants D5b: the forms of the species an entry belongs to
+ * (its adult, flowering and dead ids), for the editor's form switch; empty
+ * for an entry with no species.
+ */
+export function speciesForms(id: string): Partial<Record<TreeForm, string>> {
+  const species = BY_ID.get(id)?.species;
+  if (!species) return {};
+  const forms: Partial<Record<TreeForm, string>> = {};
+  for (const entry of CATALOG_OBJECTS) if (entry.species === species && entry.form) forms[entry.form] = entry.id;
+  return forms;
+}
+
 /** What the editor's lists and the trees tool offer. */
 export const isListed = (entry: CatalogObject): boolean => entry.listed !== false;
 

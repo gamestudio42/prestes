@@ -1,5 +1,5 @@
 import type { Vec2 } from '../protocol';
-import { CATALOG_OBJECTS, catalogObject, isListed } from './catalog-objects';
+import { CATALOG_OBJECTS, catalogObject, isListed, type FloraBiome } from './catalog-objects';
 import { mapSide, type DocObject, type EditableMap } from './document';
 import { distanceToPolyline } from './geometry';
 import { growableCell } from './growth-mask';
@@ -13,7 +13,7 @@ import { growableCell } from './growth-mask';
  * number, so the same strokes give the same trees.
  */
 
-export const TREE_BIOMES = ['atlantic-edge', 'cerrado', 'caatinga', 'pasture'] as const;
+export const TREE_BIOMES = ['atlantic-edge', 'cerrado', 'caatinga', 'amazon-edge', 'pasture'] as const;
 export type TreeBiome = (typeof TREE_BIOMES)[number];
 
 export const TREE_DENSITIES = ['sparse', 'medium', 'dense'] as const;
@@ -25,28 +25,75 @@ export const TREE_SPACING: Record<TreeDensity, number> = { sparse: 9, medium: 5,
 /** The least distance from a tree to a footprint, and between trees at any density (m). */
 export const TREE_CLEARANCE = 2;
 
-/** The species of each biome, by weight (catalog tree ids). */
+/**
+ * The species of each biome, by weight (catalog tree ids). biome-trees-and-plants
+ * 4.2: each mix draws only its biome's species (the pasture trees are the
+ * one mix of two biomes), with the biome's bushes; the dead and flowering
+ * forms are placed by hand.
+ */
+const mix = (entries: Record<string, number>): readonly { type: string; weight: number }[] =>
+  Object.entries(entries).map(([type, weight]) => ({ type, weight }));
+
 export const BIOME_MIX: Record<TreeBiome, readonly { type: string; weight: number }[]> = {
-  'atlantic-edge': [
-    { type: 'tree-broad', weight: 5 },
-    { type: 'tree-araucaria', weight: 3 },
-    { type: 'bush', weight: 2 },
-  ],
-  cerrado: [
-    { type: 'cerrado-tree', weight: 6 },
-    { type: 'buriti', weight: 1 },
-    { type: 'bush', weight: 3 },
-  ],
-  caatinga: [
-    { type: 'juazeiro', weight: 2 },
-    { type: 'mandacaru', weight: 3 },
-    { type: 'xique-xique', weight: 3 },
-    { type: 'macambira', weight: 2 },
-  ],
-  pasture: [
-    { type: 'tree-broad', weight: 7 },
-    { type: 'cerrado-tree', weight: 3 },
-  ],
+  'atlantic-edge': mix({
+    'tree-broad': 4,
+    'tree-araucaria': 3,
+    jequitiba: 2,
+    mulungu: 2,
+    manaca: 2,
+    'palmito-jucara': 2,
+    'pau-brasil': 1,
+    'bush-mata-atlantica-knee-a': 1,
+    'bush-mata-atlantica-waist-b': 2,
+    'bush-mata-atlantica-head-a': 1,
+  }),
+  cerrado: mix({
+    'cerrado-tree': 4,
+    buriti: 1,
+    aroeira: 2,
+    barbatimao: 3,
+    cagaita: 2,
+    ipe: 2,
+    'bush-cerrado-knee-a': 2,
+    'bush-cerrado-waist-b': 2,
+    'bush-cerrado-head-a': 1,
+  }),
+  caatinga: mix({
+    juazeiro: 2,
+    mandacaru: 3,
+    'xique-xique': 3,
+    macambira: 2,
+    facheiro: 2,
+    'coroa-de-frade': 1,
+    palmatoria: 2,
+    umbuzeiro: 1,
+    catingueira: 2,
+    'jurema-preta': 2,
+    'bush-caatinga-knee-b': 2,
+    'bush-caatinga-waist-a': 2,
+  }),
+  // The forest's edge, beyond the Column's route (the editor names it so).
+  'amazon-edge': mix({
+    acai: 3,
+    andiroba: 2,
+    castanheira: 1,
+    seringueira: 2,
+    sumauma: 1,
+    tucuma: 2,
+    'bush-amazonia-knee-a': 1,
+    'bush-amazonia-waist-b': 2,
+    'bush-amazonia-head-a': 2,
+  }),
+  pasture: mix({ 'tree-broad': 7, 'cerrado-tree': 3 }),
+};
+
+/** The catalog biome each mix draws from; the pasture trees have none of their own. */
+export const MIX_BIOME: Record<TreeBiome, FloraBiome | null> = {
+  'atlantic-edge': 'mata-atlantica',
+  cerrado: 'cerrado',
+  caatinga: 'caatinga',
+  'amazon-edge': 'amazonia',
+  pasture: null,
 };
 
 /** The catalog's tree group: the species the tool offers one by one. */
