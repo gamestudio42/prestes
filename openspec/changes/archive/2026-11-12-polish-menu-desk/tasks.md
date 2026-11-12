@@ -14,11 +14,11 @@
 
 ## 3. Pixel-art cleanup and redraws (Aseprite)
 
-- [ ] 3.1 Run Aseprite `preflight`; if the window is not ready, stop and ask. Clean up the campaign book (closed) over the current sprite as a locked reference layer, following design D3; verify with `look` against the old sprite, the same 128 x 96 size, the bottom row touching an opaque pixel, and the owner's side-by-side approval.
-- [ ] 3.2 Clean up the compendium book (closed) the same way; verify as in 3.1.
+- [x] 3.1 (Superseded by camp-tent-menu, archived in 667fa64 and d275af6: the camp-tent menu replaced these desk sprites.) Run Aseprite `preflight`; if the window is not ready, stop and ask. Clean up the campaign book (closed) over the current sprite as a locked reference layer, following design D3; verify with `look` against the old sprite, the same 128 x 96 size, the bottom row touching an opaque pixel, and the owner's side-by-side approval.
+- [x] 3.2 (Superseded by camp-tent-menu, archived in 667fa64 and d275af6: the camp-tent menu replaced these desk sprites.) Clean up the compendium book (closed) the same way; verify as in 3.1.
   - Apply note (2026-11-08): 3.1 and 3.2 are drawn and exported by `tools/aseprite/desk-cleanup.lua` (Aseprite 1.3.16 in batch mode stood in for `preflight`); size, bottom row and palette are verified, and `docs/review/desk-art-before-after.png` shows old and new side by side. They stay open for the owner's approval.
-- [ ] 3.3 Redraw the reference pile at 128 x 80 in the books' language, shown at 2x; verify with `look`, `validate`, the exported size and a bottom-aligned canvas.
-- [ ] 3.4 Clean up the gramophone body at its 120 x 160 size (already 2x) with the groove layer kept separate, and re-export the grooves to match; verify the groove shimmer still aligns in the open screen and the closed sprite is bottom-aligned.
+- [x] 3.3 (Superseded by camp-tent-menu, archived in 667fa64 and d275af6: the camp-tent menu replaced these desk sprites.) Redraw the reference pile at 128 x 80 in the books' language, shown at 2x; verify with `look`, `validate`, the exported size and a bottom-aligned canvas.
+- [x] 3.4 (Superseded by camp-tent-menu, archived in 667fa64 and d275af6: the camp-tent menu replaced these desk sprites.) Clean up the gramophone body at its 120 x 160 size (already 2x) with the groove layer kept separate, and re-export the grooves to match; verify the groove shimmer still aligns in the open screen and the closed sprite is bottom-aligned.
   - Apply note (2026-11-08): the scripted redraw of the pile and cleanup of the gramophone were rejected by the owner; both sprites are back to their earlier versions, and the art is to be refined later.
 - [x] 3.5 Redraw the closed compass at 64 x 64 at the finer pixel, shown at 2x; verify with `look`, `validate`, the exported size and the `DESK_ART` size.
 - [x] 3.6 Draw the open-book frame as a 2x 9-slice tinted by `--book-cover` (navy campaign, green compendium) and the placeholder section emblem (design D11, D14); verify with `look` and that the compendium visual baseline shows a green frame.

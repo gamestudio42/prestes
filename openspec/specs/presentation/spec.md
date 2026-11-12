@@ -652,17 +652,17 @@ restore affordance while hidden.
 
 ### Requirement: Minimal sepia command deck
 
-The HUD SHALL present a minimalist sepia command deck: a single-line top command
-bar, icon-only utility controls with localized titles, compact clipped-corner
-panels, one primary order row, one tactical order row and a narrow status rail.
-All existing controls, readouts, test ids and localized labels SHALL remain
+The HUD SHALL present a field-kit command deck: a single-line top bar of
+framed rails (brand, camera band, objectives and clock, language and
+leave, pause and speed, routes and post), icon controls with localized
+titles, and the docked Troops, Troop summary and Orders panels. All
+existing controls, readouts, test ids and localized labels SHALL remain
 available.
 
 #### Scenario: Desktop command deck
 
 - **WHEN** the game runs at desktop width
-- **THEN** the top bar occupies one row, the primary and tactical orders occupy
-  one row each, and the bottom deck leaves most of the map visible
+- **THEN** the top bar occupies one row, the docked panels sit at the left and right edges, and the centre of the map stays clear
 
 #### Scenario: Icon control stays discoverable
 
@@ -733,40 +733,22 @@ availability, and remain inside the viewport without capturing pointer input.
 - **WHEN** an infobox would overflow the viewport
 - **THEN** it flips or shifts to remain fully visible
 
-### Requirement: Rounded translucent command panels
-
-The HUD SHALL use sepia translucent panels, 8-10 px rounded corners, hairline
-bronze borders, a self-hosted display serif for the brand and headings, and
-Barlow for data and controls. It SHALL NOT fetch fonts or icons from a CDN.
-
-#### Scenario: Visual tokens
-
-- **WHEN** the HUD renders
-- **THEN** top rail, squad card, action row, weapon card and command row use the
-  shared radius, border, ink, paper and gold tokens
-
-#### Scenario: Readability over the map
-
-- **WHEN** a panel floats over terrain or combat
-- **THEN** its translucent fill and border keep text and icons legible without
-  fully hiding the map
-
 ### Requirement: Responsive command deck
 
-The reference composition SHALL remain usable at desktop width and SHALL adapt
-without clipping at narrower widths. Every control SHALL remain reachable by
-pointer or keyboard, using an accessible overflow when a region cannot fit.
+The battle HUD SHALL keep the reference composition from 1280 x 720 up and
+SHALL adapt without clipping: panels shrink and scroll inside, type steps
+down one size below 1440 wide, and every control SHALL remain reachable by
+pointer or keyboard.
 
 #### Scenario: Desktop composition
 
-- **WHEN** the game runs at 1440x900
-- **THEN** the top rail, squad card, seven action slots, weapon/status card and
-  command row are visible without scrolling
+- **WHEN** the game runs at 1790 x 878
+- **THEN** the top bar, five troop cards, the Troop summary and every order group are visible without scrolling
 
 #### Scenario: Narrow composition
 
-- **WHEN** the viewport is narrow
-- **THEN** groups wrap or move to overflow and every command remains reachable
+- **WHEN** the game runs at 1280 x 720 in PT-BR or EN
+- **THEN** no label overflows its control and every order is reachable without scrolling the Orders column
 
 ### Requirement: Distinct control icons
 
@@ -795,51 +777,53 @@ Icons SHALL take the colour of their control's state.
 
 ### Requirement: Visible command row status
 
-The bottom command row SHALL show the selection count, the current order and the
-body stance as visible text, or the row SHALL be removed so that no empty bar is
-rendered.
+The HUD SHALL show the selection count and the current order as visible
+text in the Troop summary's header, the concealed, revealed and ferry
+counts as badges in the Troop summary when they are not zero, and the body
+stance by the active body control with a text alternative. No separate
+command status row SHALL be drawn.
 
 #### Scenario: Status is readable
 
 - **WHEN** the section is selected with no order
-- **THEN** the command row visibly shows the selection count, "no order" and the
-  stance in the active locale
+- **THEN** the Troop summary's header visibly shows the selection count and "no order" in the active locale, and the standing body control is shown active
+
+#### Scenario: Concealed badge
+
+- **WHEN** four men of the selected section are hidden in vegetation
+- **THEN** the Troop summary shows a concealed badge with 4
 
 ### Requirement: Command deck composition
 
-The HUD SHALL follow the command-deck composition: a top rail with brand, camera
-band control, language, pause, speed and post controls; a
-bottom-left squad card with portrait, name, alive count and health, ammunition and
-morale bars; a central order board with Fire, Movement and Troop sectors that
-list every order button; a posture, stance, Hold Fire, alternating movement and
-clear row with the formation selector; a bottom-right weapon and status card; and
-a visible command status row.
+The HUD SHALL follow the field-kit composition: a top bar with brand,
+camera band control (with the strategic layer switches in the strategic
+band), objectives and clock, language, leave, pause, speed, routes and post
+controls, and no sandbox control; the compass at the top right; Troops docked top-left
+with a card per section (portrait slot, name, army, alive count and health,
+ammunition and morale bars); the Troop summary docked bottom-left with the
+section's name, army, selection and order, one figure per soldier,
+weapon card and status icons; and Orders docked right as a column of movement, fire
+and manoeuvre, position, posture, body, pace, fire and formation groups.
 
 #### Scenario: Reference layout
 
 - **WHEN** the game is running at desktop width
-- **THEN** the top rail, squad card, order board, passive row, weapon and status
-  card and command status row are visible in their groups
+- **THEN** the top bar, Troops, Troop summary and Orders are visible in their places
 
 #### Scenario: Every order on the board
 
-- **WHEN** the order board renders
-- **THEN** it exposes attack and suppress under Fire; move, withdraw, hold, face
-  and advance under Movement; and flank, rescue, recon, ambush, pursue, defend,
-  disperse, reserve and regroup under Troop, each with its localized label and
-  availability
+- **WHEN** the Orders column renders
+- **THEN** every order of the order catalogue is in its group with its localized label and availability
 
 #### Scenario: Weapon and section status
 
 - **WHEN** the frame updates
-- **THEN** the squad card and weapon and status card update health, ammunition,
-  morale, cover, cohesion, suppression and equipment from the frame
+- **THEN** the troop cards and the Troop summary update health, ammunition, morale, cover, cohesion, suppression and equipment from the frame
 
 #### Scenario: Hide and restore
 
 - **WHEN** the player hides the HUD
-- **THEN** the command deck disappears and the restore affordance remains
-  available as before
+- **THEN** the panels and ornaments disappear and the restore affordance remains available as before
 
 ### Requirement: Cover slot markers
 
@@ -857,40 +841,6 @@ pending.
 
 - **WHEN** no cover is hovered and no order is pending
 - **THEN** no slot markers are drawn
-
-### Requirement: Floating HUD windows
-
-The in-game HUD SHALL present three floating pixel windows over the map instead
-of a docked bottom bar: Orders (every order, posture, stance and HUD control),
-Troops (the troop selector) and Troop summary (the selected troop). The player
-SHALL be able to drag each window by its title bar anywhere inside the view and
-minimize it to its title bar; positions and minimized states SHALL persist in
-the browser and fall back to default positions when storage is unavailable.
-The Troop summary SHALL show the troop panel (header, alerts, one figure per
-soldier and the condition gauges, as the `troop-panel` capability defines
-them) and the troop's weapon.
-
-#### Scenario: Drag and remember
-
-- **WHEN** the player drags the Orders window to the top left and reloads
-- **THEN** the Orders window opens at the top left again
-
-#### Scenario: Minimize
-
-- **WHEN** the player minimizes the Troop summary
-- **THEN** only its title bar remains and clicking the restore button shows
-  the full window again
-
-#### Scenario: One helmet per soldier
-
-- **WHEN** a troop of 11 is selected and one soldier is wounded
-- **THEN** the Troop summary shows 11 soldier figures, the wounded one with the wounded body colour and the bandage mark
-
-#### Scenario: Windows stay in view
-
-- **WHEN** the browser window shrinks
-- **THEN** every HUD window is moved back inside the view and none covers the
-  top bar
 
 ### Requirement: Legs follow the ground
 
@@ -1481,3 +1431,348 @@ open the editor", with no deploy action.
 
 - **WHEN** the player tidies the desk or returns to the start screen
 - **THEN** the selected map is still selected
+
+### Requirement: Field-kit HUD art
+
+The battle HUD SHALL be framed as a field commander's kit: wood and leather
+panel frames, gold pixel-caps panel titles, a parchment card for the troop
+summary, the brand with the national flag emblem, a brass bezel for the
+compass and ornaments (lantern, cloth drapes, slouch hat, canteen, and a
+bottom strip with a bedroll, a Mauser rifle, an ammunition box and a
+first-aid kit), all decorative. Frames SHALL be pixel nine-slices scaled
+by whole pixels with nearest filtering. The art SHALL come from an Aseprite
+source with one named slice per frame and ornament, exported to a committed
+sheet and index so building and testing do not need Aseprite; it MAY be
+traced or rasterized from the owner's reference image, which the owner gave
+for this use, and SHALL be listed in the asset register with that origin.
+Ornaments SHALL NOT cover a control, SHALL NOT receive pointer input, SHALL
+NOT show game state and SHALL hide with the HUD.
+
+Historical note: the emblem is the national flag, carried by both sides;
+the ornaments are generic kit recorded in `docs/history/FORCES.md` and
+`WEAPONS.md`.
+
+#### Scenario: Framed panels
+
+- **WHEN** a battle starts at 1790 x 878
+- **THEN** the top bar, Troops, Troop summary and Orders are drawn in the wood frames with gold titles, and the Troop summary on parchment
+
+#### Scenario: Ornaments let clicks through
+
+- **WHEN** the player clicks the map where the bottom strip's rifle is drawn
+- **THEN** the click reaches the map as if the strip were not there
+
+#### Scenario: Registered art
+
+- **WHEN** the asset register is read
+- **THEN** the HUD frames and ornaments are listed with their Aseprite source path and as drawn from the owner's reference with the owner's permission
+
+#### Scenario: Art follows the source
+
+- **WHEN** a frame is redrawn in the Aseprite source and the export runs
+- **THEN** the exported sheet and index change and the battle HUD shows the new frame
+
+### Requirement: Docked HUD panels
+
+The battle HUD SHALL dock three panels at the screen's edges: Troops (the
+troop selector) top-left under the top bar, Troop summary (the selected
+troop) bottom-left, and Orders (every order, posture, stance, pace, fire
+control and formation control, in labelled groups) as a column on the
+right. Panels SHALL NOT be dragged or resized. Each panel SHALL collapse to
+its title tab toward its edge, Troops upward and Troop summary and Orders
+downward, and restore from that tab; the collapsed states SHALL persist in
+the browser and default to all open when storage is unavailable. A layout
+saved by the earlier floating windows SHALL be ignored. Below 1440 x 900
+the panels SHALL shrink and scroll inside rather than overlap each other or
+the top bar.
+
+#### Scenario: Collapse and remember
+
+- **WHEN** the player collapses Orders and reloads the battle
+- **THEN** Orders shows only its title tab at the bottom right, and clicking the tab opens it again
+
+#### Scenario: Troops folds up
+
+- **WHEN** the player collapses Troops
+- **THEN** only its title tab remains, under the top bar at the top left
+
+#### Scenario: No overlap at the minimum size
+
+- **WHEN** the battle runs at 1280 x 720 with every panel open
+- **THEN** no panel overlaps another or the top bar, and Troops scrolls inside to show every section
+
+#### Scenario: Old layout ignored
+
+- **WHEN** the browser holds a floating-window layout saved by an earlier build
+- **THEN** the panels open docked in their places
+
+### Requirement: Order prompt banner
+
+While an order waits for a point on the map, the HUD SHALL show its prompt
+and a Cancel control in a banner at the top centre of the map, under the
+clock, in the active locale. The banner SHALL disappear when the order is
+given or cancelled.
+
+#### Scenario: Picking a destination
+
+- **WHEN** the player presses Move
+- **THEN** the banner asks for a point on the map and offers Cancel, and pressing Cancel removes it with no order given
+
+### Requirement: Strategic map layers
+
+In the strategic camera band the HUD SHALL offer two switches: contour
+lines and cover. Contour lines SHALL be drawn as the map editor draws them
+(1 m apart, every fifth bold). The cover layer SHALL show every cover slot
+as a dot coloured by the stance it protects and concealing vegetation
+hatched, as the editor's cover overlay does, from the battle's own map;
+it SHALL NOT show which side holds a slot. Both switches SHALL be off at
+the start of every battle. The layers SHALL NOT be drawn in the tactical
+band and SHALL return when the player goes back to the strategic band with
+the switch still on. Labels SHALL be localized in PT-BR and EN.
+
+#### Scenario: Off by default
+
+- **WHEN** a battle starts and the player changes to the strategic band
+- **THEN** the switches are off and the map looks as it does today
+
+#### Scenario: Contours on
+
+- **WHEN** the player turns on contour lines in the strategic band on a map with a 6 m hill
+- **THEN** six contour rings are drawn on the hill, the fifth bold
+
+#### Scenario: Cover without enemy positions
+
+- **WHEN** the player turns on the cover layer while an unseen enemy section sits in a trench
+- **THEN** the trench's slots are drawn and none of them shows as taken
+
+#### Scenario: Tactical band hides the layers
+
+- **WHEN** the cover layer is on and the player changes to the tactical band
+- **THEN** the layer is not drawn and the switches are not shown, and it is drawn again on return to the strategic band
+
+### Requirement: Desk art standard
+
+Every closed desk object SHALL be drawn as clean pixel art at a single on-screen
+scale of 2x on every screen size, where one art pixel covers two by two screen
+pixels, so that no
+two closed objects show different pixel sizes. Every closed object SHALL use the
+shared desk palette, one light direction from the top left and a dark outline
+one art pixel wide, so it stays legible over the moving menu scene without a
+drawn table surface. Each closed object's art SHALL rest on the bottom edge of
+its sprite canvas, so every label sits the same distance below its art. Every
+closed object SHALL cast the same hard drop shadow, offset by two art pixels and
+without blur. The campaign and compendium books SHALL keep their current
+silhouette, viewing angle, cover colour and default position. An open book's
+frame SHALL use the same cover colour as its closed book. Sprites SHALL NOT be
+rotated by arbitrary angles at runtime. Every redrawn sprite SHALL be recorded in
+the asset register as original art with its source file and licence. Labels SHALL
+keep coming from the PT-BR and EN catalogs; this requirement adds no new text.
+
+#### Scenario: One pixel size on the desk
+
+- **WHEN** the desk is shown with every object closed
+- **THEN** every object's art is rendered at an integer 2x scale of its source sprite, at 1440 x 900, at 1280 x 720 and in the narrow layout
+
+#### Scenario: Labels share a baseline distance
+
+- **WHEN** the desk is shown with every object closed
+- **THEN** the gap between the lowest opaque art pixel and the label is the same for every object
+
+#### Scenario: Same shadow on every object
+
+- **WHEN** the desk is shown with every object closed
+- **THEN** every object casts a hard shadow with the same offset and no blur
+
+#### Scenario: Books keep their look
+
+- **WHEN** the desk opens with the default arrangement
+- **THEN** the campaign book is navy and the compendium book is green, at the same default positions and angles as before this change
+
+#### Scenario: Open book keeps its colour
+
+- **WHEN** the player opens the compendium book
+- **THEN** the open spread's frame uses the compendium's green; the open campaign spread's frame uses its navy
+
+#### Scenario: Art is registered
+
+- **WHEN** the asset register is read
+- **THEN** each redrawn desk sprite is listed as original art with its Aseprite source and licence
+
+### Requirement: Desk pick-up and drop feedback
+
+While the player holds a desk object with the pointer, the object SHALL appear
+lifted: it moves up by one art pixel and its hard shadow grows to three art
+pixels. Releasing the object SHALL drop it back to the resting shadow in a short
+step with no long easing. Dragging SHALL snap an object's position to a 2 px
+grid, so a moved object always lands on the art pixel grid; a stored position
+off that grid SHALL be snapped when the desk loads. A keyboard move SHALL move
+the object by whole grid steps. Under `prefers-reduced-motion: reduce` the
+object SHALL NOT move up when held; only its shadow SHALL change.
+
+#### Scenario: Picking an object up
+
+- **WHEN** the player presses the pointer on a closed object and starts to drag it
+- **THEN** the object is drawn one art pixel higher with the larger shadow and in front of the other objects
+
+#### Scenario: Dropping an object
+
+- **WHEN** the player releases a held object
+- **THEN** the object returns to the resting shadow at the drop position
+
+#### Scenario: Drop lands on the grid
+
+- **WHEN** the player drops an object at any pointer position
+- **THEN** the stored x and y of the object are multiples of 2
+
+#### Scenario: Old positions are snapped
+
+- **WHEN** the desk loads a stored layout whose positions are not multiples of 2
+- **THEN** each object is placed at the nearest grid position inside the view
+
+#### Scenario: Reduced motion
+
+- **WHEN** the player prefers reduced motion and holds an object
+- **THEN** the object does not move up and only its shadow changes
+
+### Requirement: Desk position kept across open and close
+
+Opening a desk object SHALL show its open screen as a centred overlay without
+changing or storing the object's desk position. While an object is open, its
+closed art SHALL NOT be drawn on the desk. Closing it SHALL show the closed
+object again at exactly the position it had before opening. Open screens SHALL
+NOT be draggable. When several objects are open, the one most recently opened or
+touched SHALL be in front. A resize while an object is open SHALL keep the open
+screen centred and SHALL keep the closed position inside the view. In the
+narrow layout, where the desk is a scrolling column, an open screen SHALL take
+the object's place in the column at the column's width, fully inside the view.
+
+#### Scenario: Close returns to the same place
+
+- **WHEN** the player drags the compendium to a position, opens it and closes it
+- **THEN** the closed compendium is drawn at the same position as before opening
+
+#### Scenario: Opening does not store a position
+
+- **WHEN** the player opens an object and reloads the page without moving anything
+- **THEN** the stored desk layout holds the position the object had before opening
+
+#### Scenario: Open screen is centred
+
+- **WHEN** the player opens any object from any desk position
+- **THEN** its open screen is centred in the view
+
+#### Scenario: Open screen in the narrow layout
+
+- **WHEN** the player opens a book in the narrow layout
+- **THEN** the open book sits in the column at its width and no part of it is outside the view
+
+### Requirement: Open book spreads
+
+Both menu books SHALL open into a two-page spread with a fixed role for each
+page and SHALL NOT use an inner scroll. Text that does not fit SHALL continue on
+the next page. Body text SHALL render at no less than 16 CSS px. Pages SHALL
+keep at most a small margin of blank parchment, so that no page shows a large
+empty area apart from a deliberate plate or end page. Every spread SHALL show its
+page numbers. Previous and next controls and the left and right arrow keys SHALL
+turn one spread at a time. Under reduced motion, turning SHALL be instant.
+Sections or chapters SHALL be reachable from ribbons on the book's edge and from
+a contents page. Every visible string SHALL come from the PT-BR and EN catalogs
+or the bilingual content registry, and SHALL switch with the locale without a
+reload.
+
+#### Scenario: No inner scroll
+
+- **WHEN** any spread of either book is shown at 1440 x 900 or at 1280 x 720
+- **THEN** no page content overflows its page and no page shows a scroll bar
+
+#### Scenario: Turning pages
+
+- **WHEN** the player presses the right arrow key on an open book
+- **THEN** the next spread is shown with its page numbers
+
+#### Scenario: Ribbon jumps to a section
+
+- **WHEN** the player activates a section ribbon on the compendium
+- **THEN** the book opens at that section's first spread
+
+#### Scenario: Locale switch
+
+- **WHEN** the locale changes while a book is open
+- **THEN** the same spread is shown in the new language
+
+### Requirement: Compendium book layout
+
+The open compendium SHALL start on a contents spread that lists the sections
+with their entry counts and the entries of the selected section. An entry SHALL
+fill a spread. The left page SHALL show the entry's image plate with its caption,
+credit and licence, or, when the entry has no registered image, a drawn section
+emblem marked as a placeholder in the asset register. The right page SHALL show
+the title, the label (historical, dramatized or fictional), the date and place
+when known, the short body, the extended note and the sources with confidence.
+An extended note longer than the right page SHALL continue on the following
+spread. Entries SHALL link to the related entries they name.
+
+#### Scenario: Entry with an image
+
+- **WHEN** the player opens the Miguel Costa entry
+- **THEN** the left page shows his portrait with caption, credit and licence, and the right page shows the title, label, body, note and sources
+
+#### Scenario: Entry without an image
+
+- **WHEN** the player opens an entry with no registered image
+- **THEN** the left page shows the section emblem and no broken image
+
+#### Scenario: Label and confidence are visible
+
+- **WHEN** any entry is shown
+- **THEN** its label and its confidence are visible on the spread
+
+### Requirement: Campaign book layout
+
+The open campaign book SHALL start on a title spread and a contents spread that
+lists the prologue and chapters 2 to 8, with number, title, date and commander.
+Each chapter SHALL open on a spread whose left page shows an image plate and the
+chapter's number, title, date, place, commander, perspective and label, and
+whose right page begins the chapter prose. The prose SHALL continue across
+spreads. Each chapter SHALL end on a briefing spread with the pitch, a summary of
+the objectives and links that open the chapter's compendium entries in the
+compendium book. Each chapter SHALL show a play action that is disabled and
+labelled "in preparation", and SHALL keep the existing action that brings the
+map fan forward for a skirmish.
+
+#### Scenario: Contents lists every chapter
+
+- **WHEN** the player opens the campaign book
+- **THEN** the contents spread lists the prologue and chapters 2 to 8 with title, date and commander
+
+#### Scenario: Chapter opening spread
+
+- **WHEN** the player opens chapter 3 from the contents
+- **THEN** the left page shows the plate, "Miguel Costa" as commander, the date, place, perspective and the "dramatized" label, and the right page begins the prose
+
+#### Scenario: Missions are not playable yet
+
+- **WHEN** the player reaches any chapter's briefing spread
+- **THEN** the play action is visible, disabled and labelled "in preparation"
+
+#### Scenario: Briefing links to the compendium
+
+- **WHEN** the player activates a compendium link on a briefing spread
+- **THEN** the compendium book opens, or comes to the front, at that entry
+
+### Requirement: Reference pile default position
+
+The reference pile SHALL have a default position on the desk, like every other
+desk object, so the default arrangement and the "tidy desk" action place it
+without error. Its default position SHALL keep it below the campaign book on the
+left side of the desk, clear of the books' default positions.
+
+#### Scenario: Default arrangement includes the pile
+
+- **WHEN** the desk opens with no stored layout
+- **THEN** the reference pile appears at its default position on the left, between the two books, fully inside the view
+
+#### Scenario: Tidy desk with the pile moved
+
+- **WHEN** the player moves the reference pile and activates "tidy desk"
+- **THEN** the pile returns to its default position and no error is raised

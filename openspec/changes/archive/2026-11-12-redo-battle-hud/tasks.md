@@ -33,5 +33,5 @@ Approved by the owner on 2026-11-11 ("Aprovo as três", with redo-battle-hud and
 
 - [x] 5.1 Visual baselines (battle HUD, orders column, preview HUD) refreshed once and reviewed side by side with the reference; verify: `pnpm e2e`
   - Apply note (2026-11-12): `battle-hud`, `orders-column` and `roster-builder` baselines re-recorded in 6709bbc and reviewed side by side with the reference and the owner-approved look; visual spec 7/7 passes with the compass committed (c295bb5). The preview HUD has no visual baseline; `preview-hud.spec.ts` passes.
-- [ ] 5.2 `pnpm verify` and `openspec validate redo-battle-hud --type change --strict`; verify: all pass, sizes in `docs/status.md`
-- [ ] 5.3 Hand check by the owner: a skirmish played with the new HUD in both bands; findings in `docs/status.md`
+- [x] 5.2 (2026-11-12: verify and strict validate pass; sizes in `docs/status.md`.) `pnpm verify` and `openspec validate redo-battle-hud --type change --strict`; verify: all pass, sizes in `docs/status.md`
+- [x] 5.3 (2026-11-12: the owner played a skirmish with the new HUD, "joguei agora esta tudo certo, perfeito"; recorded in `docs/status.md`.) Hand check by the owner: a skirmish played with the new HUD in both bands; findings in `docs/status.md`

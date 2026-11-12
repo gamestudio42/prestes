@@ -52,7 +52,7 @@ Decisions of 2026-11-11 (the owner):
   code it meant to delete (`training-ground.ts`, `training-layer.ts`, the
   `training_phase` and `despawn_role` commands) is still in the tree.
 - `machine-gun-fire-feedback` passed the hand check and is archived.
-- The battle HUD is redone from the owner's reference (`redo-battle-hud`, approved): panels docked, collapse only (no drag or resize); the soldier figure goes into `troop-thumbnails-and-panel`; the art is drawn in Aseprite and may start from the reference image; the bottom strip is decoration only. Applied on 2026-11-12 ahead of `troop-thumbnails-and-panel` ("agora faça o hud"): the frames, docked panels, order prompt and strategic layers are in; it frames today's troop summary until the figures land. The `battle-hud` and `orders-column` visual baselines are stale until the compass work is committed and they are re-recorded once.
+- The battle HUD is redone from the owner's reference (`redo-battle-hud`, approved): panels docked, collapse only (no drag or resize); the soldier figure goes into `troop-thumbnails-and-panel`; the art is drawn in Aseprite and may start from the reference image; the bottom strip is decoration only. Applied on 2026-11-12 ahead of `troop-thumbnails-and-panel` ("agora faça o hud"): the frames, docked panels, order prompt and strategic layers are in; it frames today's troop summary until the figures land. The baselines were re-recorded once (6709bbc) and pass with the compass committed; verified and approved by the owner after playing on 2026-11-12.
 - The sandbox is retired ("hoje temos editor de mapa"): `remove-sandbox-panel`, applied the same day.
 - The armies' catalog (`faction-armies` 1.3): the three army names stand
   (Coluna Prestes, Forças legalistas, Batalhões patrióticos); Fogão and
@@ -341,6 +341,26 @@ trees, a bush and a stump per biome, each tree adult, flowering and dead).
   before, 17.8 after; budget 16.7) on this machine with other sessions
   running.
 - Owner's hand check (4.3, 2026-11-12): approved.
+
+## redo-battle-hud verify and hand check (5.2-5.3, 2026-11-12)
+
+- Sizes: 24 HUD pieces cut from the owner's reference in
+  `apps/game/src/assets/hud/` (1.09 MB of PNG together; the two top-bar
+  drapes stay in the Aseprite source but are no longer shown), the source
+  `assets/hud/prestes-hud.aseprite` 1.48 MB, `battle-hud.css` 19.9 KB.
+  Bundle: index CSS 123,593 B against 140,000 B (after 1ec7d6b cut about
+  17 KB of unused CSS), index JS 660,870 B against 680,000 B.
+- `pnpm verify` on the working tree (with other sessions' uncommitted
+  work): check (961 unit tests in 132 files), build, bundle budget,
+  determinism (hash matches golden), tick budget (1.44-1.53 ms a tick
+  against 4.5), openspec (28 specs) and e2e (146 passed, including
+  `area-fire.spec` and the frame-budget tests) all pass.
+  `openspec validate redo-battle-hud --type change --strict` passes.
+- The ground under the troop summary carries the owner's hand finish in
+  Aseprite: export with `pnpm hud-art` only; `pnpm hud-art --seed` would
+  overwrite it.
+- Owner's hand check (5.3, 2026-11-12), after playing a skirmish with the
+  new HUD: "joguei agora esta tudo certo, perfeito". Approved.
 
 ## soldier-animation-and-textures apply (2026-11-12)
 
