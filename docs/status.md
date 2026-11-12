@@ -408,8 +408,8 @@ corrugated asbestos appears.
   caatinga's granite lajedo.
 - Waterside: dugout canoe and motor launch (p. 75), raft (pp. 56, 76, 169,
   180), river barge (pp. 22, 24, 139, 155), a boat for horses (p. 75),
-  canoa de tolda, jangada, boat turned over, drying line with a net, fish
-  traps, landing stage, mooring posts (generic).
+  canoa de tolda, jangada, boat turned over, drying line with a fishing
+  net, fish traps, landing stage, mooring posts (generic).
 - Farm: ox cart (pp. 102, 125: the government convoy's carts of
   ammunition), broken tractor of the Fordson type, imported from about 1917 and rare
   outside the large São Paulo estates (generic: no mention in Macaulay), plough,
@@ -421,7 +421,8 @@ corrugated asbestos appears.
   crates, enamelled street sign, kiosk (generic).
 - The Column's camp and train: officers' tents with a field cot and a
   hammock (pp. 142-143), saddles (pp. 51, 141), pack saddles for the mules
-  (pp. 93, 143), barrels (p. 110, a barrel pontoon), ammunition boxes,
+  (pp. 93, 143), a hammock slung between two posts or trees (p. 143),
+  barrels (p. 110, a barrel pontoon), ammunition boxes,
   campfire with its pot, rifle stack, horse line (pp. 93, 111), the aid tent
   of the kit, a poncho lean-to (generic), and a 75 mm field gun left behind
   (pp. 93-95).

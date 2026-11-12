@@ -53,7 +53,7 @@ the art kit already has an aid tent the catalog does not offer.
   tins in their crates, an enamelled street sign and a kiosk.
 - **The Column's camp and train**: canvas tents (a ridge tent, a bell tent,
   the aid tent the kit already has, a poncho lean-to), carts and pack
-  saddles, barrels and ammunition boxes, a campfire with its pot, a rifle
+  saddles, a slung hammock, barrels and ammunition boxes, a campfire with its pot, a rifle
   stack, saddles on a rail and a horse line (the posts and rope, no
   animals), and a 75 mm field gun left behind. The legalist side gets the
   same camp in its own looks where the sources say they differ.
