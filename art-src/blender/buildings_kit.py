@@ -167,14 +167,41 @@ def roof_hip(b: MeshBuilder, hw: float, hd: float, z: float, rise: float, swatch
     _poly(b, [(-w, -d, z), (w, -d, z), (w, d, z), (-w, d, z)], "timber", None)  # soffit, seen from below
 
 
+def face_out(b: MeshBuilder, points, swatch: str, out=(0, 0, 1), tile: float | None = ROOF_TILE) -> None:
+    """A flat face turned to face `out` (a battle-frame direction), its first
+    edge kept first so the tiles still run from it."""
+    corners = [at(*p) for p in points]
+    normal = Vector()
+    for k, cur in enumerate(corners):
+        normal += cur.cross(corners[(k + 1) % len(corners)])
+    if normal.dot(at(*out)) < 0:
+        points = [points[1], points[0], *reversed(points[2:])]
+    _poly(b, points, swatch, tile)
+
+
+def slope(b: MeshBuilder, low_a, low_b, high_b, high_a, swatch: str = "tile") -> None:
+    """A single roof slope from its low edge (the eave) up to its high edge,
+    with a timber soffit under it."""
+    points = [low_a, low_b, high_b, high_a]
+    face_out(b, points, swatch, (0, 0, 1))
+    face_out(b, points, "timber", (0, 0, -1), None)
+
+
 def roof_lean_to(b: MeshBuilder, x0: float, x1: float, y_high: float, y_low: float, z_high: float, z_low: float,
                  swatch: str = "tile") -> None:
     """A single slope (meia-água) from the line y_high (at z_high) down to y_low."""
-    top = [(x0, y_low, z_low), (x1, y_low, z_low), (x1, y_high, z_high), (x0, y_high, z_high)]
-    if y_low < y_high:
-        top = [top[1], top[0], top[3], top[2]]
-    _poly(b, top, swatch)
-    _poly(b, list(reversed(top)), "timber", None)
+    slope(b, (x0, y_low, z_low), (x1, y_low, z_low), (x1, y_high, z_high), (x0, y_high, z_high), swatch)
+
+
+def lean_to_side(b: MeshBuilder, x_high: float, x_low: float, y0: float, y1: float, z_high: float, z_low: float,
+                 swatch: str = "tile") -> None:
+    """A single slope against a side wall, from x_high (at z_high) down to x_low."""
+    slope(b, (x_low, y0, z_low), (x_low, y1, z_low), (x_high, y1, z_high), (x_high, y0, z_high), swatch)
+
+
+def posts(b: MeshBuilder, points, height: float, swatch: str = "timber", size: float = 0.16) -> None:
+    for x, y in points:
+        b.box(tuple(at(x, y, height / 2)), (size, size, height), swatch)
 
 
 def roof_thatch(b: MeshBuilder, hw: float, hd: float, z: float, rise: float) -> None:

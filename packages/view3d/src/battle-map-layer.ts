@@ -45,7 +45,7 @@ export const STRATEGIC_PLANT_SPAN = 110;
  */
 
 /** Building models the Blender environment already has. */
-const MODELLED = new Set(['farmhouse', 'barn', 'chapel']);
+const MODELLED = new Set(['farmhouse', 'barn', 'chapel', 'casa-sede', 'colonist-house', 'engenho', 'ferry-house']);
 
 const materials = new Map<number, THREE.Material>();
 function material(color: number): THREE.Material {

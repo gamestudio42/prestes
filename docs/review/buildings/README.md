@@ -55,3 +55,9 @@ shutters, doors with a step, alpendre/veranda on posts, chimney, awning,
 sign board, iron balcony, bell gable with cross, bell tower, steps, piles.
 
 Approved by the owner, 2026-11-12.
+
+## Rural buildings (3.2)
+
+`sheet-rural.png` sets the seven rural buildings before and after, front
+and back, as the battle draws them; the single pictures are in `after/`.
+All seven pass the model check (`pnpm check:content`).

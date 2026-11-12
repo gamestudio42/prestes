@@ -8,6 +8,7 @@ height for sight), so the game places them without scaling.
 """
 import math
 
+import buildings_kit as kit
 from common import MeshBuilder, reset, rotation_z, save_and_export
 
 WALL_TILE = 1.6
@@ -35,53 +36,137 @@ def barracks():
     b.to_object("barracks")
 
 
+def _frame(model: str):
+    """The battle's footprint of a building: half width, half depth, wall
+    height and the roof's rise up to its sight height."""
+    d = kit.openings(model)
+    return d["halfWidth"], d["halfDepth"], d["wall"], d["height"] - d["wall"]
+
+
+def _finish(b: MeshBuilder, model: str) -> None:
+    b.to_object(model)
+    kit.markers(model)
+
+
+# --- rural buildings (revise-buildings-and-stone 3.2) ------------------------
+
+
 def farmhouse():
-    """Adobe walls and a clay-tile roof, door to the south road."""
+    """Casa de sitio: whitewash worn over a stone plinth, a tiled hip roof,
+    a small alpendre over the door, wooden shutters, a kitchen chimney."""
+    m = "farmhouse"
+    hw, hd, wall, rise = _frame(m)
     b = MeshBuilder("environment")
-    hw, hd = 4.35, 2.85
-    b.box((0, 0, 1.5), (2 * hw, 2 * hd, 3.0), "adobe", top="adobe", tile=WALL_TILE)
-    b.prism((0, 0, 3.0), 2 * hw + 0.7, 2 * hd + 0.9, 1.8, "tile", end="adobe", tile=ROOF_TILE)
-    b.box((-1.2, -hd - 0.04, 1.05), (1.0, 0.1, 2.1), "door")
-    windows(b, hw, hd, (1.6,), 1.7, sides=(-1,))
-    windows(b, hw, hd, (-2.0, 2.0), 1.7, sides=(1,))
-    b.box((2.6, 0.6, 4.4), (0.5, 0.5, 1.2), "adobe")
-    # A lean-to porch over the door.
-    for x in (-2.4, 0.0):
-        b.box((x, -hd - 1.3, 1.1), (0.14, 0.14, 2.2), "timber")
-    b.box((-1.2, -hd - 0.75, 2.3), (3.0, 1.6, 0.12), "timber")
-    b.to_object("farmhouse")
+    kit.walls(b, hw, hd, wall)
+    kit.wear(b, hw, hd, patches=((-0.25, 0.75, 0.5), (0.45, 0.6, 0.4)))
+    kit.all_openings(b, m)
+    kit.roof_hip(b, hw, hd, wall, rise)
+    kit.veranda(b, 1.3, hd, 1.5, 2.5, posts=2)
+    kit.chimney(b, 2.4, -1.0, wall, 1.9)
+    _finish(b, m)
 
 
 def barn():
-    """Board walls, a high roof and a wide door to the south."""
+    """Paiol: board walls on stone piles, a tiled gable roof, a wide door,
+    a board loft hatch in the gable."""
+    m = "barn"
+    hw, hd, wall, rise = _frame(m)
     b = MeshBuilder("environment")
-    hw, hd = 5.65, 3.5
-    b.box((0, 0, 1.9), (2 * hw, 2 * hd, 3.8), "timber", top="timber", tile=2.0)
-    b.prism((0, 0, 3.8), 2 * hw + 0.6, 2 * hd + 0.8, 2.2, "tile", end="timber", tile=ROOF_TILE)
-    b.box((0, -hd - 0.05, 1.6), (3.0, 0.12, 3.2), "door", tile=1.6)
-    b.box((0, -hd - 0.08, 4.6), (1.0, 0.08, 0.8), "window")
-    b.to_object("barn")
+    kit.piles(b, hw, hd, 0.5)
+    b.box(tuple(kit.at(0, 0, (wall + 0.5) / 2)), (2 * hw, 2 * hd, wall - 0.5), "timber", top="timber", tile=2.0)
+    kit.all_openings(b, m, shutters=False, frame="timber")
+    kit.roof_gable(b, hw, hd, wall, rise, end="timber", overhang=0.3)
+    b.box(tuple(kit.at(hw + 0.32, 0, wall + rise * 0.35)), (0.06, 1.0, 0.8), "door")
+    _finish(b, m)
 
 
 def chapel():
-    """A whitewashed nave along Y with the bell tower at the south front."""
+    """Capela: whitewash with a blue dado and frames, a tiled gable along the
+    nave, a bell gable with a cross over the front, steps to the door."""
+    m = "chapel"
+    hw, hd, wall, rise = _frame(m)
     b = MeshBuilder("environment")
-    hw, hd = 3.2, 4.8
-    b.box((0, 0.6, 1.7), (2 * hw, 2 * hd - 1.2, 3.4), "plaster", top="plaster.shade", tile=WALL_TILE)
-    # Built along X, centred 0.6 m north once turned onto Y.
-    b.prism((0.6, 0, 3.4), 2 * hd - 0.6, 2 * hw + 0.7, 1.8, "tile", end="plaster", matrix=rotation_z(math.pi / 2), tile=ROOF_TILE)
-    # Bell tower on the front, door at its foot.
-    b.box((0, -hd + 1.1, 3.1), (2.4, 2.2, 6.2), "plaster", top="plaster.shade", tile=WALL_TILE)
-    b.box((0, -hd + 1.1, 5.4), (2.5, 2.3, 0.2), "plaster.shade")
-    b.cone((0, -hd + 1.1, 6.2), 1.7, 1.4, "tile", sides=4)
-    b.box((0, -hd + 1.1, 7.9), (0.1, 0.1, 0.8), "timber")
-    b.box((0, -hd + 1.1, 8.0), (0.5, 0.1, 0.1), "timber")
-    b.box((0, -hd + 0.0 - 0.04, 1.2), (1.1, 0.1, 2.2), "door")
-    b.box((0, -hd - 0.05, 4.6), (0.7, 0.1, 0.9), "ink")
-    for y in (-0.6, 1.6, 3.6):
-        for side in (-1, 1):
-            b.box((side * (hw + 0.03), y, 2.2), (0.08, 0.6, 1.3), "window")
-    b.to_object("chapel")
+    kit.walls(b, hw, hd, wall, band="wash.blue")
+    kit.all_openings(b, m, frame="wash.blue")
+    kit.roof_gable(b, hw, hd, wall, rise, along="y", overhang=0.3)
+    kit.bell_gable(b, hw, hd + 0.2, wall + rise * 0.55, height=1.7)
+    kit.steps(b, 0, hd, 2.0, count=2)
+    _finish(b, m)
+
+
+def casa_sede():
+    """Casa-sede: ochre wash and a cornice, a four-water tiled roof, a
+    full-width veranda on posts with steps, the loft's vents in the sides."""
+    m = "casa-sede"
+    hw, hd, wall, rise = _frame(m)
+    b = MeshBuilder("environment")
+    kit.walls(b, hw, hd, wall, wash="wash.ochre")
+    kit.cornice(b, hw, hd, wall)
+    kit.all_openings(b, m)
+    kit.roof_hip(b, hw, hd, wall + 0.1, rise)
+    kit.veranda(b, hw, hd, 2.2, 3.6, posts=6)
+    kit.steps(b, 0, hd + 2.2, 2.4, count=2)
+    kit.chimney(b, -4.5, -2.5, wall, 2.4)
+    _finish(b, m)
+
+
+def colonist_house():
+    """Casa de colono: wattle and daub, a gable of old tile, an open kitchen
+    shelter on the left wall with a mud stove and its chimney."""
+    m = "colonist-house"
+    hw, hd, wall, rise = _frame(m)
+    b = MeshBuilder("environment")
+    kit.walls(b, hw, hd, wall, wash="plaster.worn", plinth=None, band="adobe")
+    kit.all_openings(b, m, frame="timber")
+    kit.roof_gable(b, hw, hd, wall, rise, swatch="tile.old", end="adobe", overhang=0.35)
+    out = -hw - 1.9
+    kit.posts(b, [(out + 0.1, -hd + 0.1), (out + 0.1, 0.2)], 2.2)
+    kit.lean_to_side(b, -hw, out, -hd - 0.1, 0.4, wall - 0.3, 2.1, swatch="zinc")
+    b.box(tuple(kit.at(out + 0.8, -hd + 0.7, 0.45)), (1.0, 0.8, 0.9), "adobe")
+    kit.chimney(b, out + 0.6, -hd + 0.6, 0.9, 2.6, size=0.4, swatch="adobe")
+    _finish(b, m)
+
+
+def engenho():
+    """Engenho: worn whitewash, a tiled gable, the open mill shed on the
+    left with the cane press, a tall brick chimney."""
+    m = "engenho"
+    hw, hd, wall, rise = _frame(m)
+    b = MeshBuilder("environment")
+    kit.walls(b, hw, hd, wall, wash="plaster.worn")
+    kit.all_openings(b, m, shutters=False, frame="timber")
+    kit.roof_gable(b, hw, hd, wall, rise, overhang=0.4)
+    out = -hw - 3.2
+    kit.posts(b, [(out + 0.1, y) for y in (-hd + 0.4, 0.0, hd - 0.4)], 3.0, size=0.22)
+    kit.lean_to_side(b, -hw, out, -hd + 0.1, hd - 0.1, 4.0, 2.9)
+    # The cane press: a timber frame, three iron rollers, cane heaped by it.
+    px = -hw - 1.6
+    b.box(tuple(kit.at(px, 0, 0.5)), (1.4, 1.2, 1.0), "timber")
+    for k in (-1, 0, 1):
+        b.cylinder(tuple(kit.at(px + k * 0.35, 0, 1.25)), 0.16, 0.5, "iron", sides=6)
+    b.box(tuple(kit.at(px, 1.6, 0.3)), (1.6, 1.0, 0.6), "hay", tile=1.0)
+    kit.chimney(b, hw - 2.0, -hd + 1.5, 0, wall + rise + 4.0, size=1.1)
+    _finish(b, m)
+
+
+def ferry_house():
+    """Casa da balsa: on short timber stilts by the bank, worn whitewash, a
+    zinc meia-agua falling to the river side, a plank landing at the door."""
+    m = "ferry-house"
+    hw, hd, wall, rise = _frame(m)
+    b = MeshBuilder("environment")
+    kit.piles(b, hw, hd, 0.35, swatch="timber", every=1.6)
+    b.box(tuple(kit.at(0, 0, (wall + 0.35) / 2)), (2 * hw, 2 * hd, wall - 0.35), "plaster.worn", top="plaster.shade",
+          tile=kit.WALL_TILE)
+    kit.all_openings(b, m, frame="timber")
+    # The roof falls from the back wall to the front; the side walls rise to it.
+    kit.roof_lean_to(b, -hw - 0.3, hw + 0.3, -hd - 0.3, hd + 0.5, wall + rise + 0.05, wall - 0.1, swatch="zinc")
+    for side in (-1, 1):
+        x = side * hw
+        kit.face_out(b, [(x, hd, wall), (x, -hd, wall), (x, -hd, wall + rise)], "plaster.worn", (side, 0, 0), kit.WALL_TILE)
+    b.box(tuple(kit.at(0, hd + 1.0, 0.15)), (2.4, 2.0, 0.12), "timber", tile=1.0)
+    kit.posts(b, [(-1.1, hd + 1.9), (1.1, hd + 1.9)], 0.15, size=0.2)
+    _finish(b, m)
 
 
 def aid_tent():
@@ -99,5 +184,9 @@ def build():
     farmhouse()
     barn()
     chapel()
+    casa_sede()
+    colonist_house()
+    engenho()
+    ferry_house()
     aid_tent()
     return [save_and_export("buildings", "environment")]

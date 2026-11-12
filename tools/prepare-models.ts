@@ -26,7 +26,8 @@ for (const input of files) {
   const file = basename(input);
   const output = join(OUTPUT, `${basename(file, file.endsWith('.gltf') ? '.gltf' : '.glb')}.glb`);
   const document = await io.read(input);
-  await document.transform(prune(), dedup());
+  // revise-buildings-and-stone 2.3: the buildings' marker empties are leaves the model check reads.
+  await document.transform(prune({ keepLeaves: file.startsWith('buildings') }), dedup());
   // biome-trees-and-plants 1.2: a tree over its size class's budget fails the build.
   if (isTreeModel(file)) {
     const problems = treeBudgetProblems(meshTriangles(document), (model) => CATALOG_OBJECTS.find((entry) => entry.model === model)?.height);
