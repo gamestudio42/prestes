@@ -412,22 +412,6 @@
   width: var(--art-box-w);
 }
 
-/*
- * author-game-maps 5.2: the map's thumbnail (saved from the editor) laid on
- * the drawn sheet, above its legend strip.
- */
-.desk-map-thumb {
-  position: absolute;
-  top: 9%;
-  left: 12%;
-  width: 76%;
-  height: 60%;
-  object-fit: cover;
-  border: 2px solid #5b4630;
-  image-rendering: pixelated;
-  pointer-events: none;
-}
-
 .desk-map-empty .desk-map-title {
   font-size: 0.8em;
   text-align: center;

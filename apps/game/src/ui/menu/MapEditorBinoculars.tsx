@@ -1,7 +1,7 @@
 import { translate, type Locale } from '@prestes/content';
 import { DESK_ART, deskArtData, deskArtStyle } from './deskArt';
 
-export interface MapEditorTheodoliteProps {
+export interface MapEditorBinocularsProps {
   locale: Locale;
 }
 
@@ -9,13 +9,14 @@ export interface MapEditorTheodoliteProps {
 export const MAP_EDITOR_URL = './editor.html';
 
 /**
- * The surveyor's theodolite on the desk: a closed icon with its name below.
- * It does not open in place; choosing it goes to the map editor page.
+ * The field glasses on the camp table (camp-tent-menu; before it, the
+ * theodolite): a closed icon with its name below. They do not open in place;
+ * choosing them goes to the map editor page.
  */
-export function MapEditorTheodolite({ locale }: MapEditorTheodoliteProps) {
-  const art = DESK_ART.theodolite;
+export function MapEditorBinoculars({ locale }: MapEditorBinocularsProps) {
+  const art = DESK_ART.binoculars;
   return (
-    <div className="desk-theodolite-cover desk-art-box" style={deskArtStyle(art)} {...deskArtData(art)}>
+    <div className="desk-editor-cover desk-art-box" style={deskArtStyle(art)} {...deskArtData(art)}>
       <img
         className="desk-object-art desk-object-art-closed"
         src={art.src}

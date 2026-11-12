@@ -2,11 +2,11 @@ import { expect, test } from '@playwright/test';
 
 const PROGRESS_KEY = 'prestes.bootcamp.stations.v2';
 
-test('opens the desk over the pixel video with no continue action', async ({ page }) => {
+test('opens the desk on the camp table with no continue action', async ({ page }) => {
   await page.goto('/');
   await expect(page.getByTestId('menu-desk')).toBeVisible();
-  // The backdrop is the menu video drawn as pixel art, or the marching column if it cannot play.
-  await expect(page.getByTestId('menu-video').or(page.getByTestId('marching-scene'))).toBeVisible();
+  // camp-tent-menu: the backdrop is the camp table under the tent, rasterized from the owner's drawing.
+  await expect(page.getByTestId('camp-scene')).toBeVisible();
   await expect(page.getByTestId('start-continue')).toHaveCount(0);
   await expect(page.getByTestId('start-screen')).not.toContainText('Visual prototype');
 });
