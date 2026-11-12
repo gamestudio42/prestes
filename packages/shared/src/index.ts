@@ -202,12 +202,15 @@ export type {
 } from './training-ground';
 export {
   BASE_UNIT_SPEED,
+  CLIP_GAIT_SPEED,
   GAIT_ACCELERATION,
   GAIT_FATIGUE,
   GAIT_SPEED,
   ORDER_GAIT,
   POSTURE_PACE,
+  STANCE_PACE,
   WINDED_FATIGUE,
+  WOUND_PACE,
   WINDED_RECOVER,
 } from './gait';
 export type { Gait } from './gait';

@@ -8,7 +8,9 @@ bone (rigid skinning), which suits low-poly and keeps the deformation clean.
 Two hats are separate meshes on the same rig: a kepi (legalists, officer) and
 a slouch hat (the column); the game shows one. Clips are Blender actions.
 """
+import json
 import math
+import os
 
 import bpy
 from mathutils import Matrix, Vector
@@ -20,8 +22,12 @@ FPS = 24
 AIM_YAW = -10
 READY_YAW = -14
 LEFT_REACH = -40
-# Walk leg swings are scaled up for a longer stride (fewer steps per metre).
+# Walk leg swings: the passing pose is scaled by STRIDE; the contact pose
+# reaches STEP_FRONT and STEP_BACK degrees (1.4: about 0.75 m a step, two
+# steps a second at the walk).
 STRIDE = 1.25
+STEP_FRONT = 30
+STEP_BACK = 27
 # Slung rifle offset from its shoulder pivot (see `slung`).
 SLING_OUT = -0.06
 SLING_BACK = 0.12
@@ -180,7 +186,7 @@ class Poser:
             bone.keyframe_insert("location", frame=frame)
 
 
-def clip(rig, poser: Poser, name: str, frames: list, loop: bool = True) -> None:
+def clip(rig, poser: Poser, name: str, frames: list, loop: bool = True, period: int | None = None) -> None:
     """`frames`: list of (frame, pose function). The last pose repeats the first
     for loops."""
     action = bpy.data.actions.new(name)
@@ -194,7 +200,7 @@ def clip(rig, poser: Poser, name: str, frames: list, loop: bool = True) -> None:
     if loop:
         poser.clear()
         frames[0][1](poser)
-        poser.key(frames[-1][0] + (frames[1][0] - frames[0][0] if len(frames) > 1 else 12))
+        poser.key(frames[0][0] + period if period else frames[-1][0] + (frames[1][0] - frames[0][0] if len(frames) > 1 else 12))
     for fcurve in getattr(action, "fcurves", []):
         for point in fcurve.keyframe_points:
             point.interpolation = "LINEAR"
@@ -242,10 +248,10 @@ def stand_breathe(p: Poser) -> None:
 
 def walk_a(p: Poser, arms=None) -> None:
     (arms or slung)(p)
-    p.swing("thigh.L", 24 * STRIDE)
-    p.swing("shin.L", -8 * STRIDE)
-    p.swing("thigh.R", -20 * STRIDE)
-    p.swing("shin.R", -22 * STRIDE)
+    p.swing("thigh.L", STEP_FRONT)
+    p.swing("shin.L", -4)
+    p.swing("thigh.R", -STEP_BACK)
+    p.swing("shin.R", -8)
     if arms is None:
         p.swing("upper_arm.L", -20)
     p.root(z=0.0)
@@ -261,10 +267,10 @@ def walk_pass(p: Poser, arms=None) -> None:
 
 def walk_b(p: Poser, arms=None) -> None:
     (arms or slung)(p)
-    p.swing("thigh.R", 24 * STRIDE)
-    p.swing("shin.R", -8 * STRIDE)
-    p.swing("thigh.L", -20 * STRIDE)
-    p.swing("shin.L", -22 * STRIDE)
+    p.swing("thigh.R", STEP_FRONT)
+    p.swing("shin.R", -4)
+    p.swing("thigh.L", -STEP_BACK)
+    p.swing("shin.L", -8)
     if arms is None:
         p.swing("upper_arm.L", 20)
     p.root(z=0.0)
@@ -289,10 +295,10 @@ def port(p: Poser) -> None:
 def run_reach(p: Poser, lead: str, trail: str) -> None:
     """Contact: the lead leg reaching forward, the trailing one pushing off."""
     port(p)
-    p.swing(f"thigh.{lead}", 42)
-    p.swing(f"shin.{lead}", -18)
-    p.swing(f"thigh.{trail}", -28)
-    p.swing(f"shin.{trail}", -55)
+    p.swing(f"thigh.{lead}", 46)
+    p.swing(f"shin.{lead}", -14)
+    p.swing(f"thigh.{trail}", -34)
+    p.swing(f"shin.{trail}", -38)
     p.root(z=-0.02)
 
 
@@ -418,9 +424,6 @@ def corpse(p: Poser) -> None:
 # ------------------------------------------------------------ wound clips
 # soldier-animation-and-textures 1.1. The hurt side is the right leg and the
 # left hand presses the wound on the right flank; the view mirrors nothing.
-LIMP_STRIDE = 0.7
-
-
 def hold_wound(p: Poser) -> None:
     """The left hand presses the right flank, the body bent over the wound,
     the rifle still slung."""
@@ -436,10 +439,10 @@ def hold_wound(p: Poser) -> None:
 def limp_plant(p: Poser) -> None:
     """The good (left) leg steps out long; the hurt leg trails stiff."""
     hold_wound(p)
-    p.swing("thigh.L", 26 * LIMP_STRIDE * STRIDE)
-    p.swing("shin.L", -8)
-    p.swing("thigh.R", -14 * LIMP_STRIDE * STRIDE)
-    p.swing("shin.R", -6)
+    p.swing("thigh.L", 32)
+    p.swing("shin.L", -4)
+    p.swing("thigh.R", -20)
+    p.swing("shin.R", -4)
     p.root(z=0.0)
 
 
@@ -447,10 +450,10 @@ def limp_load(p: Poser) -> None:
     """Weight on the hurt leg: a short, stiff step, the body sags and leans
     off it."""
     hold_wound(p)
-    p.swing("thigh.R", 12 * LIMP_STRIDE * STRIDE)
-    p.swing("shin.R", -4)
-    p.swing("thigh.L", -10 * LIMP_STRIDE * STRIDE)
-    p.swing("shin.L", -35)
+    p.swing("thigh.R", 20)
+    p.swing("shin.R", -2)
+    p.swing("thigh.L", -18)
+    p.swing("shin.L", -10)
     p.swing("chest", 22)
     p.root(roll=-4, z=-0.05)
 
@@ -764,6 +767,56 @@ def check_crouch_walk(rig) -> None:
         raise RuntimeError(f"crouch-walk head reaches {highest:.2f} m, over {CROUCH_HEAD_SHARE} of {standing:.2f} m")
 
 
+# ------------------------------------------------------------ gait timing
+# soldier-animation-and-textures 1.4: each moving clip's cycle is keyed so
+# its stride covers the ground speed it is authored at, from
+# `CLIP_GAIT_SPEED` in packages/shared/src/gait.ts (a test holds the two
+# together through `soldier-gaits.json`).
+GAIT_SPEED = {
+    "walk": 1.5,
+    "walk-ready": 1.5,
+    "run": 3.5,
+    "crouch-walk": 1.5 * 0.7,
+    "limp": 1.5 * 0.75,
+    "carry": 1.0,
+}
+
+
+def foot_gap(rig, poser: Poser, pose) -> float:
+    """Distance along the line of march between the feet in a contact pose."""
+    tracks = rig.animation_data.nla_tracks if rig.animation_data else []
+    for track in tracks:
+        track.mute = True
+    poser.clear()
+    pose(poser)
+    bpy.context.view_layer.update()
+    left = rig.matrix_world @ rig.pose.bones["shin.L"].tail
+    right = rig.matrix_world @ rig.pose.bones["shin.R"].tail
+    poser.clear()
+    for track in tracks:
+        track.mute = False
+    return abs(left.y - right.y)
+
+
+def gait_clip(rig, poser: Poser, name: str, keys: list, contacts: list, gaits: dict) -> None:
+    """`keys`: (fraction of the cycle, pose); `contacts`: the contact poses,
+    one per step. The cycle lasts as long as the summed steps take at the
+    clip's speed, rounded to whole frames."""
+    stride = sum(foot_gap(rig, poser, pose) for pose in contacts)
+    period = max(8, round(stride / GAIT_SPEED[name] * FPS))
+    clip(rig, poser, name, [(1 + round(at * period), pose) for at, pose in keys], period=period)
+    gaits[name] = {"strideMetres": round(stride, 4), "cycleFrames": period, "fps": FPS, "speed": GAIT_SPEED[name]}
+
+
+def write_gaits(gaits: dict) -> None:
+    """The measured stride and cycle of each moving clip, for the view's test."""
+    path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "characters", "soldier-gaits.json")
+    with open(path, "w", encoding="utf-8", newline="\n") as out:
+        json.dump(gaits, out, indent=2, sort_keys=True)
+        out.write("\n")
+    print(f"gaits: {gaits}")
+
+
 def build():
     reset()
     bpy.context.scene.render.fps = FPS
@@ -773,29 +826,22 @@ def build():
     poser = Poser(rig)
 
     clip(rig, poser, "idle", [(1, stand), (24, stand_breathe), (48, stand)], loop=False)
-    clip(rig, poser, "walk", [(1, walk_a), (7, walk_pass), (13, walk_b), (19, walk_pass_b)])
+    gaits: dict = {}
+    quarter = lambda a, b, c, d: [(0, a), (0.25, b), (0.5, c), (0.75, d)]
+    gait_clip(rig, poser, "walk", quarter(walk_a, walk_pass, walk_b, walk_pass_b), [walk_a, walk_b], gaits)
     clip(rig, poser, "idle-ready", [(1, ready), (24, lambda p: (ready(p), p.swing("head", 2))), (48, ready)], loop=False)
-    clip(rig, poser, "walk-ready", [
-        (1, lambda p: walk_a(p, ready)),
-        (7, lambda p: walk_pass(p, ready)),
-        (13, lambda p: walk_b(p, ready)),
-        (19, lambda p: walk_pass_b(p, ready)),
-    ])
+    gait_clip(rig, poser, "walk-ready", quarter(
+        lambda p: walk_a(p, ready), lambda p: walk_pass(p, ready), lambda p: walk_b(p, ready), lambda p: walk_pass_b(p, ready),
+    ), [lambda p: walk_a(p, ready), lambda p: walk_b(p, ready)], gaits)
     # Run: 16 frames a cycle (three steps a second), about 3.5 m/s.
-    clip(rig, poser, "run", [
-        (1, lambda p: run_reach(p, "L", "R")),
-        (5, lambda p: run_float(p, "L", "R")),
-        (9, lambda p: run_reach(p, "R", "L")),
-        (13, lambda p: run_float(p, "R", "L")),
-    ])
+    gait_clip(rig, poser, "run", quarter(
+        lambda p: run_reach(p, "L", "R"), lambda p: run_float(p, "L", "R"), lambda p: run_reach(p, "R", "L"), lambda p: run_float(p, "R", "L"),
+    ), [lambda p: run_reach(p, "L", "R"), lambda p: run_reach(p, "R", "L")], gaits)
     clip(rig, poser, "crouch-idle", [(1, lambda p: crouch(p)), (24, lambda p: crouch(p))], loop=False)
     # Crouch-walk (1.3): low, rifle forward, a full four-key cycle.
-    clip(rig, poser, "crouch-walk", [
-        (1, lambda p: crouch_step(p, "L", "R")),
-        (8, lambda p: crouch_pass(p, "L", "R")),
-        (15, lambda p: crouch_step(p, "R", "L")),
-        (22, lambda p: crouch_pass(p, "R", "L")),
-    ])
+    gait_clip(rig, poser, "crouch-walk", quarter(
+        lambda p: crouch_step(p, "L", "R"), lambda p: crouch_pass(p, "L", "R"), lambda p: crouch_step(p, "R", "L"), lambda p: crouch_pass(p, "R", "L"),
+    ), [lambda p: crouch_step(p, "L", "R"), lambda p: crouch_step(p, "R", "L")], gaits)
     clip(rig, poser, "prone", [(1, lambda p: prone(p)), (24, lambda p: prone(p))], loop=False)
     clip(rig, poser, "crawl", [(1, lambda p: crawl(p, 1)), (16, lambda p: crawl(p, -1))])
     clip(rig, poser, "aim-stand", [(1, lambda p: aim_arms(p)), (24, lambda p: aim_arms(p))], loop=False)
@@ -817,30 +863,23 @@ def build():
     clip(rig, poser, "corpse", [(1, corpse), (24, corpse)], loop=False)
     # Wound clips (1.1). The limp's cycle is longer than the walk's: the
     # simulation moves a lightly or moderately wounded man slower.
-    clip(rig, poser, "limp", [
-        (1, limp_plant),
-        (9, lambda p: (hold_wound(p), p.swing("thigh.R", 0), p.root(z=0.02))),
-        (15, limp_load),
-        (21, lambda p: (hold_wound(p), p.swing("shin.L", -30), p.root(z=-0.02))),
-    ])
+    gait_clip(rig, poser, "limp", [
+        (0, limp_plant),
+        (0.3, lambda p: (hold_wound(p), p.swing("thigh.R", 0), p.root(z=0.02))),
+        (0.55, limp_load),
+        (0.8, lambda p: (hold_wound(p), p.swing("shin.L", -30), p.root(z=-0.02))),
+    ], [limp_plant, limp_load], gaits)
     clip(rig, poser, "hold-wound", [(1, hold_wound), (24, lambda p: (hold_wound(p), p.swing("chest", 20))), (48, hold_wound)], loop=False)
     clip(rig, poser, "lying-wounded", [
         (1, lambda p: lying_wounded(p, 0)),
         (18, lambda p: lying_wounded(p, 1)),
         (30, lambda p: lying_wounded(p, 0.4)),
     ])
-    clip(rig, poser, "carry", [
-        (1, lambda p: walk_a(p, carry_arms)),
-        (9, lambda p: walk_pass(p, carry_arms)),
-        (17, lambda p: walk_b(p, carry_arms)),
-        (25, lambda p: walk_pass_b(p, carry_arms)),
-    ])
-    clip(rig, poser, "carried", [
-        (1, lambda p: carried(p, 0)),
-        (9, lambda p: carried(p, 1)),
-        (17, lambda p: carried(p, 0)),
-        (25, lambda p: carried(p, 1)),
-    ])
+    gait_clip(rig, poser, "carry", quarter(
+        lambda p: walk_a(p, carry_arms), lambda p: walk_pass(p, carry_arms), lambda p: walk_b(p, carry_arms), lambda p: walk_pass_b(p, carry_arms),
+    ), [lambda p: walk_a(p, carry_arms), lambda p: walk_b(p, carry_arms)], gaits)
+    carry_period = gaits["carry"]["cycleFrames"]
+    clip(rig, poser, "carried", [(1 + round(at * carry_period), lambda p, b=b: carried(p, b)) for at, b in ((0, 0), (0.25, 1), (0.5, 0), (0.75, 1))], period=carry_period)
     clip(rig, poser, "kneel-treat", [(1, lambda p: kneel_treat(p, 0)), (16, lambda p: kneel_treat(p, 1))])
     clip(rig, poser, "treated", [(1, lambda p: treated(p, 0)), (36, lambda p: treated(p, 1))])
     # Death clips (1.2), held on their last frame, and the corpse poses they end in.
@@ -878,5 +917,6 @@ def build():
     ], loop=False)
 
     check_crouch_walk(rig)
+    write_gaits(gaits)
     poser.clear()
     return [save_and_export("soldier", "characters")]

@@ -1,4 +1,4 @@
-import type { UnitSnapshot } from '@prestes/shared';
+import { CLIP_GAIT_SPEED, type UnitSnapshot } from '@prestes/shared';
 
 /** Clip names exported by art-src/blender/target_soldier.py. */
 export type SoldierClip =
@@ -201,14 +201,14 @@ function stanceOf(clip: SoldierClip): 'standing' | 'crouched' | 'prone' {
 
 /**
  * Ground speed each moving clip is authored at, in metres per second at 1x
- * (real time since order-tempo-and-facing): two steps a second for the walk,
- * three for the run.
+ * (real time since order-tempo-and-facing). soldier-animation-and-textures
+ * 1.4: the art build keys each cycle to these speeds from the shared gaits.
  */
 export const CLIP_SPEED: Partial<Record<SoldierClip, number>> = {
-  walk: 1.6,
-  'walk-ready': 1.5,
-  run: 3.5,
-  'crouch-walk': 1.0,
+  walk: CLIP_GAIT_SPEED.walk,
+  'walk-ready': CLIP_GAIT_SPEED['walk-ready'],
+  run: CLIP_GAIT_SPEED.run,
+  'crouch-walk': CLIP_GAIT_SPEED['crouch-walk'],
   crawl: 0.45,
 };
 
@@ -217,7 +217,7 @@ export const CLIP_SPEED: Partial<Record<SoldierClip, number>> = {
  * its authored rate: beyond that the next clip (walk or run) takes over, so
  * the feet never visibly skate or blur.
  */
-export function walkTimeScale(metresPerSecond: number, authored = 1.6): number {
+export function walkTimeScale(metresPerSecond: number, authored = CLIP_GAIT_SPEED.walk): number {
   return Math.max(0.75, Math.min(1.25, metresPerSecond / authored));
 }
 

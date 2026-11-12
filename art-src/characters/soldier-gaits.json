@@ -1,0 +1,38 @@
+{
+  "carry": {
+    "cycleFrames": 41,
+    "fps": 24,
+    "speed": 1.0,
+    "strideMetres": 1.6942
+  },
+  "crouch-walk": {
+    "cycleFrames": 34,
+    "fps": 24,
+    "speed": 1.0499999999999998,
+    "strideMetres": 1.4852
+  },
+  "limp": {
+    "cycleFrames": 29,
+    "fps": 24,
+    "speed": 1.125,
+    "strideMetres": 1.3704
+  },
+  "run": {
+    "cycleFrames": 16,
+    "fps": 24,
+    "speed": 3.5,
+    "strideMetres": 2.3853
+  },
+  "walk": {
+    "cycleFrames": 27,
+    "fps": 24,
+    "speed": 1.5,
+    "strideMetres": 1.6942
+  },
+  "walk-ready": {
+    "cycleFrames": 27,
+    "fps": 24,
+    "speed": 1.5,
+    "strideMetres": 1.6942
+  }
+}

@@ -82,7 +82,7 @@ describe('soldierOutfit', () => {
 
 describe('walkTimeScale', () => {
   it('keeps the step in time with the ground speed, within 0.75..1.25', () => {
-    expect(walkTimeScale(1.6)).toBeCloseTo(1);
+    expect(walkTimeScale(1.5)).toBeCloseTo(1);
     expect(walkTimeScale(0)).toBe(0.75);
     expect(walkTimeScale(10)).toBe(1.25);
     expect(walkTimeScale(3.5, CLIP_SPEED.run)).toBeCloseTo(1);

@@ -6,6 +6,7 @@ import {
   GAIT_SPEED,
   ORDER_GAIT,
   POSTURE_PACE,
+  STANCE_PACE,
   WINDED_FATIGUE,
   WINDED_RECOVER,
   MAP_BOUNDS,
@@ -276,7 +277,7 @@ export function moveUnit(
 
   const gait = unitGait(ctx, unit);
   unit.gait = gait;
-  const stanceFactor = unit.stance === 'prone' ? 0.45 : unit.stance === 'crouched' ? 0.7 : 1;
+  const stanceFactor = STANCE_PACE[unit.stance];
   const postureFactor = POSTURE_PACE[unit.posture] ?? 1;
   const wanted =
     GAIT_SPEED[gait] *

@@ -1,4 +1,4 @@
-import { MAX_HP, MAX_MORALE, findPath } from '@prestes/shared';
+import { MAX_HP, MAX_MORALE, WOUND_PACE, findPath } from '@prestes/shared';
 import type { SimEvent, WoundSeverity } from '@prestes/shared';
 import { RECOVERY_TICKS, RESCUE_CARRY_TICKS, RESCUE_CONTACT_DISTANCE, TREAT_TICKS } from './model';
 import type { MutableUnit } from './model';
@@ -258,7 +258,7 @@ export function woundFor(ctx: SimContext, unit: MutableUnit): WoundSeverity {
 }
 
 export function woundSpeedFactor(ctx: SimContext, unit: MutableUnit): number {
-  return unit.wound === 'light' ? 0.9 : unit.wound === 'moderate' ? 0.75 : 1;
+  return unit.wound === 'light' || unit.wound === 'moderate' ? WOUND_PACE[unit.wound] : 1;
 }
 
 export function woundAccuracyFactor(ctx: SimContext, unit: MutableUnit): number {
