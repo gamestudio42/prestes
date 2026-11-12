@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
+import { DEATH_POSE } from '../src/soldier-clips';
 
 /**
  * soldier-animation-and-textures 1.2: every death clip of the exported
@@ -73,6 +74,8 @@ describe('soldier death clips (1.2)', () => {
   it.each(['death-stand-front', 'death-stand-back', 'death-stand-flank', 'death-crouch', 'death-prone'])('%s ends in a corpse pose', (death) => {
     const end = lastPose(gltf, death);
     expect(corpses.filter((corpse) => samePose(end, lastPose(gltf, corpse)))).not.toHaveLength(0);
+    // 2.2: the view's table names the pose it ends in.
+    expect(samePose(end, lastPose(gltf, DEATH_POSE[death as keyof typeof DEATH_POSE]))).toBe(true);
   });
 
   it('the death clips together reach four different corpse poses', () => {

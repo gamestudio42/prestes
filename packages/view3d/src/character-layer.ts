@@ -6,7 +6,9 @@ import {
   holdReady,
   soldierClip,
   aimTransition,
+  corpsePose,
   deathClip,
+  deathVariant,
   shotSide,
   soldierOutfit,
   steadyClip,
@@ -331,7 +333,9 @@ export class CharacterLayer {
     const shooters = new Set<number>();
     const struck = new Set<number>();
     const hitFrom = new Map<number, { x: number; y: number }>();
+    const diedOn = new Map<number, number>();
     for (const event of fresh ? frame.events : []) {
+      if (event.type === 'unit_died') diedOn.set(event.unitId, event.tick);
       if (event.type === 'shot') shooters.add(event.source);
       if (event.type === 'shot' && event.hit && event.target >= 0) hitFrom.set(event.target, { x: event.x, y: event.y });
       if (event.type === 'unit_hit') struck.add(event.unitId);
@@ -379,6 +383,8 @@ export class CharacterLayer {
           down: !unit.alive || unit.incapacitated,
           alive: unit.alive,
           shotFrom: null,
+          // 2.2: a man first seen dead lies in a pose of his id.
+          ...(!unit.alive && !unit.routed ? { death: corpsePose(unit.id, unit.stance) } : {}),
         };
         this.views.set(unit.id, view);
       }
@@ -398,7 +404,7 @@ export class CharacterLayer {
       if (view.alive && !unit.alive && !unit.routed) {
         // Seen to die: the clip of his stance and the side the shot came from.
         const side = view.shotFrom ? shotSide(unit.facingX, unit.facingY, view.shotFrom.x - unit.x, view.shotFrom.y - unit.y) : 'front';
-        view.death = deathClip(unit.stance, side);
+        view.death = deathClip(unit.stance, side, deathVariant(unit.id, diedOn.get(unit.id) ?? frame.tick));
       }
       view.alive = unit.alive;
       const down = !unit.alive || unit.incapacitated;

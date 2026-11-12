@@ -191,11 +191,62 @@ export function shotSide(facingX: number, facingY: number, dx: number, dy: numbe
   return 'flank';
 }
 
-/** The death clip for his stance and the side the shot came from (1.2). */
-export function deathClip(stance: UnitSnapshot['stance'], side: ShotSide): DeathClip {
+/** FNV-1a, 32 bits (the kernel's hash, here for numbers in the view). */
+function fnv1a(input: string): number {
+  let hash = 0x811c9dc5;
+  for (let index = 0; index < input.length; index += 1) {
+    hash ^= input.charCodeAt(index);
+    hash = Math.imul(hash, 0x01000193) >>> 0;
+  }
+  return hash >>> 0;
+}
+
+/** 2.2: a soldier's variant number, from his id and the tick he died on alone. */
+export function deathVariant(id: number, tick: number): number {
+  return fnv1a(`${id}:${tick}`);
+}
+
+/**
+ * The death clips a standing man may play for each side the shot came from:
+ * the first is the plain fall, the second a twist that ends in another pose.
+ */
+const STANDING_DEATHS: Readonly<Record<ShotSide, readonly DeathClip[]>> = {
+  front: ['death-stand-front', 'death-stand-flank'],
+  back: ['death-stand-back', 'death-stand-flank'],
+  flank: ['death-stand-flank', 'death-stand-back'],
+};
+
+/**
+ * The death clip for his stance and the side the shot came from (1.2), the
+ * variant picked by `variant` (2.2: from `deathVariant`). Prone and crouched
+ * men keep their own clip: they never rise to die.
+ */
+export function deathClip(stance: UnitSnapshot['stance'], side: ShotSide, variant = 0): DeathClip {
   if (stance === 'prone') return 'death-prone';
   if (stance === 'crouched') return 'death-crouch';
-  return side === 'front' ? 'death-stand-front' : side === 'back' ? 'death-stand-back' : 'death-stand-flank';
+  const choices = STANDING_DEATHS[side];
+  return choices[variant % choices.length]!;
+}
+
+/** The corpse pose each death clip ends in (1.2; held by a test on the model). */
+export const DEATH_POSE: Readonly<Record<DeathClip, SoldierClip>> = {
+  'death-stand-front': 'corpse',
+  'death-stand-back': 'corpse-face',
+  'death-stand-flank': 'corpse-side',
+  'death-crouch': 'corpse-face',
+  'death-prone': 'corpse-sprawl',
+};
+
+const LYING_POSES: readonly SoldierClip[] = ['corpse', 'corpse-face', 'corpse-side'];
+
+/**
+ * 2.2: the pose of a man first seen already dead (the view did not see him
+ * fall, so it has no shot side or tick): prone he lies sprawled, otherwise
+ * one of the other three poses by his id alone.
+ */
+export function corpsePose(id: number, stance: UnitSnapshot['stance']): SoldierClip {
+  if (stance === 'prone') return 'corpse-sprawl';
+  return LYING_POSES[fnv1a(`${id}`) % LYING_POSES.length]!;
 }
 
 /** How long the raise into the aim and the lowering out of it play (ms). */

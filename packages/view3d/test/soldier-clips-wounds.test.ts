@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CLIP_SPEED, LOWER_MS, RAISE_MS, aimTransition, deathClip, shotSide, soldierClip, steadyClip } from '../src/soldier-clips';
+import { CLIP_SPEED, DEATH_POSE, LOWER_MS, RAISE_MS, aimTransition, corpsePose, deathClip, deathVariant, shotSide, soldierClip, steadyClip } from '../src/soldier-clips';
 
 /**
  * soldier-animation-and-textures 2.1: one test per scenario of the wound,
@@ -92,5 +92,36 @@ describe('Crouched movement, aiming and reloading', () => {
     expect(soldierClip({ ...base, targetId: 7 }, { ...still, turning: true })).toBe('aim-turn-stand');
     expect(soldierClip({ ...base, stance: 'crouched', targetId: 7 }, { ...still, turning: true })).toBe('aim-turn-crouch');
     expect(aimTransition('aim-stand', 0, 'aim-turn-stand', 1000)).toBe('aim-turn-stand');
+  });
+});
+
+describe('death and corpse variants (2.2)', () => {
+  it('the same soldier dying on the same tick falls the same way', () => {
+    for (let id = 1; id <= 50; id += 1) {
+      const tick = 300 + id * 17;
+      expect(deathClip('standing', 'front', deathVariant(id, tick))).toBe(deathClip('standing', 'front', deathVariant(id, tick)));
+      expect(corpsePose(id, 'standing')).toBe(corpsePose(id, 'standing'));
+    }
+  });
+
+  it("four corpse poses occur over a battle's dead", () => {
+    // Thirty-six dead of a 3v3: most standing, some crouched, a few prone, shot from every side.
+    const stances = ['standing', 'standing', 'standing', 'crouched', 'standing', 'prone'] as const;
+    const sides = ['front', 'front', 'flank', 'back'] as const;
+    const poses = new Set<string>();
+    for (let id = 0; id < 36; id += 1) {
+      const clip = deathClip(stances[id % stances.length]!, sides[id % sides.length]!, deathVariant(id, 400 + id * 23));
+      poses.add(DEATH_POSE[clip]);
+    }
+    expect(poses.size).toBe(4);
+    // Men first seen already dead lie in more than one pose too.
+    expect(new Set(Array.from({ length: 20 }, (_, id) => corpsePose(id, 'standing'))).size).toBe(3);
+    expect(corpsePose(5, 'prone')).toBe('corpse-sprawl');
+  });
+
+  it('the variant changes a standing death and never a prone one', () => {
+    const fronts = new Set(Array.from({ length: 20 }, (_, id) => deathClip('standing', 'front', deathVariant(id, 900))));
+    expect(fronts).toEqual(new Set(['death-stand-front', 'death-stand-flank']));
+    expect(new Set(Array.from({ length: 20 }, (_, id) => deathClip('prone', 'back', deathVariant(id, 900))))).toEqual(new Set(['death-prone']));
   });
 });
