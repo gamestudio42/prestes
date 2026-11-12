@@ -2,6 +2,8 @@ import { NodeIO } from '@gltf-transform/core';
 import { dedup, prune } from '@gltf-transform/functions';
 import { copyFileSync, existsSync, mkdirSync, readdirSync } from 'node:fs';
 import { basename, join } from 'node:path';
+import { CATALOG_OBJECTS } from '../packages/shared/src';
+import { isTreeModel, meshTriangles, treeBudgetProblems } from './tree-budgets';
 
 const SOURCES = ['art-src/characters', 'art-src/environment'];
 const OUTPUT = 'apps/game/public/models';
@@ -25,6 +27,14 @@ for (const input of files) {
   const output = join(OUTPUT, `${basename(file, file.endsWith('.gltf') ? '.gltf' : '.glb')}.glb`);
   const document = await io.read(input);
   await document.transform(prune(), dedup());
+  // biome-trees-and-plants 1.2: a tree over its size class's budget fails the build.
+  if (isTreeModel(file)) {
+    const problems = treeBudgetProblems(meshTriangles(document), (model) => CATALOG_OBJECTS.find((entry) => entry.model === model)?.height);
+    if (problems.length > 0) {
+      console.error(`${input}: over the triangle budget\n  ${problems.join('\n  ')}`);
+      process.exit(1);
+    }
+  }
   await io.write(output, document);
   console.log(`${output}: ${document.getRoot().listMeshes().length} meshes`);
 }

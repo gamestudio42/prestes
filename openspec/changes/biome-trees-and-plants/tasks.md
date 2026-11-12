@@ -1,11 +1,13 @@
 ## 0. Before starting
 
-- [ ] 0.1 Read `docs/handoff.md`, then this change's proposal, design and spec. Prerequisites: the Refloreste project on disk at `C:/projetos/Refloreste` (or `REFLORESTE` set) and Blender for `art-src/blender/target_trees.py`; never paint in the editor inside the shared preview pane (its autosave overwrites the owner's maps); verify: the tree target reproduces the present five trees before any change
+- [x] 0.1 Read `docs/handoff.md`, then this change's proposal, design and spec. Prerequisites: the Refloreste project on disk at `C:/projetos/Refloreste` (or `REFLORESTE` set) and Blender for `art-src/blender/target_trees.py`; never paint in the editor inside the shared preview pane (its autosave overwrites the owner's maps); verify: the tree target reproduces the present five trees before any change
+  - Done 2026-11-12: Blender 5.2 rebuilds `trees.glb` byte-identical (bush 160, cerrado tree 506, buriti 663, broadleaf 689, araucária 766 triangles).
 
 ## 1. Inventory and budgets
 
 - [ ] 1.1 List every Refloreste species with its adult, flowering and dead models, real height range and biome, and the candidate caatinga plants; verify: the owner confirms the list (species, forms, caatinga plants), recorded in `docs/status.md`
-- [ ] 1.2 Size classes and triangle budgets measured from the five trees already adapted; the build fails over budget; verify with a build test on a fixture over budget
+- [x] 1.2 Size classes and triangle budgets measured from the five trees already adapted; the build fails over budget; verify with a build test on a fixture over budget
+  - Done 2026-11-12: `tools/tree-budgets.ts` (bush under 2 m 300, small tree under 6 m 600, tree to 15 m 800, giant 1200); `pnpm models` fails naming the species and count; `tests/tools/tree-budgets.test.ts`.
 
 ## 2. Adaptation
 
