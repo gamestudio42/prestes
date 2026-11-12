@@ -4,7 +4,7 @@
 
 ## 1. Choices
 
-- [ ] 1.1 Candidate list of new buildings (rural, town, military), each with a source or "generic period type", and of rock kinds with the regions they stand for; verify: the owner approves the lists, recorded in `docs/status.md`
+- [ ] 1.1 Candidate list of new buildings (rural, town, military), each with a source or "generic period type"; of rock kinds with the regions they stand for; of waterside, farm, town and camp objects (the tractor and the camp objects with a source or "generic period type"); and of new fences and walls; verify: the owner approves the lists, recorded in `docs/status.md`
 - [ ] 1.2 Review sheet of the seventeen present buildings as drawn today, with the features each should gain; verify: the owner marks the sheet
 
 ## 2. Openings as one source
@@ -28,9 +28,16 @@
 - [ ] 4.2 Built stone: the dry stone wall line by rock kind, the corral, steps and retaining wall; verify with a view test of the wall on a slope and a simulation test of cover along it
 - [ ] 4.3 Names in EN and PT-BR, editor list grouped by kind with thumbnails; verify with `pnpm check:locales` and an editor e2e
 
-## 5. Gates
+## 5. Objects, fences and walls
 
-- [ ] 5.1 Models split by group and loaded by what the map uses; strategic-band meshes; verify with the sixty-building performance e2e
-- [ ] 5.2 `docs/assets.md`: every building and stone with source and licence; verify: the register check passes
-- [ ] 5.3 `pnpm verify` and `openspec validate revise-buildings-and-stone --type change --strict`; verify: all pass, model sizes in `docs/status.md`
-- [ ] 5.4 Hand check by the owner: the two authored maps before and after, and a town built in the editor; findings in `docs/status.md`
+- [ ] 5.1 The approved waterside, farm and town objects: builders in the props target, catalog rows with footprint, height and cover class (D9), the `water` group and its placement on water and banks; verify with the review sheet, a unit test that a boat in water leaves passability and cover unchanged, and a simulation test of cover behind a canoe on a bank
+- [ ] 5.2 The Column's camp and train: tents (with the kit's aid tent), carts, pack saddles, barrels, ammunition boxes, campfire, rifle stack, saddle rail, horse line and the abandoned 75 mm gun as approved, the `camp` group and the per-side variants (D11); verify with the review sheet and the variant determinism test
+- [ ] 5.3 The approved fences and walls as appended `LINE_KINDS` (D10); verify with a view test of each on a slope, a simulation test of a fence's and a wall's cover, and a loader test of an older map's lines
+- [ ] 5.4 Names in EN and PT-BR and thumbnails for every new object and line; verify with `pnpm check:locales`, `pnpm check:content` and an editor e2e placing one object of each group and drawing one new line
+
+## 6. Gates
+
+- [ ] 6.1 Models split by group and loaded by what the map uses; strategic-band meshes; verify with the sixty-building performance e2e
+- [ ] 6.2 `docs/assets.md`: every building, stone, object and line with source and licence; verify: the register check passes
+- [ ] 6.3 `pnpm verify` and `openspec validate revise-buildings-and-stone --type change --strict`; verify: all pass, model sizes in `docs/status.md`
+- [ ] 6.4 Hand check by the owner: the two authored maps before and after, a town and a river camp built in the editor; findings in `docs/status.md`

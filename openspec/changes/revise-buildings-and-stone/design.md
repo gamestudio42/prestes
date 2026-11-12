@@ -18,7 +18,12 @@ See proposal.md. Observed:
   (`WINDOW_SPACING`, `BUILDING_WALL_SHARE`), defines upper floors per model
   (`BUILDING_UPPER`) and towers; `positions.ts` turns them into garrison
   positions. The battle's openings are therefore data the art can read.
-- Line kinds include `stone-wall`.
+- Line kinds include `stone-wall`; seven kinds in all (`LINE_KINDS`: each
+  is a wall or a fence, with a default height and a half depth; the
+  hedgerow also conceals). Props are eight, in the `prop` group; the art
+  kit's `aid-tent` (target_buildings.py) is not in the catalog.
+- `docs/history/FORCES.md`: the Column crossed the Paraná with 600 horses
+  and mules and three 75 mm guns, later abandoned in Mato Grosso.
 
 Boundary: the simulation keeps reading footprints and openings from shared
 data; models are view-only. The pipeline stays script-built.
@@ -77,6 +82,27 @@ the approved ones get builders. The proposal's list is a candidate.
 stones go, what is left of building and stone placement moves to a
 `structures-layer.ts`, in line with splitting large files when touched.
 
+**D9. Objects by size, as stones are.** A new object's battle part is a
+footprint and a cover class picked by its size and stuff, from the classes
+the catalog has (barrel, low wall, stone, sandbag): a canoe on the bank or
+a cart is low cover like a barrel, a tractor or a landing stage's piles
+block like stone. An object placed in water keeps its footprint, but water
+already stops movement, so in water it is drawing only and gives no cover;
+the editor allows the waterside group on water cells and shallow banks.
+New groups `water` and `camp` sort the editor's list; `farm` and `town`
+objects stay in `prop`, with a sub-heading.
+
+**D10. New fences and walls are appended line kinds.** Each is a
+`LINE_KINDS` row (wall or fence, height, half depth, conceals), drawn by the
+line drawing the walls already use, so it follows the ground. Appending
+keeps every saved map's line kinds where they are. A wall gives the cover
+of a wall of its height, a fence what the present fences give.
+
+**D11. The camp is the Column's and the government's.** Camp objects have
+one model each and, where the sources show a difference (canvas against
+improvised shelter, issue boxes against requisitioned barrels), a variant
+per side through D3; they carry no faction rule in battle.
+
 **D8. Level of detail.** Buildings are instanced per model and variant; at
 the strategic band the same model is drawn without its small features
 (a second mesh in the kit), so a town stays in budget.
@@ -96,3 +122,6 @@ the strategic band the same model is drawn without its small features
 ## Open Questions
 
 - Which variants each building gets, decided on the review sheet.
+- Which waterside, farm, town and camp objects and which fences and walls
+  are made, decided by the owner in task 1.1 from the proposal's
+  candidates.

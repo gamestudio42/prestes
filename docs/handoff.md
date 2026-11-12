@@ -90,7 +90,7 @@ with a task 0.1 of prerequisites.
 | 3b | `redo-battle-hud` | 12/17 | applied ahead of 3 at the owner's request (2026-11-12) | the art pass (1.2), the soldier figures on the card (3.1, after 3), baselines (5.1), gates and hand check (5.2, 5.3) |
 | any time | `remove-sandbox-panel` | 6/7 | applied 2026-11-11 | nothing; the `battle-hud` baseline re-record (2.5) waits for the compass and area-fire work to be committed |
 | 4 | `biome-trees-and-plants` | 0/18 | planned | the species and caatinga list (1.1), the review sheet, the hand check (5.3) |
-| 5 | `revise-buildings-and-stone` | 0/19 | planned | the lists of new buildings and rock kinds (1.1), the marked sheet (1.2), the hand check (5.4) |
+| 5 | `revise-buildings-and-stone` | 0/23 | planned; waterside, farm, town and camp objects and new fences and walls added 2026-11-12 | the lists of new buildings, rock kinds, objects and fences (1.1), the marked sheet (1.2), the hand check (6.4) |
 | any time | `ambient-sound-and-voices` | 0/19 | planned | the sound source list (3.1), the review of the Portuguese lines (5.1), **the recordings** (5.6), the hand check (6.3) |
 | on hold | `add-field-manual` | 0/11 | proposed, the owner said "not yet" | the go-ahead |
 | the owner's | `polish-menu-desk` | 31/35 | four Aseprite redraws left (both closed books, the reference pile, the gramophone) | the drawings |
@@ -157,6 +157,8 @@ reads the battle's doors and windows from shared data
 (`packages/shared/src/maps/openings.ts`) so the model and the battle agree.
 The present buildings' openings do not move. Variants change only the
 drawing. A stone's cover depends on its size, never on its rock kind.
+The new objects take a cover class by size, as stones do; in water an
+object is drawing only; new fences and walls are appended line kinds.
 
 **ambient-sound-and-voices.** Sound belongs to what is near the point the
 camera looks at; the commander's order and the section's answer are the

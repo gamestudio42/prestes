@@ -110,6 +110,53 @@ height, and its drawing SHALL follow the ground along its length.
 - **WHEN** the author draws a dry stone wall down a hillside
 - **THEN** the wall follows the ground without gaps under it, and soldiers take cover along it
 
+### Requirement: Waterside, farm, town and camp objects
+
+The catalog SHALL hold objects of the waterside (boats, nets, a landing
+stage), the farm (a broken tractor among them), the town, and the Column's
+camp and train (tents, carts, barrels, ammunition boxes, a campfire), at
+least eight across the waterside, farm and town groups. Every object SHALL
+have a localized name in PT-BR and EN, a footprint, a height and the cover
+it gives, chosen from the catalog's cover classes by its size and stuff,
+and SHALL work in the editor and in battle as the present objects do. A
+waterside object SHALL be placeable on a bank or in shallow water; in water
+it SHALL give no cover and SHALL NOT change where men can move.
+
+Historical note: the Column crossed the Paraná with about 1,500 men, 600
+horses and mules and three 75 mm guns, later abandoned
+(`docs/history/FORCES.md`, Macaulay pp. 87-89); each camp object's catalog
+note says whether it is a documented or a generic period type. The sea
+objects are for skirmish maps.
+
+#### Scenario: A canoe on the bank
+- **WHEN** a soldier lies behind a canoe pulled up on a river bank
+- **THEN** he has the cover of a low object of that size against a shot from across the river
+
+#### Scenario: A boat in the water
+- **WHEN** a rowing boat is placed in a pond
+- **THEN** it is drawn on the water, gives no cover, and the pond's passability is unchanged
+
+#### Scenario: A camp in the editor
+- **WHEN** the author opens the camp group of the object list
+- **THEN** tents, carts, barrels, ammunition boxes and a campfire are offered with their names in the editor's language
+
+### Requirement: More kinds of fence and wall
+
+The line catalog SHALL hold at least three new kinds of fence or wall
+beside the seven present ones. Every kind SHALL say whether it is a wall or
+a fence, its height and thickness, and whether it conceals; a wall SHALL
+give the cover of a wall of its height, and its drawing SHALL follow the
+ground along its length. Maps saved before SHALL load with every line in
+the kind it had.
+
+#### Scenario: A rail fence across a field
+- **WHEN** the author draws a rail fence and a soldier takes cover behind it
+- **THEN** he has a fence's cover, not a wall's, and the fence follows the ground
+
+#### Scenario: An older map's walls
+- **WHEN** a map saved before this change is loaded
+- **THEN** every wall and fence keeps its kind and the map check passes
+
 ### Requirement: Structures stay inside the frame budget
 
 A large map with a town of sixty buildings SHALL stay inside the frame
