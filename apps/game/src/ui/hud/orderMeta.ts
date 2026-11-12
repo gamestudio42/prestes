@@ -70,7 +70,7 @@ export function orderLetter(order: UnitOrder): string {
 export const ICONS = {
   attack: pixelIcon('order-attack'),
   suppress: pixelIcon('order-suppress'),
-  // scrub-concealment-and-area-fire: a named placeholder until the owner's art pass.
+  // scrub-concealment-and-area-fire: bursts inside the corners of an area (drawn 2026-11-12).
   'area-fire': pixelIcon('order-area-fire'),
   move: pixelIcon('order-move'),
   withdraw: pixelIcon('order-withdraw'),
