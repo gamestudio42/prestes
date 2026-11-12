@@ -44,6 +44,8 @@ LEAF_ARAUCARIA = (0.20, 0.40, 0.17)
 #   palm       the real fronds kept (Refloreste's palms are geometry, not cards)
 #   giant      as broadleaf, the trunk kept at LOD 0 for its buttresses
 #   bush       as broadleaf, no trunk, spread to `width`
+#   dead       the trunk alone (dead forms and stumps); `trunk="auto"` takes the
+#              most detailed LOD that fits the budget
 TREES = {
     "tree-broad": dict(path="mata_atlantica/peroba/mata_atlantica_peroba_adulta.glb", family="broadleaf", trunk=1, foliage=0, clumps=26, leaf=LEAF, flat=0.8, height=8.0),
     "tree-araucaria": dict(path="mata_atlantica/araucaria/mata_atlantica_araucaria_adulta.glb", family="tiered", trunk=1, foliage=0, clumps=28, tiers=4, bare=0.4, lift=0.35, cap=2.6, leaf=LEAF_ARAUCARIA, flat=0.3, height=14.0),
@@ -52,7 +54,7 @@ TREES = {
     "bush": dict(path="cerrado/bush/cerrado_bush_adulta.glb", family="bush", trunk=None, foliage=0, clumps=8, leaf=LEAF, flat=0.75, height=1.3, width=2.6),
 }
 
-FAMILIES = ("broadleaf", "tiered", "palm", "giant", "bush")
+FAMILIES = ("broadleaf", "tiered", "palm", "giant", "bush", "dead")
 for _spec in TREES.values():
     _spec["file"] = "trees"
 
@@ -86,28 +88,77 @@ def species(biome: str, folder: str, family: str, height: float, leaf, **extra):
 
 TREES.update({
     # Atlantic forest
-    "araucaria": species("mata_atlantica", "araucaria", "tiered", 22.0, LEAF_ARAUCARIA, clumps=32, tiers=4, bare=0.4, lift=0.35, cap=2.6, flat=0.3),
-    "mulungu": species("mata_atlantica", "erythrina", "broadleaf", 10.0, LEAF_ATLANTIC),
-    "jequitiba": species("mata_atlantica", "jequitiba", "giant", 32.0, LEAF_ATLANTIC, flat=0.7),
-    "manaca": species("mata_atlantica", "manaca", "broadleaf", 6.0, LEAF_ATLANTIC),
-    "palmito-jucara": species("mata_atlantica", "palmito_jucara", "palm", 10.0, LEAF_ATLANTIC),
-    "pau-brasil": species("mata_atlantica", "pau_brasil", "broadleaf", 14.0, LEAF_ATLANTIC),
-    "peroba": species("mata_atlantica", "peroba", "broadleaf", 22.0, LEAF_ATLANTIC),
+    "araucaria": species("mata_atlantica", "araucaria", "tiered", 14.0, LEAF_ARAUCARIA, clumps=32, tiers=4, bare=0.4, lift=0.35, cap=2.6, flat=0.3),
+    "mulungu": species("mata_atlantica", "erythrina", "broadleaf", 8.0, LEAF_ATLANTIC),
+    "jequitiba": species("mata_atlantica", "jequitiba", "giant", 13.0, LEAF_ATLANTIC, flat=0.7),
+    "manaca": species("mata_atlantica", "manaca", "broadleaf", 5.0, LEAF_ATLANTIC),
+    "palmito-jucara": species("mata_atlantica", "palmito_jucara", "palm", 8.0, LEAF_ATLANTIC),
+    "pau-brasil": species("mata_atlantica", "pau_brasil", "broadleaf", 10.0, LEAF_ATLANTIC),
+    "peroba": species("mata_atlantica", "peroba", "broadleaf", 8.0, LEAF_ATLANTIC),
     # Cerrado
-    "aroeira": species("cerrado", "aroeira", "broadleaf", 8.0, LEAF_CERRADO),
+    "aroeira": species("cerrado", "aroeira", "broadleaf", 7.0, LEAF_CERRADO),
     "barbatimao": species("cerrado", "barbatimao", "broadleaf", 4.0, LEAF_CERRADO),
-    "buriti-adult": species("cerrado", "buriti", "palm", 18.0, LEAF_CERRADO),
-    "cagaita": species("cerrado", "cagaita", "broadleaf", 5.0, LEAF_CERRADO),
-    "ipe": species("cerrado", "ipe", "broadleaf", 10.0, LEAF_CERRADO),
-    "pequi": species("cerrado", "pequi", "broadleaf", 7.0, LEAF_CERRADO),
+    "buriti-adult": species("cerrado", "buriti", "palm", 12.0, LEAF_CERRADO),
+    "cagaita": species("cerrado", "cagaita", "broadleaf", 4.0, LEAF_CERRADO),
+    "ipe": species("cerrado", "ipe", "broadleaf", 8.0, LEAF_CERRADO),
+    "pequi": species("cerrado", "pequi", "broadleaf", 6.0, LEAF_CERRADO),
     # Amazon
-    "acai": species("amazonia", "acai", "palm", 14.0, LEAF_AMAZON),
-    "andiroba": species("amazonia", "andiroba", "giant", 25.0, LEAF_AMAZON),
-    "castanheira": species("amazonia", "castanheira", "giant", 32.0, LEAF_AMAZON, flat=0.7),
-    "seringueira": species("amazonia", "seringueira", "broadleaf", 22.0, LEAF_AMAZON),
-    "sumauma": species("amazonia", "sumauma", "giant", 38.0, LEAF_AMAZON, flat=0.55),
-    "tucuma": species("amazonia", "tucuma", "palm", 12.0, LEAF_AMAZON),
+    "acai": species("amazonia", "acai", "palm", 10.0, LEAF_AMAZON),
+    "andiroba": species("amazonia", "andiroba", "giant", 12.0, LEAF_AMAZON),
+    "castanheira": species("amazonia", "castanheira", "giant", 13.0, LEAF_AMAZON, flat=0.7),
+    "seringueira": species("amazonia", "seringueira", "broadleaf", 11.0, LEAF_AMAZON),
+    "sumauma": species("amazonia", "sumauma", "giant", 14.0, LEAF_AMAZON, flat=0.55),
+    "tucuma": species("amazonia", "tucuma", "palm", 9.0, LEAF_AMAZON),
 })
+
+# biome-trees-and-plants 2.5: dead forms (every adult), one stump per biome and
+# the four flowering forms chosen at task 1.1 (docs/status.md). A dead or
+# flowering form takes its height from the adult row, so editing that row
+# carries over.
+FLOWERS = {
+    "ipe": (0.95, 0.78, 0.15),
+    "mulungu": (0.85, 0.28, 0.12),
+    "manaca": (0.78, 0.45, 0.70),
+    "pau-brasil": (0.93, 0.80, 0.20),
+}
+# Dead wood: the source's vertex colours multiplied toward grey-brown.
+DEAD_WOOD = (0.45, 0.40, 0.34)
+
+
+def add_forms():
+    adults = [(name, spec) for name, spec in TREES.items() if spec["file"] != "trees"]
+    stumps = {}
+    for name, spec in adults:
+        dead = dict(spec, path=spec["path"].replace("_adulta.glb", "_morta.glb"), family="dead", trunk="auto", foliage=None, clumps=0, tint=DEAD_WOOD, height=TREES[name]["height"])
+        TREES[f"{name}-dead"] = dead
+        biome = spec["path"].split("/")[0]
+        stumps.setdefault(biome, spec["file"])
+    for name, spec in adults:
+        if name in FLOWERS:
+            TREES[f"{name}-flowering"] = dict(spec, path=spec["path"].replace("_adulta.glb", "_adulta_florida.glb"), flowers=FLOWERS[name], height=TREES[name]["height"])
+    for biome, file in stumps.items():
+        TREES[f"stump-{biome.replace('_', '-')}"] = dict(
+            path=f"{biome}/stump/{biome}_stump_adulta.glb", file=file, family="dead", trunk=0, foliage=None,
+            clumps=0, leaf=LEAF, flat=1.0, height=0.6, tint=DEAD_WOOD)
+
+
+add_forms()
+
+# biome-trees-and-plants 2.4b (design D5c): the araucaria, peroba, pequi and
+# buriti already in maps are those species' adults, under their legacy ids
+# and heights; their rows above only give their dead forms. The adult rows
+# are dropped, and the dead forms take the legacy heights.
+LEGACY_ADULTS = {"araucaria": "tree-araucaria", "peroba": "tree-broad", "pequi": "cerrado-tree", "buriti-adult": "buriti"}
+for _name, _legacy in LEGACY_ADULTS.items():
+    del TREES[_name]
+    _dead = TREES.pop(f"{_name}-dead")
+    _dead["height"] = TREES[_legacy]["height"]
+    TREES[f"{_name.replace('-adult', '')}-dead"] = _dead
+
+# No tree over 14 m (owner, 2026-11-12: no giant trees on the battle maps).
+MAX_TREE_HEIGHT = 14.0
+for _name, _spec in TREES.items():
+    assert _spec["height"] <= MAX_TREE_HEIGHT, f"{_name}: {_spec['height']} m, over {MAX_TREE_HEIGHT} m"
 
 with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "tools", "tree-budgets.json"), encoding="utf-8") as _file:
     BUDGETS = json.load(_file)
@@ -223,7 +274,15 @@ def kmeans(cards, count: int, rounds: int = 12):
     return [(seeds[i], group) for i, group in enumerate(groups) if group]
 
 
-def crown(name: str, cards, clumps: int, leaf, flat: float, card_radius: float, groups=None, cap=None):
+def tint_wood(trunk, tint):
+    """Multiplies the trunk's vertex colours by `tint` (dead wood reads grey-brown)."""
+    layer = colour_layer(trunk.data)
+    for item in layer.data:
+        r, g, b, a = item.color
+        item.color = (r * tint[0], g * tint[1], b * tint[2], a)
+
+
+def crown(name: str, cards, clumps: int, leaf, flat: float, card_radius: float, groups=None, cap=None, shade_cap=1.4):
     """The crown as clumps, one per k-means group of leaf cards (or the groups given)."""
     mesh = bpy.data.meshes.new(f"{name}-crown")
     bm = bmesh.new()
@@ -231,7 +290,7 @@ def crown(name: str, cards, clumps: int, leaf, flat: float, card_radius: float, 
     for centre, group in groups if groups is not None else kmeans(cards, clumps):
         spread = math.sqrt(sum((c - centre).length_squared for c, _ in group) / len(group))
         radius = (min(spread, cap) if cap else spread) + card_radius * 0.6
-        shade = min(1.4, max(0.45, 1.5 * sum(s for _, s in group) / len(group)))
+        shade = min(shade_cap, max(0.45, 1.5 * sum(s for _, s in group) / len(group)))
         colour = (leaf[0] * shade, leaf[1] * shade, leaf[2] * shade, 1.0)
         result = bmesh.ops.create_icosphere(bm, subdivisions=0, radius=1.0)
         for vertex in result["verts"]:
@@ -307,7 +366,14 @@ def whorls(cards, tiers: int, per_tier: int, bare: float):
 def build_tree(name: str, spec: dict):
     meshes = import_source(spec["path"])
     keep = []
+    if spec["trunk"] == "auto":
+        # The most detailed trunk that fits the budget.
+        lods = [lod for lod in (0, 1, 2) if pick(meshes, "tronco", lod)]
+        fitting = [lod for lod in lods if triangles(pick(meshes, "tronco", lod)) <= budget_for(spec["height"]) * 0.92]
+        spec = dict(spec, trunk=fitting[0] if fitting else lods[-1])
     trunk = pick(meshes, "tronco", spec["trunk"])
+    if trunk and spec.get("tint"):
+        tint_wood(trunk, spec["tint"])
     if trunk:
         keep.append(trunk)
     family = spec["family"]
@@ -325,7 +391,17 @@ def build_tree(name: str, spec: dict):
         foliage = pick(meshes, "folhagem", spec["foliage"])
     if spec["clumps"] is None:
         spec = dict(spec, clumps=max(8, min(40, int(room // 20))))
-    if foliage and family != "palm":
+    flowers = pick(meshes, "flores", 0) if spec.get("flowers") else None
+    if flowers:
+        # Flowering form: the clump budget goes to the flowers, or half and
+        # half with the leaves where the file has foliage too.
+        leaf_clumps = spec["clumps"] // 2 if foliage else 0
+        xs = [v.co.x for v in flowers.data.vertices]
+        flower_radius = max(0.4, (max(xs) - min(xs)) * 0.04)
+        keep.append(crown(f"{name}-flowers", card_centres(flowers), spec["clumps"] - leaf_clumps, spec["flowers"], spec["flat"], flower_radius, shade_cap=1.0))
+        spec = dict(spec, clumps=leaf_clumps)
+        print(f"{name}: flower crown from {len(flowers.data.polygons)} flower-card faces")
+    if foliage and family != "palm" and spec["clumps"]:
         # A card is about a twenty-fifth of the crown's width.
         xs = [v.co.x for v in foliage.data.vertices]
         card_radius = max(0.4, (max(xs) - min(xs)) * 0.04)

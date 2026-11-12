@@ -20,6 +20,9 @@ export const TREE_BUDGETS: Record<SizeClass, number> = {
   giant: budgets.giant,
 };
 
+/** No tree stands taller, in metres (owner, 2026-11-12: no giant trees on the battle maps). */
+export const MAX_TREE_HEIGHT: number = budgets.maxHeight;
+
 /** By catalog height in metres: a bush under 2 m, a small tree under 6, a giant over 15. */
 export function sizeClass(height: number): SizeClass {
   if (height < 2) return 'bush';
@@ -71,6 +74,7 @@ export function treeBudgetProblems(meshes: readonly TreeMesh[], heightOf: (model
       problems.push(`${mesh.name}: no height, so no size class`);
       continue;
     }
+    if (height > MAX_TREE_HEIGHT + 0.05) problems.push(`${mesh.name}: ${height.toFixed(1)} m, over the ${MAX_TREE_HEIGHT} m limit`);
     const size = sizeClass(height);
     const budget = TREE_BUDGETS[size];
     if (mesh.triangles > budget) problems.push(`${mesh.name}: ${mesh.triangles} triangles, over the ${size} budget of ${budget}`);

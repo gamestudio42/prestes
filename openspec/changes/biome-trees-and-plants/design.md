@@ -92,6 +92,15 @@ over the crowns. Only the player's own men count, so the fade never shows
 an enemy that the fog of war hides. A considered alternative, cutting all
 crowns to trunks near the cursor, hides the wood's shape and was dropped.
 
+The owner likes the trees' look in battle (2026-11-12: the pixelated
+clumps, their outlines and light-and-dark shading): it must not be lost.
+The new species go through the same view path as the five trees already in
+the game (vertex-coloured clumps, the pixel render, the outline pass), and
+the fade keeps it: a screen-door dither in whole pixels with the outlines
+kept, never a smooth transparency or a change of shading. Species leaf
+colours stay in the game's palette; the in-game look of each biome is
+checked against a screenshot of today's trees before section 4 closes.
+
 **D6. Bushes are a family, not a species.** Per biome: three sizes, two
 shapes each, generated from the biome bush with different clump counts and
 flattening. Concealment by height reuses the stance rule the concealment

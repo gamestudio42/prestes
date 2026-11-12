@@ -32,15 +32,17 @@ describe('tree triangle budgets', () => {
     expect(treeBudgetProblems(meshTriangles(fixture('bush', 299)), heightOf)).toEqual([]);
     expect(treeBudgetProblems([{ name: 'nao-existe', triangles: 10 }], heightOf)).toEqual(['nao-existe: no height, so no size class']);
     // A species not in the catalog yet is classed by its own height.
-    expect(treeBudgetProblems([{ name: 'sumauma', triangles: 1100, height: 38 }], heightOf)).toEqual([]);
+    expect(treeBudgetProblems([{ name: 'sumauma', triangles: 700, height: 14 }], heightOf)).toEqual([]);
+    // No giant trees: over 14 m fails, naming the tree.
+    expect(treeBudgetProblems([{ name: 'sumauma', triangles: 700, height: 38 }], heightOf)).toEqual(['sumauma: 38.0 m, over the 14 m limit']);
     expect(treeBudgetProblems([{ name: 'cagaita', triangles: 700, height: 5 }], heightOf)).toEqual(['cagaita: 700 triangles, over the small-tree budget of 600']);
   });
 
   it('every tree model in the game is inside its budget', async () => {
     const read = async (name: string) => meshTriangles(await new NodeIO().read(fileURLToPath(new URL(`../../apps/game/public/models/${name}`, import.meta.url))));
     expect(await read('trees.glb')).toHaveLength(5);
-    // 2.2-2.4: Refloreste's adult trees, one file per biome.
-    const counts = { 'trees-mata-atlantica.glb': 7, 'trees-cerrado.glb': 6, 'trees-amazonia.glb': 6 };
+    // 2.2-2.5: Refloreste's adult trees, their dead forms, stumps and four flowering forms, one file per biome.
+    const counts = { 'trees-mata-atlantica.glb': 16, 'trees-cerrado.glb': 12, 'trees-amazonia.glb': 13 };
     for (const [file, count] of Object.entries({ 'trees.glb': 5, ...counts })) {
       const meshes = await read(file);
       expect(meshes, file).toHaveLength(count);
