@@ -162,7 +162,21 @@ export type BuildingModel =
   | 'casa-terrea'
   | 'venda'
   | 'armazem'
-  | 'coreto';
+  | 'coreto'
+  // revise-buildings-and-stone 3.4: the owner's new buildings (1.1).
+  | 'wattle-house'
+  | 'rancho'
+  | 'flour-house'
+  | 'railway-station'
+  | 'telegraph-office'
+  | 'jail'
+  | 'town-hall'
+  | 'school'
+  | 'market-shed'
+  | 'water-tank'
+  | 'barracks-block'
+  | 'guardhouse'
+  | 'depot';
 
 /**
  * Buildings shared by the simulation (as `building` cover) and the view (which

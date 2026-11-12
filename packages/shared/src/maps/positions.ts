@@ -69,6 +69,21 @@ export const BUILDING_CAPACITY: Readonly<Record<BuildingModel, number>> = {
   factory: 12,
   // A bandstand is open on every side: men there are in the open.
   coreto: 0,
+  'wattle-house': 4,
+  rancho: 6,
+  'flour-house': 6,
+  'railway-station': 8,
+  'telegraph-office': 4,
+  jail: 6,
+  'town-hall': 10,
+  school: 8,
+  // An open shed: men there are in the open.
+  'market-shed': 0,
+  // A tank on a brick base: no room to garrison.
+  'water-tank': 0,
+  'barracks-block': 12,
+  guardhouse: 3,
+  depot: 6,
 };
 
 export const BUILDING_POSITION_COVER = 0.6;

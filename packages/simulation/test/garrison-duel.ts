@@ -10,11 +10,11 @@ import type { MutableUnit } from '../src/systems/model';
  * inside, four legalists in the open 60 m in front of it. Everyone else is
  * put far away with his fire held.
  */
-const HOUSE: Building = { id: 9001, model: 'casa-terrea', x: 0, y: 0, rotation: 0, halfWidth: 5, halfDepth: 4, height: 4 };
+const DEFAULT_HOUSE: Building = { id: 9001, model: 'casa-terrea', x: 0, y: 0, rotation: 0, halfWidth: 5, halfDepth: 4, height: 4 };
 
-function duelMap(): BattleMap {
+export function duelMap(house: Building): BattleMap {
   const base = openField();
-  return { ...base, id: 'garrison-duel', buildings: [HOUSE], covers: [buildingCover(HOUSE)], sightObstacles: [], yards: [], garrisonYards: [] };
+  return { ...base, id: 'garrison-duel', buildings: [house], covers: [buildingCover(house)], sightObstacles: [], yards: [], garrisonYards: [] };
 }
 
 function park(unit: MutableUnit, x: number, y: number): void {
@@ -30,9 +30,10 @@ function park(unit: MutableUnit, x: number, y: number): void {
 
 export function duel(
   seed: number,
-  options: { garrisonPinned?: boolean; openCount?: number; atDoor?: number; insideFaction?: 'column' | 'legalist' } = {},
+  options: { garrisonPinned?: boolean; openCount?: number; atDoor?: number; insideFaction?: 'column' | 'legalist'; house?: Building } = {},
 ) {
-  const map = duelMap();
+  const HOUSE = options.house ?? DEFAULT_HOUSE;
+  const map = duelMap(HOUSE);
   const engine = new SimulationEngine({ seed, scenario: 'battle3v3', sandbox: true, battleMap: map });
   const column = engine.units.filter((unit) => unit.faction === 'column');
   const legalist = engine.units.filter((unit) => unit.faction === 'legalist');

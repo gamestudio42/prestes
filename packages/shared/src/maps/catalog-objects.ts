@@ -163,6 +163,33 @@ export const CATALOG_OBJECTS: readonly CatalogObject[] = [
   building('venda', 5, 6, 5),
   building('armazem', 7, 8, 5.5),
   building('coreto', 3, 3, 4),
+  // revise-buildings-and-stone 3.4: rural, town and military buildings the owner approved (1.1).
+  // generic period type
+  building('wattle-house', 3.0, 2.5, 3.8),
+  // generic period type
+  building('rancho', 5.0, 3.5, 4.6),
+  // generic period type
+  building('flour-house', 5.0, 4.0, 5.0),
+  // Macaulay pp. 9-10, 44, 199
+  building('railway-station', 10.0, 4.0, 6.0),
+  // Macaulay p. 202
+  building('telegraph-office', 3.5, 4.0, 5.0),
+  // Macaulay pp. 161, 165
+  building('jail', 5.0, 4.5, 5.5),
+  // generic period type
+  building('town-hall', 7.0, 6.0, 9.0),
+  // generic period type
+  building('school', 9.0, 5.0, 6.0),
+  // generic period type
+  building('market-shed', 8.0, 5.0, 6.0),
+  // generic period type
+  building('water-tank', 2.0, 2.0, 9.0),
+  // Macaulay pp. 4, 9
+  building('barracks-block', 12.0, 5.0, 6.5),
+  // generic period type
+  building('guardhouse', 2.5, 2.5, 4.0),
+  // generic period type
+  building('depot', 6.0, 4.0, 5.0),
   // Stones.
   item('rock-small', 'stone', 0.7, 0.6, 0.6, SOLID_STONE),
   item('boulder', 'stone', 1.2, 1, 1.2, SOLID_STONE),

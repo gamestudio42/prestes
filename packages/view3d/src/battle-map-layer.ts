@@ -45,7 +45,11 @@ export const STRATEGIC_PLANT_SPAN = 110;
  */
 
 /** Building models the Blender environment already has. */
-const MODELLED = new Set(['farmhouse', 'barn', 'chapel', 'casa-sede', 'colonist-house', 'engenho', 'ferry-house', 'terraced-house', 'terraced-house-wide', 'sobrado', 'casa-terrea', 'venda', 'armazem', 'coreto', 'church', 'factory', 'warehouse']);
+const MODELLED = new Set(['farmhouse', 'barn', 'chapel', 'casa-sede', 'colonist-house', 'engenho', 'ferry-house', 'terraced-house', 'terraced-house-wide', 'sobrado', 'casa-terrea', 'venda', 'armazem', 'coreto', 'church', 'factory', 'warehouse',
+  // revise-buildings-and-stone 3.4: the new buildings.
+  'wattle-house', 'rancho', 'flour-house', 'railway-station', 'telegraph-office', 'jail', 'town-hall', 'school', 'market-shed',
+  'water-tank', 'barracks-block', 'guardhouse', 'depot',
+]);
 
 const materials = new Map<number, THREE.Material>();
 function material(color: number): THREE.Material {

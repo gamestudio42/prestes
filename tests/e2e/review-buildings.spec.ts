@@ -27,6 +27,9 @@ const SIZES: Record<string, number> = {
   farmhouse: 8.7, barn: 11.3, chapel: 9.6, 'casa-sede': 14, 'colonist-house': 7.2, engenho: 16, 'ferry-house': 6.4,
   'terraced-house': 10, 'terraced-house-wide': 10, sobrado: 12, 'casa-terrea': 10, venda: 12, armazem: 16,
   coreto: 6, church: 24, factory: 40, warehouse: 36,
+  // revise-buildings-and-stone 3.4: the new buildings.
+  'wattle-house': 6, rancho: 10, 'flour-house': 12, 'railway-station': 26, 'telegraph-office': 8, jail: 10, 'town-hall': 14,
+  school: 18, 'market-shed': 16, 'water-tank': 12, 'barracks-block': 24, guardhouse: 6, depot: 12,
 };
 const BUILDINGS = Object.keys(SIZES);
 const OUT = process.env.PRESTES_REVIEW_OUT ?? 'docs/review/buildings/before';
@@ -43,7 +46,7 @@ const editor = (page: Page) => ({
 });
 
 test('every building as drawn today, from the front and the back', async ({ page }) => {
-  test.setTimeout(300_000);
+  test.setTimeout(600_000);
   await page.setViewportSize({ width: 1400, height: 900 });
   await page.addInitScript(() => localStorage.setItem('prestes.audio.v1', JSON.stringify({ muted: true })));
   await page.goto('/editor.html');
@@ -58,8 +61,8 @@ test('every building as drawn today, from the front and the back', async ({ page
   await page.waitForTimeout(1500);
   const bridge = editor(page);
 
-  // One building per 50 m cell, five to a row.
-  const at = BUILDINGS.map((_, index) => ({ x: -100 + (index % 5) * 50, y: -75 + Math.floor(index / 5) * 50 }));
+  // One building per 50 m cell, six to a row.
+  const at = BUILDINGS.map((_, index) => ({ x: -125 + (index % 6) * 50, y: -100 + Math.floor(index / 6) * 50 }));
   await page.locator('[data-tool="place"]').click();
   for (const [index, id] of BUILDINGS.entries()) {
     const button = page.locator(`[data-object="${id}"]`);

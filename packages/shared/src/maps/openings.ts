@@ -61,6 +61,9 @@ export const BUILDING_UPPER: Readonly<Partial<Record<BuildingModel, { kind: 'sto
   warehouse: { kind: 'storey', eye: 5 },
   'casa-sede': { kind: 'loft', eye: 4 },
   engenho: { kind: 'loft', eye: 4 },
+  // revise-buildings-and-stone 3.4: the town hall's chamber upstairs; the barracks' loft.
+  'town-hall': { kind: 'storey', eye: 5 },
+  'barracks-block': { kind: 'loft', eye: 4 },
 };
 /** A window every this many metres along a wall. */
 export const WINDOW_SPACING = 2.5;
@@ -139,7 +142,7 @@ export interface OpeningDeclaration {
 export const DECLARED_OPENINGS: Partial<Record<BuildingModel, OpeningDeclaration>> = {};
 
 const SHOP_MODELS: ReadonlySet<BuildingModel> = new Set(['venda', 'armazem']);
-const BIG_DOOR_MODELS: ReadonlySet<BuildingModel> = new Set(['barn', 'warehouse', 'armazem', 'factory', 'engenho']);
+const BIG_DOOR_MODELS: ReadonlySet<BuildingModel> = new Set(['barn', 'warehouse', 'armazem', 'factory', 'engenho', 'flour-house', 'depot', 'market-shed']);
 
 /** Evenly spread points along a wall of `length`, one per `spacing`, at least one. */
 function along(length: number, spacing: number): number[] {
