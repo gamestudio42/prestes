@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { battleMap, compileMapDocument, createEditableMap, DEFAULT_BATTLE_MAP, loadAuthoredMap, parseMapDocument, toMapDocument, validateEditableMap, type Objective } from '../src';
+import { MAP_DOCUMENT_VERSION, battleMap, compileMapDocument, createEditableMap, DEFAULT_BATTLE_MAP, loadAuthoredMap, parseMapDocument, toMapDocument, validateEditableMap, type Objective } from '../src';
 
 // add-map-objectives 1.3: objectives in the map document (version 5).
 const BRIDGE: Objective = {
@@ -22,7 +22,7 @@ describe('objectives in the map document', () => {
     const parsed = parseMapDocument({ ...document, version: 4 });
     expect(parsed.ok).toBe(true);
     if (!parsed.ok) return;
-    expect(parsed.document.version).toBe(6);
+    expect(parsed.document.version).toBe(MAP_DOCUMENT_VERSION);
     expect(compileMapDocument(parsed.document).objectives).toBeUndefined();
   });
 

@@ -36,3 +36,4 @@ export { DEPLOYMENT_MARK_SECONDS, type DeploymentLabels } from './deployment-lay
 export { PaintedGround, GROUND_CHUNK, type GroundOverlay } from './painted-ground';
 export { groundAtlasPixels } from './ground-atlas';
 export { sunFromLight, type SunLook } from './map-light';
+export { compassAngle } from './compass';

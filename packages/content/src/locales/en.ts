@@ -145,6 +145,8 @@ export const en = {
   'hud.leaveText': 'The battle will be lost; you return to the desk.',
   'hud.leaveConfirm': 'Leave',
   'hud.leaveCancel': 'Stay',
+  'hud.compassLetter': 'N',
+  'hud.compass': 'Compass: click to turn north up',
   'hud.tip.center': 'Double-click to centre the view on this section',
   'hud.clock': '{time} left',
   'hud.contested': 'Contested',

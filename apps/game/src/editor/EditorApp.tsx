@@ -54,6 +54,7 @@ import {
   VEGETATION_DENSITIES,
   MAP_LIGHT_TIME,
   mapLight,
+  mapNorth,
   type MapLight,
 } from '@prestes/shared';
 import { LOCALES, translate, type Locale, type MessageKey } from '@prestes/content';
@@ -65,6 +66,7 @@ import { editorBridge, type EditorBridge } from './test-bridge';
 import { EditorViewport, PROTECTION_COLORS, type CursorInfo } from './viewport';
 import { useThumbnails } from './thumbnails';
 import { EnemyForces } from './EnemyForces';
+import { Compass } from '../ui/hud/Compass';
 
 /**
  * The map editor page (add-map-editor): toolbar, tool palette, properties,
@@ -195,6 +197,10 @@ export function EditorApp(): ReactNode {
   const fileInput = useRef<HTMLInputElement | null>(null);
   const [cursor, setCursor] = useState<CursorInfo | null>(null);
   const [dialog, setDialog] = useState<'new' | 'properties' | 'open' | null>(null);
+  // add-map-compass: the north the properties dialog is previewing (null: the map's own).
+  const [previewNorth, setPreviewNorth] = useState<number | null>(null);
+  // The editor's camera turns with Q and E too: the arrow follows it.
+  const editorCamera = useMemo(() => () => viewport.current?.view.camera, []);
   // author-game-maps 4.1, 4.2: the project's maps, fetched when a dialog that shows slots opens.
   const [projectMaps, setProjectMaps] = useState<AuthoredMapEntry[] | null>(null);
   const openDialog = (next: 'new' | 'properties' | 'open'): void => {
@@ -444,6 +450,14 @@ export function EditorApp(): ReactNode {
         <ToolProperties store={store} t={t} />
         {view.cover ? <CoverPanel store={store} t={t} /> : null}
         {tool === 'select' || tool === 'objective' ? <SelectionPanel store={store} viewport={viewport.current} t={t} /> : null}
+        <Compass
+          className="editor-compass"
+          testId="editor-compass"
+          north={previewNorth ?? mapNorth(map.north)}
+          view={editorCamera}
+          letter={t('editor.north.letter')}
+          label={t('editor.north.arrow')}
+        />
         {settings.snap !== undefined && ['road', 'river', 'pond', 'line', 'bridge', 'ferry', 'place', 'select', 'deployment'].includes(tool) ? (
           <label>
             {t('editor.prop.snap')}
@@ -501,12 +515,16 @@ export function EditorApp(): ReactNode {
             viewport.current?.previewLight(null);
             setDialog(null);
           }}
-          onPreviewLight={(light) => viewport.current?.previewLight(light)}
+          onPreviewLight={(light, north) => {
+            viewport.current?.view.previewLight(light, north);
+            setPreviewNorth(north);
+          }}
           onCreate={(next) => {
             store.load(next);
             viewport.current?.frameMap();
             setDialog(null);
           }}
+            setPreviewNorth(null);
           onApply={(next) => {
             store.execute(replaceCommand(store.map, next));
             if (next.size !== map.size) viewport.current?.frameMap();
@@ -518,6 +536,7 @@ export function EditorApp(): ReactNode {
   );
 }
 
+            setPreviewNorth(null);
 function NumberField(props: { label: string; value: number; min: number; max: number; step: number; onChange: (value: number) => void }): ReactNode {
   return (
     <label>
@@ -1137,7 +1156,7 @@ function MapDialog(props: {
   locale: Locale;
   t: T;
   onClose: () => void;
-  onPreviewLight: (light: MapLight) => void;
+  onPreviewLight: (light: MapLight, north: number) => void;
   onCreate: (map: EditableMap) => void;
   onApply: (map: EditableMap) => void;
 }): ReactNode {
@@ -1158,7 +1177,13 @@ function MapDialog(props: {
   const [light, setLight] = useState<MapLight>(mode === 'new' ? { ...DEFAULT_MAP_LIGHT } : mapLight(map.light));
   const changeLight = (next: MapLight): void => {
     setLight(next);
-    props.onPreviewLight(next);
+    props.onPreviewLight(next, north);
+  };
+  // add-map-compass: true north on the grid, previewed live by the view's arrow and sun.
+  const [north, setNorth] = useState(mode === 'new' ? 0 : mapNorth(map.north));
+  const changeNorth = (next: number): void => {
+    setNorth(next);
+    props.onPreviewLight(light, next);
   };
   const [enemyForces, setEnemyForces] = useState<Roster[]>(mode === 'new' ? [] : (map.enemyForces ?? []).map((roster) => ({ sections: [...roster.sections] })));
   const valid = isValidMapId(id);
@@ -1185,6 +1210,8 @@ function MapDialog(props: {
       props.onCreate({ ...created, ...fields });
       return;
     }
+      // Saved only when turned: the top edge is north by default.
+      north: north === 0 ? undefined : north,
     if (outside.length > 0) {
       const names = outside.map((objectId) => {
         const type = map.objects.find((object) => object.id === objectId)?.type ?? '';
@@ -1304,4 +1331,12 @@ function MapDialog(props: {
       </form>
     </div>
   );
+        <fieldset className="editor-light" data-testid="map-north">
+          <legend>{t('editor.north.title')}</legend>
+          <label>
+            {t('editor.north.bearing', { bearing: Math.round(north), direction: t(`editor.light.compass.${compassPoint(360 - north)}`) })}
+            <input type="range" data-testid="map-north-bearing" min={0} max={355} step={5} value={north} onChange={(event) => changeNorth(Number(event.target.value))} />
+          </label>
+          <p className="editor-hint">{t('editor.north.hint')}</p>
+        </fieldset>
 }

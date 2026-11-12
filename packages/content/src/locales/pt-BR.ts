@@ -146,6 +146,8 @@ export const ptBR: Record<MessageKey, string> = {
   'hud.leaveText': 'A batalha será perdida; você volta à mesa.',
   'hud.leaveConfirm': 'Sair',
   'hud.leaveCancel': 'Ficar',
+  'hud.compassLetter': 'N',
+  'hud.compass': 'Bússola: clique para pôr o norte para cima',
   'hud.tip.center': 'Clique duas vezes para centralizar a visão nesta seção',
   'hud.clock': '{time} restantes',
   'hud.contested': 'Contestado',

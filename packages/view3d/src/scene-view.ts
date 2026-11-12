@@ -922,10 +922,19 @@ export class SceneView {
     this.scene.add(ground);
   }
 
-  /** author-game-maps 4.3: the editor's live preview of a light (null: back to the map's own). */
-  previewLight(light: MapLight | null): void {
+  /**
+   * author-game-maps 4.3: the editor's live preview of a light (null: back to
+   * the map's own). add-map-compass: `north` previews the map's north too.
+   */
+  previewLight(light: MapLight | null, north?: number): void {
     if (!this.battleMap) return;
-    this.aimSun(light ? { ...this.battleMap, light } : this.battleMap);
+    const map = light ? { ...this.battleMap, light } : this.battleMap;
+    this.aimSun(north === undefined ? map : { ...map, north });
+  }
+
+  /** add-map-compass: the shown map's true north, degrees clockwise from the grid's top edge. */
+  mapNorth(): number {
+    return this.battleMap?.north ?? 0;
   }
 
   /** author-game-maps 4.3: where the sun stands now (tests read it through the editor bridge). */

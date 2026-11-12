@@ -30,6 +30,8 @@ export interface EditorBridge {
     enemyForces: string[][];
     /** author-game-maps 4.3: the document's light, if set. */
     light: { time: number; bearing: number } | null;
+    /** add-map-compass: the map's north as saved (null: the top edge). */
+    north: number | null;
     canUndo: boolean;
     saveState: string;
     message: string | null;
@@ -89,6 +91,7 @@ export function editorBridge(store: EditorStore, viewport: () => EditorViewport 
       saveState: store.saveState,
       message: store.message?.text ?? null,
     }),
+      north: store.map.north ?? null,
     toScreen: (x, y) => viewport()?.screenPoint(x, y) ?? null,
     sun: () => viewport()?.view.sunPosition() ?? null,
     surfaceAt: (x, y) => terrainSurfaceAt(x, y),

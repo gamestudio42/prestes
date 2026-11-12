@@ -116,7 +116,7 @@ describe('map document', () => {
     });
     expect(parsed.ok).toBe(true);
     if (!parsed.ok) return;
-    expect(parsed.document.version).toBe(6);
+    expect(parsed.document.version).toBe(MAP_DOCUMENT_VERSION);
     expect(parsed.document.enemyForces).toEqual([
       { sections: ['comando-companhia', 'infantaria-exercito', 'metralhadora-legalista'] },
       { sections: ['provisorios', 'fuzil-metralhador-legalista'] },
@@ -124,6 +124,36 @@ describe('map document', () => {
     // A version 6 preset is kept as saved, mixed armies included.
     const mixed = parseMapDocument({ ...document, enemyForces: [{ sections: ['brigada-militar', 'jaguncos'] }] });
     expect(mixed.ok && mixed.document.enemyForces).toEqual([{ sections: ['brigada-militar', 'jaguncos'] }]);
+  });
+
+  // add-map-compass 1.1: north is saved, read back, defaulted and checked.
+  it('north round-trips, defaults to the top edge and is validated', () => {
+    const map = createEditableMap({ id: 'norte', size: 'small' });
+    expect(toMapDocument(map).north).toBeUndefined();
+    expect(compileMapDocument(toMapDocument(map)).north).toBe(0);
+    map.north = 30;
+    const parsed = parseMapDocument(JSON.parse(JSON.stringify(toMapDocument(map))));
+    expect(parsed.ok).toBe(true);
+    if (!parsed.ok) return;
+    expect(parsed.document.north).toBe(30);
+    expect(fromMapDocument(parsed.document).north).toBe(30);
+    expect(compileMapDocument(parsed.document).north).toBe(30);
+    map.north = -45;
+    expect(compileMapDocument(toMapDocument(map)).north).toBe(315);
+    map.north = 725;
+    expect(compileMapDocument(toMapDocument(map)).north).toBe(5);
+    expect(parseMapDocument({ ...toMapDocument(flat()), north: 'up' })).toMatchObject({ ok: false, error: 'invalid', detail: 'north' });
+  });
+
+  it('a version 6 file is upgraded with the top edge as north', () => {
+    const document = toMapDocument(flat());
+    const parsed = parseMapDocument({ ...document, version: 6 });
+    expect(parsed.ok).toBe(true);
+    if (!parsed.ok) return;
+    expect(MAP_DOCUMENT_VERSION).toBe(7);
+    expect(parsed.document.version).toBe(7);
+    expect(parsed.document.north).toBeUndefined();
+    expect(compileMapDocument(parsed.document).north).toBe(0);
   });
 
   it('mission, test use and light round-trip; light is kept in range', () => {

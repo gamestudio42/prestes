@@ -32,7 +32,7 @@ import { DEFAULT_MAP_LIGHT, MAP_LIGHT_TIME, type BattleMap, type DeploymentZone,
  */
 
 export const MAP_DOCUMENT_FORMAT = 'prestes-map';
-export const MAP_DOCUMENT_VERSION = 6;
+export const MAP_DOCUMENT_VERSION = 7;
 
 /** Heights the editor allows (m). */
 export const MIN_HEIGHT = -12;
@@ -146,6 +146,11 @@ interface MapDocumentBody {
   /** author-game-maps D5: time of day and sun bearing; absent = midday from the north-east. */
   light?: MapLight;
   /**
+   * add-map-compass: the bearing of true north on the grid, degrees clockwise
+   * from the top edge; absent = 0 (the top is north).
+   */
+  north?: number;
+  /**
    * author-game-maps: the legalist forces one is drawn from when the player
    * brings a roster (pre-battle-roster 2.3); absent = the default roster.
    */
@@ -220,6 +225,12 @@ export function mapLight(light: MapLight | undefined): MapLight {
   const time = Math.max(MAP_LIGHT_TIME.min, Math.min(MAP_LIGHT_TIME.max, light.time));
   const bearing = ((light.bearing % 360) + 360) % 360;
   return { time, bearing };
+}
+
+/** add-map-compass: a document's north, defaulted and kept in [0, 360). */
+export function mapNorth(north: number | undefined): number {
+  if (north === undefined || !Number.isFinite(north)) return 0;
+  return ((north % 360) + 360) % 360;
 }
 
 /** A new flat map, deployment zones 190 m apart on its north-south axis. */
@@ -341,6 +352,9 @@ const isZone = (value: unknown): value is DeploymentZone => isObject(value) && i
  * 5 -> 6 (faction-armies D5): a section id names its army, so no field is
  * new; the enemy presets' ids of the time before the armies go through the
  * successor table onto the Forças legalistas.
+ *
+ * 6 -> 7 (add-map-compass): `north` is new and optional; a version 6 map
+ * keeps the top edge as north.
  */
 function migrate(document: Record<string, unknown>): Record<string, unknown> {
   let doc = document;
@@ -349,6 +363,7 @@ function migrate(document: Record<string, unknown>): Record<string, unknown> {
   if (doc.version === 3) doc = { ...doc, version: 4 };
   if (doc.version === 4) doc = { ...doc, version: 5 };
   if (doc.version === 5) doc = migrateV5(doc);
+  if (doc.version === 6) doc = { ...doc, version: 7 };
   return doc;
 }
 
@@ -428,6 +443,7 @@ export function parseMapDocument(value: unknown): ParseResult {
   if (doc.use !== 'skirmish' && doc.use !== 'campaign' && doc.use !== 'test') return fail('use');
   if (doc.mission !== undefined && !isString(doc.mission)) return fail('mission');
   if (doc.light !== undefined && !(isObject(doc.light) && isNumber(doc.light.time) && isNumber(doc.light.bearing))) return fail('light');
+  if (doc.north !== undefined && !isNumber(doc.north)) return fail('north');
   if (doc.enemyForces !== undefined && !(Array.isArray(doc.enemyForces) && doc.enemyForces.every((roster) => isObject(roster) && Array.isArray(roster.sections) && roster.sections.every(isString)))) return fail('enemyForces');
   if (doc.objectives !== undefined && !(Array.isArray(doc.objectives) && doc.objectives.every(isObjective))) return fail('objectives');
   if (!isObject(doc.setting) || !isString(doc.setting.label) || !isString(doc.setting.sourceNote)) return fail('setting');
@@ -1057,6 +1073,7 @@ export function compileMapDocument(source: EditableMap | MapDocument): BattleMap
     ...(trenches.length > 0 ? { trenches: trenches.map((line) => ({ ...line, points: line.points.map((p) => ({ ...p })) })) } : {}),
     palette: map.palette,
     light: mapLight(map.light),
+    north: mapNorth(map.north),
     ...(map.enemyForces && map.enemyForces.length > 0 ? { enemyForces: map.enemyForces.map((roster) => ({ sections: [...roster.sections] })) } : {}),
     ...(map.objectives && map.objectives.length > 0
       ? {

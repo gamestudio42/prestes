@@ -82,6 +82,17 @@ export class CameraRig {
     this.targetYaw += (steps * Math.PI) / 4;
   }
 
+  /**
+   * add-map-compass: turn the view the shortest way until true north (the
+   * given bearing, clockwise from the grid's top edge) points up the screen.
+   */
+  faceNorth(north: number): void {
+    const goal = (-north * Math.PI) / 180;
+    const turn = 2 * Math.PI;
+    const delta = ((((goal - this.targetYaw) % turn) + turn + Math.PI) % turn) - Math.PI;
+    this.targetYaw += delta;
+  }
+
   pan(dxMetres: number, dyMetres: number): void {
     const c = Math.cos(this.yaw);
     const s = Math.sin(this.yaw);

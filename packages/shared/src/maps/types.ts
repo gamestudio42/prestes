@@ -226,6 +226,8 @@ export interface BattleMap {
   palette: 'temperate' | 'cerrado' | 'caatinga' | 'urban';
   /** author-game-maps: the time of day and sun bearing the view lights the map with (view only, never hashed). */
   light?: MapLight;
+  /** add-map-compass: true north on the grid, degrees clockwise from the top edge (view and HUD only, never hashed). */
+  north?: number;
   /**
    * pre-battle-roster 2.3: the legalist forces the engine draws from when the
    * player brings a roster (built-in maps). Absent: the default roster.

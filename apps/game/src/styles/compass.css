@@ -1,0 +1,74 @@
+/* add-map-compass: the compass rose of the battle HUD and the editor's view. */
+.compass {
+  display: block;
+  width: 58px;
+  height: 58px;
+  padding: 2px;
+  border: 1px solid #6d5130;
+  border-radius: 50%;
+  background: rgba(38, 28, 19, 0.88);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.45);
+  line-height: 0;
+}
+
+button.compass {
+  cursor: pointer;
+}
+
+button.compass:hover,
+button.compass:focus-visible {
+  border-color: #d0a45c;
+  outline: none;
+}
+
+.compass svg {
+  display: block;
+}
+
+.compass-ring {
+  fill: none;
+  stroke: #7e6746;
+  stroke-width: 1;
+}
+
+.compass-tick {
+  fill: #b39365;
+}
+
+.compass-south {
+  fill: #ead8b5;
+}
+
+.compass-north {
+  fill: #c56a4d;
+}
+
+.compass-hub {
+  fill: #17110b;
+  stroke: #d0a45c;
+  stroke-width: 0.8;
+}
+
+.compass-letter {
+  fill: #fff0cd;
+  font-family: 'Pixelify Sans', sans-serif;
+  font-size: 9px;
+  font-weight: 600;
+}
+
+/* The battle HUD: under the top bar, at the right edge. */
+.battle-compass {
+  position: fixed;
+  top: 64px;
+  right: 12px;
+  z-index: 4;
+}
+
+/* The editor: the top-right corner of the view (the scale bar holds the bottom left). */
+.editor-compass {
+  position: absolute;
+  right: 12px;
+  top: 12px;
+  z-index: 3;
+  pointer-events: none;
+}

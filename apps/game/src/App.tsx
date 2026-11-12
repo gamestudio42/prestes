@@ -20,6 +20,7 @@ import { FieldOverlays } from './ui/FieldOverlays';
 import { GameCanvas } from './ui/GameCanvas';
 import { Hud } from './ui/Hud';
 import type { MapLayers } from './ui/hud/TopBar';
+import { Compass } from './ui/hud/Compass';
 import { StartScreenDesk } from './ui/menu/StartScreenDesk';
 import { battleRosters, loadSetup, saveSetup, type SkirmishSetup } from './ui/menu/setupState';
 import { BattleEndPanel } from './ui/BattleEndPanel';
@@ -74,6 +75,8 @@ export function App() {
   const clientRef = useRef<GameClient | null>(null);
   // refine-battle-controls: the battle scene, for the HUD's centring control.
   const sceneRef = useRef<SceneView | null>(null);
+  // add-map-compass: the battle map's true north, for the HUD compass.
+  const [mapNorth, setMapNorth] = useState(0);
   // add-deployment-phase 3.1: the latest refused deployment order, shown for a few seconds.
   const [deploymentRefusal, setDeploymentRefusal] = useState<DeploymentRefusal | null>(null);
   const refusalTimer = useRef<number | null>(null);
@@ -420,6 +423,7 @@ export function App() {
         onPreviewUnit={handlePreviewUnit}
         onSceneReady={(scene) => {
           sceneRef.current = scene;
+          setMapNorth(scene?.mapNorth() ?? 0);
           showMapLayers(scene);
         }}
         onHover={(kind, x, y) => {
@@ -470,6 +474,17 @@ export function App() {
         orderNotice={orderNotice}
         onCenterSquad={handleCenterSquad}
         onLeave={handleBackToMenu}
+        />
+      ) : null}
+      {!hudHidden ? (
+        <Compass
+          className="battle-compass"
+          testId="battle-compass"
+          north={mapNorth}
+          view={() => sceneRef.current?.camera}
+          letter={translate(locale, 'hud.compassLetter')}
+          label={translate(locale, 'hud.compass')}
+          onClick={() => sceneRef.current?.camera.faceNorth(mapNorth)}
         />
       ) : null}
       {hudHidden ? (

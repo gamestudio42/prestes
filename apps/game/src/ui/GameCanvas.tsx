@@ -166,6 +166,8 @@ export function GameCanvas({
         groundToScreen: (x: number, y: number) => scene.groundToScreen(x, y),
         focusOn: (x: number, y: number) => scene.focusOn(x, y),
         view: () => scene.view(),
+        // add-map-compass: the camera's yaw and tilt (radians), for the compass checks.
+        camera: () => ({ yaw: scene.camera.yaw, tilt: scene.camera.tilt, targetYaw: scene.camera.targetYaw }),
         garrisonMarks: () => scene.garrisonMarks(),
     objectiveMarks: () => scene.objectiveMarks(),
         deploymentMarks: () => scene.deploymentMarksShown(),
