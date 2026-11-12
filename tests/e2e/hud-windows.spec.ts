@@ -56,7 +56,9 @@ test('HUD panels are docked, collapse toward their edge and stay collapsed after
   expect(Math.abs(troopsTab.y - troops.y)).toBeLessThanOrEqual(2);
   expect(troopsTab.height).toBeLessThan(60);
   expect(summaryTab.y + summaryTab.height).toBeGreaterThan(878 - 20);
-  expect(ordersTab.y + ordersTab.height).toBeGreaterThan(878 - 20);
+  // Orders folds down to the bottom of its column, just above the kit strip.
+  expect(ordersTab.y + ordersTab.height).toBeGreaterThan(878 - 120);
+  expect(ordersTab.y).toBeGreaterThan(orders.y + 200);
   expect(ordersTab.height).toBeLessThan(60);
 
   await page.reload();
@@ -129,16 +131,19 @@ test('the strategic band offers contour and cover layers, off at the start', asy
   expect(await layers()).toEqual(shown);
 });
 
-test('the troop summary shows a helmet and three bars per soldier', async ({ page }) => {
+test('the troop summary draws a soldier figure per man: cover helmet, health body, five-round clip', async ({ page }) => {
   await page.goto('/');
   await page.evaluate(() => window.localStorage.removeItem('prestes.hud.docks.v1'));
   await page.reload();
   await start(page);
-  await expect(page.locator('[data-testid^="helmet-"]')).toHaveCount(11);
-  const first = page.locator('[data-testid^="helmet-"]').first();
-  await expect(first.locator('.helmet-bar')).toHaveCount(3);
+  const figures = page.locator('[data-testid^="helmet-"]');
+  await expect(figures).toHaveCount(11);
+  await expect(figures.first().locator('svg.soldier-figure')).toHaveCount(1);
+  await expect(figures.first()).toHaveAttribute('data-health', 'fit');
+  await expect(figures.first()).toHaveAttribute('data-cover', /none|light|good|inside/);
+  await expect(figures.first()).toHaveAttribute('data-rounds', '5');
 
-  // Wound one soldier: his helmet turns to the wounded colour.
+  // Wound one soldier: his body turns to the wounded colour and he wears a bandage.
   const id = await page.evaluate(() => {
     const bridge = (window as unknown as Bridge).__prestes!;
     const soldier = bridge.frame()!.units.find((unit) => unit.squadId === 1 && unit.alive)!;
@@ -147,4 +152,9 @@ test('the troop summary shows a helmet and three bars per soldier', async ({ pag
     return soldier.id;
   });
   await expect(page.getByTestId(`helmet-${id}`)).toHaveAttribute('data-tone', 'wounded');
+  await expect(page.getByTestId(`helmet-${id}`)).toHaveAttribute('data-health', /wounded|badly/);
+  // Eleven figures fit on the card's width.
+  const card = (await page.getByTestId('troop-helmets').boundingBox())!;
+  const last = (await figures.last().boundingBox())!;
+  expect(last.x + last.width).toBeLessThanOrEqual(card.x + card.width + 1);
 });

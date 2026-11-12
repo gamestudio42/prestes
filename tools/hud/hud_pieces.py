@@ -1,16 +1,21 @@
-"""Cuts the battle HUD ornaments out of the owner's reference image.
+"""Cuts the battle HUD pieces out of the owner's reference image.
 
 redo-battle-hud D1: the owner drew the HUD he wants in
 `referencias para hud/Interface de comando da Coluna Prestes.png` and allowed
-it to be rasterized for the game (2026-11-11). This script crops each
-ornament, clears the map behind it (green pixels joined to the crop's edge),
-halves it to the art-pixel grid and reduces the set to one shared palette.
-It writes `ornaments.png` and `ornaments.txt` (name x y w h per line) for
-`build-hud.lua`, which lays them into the Aseprite source with the frames.
+it to be rasterized for the game (2026-11-11). After his review on
+2026-11-12 ("ta bem longe ainda do modelo") the frames are no longer redrawn
+from a sampled palette: every frame, plate and ornament is cut from the
+reference at its own size (one reference pixel is one CSS pixel at 1790 px
+wide), the baked-in labels and icons are painted out, and the map behind
+the ornaments is cleared.
 
-Run once to seed the source; after that the art is edited in Aseprite.
+It writes `pieces.png` (one piece per row) and `pieces.txt`
+(`name x y w h [top right bottom left]`, the nine-slice insets when the
+piece is a stretchable frame) for `build-hud.lua`, which lays them into the
+Aseprite source as slices. Run once to seed the source; after that the art
+is edited in Aseprite.
 
-    python tools/hud/hud_pieces.py <reference.png> <out-dir>
+    python -I tools/hud/hud_pieces.py <reference.png> <out-dir>
 """
 import sys
 from collections import deque
@@ -19,54 +24,71 @@ from pathlib import Path
 import numpy as np
 from PIL import Image
 
-# name: ((x0, y0, x1, y1) in the reference's 1790 x 878 pixels, clear the map behind it).
-# The flag is green itself and sits on wood: it is kept whole.
-ORNAMENTS = {
-    'flag': ((30, 10, 84, 64), False),
-    'lantern': ((258, 10, 306, 84), True),
-    'side-kit': ((398, 528, 500, 840), True),
-    'bottom-strip': ((904, 790, 1790, 878), True),
+# Each piece: box (x0, y0, x1, y1) in the reference's 1790 x 878 pixels,
+# nine-slice insets (top, right, bottom, left) or None, what to paint out,
+# and whether to clear the map behind it.
+#   paint out: (rect, rule, fill) with rect in reference pixels,
+#   rule 'light' (labels lighter than the plate), 'dark' (ink on a light
+#   plate), 'all', or 'ink' (anything that is not parchment), and fill
+#   'smooth' (blend in from the edges) or 'texture' (copy nearby texture).
+PIECES = {
+    'brand': ((0, 0, 270, 76), None, [((100, 8, 252, 66), 'light', 'smooth')], False),
+    'rail': ((305, 0, 566, 74), (16, 16, 16, 16), [((316, 13, 556, 62), 'all', 'smooth')], False),
+    'tab': ((440, 21, 547, 57), (8, 8, 8, 8), [((448, 27, 539, 51), 'light', 'smooth')], False),
+    'tab-active': ((341, 21, 435, 57), (8, 8, 8, 8), [((349, 27, 427, 51), 'light', 'smooth')], False),
+    'button': ((1278, 21, 1329, 53), (8, 8, 8, 8), [((1285, 26, 1322, 48), 'light', 'smooth')], False),
+    'button-active': ((1413, 21, 1445, 53), (8, 8, 8, 8), [((1419, 26, 1439, 48), 'light', 'smooth')], False),
+    'panel': ((30, 87, 344, 515), (38, 15, 14, 15), [((66, 91, 165, 122), 'light', 'smooth'), ((44, 124, 330, 503), 'all', 'smooth')], False),
+    'panel-orders': ((1589, 160, 1788, 791), (42, 14, 16, 14), [((1612, 166, 1772, 198), 'light', 'smooth'), ((1600, 200, 1777, 778), 'all', 'smooth')], False),
+    'card': ((50, 125, 310, 199), (7, 7, 7, 7), [((54, 129, 306, 195), 'all', 'smooth')], False),
+    'group': ((1603, 200, 1775, 279), (9, 9, 9, 9), [((1609, 205, 1769, 273), 'all', 'smooth')], False),
+    'order-button': ((1612, 229, 1647, 268), (8, 8, 8, 8), [((1617, 234, 1642, 263), 'light', 'smooth')], False),
+    'order-button-active': ((1614, 484, 1651, 520), (8, 8, 8, 8), [((1619, 489, 1646, 515), 'light', 'smooth')], False),
+    'summary': ((6, 528, 500, 868), None, [((112, 553, 392, 590), 'dark', 'smooth'), ((50, 595, 398, 824), 'all', ('patch', (240, 620, 360, 650)))], True),
+    'lantern': ((258, 10, 306, 84), None, [], True),
+    'drape-left': ((574, 0, 724, 58), None, [], True),
+    'drape-right': ((962, 0, 1072, 56), None, [], True),
+    'bottom-strip': ((900, 784, 1790, 878), None, [], True),
 }
-COLOURS = 64
+# The summary's title plate on its own, for the collapsed card (cut after painting out).
+PLATE = ('summary-plate', (88, 18, 400, 66))
+
+
+def luminance(rgb: np.ndarray) -> np.ndarray:
+    return rgb[..., 0] * 0.3 + rgb[..., 1] * 0.59 + rgb[..., 2] * 0.11
 
 
 def greenish(rgb: np.ndarray) -> np.ndarray:
     r, g, b = (rgb[..., i].astype(int) for i in range(3))
-    # Map grass and the dark green field: green leads red and blue, or the
-    # field's near-black shadow (dark, not warm like the wood).
     lum = (r + g + b) // 3
     return ((g > r + 6) & (g > b + 10)) | ((lum < 48) & (g >= r - 2))
 
 
-def clear_background(rgb: np.ndarray) -> np.ndarray:
-    """Alpha: transparent where a greenish pixel joins the crop's border."""
-    h, w, _ = rgb.shape
-    green = greenish(rgb)
+def flood_from_border(mask: np.ndarray) -> np.ndarray:
+    h, w = mask.shape
     gone = np.zeros((h, w), bool)
     queue = deque()
     for x in range(w):
         for y in (0, h - 1):
-            if green[y, x] and not gone[y, x]:
+            if mask[y, x] and not gone[y, x]:
                 gone[y, x] = True
                 queue.append((y, x))
     for y in range(h):
         for x in (0, w - 1):
-            if green[y, x] and not gone[y, x]:
+            if mask[y, x] and not gone[y, x]:
                 gone[y, x] = True
                 queue.append((y, x))
     while queue:
         y, x = queue.popleft()
         for dy, dx in ((1, 0), (-1, 0), (0, 1), (0, -1)):
             ny, nx = y + dy, x + dx
-            if 0 <= ny < h and 0 <= nx < w and green[ny, nx] and not gone[ny, nx]:
+            if 0 <= ny < h and 0 <= nx < w and mask[ny, nx] and not gone[ny, nx]:
                 gone[ny, nx] = True
                 queue.append((ny, nx))
-    alpha = np.where(gone, 0, 255).astype(np.uint8)
-    return drop_specks(alpha)
+    return gone
 
 
-def drop_specks(alpha: np.ndarray, smallest: int = 40) -> np.ndarray:
-    """Clears opaque islands smaller than `smallest` pixels (field noise)."""
+def drop_specks(alpha: np.ndarray, smallest: int = 60) -> np.ndarray:
     h, w = alpha.shape
     seen = np.zeros((h, w), bool)
     for sy in range(h):
@@ -89,37 +111,135 @@ def drop_specks(alpha: np.ndarray, smallest: int = 40) -> np.ndarray:
     return alpha
 
 
+def dilate(mask: np.ndarray, steps: int) -> np.ndarray:
+    out = mask.copy()
+    for _ in range(steps):
+        grown = out.copy()
+        grown[1:] |= out[:-1]
+        grown[:-1] |= out[1:]
+        grown[:, 1:] |= out[:, :-1]
+        grown[:, :-1] |= out[:, 1:]
+        out = grown
+    return out
+
+
+def rule_mask(rgb: np.ndarray, rule: str) -> np.ndarray:
+    lum = luminance(rgb.astype(float))
+    if rule == 'all':
+        return np.ones(lum.shape, bool)
+    if rule == 'light':
+        base = np.median(lum)
+        return dilate(lum > base + 45, 2)
+    if rule == 'dark':
+        base = np.median(lum)
+        return dilate(lum < base - 45, 2)
+    if rule == 'ink':
+        r, g, b = (rgb[..., i].astype(int) for i in range(3))
+        parchment = (r > 150) & (g > 120) & (b > 80) & (r >= g) & (g >= b) & (r - b < 110)
+        return dilate(~parchment, 2)
+    raise ValueError(rule)
+
+
+def fill_smooth(rgb: np.ndarray, mask: np.ndarray) -> None:
+    """Fills masked pixels from their unmasked neighbours, ring by ring."""
+    img = rgb.astype(float)
+    known = ~mask
+    h, w = mask.shape
+    while not known.all():
+        total = np.zeros_like(img)
+        count = np.zeros((h, w))
+        for dy, dx in ((1, 0), (-1, 0), (0, 1), (0, -1), (1, 1), (-1, -1), (1, -1), (-1, 1)):
+            shifted = np.zeros_like(img)
+            ok = np.zeros((h, w), bool)
+            ys = slice(max(dy, 0), h + min(dy, 0))
+            yd = slice(max(-dy, 0), h + min(-dy, 0))
+            xs = slice(max(dx, 0), w + min(dx, 0))
+            xd = slice(max(-dx, 0), w + min(-dx, 0))
+            shifted[yd, xd] = img[ys, xs]
+            ok[yd, xd] = known[ys, xs]
+            total += shifted * ok[..., None]
+            count += ok
+        frontier = (~known) & (count > 0)
+        if not frontier.any():
+            break
+        img[frontier] = total[frontier] / count[frontier][:, None]
+        known = known | frontier
+    rgb[...] = np.clip(img, 0, 255).astype(np.uint8)
+
+
+def fill_texture(rgb: np.ndarray, mask: np.ndarray) -> None:
+    """Fills masked pixels by copying nearby unmasked texture (keeps the grain)."""
+    h, w = mask.shape
+    todo = mask.copy()
+    offsets = [(0, 14), (0, -14), (14, 0), (-14, 0), (0, 28), (0, -28), (28, 0), (-28, 0), (9, 21), (-9, -21), (21, -9), (-21, 9)]
+    for _ in range(40):
+        if not todo.any():
+            return
+        for dy, dx in offsets:
+            ys, xs = np.nonzero(todo)
+            sy, sx = ys + dy, xs + dx
+            inside = (sy >= 0) & (sy < h) & (sx >= 0) & (sx < w)
+            ys, xs, sy, sx = ys[inside], xs[inside], sy[inside], sx[inside]
+            good = ~todo[sy, sx]
+            rgb[ys[good], xs[good]] = rgb[sy[good], sx[good]]
+            todo[ys[good], xs[good]] = False
+        offsets = [(dy * 2, dx * 2) for dy, dx in offsets]
+    if todo.any():
+        fill_smooth(rgb, todo)
+
+
+def cut(source: np.ndarray, box, paint, clear) -> Image.Image:
+    x0, y0, x1, y1 = box
+    rgb = source[y0:y1, x0:x1].copy()
+    alpha = np.full(rgb.shape[:2], 255, np.uint8)
+    if clear:
+        alpha = np.where(flood_from_border(greenish(rgb)), 0, 255).astype(np.uint8)
+        alpha = drop_specks(alpha)
+    for (rx0, ry0, rx1, ry1), rule, fill in paint:
+        sub = rgb[ry0 - y0:ry1 - y0, rx0 - x0:rx1 - x0]
+        mask = rule_mask(sub, rule)
+        mask[[0, -1], :] = mask[[0, -1], :] & (rule == 'all')
+        if isinstance(fill, tuple):
+            # Tile a clean patch of the same surface, mirrored so the seams meet.
+            _, (px0, py0, px1, py1) = fill
+            patch = source[py0:py1, px0:px1]
+            tile = np.concatenate([np.concatenate([patch, patch[:, ::-1]], 1), np.concatenate([patch[::-1], patch[::-1, ::-1]], 1)], 0)
+            reps = (sub.shape[0] // tile.shape[0] + 1, sub.shape[1] // tile.shape[1] + 1, 1)
+            sub[...] = np.tile(tile, reps)[: sub.shape[0], : sub.shape[1]]
+        elif rule == 'all':
+            # A flat fill in the region's darker tone: live content covers it.
+            lum = luminance(sub.astype(float))
+            sub[...] = np.median(sub[lum <= np.median(lum)], axis=0).astype(np.uint8)
+        elif fill == 'smooth':
+            fill_smooth(sub, mask)
+        else:
+            fill_texture(sub, mask)
+    return Image.fromarray(np.dstack([rgb, alpha]), 'RGBA')
+
+
 def main() -> None:
     reference, out = Path(sys.argv[1]), Path(sys.argv[2])
     out.mkdir(parents=True, exist_ok=True)
     source = np.asarray(Image.open(reference).convert('RGB'))
     pieces = []
-    for name, ((x0, y0, x1, y1), clear) in ORNAMENTS.items():
-        rgb = source[y0:y1, x0:x1]
-        alpha = clear_background(rgb) if clear else np.full(rgb.shape[:2], 255, np.uint8)
-        rgba = Image.fromarray(np.dstack([rgb, alpha]), 'RGBA')
-        half = rgba.resize((rgba.width // 2, rgba.height // 2), Image.BOX)
-        a = np.asarray(half)[..., 3]
-        arr = np.asarray(half).copy()
-        arr[..., 3] = np.where(a >= 128, 255, 0)
-        pieces.append((name, Image.fromarray(arr, 'RGBA')))
-    # One row per piece, 2 px apart.
-    width = max(p.width for _, p in pieces)
-    height = sum(p.height + 2 for _, p in pieces)
+    for name, (box, insets, paint, clear) in PIECES.items():
+        piece = cut(source, box, paint, clear)
+        pieces.append((name, piece, insets))
+        if name == 'summary':
+            plate_name, crop = PLATE
+            pieces.append((plate_name, piece.crop(crop), None))
+    width = max(p.width for _, p, _ in pieces)
+    height = sum(p.height + 2 for _, p, _ in pieces)
     atlas = Image.new('RGBA', (width, height), (0, 0, 0, 0))
     lines, y = [], 0
-    for name, piece in pieces:
+    for name, piece, insets in pieces:
         atlas.paste(piece, (0, y))
-        lines.append(f'{name} 0 {y} {piece.width} {piece.height}')
+        extra = '' if insets is None else ' ' + ' '.join(str(v) for v in insets)
+        lines.append(f'{name} 0 {y} {piece.width} {piece.height}{extra}')
         y += piece.height + 2
-    # Shared palette, no dithering: crisp pixel colours.
-    alpha = atlas.getchannel('A')
-    reduced = atlas.convert('RGB').quantize(COLOURS, method=Image.Quantize.MEDIANCUT, dither=Image.Dither.NONE)
-    result = reduced.convert('RGBA')
-    result.putalpha(alpha)
-    result.save(out / 'ornaments.png')
-    (out / 'ornaments.txt').write_text('\n'.join(lines) + '\n', encoding='utf-8')
-    print(f'{len(pieces)} ornaments -> {out}')
+    atlas.save(out / 'pieces.png')
+    (out / 'pieces.txt').write_text('\n'.join(lines) + '\n', encoding='utf-8')
+    print(f'{len(pieces)} pieces -> {out}')
 
 
 if __name__ == '__main__':

@@ -22,7 +22,6 @@ import { WeaponCard } from './hud/WeaponCard';
 import { hasSuspectedContact } from '../hooks/suspectedContact';
 import { loadDocks, saveDocks, toggleDock, type DockId, type DockLayout } from './dockLayout';
 import bottomStrip from '../assets/hud/bottom-strip.png';
-import sideKit from '../assets/hud/side-kit.png';
 
 const layoutStorage = (): Storage | null => {
   try {
@@ -239,7 +238,6 @@ export function Hud({
               aliveUnits={aliveUnits}
             />
           </DockedPanel>
-          {docks.summary ? null : <img className="hud-side-kit" src={sideKit} alt="" aria-hidden="true" draggable={false} />}
         </div>
 
         <div className="hud-dock-right">

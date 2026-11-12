@@ -40,7 +40,7 @@ try {
     execFileSync('python', ['-I', resolve(root, 'tools/hud/hud_pieces.py'), reference, work], { stdio: 'inherit' });
     execFileSync(
       aseprite,
-      ['-b', '--script-param', `ornaments=${work}`, '--script-param', `out=${source}`, '--script', resolve(root, 'tools/hud/build-hud.lua')],
+      ['-b', '--script-param', `pieces=${work}`, '--script-param', `out=${source}`, '--script', resolve(root, 'tools/hud/build-hud.lua')],
       { stdio: 'inherit' },
     );
   }

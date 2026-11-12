@@ -1,104 +1,76 @@
 /* redo-battle-hud: the battle HUD as a field commander's kit.
-   Frames are pixel nine-slices exported from assets/hud/prestes-hud.aseprite
-   (`pnpm hud-art`); their slice insets come from apps/game/src/assets/hud/hud.json
-   and are checked by tests/hud/hud-art.test.ts. Art pixels show at 2 screen
-   pixels from 1440 px wide, 1 below. Loaded last, scoped to the battle. */
+   Every frame, plate and ornament is cut from the owner's reference image at
+   its own size (tools/hud/hud_pieces.py -> assets/hud/prestes-hud.aseprite ->
+   `pnpm hud-art`), so the layout below is written in the reference's pixels:
+   it was drawn at 1790 x 878. The nine-slice insets come from
+   apps/game/src/assets/hud/hud.json and are checked by tests/hud/hud-art.test.ts.
+   Below 1440 px wide the whole kit is drawn at --hud-k. Loaded last. */
 
 .app.game {
-  --hud-px: 2px;
-  --hud-gap: 8px;
-  --hud-top: 96px;
-  --hud-left-w: 316px;
-  --hud-right-w: 216px;
-  --order-button: 30px;
+  --hud-k: 1;
   --kit-ink: #140d07;
-  --kit-panel: #2a1d12;
-  --kit-panel-dark: #1e140c;
-  --kit-line: #4a3420;
-  --kit-gold: #ffc244;
-  --kit-gold-dim: #eeae40;
-  --kit-text: #f1dfbd;
-  --kit-text-dim: #c9b18a;
-  --kit-rust: #82421d;
-  --kit-parch-ink: #1e140a;
-  --kit-parch-dim: #4a3420;
-  --kit-title-size: 16px;
-  --kit-label-size: 12px;
-  --kit-data-size: 11px;
+  --kit-gold: #f2b23a;
+  --kit-text: #f3e6c8;
+  --kit-text-dim: #e0cfa8;
+  --kit-parch-ink: #2a1a0e;
+  --kit-parch-dim: #4e3720;
+  --kit-font: 'Pixelify Sans', monospace;
 }
 
-@media (max-width: 1439px) {
+@media (max-width: 1439px), (max-height: 799px) {
   .app.game {
-    --hud-px: 1px;
-    --hud-top: 64px;
-    --hud-left-w: 280px;
-    --hud-right-w: 184px;
-    --order-button: 26px;
-    --kit-title-size: 14px;
-    --kit-label-size: 11px;
-    --kit-data-size: 10px;
+    --hud-k: 0.8;
   }
 }
 
-/* --- Frames ------------------------------------------------------------- */
-.app.game .kit-rail,
-.app.game .hud-top .hud-rail,
-.app.game .hud-top .hud-actions {
-  border-style: solid;
-  border-width: calc(6 * var(--hud-px));
-  border-image: url('../assets/hud/rail.png') 6 fill / calc(6 * var(--hud-px)) round;
-  image-rendering: pixelated;
-  background: none;
-  box-shadow: none;
-  clip-path: none;
+.app.game .hud-top,
+.app.game .hud-docks,
+.app.game .order-prompt,
+.app.game .hud-bottom-strip {
+  zoom: var(--hud-k);
+  font-family: var(--kit-font);
+  font-weight: 600;
+  -webkit-font-smoothing: none;
 }
 
+/* --- Shared frames ------------------------------------------------------ */
 .app.game .hud-top button,
 .app.game .hud-top .language-control,
-.app.game .docked-panel .action-button,
-.app.game .docked-panel .passive-button {
+.app.game .docked-panel .pace-button {
   border-style: solid;
-  border-width: calc(4 * var(--hud-px));
-  border-image: url('../assets/hud/button.png') 4 fill / calc(4 * var(--hud-px)) stretch;
-  image-rendering: pixelated;
+  border-width: 8px;
+  border-image: url('../assets/hud/button.png') 8 fill / 8px stretch;
   background: none;
   box-shadow: none;
   clip-path: none;
   border-radius: 0;
   color: var(--kit-text);
-}
-
-.app.game .hud-top button:hover:not(:disabled),
-.app.game .docked-panel .action-button:hover:not(:disabled),
-.app.game .docked-panel .passive-button:hover:not(:disabled) {
-  border-image-source: url('../assets/hud/button-hover.png');
+  font: inherit;
 }
 
 .app.game .hud-top button.active,
 .app.game .hud-top button[aria-pressed='true'],
-.app.game .docked-panel .action-button.active,
-.app.game .docked-panel .passive-button.active {
+.app.game .docked-panel .pace-button.active {
   border-image-source: url('../assets/hud/button-active.png');
   color: #fff4da;
 }
 
-.app.game .docked-panel .action-button:disabled,
-.app.game .docked-panel .passive-button:disabled {
-  border-image-source: url('../assets/hud/button-disabled.png');
-  color: #7d6a50;
+.app.game .hud-top button:hover:not(:disabled),
+.app.game .docked-panel .pace-button:hover:not(:disabled) {
+  filter: brightness(1.15);
 }
 
-/* --- Top bar ------------------------------------------------------------ */
+/* --- Top bar: brand plate, three rails, drapes ---------------------------- */
 .app.game .hud-top {
   position: fixed;
-  top: 6px;
-  left: 8px;
-  right: 8px;
-  height: auto;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 76px;
   min-height: 0;
   display: flex;
-  align-items: stretch;
-  gap: var(--hud-gap);
+  align-items: flex-start;
+  gap: 0;
   padding: 0;
   background: none;
   border: 0;
@@ -110,70 +82,102 @@
   pointer-events: auto;
 }
 
+.app.game .hud-top .hud-drape {
+  position: absolute;
+  top: 0;
+  z-index: -1;
+  pointer-events: none;
+}
+
+.app.game .hud-drape-left {
+  left: 566px;
+}
+
+.app.game .hud-drape-right {
+  left: calc(50% / var(--hud-k) + 67px);
+}
+
 .app.game .hud-top .hud-rail,
 .app.game .hud-top .hud-actions {
   display: flex;
   align-items: center;
   gap: 6px;
+  height: 74px;
   min-height: 0;
-  padding: 2px 6px;
-  border-right: 0;
+  padding: 0 4px;
+  border-style: solid;
+  border-width: 16px;
+  border-image: url('../assets/hud/rail.png') 16 fill / 16px stretch;
+  background: none;
+  box-shadow: none;
+  clip-path: none;
 }
 
 .app.game .hud-top .brand-rail {
   position: relative;
-  gap: 8px;
-  padding-left: 4px;
-  padding-right: 34px;
-}
-
-.app.game .hud-flag {
-  width: calc(27 * var(--hud-px));
-  height: calc(27 * var(--hud-px));
-  image-rendering: pixelated;
   flex: none;
-}
-
-.app.game .hud-lantern {
-  position: absolute;
-  right: calc(-14 * var(--hud-px));
-  top: calc(-4 * var(--hud-px));
-  width: calc(24 * var(--hud-px));
-  height: calc(37 * var(--hud-px));
-  image-rendering: pixelated;
-  pointer-events: none;
-  z-index: 1;
+  width: 270px;
+  height: 76px;
+  padding: 0 0 0 104px;
+  border: 0;
+  border-image: none;
+  background: url('../assets/hud/brand.png') no-repeat;
+  justify-content: center;
 }
 
 .app.game .hud-brand {
   display: grid;
+  justify-items: center;
+  width: 150px;
   color: #f4e6c6;
-  font-size: 22px;
+  font-size: 30px;
   line-height: 1;
   letter-spacing: 1px;
   text-shadow: 2px 2px 0 var(--kit-ink);
 }
 
 .app.game .hud-brand .hud-eyebrow {
-  margin-top: 3px;
+  margin-top: 4px;
   color: var(--kit-text-dim);
-  font-size: 10px;
-  letter-spacing: 1px;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  text-shadow: 1px 1px 0 var(--kit-ink);
+}
+
+.app.game .hud-lantern {
+  position: absolute;
+  left: 258px;
+  top: 10px;
+  width: 48px;
+  height: 74px;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.app.game .hud-top .camera-rail {
+  flex: none;
+  margin-left: 35px;
+  padding-left: 6px;
 }
 
 .app.game .hud-top .camera-rail .camera-segmented {
   display: flex;
-  gap: 4px;
+  gap: 6px;
   padding: 0;
   border: 0;
   background: none;
 }
 
+.app.game .hud-top .camera-icon {
+  color: var(--kit-text-dim);
+}
+
 .app.game .hud-top .camera-segmented button {
-  min-width: 92px;
-  height: 32px;
+  min-width: 94px;
+  height: 36px;
   padding: 0 8px;
-  font-size: var(--kit-label-size);
+  border-image: url('../assets/hud/tab.png') 8 fill / 8px stretch;
+  font-size: 15px;
   text-transform: uppercase;
 }
 
@@ -181,14 +185,11 @@
   border-image-source: url('../assets/hud/tab-active.png');
 }
 
-.app.game .hud-top .camera-icon {
-  color: var(--kit-text-dim);
-}
-
 .app.game .hud-top .objective-rail {
-  flex: 0 0 auto;
-  margin-left: auto;
-  margin-right: auto;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  flex: none;
 }
 
 .app.game .hud-top .objective-rail > .hud-band-value {
@@ -196,34 +197,31 @@
 }
 
 .app.game .hud-top .hud-clock {
-  min-width: 72px;
+  min-width: 80px;
   padding: 0 8px;
   color: #f4e6c6;
-  font-size: 20px;
+  font-size: 26px;
   text-align: center;
   text-shadow: 2px 2px 0 var(--kit-ink);
 }
 
 .app.game .hud-top .objective-icon {
-  border: calc(1 * var(--hud-px)) solid #b8863e;
-  background: var(--kit-panel-dark);
+  border: 2px solid #b8863e;
+  background: #1e140c;
   box-shadow: inset 0 0 0 1px #6e4a1e;
 }
 
 .app.game .hud-top .hud-actions {
   margin-left: auto;
-}
-
-.app.game .hud-top .objective-rail + .hud-actions {
-  margin-left: 0;
+  margin-right: 24px;
 }
 
 .app.game .hud-top .hud-actions button,
 .app.game .hud-top .language-control {
   height: 32px;
   min-width: 32px;
-  padding: 0 8px;
-  font-size: var(--kit-label-size);
+  padding: 0 6px;
+  font-size: 15px;
 }
 
 .app.game .hud-top .language-control select {
@@ -231,6 +229,10 @@
   background: transparent;
   color: var(--kit-text);
   font: inherit;
+}
+
+.app.game .hud-top .language-control select option {
+  background: #2a1d12;
 }
 
 .app.game .hud-top .speed-control {
@@ -242,21 +244,32 @@
 }
 
 .app.game .hud-top .speed-button {
-  min-width: 40px;
+  min-width: 32px;
 }
 
 /* redo-battle-hud D6: the strategic layer switches beside the band buttons. */
+.app.game .hud-top .camera-rail {
+  position: relative;
+}
+
+/* Hangs under the camera rail, so the rail keeps its width. */
 .app.game .hud-top .layer-switches {
+  position: absolute;
+  top: calc(100% + 2px);
+  left: 24px;
   display: flex;
   gap: 4px;
-  padding-left: 6px;
-  border-left: 2px solid var(--kit-line);
+  padding: 0 4px;
+  border-style: solid;
+  border-width: 16px;
+  border-image: url('../assets/hud/rail.png') 16 fill / 16px stretch;
 }
 
 .app.game .hud-top .layer-switches button {
-  height: 32px;
-  padding: 0 8px;
-  font-size: var(--kit-data-size);
+  white-space: nowrap;
+  height: 36px;
+  padding: 0 6px;
+  font-size: 13px;
 }
 
 /* --- Docked panels ------------------------------------------------------ */
@@ -267,31 +280,32 @@
   pointer-events: none;
 }
 
-.app.game .hud-dock-left,
-.app.game .hud-dock-right {
+.app.game .hud-dock-left {
   position: absolute;
-  top: var(--hud-top);
+  top: 87px;
   bottom: 10px;
+  left: 6px;
+  width: 494px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  gap: var(--hud-gap);
-}
-
-.app.game .hud-dock-left {
-  left: 10px;
-  width: var(--hud-left-w);
+  align-items: flex-start;
+  gap: 12px;
 }
 
 .app.game .hud-dock-right {
-  right: 10px;
-  width: var(--hud-right-w);
-  justify-content: flex-end;
+  position: absolute;
+  top: 154px;
+  bottom: 86px;
+  right: 2px;
+  width: 214px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
 }
 
-/* The compass stands just left of the Orders column. */
-.app.game .battle-compass {
-  right: calc(var(--hud-right-w) + 24px);
+.app.game .hud-dock-right:has(> [data-minimized='true']) {
+  justify-content: flex-end;
 }
 
 .app.game .docked-panel {
@@ -303,58 +317,16 @@
   color: var(--kit-text);
 }
 
-.app.game .docked-panel.panel-wood {
-  border-style: solid;
-  border-width: calc(18 * var(--hud-px)) calc(8 * var(--hud-px)) calc(8 * var(--hud-px));
-  border-image: url('../assets/hud/panel.png') 18 8 8 / calc(18 * var(--hud-px)) calc(8 * var(--hud-px)) calc(8 * var(--hud-px)) round;
-  background: var(--kit-panel) padding-box;
-  image-rendering: pixelated;
-}
-
-.app.game .docked-panel.panel-wood .docked-panel-title {
-  position: absolute;
-  top: calc(-18 * var(--hud-px));
-  left: calc(-8 * var(--hud-px));
-  right: calc(-8 * var(--hud-px));
-  height: calc(17 * var(--hud-px));
-}
-
-.app.game .docked-panel.panel-parchment {
-  border-style: solid;
-  border-width: calc(8 * var(--hud-px));
-  border-image: url('../assets/hud/card-parchment.png') 8 fill / calc(8 * var(--hud-px)) round;
-  image-rendering: pixelated;
-  color: var(--kit-parch-ink);
-}
-
-.app.game .docked-panel.panel-parchment .docked-panel-title {
-  align-self: center;
-  margin-top: calc(-14 * var(--hud-px));
-  min-width: 62%;
-  height: calc(14 * var(--hud-px));
-  padding: 0 calc(8 * var(--hud-px));
-  border-style: solid;
-  border-width: calc(3 * var(--hud-px)) calc(7 * var(--hud-px));
-  border-image: url('../assets/hud/plate-parchment.png') 3 7 fill / calc(3 * var(--hud-px)) calc(7 * var(--hud-px)) stretch;
-  color: var(--kit-parch-ink);
-  justify-content: center;
-}
-
 .app.game .docked-panel-title {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 0 calc(10 * var(--hud-px));
   color: var(--kit-gold);
-  font-size: var(--kit-title-size);
+  font-size: 22px;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 0.5px;
   text-shadow: 2px 2px 0 var(--kit-ink);
   user-select: none;
-}
-
-.app.game .panel-parchment .docked-panel-title {
-  text-shadow: none;
 }
 
 .app.game .docked-panel-name {
@@ -364,20 +336,16 @@
   text-overflow: ellipsis;
 }
 
-.app.game .panel-parchment .docked-panel-name {
-  flex: 0 1 auto;
-}
-
 .app.game .docked-panel-toggle {
   display: grid;
   place-items: center;
-  width: 22px;
-  height: 22px;
+  width: 26px;
+  height: 26px;
   padding: 0;
   border: 0;
   background: transparent;
   color: inherit;
-  opacity: 0.8;
+  opacity: 0.85;
   cursor: pointer;
 }
 
@@ -391,24 +359,9 @@
   flex-direction: column;
   gap: 6px;
   min-height: 0;
-  padding: 6px 4px 4px;
   overflow: auto;
   scrollbar-width: thin;
-  scrollbar-color: #8a5a30 var(--kit-panel-dark);
-}
-
-/* Collapsed: the frame shrinks to its title band against its edge. */
-.app.game .docked-panel.collapsed.panel-wood {
-  border-bottom-width: calc(2 * var(--hud-px));
-}
-
-.app.game .docked-panel.collapsed.panel-parchment {
-  border-width: calc(4 * var(--hud-px)) calc(8 * var(--hud-px));
-  padding-top: calc(10 * var(--hud-px));
-}
-
-.app.game .docked-panel.collapsed.panel-parchment .docked-panel-title {
-  margin-top: calc(-14 * var(--hud-px));
+  scrollbar-color: #8a5a30 #1e140c;
 }
 
 /* The children drop the frames they had in the floating windows. */
@@ -429,15 +382,52 @@
   background: transparent;
 }
 
+/* Wood panels: Troops and Orders, title in the frame's top band. */
+.app.game .docked-panel.panel-wood {
+  border-style: solid;
+  border-width: 38px 15px 14px;
+  border-image: url('../assets/hud/panel.png') 38 15 14 fill / 38px 15px 14px stretch;
+  background: none;
+}
+
+.app.game [data-window='orders'].docked-panel.panel-wood {
+  border-width: 42px 14px 16px;
+  border-image: url('../assets/hud/panel-orders.png') 42 14 16 fill / 42px 14px 16px stretch;
+}
+
+.app.game .docked-panel.panel-wood .docked-panel-title {
+  position: absolute;
+  top: -36px;
+  left: 20px;
+  right: 6px;
+  height: 34px;
+}
+
+.app.game [data-window='orders'] .docked-panel-title {
+  top: -40px;
+  left: 18px;
+  height: 38px;
+}
+
+.app.game .docked-panel.panel-wood .docked-panel-body {
+  padding: 2px 2px 0;
+}
+
+.app.game .docked-panel.collapsed.panel-wood {
+  border-bottom-width: 4px;
+}
+
 /* --- Troops: the tall list, top left ------------------------------------ */
 .app.game [data-window='troops'] {
   flex: 0 1 auto;
+  width: 314px;
+  margin-left: 24px;
 }
 
 .app.game [data-window='troops'] .squad-stack {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 2px;
   max-height: none;
   overflow: visible;
 }
@@ -453,44 +443,51 @@
 
 .app.game [data-window='troops'] .squad-select {
   display: flex;
-  align-items: stretch;
-  gap: 10px;
+  align-items: center;
+  gap: 12px;
   width: 100%;
-  padding: 2px;
+  min-height: 74px;
+  padding: 0 4px;
   border-style: solid;
-  border-width: calc(4 * var(--hud-px));
-  border-image: url('../assets/hud/card.png') 4 fill / calc(4 * var(--hud-px)) stretch;
+  border-width: 7px;
+  border-image: url('../assets/hud/card.png') 7 fill / 7px stretch;
   background: none;
   color: var(--kit-text);
+  font: inherit;
   text-align: left;
   clip-path: none;
   box-shadow: none;
 }
 
 .app.game [data-window='troops'] .squad-card.selected .squad-select {
-  border-image-source: url('../assets/hud/card-active.png');
+  filter: brightness(1.25);
+  outline: 2px solid #c98c3c;
+  outline-offset: -4px;
 }
 
 .app.game [data-window='troops'] .section-portrait {
   flex: none;
-  width: 52px;
-  height: 52px;
+  width: 50px;
+  height: 50px;
   border: 2px solid #3a2412;
-  background: repeating-linear-gradient(135deg, #1e140c 0 6px, #2a1d12 6px 9px);
+  background: repeating-linear-gradient(135deg, #1a120b 0 6px, #261a10 6px 9px);
 }
 
 .app.game [data-window='troops'] .section-copy {
   display: grid;
   flex: 1;
-  gap: 2px;
+  gap: 1px;
   min-width: 0;
-  font-size: var(--kit-data-size);
+  color: var(--kit-text-dim);
+  font-size: 13px;
+  font-weight: 400;
 }
 
 .app.game [data-window='troops'] .section-copy strong {
   overflow: hidden;
-  color: #fff0d2;
-  font-size: var(--kit-label-size);
+  color: #fff4dc;
+  font-size: 15px;
+  font-weight: 600;
   text-transform: uppercase;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -498,6 +495,7 @@
 
 .app.game [data-window='troops'] .section-army {
   color: var(--kit-text-dim);
+  font-size: 14px;
 }
 
 .app.game [data-window='troops'] .mini-bar {
@@ -506,18 +504,55 @@
   background: var(--kit-ink);
 }
 
-.app.game [data-window='troops'] .mini-bar.health > span { background: #db5d35; }
-.app.game [data-window='troops'] .mini-bar.ammo > span { background: #e8c070; }
-.app.game [data-window='troops'] .mini-bar.morale > span { background: #8fb25a; }
+.app.game [data-window='troops'] .mini-bar.health > span { background: #e0603a; }
+.app.game [data-window='troops'] .mini-bar.ammo > span { background: #f0d070; }
+.app.game [data-window='troops'] .mini-bar.morale > span { background: #9cc25e; }
 
 /* --- Troop summary: the parchment card, bottom left ---------------------- */
 .app.game [data-window='summary'] {
   flex: none;
-  max-height: 55vh;
+  width: 494px;
+  height: 340px;
+  background: url('../assets/hud/summary.png') no-repeat;
+  color: var(--kit-parch-ink);
+}
+
+.app.game [data-window='summary'] .docked-panel-title {
+  position: absolute;
+  top: 26px;
+  left: 108px;
+  width: 276px;
+  height: 34px;
+  justify-content: center;
+  color: var(--kit-parch-ink);
+  font-size: 20px;
+  text-shadow: none;
+}
+
+.app.game [data-window='summary'] .docked-panel-name {
+  flex: 0 1 auto;
 }
 
 .app.game [data-window='summary'] .docked-panel-body {
-  padding: 4px 6px 2px;
+  position: absolute;
+  top: 68px;
+  left: 50px;
+  width: 340px;
+  height: 226px;
+  gap: 4px;
+  padding: 0 2px;
+}
+
+.app.game [data-window='summary'].collapsed {
+  width: 312px;
+  height: 48px;
+  margin-left: 82px;
+  background-image: url('../assets/hud/summary-plate.png');
+}
+
+.app.game [data-window='summary'].collapsed .docked-panel-title {
+  top: 8px;
+  left: 18px;
 }
 
 .app.game [data-window='summary'] .troop-heading {
@@ -526,47 +561,62 @@
 }
 
 .app.game [data-window='summary'] .troop-heading strong {
-  font-size: calc(var(--kit-title-size) + 2px);
+  font-size: 22px;
+  line-height: 1.1;
 }
 
 .app.game [data-window='summary'] .troop-heading small {
   color: var(--kit-parch-dim);
-  font-size: var(--kit-label-size);
+  font-size: 15px;
 }
 
 .app.game [data-window='summary'] .troop-helmets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 2px;
   max-width: none;
+  margin: 2px 0 0;
+  padding: 0 0 4px;
+  border-bottom: 2px solid rgba(78, 55, 32, 0.35);
+  list-style: none;
 }
 
-.app.game [data-window='summary'] .troop-helmet.tone-fit { color: #3f5a24; }
-.app.game [data-window='summary'] .troop-helmet.tone-selected { color: #1e3a10; }
-.app.game [data-window='summary'] .troop-helmet.tone-wounded { color: #9a2c1a; }
-.app.game [data-window='summary'] .troop-helmet.tone-down { color: #7d6a50; }
-.app.game [data-window='summary'] .troop-helmet.tone-dead { color: #4a3a2a; }
-.app.game [data-window='summary'] .helmet-bar { background: rgba(30, 20, 10, 0.35); }
+.app.game [data-window='summary'] .troop-helmet {
+  display: block;
+  width: 28px;
+  padding: 0;
+  box-shadow: none;
+}
+
+.app.game [data-window='summary'] .soldier-figure {
+  display: block;
+}
 
 .app.game .troop-status {
   display: grid;
-  gap: 4px;
-  font-size: var(--kit-data-size);
+  gap: 2px;
+  font-size: 13px;
 }
 
 .app.game .troop-status p {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px 10px;
+  gap: 2px 10px;
   margin: 0;
 }
 
-.app.game .troop-status-line {
-  padding-top: 4px;
-  border-top: 2px solid rgba(74, 52, 32, 0.35);
+.app.game [data-window='summary'] .troop-status,
+.app.game [data-window='summary'] .troop-status * {
   color: var(--kit-parch-dim);
+  opacity: 1;
+}
+
+.app.game .troop-status-line {
   text-transform: uppercase;
 }
 
 .app.game .troop-badge {
-  padding: 1px 6px;
+  padding: 0 6px;
   border: 2px solid var(--kit-parch-dim);
   color: var(--kit-parch-ink);
 }
@@ -574,36 +624,30 @@
 .app.game [data-window='summary'] .weapon-card,
 .app.game [data-window='summary'] .weapon-card * {
   color: var(--kit-parch-ink);
+  font-size: 14px;
+}
+
+.app.game [data-window='summary'] .weapon-card .weapon-head,
+.app.game [data-window='summary'] .weapon-card .weapon-head * {
+  font-size: 16px;
+  text-transform: uppercase;
 }
 
 .app.game [data-window='summary'] .weapon-card .status-details,
-.app.game [data-window='summary'] .weapon-card .weapon-line-pool {
+.app.game [data-window='summary'] .weapon-card .status-details * {
   color: var(--kit-parch-dim);
+  font-size: 12px;
+  font-weight: 400;
 }
 
 .app.game [data-window='summary'] .weapon-card .pixel-icon {
   color: var(--kit-parch-ink);
 }
 
-.app.game .hud-side-kit {
-  position: absolute;
-  left: calc(100% - 6px);
-  bottom: 4px;
-  width: calc(51 * var(--hud-px));
-  height: calc(156 * var(--hud-px));
-  image-rendering: pixelated;
-  pointer-events: none;
-}
-
-@media (max-height: 819px), (max-width: 1279px) {
-  .app.game .hud-side-kit {
-    display: none;
-  }
-}
-
 /* --- Orders: the column, right ------------------------------------------- */
 .app.game [data-window='orders'] {
   flex: 0 1 auto;
+  width: 214px;
 }
 
 .app.game [data-window='orders'] .order-board,
@@ -612,21 +656,21 @@
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  gap: 6px;
+  gap: 2px;
 }
 
 .app.game [data-window='orders'] .order-sector,
 .app.game [data-window='orders'] .passive-group {
   display: grid;
-  grid-template-columns: repeat(5, var(--order-button));
+  grid-template-columns: repeat(5, 31px);
   justify-content: start;
-  gap: 4px;
+  gap: 3px 3px;
   flex: none;
   margin: 0;
-  padding: 4px 6px 6px;
+  padding: 0 0 0 1px;
   border-style: solid;
-  border-width: calc(3 * var(--hud-px));
-  border-image: url('../assets/hud/group.png') 3 fill / calc(3 * var(--hud-px)) stretch;
+  border-width: 8px;
+  border-image: url('../assets/hud/group.png') 9 fill / 8px stretch;
   background: none;
   box-shadow: none;
   clip-path: none;
@@ -639,22 +683,48 @@
 .app.game [data-window='orders'] .order-sector-title,
 .app.game [data-window='orders'] .passive-label {
   grid-column: 1 / -1;
-  margin: 0 0 2px;
+  margin: -3px 0 0;
   color: #f4e6c6;
-  font-size: var(--kit-label-size);
+  font-size: 14px;
+  line-height: 1.1;
   text-transform: uppercase;
   letter-spacing: 0;
+  text-shadow: 1px 1px 0 var(--kit-ink);
 }
 
 .app.game .hud-docks [data-window='orders'] .action-button,
 .app.game .hud-docks [data-window='orders'] .passive-button.square-button {
-  width: var(--order-button);
-  min-width: 0;
-  height: var(--order-button);
-  min-height: 0;
-  padding: 0;
   display: grid;
   place-items: center;
+  width: 31px;
+  min-width: 0;
+  height: 33px;
+  min-height: 0;
+  padding: 0;
+  border-style: solid;
+  border-width: 7px;
+  border-image: url('../assets/hud/order-button.png') 8 fill / 7px stretch;
+  background: none;
+  box-shadow: none;
+  clip-path: none;
+  border-radius: 0;
+  color: #f1dfbd;
+}
+
+.app.game .hud-docks [data-window='orders'] .action-button.active,
+.app.game .hud-docks [data-window='orders'] .passive-button.active {
+  border-image-source: url('../assets/hud/order-button-active.png');
+  color: #fff4da;
+}
+
+.app.game .hud-docks [data-window='orders'] .action-button:hover:not(:disabled),
+.app.game .hud-docks [data-window='orders'] .passive-button:hover:not(:disabled) {
+  filter: brightness(1.2);
+}
+
+.app.game .hud-docks [data-window='orders'] .action-button:disabled,
+.app.game .hud-docks [data-window='orders'] .passive-button:disabled {
+  opacity: 0.45;
 }
 
 .app.game [data-window='orders'] .action-button .order-label {
@@ -662,46 +732,43 @@
 }
 
 .app.game [data-window='orders'] .pace-group {
-  grid-template-columns: repeat(2, 1fr);
-  justify-content: stretch;
-}
-
-.app.game [data-window='orders'] .pace-group .passive-label {
-  grid-column: 1 / -1;
+  grid-template-columns: repeat(2, auto);
 }
 
 .app.game .hud-docks [data-window='orders'] .pace-button {
   width: auto;
   min-width: 0;
-  height: 26px;
+  height: 28px;
   min-height: 0;
-  font-size: var(--kit-data-size);
+  padding: 0 4px;
+  font-size: 13px;
 }
 
 .app.game [data-window='orders'] .order-queue {
   margin: 0;
   padding: 4px 8px 4px 22px;
   color: var(--kit-text-dim);
-  font-size: var(--kit-data-size);
+  font-size: 12px;
 }
 
 /* --- Order prompt: top centre of the map --------------------------------- */
 .app.game .order-prompt {
   position: fixed;
-  top: calc(var(--hud-top) + 6px);
+  top: 84px;
   left: 50%;
   transform: translateX(-50%);
   z-index: 16;
   display: flex;
   align-items: center;
   gap: 10px;
-  max-width: min(560px, calc(100vw - var(--hud-left-w) - var(--hud-right-w) - 60px));
-  padding: 4px 8px;
+  max-width: 600px;
+  min-height: 60px;
+  padding: 0 6px;
   border-style: solid;
-  border-width: calc(6 * var(--hud-px));
-  border-image: url('../assets/hud/rail.png') 6 fill / calc(6 * var(--hud-px)) round;
+  border-width: 16px;
+  border-image: url('../assets/hud/rail.png') 16 fill / 16px stretch;
   color: var(--kit-text);
-  font-size: var(--kit-label-size);
+  font-size: 15px;
   clip-path: none;
   background: none;
   box-shadow: none;
@@ -717,15 +784,14 @@
   right: 0;
   bottom: 0;
   z-index: 14;
-  width: calc(443 * var(--hud-px));
-  max-width: 62vw;
-  height: auto;
-  image-rendering: pixelated;
+  width: 890px;
+  height: 94px;
   pointer-events: none;
 }
 
 @media (max-width: 1279px) {
-  .app.game .hud-bottom-strip {
+  .app.game .hud-bottom-strip,
+  .app.game .hud-top .hud-drape {
     display: none;
   }
 }

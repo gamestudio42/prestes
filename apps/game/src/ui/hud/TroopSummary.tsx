@@ -1,6 +1,6 @@
 import type { MessageKey } from '@prestes/content';
 import { ARMIES, trainingLoad, type CoverPoint, type UnitSnapshot } from '@prestes/shared';
-import { Helmet } from '../icons';
+import { SoldierFigure, coverClassOf, healthClassOf, type CoverClass } from './SoldierFigure';
 import type { Translate } from './orderMeta';
 import { positionName } from './positionName';
 
@@ -23,14 +23,22 @@ function toneOf(unit: UnitSnapshot, selected: boolean): HelmetTone {
   return selected ? 'selected' : 'fit';
 }
 
-const pct = (value: number) => `${Math.round(Math.max(0, Math.min(1, value)) * 100)}%`;
+const COVER_KEY: Record<CoverClass, MessageKey> = {
+  none: 'hud.coverNone',
+  light: 'hud.coverLight',
+  good: 'hud.coverGood',
+  inside: 'hud.coverInside',
+};
 
 /**
- * One helmet per soldier of the troop, each with three vertical bars: health,
- * morale and ammunition. The helmet's colour gives the soldier's condition.
+ * One soldier figure per man of the troop (redo-battle-hud, the owner's
+ * figure): helmet colour for his cover, body colour for his health and a
+ * five-round clip for his ammunition; the fallen go last.
  */
 export function TroopSummary({ t, squadUnits, selectedIds, ammoFull, covers }: TroopSummaryProps) {
-  const soldiers = [...squadUnits].filter((unit) => !unit.dummy).sort((left, right) => left.id - right.id);
+  const soldiers = [...squadUnits]
+    .filter((unit) => !unit.dummy)
+    .sort((left, right) => Number(!left.alive) - Number(!right.alive) || left.id - right.id);
   // faction-armies 4.4: the section's name and its army above the helmets.
   const sectionType = soldiers.find((unit) => unit.sectionType !== undefined)?.sectionType;
   const army = soldiers.find((unit) => unit.army !== undefined)?.army;
@@ -58,7 +66,12 @@ export function TroopSummary({ t, squadUnits, selectedIds, ammoFull, covers }: T
           fatigue: Math.round(unit.fatigue),
           rounds,
         });
-        const tip = inside ? `${soldierTip} · ${t('hud.inside', { place: inside })}` : soldierTip;
+        const cover = coverClassOf(unit);
+        const health = healthClassOf(unit);
+        const mark = !unit.alive ? null : unit.routed || unit.state === 'routed' ? 'routed' : unit.state === 'pinned' ? 'pinned' : null;
+        const ammo = full > 0 ? rounds / full : 0;
+        const withCover = `${soldierTip} · ${t(COVER_KEY[cover])}`;
+        const tip = inside ? `${withCover} · ${t('hud.inside', { place: inside })}` : withCover;
         return (
           <li
             key={unit.id}
@@ -67,20 +80,13 @@ export function TroopSummary({ t, squadUnits, selectedIds, ammoFull, covers }: T
             data-tone={tone}
             data-inside={inside ?? undefined}
             data-weapon={unit.weaponId}
+            data-cover={cover}
+            data-health={health}
+            data-mark={mark ?? undefined}
+            data-rounds={Math.round(Math.min(1, ammo) * 5)}
             title={tip}
           >
-            <Helmet size={16} />
-            <span className="helmet-bars" aria-hidden="true">
-              <span className="helmet-bar health" title={t('hud.health')}>
-                <span style={{ height: pct(unit.alive ? unit.hp / 100 : 0) }} />
-              </span>
-              <span className="helmet-bar morale" title={t('hud.morale')}>
-                <span style={{ height: pct(unit.alive ? unit.morale / 100 : 0) }} />
-              </span>
-              <span className="helmet-bar ammo" title={t('hud.ammo')}>
-                <span style={{ height: pct(full > 0 ? rounds / full : 0) }} />
-              </span>
-            </span>
+            <SoldierFigure cover={cover} health={health} ammo={ammo} mark={mark} selected={tone === 'selected'} />
             <span className="visually-hidden">{tip}</span>
           </li>
         );
