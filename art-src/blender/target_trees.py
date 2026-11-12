@@ -29,18 +29,28 @@ SOURCE = os.environ.get("REFLORESTE", "C:/projetos/Refloreste")
 VEGETATION = os.path.join(SOURCE, "assets", "vegetacao")
 
 LEAF = (0.365, 0.659, 0.176)
-LEAF_ARAUCARIA = (0.125, 0.290, 0.125)
+# Lighter than the first pass (0.125, 0.290, 0.125), which read as dark clumps (hand check 2026-11-09).
+LEAF_ARAUCARIA = (0.20, 0.40, 0.17)
 
-# Catalog model -> source, trunk LOD, foliage LOD, crown clumps, leaf colour,
-# clump flattening, catalog height (m), and whether the foliage is leaf cards
-# (Refloreste's palms have real fronds; every other tree and the bush, cards).
+# Catalog model -> source, family, trunk LOD, foliage LOD, crown clumps,
+# leaf colour, clump flattening and catalog height (m).
+#
+# The family picks the crown method (biome-trees-and-plants D1):
+#   broadleaf  k-means clumps over the leaf cards
+#   tiered     clumps per whorl, at the branch tips (the araucaria's candelabra);
+#              `tiers` whorls of `clumps // tiers` tufts each
+#   palm       the real fronds kept (Refloreste's palms are geometry, not cards)
+#   giant      as broadleaf, the trunk kept at LOD 0 for its buttresses
+#   bush       as broadleaf, no trunk, spread to `width`
 TREES = {
-    "tree-broad": dict(path="mata_atlantica/peroba/mata_atlantica_peroba_adulta.glb", trunk=1, foliage=0, clumps=26, leaf=LEAF, flat=0.8, height=8.0, cards=True),
-    "tree-araucaria": dict(path="mata_atlantica/araucaria/mata_atlantica_araucaria_adulta.glb", trunk=1, foliage=0, clumps=28, leaf=LEAF_ARAUCARIA, flat=0.55, height=14.0, cards=True),
-    "buriti": dict(path="cerrado/buriti/cerrado_buriti_adulta.glb", trunk=0, foliage=1, clumps=0, leaf=LEAF, flat=1.0, height=12.0, cards=False),
-    "cerrado-tree": dict(path="cerrado/pequi/cerrado_pequi_adulta.glb", trunk=1, foliage=0, clumps=18, leaf=LEAF, flat=0.8, height=6.0, cards=True),
-    "bush": dict(path="cerrado/bush/cerrado_bush_adulta.glb", trunk=None, foliage=0, clumps=8, leaf=LEAF, flat=0.75, height=1.3, cards=True, width=2.6),
+    "tree-broad": dict(path="mata_atlantica/peroba/mata_atlantica_peroba_adulta.glb", family="broadleaf", trunk=1, foliage=0, clumps=26, leaf=LEAF, flat=0.8, height=8.0),
+    "tree-araucaria": dict(path="mata_atlantica/araucaria/mata_atlantica_araucaria_adulta.glb", family="tiered", trunk=1, foliage=0, clumps=28, tiers=4, bare=0.4, lift=0.35, cap=2.6, leaf=LEAF_ARAUCARIA, flat=0.3, height=14.0),
+    "buriti": dict(path="cerrado/buriti/cerrado_buriti_adulta.glb", family="palm", trunk=0, foliage=1, clumps=0, leaf=LEAF, flat=1.0, height=12.0),
+    "cerrado-tree": dict(path="cerrado/pequi/cerrado_pequi_adulta.glb", family="broadleaf", trunk=1, foliage=0, clumps=18, leaf=LEAF, flat=0.8, height=6.0),
+    "bush": dict(path="cerrado/bush/cerrado_bush_adulta.glb", family="bush", trunk=None, foliage=0, clumps=8, leaf=LEAF, flat=0.75, height=1.3, width=2.6),
 }
+
+FAMILIES = ("broadleaf", "tiered", "palm", "giant", "bush")
 
 
 
@@ -122,14 +132,14 @@ def kmeans(cards, count: int, rounds: int = 12):
     return [(seeds[i], group) for i, group in enumerate(groups) if group]
 
 
-def crown(name: str, cards, clumps: int, leaf, flat: float, card_radius: float):
-    """The crown as clumps, one per k-means group of leaf cards."""
+def crown(name: str, cards, clumps: int, leaf, flat: float, card_radius: float, groups=None, cap=None):
+    """The crown as clumps, one per k-means group of leaf cards (or the groups given)."""
     mesh = bpy.data.meshes.new(f"{name}-crown")
     bm = bmesh.new()
     colours = bm.loops.layers.float_color.new("Color")
-    for centre, group in kmeans(cards, clumps):
+    for centre, group in groups if groups is not None else kmeans(cards, clumps):
         spread = math.sqrt(sum((c - centre).length_squared for c, _ in group) / len(group))
-        radius = spread + card_radius * 0.6
+        radius = (min(spread, cap) if cap else spread) + card_radius * 0.6
         shade = min(1.4, max(0.45, 1.5 * sum(s for _, s in group) / len(group)))
         colour = (leaf[0] * shade, leaf[1] * shade, leaf[2] * shade, 1.0)
         result = bmesh.ops.create_icosphere(bm, subdivisions=0, radius=1.0)
@@ -146,6 +156,63 @@ def crown(name: str, cards, clumps: int, leaf, flat: float, card_radius: float):
     return obj
 
 
+def candelabra(trunk, cards, bare: float, lift: float):
+    """Shapes the araucaria's branches (biome-trees-and-plants 2.1): the
+    branches under the crown are cut (an adult sheds them), and every branch
+    is bent upward toward its tip, by `lift` of the foliage's height at the
+    farthest reach, so the whorls open into the candelabra's cup. The leaf
+    cards are lifted the same way and stay on their branch tips."""
+    low = min(card[0].z for card in cards)
+    high = max(card[0].z for card in cards)
+    base = low + (high - low) * bare
+    reach = max(card[0].xy.length for card in cards)
+    rise = (high - low) * lift
+
+    def bent(co):
+        return Vector((co.x, co.y, co.z + rise * (co.xy.length / reach) ** 2))
+
+    bm = bmesh.new()
+    bm.from_mesh(trunk.data)
+    # A face wholly under the crown and farther from the axis than the
+    # tapering trunk is a low branch.
+    top = max(v.co.z for v in bm.verts)
+    foot = max(v.co.xy.length for v in bm.verts if v.co.z < top * 0.02)
+
+    def off_trunk(face):
+        centre = face.calc_center_median()
+        return centre.xy.length > max(0.5, foot * (1 - centre.z / top)) * 1.4
+
+    low_branch = [face for face in bm.faces if off_trunk(face) and all(v.co.z < base for v in face.verts)]
+    bmesh.ops.delete(bm, geom=low_branch, context="FACES")
+    for vertex in bm.verts:
+        vertex.co = bent(vertex.co)
+    bm.to_mesh(trunk.data)
+    bm.free()
+    return [(bent(centre), shade) for centre, shade in cards]
+
+
+def whorls(cards, tiers: int, per_tier: int, bare: float):
+    """The tiered crown's groups (biome-trees-and-plants 2.1): the araucaria's
+    candelabra. An adult sheds its low branches, so the cards in the lowest
+    `bare` share of the foliage's height are dropped; the rest are cut by
+    height into `tiers` whorls, and in each whorl only the outer cards (the
+    branch tips, where the needles grow) are clustered into `per_tier` tufts.
+    The bare branches show between the tufts and the crown opens upward like
+    a cup, not one round clump."""
+    low = min(card[0].z for card in cards)
+    high = max(card[0].z for card in cards)
+    kept = sorted((card for card in cards if card[0].z >= low + (high - low) * bare), key=lambda card: card[0].z)
+    groups = []
+    for tier in range(tiers):
+        band = kept[tier * len(kept) // tiers:(tier + 1) * len(kept) // tiers]
+        if not band:
+            continue
+        reach = max(card[0].xy.length for card in band)
+        tips = [card for card in band if card[0].xy.length >= reach * 0.55] or band
+        groups.extend(kmeans(tips, per_tier))
+    return groups
+
+
 def build_tree(name: str, spec: dict):
     meshes = import_source(spec["path"])
     keep = []
@@ -153,12 +220,19 @@ def build_tree(name: str, spec: dict):
     if trunk:
         keep.append(trunk)
     foliage = pick(meshes, "folhagem", spec["foliage"])
-    if foliage and spec["cards"]:
+    family = spec["family"]
+    assert family in FAMILIES, f"{name}: unknown family {family}"
+    if foliage and family != "palm":
         # A card is about a twenty-fifth of the crown's width.
         xs = [v.co.x for v in foliage.data.vertices]
         card_radius = max(0.4, (max(xs) - min(xs)) * 0.04)
-        keep.append(crown(name, card_centres(foliage), spec["clumps"], spec["leaf"], spec["flat"], card_radius))
-        print(f"{name}: crown from {len(foliage.data.polygons)} leaf-card faces")
+        cards = card_centres(foliage)
+        groups = None
+        if family == "tiered":
+            cards = candelabra(trunk, cards, spec["bare"], spec["lift"])
+            groups = whorls(cards, spec["tiers"], spec["clumps"] // spec["tiers"], spec["bare"])
+        keep.append(crown(name, cards, spec["clumps"], spec["leaf"], spec["flat"], card_radius, groups, spec.get("cap")))
+        print(f"{name}: {family} crown from {len(foliage.data.polygons)} leaf-card faces")
     elif foliage:
         keep.append(foliage)
     for obj in list(meshes.values()):
