@@ -83,7 +83,7 @@ with a task 0.1 of prerequisites.
 | 1 | `faction-armies` | 4/18 | planning done, code not started | the go-ahead; the hand check (5.2) |
 | 2 | `soldier-animation-and-textures` | 0/16 | planned | review of the clip and uniform sheets (4.1), the hand check (4.3) |
 | 3 | `troop-thumbnails-and-panel` | 0/15 | planned (soldier figures instead of rows, approved 2026-11-11) | the hand check (4.3) |
-| 3b | `redo-battle-hud` | 13/17 | applied ahead of 3 at the owner's request (2026-11-12) | the art pass (1.2), the soldier figures on the card (3.1, after 3), baselines (5.1), gates and hand check (5.2, 5.3) |
+| 3b | `redo-battle-hud` | 12/17 | applied ahead of 3 at the owner's request (2026-11-12) | the art pass (1.2), the soldier figures on the card (3.1, after 3), baselines (5.1), gates and hand check (5.2, 5.3) |
 | any time | `remove-sandbox-panel` | 6/7 | applied 2026-11-11 | nothing; the `battle-hud` baseline re-record (2.5) waits for the compass and area-fire work to be committed |
 | 4 | `biome-trees-and-plants` | 0/18 | planned | the species and caatinga list (1.1), the review sheet, the hand check (5.3) |
 | 5 | `revise-buildings-and-stone` | 0/19 | planned | the lists of new buildings and rock kinds (1.1), the marked sheet (1.2), the hand check (5.4) |
