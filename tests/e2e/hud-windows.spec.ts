@@ -7,59 +7,131 @@ type Bridge = {
 
 test.setTimeout(90_000);
 
-async function start(page: Page): Promise<void> {
+async function start(page: Page, ordersOpen = true): Promise<void> {
   await page.getByTestId('open-skirmish').click();
   await page.getByTestId('start-battle-3v3').click();
   // add-deployment-phase: the skirmish opens in deployment; start the battle.
   await page.getByTestId('start-battle').click();
   await page.waitForFunction(() => Boolean((window as unknown as Bridge).__prestes?.frame()));
   await expect(page.getByTestId('window-orders')).toBeVisible();
+  if (ordersOpen) await expect(page.getByTestId('order-board')).toBeVisible();
 }
 
 const box = async (page: Page, id: string) => (await page.getByTestId(`window-${id}`).boundingBox())!;
 
-test('HUD windows can be dragged, minimized and stay where the player left them', async ({ page }) => {
+type SceneHook = { __prestesScene?: { mapLayers: () => { contours: boolean; cover: boolean; coverSlots: number } } };
+
+test('HUD panels are docked, collapse toward their edge and stay collapsed after a reload', async ({ page }) => {
+  await page.setViewportSize({ width: 1790, height: 878 });
   await page.goto('/');
-  await page.evaluate(() => window.localStorage.removeItem('prestes.hud.windows.v1'));
+  // An old floating-window layout is ignored: every panel opens docked.
+  await page.evaluate(() => {
+    window.localStorage.removeItem('prestes.hud.docks.v1');
+    window.localStorage.setItem('prestes.hud.windows.v1', JSON.stringify({ orders: { x: 400, y: 400, minimized: true } }));
+  });
   await page.reload();
   await start(page);
 
-  // Three windows, none covering the top bar.
-  for (const id of ['orders', 'troops', 'summary']) {
-    expect((await box(page, id)).y).toBeGreaterThanOrEqual(56);
+  const top = (await page.getByTestId('hud').boundingBox())!;
+  const troops = await box(page, 'troops');
+  const summary = await box(page, 'summary');
+  const orders = await box(page, 'orders');
+  for (const panel of [troops, summary, orders]) expect(panel.y).toBeGreaterThanOrEqual(top.y + top.height - 1);
+  expect(troops.x).toBeLessThan(40);
+  expect(summary.x).toBeLessThan(40);
+  expect(orders.x + orders.width).toBeGreaterThan(1790 - 40);
+  expect(summary.y).toBeGreaterThan(troops.y + troops.height);
+  for (const id of ['troops', 'summary', 'orders']) {
+    await expect(page.getByTestId(`window-${id}`)).toHaveAttribute('data-minimized', 'false');
   }
+  // No drag handle, no resize grip.
+  await expect(page.locator('[data-testid$="-resize"]')).toHaveCount(0);
 
-  // Drag Orders by its title bar to the top left.
-  const title = (await page.getByTestId('window-orders-title').boundingBox())!;
-  await page.mouse.move(title.x + 60, title.y + title.height / 2);
-  await page.mouse.down();
-  await page.mouse.move(80, 90, { steps: 8 });
-  await page.mouse.up();
-  const moved = await box(page, 'orders');
-  expect(moved.x).toBeLessThan(40);
-  expect(moved.y).toBeLessThan(120);
-
-  // Minimize the summary: only the title bar remains.
-  const full = await box(page, 'summary');
-  await page.getByTestId('window-summary-toggle').click();
-  await expect(page.getByTestId('window-summary')).toHaveAttribute('data-minimized', 'true');
+  // Troops folds up under the top bar; Summary and Orders fold down to the bottom edge.
+  for (const id of ['troops', 'summary', 'orders']) await page.getByTestId(`window-${id}-toggle`).click();
   await expect(page.getByTestId('troop-helmets')).toHaveCount(0);
-  expect((await box(page, 'summary')).height).toBeLessThan(full.height / 2);
+  const troopsTab = await box(page, 'troops');
+  const summaryTab = await box(page, 'summary');
+  const ordersTab = await box(page, 'orders');
+  expect(Math.abs(troopsTab.y - troops.y)).toBeLessThanOrEqual(2);
+  expect(troopsTab.height).toBeLessThan(60);
+  expect(summaryTab.y + summaryTab.height).toBeGreaterThan(878 - 20);
+  expect(ordersTab.y + ordersTab.height).toBeGreaterThan(878 - 20);
+  expect(ordersTab.height).toBeLessThan(60);
 
-  // After a reload the layout is the same.
   await page.reload();
-  await start(page);
-  const again = await box(page, 'orders');
-  expect(Math.abs(again.x - moved.x)).toBeLessThanOrEqual(2);
-  expect(Math.abs(again.y - moved.y)).toBeLessThanOrEqual(2);
-  await expect(page.getByTestId('window-summary')).toHaveAttribute('data-minimized', 'true');
+  await start(page, false);
+  for (const id of ['troops', 'summary', 'orders']) {
+    await expect(page.getByTestId(`window-${id}`)).toHaveAttribute('data-minimized', 'true');
+  }
   await page.getByTestId('window-summary-toggle').click();
   await expect(page.getByTestId('troop-helmets')).toBeVisible();
 });
 
+for (const locale of ['en', 'pt-BR'] as const) {
+  test(`at 1280 x 720 (${locale}) the docked panels neither overlap nor leave the screen`, async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 720 });
+    await page.goto('/');
+    await page.evaluate((value) => {
+      window.localStorage.removeItem('prestes.hud.docks.v1');
+      window.localStorage.setItem('prestes.locale', value);
+    }, locale);
+    await page.reload();
+    await start(page);
+    const panels = await Promise.all(['troops', 'summary', 'orders'].map((id) => box(page, id)));
+    for (const panel of panels) {
+      expect(panel.x).toBeGreaterThanOrEqual(0);
+      expect(panel.y + panel.height).toBeLessThanOrEqual(720);
+      expect(panel.x + panel.width).toBeLessThanOrEqual(1280);
+    }
+    const [troops, summary, orders] = panels as [typeof panels[0], typeof panels[0], typeof panels[0]];
+    expect(troops.y + troops.height).toBeLessThanOrEqual(summary.y);
+    expect(summary.x + summary.width).toBeLessThan(orders.x);
+    // Every order button sits inside the Orders column.
+    const column = (await page.getByTestId('window-orders').boundingBox())!;
+    for (const button of await page.getByTestId('window-orders').locator('button').all()) {
+      const rect = (await button.boundingBox())!;
+      expect(rect.x + rect.width).toBeLessThanOrEqual(column.x + column.width + 1);
+      expect(rect.y + rect.height).toBeLessThanOrEqual(column.y + column.height + 1);
+    }
+  });
+}
+
+test('the strategic band offers contour and cover layers, off at the start', async ({ page }) => {
+  await page.goto('/');
+  await start(page);
+  const layers = () => page.evaluate(() => (window as unknown as SceneHook).__prestesScene!.mapLayers());
+
+  // Tactical band: no switches.
+  await expect(page.getByTestId('map-layers')).toHaveCount(0);
+  await page.getByTestId('camera-strategic').click();
+  await expect(page.getByTestId('layer-contours')).toHaveAttribute('aria-pressed', 'false');
+  await expect(page.getByTestId('layer-cover')).toHaveAttribute('aria-pressed', 'false');
+  expect(await layers()).toEqual({ contours: false, cover: false, coverSlots: 0 });
+
+  await page.getByTestId('layer-contours').click();
+  await page.getByTestId('layer-cover').click();
+  await expect(page.getByTestId('layer-cover')).toHaveAttribute('aria-pressed', 'true');
+  const shown = await layers();
+  expect(shown.contours).toBe(true);
+  expect(shown.cover).toBe(true);
+  expect(shown.coverSlots).toBeGreaterThan(0);
+
+  // The layer draws the map's slots, not who holds them: time passing changes nothing.
+  await page.evaluate(() => (window as unknown as Bridge).__prestes!.step(40));
+  expect((await layers()).coverSlots).toBe(shown.coverSlots);
+
+  // Back to tactical hides them; strategic again restores them.
+  await page.getByTestId('camera-tactical').click();
+  await expect(page.getByTestId('map-layers')).toHaveCount(0);
+  expect(await layers()).toEqual({ contours: false, cover: false, coverSlots: 0 });
+  await page.getByTestId('camera-strategic').click();
+  expect(await layers()).toEqual(shown);
+});
+
 test('the troop summary shows a helmet and three bars per soldier', async ({ page }) => {
   await page.goto('/');
-  await page.evaluate(() => window.localStorage.removeItem('prestes.hud.windows.v1'));
+  await page.evaluate(() => window.localStorage.removeItem('prestes.hud.docks.v1'));
   await page.reload();
   await start(page);
   await expect(page.locator('[data-testid^="helmet-"]')).toHaveCount(11);
@@ -75,59 +147,4 @@ test('the troop summary shows a helmet and three bars per soldier', async ({ pag
     return soldier.id;
   });
   await expect(page.getByTestId(`helmet-${id}`)).toHaveAttribute('data-tone', 'wounded');
-});
-
-test('the Orders window turns into a tall column, resizes and keeps its shape', async ({ page }) => {
-  await page.goto('/');
-  await page.evaluate(() => window.localStorage.removeItem('prestes.hud.windows.v1'));
-  await page.reload();
-  await start(page);
-
-  const wide = await box(page, 'orders');
-  expect(wide.width).toBeGreaterThan(wide.height);
-  await expect(page.getByTestId('window-orders')).toHaveAttribute('data-orientation', 'horizontal');
-
-  // The column button lays it out narrow and tall, its buttons stacked.
-  await page.getByTestId('window-orders-orientation').click();
-  await expect(page.getByTestId('window-orders')).toHaveAttribute('data-orientation', 'vertical');
-  const column = await box(page, 'orders');
-  expect(column.width).toBeLessThan(200);
-  expect(column.height).toBeGreaterThan(600);
-  expect(column.y).toBeGreaterThanOrEqual(56);
-  const sectors = page.getByTestId('order-board').locator('.order-sector');
-  const first = (await sectors.nth(0).boundingBox())!;
-  const second = (await sectors.nth(1).boundingBox())!;
-  expect(second.y).toBeGreaterThan(first.y + first.height - 1);
-  const posture = (await page.locator('.posture-group').boundingBox())!;
-  const fire = (await page.getByTestId('fire-control').boundingBox())!;
-  expect(fire.y).toBeGreaterThan(posture.y);
-  // Every order button still fits inside the column.
-  const attack = (await page.getByTestId('order-attack').boundingBox())!;
-  expect(attack.x + attack.width).toBeLessThanOrEqual(column.x + column.width);
-
-  // Drag the grip: a shorter, narrower column (it sits against the right edge).
-  const grip = (await page.getByTestId('window-orders-resize').boundingBox())!;
-  await page.mouse.move(grip.x + grip.width / 2, grip.y + grip.height / 2);
-  await page.mouse.down();
-  await page.mouse.move(grip.x + grip.width / 2 - 8, grip.y + grip.height / 2 - 200, { steps: 8 });
-  await page.mouse.up();
-  const resized = await box(page, 'orders');
-  expect(Math.abs(resized.height - (column.height - 200))).toBeLessThanOrEqual(4);
-  expect(Math.abs(resized.width - (column.width - 8))).toBeLessThanOrEqual(4);
-
-  // The size is part of the saved layout and survives a reload.
-  const saved = await page.evaluate(() => JSON.parse(window.localStorage.getItem('prestes.hud.windows.v1') ?? '{}'));
-  expect(saved.orders.w).toBeGreaterThan(0);
-  expect(saved.orders.h).toBeGreaterThan(saved.orders.w);
-  await page.reload();
-  await start(page);
-  await expect(page.getByTestId('window-orders')).toHaveAttribute('data-orientation', 'vertical');
-  const again = await box(page, 'orders');
-  expect(Math.abs(again.height - resized.height)).toBeLessThanOrEqual(2);
-
-  // And back to the wide row.
-  await page.getByTestId('window-orders-orientation').click();
-  await expect(page.getByTestId('window-orders')).toHaveAttribute('data-orientation', 'horizontal');
-  const back = await box(page, 'orders');
-  expect(back.width).toBeGreaterThan(back.height);
 });

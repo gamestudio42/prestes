@@ -289,6 +289,12 @@ export class PaintedGround {
     this.uniforms.uOverlay!.value = OVERLAY_CODE[overlay];
   }
 
+  /** The overlay shown now. */
+  overlay(): GroundOverlay {
+    const code = this.uniforms.uOverlay!.value as number;
+    return (Object.keys(OVERLAY_CODE) as GroundOverlay[]).find((key) => OVERLAY_CODE[key] === code) ?? 'none';
+  }
+
   /** A metre grid every `spacing` m; 0 hides it. */
   setGrid(spacing: number): void {
     this.uniforms.uGrid!.value = spacing;

@@ -4,6 +4,14 @@ import type { ObjectiveSnapshot } from '@prestes/shared';
 import type { CameraBand } from '@prestes/view3d';
 import { IconButton } from './IconButton';
 import type { Translate } from './orderMeta';
+import flag from '../../assets/hud/flag.png';
+import lantern from '../../assets/hud/lantern.png';
+
+/** redo-battle-hud D6: the strategic band's map layers, off at battle start. */
+export interface MapLayers {
+  contours: boolean;
+  cover: boolean;
+}
 
 interface TopBarProps {
   t: Translate;
@@ -17,6 +25,9 @@ interface TopBarProps {
   /** add-map-objectives 3.2: the objectives and the battle clock, on maps with objectives. */
   objectives?: readonly ObjectiveSnapshot[];
   clock?: { tick: number; limit: number };
+  /** redo-battle-hud D6: the layer switches, shown in the strategic band only. */
+  layers?: MapLayers;
+  onToggleLayer?: (layer: keyof MapLayers) => void;
   onLocaleChange: (locale: Locale) => void;
   onCameraBand: (band: CameraBand) => void;
   onSetSpeed: (speed: 0 | 1 | 2 | 4 | 8) => void;
@@ -39,6 +50,8 @@ export function TopBar({
   deploying = false,
   objectives = [],
   clock,
+  layers,
+  onToggleLayer,
   onLocaleChange,
   onCameraBand,
   onSetSpeed,
@@ -58,14 +71,16 @@ export function TopBar({
   return (
     <header className="hud-top" data-testid="hud">
       <div className="hud-rail brand-rail">
+        <img className="hud-flag" src={flag} alt="" aria-hidden="true" draggable={false} />
         <div className="hud-brand">
           {t('app.title')}
           <span className="hud-eyebrow">{t('hud.commandBar')}</span>
         </div>
+        <img className="hud-lantern" src={lantern} alt="" aria-hidden="true" draggable={false} />
       </div>
 
       <div className="hud-rail camera-rail">
-        <span className="hud-band-value" data-testid="band-value">
+        <span className="hud-band-value visually-hidden" data-testid="band-value">
           {t('hud.band')}: {t(bandKey)}
         </span>
         <Camera aria-hidden="true" size={15} className="camera-icon" />
@@ -89,6 +104,30 @@ export function TopBar({
             {t('hud.strategic')}
           </button>
         </div>
+        {band === 'strategic' && layers && onToggleLayer ? (
+          <div className="layer-switches" role="group" aria-label={t('hud.layers')} data-testid="map-layers">
+            <button
+              type="button"
+              className={layers.contours ? 'active' : ''}
+              aria-pressed={layers.contours}
+              title={t('hud.tip.layerContours')}
+              onClick={() => onToggleLayer('contours')}
+              data-testid="layer-contours"
+            >
+              {t('hud.layerContours')}
+            </button>
+            <button
+              type="button"
+              className={layers.cover ? 'active' : ''}
+              aria-pressed={layers.cover}
+              title={t('hud.tip.layerCover')}
+              onClick={() => onToggleLayer('cover')}
+              data-testid="layer-cover"
+            >
+              {t('hud.layerCover')}
+            </button>
+          </div>
+        ) : null}
       </div>
 
       {objectives.length > 0 ? (

@@ -52,7 +52,7 @@ Decisions of 2026-11-11 (the owner):
   code it meant to delete (`training-ground.ts`, `training-layer.ts`, the
   `training_phase` and `despawn_role` commands) is still in the tree.
 - `machine-gun-fire-feedback` passed the hand check and is archived.
-- The battle HUD is redone from the owner's reference (`redo-battle-hud`, approved): panels docked, collapse only (no drag or resize); the soldier figure goes into `troop-thumbnails-and-panel`; the art is drawn in Aseprite and may start from the reference image; the bottom strip is decoration only.
+- The battle HUD is redone from the owner's reference (`redo-battle-hud`, approved): panels docked, collapse only (no drag or resize); the soldier figure goes into `troop-thumbnails-and-panel`; the art is drawn in Aseprite and may start from the reference image; the bottom strip is decoration only. Applied on 2026-11-12 ahead of `troop-thumbnails-and-panel` ("agora faça o hud"): the frames, docked panels, order prompt and strategic layers are in; it frames today's troop summary until the figures land. The `battle-hud` and `orders-column` visual baselines are stale until the compass work is committed and they are re-recorded once.
 - The sandbox is retired ("hoje temos editor de mapa"): `remove-sandbox-panel`, applied the same day.
 - The armies' catalog (`faction-armies` 1.3): the three army names stand
   (Coluna Prestes, Forças legalistas, Batalhões patrióticos); Fogão and

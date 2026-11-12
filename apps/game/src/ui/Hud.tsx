@@ -9,36 +9,20 @@ import type {
   Stance,
   TacticalOrder,
 } from '@prestes/shared';
-import { useEffect, useRef, useState } from 'react';
-import { FloatingWindow } from './FloatingWindow';
-import { CommandRow } from './hud/CommandRow';
+import { useState } from 'react';
+import { DockedPanel } from './DockedPanel';
+import { CommandStatus, OrderPrompt } from './hud/CommandStatus';
 import { OrderBoard } from './hud/OrderBoard';
 import { SquadCards } from './hud/SquadCards';
-import { TopBar } from './hud/TopBar';
+import { TopBar, type MapLayers } from './hud/TopBar';
 import { orderLetter } from './hud/orderMeta';
 import { DeploymentBanner, type DeploymentRefusal } from './hud/DeploymentBanner';
 import { TroopSummary } from './hud/TroopSummary';
 import { WeaponCard } from './hud/WeaponCard';
 import { hasSuspectedContact } from '../hooks/suspectedContact';
-import {
-  coversTitle,
-  defaultPosition,
-  loadLayout,
-  saveLayout,
-  type WindowId,
-  type WindowLayout,
-  type WindowState,
-} from './windowLayout';
-
-const troopsSize = () => {
-  const rect = document.querySelector('[data-window="troops"]')?.getBoundingClientRect();
-  return { w: rect?.width ?? 0, h: rect?.height ?? 0 };
-};
-
-const rectOf = (selector: string) => {
-  const rect = document.querySelector(selector)?.getBoundingClientRect();
-  return rect ? { x: rect.left, y: rect.top, w: rect.width, h: rect.height } : null;
-};
+import { loadDocks, saveDocks, toggleDock, type DockId, type DockLayout } from './dockLayout';
+import bottomStrip from '../assets/hud/bottom-strip.png';
+import sideKit from '../assets/hud/side-kit.png';
 
 const layoutStorage = (): Storage | null => {
   try {
@@ -82,6 +66,9 @@ export interface HudProps {
   onTogglePause: () => void;
   onTogglePost: () => void;
   onToggleRoutes: () => void;
+  /** redo-battle-hud D6: the strategic map layers. */
+  mapLayers?: MapLayers;
+  onToggleLayer?: (layer: keyof MapLayers) => void;
   /** refine-battle-controls: centre the view on a section, and leave the battle. */
   onCenterSquad: (squadId: number) => void;
   onLeave: () => void;
@@ -128,6 +115,8 @@ export function Hud({
   onTogglePause,
   onTogglePost,
   onToggleRoutes,
+  mapLayers,
+  onToggleLayer,
   onCenterSquad,
   onLeave,
   selectedUnitIds = [],
@@ -137,43 +126,19 @@ export function Hud({
   deploymentRefusal = null,
   orderNotice = null,
 }: HudProps) {
-  const [layout, setLayout] = useState<WindowLayout>(() => loadLayout(layoutStorage()));
+  // redo-battle-hud D3: which docked panels are collapsed.
+  const [docks, setDocks] = useState<DockLayout>(() => loadDocks(layoutStorage()));
   // refine-battle-controls: the leave-battle confirmation.
   const [leaveOpen, setLeaveOpen] = useState(false);
-  const updateWindow = (id: WindowId) => (next: WindowState) =>
-    setLayout((previous) => {
-      const updated = { ...previous, [id]: next };
-      saveLayout(layoutStorage(), updated);
-      return updated;
+  const toggle = (id: DockId) => () =>
+    setDocks((previous) => {
+      const next = toggleDock(previous, id);
+      saveDocks(layoutStorage(), next);
+      return next;
     });
-  // The summary is placed before the first frame fills it; grown, it can end
-  // up over the Troops title bar (a layout saved like that too). Once there is
-  // a frame, put it back above Troops if it covers that bar.
-  const summaryChecked = useRef(false);
-  useEffect(() => {
-    if (summaryChecked.current || frame === null || !layout.summary || !layout.troops) return;
-    const check = requestAnimationFrame(() => {
-      summaryChecked.current = true;
-      const summary = rectOf('[data-window="summary"]');
-      const troopsTitle = rectOf('[data-testid="window-troops-title"]');
-      if (!summary || !troopsTitle || !layout.summary || layout.summary.minimized) return;
-      if (coversTitle(summary, troopsTitle)) {
-        const view = { w: window.innerWidth, h: window.innerHeight };
-        updateWindow('summary')({
-          ...layout.summary,
-          ...defaultPosition('summary', { w: summary.w, h: summary.h }, view, troopsSize()),
-        });
-      }
-    });
-    return () => cancelAnimationFrame(check);
-  });
   const t = (key: MessageKey, values?: Readonly<Record<string, string | number>>) =>
     translate(locale, key, values);
-  const resizableLabels = {
-    resize: t('hud.windowResize'),
-    vertical: t('hud.windowVertical'),
-    horizontal: t('hud.windowHorizontal'),
-  };
+  const panelLabels = { collapseLabel: t('hud.windowMinimize'), expandLabel: t('hud.windowRestore') };
   const squadUnits = frame?.units.filter((unit) => unit.squadId === selectedSquadId) ?? [];
   const aliveUnits = squadUnits.filter((unit) => unit.alive && !unit.routed);
   const stance = aliveUnits[0]?.stance ?? squadUnits[0]?.stance ?? 'standing';
@@ -202,6 +167,7 @@ export function Hud({
         deploying={deploying}
         objectives={frame?.objectives ?? []}
         {...(frame?.clock ? { clock: frame.clock } : {})}
+        {...(mapLayers && onToggleLayer ? { layers: mapLayers, onToggleLayer } : {})}
         onLocaleChange={onLocaleChange}
         onCameraBand={onCameraBand}
         onSetSpeed={onSetSpeed}
@@ -220,117 +186,104 @@ export function Hud({
         </div>
       ) : null}
 
-      <div className="hud-windows" data-testid="squad-status">
-        <FloatingWindow
-          id="troops"
-          title={t('hud.windowTroops')}
-          state={layout.troops}
-          place={(size, view) => defaultPosition('troops', size, view)}
-          onChange={updateWindow('troops')}
-          minimizeLabel={t('hud.windowMinimize')}
-          restoreLabel={t('hud.windowRestore')}
-          moveLabel={t('hud.windowMove')}
-          resizable={resizableLabels}
-        >
-          <SquadCards
-            t={t}
-            frame={frame}
-            selectedSquadId={selectedSquadId}
-            controlBothSides={controlBothSides}
-            battleMode={battleMode}
-            onSelectSquad={onSelectSquad}
-            onCenterSquad={onCenterSquad}
-          />
-        </FloatingWindow>
-
-        <FloatingWindow
-          id="summary"
-          title={t('hud.windowSummary')}
-          state={layout.summary}
-          place={(size, view) => defaultPosition('summary', size, view, troopsSize())}
-          onChange={updateWindow('summary')}
-          minimizeLabel={t('hud.windowMinimize')}
-          restoreLabel={t('hud.windowRestore')}
-          moveLabel={t('hud.windowMove')}
-        >
-          <div
-            onDoubleClick={() => onCenterSquad(selectedSquadId)}
-            data-testid="troop-summary"
-            title={t('hud.tip.center')}
-          >
-            <TroopSummary
+      <div className="hud-docks" data-testid="squad-status">
+        <div className="hud-dock-left">
+          <DockedPanel id="troops" title={t('hud.windowTroops')} collapsed={docks.troops} onToggle={toggle('troops')} {...panelLabels}>
+            <SquadCards
               t={t}
-              squadUnits={squadUnits}
-              selectedIds={new Set(selectedUnitIds)}
-              ammoFull={ammoFull}
-              covers={frame?.covers ?? []}
+              frame={frame}
+              selectedSquadId={selectedSquadId}
+              controlBothSides={controlBothSides}
+              battleMode={battleMode}
+              onSelectSquad={onSelectSquad}
+              onCenterSquad={onCenterSquad}
             />
-          </div>
-          <WeaponCard
-            t={t}
-            frame={frame}
-            squadUnits={squadUnits}
-            aliveUnits={aliveUnits}
-          />
-        </FloatingWindow>
+          </DockedPanel>
 
-        <FloatingWindow
-          id="orders"
-          title={t('hud.windowOrders')}
-          state={layout.orders}
-          place={(size, view) => defaultPosition('orders', size, view, troopsSize())}
-          onChange={updateWindow('orders')}
-          minimizeLabel={t('hud.windowMinimize')}
-          restoreLabel={t('hud.windowRestore')}
-          moveLabel={t('hud.windowMove')}
-          resizable={{ ...resizableLabels, columnEdge: 'right' }}
-        >
-          <OrderBoard
-            currentOrder={currentOrder}
-            pendingOrder={pendingOrder}
-            pendingTactical={pendingTactical}
-            aimPending={aimPending}
-            posture={posture}
-            fireControl={fireControl}
-            stance={stance}
-            formation={formation}
-            selectedCount={selectedCount}
-            areaFireReady={hasSuspectedContact(frame as (Frame & FogExtras) | null)}
-            onActivateOrder={onActivateOrder}
-            onPosture={onPosture}
-            onFireControl={onFireControl}
-            onStance={onStance}
-            hurry={hurry}
-            onHurry={onHurry}
-            onFormation={onFormation}
-            t={t}
-          />
-          {queuedOrders.length > 0 ? (
-            <ol className="order-queue" data-testid="order-queue" aria-label={t('hud.queuedOrders')}>
-              {queuedOrders.map((entry, index) => (
-                <li key={`${entry.squadId}-${index}`} data-testid={`order-queue-${index + 1}`}>
-                  {t(`hud.order${orderLetter(entry.order)}` as MessageKey)}
-                </li>
-              ))}
-            </ol>
-          ) : null}
-          <CommandRow
-            t={t}
-            selectedCount={selectedCount}
-            aliveCount={aliveUnits.length}
-            currentOrder={currentOrder}
-            stance={stance}
-            concealedCount={concealedCount}
-            revealedCount={revealedCount}
-            ferryAboard={aboardCount}
-            ferryWaiting={waitingCount}
-            pendingOrder={pendingOrder}
-            pendingTactical={pendingTactical}
-            aimPending={aimPending}
-            onCancelOrder={onCancelOrder}
-          />
-        </FloatingWindow>
+          <DockedPanel
+            id="summary"
+            title={t('hud.windowSummary')}
+            collapsed={docks.summary}
+            onToggle={toggle('summary')}
+            variant="parchment"
+            {...panelLabels}
+          >
+            <div
+              onDoubleClick={() => onCenterSquad(selectedSquadId)}
+              data-testid="troop-summary"
+              title={t('hud.tip.center')}
+            >
+              <TroopSummary
+                t={t}
+                squadUnits={squadUnits}
+                selectedIds={new Set(selectedUnitIds)}
+                ammoFull={ammoFull}
+                covers={frame?.covers ?? []}
+              />
+            </div>
+            <CommandStatus
+              t={t}
+              selectedCount={selectedCount}
+              aliveCount={aliveUnits.length}
+              currentOrder={currentOrder}
+              stance={stance}
+              concealedCount={concealedCount}
+              revealedCount={revealedCount}
+              ferryAboard={aboardCount}
+              ferryWaiting={waitingCount}
+            />
+            <WeaponCard
+              t={t}
+              frame={frame}
+              squadUnits={squadUnits}
+              aliveUnits={aliveUnits}
+            />
+          </DockedPanel>
+          {docks.summary ? null : <img className="hud-side-kit" src={sideKit} alt="" aria-hidden="true" draggable={false} />}
+        </div>
+
+        <div className="hud-dock-right">
+          <DockedPanel id="orders" title={t('hud.windowOrders')} collapsed={docks.orders} onToggle={toggle('orders')} {...panelLabels}>
+            <OrderBoard
+              currentOrder={currentOrder}
+              pendingOrder={pendingOrder}
+              pendingTactical={pendingTactical}
+              aimPending={aimPending}
+              posture={posture}
+              fireControl={fireControl}
+              stance={stance}
+              formation={formation}
+              selectedCount={selectedCount}
+              areaFireReady={hasSuspectedContact(frame as (Frame & FogExtras) | null)}
+              onActivateOrder={onActivateOrder}
+              onPosture={onPosture}
+              onFireControl={onFireControl}
+              onStance={onStance}
+              hurry={hurry}
+              onHurry={onHurry}
+              onFormation={onFormation}
+              t={t}
+            />
+            {queuedOrders.length > 0 ? (
+              <ol className="order-queue" data-testid="order-queue" aria-label={t('hud.queuedOrders')}>
+                {queuedOrders.map((entry, index) => (
+                  <li key={`${entry.squadId}-${index}`} data-testid={`order-queue-${index + 1}`}>
+                    {t(`hud.order${orderLetter(entry.order)}` as MessageKey)}
+                  </li>
+                ))}
+              </ol>
+            ) : null}
+          </DockedPanel>
+        </div>
       </div>
+      <OrderPrompt
+        t={t}
+        pendingOrder={pendingOrder}
+        pendingTactical={pendingTactical}
+        aimPending={aimPending}
+        onCancelOrder={onCancelOrder}
+      />
+      <img className="hud-bottom-strip" src={bottomStrip} alt="" aria-hidden="true" draggable={false} />
       {leaveOpen ? (
         <div className="overlay" data-testid="leave-battle-dialog">
           <section className="codex battle-end" role="dialog" aria-labelledby="leave-title">

@@ -24,6 +24,7 @@ import {
 import { CameraRig, STRATEGIC_TILT, TACTICAL_SPAN, type CameraBand } from './camera-rig';
 import { CharacterLayer } from './character-layer';
 import { CoverLayer } from './cover-layer';
+import { CoverMapLayer } from './cover-map-layer';
 import { EffectsLayer } from './effects-layer';
 import { MarkerLayer } from './marker-layer';
 import { GarrisonLayer, type AssaultBarsState, type GarrisonBannerState } from './garrison-layer';
@@ -113,6 +114,9 @@ export class SceneView {
   private readonly preview = new PreviewLayer();
   private battleMap: BattleMap | null;
   private mapLayer: BattleMapLayer | null = null;
+  /** redo-battle-hud D6: the strategic cover layer, built the first time it is shown. */
+  private coverMap: CoverMapLayer | null = null;
+  private coverMapOn = false;
   /** refine-battle-maps 6.2: the opening deployment marks (a battle only, never the editor). */
   private deployment: DeploymentLayer | null = null;
   private slotMarkerCount = 0;
@@ -712,6 +716,12 @@ export class SceneView {
     }
     this.battleMap = map;
     this.areasMap = map;
+    if (this.coverMap) {
+      this.scene.remove(this.coverMap.group);
+      this.coverMap.dispose();
+      this.coverMap = null;
+      if (this.coverMapOn) this.setCoverMap(true);
+    }
     this.mapLayer = new BattleMapLayer(map);
     if (this.environment) this.mapLayer.useModels(this.environment);
     this.scene.add(this.mapLayer.group);
@@ -748,6 +758,28 @@ export class SceneView {
 
   setGroundOverlay(overlay: GroundOverlay): void {
     this.paintedGround?.setOverlay(overlay);
+  }
+
+  /**
+   * redo-battle-hud D6: the cover layer (slots by what they protect, the
+   * vegetation hatch), drawn from the map alone. A battle map only.
+   */
+  setCoverMap(on: boolean): void {
+    this.coverMapOn = on;
+    if (on && !this.coverMap && this.battleMap) {
+      this.coverMap = new CoverMapLayer(this.battleMap);
+      this.scene.add(this.coverMap.group);
+    }
+    this.coverMap?.setVisible(on);
+  }
+
+  /** redo-battle-hud: what the strategic layers show, for the e2e checks. */
+  mapLayersState(): { contours: boolean; cover: boolean; coverSlots: number } {
+    return {
+      contours: this.paintedGround?.overlay() === 'contours',
+      cover: this.coverMapOn && this.coverMap !== null,
+      coverSlots: this.coverMapOn ? (this.coverMap?.slots() ?? 0) : 0,
+    };
   }
 
   setGroundGrid(spacing: number): void {
@@ -826,6 +858,7 @@ export class SceneView {
     this.renderer.domElement.removeEventListener('wheel', this.onWheel);
     this.deployment?.dispose();
     this.deploymentAreas?.dispose();
+    this.coverMap?.dispose();
     for (const label of this.slotBadgeLabels) label.element.remove();
     this.covers.dispose();
     this.characters.dispose();

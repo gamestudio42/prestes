@@ -19,6 +19,7 @@ import { DEFAULT_SPEED, GameClient } from './client/GameClient';
 import { FieldOverlays } from './ui/FieldOverlays';
 import { GameCanvas } from './ui/GameCanvas';
 import { Hud } from './ui/Hud';
+import type { MapLayers } from './ui/hud/TopBar';
 import { StartScreenDesk } from './ui/menu/StartScreenDesk';
 import { battleRosters, loadSetup, saveSetup, type SkirmishSetup } from './ui/menu/setupState';
 import { BattleEndPanel } from './ui/BattleEndPanel';
@@ -28,6 +29,8 @@ import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { useOrders } from './hooks/useOrders';
 import { useTestBridge } from './hooks/useTestBridge';
 import { isDeploymentRefusal, type DeploymentRefusal } from './ui/hud/DeploymentBanner';
+
+const NO_MAP_LAYERS: MapLayers = { contours: false, cover: false };
 
 export function App() {
   const [locale, setLocale] = useState<Locale>(loadLocale);
@@ -50,6 +53,14 @@ export function App() {
   );
   const [postStrong, setPostStrong] = useState(true);
   const [routesVisible, setRoutesVisible] = useState(() => loadRoutesVisible());
+  // redo-battle-hud D6: the strategic map layers, off at battle start and drawn in that band only.
+  const [mapLayers, setMapLayers] = useState<MapLayers>(NO_MAP_LAYERS);
+  const showMapLayers = (scene: SceneView | null): void => {
+    const strategic = band === 'strategic';
+    scene?.setGroundOverlay(strategic && mapLayers.contours ? 'contours' : 'none');
+    scene?.setCoverMap(strategic && mapLayers.cover);
+  };
+  useEffect(() => showMapLayers(sceneRef.current), [band, mapLayers]);
   useEffect(() => saveRoutesVisible(routesVisible), [routesVisible]);
   const [speed, setSpeed] = useState<0 | 1 | 2 | 4 | 8>(DEFAULT_SPEED);
   const [hudHidden, setHudHidden] = useState(false);
@@ -297,6 +308,7 @@ export function App() {
     setPendingTactical(null);
     setAimPending(false);
     setPreviewEnabled(false);
+    setMapLayers(NO_MAP_LAYERS);
     setSpeed(DEFAULT_SPEED);
     setStarted(true);
     createClient(map, rosters, timeLimitTicks);
@@ -408,6 +420,7 @@ export function App() {
         onPreviewUnit={handlePreviewUnit}
         onSceneReady={(scene) => {
           sceneRef.current = scene;
+          showMapLayers(scene);
         }}
         onHover={(kind, x, y) => {
           setCursor(x > 0 && y > 0 ? { x, y } : null);
@@ -449,6 +462,8 @@ export function App() {
         onTogglePost={() => setPostStrong((value) => !value)}
         routesVisible={routesVisible}
         onToggleRoutes={() => setRoutesVisible((value) => !value)}
+        mapLayers={mapLayers}
+        onToggleLayer={(layer) => setMapLayers((layers) => ({ ...layers, [layer]: !layers[layer] }))}
         onStartBattle={handleStartDeployedBattle}
         onResetDeployment={handleResetDeployment}
         deploymentRefusal={deploymentRefusal}

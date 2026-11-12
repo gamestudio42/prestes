@@ -119,9 +119,8 @@ const liveNumbers = (page: Page) => [
 ];
 
 test('orders window as a column matches the baseline', async ({ page }) => {
-  await page.addInitScript(() => window.localStorage.removeItem('prestes.hud.windows.v1'));
+  await page.addInitScript(() => window.localStorage.removeItem('prestes.hud.docks.v1'));
   await openPausedHud(page);
-  await page.getByTestId('window-orders-orientation').click();
-  await expect(page.getByTestId('window-orders')).toHaveAttribute('data-orientation', 'vertical');
+  await expect(page.getByTestId('window-orders')).toHaveAttribute('data-minimized', 'false');
   await expect(page).toHaveScreenshot('orders-column.png', { ...SCREENSHOT, mask: liveNumbers(page) });
 });

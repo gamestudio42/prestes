@@ -171,6 +171,8 @@ export function GameCanvas({
         deploymentMarks: () => scene.deploymentMarksShown(),
         deploymentAreas: () => scene.deploymentAreasShown(),
         slotPreview: () => scene.slotPreviewState(),
+        // redo-battle-hud D6: what the strategic layers draw.
+        mapLayers: () => scene.mapLayersState(),
         rangeRing: () => scene.rangeRingState(),
         setBand: (band: 'tactical' | 'strategic') => scene.setBand(band),
         effects: () => scene.effectsState(),

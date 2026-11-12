@@ -35,6 +35,7 @@
     "models": "tsx tools/prepare-models.ts",
     "optimize:music": "tsx tools/optimize-gramophone.ts",
     "icons": "tsx tools/export-icons.ts",
+    "hud-art": "tsx tools/export-hud.ts",
     "art": "tsx tools/build-art.ts",
     "check:maps": "tsx tools/check-maps.ts",
     "art:theodolite": "tsx tools/build-desk-theodolite.ts",

@@ -8,6 +8,7 @@
 @import './gramophone.css';
 @import './menu-desk.css';
 @import './skirmish-setup.css';
+@import './battle-hud.css';
 
 /* add-map-editor: back to the editor during a playtest. */
 .playtest-back {
