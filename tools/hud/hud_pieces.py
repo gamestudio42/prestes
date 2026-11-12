@@ -62,12 +62,14 @@ PIECES = {
     'drape-orders': ((1540, 160, 1590, 445), None, [], 'grass'),
     'tuft-left': ((0, 740, 20, 878), None, [], 'field'),
     # The ground under the summary card: moss, stones and the tufts by the canteen.
-    'ground-left': ((0, 786, 660, 878), None, [], 'field'),
+    # Runs up the card's left side too, so no map shows between the card and
+    # the screen's edge (the owner, 2026-11-12: "buraco na lateral e abaixo").
+    'ground-left': ((0, 520, 660, 878), None, [], 'grass+field'),
 }
 # Edges where a piece's box cuts through grass that runs on in the
 # reference (the owner, 2026-11-12: "as pontas das folhas ... corta muito
 # seco"): the leaves there are thinned into ragged blade tips instead of a
-# straight cut. Side ('l', 'r', 'b') and depth in pixels.
+# straight cut. Side ('l', 'r', 't', 'b') and depth in pixels.
 FRINGE = {
     'bottom-strip': [('l', 34)],
     'summary': [('r', 22)],
@@ -75,6 +77,7 @@ FRINGE = {
     'tuft-left': [('r', 8)],
 }
 # The summary's title plate on its own, for the collapsed card (cut after painting out).
+SOURCE_RGB = None
 PLATE = ('summary-plate', (88, 18, 400, 66))
 
 
@@ -232,7 +235,7 @@ def fringe(rgb: np.ndarray, alpha: np.ndarray, side: str, depth: int, seed: int)
     """Thins the leaves along one edge into blade tips: each blade keeps a
     tapering spike towards the edge, the gaps between them clear."""
     if side in ('l', 'r'):
-        along, across = rgb.shape[0], rgb.shape[1]
+        along, across = rgb.shape[0], rgb.shape[1]  # 't' and 'b' run along the width
     else:
         along, across = rgb.shape[1], rgb.shape[0]
     rng = np.random.default_rng(seed)
@@ -250,7 +253,7 @@ def fringe(rgb: np.ndarray, alpha: np.ndarray, side: str, depth: int, seed: int)
     for i in range(along):
         cut_to = int(round(reach[i] + rng.uniform(-1, 1)))
         for j in range(min(across, max(0, cut_to))):
-            y, x = {'l': (i, j), 'r': (i, across - 1 - j), 'b': (across - 1 - j, i)}[side]
+            y, x = {'l': (i, j), 'r': (i, across - 1 - j), 'b': (across - 1 - j, i), 't': (j, i)}[side]
             if leafy[y, x]:
                 alpha[y, x] = 0
 
@@ -296,13 +299,49 @@ def cut(source: np.ndarray, box, paint, clear, edges=()) -> Image.Image:
     return Image.fromarray(np.dstack([rgb, alpha]), 'RGBA')
 
 
+def hug(ground: Image.Image, box, card: Image.Image, card_box, seed: int) -> Image.Image:
+    """Lays the reference's dark moss back in a ragged band around the card
+    and down to the screen's left and bottom edges, so the map never shows
+    between them; the rest of the ground piece keeps its own cut."""
+    x0, y0, x1, y1 = box
+    cx0, cy0 = card_box[0] - x0, card_box[1] - y0
+    h, w = y1 - y0, x1 - x0
+    near = np.zeros((h, w), bool)
+    opaque = np.asarray(card)[..., 3] > 0
+    near[cy0:cy0 + opaque.shape[0], cx0:cx0 + opaque.shape[1]] = opaque
+    ring = near.copy()
+    rng = np.random.default_rng(seed)
+    for step in range(12):
+        grown = ring.copy()
+        grown[1:] |= ring[:-1]; grown[:-1] |= ring[1:]; grown[:, 1:] |= ring[:, :-1]; grown[:, :-1] |= ring[:, 1:]
+        keep = rng.random((h, w)) < (1.0 if step < 5 else 0.55)  # solid, then breaking into tips
+        ring = ring | (grown & keep)
+    ys, xs = np.mgrid[0:h, 0:w]
+    edge = (xs < cx0 + 4) | (ys > cy0 + opaque.shape[0] - 4)
+    right = cx0 + opaque.shape[1]
+    rim = ((xs < cx0 + 10) & (ys > cy0 + 30)) | ((ys > h - 12) & (xs < right - 20))  # down to the screen's edges
+    band = (ring & (edge | (xs < right - 60)) & (xs < right)) | rim
+    band &= ~near
+    reference = np.asarray(ground.convert('RGBA')).copy()
+    reference[: cy0 + opaque.shape[0] // 2, :, 3] = 0  # the old ground began at the card's middle
+    source = np.asarray(SOURCE_RGB)[y0:y1, x0:x1]
+    reference[band, :3] = source[band]
+    reference[band, 3] = 255
+    return Image.fromarray(reference, 'RGBA')
+
+
 def main() -> None:
     reference, out = Path(sys.argv[1]), Path(sys.argv[2])
     out.mkdir(parents=True, exist_ok=True)
     source = np.asarray(Image.open(reference).convert('RGB'))
+    global SOURCE_RGB
+    SOURCE_RGB = source
     pieces = []
     for name, (box, insets, paint, clear) in PIECES.items():
         piece = cut(source, box, paint, clear, FRINGE.get(name, ()))
+        if name == 'ground-left':
+            card = next(p for n, p, _ in pieces if n == 'summary')
+            piece = hug(piece, box, card, PIECES['summary'][0], seed=7)
         pieces.append((name, piece, insets))
         if name == 'summary':
             plate_name, crop = PLATE
