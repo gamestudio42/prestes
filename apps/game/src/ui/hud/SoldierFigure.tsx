@@ -76,13 +76,15 @@ interface SoldierFigureProps {
   ammo: number;
   mark: 'pinned' | 'routed' | null;
   selected: boolean;
+  /** troop-thumbnails-and-panel 3.2: the section's leader wears a star. */
+  leader?: boolean;
 }
 
 const px = (x: number, y: number, w: number, h: number, fill: string, key: string) => (
   <rect key={key} x={x} y={y} width={w} height={h} fill={fill} />
 );
 
-export function SoldierFigure({ cover, health, ammo, mark, selected }: SoldierFigureProps) {
+export function SoldierFigure({ cover, health, ammo, mark, selected, leader = false }: SoldierFigureProps) {
   const helmet = HELMET_COLOURS[cover];
   const body = BODY_COLOURS[health];
   const lying = health === 'down' || health === 'dead';
@@ -121,6 +123,9 @@ export function SoldierFigure({ cover, health, ammo, mark, selected }: SoldierFi
         {figure}
       </g>
       {health === 'dead' ? <path d="M4 2 L10 8 M10 2 L4 8" stroke="#3a2a1a" strokeWidth={1} /> : null}
+      {leader ? (
+        <path d="M1.5 0 L2.1 1.2 L3.4 1.3 L2.4 2.1 L2.8 3.4 L1.5 2.7 L0.2 3.4 L0.6 2.1 L-0.4 1.3 L0.9 1.2 Z" transform="translate(0.5 0.15) scale(1.3)" fill="#e2b54a" stroke={INK} strokeWidth={0.3} data-mark="leader" />
+      ) : null}
       {mark === 'pinned' ? (
         <path d="M5 0 L9 0 L7 2 Z" fill="#e8743b" stroke={INK} strokeWidth={0.4} data-mark="pinned" />
       ) : null}

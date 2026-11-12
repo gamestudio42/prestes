@@ -160,3 +160,42 @@ test('the troop summary draws a soldier figure per man: cover helmet, health bod
   const last = (await figures.last().boundingBox())!;
   expect(last.x + last.width).toBeLessThanOrEqual(card.x + card.width + 1);
 });
+
+// troop-thumbnails-and-panel 3.1-3.2: the header and the figures read a section.
+test('the troop panel header and figures: picture, order, counts, leader, wound and a man in a trench', async ({ page }) => {
+  await page.goto('/');
+  await page.evaluate(() => window.localStorage.removeItem('prestes.hud.docks.v1'));
+  await page.reload();
+  await start(page);
+  await expect(page.getByTestId('troop-thumb')).toHaveAttribute('src', /assets\/sections\/[a-z0-9-]+\.png$/);
+  await expect(page.getByTestId('troop-order')).toBeVisible();
+  const counts = page.getByTestId('troop-counts');
+  const fitBefore = Number(await counts.getAttribute('data-fit'));
+  // The leader stands first and wears his star.
+  const figures = page.locator('[data-testid^="helmet-"]');
+  await expect(figures.first()).toHaveAttribute('data-leader', 'true');
+  await expect(figures.first().locator('[data-mark="leader"]')).toHaveCount(1);
+  await expect(page.locator('[data-leader="true"]')).toHaveCount(1);
+
+  const ids = await page.evaluate(() => {
+    const bridge = (window as unknown as Bridge).__prestes!;
+    const men = bridge.frame()!.units.filter((unit) => unit.squadId === 1 && unit.alive);
+    const hurt = men[men.length - 1]!;
+    const dug = men[men.length - 2]!;
+    bridge.command({ type: 'wound', targetId: hurt.id, hp: 30 });
+    bridge.command({ type: 'spawn_cover', kind: 'trench', to: { x: dug.x, y: dug.y } });
+    bridge.command({ type: 'stance', unitIds: [dug.id], stance: 'prone' });
+    bridge.step(20);
+    return { hurt: hurt.id, dug: dug.id };
+  });
+  // The wounded man: wounded body, a bandage, his tooltip says so; the header counts him.
+  const hurt = page.getByTestId(`helmet-${ids.hurt}`);
+  await expect(hurt).toHaveAttribute('data-health', /wounded|badly/);
+  await expect(hurt).toHaveAttribute('title', /wounded|ferido/);
+  await expect(counts).toHaveAttribute('data-fit', String(fitBefore - 1));
+  await expect(counts).toHaveAttribute('data-wounded', '1');
+  // The man prone in the trench: his helmet shows good cover; the tooltip names his role.
+  const dug = page.getByTestId(`helmet-${ids.dug}`);
+  await expect(dug).toHaveAttribute('data-cover', 'good');
+  await expect(dug).toHaveAttribute('title', /Rifleman|Loader|Gunner|Bugler|Fuzileiro|Municiador|Atirador|Corneteiro/);
+});

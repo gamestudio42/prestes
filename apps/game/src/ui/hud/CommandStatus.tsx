@@ -47,7 +47,8 @@ export function CommandStatus({
         <span className="hud-selection" data-testid="selection-count" data-selected={selectedCount}>
           {t('hud.selection')}: {selectedCount}/{aliveCount}
         </span>
-        <span className="hud-order-value" data-testid="order-value">
+        {/* troop-thumbnails-and-panel 3.1: the header names the order; kept here for screen readers. */}
+        <span className="hud-order-value visually-hidden" data-testid="order-value">
           {t(orderKey)}
         </span>
         <span className="hud-stance-value visually-hidden" data-testid="stance-value">

@@ -18,6 +18,7 @@ import { translate, type Locale, type MessageKey } from '@prestes/content';
 import { ChevronDown, ChevronUp, Close, Rifle, WeaponAutomatic, WeaponCarbine, WeaponMachineGun, WeaponPistol, type PixelIconComponent } from '../icons';
 import '../../styles/troop-thumbs.css';
 import { refusalMessage } from './setupState';
+import { sectionThumbnail } from '../sectionThumbnail';
 
 export interface RosterBuilderProps {
   locale: Locale;
@@ -40,9 +41,6 @@ export function sectionWeapons(type: SectionTypeId): { weapon: WeaponId; count: 
   }
   return (Object.keys(WEAPONS) as WeaponId[]).filter((id) => counts.has(id)).map((weapon) => ({ weapon, count: counts.get(weapon)! }));
 }
-
-/** troop-thumbnails-and-panel D1-D2: a section type's picture, built by `pnpm thumbs`. */
-export const sectionThumbnail = (type: SectionTypeId) => `${import.meta.env.BASE_URL}assets/sections/${type}.png`;
 
 /** 2.1: the icon of a weapon by its kind. */
 const WEAPON_ICONS: Readonly<Record<WeaponKind, PixelIconComponent>> = {

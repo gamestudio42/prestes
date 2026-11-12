@@ -33,3 +33,36 @@
   width: 24px;
   height: 24px;
 }
+
+/* troop-thumbnails-and-panel 3.1: the troop panel's header. */
+.app.game [data-window='summary'] .troop-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 2px;
+}
+
+.app.game [data-window='summary'] .troop-thumb {
+  width: 48px;
+  height: 48px;
+  border-color: rgba(78, 55, 32, 0.5);
+  background: rgba(255, 245, 220, 0.35);
+}
+
+.app.game [data-window='summary'] .troop-header-copy {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+}
+
+.app.game [data-window='summary'] .troop-header-line {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 10px;
+  margin: 0;
+  font-size: 13px;
+}
+
+.app.game [data-window='summary'] .troop-order {
+  font-weight: 600;
+}

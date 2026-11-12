@@ -228,6 +228,7 @@ export function Hud({
                 selectedIds={new Set(selectedUnitIds)}
                 ammoFull={ammoFull}
                 covers={frame?.covers ?? []}
+                currentOrder={currentOrder}
               />
             </div>
             <CommandStatus
