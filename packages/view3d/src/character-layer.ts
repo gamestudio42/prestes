@@ -233,6 +233,8 @@ export class CharacterLayer {
   private readonly proxyCorpse: THREE.InstancedMesh;
   /** fog-of-war: faded silhouettes where enemies were last seen. */
   private readonly ghosts: THREE.InstancedMesh;
+  /** biome-trees-and-plants 4.1b: the player's men still hidden behind a crown, drawn over it. */
+  private readonly canopyOutlines: THREE.InstancedMesh;
   private readonly proxyMatrix = new THREE.Matrix4();
   private readonly proxyQuaternion = new THREE.Quaternion();
   private readonly proxyPosition = new THREE.Vector3();
@@ -288,6 +290,14 @@ export class CharacterLayer {
       new THREE.MeshBasicMaterial({ color: PALETTE.factions.legalist, transparent: true, opacity: 0.35, depthWrite: false }),
       128,
     );
+    // Over the crowns (no depth test), in the column's colour: a man hidden by foliage keeps his outline.
+    this.canopyOutlines = new THREE.InstancedMesh(
+      bodyGeometry,
+      new THREE.MeshBasicMaterial({ color: PALETTE.factions.column, transparent: true, opacity: 0.45, depthTest: false, depthWrite: false }),
+      128,
+    );
+    this.canopyOutlines.name = 'canopy-outlines';
+    this.canopyOutlines.renderOrder = 10;
     this.barrels = new THREE.InstancedMesh(new THREE.BoxGeometry(0.1, 0.1, 1), toon({ color: PALETTE.barrel }), 256);
     this.barrels.name = 'garrison-barrels';
     this.elevatedMarkers = new THREE.InstancedMesh(
@@ -296,7 +306,7 @@ export class CharacterLayer {
       64,
     );
     this.elevatedMarkers.name = 'garrison-elevated-markers';
-    for (const mesh of [this.proxyBody, this.proxyHead, this.proxyRing, this.proxyCorpse, this.ghosts, this.barrels, this.elevatedMarkers]) {
+    for (const mesh of [this.proxyBody, this.proxyHead, this.proxyRing, this.proxyCorpse, this.ghosts, this.canopyOutlines, this.barrels, this.elevatedMarkers]) {
       mesh.count = 0;
       mesh.frustumCulled = false;
       this.group.add(mesh);
@@ -710,6 +720,26 @@ export class CharacterLayer {
     }
     this.ghosts.count = index;
     this.ghosts.instanceMatrix.needsUpdate = true;
+  }
+
+  /** biome-trees-and-plants 4.1b: outlines over the crowns for these men (ground points). */
+  updateCanopyOutlines(men: readonly { x: number; y: number }[], span: number): void {
+    const scale = unitScaleForSpan(span) * 1.1;
+    let index = 0;
+    for (const man of men.slice(0, 128)) {
+      this.proxyPosition.set(man.x, terrainHeightAt(man.x, man.y) + 0.72, man.y);
+      this.proxyScale.set(scale, scale, scale);
+      this.proxyMatrix.compose(this.proxyPosition, this.proxyQuaternion.identity(), this.proxyScale);
+      this.canopyOutlines.setMatrixAt(index, this.proxyMatrix);
+      index += 1;
+    }
+    this.canopyOutlines.count = index;
+    this.canopyOutlines.instanceMatrix.needsUpdate = true;
+  }
+
+  /** How many outlines are drawn over the crowns (dev checks). */
+  canopyOutlineCount(): number {
+    return this.canopyOutlines.count;
   }
 
   dispose(): void {

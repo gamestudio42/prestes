@@ -40,7 +40,7 @@ import { PreviewLayer } from './preview-layer';
 import { TracerLayer, tracerKind } from './tracer-layer';
 import { TrainingLayer, type TrainingMarker } from './training-layer';
 import { WorldLayer } from './world-layer';
-import { BattleMapLayer } from './battle-map-layer';
+import { BattleMapLayer, STRATEGIC_PLANT_SPAN } from './battle-map-layer';
 import { DeploymentAreasLayer, DeploymentLayer, type DeploymentLabels } from './deployment-layer';
 
 
@@ -716,6 +716,34 @@ export class SceneView {
       });
   }
 
+  /**
+   * biome-trees-and-plants 4.1b (D5d): the crowns over the player's men fade
+   * and a man still hidden keeps his outline. Only the column's men count
+   * (the player's side, as the fog view's): the fogged frame never holds an
+   * enemy the player cannot see, and his crowns stay solid anyway.
+   */
+  private updateCanopy(delta: number): void {
+    const layer = this.mapLayer;
+    if (!layer || !this.lastFrame || this.rig.span > STRATEGIC_PLANT_SPAN) {
+      this.characters.updateCanopyOutlines([], this.rig.span);
+      return;
+    }
+    const men = this.lastFrame.units.filter((unit) => unit.faction === 'column' && unit.alive && !unit.routed);
+    while (this.canopyChests.length < men.length) this.canopyChests.push(new THREE.Vector3());
+    const chests = men.map((unit, index) => this.canopyChests[index]!.set(unit.x, terrainHeightAt(unit.x, unit.y) + 1.2, unit.y));
+    const hidden = layer.canopy.update(this.rig.camera.getWorldDirection(this.canopyView), chests, delta);
+    this.characters.updateCanopyOutlines(hidden.map((index) => men[index]!), this.rig.span);
+  }
+
+  private readonly canopyView = new THREE.Vector3();
+  private readonly canopyChests: THREE.Vector3[] = [];
+
+  /** biome-trees-and-plants 4.1b: crowns faded over the player's men, and outlines drawn (dev checks). */
+  canopyState(): { faded: number; outlines: number } {
+    const faded = this.mapLayer?.canopy.fades().filter((crown) => crown.fade > 0.5).length ?? 0;
+    return { faded, outlines: this.characters.canopyOutlineCount() };
+  }
+
   // --- add-map-editor: what the editor drives -------------------------------
 
   /** The 3D scene, for the editor's own layer (cursor, gizmos, labels). */
@@ -993,6 +1021,7 @@ export class SceneView {
     this.tracers.setView(camera.getWorldDirection(this.viewDirection), metresHigh / Math.max(1, this.post.target.height));
     this.tracers.update(delta);
     this.mapLayer?.tick(time / 1000, this.rig.span);
+    this.updateCanopy(delta);
     this.objectiveLayer.tick(time / 1000);
     // The marks' 10 s run from the battle's first frame.
     if (this.deployment && this.deploymentAreas) this.deployment.hold();

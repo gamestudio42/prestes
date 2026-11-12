@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import { compileMapDocument, createEditableMap, setActiveMap } from '@prestes/shared';
 import { TEST_MAP } from '../../shared/test/fixtures/test-map';
 import { BattleMapLayer } from '../src/battle-map-layer';
-import { impostorGeometry, ModelLibrary, ModelPlacements, type EnvironmentAsset } from '../src/environment-models';
+import { impostorGeometry, impostorShape, ModelLibrary, ModelPlacements, type EnvironmentAsset } from '../src/environment-models';
 
 // biome-trees-and-plants 4.1: the biome tree files load by the map's species; strategic stand-ins.
 
@@ -77,6 +77,16 @@ describe('strategic stand-ins', () => {
     expect(impostor.boundingBox!.max.y).toBeCloseTo(6, 1);
     const colour = impostor.getAttribute('color');
     expect(colour.getY(0)).toBeCloseTo(0.5, 2);
+  });
+
+  it('a palm stands in as drooping fronds on a bare trunk, a column cactus as a column with arms', () => {
+    expect([impostorShape('acai'), impostorShape('acai-dead'), impostorShape('mandacaru'), impostorShape('ipe')]).toEqual(['palm', 'palm', 'column', 'tree']);
+    const palm = impostorGeometry((scene(['acai']).children[0] as THREE.Mesh).geometry, 'palm');
+    // Trunk box (12 triangles) and seven fronds of two triangles.
+    expect(palm.getAttribute('position').count / 3).toBe(12 + 14);
+    const cactus = new THREE.BoxGeometry(2.8, 4, 0.6).translate(0, 2, 0);
+    const column = impostorGeometry(cactus, 'column');
+    expect(column.getAttribute('position').count / 3).toBe(12 * 4);
   });
 
   it('only trees get stand-ins; a cart keeps its model at any span', () => {

@@ -27,6 +27,7 @@ import {
   type Strip,
   type Vec2,
 } from '@prestes/shared';
+import { CanopyFade } from './canopy';
 import { ModelPlacements, warnMissing, type EnvironmentAsset } from './environment-models';
 import { toon } from './materials';
 import { PALETTE } from './palette';
@@ -1267,6 +1268,8 @@ export class BattleMapLayer {
   /** The trees as drawn up close, and their strategic stand-ins (biome-trees-and-plants 4.1). */
   private trees: THREE.Group | null = null;
   private impostors: THREE.Group | null = null;
+  /** biome-trees-and-plants 4.1b: the crowns that fade over the player's men. */
+  readonly canopy = new CanopyFade();
 
   constructor(private readonly map: BattleMap) {
     this.group.name = `battle-map:${map.id}`;
@@ -1373,6 +1376,7 @@ export class BattleMapLayer {
     this.strategicPlants = strategic;
     for (const mesh of this.plants) mesh.visible = !strategic;
     for (const mesh of this.clumps) mesh.visible = strategic;
+    if (strategic) this.canopy.clear();
     this.showImpostors();
   }
 
@@ -1384,6 +1388,7 @@ export class BattleMapLayer {
   useModels(asset: EnvironmentAsset): void {
     warnMissing('battle map', this.placements.missing(asset));
     this.trees = this.placements.build(asset);
+    for (const mesh of this.trees.children) if (asset.isTree(mesh.name)) this.canopy.add(mesh as THREE.InstancedMesh);
     this.impostors = this.placements.buildImpostors(asset);
     this.impostors.name = 'battle-map-tree-impostors';
     this.group.add(this.trees, this.impostors);

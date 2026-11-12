@@ -130,15 +130,37 @@ export async function loadEnvironmentAsset(base = './models/'): Promise<Environm
  * biome-trees-and-plants 4.1: a tree's stand-in at strategic span, about 30
  * triangles: an icosahedron crown over a box trunk, coloured by the model's
  * own mean crown and trunk colours, so a wood still reads as its species'
- * greens from far off. A plant lower than 2 m is one lump.
+ * greens from far off. A plant lower than 2 m is one lump. A palm is a
+ * crown of drooping fronds on its bare trunk, a column cactus a column with
+ * its arms (owner 2026-11-12: the açaí as a round tree read wrong).
  */
-export function impostorGeometry(model: THREE.BufferGeometry): THREE.BufferGeometry {
+export type ImpostorShape = 'tree' | 'palm' | 'column';
+
+/** The species whose stand-in is not a round crown (their dead forms too). */
+const IMPOSTOR_SHAPES: Readonly<Record<string, ImpostorShape>> = {
+  acai: 'palm',
+  tucuma: 'palm',
+  'palmito-jucara': 'palm',
+  buriti: 'palm',
+  mandacaru: 'column',
+  facheiro: 'column',
+};
+
+export const impostorShape = (name: string): ImpostorShape => IMPOSTOR_SHAPES[name.replace(/-dead$/, '')] ?? 'tree';
+
+export function impostorGeometry(model: THREE.BufferGeometry, shape: ImpostorShape = 'tree'): THREE.BufferGeometry {
   if (!model.boundingBox) model.computeBoundingBox();
   const box = model.boundingBox!;
   const height = box.max.y - box.min.y;
   const position = model.getAttribute('position');
   const colour = model.getAttribute('color');
-  const split = box.min.y + height * (height < 2 ? 0 : 0.45);
+  let lowestLeaf = box.max.y;
+  if (shape === 'palm' && colour) {
+    for (let index = 0; index < position.count; index += 1) {
+      if (colour.getY(index) > colour.getX(index) && colour.getY(index) > colour.getZ(index)) lowestLeaf = Math.min(lowestLeaf, position.getY(index));
+    }
+  }
+  const split = shape === 'palm' ? lowestLeaf : box.min.y + height * (height < 2 || shape === 'column' ? 0 : 0.45);
   const crown: [number, number, number, number] = [0, 0, 0, 0];
   const trunk: [number, number, number, number] = [0, 0, 0, 0];
   // The crown's colour is its leaves' (greener than red and blue), not the grey branches among them.
@@ -170,6 +192,50 @@ export function impostorGeometry(model: THREE.BufferGeometry): THREE.BufferGeome
   const width = Math.max(box.max.x - box.min.x, 0.4);
   const depth = Math.max(box.max.z - box.min.z, 0.4);
   const crownHeight = box.max.y - split;
+  const cx = (box.min.x + box.max.x) / 2;
+  const cz = (box.min.z + box.max.z) / 2;
+  if (shape === 'palm') {
+    // The bare trunk to the lowest frond, then seven fronds drooping from the top.
+    const post = new THREE.BoxGeometry(0.3, Math.max(split - box.min.y, 0.1), 0.3);
+    post.translate(cx, box.min.y + Math.max(split - box.min.y, 0.1) / 2, cz);
+    paint(post, mean(trunk));
+    if (crownHeight > 0.2) {
+      const reach = Math.max(width, depth) / 2;
+      const top = box.max.y;
+      const vertices: number[] = [];
+      for (let frond = 0; frond < 7; frond += 1) {
+        const angle = (frond / 7) * Math.PI * 2;
+        const along = [Math.cos(angle), Math.sin(angle)] as const;
+        const side = [-along[1] * reach * 0.18, along[0] * reach * 0.18] as const;
+        const mid = [cx + along[0] * reach * 0.5, top - crownHeight * 0.15, cz + along[1] * reach * 0.5] as const;
+        const tip = [cx + along[0] * reach, top - crownHeight * 0.85, cz + along[1] * reach] as const;
+        const base = [cx, top - crownHeight * 0.1, cz] as const;
+        const left = [mid[0] + side[0], mid[1], mid[2] + side[1]];
+        const right = [mid[0] - side[0], mid[1], mid[2] - side[1]];
+        vertices.push(...base, ...left, ...right, ...left, ...tip, ...right);
+      }
+      const fronds = new THREE.BufferGeometry();
+      fronds.setAttribute('position', new THREE.BufferAttribute(new Float32Array(vertices), 3));
+      paint(fronds, mean(crown));
+    }
+    return finish(parts);
+  }
+  if (shape === 'column') {
+    // A column, and two arms rising beside it when the cactus is wide.
+    const green = mean(crown[3] ? crown : trunk);
+    const column = new THREE.BoxGeometry(0.5, height, 0.5).translate(cx, box.min.y + height / 2, cz);
+    paint(column, green);
+    if (Math.max(width, depth) > 1.2) {
+      const spread = Math.max(width, depth) * 0.35;
+      for (const sign of [-1, 1]) {
+        const arm = new THREE.BoxGeometry(0.4, height * 0.45, 0.4).translate(cx + sign * spread, box.min.y + height * 0.62, cz);
+        paint(arm, green);
+      }
+      const bar = new THREE.BoxGeometry(spread * 2, 0.35, 0.35).translate(cx, box.min.y + height * 0.4, cz);
+      paint(bar, green);
+    }
+    return finish(parts);
+  }
   const lump = new THREE.IcosahedronGeometry(0.5, 0);
   // Fitted to the crown's box: an icosahedron does not reach its radius on every axis.
   lump.computeBoundingBox();
@@ -183,6 +249,10 @@ export function impostorGeometry(model: THREE.BufferGeometry): THREE.BufferGeome
     post.translate(0, box.min.y + (split - box.min.y) / 2, 0);
     paint(post, mean(trunk));
   }
+  return finish(parts);
+}
+
+function finish(parts: readonly THREE.BufferGeometry[]): THREE.BufferGeometry {
   const merged = mergeFlat(parts);
   merged.computeVertexNormals();
   merged.computeBoundingSphere();
@@ -251,7 +321,7 @@ export class ModelPlacements {
       if (!model) return undefined;
       let impostor = IMPOSTORS.get(model);
       if (!impostor) {
-        impostor = impostorGeometry(model);
+        impostor = impostorGeometry(model, impostorShape(name));
         IMPOSTORS.set(model, impostor);
       }
       return impostor;

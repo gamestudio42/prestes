@@ -97,6 +97,9 @@ export class PixelPost {
           float nearer = max(max(zc - zl, zc - zr), max(zc - zu, zc - zd));
           float farther = max(max(zl - zc, zr - zc), max(zu - zc, zd - zc));
           float edge = step(thr, farther) * (1.0 - step(thr, nearer) * 0.5);
+          // biome-trees-and-plants 4.1b: a faded crown's kept pixels (marked alpha, canopy.ts) get no
+          // outline, or every dither hole would ring them dark.
+          if (col.a < 0.75) edge = 0.0;
 
           vec3 c = col.rgb;
           vec3 glow = vec3(0.0);

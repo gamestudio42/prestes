@@ -38,7 +38,7 @@
 ## 4. View and editor
 
 - [x] 4.1 Models split per biome and loaded by the map's species; strategic-band impostors; verify with a view test that a caatinga map does not request the Atlantic forest file, and the wooded-map performance e2e
-- [ ] 4.1b Soldiers stay visible under trees: crowns over or hiding the player's own soldiers turn see-through (trunks solid), a soldier still hidden shows his outline, enemies are not revealed; verify with a view test of which crowns fade, a Playwright check that a soldier in a wood can be clicked, and the wooded-map performance e2e
+- [x] 4.1b Soldiers stay visible under trees: crowns over or hiding the player's own soldiers turn see-through (trunks solid), a soldier still hidden shows his outline, enemies are not revealed; verify with a view test of which crowns fade, a Playwright check that a soldier in a wood can be clicked, and the wooded-map performance e2e
 - [ ] 4.2 Biome mixes, the Amazon edge, and the trees tool's list grouped by biome with thumbnails; verify with unit tests of the mixes and the determinism of a stroke, and an editor e2e that scatters a cerrado stroke
 
 ## 5. Gates

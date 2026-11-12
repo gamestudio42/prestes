@@ -182,6 +182,8 @@ export function GameCanvas({
         weapons: (unitId: number) => scene.weaponState(unitId),
         shown: () => scene.shownUnitIds(),
         smoothEdges: () => scene.smoothEdges(),
+        // biome-trees-and-plants 4.1b: crowns faded over the player's men, outlines drawn.
+        canopy: () => scene.canopyState(),
         pick: (x: number, y: number) => {
           const screen = scene.groundToScreen(x, y);
           return screen ? scene.pickUnit(screen.x, screen.y) : null;
