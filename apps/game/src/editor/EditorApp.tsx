@@ -453,14 +453,6 @@ export function EditorApp(): ReactNode {
 
       <main className="editor-viewport" data-testid="editor-viewport" data-ready={ready} ref={container}>
         {!ready ? <div className="editor-loading">{t('editor.loading')}</div> : null}
-      </main>
-
-      <aside className="editor-properties">
-        <h2>{t(`editor.tool.${tool}`)}</h2>
-        <p className="editor-hint">{t(hintKey(tool))}</p>
-        <ToolProperties store={store} t={t} />
-        {view.cover ? <CoverPanel store={store} t={t} /> : null}
-        {tool === 'select' || tool === 'objective' ? <SelectionPanel store={store} viewport={viewport.current} t={t} /> : null}
         <Compass
           className="editor-compass"
           testId="editor-compass"
@@ -469,6 +461,14 @@ export function EditorApp(): ReactNode {
           letter={t('editor.north.letter')}
           label={t('editor.north.arrow')}
         />
+      </main>
+
+      <aside className="editor-properties">
+        <h2>{t(`editor.tool.${tool}`)}</h2>
+        <p className="editor-hint">{t(hintKey(tool))}</p>
+        <ToolProperties store={store} t={t} />
+        {view.cover ? <CoverPanel store={store} t={t} /> : null}
+        {tool === 'select' || tool === 'objective' ? <SelectionPanel store={store} viewport={viewport.current} t={t} /> : null}
         {settings.snap !== undefined && ['road', 'river', 'pond', 'line', 'bridge', 'ferry', 'place', 'select', 'deployment'].includes(tool) ? (
           <label>
             {t('editor.prop.snap')}
@@ -524,6 +524,7 @@ export function EditorApp(): ReactNode {
           t={t}
           onClose={() => {
             viewport.current?.previewLight(null);
+            setPreviewNorth(null);
             setDialog(null);
           }}
           onPreviewLight={(light, north) => {
@@ -535,10 +536,10 @@ export function EditorApp(): ReactNode {
             viewport.current?.frameMap();
             setDialog(null);
           }}
-            setPreviewNorth(null);
           onApply={(next) => {
             store.execute(replaceCommand(store.map, next));
             if (next.size !== map.size) viewport.current?.frameMap();
+            setPreviewNorth(null);
             setDialog(null);
           }}
         />
@@ -547,7 +548,6 @@ export function EditorApp(): ReactNode {
   );
 }
 
-            setPreviewNorth(null);
 function NumberField(props: { label: string; value: number; min: number; max: number; step: number; onChange: (value: number) => void }): ReactNode {
   return (
     <label>
@@ -1250,6 +1250,8 @@ function MapDialog(props: {
       baseMaterial,
       waterLevel,
       light,
+      // Saved only when turned: the top edge is north by default.
+      north: north === 0 ? undefined : north,
       // An empty preset is dropped; none at all leaves the field out (the default roster).
       enemyForces: enemyForces.some((roster) => roster.sections.length > 0) ? enemyForces.filter((roster) => roster.sections.length > 0) : undefined,
     };
@@ -1258,8 +1260,6 @@ function MapDialog(props: {
       props.onCreate({ ...created, ...fields });
       return;
     }
-      // Saved only when turned: the top edge is north by default.
-      north: north === 0 ? undefined : north,
     if (outside.length > 0) {
       const names = outside.map((objectId) => {
         const type = map.objects.find((object) => object.id === objectId)?.type ?? '';
@@ -1371,14 +1371,6 @@ function MapDialog(props: {
           </label>
           <p className="editor-hint">{t('editor.light.hint')}</p>
         </fieldset>
-        <EnemyForces presets={enemyForces} onChange={setEnemyForces} t={t} />
-        <div className="editor-row">
-          <button type="button" onClick={props.onClose}>{t('editor.map.close')}</button>
-          <button type="submit" className="editor-primary" data-testid="map-submit" disabled={!valid}>{t(mode === 'new' ? 'editor.map.create' : 'editor.map.apply')}</button>
-        </div>
-      </form>
-    </div>
-  );
         <fieldset className="editor-light" data-testid="map-north">
           <legend>{t('editor.north.title')}</legend>
           <label>
@@ -1387,4 +1379,12 @@ function MapDialog(props: {
           </label>
           <p className="editor-hint">{t('editor.north.hint')}</p>
         </fieldset>
+        <EnemyForces presets={enemyForces} onChange={setEnemyForces} t={t} />
+        <div className="editor-row">
+          <button type="button" onClick={props.onClose}>{t('editor.map.close')}</button>
+          <button type="submit" className="editor-primary" data-testid="map-submit" disabled={!valid}>{t(mode === 'new' ? 'editor.map.create' : 'editor.map.apply')}</button>
+        </div>
+      </form>
+    </div>
+  );
 }
