@@ -13,6 +13,8 @@ matched to soldiers by minimum total distance, with ties broken by unit id, so
 that soldiers' routes do not cross. Soldiers ordered to destinations near each
 other SHALL follow one route for the section, each offset by its formation
 position, and SHALL spread to their own destinations at the end of the route.
+When several sections are ordered together, each section SHALL follow its own
+route as a body, the same route the order preview draws for it.
 Blocked routes SHALL recalculate; laggards SHALL slow or pause the group rather
 than be teleported. The result SHALL be deterministic for the same seed and
 commands.
@@ -30,6 +32,10 @@ commands.
 - **WHEN** a section of 11 is ordered to a point 40 m away
 - **THEN** its soldiers follow one shared route with formation offsets and stay
   within the cohesion limit of the section centroid while marching
+
+#### Scenario: Several sections march as bodies
+- **WHEN** three sections are selected together and ordered to a point 40 m away
+- **THEN** each section follows its own shared route with formation offsets, and each soldier walks the route the preview drew for him
 
 #### Scenario: Obstacle
 - **WHEN** a soldier's route is blocked
