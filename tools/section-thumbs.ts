@@ -1,4 +1,4 @@
-import { spawn, type ChildProcess } from 'node:child_process';
+import { spawn, spawnSync, type ChildProcess } from 'node:child_process';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { chromium } from '@playwright/test';
@@ -31,6 +31,13 @@ async function serverUp(): Promise<boolean> {
   }
 }
 
+/** Stops the server it started; on Windows `kill()` ends only the shell and leaves Vite running. */
+function stopServer(server: ChildProcess | null): void {
+  if (!server?.pid) return;
+  if (process.platform === 'win32') spawnSync('taskkill', ['/PID', String(server.pid), '/T', '/F'], { stdio: 'ignore' });
+  else server.kill();
+}
+
 async function ensureServer(): Promise<ChildProcess | null> {
   if (await serverUp()) return null;
   const server = spawn('pnpm --filter @prestes/game dev:test', { stdio: 'ignore', shell: true });
@@ -39,7 +46,7 @@ async function ensureServer(): Promise<ChildProcess | null> {
     if (await serverUp()) return server;
     await new Promise((done) => setTimeout(done, 500));
   }
-  server.kill();
+  stopServer(server);
   throw new Error(`the dev server did not come up on ${BASE}`);
 }
 
@@ -67,7 +74,7 @@ async function main(): Promise<void> {
     }
   } finally {
     await browser.close();
-    server?.kill();
+    stopServer(server);
   }
 }
 
