@@ -63,26 +63,39 @@ sections and the same totals over all of them.
 - **WHEN** the player selects three sections
 - **THEN** the header shows "3 sections" and the totals of the three
 
-### Requirement: Soldier rows
+### Requirement: Soldier figures
 
-The troop panel SHALL list the section's soldiers one per row, leader first
-and casualties last, each with his role, his weapon, a state word (fit,
-wounded, pinned, down, routed, or the position he is inside) and his health,
-morale and ammunition as bars with a label or icon that names each. A state
-SHALL be told by its word and by its colour, never by colour alone. A row
-SHALL NOT need a tooltip to be read; the tooltip MAY add detail.
+The troop panel SHALL show each soldier of the selected section as a small
+figure, leader first (marked as leader) and casualties last: the helmet
+coloured by his cover in four classes (none, light, good, inside a
+position), the body coloured by his health (fit, wounded, badly wounded,
+down; a down man greyed and laid flat), and under the figure a cartridge
+clip of five rounds that empties as his ammunition runs out, marked at
+empty. A wounded man SHALL carry a bandage mark and a pinned or routed man
+a mark over the figure, so no state is told by colour alone. Each figure
+SHALL have a localized tooltip and text alternative with his role, weapon,
+state word, cover, health, morale and rounds. Selected soldiers SHALL stay
+highlighted. The owner chose this figure on 2026-11-11.
 
-#### Scenario: A pinned man is named
-- **WHEN** a soldier of the selected section is pinned
-- **THEN** his row reads "pinned" and is marked apart from the fit men
+#### Scenario: Cover in the helmet
+- **WHEN** one soldier of the selected section goes prone in a trench and the others stand in the open
+- **THEN** his helmet shows the good-cover colour and the others the no-cover colour
+
+#### Scenario: Health in the body
+- **WHEN** a soldier is wounded
+- **THEN** his figure's body shows the wounded colour and a bandage mark, and the others stay fit
 
 #### Scenario: Out of ammunition is seen
-- **WHEN** a soldier has no rounds left
-- **THEN** his ammunition bar is empty and marked as empty
+- **WHEN** a soldier has fired half his load, and another has no rounds left
+- **THEN** the first one's clip shows about half its rounds, and the second one's clip is empty and marked
+
+#### Scenario: A pinned man is marked
+- **WHEN** a soldier of the selected section is pinned
+- **THEN** his figure carries the pinned mark and his tooltip reads "pinned"
 
 #### Scenario: Readable without colour
-- **WHEN** the panel is viewed in greyscale
-- **THEN** each soldier's state can still be read from its word
+- **WHEN** the panel is viewed in greyscale with a wounded, a pinned and a down soldier
+- **THEN** each of the three is told apart by its mark or pose
 
 ### Requirement: Troop condition gauges
 
@@ -102,7 +115,7 @@ from shared data, not thresholds written in the view.
 
 ### Requirement: Troop alerts
 
-The troop panel SHALL show, above the soldier rows, what needs the player's
+The troop panel SHALL show, above the soldier figures, what needs the player's
 attention in the selected section, most urgent first: no ammunition, the
 section pinned or panicked, a casualty waiting for rescue, a machine gun
 without a gunner. With none, the alert area SHALL take no space.
@@ -113,7 +126,7 @@ without a gunner. With none, the alert area SHALL take no space.
 
 #### Scenario: Nothing to report
 - **WHEN** the selected section is fit, supplied and not under fire
-- **THEN** no alert is shown and the rows start under the header
+- **THEN** no alert is shown and the figures start under the header
 
 ### Requirement: Troop panel localization and size
 
@@ -125,7 +138,7 @@ beyond the panel's own area.
 
 #### Scenario: Eleven men fit
 - **WHEN** a section of eleven is selected at 1280 x 720 in PT-BR
-- **THEN** all eleven rows are visible without scrolling
+- **THEN** all eleven figures are visible without scrolling
 
 #### Scenario: Language switch
 - **WHEN** the player switches language with the panel open

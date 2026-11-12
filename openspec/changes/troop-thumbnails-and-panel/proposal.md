@@ -22,10 +22,11 @@ empty today, and for a troop panel that reads better.
 - **The troop panel is redrawn for reading**:
   - a header with the thumbnail, the section's name and type, its army,
     its current order and its men fit, wounded and down;
-  - one row per soldier instead of a helmet: role, weapon, a state word
-    (fit, wounded, pinned, down, inside a position), and health, morale and
-    ammunition as labelled bars; the men ordered leader first, casualties
-    last;
+  - one figure per soldier instead of the helmet and three bars (owner's
+    design, 2026-11-11): helmet colour = cover, body colour = health, a
+    cartridge clip under him = ammunition, marks for wounded, pinned and
+    routed; leader first, casualties last; role, weapon and state word in
+    the tooltip;
   - the troop's condition as four named gauges (morale, cover, cohesion,
     suppression) with a word for each band, not bare numbers;
   - what needs the player now, at the top: out of ammunition, pinned, a
@@ -54,7 +55,7 @@ multi-perspective approach and its playable figures are unchanged.
 ### New Capabilities
 
 - `troop-panel`: section thumbnails, the roster's type cards, and the troop
-  panel's header, soldier rows, gauges and alerts.
+  panel's header, soldier figures, gauges and alerts.
 
 ### Modified Capabilities
 
@@ -71,6 +72,8 @@ multi-perspective approach and its playable figures are unchanged.
   `SquadCards.tsx`; `ui/menu/RosterBuilder.tsx`; their styles.
 - `apps/game/public/assets/sections/`: one image per type; `docs/assets.md`.
 - e2e: the HUD and setup specs and their visual baselines.
+- `redo-battle-hud` (planned after this change) frames this panel on its
+  parchment card and does not redraw it.
 - Depends on `faction-armies` (types per army) and on
   `soldier-animation-and-textures` (uniforms) for the final pictures; the
   tool and the panel can be built before them and re-run after.

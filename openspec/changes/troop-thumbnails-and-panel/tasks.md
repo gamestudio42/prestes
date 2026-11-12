@@ -1,3 +1,5 @@
+Approved by the owner on 2026-11-11 ("Aprovo as três", with redo-battle-hud and the soldier figures); apply in the planned order: soldier-animation-and-textures, troop-thumbnails-and-panel, redo-battle-hud; remove-sandbox-panel at any time.
+
 ## 0. Before starting
 
 - [ ] 0.1 Read `docs/handoff.md`, then this change's proposal, design and specs. Prerequisites: `faction-armies` section 2 for the full type list and `soldier-animation-and-textures` section 3 for the final uniforms; the tool (1.1, 1.2) and the panel (section 3) can be built before them and the thumbnails re-run after; verify: `docs/handoff.md` records which prerequisites were in place when the work started
@@ -16,11 +18,11 @@
 ## 3. Troop panel
 
 - [ ] 3.1 Header: thumbnail, name and type, army, current order, fit/wounded/down; totals for several sections; verify with a HUD unit test of both header scenarios
-- [ ] 3.2 Soldier rows: role, weapon, state word, labelled bars, leader first and casualties last; verify with unit tests of the ordering and the state word, and an e2e that reads a pinned man's row
+- [ ] 3.2 Soldier figures (D4): helmet by cover class, body by health, five-round clip, leader/bandage/pinned/routed marks, down laid flat, leader first and casualties last, tooltip with role, weapon and state word; verify with unit tests of the colour, clip and mark mapping from unit snapshots and of the ordering, and an e2e that reads a wounded man's and a prone man-in-trench's figure
 - [ ] 3.3 Gauges for morale, cover, cohesion and suppression with band words from shared thresholds (add named bands to shared data where missing); verify with unit tests that the words follow the shared thresholds
-- [ ] 3.4 Alerts as a pure function of the selected units, shown above the rows; verify with unit tests of each alert and of the empty case
+- [ ] 3.4 Alerts as a pure function of the selected units, shown above the figures; verify with unit tests of each alert and of the empty case
 - [ ] 3.5 Section cards take the thumbnail; the placeholder portrait, its label and its asset-register row are removed; verify with the HUD e2e and `pnpm check:locales` (no unused key left)
-- [ ] 3.6 Eleven rows without scrolling at 1280 x 720, inner scroll for more, greyscale readability; verify with an overflow e2e in EN and PT-BR and a greyscale screenshot reviewed
+- [ ] 3.6 Eleven figures without scrolling at 1280 x 720, inner scroll for more, greyscale readability; verify with an overflow e2e in EN and PT-BR and a greyscale screenshot reviewed
 
 ## 4. Gates
 

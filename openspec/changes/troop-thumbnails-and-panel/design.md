@@ -26,7 +26,8 @@ with the simulation's own thresholds, not invented in the view.
 
 - Pictures that cannot go stale silently: built from the catalog, checked.
 - A panel read without hovering, in both languages, at 1280 x 720.
-- No new frame fields unless a row needs one the frame lacks.
+- No new frame fields unless a figure needs one the frame lacks (the
+  cover class per man is checked at apply).
 
 **Non-Goals:**
 
@@ -54,11 +55,18 @@ front; a crew-served gun shows the gun and two crewmen; an officer's
 section shows the officer forward. Camera, light and palette are fixed so
 the set reads as one family.
 
-**D4. The troop panel is one component with a row per man.** `TroopSummary`
-becomes header, alerts and rows; the gauges move from `WeaponCard`'s text
-line into the panel; `WeaponCard` keeps weapons and the gun's state. Rows
-are 18 to 20 px high so eleven fit in the panel's present height at
-1280 x 720; the exact height is set against the overflow e2e.
+**D4. The troop panel is one component with a figure per man.**
+`TroopSummary` becomes header, alerts and figures; the gauges move from
+`WeaponCard`'s text line into the panel; `WeaponCard` keeps weapons and the
+gun's state. The figure (owner, 2026-11-11, replacing the per-man rows
+first proposed) is one 10 x 18 px sprite at 1x with two recoloured regions
+(helmet = cover class from the frame, body = health band) and overlay
+marks (leader, bandage, pinned, routed, down laid flat), with a five-round
+clip under it (one round per fifth of a full load, the last blinking red at
+empty). Morale per man moves to the tooltip and to the section's gauges.
+The sprite is drawn in Aseprite (in `redo-battle-hud`'s HUD sheet if it
+exists by then, otherwise in the icon sheet) and exported as the icons are.
+Eleven figures fit a row at 2x in the panel's width at 1280 x 720.
 
 **D5. Words and bands from shared data.** State words reuse the existing
 `state.*` and `wound.*` keys; band words are new keys under `hud.band.*`.
@@ -69,9 +77,9 @@ units' snapshots to an ordered alert list, unit-tested without React.
 
 ## Risks / Trade-offs
 
-- [Rows take more room than helmets] → the map-covering area is fixed to
-  the panel; larger selections scroll inside it (spec), and the collapsed
-  orders panel stays available.
+- [Figures carry less text than rows would] → role, weapon and state word
+  are in each figure's tooltip and text alternative; the marks keep the
+  states readable without hovering or colour.
 - [Thumbnails drift from the uniforms when the textures change] → the hash
   includes the uniform texture's file hash; the check fails until the tool
   is re-run.
