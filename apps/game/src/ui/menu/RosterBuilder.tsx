@@ -12,9 +12,11 @@ import {
   type Roster,
   type SectionTypeId,
   type WeaponId,
+  type WeaponKind,
 } from '@prestes/shared';
 import { translate, type Locale, type MessageKey } from '@prestes/content';
-import { ChevronDown, ChevronUp, Close, Rifle } from '../icons';
+import { ChevronDown, ChevronUp, Close, Rifle, WeaponAutomatic, WeaponCarbine, WeaponMachineGun, WeaponPistol, type PixelIconComponent } from '../icons';
+import '../../styles/troop-thumbs.css';
 import { refusalMessage } from './setupState';
 
 export interface RosterBuilderProps {
@@ -38,6 +40,19 @@ export function sectionWeapons(type: SectionTypeId): { weapon: WeaponId; count: 
   }
   return (Object.keys(WEAPONS) as WeaponId[]).filter((id) => counts.has(id)).map((weapon) => ({ weapon, count: counts.get(weapon)! }));
 }
+
+/** troop-thumbnails-and-panel D1-D2: a section type's picture, built by `pnpm thumbs`. */
+export const sectionThumbnail = (type: SectionTypeId) => `${import.meta.env.BASE_URL}assets/sections/${type}.png`;
+
+/** 2.1: the icon of a weapon by its kind. */
+const WEAPON_ICONS: Readonly<Record<WeaponKind, PixelIconComponent>> = {
+  'bolt-rifle': Rifle,
+  'lever-rifle': WeaponCarbine,
+  'automatic-rifle': WeaponAutomatic,
+  'machine-gun': WeaponMachineGun,
+  pistol: WeaponPistol,
+};
+export const weaponIcon = (weapon: WeaponId): PixelIconComponent => WEAPON_ICONS[WEAPONS[weapon].kind] ?? Rifle;
 
 /** Arrow keys move between the entries of a list; Home and End jump to its ends. */
 export function moveFocus(event: KeyboardEvent<HTMLElement>): void {
@@ -93,14 +108,19 @@ export function RosterBuilder({ locale, roster, army, onChange, testPrefix, labe
                 onClick={() => add(type)}
                 data-testid={`${testPrefix}-add-${type}`}
               >
+                <img className="section-thumb roster-type-thumb" src={sectionThumbnail(type)} alt="" width={48} height={48} data-testid={`${testPrefix}-thumb-${type}`} />
+                <span className="roster-type-body">
                 <span className="roster-type-head">
                   <span className="roster-type-name">{name}</span>
                   <span className="roster-type-men">{t('setup.men', { count: section.men.length })}</span>
                 </span>
                 <span className="roster-weapons">
                   {sectionWeapons(type).map(({ weapon, count }) => (
-                    <span key={weapon} className="roster-weapon">
-                      <Rifle aria-hidden="true" size={16} />
+                    <span key={weapon} className="roster-weapon" data-weapon={WEAPONS[weapon].kind}>
+                      {(() => {
+                        const Icon = weaponIcon(weapon);
+                        return <Icon aria-hidden="true" size={16} />;
+                      })()}
                       {count} {t(WEAPONS[weapon].shortNameKey as MessageKey)}
                     </span>
                   ))}
@@ -113,6 +133,7 @@ export function RosterBuilder({ locale, roster, army, onChange, testPrefix, labe
                   ) : (
                     t(section.descriptionKey as MessageKey)
                   )}
+                </span>
                 </span>
               </button>
             </li>
@@ -141,6 +162,7 @@ export function RosterBuilder({ locale, roster, army, onChange, testPrefix, labe
           >
             {roster.sections.map((type, index) => (
               <li key={`${type}-${index}`} className="roster-row" data-row={index} data-testid={`${testPrefix}-row-${index}`}>
+                <img className="section-thumb roster-row-thumb" src={sectionThumbnail(type)} alt="" width={24} height={24} />
                 <span className="roster-row-name" tabIndex={0} data-nav>
                   {index + 1}. {t(SECTION_TYPES[type].nameKey as MessageKey)}
                 </span>

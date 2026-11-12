@@ -142,3 +142,35 @@ test('weapon card shows the mix', async ({ page }) => {
   // A man's tooltip names his weapon.
   await expect(page.locator('[data-testid^="helmet-"][data-weapon="metralhadora-7mm"]')).toHaveCount(1);
 });
+
+// troop-thumbnails-and-panel 2.1-2.2: the types read as cards with their picture,
+// weapon icons by kind and the reason a type is refused, in both languages.
+for (const [locale, refusal] of [
+  ['en', /33/],
+  ['pt-BR', /33/],
+] as const) {
+  test(`type cards with thumbnails and weapon icons (${locale})`, async ({ page }) => {
+    await page.addInitScript((value) => window.localStorage.setItem('prestes.locale', value), locale);
+    await openSetup(page);
+    const thumb = page.getByTestId('roster-thumb-metralhadora');
+    await expect(thumb).toBeVisible();
+    await expect(thumb).toHaveAttribute('src', /assets\/sections\/metralhadora\.png$/);
+    // The picture loaded (a missing file has no natural size).
+    await expect.poll(() => thumb.evaluate((img: HTMLImageElement) => img.naturalWidth)).toBe(96);
+    const gun = page.getByTestId('roster-add-metralhadora');
+    await expect(gun.locator('[data-weapon="machine-gun"]')).toContainText('1');
+    await expect(gun.locator('[data-weapon="bolt-rifle"]')).toContainText('3');
+    await expect(page.getByTestId('roster-add-irregulares').locator('[data-weapon="lever-rifle"]')).toContainText('5');
+    await expect(page.getByTestId('roster-add-comando').locator('[data-weapon="pistol"]')).toContainText('1');
+    // The full default roster refuses another type and says why.
+    await expect(page.getByTestId('roster-refusal-esquadra-4')).toContainText(refusal);
+    // Roster rows carry the type's picture.
+    await expect(page.getByTestId('roster-row-0').locator('img.roster-row-thumb')).toHaveAttribute('src', /assets\/sections\/.+\.png$/);
+    // Arrow keys still walk the cards.
+    await page.getByTestId('roster-add-comando').focus();
+    await page.keyboard.press('ArrowDown');
+    await expect(page.getByTestId('roster-add-fuzileiros')).toBeFocused();
+    await page.keyboard.press('End');
+    await expect(page.getByTestId('roster-add-veteranos-gauchos')).toBeFocused();
+  });
+}

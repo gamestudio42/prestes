@@ -1,0 +1,35 @@
+/* troop-thumbnails-and-panel 2.1-2.2: section thumbnails in the roster builder. */
+.section-thumb {
+  flex: none;
+  image-rendering: pixelated;
+  background: var(--book-paper);
+  border: 1px solid var(--book-edge);
+}
+
+.roster-type {
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.roster-type-thumb {
+  width: 48px;
+  height: 48px;
+}
+
+.roster-type-body {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.roster-row {
+  grid-template-columns: 24px minmax(0, 1fr) auto repeat(3, 28px);
+}
+
+.roster-row-thumb {
+  width: 24px;
+  height: 24px;
+}

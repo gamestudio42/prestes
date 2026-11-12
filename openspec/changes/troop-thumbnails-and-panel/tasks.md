@@ -12,8 +12,8 @@ Approved by the owner on 2026-11-11 ("Aprovo as três", with redo-battle-hud and
 
 ## 2. Roster builder
 
-- [ ] 2.1 Type cards: thumbnail, name, men, weapon icons with counts, description or refusal reason; keyboard navigation kept; verify with the setup e2e (cards, a refused type's reason, arrow keys) in EN and PT-BR
-- [ ] 2.2 Roster rows show the type's thumbnail; verify with the setup e2e
+- [x] 2.1 (48 px picture, weapon icons by kind: four new ones (`weapon-carbine`, `-automatic`, `-machine-gun`, `-pistol`) added to the `.aseprite` by `pnpm icons --add`, which leaves drawn icons untouched; refused cards keep their colour, dimmed; styles in `troop-thumbs.css`) Type cards: thumbnail, name, men, weapon icons with counts, description or refusal reason; keyboard navigation kept; verify with the setup e2e (cards, a refused type's reason, arrow keys) in EN and PT-BR
+- [x] 2.2 (24 px picture at the head of each row) Roster rows show the type's thumbnail; verify with the setup e2e
 
 ## 3. Troop panel
 

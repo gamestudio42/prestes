@@ -4,6 +4,8 @@
  *   pnpm icons          export assets/icons/prestes-icons.aseprite
  *   pnpm icons --grids  rebuild the .aseprite from assets/icons/icons.txt first
  *                       (this overwrites edits made in Aseprite)
+ *   pnpm icons --add    add the icons of icons.txt the .aseprite lacks, in new
+ *                       cells, leaving the drawn ones as they are, then export
  *
  * The exported icons.png and icons.json are committed: building and testing
  * the game never need Aseprite. Set ASEPRITE to the executable if it is not
@@ -36,6 +38,14 @@ if (process.argv.includes('--grids')) {
   execFileSync(
     aseprite,
     ['-b', '--script-param', `txt=${grids}`, '--script-param', `out=${source}`, '--script', resolve(root, 'tools/icons/build-icons.lua')],
+    { stdio: 'inherit' },
+  );
+}
+
+if (process.argv.includes('--add')) {
+  execFileSync(
+    aseprite,
+    ['-b', '--script-param', `txt=${grids}`, '--script-param', `file=${source}`, '--script', resolve(root, 'tools/icons/add-icons.lua')],
     { stdio: 'inherit' },
   );
 }
