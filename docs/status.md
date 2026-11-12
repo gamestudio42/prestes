@@ -316,6 +316,8 @@ trees, a bush and a stump per biome, each tree adult, flowering and dead).
 - Open for the owner's hand check (5.3): the pequi at 4.5 m beside the
   houses; the castanheira's strategic stand-in reads greyish; the English
   glosses of manacá, andiroba, coroa-de-frade and palmatória.
+- Hand check (5.3, 2026-11-12): the owner approved the editor and a skirmish
+  on a wooded map; the open items above stay as they are.
 
 ## troop-thumbnails-and-panel verify (2026-11-12)
 

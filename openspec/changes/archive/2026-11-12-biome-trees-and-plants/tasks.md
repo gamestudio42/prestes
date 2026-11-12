@@ -45,4 +45,4 @@
 
 - [x] 5.1 `docs/assets.md`: every species with its source (Refloreste, the owner's work, or original) and licence; verify: the register check passes
 - [x] 5.2 `pnpm verify` and `openspec validate biome-trees-and-plants --type change --strict`; verify: all pass, model sizes in `docs/status.md`
-- [ ] 5.3 Hand check by the owner in the editor and in a skirmish on a wooded map; findings in `docs/status.md`
+- [x] 5.3 Hand check by the owner in the editor and in a skirmish on a wooded map; findings in `docs/status.md`
