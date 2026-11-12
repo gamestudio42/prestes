@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { terrainHeightAt } from '@prestes/shared';
 import { toonGradient } from './materials';
+import { lowestLeaf } from './canopy';
 
 /**
  * The Blender-built environment (art-src/blender/target_{buildings,
@@ -154,13 +155,7 @@ export function impostorGeometry(model: THREE.BufferGeometry, shape: ImpostorSha
   const height = box.max.y - box.min.y;
   const position = model.getAttribute('position');
   const colour = model.getAttribute('color');
-  let lowestLeaf = box.max.y;
-  if (shape === 'palm' && colour) {
-    for (let index = 0; index < position.count; index += 1) {
-      if (colour.getY(index) > colour.getX(index) && colour.getY(index) > colour.getZ(index)) lowestLeaf = Math.min(lowestLeaf, position.getY(index));
-    }
-  }
-  const split = shape === 'palm' ? lowestLeaf : box.min.y + height * (height < 2 || shape === 'column' ? 0 : 0.45);
+  const split = shape === 'palm' ? (lowestLeaf(model) ?? box.max.y) : box.min.y + height * (height < 2 || shape === 'column' ? 0 : 0.45);
   const crown: [number, number, number, number] = [0, 0, 0, 0];
   const trunk: [number, number, number, number] = [0, 0, 0, 0];
   // The crown's colour is its leaves' (greener than red and blue), not the grey branches among them.
@@ -322,6 +317,8 @@ export class ModelPlacements {
       let impostor = IMPOSTORS.get(model);
       if (!impostor) {
         impostor = impostorGeometry(model, impostorShape(name));
+        // Cached for every map: a map's disposal keeps it (scene-view disposeObject).
+        impostor.userData.shared = true;
         IMPOSTORS.set(model, impostor);
       }
       return impostor;

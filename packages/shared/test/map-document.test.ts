@@ -310,6 +310,18 @@ describe('every object affects the battle', () => {
     expect(VEGETATION_KINDS.slice(0, 4)).toEqual(['cane', 'corn', 'scrub', 'tall-grass']);
   });
 
+  it('a knee-high bush or a crown over a thicket leaves it a thicket, in either order', () => {
+    for (const order of [
+      ['bush-caatinga-head-a', 'bush-cerrado-knee-a', 'manaca'],
+      ['manaca', 'bush-cerrado-knee-a', 'bush-caatinga-head-a'],
+    ]) {
+      const map = flat();
+      order.forEach((type, index) => map.objects.push({ id: index + 1, type, x: 0, y: 0, rotation: 0 }));
+      setActiveMap(compileMapDocument(map));
+      expect(vegetationAt(0, 0)).toBe('thicket');
+    }
+  });
+
   it('thorns slow: a macambira patch is thorny ground, slower than scrub, and still conceals', () => {
     withObject('macambira');
     expect(terrainSurfaceAt(0, 0)).toBe('thorns');

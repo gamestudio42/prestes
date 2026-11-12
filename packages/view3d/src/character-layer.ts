@@ -726,7 +726,8 @@ export class CharacterLayer {
   updateCanopyOutlines(men: readonly { x: number; y: number }[], span: number): void {
     const scale = unitScaleForSpan(span) * 1.1;
     let index = 0;
-    for (const man of men.slice(0, 128)) {
+    for (const man of men) {
+      if (index === 128) break;
       this.proxyPosition.set(man.x, terrainHeightAt(man.x, man.y) + 0.72, man.y);
       this.proxyScale.set(scale, scale, scale);
       this.proxyMatrix.compose(this.proxyPosition, this.proxyQuaternion.identity(), this.proxyScale);

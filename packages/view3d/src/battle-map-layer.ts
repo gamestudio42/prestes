@@ -1255,7 +1255,7 @@ export function propPreview(model: string, asset: EnvironmentAsset | null): THRE
 const MODELLED_PROPS = new Set(['tree-broad', 'tree-pine', 'tree-araucaria', 'buriti', 'cerrado-tree', 'bush', 'cart', 'well', 'haystack', 'barrel', 'crate']);
 
 /** A modelled prop, or a tree or plant of a biome file (biome-trees-and-plants 4.1). */
-const isModelled = (model: string): boolean => MODELLED_PROPS.has(model) || modelFilesOf([model]).length > 0;
+const isModelled = (model: string): boolean => MODELLED_PROPS.has(model) || !!catalogObject(model)?.modelFile;
 
 export class BattleMapLayer {
   readonly group = new THREE.Group();

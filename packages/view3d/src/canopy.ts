@@ -19,23 +19,30 @@ const HIDING_FADE = 0.3;
 /** The marked alpha of a faded crown's kept pixels; post.ts skips outlines there. */
 export const FADED_ALPHA = 0.5;
 
+/**
+ * The height of a tree model's lowest leaf (a vertex greener than red and
+ * blue), or null when it has none (a dead tree, an uncoloured model).
+ */
+export function lowestLeaf(geometry: THREE.BufferGeometry): number | null {
+  const position = geometry.getAttribute('position');
+  const colour = geometry.getAttribute('color');
+  if (!colour) return null;
+  let lowest = Infinity;
+  for (let index = 0; index < position.count; index += 1) {
+    const g = colour.getY(index);
+    if (g > colour.getX(index) && g > colour.getZ(index)) lowest = Math.min(lowest, position.getY(index));
+  }
+  return lowest === Infinity ? null : lowest;
+}
+
 /** Marks each vertex of a tree model: 1 in the crown (from the lowest leaf up), 0 in the trunk below. */
 export function crownMask(geometry: THREE.BufferGeometry): { base: number; top: number } {
   if (!geometry.boundingBox) geometry.computeBoundingBox();
   const box = geometry.boundingBox!;
   const height = box.max.y - box.min.y;
   const position = geometry.getAttribute('position');
-  const colour = geometry.getAttribute('color');
-  let base = box.max.y;
-  for (let index = 0; index < position.count; index += 1) {
-    if (!colour) break;
-    const r = colour.getX(index);
-    const g = colour.getY(index);
-    const b = colour.getZ(index);
-    if (g > r && g > b) base = Math.min(base, position.getY(index));
-  }
   // A plant lower than 2 m fades whole; a tree without leaves (a dead one) from 45% of its height.
-  if (base >= box.max.y) base = box.min.y + height * 0.45;
+  let base = lowestLeaf(geometry) ?? box.min.y + height * 0.45;
   // The trunk keeps at least its lowest 1.6 m (or 30%) solid.
   base = Math.max(base, box.min.y + Math.min(1.6, height * 0.3));
   if (height < 2) base = box.min.y;
@@ -79,6 +86,8 @@ if (vCanopyFade > 0.01 && canopyBayer(gl_FragCoord.xy) < vCanopyFade * canopyDro
       .replace('#include <dithering_fragment>', `#include <dithering_fragment>\nif (vCanopyFade > 0.01) gl_FragColor.a = ${FADED_ALPHA.toFixed(2)};`);
   };
   material.customProgramCacheKey = () => 'canopy-fade';
+  // Cached for every map: a map's disposal keeps it (scene-view disposeObject).
+  material.userData = { shared: true };
   FADING.set(source, material);
   return material;
 }
@@ -88,7 +97,6 @@ interface Crown {
   index: number;
   centre: THREE.Vector3;
   radius: number;
-  base: number;
   top: number;
   fade: number;
 }
@@ -107,6 +115,10 @@ export class CanopyFade {
   private readonly crowns: Crown[] = [];
   private readonly meshes = new Set<THREE.InstancedMesh>();
   private readonly back = new THREE.Vector3();
+  // Scratch kept across frames: update runs every frame.
+  private readonly hiddenFlags: boolean[] = [];
+  private readonly hidden: number[] = [];
+  private readonly touched = new Set<THREE.InstancedMesh>();
 
   /** Takes over a tree species' instanced mesh: its material fades, its crowns are tracked. */
   add(mesh: THREE.InstancedMesh): void {
@@ -120,6 +132,8 @@ export class CanopyFade {
     const fades = new THREE.InstancedBufferAttribute(new Float32Array(mesh.count), 1);
     fades.setUsage(THREE.DynamicDrawUsage);
     mesh.geometry = mesh.geometry.clone();
+    // The clone is this map's own (the clone shares the source's userData object).
+    mesh.geometry.userData = {};
     mesh.geometry.setAttribute('instanceFade', fades);
     mesh.material = fadingMaterial(mesh.material as THREE.Material);
     for (let index = 0; index < mesh.count; index += 1) {
@@ -132,7 +146,6 @@ export class CanopyFade {
         index,
         centre: local.clone().applyMatrix4(matrix),
         radius: reach * size * 0.85,
-        base: origin.y + base * scale.y,
         top: origin.y + top * scale.y,
         fade: 0,
       });
@@ -144,12 +157,16 @@ export class CanopyFade {
    * Fades the crowns that hide one of these men from a camera looking along
    * `view` (orthographic: the rays are parallel), or stand close over him,
    * and brings the others back. Returns the indices of the men still hidden
-   * behind a crown, for their outline.
+   * behind a crown, for their outline, ascending (the array is reused by
+   * the next call).
    */
-  update(view: THREE.Vector3, men: readonly THREE.Vector3[], seconds: number): number[] {
+  update(view: THREE.Vector3, men: readonly THREE.Vector3[], seconds: number): readonly number[] {
     const back = this.back.copy(view).normalize().negate();
-    const hidden = new Set<number>();
-    const touched = new Set<THREE.InstancedMesh>();
+    const flags = this.hiddenFlags;
+    flags.length = men.length;
+    flags.fill(false);
+    const touched = this.touched;
+    touched.clear();
     const step = Math.min(1, seconds * FADE_RATE);
     // Seen from above, a crown can hide a man only if it stands within this
     // much of him horizontally: the ray climbs at the camera's pitch.
@@ -167,7 +184,7 @@ export class CanopyFade {
           const over = dx * dx + dz * dz < crown.radius * crown.radius && man.y < crown.top;
           if (along || over) {
             covers = true;
-            if (crown.fade > HIDING_FADE || along) hidden.add(index);
+            if (crown.fade > HIDING_FADE || along) flags[index] = true;
           }
         }
       }
@@ -178,7 +195,9 @@ export class CanopyFade {
       touched.add(crown.mesh);
     }
     for (const mesh of touched) mesh.geometry.getAttribute('instanceFade').needsUpdate = true;
-    return [...hidden].sort((a, b) => a - b);
+    this.hidden.length = 0;
+    for (let index = 0; index < flags.length; index += 1) if (flags[index]) this.hidden.push(index);
+    return this.hidden;
   }
 
   /** Each crown's fade, by species and instance (view tests). */

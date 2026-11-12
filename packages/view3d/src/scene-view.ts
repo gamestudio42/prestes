@@ -728,15 +728,29 @@ export class SceneView {
       this.characters.updateCanopyOutlines([], this.rig.span);
       return;
     }
-    const men = this.lastFrame.units.filter((unit) => unit.faction === 'column' && unit.alive && !unit.routed);
-    while (this.canopyChests.length < men.length) this.canopyChests.push(new THREE.Vector3());
-    const chests = men.map((unit, index) => this.canopyChests[index]!.set(unit.x, terrainHeightAt(unit.x, unit.y) + 1.2, unit.y));
+    // Scratch arrays reused every frame: no allocation in the render loop.
+    const men = this.canopyMen;
+    const chests = this.canopyChests;
+    men.length = 0;
+    chests.length = 0;
+    for (const unit of this.lastFrame.units) {
+      if (unit.faction !== 'column' || !unit.alive || unit.routed) continue;
+      const index = men.push(unit) - 1;
+      const chest = (this.canopyChestPool[index] ??= new THREE.Vector3());
+      chests.push(chest.set(unit.x, terrainHeightAt(unit.x, unit.y) + 1.2, unit.y));
+    }
     const hidden = layer.canopy.update(this.rig.camera.getWorldDirection(this.canopyView), chests, delta);
-    this.characters.updateCanopyOutlines(hidden.map((index) => men[index]!), this.rig.span);
+    const outlined = this.canopyOutlined;
+    outlined.length = 0;
+    for (const index of hidden) outlined.push(men[index]!);
+    this.characters.updateCanopyOutlines(outlined, this.rig.span);
   }
 
   private readonly canopyView = new THREE.Vector3();
+  private readonly canopyChestPool: THREE.Vector3[] = [];
   private readonly canopyChests: THREE.Vector3[] = [];
+  private readonly canopyMen: { x: number; y: number }[] = [];
+  private readonly canopyOutlined: { x: number; y: number }[] = [];
 
   /** biome-trees-and-plants 4.1b: crowns faded over the player's men, and outlines drawn (dev checks). */
   canopyState(): { faded: number; outlines: number } {
@@ -1111,20 +1125,17 @@ export class SceneView {
   };
 }
 
+/** Disposes an object's own geometries and materials; the shared, cached ones (`userData.shared`) are reused by the next map. */
 function disposeObject(object: THREE.Object3D): void {
+  const own = (resource: { userData: Record<string, unknown>; dispose: () => void }) => {
+    if (!resource.userData.shared) resource.dispose();
+  };
   object.traverse((child) => {
     const mesh = child as THREE.Mesh;
-    if (mesh.geometry) {
-      mesh.geometry.dispose();
-    }
+    if (mesh.geometry) own(mesh.geometry);
     const material = mesh.material;
-    if (Array.isArray(material)) {
-      for (const entry of material) {
-        entry.dispose();
-      }
-    } else if (material) {
-      material.dispose();
-    }
+    if (Array.isArray(material)) material.forEach(own);
+    else if (material) own(material);
   });
 }
 

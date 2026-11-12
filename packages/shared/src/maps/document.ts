@@ -12,6 +12,7 @@ import {
 } from './catalog-objects';
 import { distanceToPolyline, pointInPolygon, pointsBox, polygonBox, smooth, type Box } from './geometry';
 import { GROUND_MATERIAL_IDS, groundMaterial, groundMaterialIndex, type GroundMaterialId } from './ground-materials';
+import { VEGETATION } from './concealment';
 import { decodeRaster, encodeRaster, type EncodedRaster } from './raster';
 import { BRIDGE_RAMP, bridgeDeckHeight, bridgeLandings, bridgePolygon, HEIGHT_SPACING, SURFACES, VEGETATION_KINDS, vegetationDensityOf, vegetationKindOf } from './runtime';
 import { boundsForSize, MAP_SIZE_METRES, MAP_SIZES, type MapSize } from './sizes';
@@ -810,6 +811,15 @@ export function compileMapDocument(source: EditableMap | MapDocument): BattleMap
   const objectConcealed = new Uint8Array(vegetation.length);
   // Cells under a thorn patch (macambira): their surface becomes thorns, below the roads.
   const thorny = new Uint8Array(vegetation.length);
+  // A placed plant's vegetation (1-based kind) goes over a cell's only if at
+  // least as tall: a knee-high bush or a crown's shade never thins a thicket
+  // or a cane field, whatever order the objects were placed in.
+  const stampVegetation = (index: number, kind: number): void => {
+    const current = vegetationKindOf(vegetation[index]!);
+    if (!current) objectConcealed[index] = 1;
+    else if (VEGETATION[VEGETATION_KINDS[current - 1]!].height > VEGETATION[VEGETATION_KINDS[kind - 1]!].height) return;
+    vegetation[index] = kind;
+  };
   const stampMaterial = (index: number, material: GroundMaterialId): void => {
     paint[index] = groundMaterialIndex(material);
   };
@@ -935,8 +945,7 @@ export function compileMapDocument(source: EditableMap | MapDocument): BattleMap
       case 'foliage': {
         const kind = BUSH_VEGETATION[entry.bushClass ?? 'waist'];
         footprintCells((index) => {
-          if (!vegetation[index]) objectConcealed[index] = 1;
-          vegetation[index] = kind;
+          stampVegetation(index, kind);
           if (entry.thorns) thorny[index] = 1;
         });
         break;
@@ -961,8 +970,7 @@ export function compileMapDocument(source: EditableMap | MapDocument): BattleMap
       const radius = entry.concealRadius * scale;
       forCellsIn(side, bounds.minX, bounds.minY, footprintBox, (index, x, y) => {
         if (Math.hypot(x - object.x, y - object.y) > radius) return;
-        if (!vegetation[index]) objectConcealed[index] = 1;
-        vegetation[index] = SCRUB;
+        stampVegetation(index, SCRUB);
       });
     }
     props.push({ model: entry.model, x: object.x, y: object.y, rotation: object.rotation, scale });

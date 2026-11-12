@@ -56,7 +56,7 @@ export const SURFACES: readonly TerrainSurface[] = [
 // Appended only: a raster cell stores its kind's index + 1.
 export const VEGETATION_KINDS: readonly VegetationKind[] = ['cane', 'corn', 'scrub', 'tall-grass', 'low-bush', 'thicket'];
 /** The kinds the vegetation brush paints; the bushes' kinds come from placed bushes only. */
-export const PAINTED_VEGETATION_KINDS: readonly VegetationKind[] = ['cane', 'corn', 'scrub', 'tall-grass'];
+export const PAINTED_VEGETATION_KINDS: readonly VegetationKind[] = VEGETATION_KINDS.slice(0, 4);
 
 /**
  * author-game-maps: a painted vegetation cell holds its kind (1-based, low
