@@ -122,6 +122,22 @@ export function windowMiddleHeight(
   return Math.min(window.elevation + EYE_HEIGHTS.standing - 0.2, top);
 }
 
+/**
+ * revise-buildings-and-stone 2.2 (D1): a building may declare its doors and
+ * windows instead of taking them from the rule, so a modelled façade can
+ * place them where its design wants. Each opening is on a wall, `at` metres
+ * from the wall's middle (toward local +x on the front and back walls,
+ * toward local +y on the side walls). The present buildings declare none:
+ * their openings, and so the goldens, stay the rule's.
+ */
+export interface OpeningDeclaration {
+  doors: readonly { wall: BuildingWall; at: number; width: number; height?: number }[];
+  windows: readonly { wall: BuildingWall; at: number; level: number }[];
+}
+
+/** The buildings that declare their openings (the new ones of 3.4). */
+export const DECLARED_OPENINGS: Partial<Record<BuildingModel, OpeningDeclaration>> = {};
+
 const SHOP_MODELS: ReadonlySet<BuildingModel> = new Set(['venda', 'armazem']);
 const BIG_DOOR_MODELS: ReadonlySet<BuildingModel> = new Set(['barn', 'warehouse', 'armazem', 'factory', 'engenho']);
 
@@ -153,6 +169,18 @@ export function buildingOpenings(building: Pick<Building, 'model' | 'halfWidth' 
     const w = walls[wall];
     doors.push({ wall, x: w.cx + w.tx * t, y: w.cy + w.ty * t, outX: w.outX, outY: w.outY, width, height });
   };
+  const windows: BuildingWindow[] = [];
+  const windowAt = (wall: BuildingWall, t: number, level: number) => {
+    const w = walls[wall];
+    const elevation = level === 0 ? 0 : upper ? upperElevation : storey * level;
+    windows.push({ wall, x: w.cx + w.tx * t, y: w.cy + w.ty * t, outX: w.outX, outY: w.outY, level, elevation });
+  };
+  const declared = DECLARED_OPENINGS[model];
+  if (declared) {
+    for (const entry of declared.doors) door(entry.wall, entry.at, entry.width, entry.height ?? doorHeight);
+    for (const entry of declared.windows) windowAt(entry.wall, entry.at, entry.level);
+    return { doors, windows, storey, storeys, wall };
+  }
   if (model === 'church') {
     // A wide portal under the façade, and a door in each side wall toward the front.
     door('front', 0, 2.4, Math.min(3.6, storey * 0.6));
@@ -164,12 +192,10 @@ export function buildingOpenings(building: Pick<Building, 'model' | 'halfWidth' 
     door('front', 0, big ? 2.6 : SHOP_MODELS.has(model) ? 1.6 : 1.1, big ? Math.min(3.2, storey * 0.85) : doorHeight);
     door('back', 0, big ? 2.2 : 1.0);
   }
-  const windows: BuildingWindow[] = [];
   for (const wall of ['front', 'back', 'left', 'right'] as const) {
     const w = walls[wall];
     const onWall = doors.filter((entry) => entry.wall === wall);
-    const put = (t: number, level: number) =>
-      windows.push({ wall, x: w.cx + w.tx * t, y: w.cy + w.ty * t, outX: w.outX, outY: w.outY, level, elevation: level === 0 ? 0 : upperElevation });
+    const put = (t: number, level: number) => windowAt(wall, t, level);
     for (const t of along(w.length, WINDOW_SPACING)) {
       const blocked = onWall.some((entry) => Math.abs(entry.x * w.tx + entry.y * w.ty - t) < entry.width / 2 + WINDOW_DOOR_CLEARANCE + WINDOW_HALF_WIDTH);
       if (!blocked) put(t, 0);

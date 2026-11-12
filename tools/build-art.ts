@@ -38,6 +38,10 @@ if (!blender) {
   process.exit(1);
 }
 
+// revise-buildings-and-stone 2.1: the battle's openings, which the building target cuts.
+execFileSync(process.execPath, [resolve(root, 'node_modules/tsx/dist/cli.mjs'), resolve(root, 'tools/export-openings.ts')], {
+  stdio: 'inherit',
+});
 execFileSync(process.platform === 'win32' ? 'python' : 'python3', [resolve(root, 'art-src/textures/make_textures.py')], {
   stdio: 'inherit',
 });

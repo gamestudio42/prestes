@@ -10,9 +10,9 @@
 
 ## 2. Openings as one source
 
-- [ ] 2.1 `tools/export-openings.ts`: doors, windows, upper floors and towers of every catalog building to JSON for the art build; verify with a unit test against `openings.ts` for three buildings
-- [ ] 2.2 Explicit openings in shared data for buildings that declare them, beside the rule; verify with unit tests that a declared building's positions come from its declaration and the present buildings' positions are unchanged
-- [ ] 2.3 The model check: every exported building's opening markers and wall lines against the shared data (0.2 m), failing with the building and wall; verify with fixtures for a missing window, an extra door and a wall off its footprint
+- [x] 2.1 `tools/export-openings.ts`: doors, windows, upper floors and towers of every catalog building to JSON for the art build; verify with a unit test against `openings.ts` for three buildings
+- [x] 2.2 Explicit openings in shared data for buildings that declare them, beside the rule; verify with unit tests that a declared building's positions come from its declaration and the present buildings' positions are unchanged
+- [x] 2.3 The model check: every exported building's opening markers and wall lines against the shared data (0.2 m), failing with the building and wall; verify with fixtures for a missing window, an extra door and a wall off its footprint
 
 ## 3. Buildings
 

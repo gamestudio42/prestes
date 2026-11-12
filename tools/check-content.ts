@@ -1,5 +1,7 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { buildingFileProblems } from './building-model-check';
+import { exportOpenings } from './export-openings';
 import { FLORA_FILES, floraProblems, floraRegisterProblems, readModelHeights } from './flora-check';
 import { SECTION_THUMBS_DIR, sectionThumbProblems } from './section-thumbs-hash';
 import {
@@ -162,6 +164,8 @@ errors.push(...validateNameRegister(parseNameRegister(readFileSync(resolve(root,
 errors.push(
   ...floraProblems(CATALOG_OBJECTS, await readModelHeights(), (key) => LOCALES.filter((locale) => !(key in messages[locale]))),
 );
+// revise-buildings-and-stone 2.3: every marked building model agrees with its battle openings and footprint.
+errors.push(...(await buildingFileProblems(resolve(root, 'apps/game/public/models/buildings.glb'), exportOpenings())));
 // 5.1: every species and tree model file in the asset register.
 errors.push(...floraRegisterProblems(CATALOG_OBJECTS, FLORA_FILES, readFileSync(resolve(root, 'docs/assets.md'), 'utf8')));
 

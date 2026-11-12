@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   BUILDING_CAPACITY,
+  DECLARED_OPENINGS,
   battleMap,
   buildingOpenings,
   buildingPosition,
@@ -81,6 +82,33 @@ describe('positions (garrison-and-assault 1.1)', () => {
     const church = buildingOpenings({ model: 'church', halfWidth: 7, halfDepth: 9, height: 11 });
     expect(church.doors.map((door) => door.wall)).toEqual(['front', 'left', 'right']);
     expect(church.doors[0]!.width).toBeGreaterThan(2);
+  });
+
+  // revise-buildings-and-stone 2.2: a building that declares its openings is garrisoned from them.
+  it('a declared building takes its doors and windows from its declaration; the rule stays for the rest', () => {
+    const rule = buildingPosition(house())!;
+    DECLARED_OPENINGS['casa-terrea'] = {
+      doors: [{ wall: 'left', at: 1, width: 1.2 }],
+      windows: [
+        { wall: 'front', at: -2, level: 0 },
+        { wall: 'front', at: 2, level: 0 },
+      ],
+    };
+    try {
+      const declared = buildingPosition(house())!;
+      // One door, on the left wall 1 m toward the front, the entrance outside it.
+      expect(declared.entrances).toHaveLength(1);
+      expect(declared.entrances[0]!.x).toBeLessThan(10 - 4);
+      expect(declared.entrances[0]!.y).toBeCloseTo(21);
+      expect(declared.ports).toHaveLength(2);
+      expect(declared.ports.every((port) => port.facing.y === 1)).toBe(true);
+      expect(declared.ports.map((port) => Math.round(port.x))).toEqual([8, 12]);
+      // Another model is untouched.
+      expect(buildingPosition(house({ model: 'venda', halfWidth: 5 }))!.ports.length).toBeGreaterThan(2);
+    } finally {
+      delete DECLARED_OPENINGS['casa-terrea'];
+    }
+    expect(buildingPosition(house())).toEqual(rule);
   });
 
   it('a long building has a back door; the door follows the street face and the rotation', () => {
