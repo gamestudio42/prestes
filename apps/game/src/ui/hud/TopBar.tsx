@@ -4,8 +4,6 @@ import type { ObjectiveSnapshot } from '@prestes/shared';
 import type { CameraBand } from '@prestes/view3d';
 import { IconButton } from './IconButton';
 import type { Translate } from './orderMeta';
-import drapeLeft from '../../assets/hud/drape-left.png';
-import drapeRight from '../../assets/hud/drape-right.png';
 import lantern from '../../assets/hud/lantern.png';
 
 /** redo-battle-hud D6: the strategic band's map layers, off at battle start. */
@@ -71,8 +69,6 @@ export function TopBar({
 
   return (
     <header className="hud-top" data-testid="hud">
-      <img className="hud-drape hud-drape-left" src={drapeLeft} alt="" aria-hidden="true" draggable={false} />
-      <img className="hud-drape hud-drape-right" src={drapeRight} alt="" aria-hidden="true" draggable={false} />
       <div className="hud-rail brand-rail">
         <div className="hud-brand">
           {t('app.title')}

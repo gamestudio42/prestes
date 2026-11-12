@@ -62,7 +62,7 @@
   filter: brightness(1.15);
 }
 
-/* --- Top bar: brand plate, three rails, drapes ---------------------------- */
+/* --- Top bar: brand plate, three rails (the owner dropped the drapes) ---------------------------- */
 .app.game .hud-top {
   position: fixed;
   top: 0;
@@ -82,21 +82,6 @@
 
 .app.game .hud-top > * {
   pointer-events: auto;
-}
-
-.app.game .hud-top .hud-drape {
-  position: absolute;
-  top: 0;
-  z-index: -1;
-  pointer-events: none;
-}
-
-.app.game .hud-drape-left {
-  left: 566px;
-}
-
-.app.game .hud-drape-right {
-  left: calc(50% / var(--hud-k) + 67px);
 }
 
 .app.game .hud-top .hud-rail,
@@ -806,8 +791,7 @@
 }
 
 @media (max-width: 1279px) {
-  .app.game .hud-bottom-strip,
-  .app.game .hud-top .hud-drape {
+  .app.game .hud-bottom-strip {
     display: none;
   }
 }
@@ -887,12 +871,18 @@
 /* Pinned on the dial's centre (1751, 113 in the reference): a button
    centres its content vertically, which pushed the rose low. */
 .app.game .battle-compass svg {
+  /* The owner (2026-11-12): a bigger cross, no letter; red stays north. */
   position: absolute;
-  top: 33px;
-  left: 17px;
-  width: 56px;
-  height: 56px;
+  top: 22px;
+  left: 6px;
+  width: 78px;
+  height: 78px;
   margin: 0;
+  overflow: visible;
+}
+
+.app.game .battle-compass .compass-letter {
+  display: none;
 }
 
 .app.game .battle-compass .compass-ring {
