@@ -27,11 +27,11 @@ import os
 import bpy
 from mathutils import Matrix, Vector
 
-from common import MeshBuilder, rotation_z
+from common import MeshBuilder, region_uv, rotation_z
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 WALL_TILE = 1.6
-ROOF_TILE = 1.4
+ROOF_TILE = 1.2
 
 with open(os.path.join(HERE, "openings.json"), encoding="utf-8") as handle:
     OPENINGS = {entry["model"]: entry for entry in json.load(handle)}
@@ -76,13 +76,61 @@ def platband(b: MeshBuilder, hw: float, hd: float, wall: float, height: float = 
 # --- roofs --------------------------------------------------------------------
 
 
+def _clip(poly, axis: int, limit: float, keep_above: bool):
+    """Sutherland-Hodgman: the part of a 2D polygon on one side of a line."""
+    out = []
+    inside = (lambda p: p[axis] >= limit) if keep_above else (lambda p: p[axis] <= limit)
+    for k, cur in enumerate(poly):
+        prev = poly[k - 1]
+        if inside(cur):
+            if not inside(prev):
+                out.append(_cross(prev, cur, axis, limit))
+            out.append(cur)
+        elif inside(prev):
+            out.append(_cross(prev, cur, axis, limit))
+    return out
+
+
+def _cross(p, q, axis: int, limit: float):
+    t = (limit - p[axis]) / (q[axis] - p[axis])
+    return (p[0] + (q[0] - p[0]) * t, p[1] + (q[1] - p[1]) * t)
+
+
 def _poly(b: MeshBuilder, points, swatch: str, tile: float | None = ROOF_TILE) -> None:
-    """A flat triangle or quad from battle-frame points, wound as given
-    (outward), the swatch repeated about every `tile` metres."""
+    """A flat convex face from battle-frame points, wound as given (outward).
+    The swatch repeats every `tile` metres on a grid laid along the first
+    edge (the eave) and up the face, so the tiles' lines run straight down
+    every slope, the hip ends too."""
     corners = [at(*p) for p in points]
-    if len(corners) == 3:
-        corners.append(corners[2].copy())
-    b.quad(corners, swatch, None, tile)
+    origin = corners[0]
+    u = (corners[1] - origin).normalized()
+    normal = Vector()
+    for k, cur in enumerate(corners):
+        nxt = corners[(k + 1) % len(corners)]
+        normal += cur.cross(nxt)
+    normal.normalize()
+    v = normal.cross(u)
+    flat = [((c - origin).dot(u), (c - origin).dot(v)) for c in corners]
+    size = tile or max(max(abs(p[0]) for p in flat), max(abs(p[1]) for p in flat)) * 2
+    u0, v0, u1, v1 = region_uv(b.atlas, swatch)
+    s_lo, s_hi = min(p[0] for p in flat), max(p[0] for p in flat)
+    t_lo, t_hi = min(p[1] for p in flat), max(p[1] for p in flat)
+    for i in range(math.floor(s_lo / size), math.ceil(s_hi / size)):
+        for j in range(math.floor(t_lo / size), math.ceil(t_hi / size)):
+            cell = flat
+            for axis, limit, above in ((0, i * size, True), (0, (i + 1) * size, False), (1, j * size, True), (1, (j + 1) * size, False)):
+                cell = _clip(cell, axis, limit, above) if cell else cell
+            if len(cell) < 3:
+                continue
+            area = sum(p[0] * q[1] - q[0] * p[1] for p, q in zip(cell, cell[1:] + cell[:1]))
+            if area < 1e-6:
+                continue
+            verts = [b._vert(origin + u * p[0] + v * p[1], None) for p in cell]
+            face = b.bm.faces.new(verts)
+            for loop, p in zip(face.loops, cell):
+                fs, ft = p[0] / size - i, p[1] / size - j
+                loop[b.uv].uv = (u0 + (u1 - u0) * fs, v0 + (v1 - v0) * ft)
+            face.smooth = False
 
 
 def roof_gable(b: MeshBuilder, hw: float, hd: float, z: float, rise: float, swatch: str = "tile", end: str = "plaster",

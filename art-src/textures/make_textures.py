@@ -309,12 +309,18 @@ def environment_atlas() -> Atlas:
         return paint
 
     def tile(i, j, rng):
-        # Clay canal tiles: soft course shadows, capa and canal stripes.
-        if j % 4 == 3:
-            return (136, 72, 50)
-        if i % 4 in (0, 1):
-            return (166, 92, 62) if rng.random() > 0.08 else (154, 82, 56)
-        return (154, 82, 56) if rng.random() > 0.08 else (146, 78, 54)
+        # Clay canal tiles, two across a cell: a lit capa, a shaded canal and
+        # a soft crease between them; a course shadow every 8 rows.
+        if j % 8 == 7:
+            return (128, 66, 46)
+        k = i % 8
+        if k == 7:
+            return (124, 64, 44)
+        if k in (1, 2):
+            return (184, 104, 70)
+        if k in (0, 3):
+            return (166, 92, 62)
+        return (146, 78, 54) if rng.random() > 0.08 else (138, 74, 52)
 
     def timber(i, j, rng):
         if i % 5 == 0:
@@ -414,14 +420,19 @@ def environment_atlas() -> Atlas:
         return (66, 104, 76) if j % 3 else (52, 84, 60)
 
     def tile_old(i, j, rng):
-        # Weathered tiles: the same courses, browner, with moss and soot.
-        if j % 4 == 3:
-            return (108, 62, 46)
-        if rng.random() < 0.12:
+        # Weathered tiles: the same shape, browner, with moss and soot.
+        if rng.random() < 0.1:
             return (104, 92, 62)
-        if i % 4 in (0, 1):
-            return (138, 80, 56)
-        return (124, 70, 50)
+        if j % 8 == 7:
+            return (102, 58, 42)
+        k = i % 8
+        if k == 7:
+            return (98, 56, 40)
+        if k in (1, 2):
+            return (150, 88, 60)
+        if k in (0, 3):
+            return (136, 78, 54)
+        return (120, 68, 48)
 
     swatches = [
         ("plaster", plaster(PAPER, LIGHT)),
