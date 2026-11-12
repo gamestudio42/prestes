@@ -11,6 +11,7 @@ import {
   deathVariant,
   shotSide,
   soldierOutfit,
+  uniformVariant,
   steadyClip,
   turnToward,
   walkTimeScale,
@@ -541,7 +542,7 @@ export class CharacterLayer {
       }
 
       if (this.asset && !view.soldier && unit.kind !== 'dummy') {
-        view.soldier = new SoldierInstance(this.asset, soldierOutfit(unit));
+        view.soldier = new SoldierInstance(this.asset, soldierOutfit(unit), uniformVariant(unit.id));
         view.weapons = new WeaponProps(view.soldier.root);
         marks.root.add(view.soldier.root);
       }

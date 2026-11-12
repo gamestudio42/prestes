@@ -132,8 +132,11 @@ errors.push(...validateArmies());
 const assetsRegister = readFileSync(resolve(root, 'docs/assets.md'), 'utf8');
 for (const army of Object.values(ARMIES)) {
   for (const rank of ['troop', 'officer']) {
-    const texture = `soldier-${army.uniform}-${rank}.png`;
-    if (!existsSync(resolve(root, 'apps/game/public/models/textures', texture))) errors.push(`${army.id}: no uniform texture ${texture}`);
+    // 3.3: three variants of each.
+    for (const variant of [0, 1, 2]) {
+      const texture = `soldier-${army.uniform}-${rank}-${variant}.png`;
+      if (!existsSync(resolve(root, 'apps/game/public/models/textures', texture))) errors.push(`${army.id}: no uniform texture ${texture}`);
+    }
   }
   if (!assetsRegister.includes(`uniform set ${army.uniform}`)) errors.push(`${army.id}: uniform set ${army.uniform} not in docs/assets.md`);
 }

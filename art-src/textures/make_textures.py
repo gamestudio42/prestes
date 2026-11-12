@@ -2,7 +2,7 @@
 
 Draws three small atlases in the sepia palette and writes their region index:
 
-  soldier-<outfit>.png  128 x 128  same layout per outfit (<army uniform>-troop and -officer)
+  soldier-<outfit>-<n>.png  128 x 128  same layout per outfit (<army uniform>-troop and -officer), three variants
   environment.png  128 x 128 16 x 16 swatches: plaster, tile, timber, stone...
   effects.png      64 x 16   8 x 8 sprite frames: muzzle, smoke, dust, splinter
   regions.json     swatch name -> [x, y, w, h] in pixels, per atlas
@@ -50,13 +50,14 @@ LEAF_LIGHT = (112, 128, 70)
 
 
 class Atlas:
-    def __init__(self, width: int, height: int) -> None:
+    def __init__(self, width: int, height: int, seed: str = "") -> None:
+        self.seed = seed
         self.image = Image.new("RGBA", (width, height), (0, 0, 0, 0))
         self.px = self.image.load()
         self.regions: dict[str, list[int]] = {}
 
     def swatch(self, name: str, x: int, y: int, w: int, h: int, paint) -> None:
-        rng = random.Random(name)
+        rng = random.Random(name + self.seed)
         for j in range(h):
             for i in range(w):
                 self.px[x + i, y + j] = (*paint(i, j, rng), 255)
@@ -243,12 +244,23 @@ OUTFIT_DETAIL = {
 }
 
 
-def soldier_atlas(outfit: str) -> Atlas:
+# 3.3: three variants per uniform set, chosen in the view by soldier id: the
+# cloth a shade darker or lighter (washed, worn), a fresh weave, and the
+# moustache on some faces and not others.
+UNIFORM_VARIANTS = 3
+VARIANT_SHADE = (0, -12, 10)
+
+
+def soldier_atlas(outfit: str, variant: int = 0) -> Atlas:
     """One atlas per outfit with the same layout, so one model wears all three.
     3.1: 128 x 128, 16 x 16 swatches, each face painted in layers."""
-    atlas = Atlas(SOLDIER_SIZE, SOLDIER_SIZE)
-    colours = OUTFITS[outfit]
-    detail = OUTFIT_DETAIL[outfit]
+    atlas = Atlas(SOLDIER_SIZE, SOLDIER_SIZE, seed=f"#{variant}" if variant else "")
+    by = VARIANT_SHADE[variant]
+    colours = {key: tuple(shade(c, by) for c in pair) if key in ("tunic", "trousers", "hat") else pair
+               for key, pair in OUTFITS[outfit].items()}
+    detail = dict(OUTFIT_DETAIL[outfit])
+    if variant == 1:
+        detail["moustache"] = not detail["moustache"]
     tunic, tunic_dark = colours["tunic"]
     trousers, trousers_dark = colours["trousers"]
     hat, hat_dark = colours["hat"]
@@ -517,8 +529,9 @@ def outline(atlas: Atlas, colour) -> None:
 def main() -> None:
     out = {}
     for outfit in OUTFITS:
-        atlas = soldier_atlas(outfit)
-        atlas.image.save(os.path.join(HERE, f"soldier-{outfit}.png"))
+        for variant in range(UNIFORM_VARIANTS):
+            atlas = soldier_atlas(outfit, variant)
+            atlas.image.save(os.path.join(HERE, f"soldier-{outfit}-{variant}.png"))
         out["soldier"] = {"size": list(atlas.image.size), "regions": atlas.regions}
     for name, atlas in (("environment", environment_atlas()), ("effects", effects_atlas())):
         atlas.image.save(os.path.join(HERE, f"{name}.png"))

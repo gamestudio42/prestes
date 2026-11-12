@@ -54,7 +54,7 @@ BONES = {
 
 
 def body_mesh() -> bpy.types.Object:
-    b = MeshBuilder("soldier", "soldier-coluna-troop")
+    b = MeshBuilder("soldier", "soldier-coluna-troop-0")
     for side, x in (("L", 0.1), ("R", -0.1)):
         b.box((x, 0.03, 0.05), (0.12, 0.26, 0.1), "boots", group=f"shin.{side}")
         b.box((x, 0, 0.31), (0.11, 0.12, 0.42), "puttees", group=f"shin.{side}")
@@ -81,14 +81,14 @@ def body_mesh() -> bpy.types.Object:
 
 
 def kepi() -> bpy.types.Object:
-    b = MeshBuilder("soldier", "soldier-coluna-troop")
+    b = MeshBuilder("soldier", "soldier-coluna-troop-0")
     b.box((0, 0.0, 1.73), (0.2, 0.22, 0.1), "hat", group="head", front="hat-front", top="hat-top")
     b.box((0, 0.13, 1.685), (0.2, 0.08, 0.02), "leather", group="head")
     return b.to_object("Kepi")
 
 
 def slouch() -> bpy.types.Object:
-    b = MeshBuilder("soldier", "soldier-coluna-troop")
+    b = MeshBuilder("soldier", "soldier-coluna-troop-0")
     b.box((0, 0, 1.69), (0.38, 0.38, 0.03), "hat", group="head")
     b.box((0, 0, 1.75), (0.2, 0.2, 0.1), "hat", group="head", top="hat-top")
     b.box((0, 0, 1.715), (0.21, 0.21, 0.02), "scarf", group="head")

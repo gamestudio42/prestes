@@ -333,6 +333,14 @@ export function soldierOutfit(unit: Pick<UnitSnapshot, 'kind' | 'faction'> & Par
   return `${ARMIES[army].uniform}-${unit.kind === 'officer' ? 'officer' : 'troop'}`;
 }
 
+/** 3.3: each uniform set comes in this many variants. */
+export const UNIFORM_VARIANTS = 3;
+
+/** 3.3: the variant of his uniform, by his id alone. */
+export function uniformVariant(id: number): number {
+  return fnv1a(`uniform:${id}`) % UNIFORM_VARIANTS;
+}
+
 /** Which hat an outfit wears: the kepi for the legalist army, else the brimmed hat. */
 export function wearsKepi(outfit: SoldierOutfit): boolean {
   return outfit.startsWith('legalista-');

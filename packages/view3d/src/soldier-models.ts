@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { clipFade, HELD_CLIPS, missingClips, SOLDIER_OUTFITS, wearsKepi, type SoldierClip, type SoldierOutfit } from './soldier-clips';
+import { clipFade, HELD_CLIPS, missingClips, SOLDIER_OUTFITS, UNIFORM_VARIANTS, wearsKepi, type SoldierClip, type SoldierOutfit } from './soldier-clips';
 import { toonGradient } from './materials';
 
 /**
@@ -11,7 +11,8 @@ import { toonGradient } from './materials';
 export interface SoldierAsset {
   scene: THREE.Group;
   clips: Map<string, THREE.AnimationClip>;
-  materials: Record<SoldierOutfit, THREE.Material>;
+  /** 3.3: by outfit and variant, `<outfit>-<n>`. */
+  materials: Record<string, THREE.Material>;
   /** Skeleton-aware clone (three's SkeletonUtils, loaded with the asset). */
   clone: (source: THREE.Object3D) => THREE.Object3D;
 }
@@ -36,11 +37,16 @@ export async function loadSoldierAsset(base = './models/'): Promise<SoldierAsset
   ]);
   const gltf = await new GLTFLoader().loadAsync(`${base}soldier.glb`);
   const textureLoader = new THREE.TextureLoader();
-  const materials = {} as Record<SoldierOutfit, THREE.Material>;
-  for (const outfit of OUTFITS) {
-    const map = pixelTexture(await textureLoader.loadAsync(`${base}textures/soldier-${outfit}.png`));
-    materials[outfit] = new THREE.MeshToonMaterial({ map, gradientMap: toonGradient() });
-  }
+  const materials: Record<string, THREE.Material> = {};
+  const gradientMap = toonGradient();
+  await Promise.all(
+    OUTFITS.flatMap((outfit) =>
+      Array.from({ length: UNIFORM_VARIANTS }, async (_, variant) => {
+        const map = pixelTexture(await textureLoader.loadAsync(`${base}textures/soldier-${outfit}-${variant}.png`));
+        materials[`${outfit}-${variant}`] = new THREE.MeshToonMaterial({ map, gradientMap });
+      }),
+    ),
+  );
   const missing = missingClips(gltf.animations.map((clip) => clip.name));
   // A test fails the build on this; at run time the soldier just holds his pose.
   if (missing.length > 0) console.error(`soldier.glb lacks clips: ${missing.join(', ')}`);
@@ -59,12 +65,12 @@ export class SoldierInstance {
   private readonly actions = new Map<string, THREE.AnimationAction>();
   private current: SoldierClip | null = null;
 
-  constructor(asset: SoldierAsset, outfit: SoldierOutfit) {
+  constructor(asset: SoldierAsset, outfit: SoldierOutfit, variant = 0) {
     this.root = asset.clone(asset.scene);
     this.root.traverse((child) => {
       const mesh = child as THREE.SkinnedMesh;
       if (!mesh.isMesh) return;
-      mesh.material = asset.materials[outfit];
+      mesh.material = asset.materials[`${outfit}-${variant}`]!;
       mesh.frustumCulled = false;
       if (mesh.name.startsWith('Kepi')) mesh.visible = wearsKepi(outfit);
       if (mesh.name.startsWith('Slouch')) mesh.visible = !wearsKepi(outfit);

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CLIP_FADE_SECONDS, CLIP_SPEED, clipFade, DEATH_POSE, LOWER_MS, RAISE_MS, aimTransition, corpsePose, deathClip, deathVariant, shotSide, soldierClip, steadyClip } from '../src/soldier-clips';
+import { CLIP_FADE_SECONDS, UNIFORM_VARIANTS, uniformVariant, CLIP_SPEED, clipFade, DEATH_POSE, LOWER_MS, RAISE_MS, aimTransition, corpsePose, deathClip, deathVariant, shotSide, soldierClip, steadyClip } from '../src/soldier-clips';
 
 /**
  * soldier-animation-and-textures 2.1: one test per scenario of the wound,
@@ -139,5 +139,16 @@ describe('clips blend (2.3)', () => {
     for (const clip of ['death-stand-front', 'death-stand-back', 'death-stand-flank', 'death-crouch', 'death-prone', 'corpse', 'corpse-side'] as const) {
       expect(clipFade(clip)).toBe(0);
     }
+  });
+});
+
+describe('uniform variants (3.3)', () => {
+  it('a soldier keeps his variant, and a section of eleven shows all three', () => {
+    for (let id = 0; id < 40; id += 1) expect(uniformVariant(id)).toBe(uniformVariant(id));
+    for (const first of [1, 12, 23, 34, 100]) {
+      const section = Array.from({ length: 11 }, (_, at) => uniformVariant(first + at));
+      expect(new Set(section).size, `section from ${first}`).toBeGreaterThanOrEqual(2);
+    }
+    expect(new Set(Array.from({ length: 11 }, (_, at) => uniformVariant(1 + at))).size).toBe(UNIFORM_VARIANTS);
   });
 });
