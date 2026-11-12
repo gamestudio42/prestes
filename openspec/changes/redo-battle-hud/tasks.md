@@ -20,7 +20,7 @@ Approved by the owner on 2026-11-11 ("Aprovo as três", with redo-battle-hud and
 
 ## 3. Troop summary
 
-- [ ] 3.1 (The owner asked for the figures now (2026-11-12): `SoldierFigure` draws each man with the helmet by cover (none, light, good, inside), the body by health, a bandage, pinned and routed marks, and a five-round clip; leader marking and the gauges stay with `troop-thumbnails-and-panel`) Frame `troop-thumbnails-and-panel`'s header, soldier figures, gauges and alerts on the parchment card; verify: the troop-panel e2e of that change pass unchanged and the eleven-figure overflow e2e at 1280 x 720
+- [x] 3.1 (Leader mark and leader-first order landed with troop-thumbnails-and-panel section 3, 2026-11-12. The owner asked for the figures now (2026-11-12): `SoldierFigure` draws each man with the helmet by cover (none, light, good, inside), the body by health, a bandage, pinned and routed marks, and a five-round clip; leader marking and the gauges stay with `troop-thumbnails-and-panel`) Frame `troop-thumbnails-and-panel`'s header, soldier figures, gauges and alerts on the parchment card; verify: the troop-panel e2e of that change pass unchanged and the eleven-figure overflow e2e at 1280 x 720
 - [x] 3.2 (`CommandStatus` in the summary card; `CommandRow` removed) Command status row redistributed (D5): header selection and order, concealed/revealed/ferry badges, hidden stance text; `CommandRow` row removed; verify: the existing e2e that read `selection-count`, `order-value`, `stance-value`, `concealed-value`, `ferry-value` pass unchanged
 - [x] 3.3 (`OrderPrompt` (`order-prompt`)) Order prompt banner at the top centre with Cancel; verify: battle-orders e2e (pick, cancel, give)
 
