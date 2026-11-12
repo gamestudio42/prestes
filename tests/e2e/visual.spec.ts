@@ -5,10 +5,8 @@ import { expect, test, type Page } from '@playwright/test';
 
 const SCREENSHOT = { animations: 'disabled', caret: 'hide', maxDiffPixelRatio: 0.002 } as const;
 
-// The menu video holds its first frame for reduced motion, but that frame depends on
-// when the video finishes loading, so the screenshots hide it. A mask would cover the
-// book too: the video canvas fills the screen.
-const HIDE_MENU_VIDEO = '[data-testid="menu-video"] { visibility: hidden; }';
+// camp-tent-menu: the menu's backdrop is a still image (the camp table), so the
+// screenshots draw it; there is no video frame to hide.
 test.use({ contextOptions: { reducedMotion: 'reduce' } });
 
 async function stableFonts(page: Page): Promise<void> {
@@ -22,7 +20,6 @@ test('desk start screen matches the baseline', async ({ page }) => {
   });
   await page.goto('/');
   await expect(page.getByTestId('menu-desk')).toBeVisible();
-  await page.addStyleTag({ content: HIDE_MENU_VIDEO });
   await stableFonts(page);
   await expect(page).toHaveScreenshot('desk-start-screen.png', SCREENSHOT);
 });
@@ -35,7 +32,6 @@ test('desk compendium matches the baseline', async ({ page }) => {
   await page.goto('/');
   await page.getByTestId('start-codex').click();
   await expect(page.getByTestId('codex')).toBeVisible();
-  await page.addStyleTag({ content: HIDE_MENU_VIDEO });
   await stableFonts(page);
   await expect(page).toHaveScreenshot('desk-compendium.png', SCREENSHOT);
 });
@@ -53,7 +49,6 @@ test('desk campaign chapter opening matches the baseline', async ({ page }) => {
     .poll(() => page.getByTestId('book-plate-image').evaluate((node: HTMLImageElement) => node.naturalWidth))
     .toBeGreaterThan(0);
   await page.mouse.move(0, 0);
-  await page.addStyleTag({ content: HIDE_MENU_VIDEO });
   await stableFonts(page);
   await expect(page).toHaveScreenshot('desk-campaign-chapter.png', SCREENSHOT);
 });
@@ -67,7 +62,6 @@ test('desk gramophone screen matches the baseline', async ({ page }) => {
   await page.getByTestId('desk-gramophone-object').click();
   await expect(page.getByTestId('gramophone-title')).toBeVisible();
   await page.mouse.move(0, 0);
-  await page.addStyleTag({ content: HIDE_MENU_VIDEO });
   await stableFonts(page);
   await expect(page).toHaveScreenshot('desk-gramophone.png', SCREENSHOT);
 });

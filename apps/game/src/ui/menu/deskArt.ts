@@ -8,6 +8,7 @@ import gramophoneBody from '../../assets/menu/desk/gramophone-body.png';
 import gramophoneGrooves from '../../assets/menu/desk/gramophone-grooves.png';
 import gramophoneRecord from '../../assets/menu/desk/gramophone-record.png';
 import theodolite from '../../assets/menu/desk/theodolite.png';
+import binoculars from '../../assets/menu/desk/binoculars.png';
 
 import type { CSSProperties } from 'react';
 
@@ -33,28 +34,34 @@ export interface DeskArt {
 export const DESK_SCALE = 2;
 
 /**
- * The desk's pixel-art sprites. The closed books are rasterized from reference
- * photographs supplied by the project owner and cleaned up in Aseprite
- * (tools/aseprite/desk-cleanup.lua); the reference pile and the gramophone are
- * still the first rasterized versions; the compass is drawn by
- * tools/aseprite/desk-draw.lua; the open books are
- * drawn in CSS (menu-desk.css). They are imported by
- * Vite, so the built game carries them without a runtime path.
+ * The desk's pixel-art sprites. camp-tent-menu: the books, the reference pile,
+ * the record player, the compass and the binoculars are rasterized and cut
+ * from the owner's item sheet (`referencias para hud/Itens do Menu em Pixel
+ * Art.png`) by tools/menu/camp_pieces.py, which also draws the map sheet and
+ * the record's groove layer. The open compass and the theodolite are the
+ * earlier sprites, no longer laid on the desk; the open books are drawn in
+ * CSS (menu-desk.css). They are imported by Vite, so the built game carries
+ * them without a runtime path.
  */
 export const DESK_ART = {
-  campaignClosed: { src: campaignBookClosed, width: 128, height: 96 },
-  compendiumClosed: { src: compendiumBookClosed, width: 128, height: 96 },
-  compassClosed: { src: compassClosed, width: 64, height: 64 },
+  campaignClosed: { src: campaignBookClosed, width: 112, height: 105 },
+  compendiumClosed: { src: compendiumBookClosed, width: 146, height: 110 },
+  compassClosed: { src: compassClosed, width: 101, height: 99 },
   compassOpen: { src: compassOpen, width: 64, height: 64 },
-  // The folded sheet every skirmish map is drawn on (the thumbnail lies over it).
-  mapSheet: { src: mapSheet, width: 128, height: 120 },
-  referencesPile: { src: referencesBooks, width: 128, height: 80 },
-  gramophoneBody: { src: gramophoneBody, width: 120, height: 160 },
-  gramophoneGrooves: { src: gramophoneGrooves, width: 64, height: 32 },
+  // The card every skirmish map is printed on; the print shows through its window (MAP_SHEET_WINDOW).
+  mapSheet: { src: mapSheet, width: 144, height: 136 },
+  referencesPile: { src: referencesBooks, width: 144, height: 90 },
+  gramophoneBody: { src: gramophoneBody, width: 133, height: 140 },
+  gramophoneGrooves: { src: gramophoneGrooves, width: 58, height: 25 },
   gramophoneRecord: { src: gramophoneRecord, width: 30, height: 30 },
   // add-map-editor: drawn in code by tools/build-desk-theodolite.ts.
   theodolite: { src: theodolite, width: 64, height: 80 },
+  // camp-tent-menu: the field glasses that open the map editor.
+  binoculars: { src: binoculars, width: 149, height: 87 },
 } as const satisfies Record<string, DeskArt>;
+
+/** The map sheet's window in art pixels (x0, y0, x1, y1): the print lies under it. */
+export const MAP_SHEET_WINDOW = { x0: 26, y0: 8, x1: 118, y1: 100 } as const;
 
 /** Closed sprites that are not yet drawn for the 2x desk standard. */
 export const PENDING_REDRAW = Object.entries(DESK_ART as Record<string, DeskArt>)

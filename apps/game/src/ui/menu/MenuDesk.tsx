@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import type { BattleMap, BattleMapId } from '@prestes/shared';
 import { translate, type Locale, type MessageKey } from '@prestes/content';
 import type { GramophoneState } from '../../audio/Gramophone';
@@ -7,7 +7,7 @@ import { CampaignBook } from './CampaignBook';
 import { CompendiumBook, type CompendiumTarget } from './CompendiumBook';
 import { DeskObject } from './DeskObject';
 import { GramophoneDesk } from './GramophoneDesk';
-import { MAP_EDITOR_URL, MapEditorTheodolite } from './MapEditorTheodolite';
+import { MAP_EDITOR_URL, MapEditorBinoculars } from './MapEditorBinoculars';
 import { OptionsCompass } from './OptionsCompass';
 import { ReferencesShelf } from './ReferencesShelf';
 import { SkirmishMaps } from './SkirmishMaps';
@@ -18,6 +18,7 @@ import {
   defaultDeskPosition,
   loadDesk,
   saveDesk,
+  sceneTransform,
   type DeskLayout,
   type DeskObjectId,
   type DeskPosition,
@@ -86,6 +87,8 @@ export function MenuDesk({
   const open = useMemo(() => new Set(openOrder), [openOrder]);
   const [front, setFront] = useState<DeskObjectId | null>(null);
   const [compendiumTarget, setCompendiumTarget] = useState<CompendiumTarget | null>(null);
+  // camp-tent-menu: the objects are drawn at the camp table's scale, so they
+  // keep the sizes of the owner's layout at any view size.
 
   const commit = useCallback((next: DeskLayout) => {
     setLayout(next);
@@ -100,6 +103,35 @@ export function MenuDesk({
       if (current && current.w === size.w && current.h === size.h) return previous;
       return { ...previous, [id]: size };
     });
+  }, []);
+
+  // camp-tent-menu: the objects are drawn at the camp table's scale, so they
+  // keep the sizes of the owner's layout at any view size. A resize carries
+  // every placed object with the table, so the arrangement keeps its shape.
+  const [sceneScale, setSceneScale] = useState(() => sceneTransform(view()).scale);
+  const sceneRef = useRef(sceneTransform(view()));
+  useEffect(() => {
+    const update = () => {
+      const previous = sceneRef.current;
+      const next = sceneTransform(view());
+      if (previous.scale === next.scale && previous.x === next.x && previous.y === next.y) return;
+      sceneRef.current = next;
+      setSceneScale(next.scale);
+      setLayout((current) => {
+        const moved: DeskLayout = {};
+        for (const id of DESK_OBJECT_IDS) {
+          const position = current[id];
+          if (!position) continue;
+          moved[id] = {
+            x: next.x + ((position.x - previous.x) * next.scale) / previous.scale,
+            y: next.y + ((position.y - previous.y) * next.scale) / previous.scale,
+          };
+        }
+        return moved;
+      });
+    };
+    window.addEventListener('resize', update);
+    return () => window.removeEventListener('resize', update);
   }, []);
 
   // Give every measured object a place, and pull saved positions back in view
@@ -199,7 +231,12 @@ export function MenuDesk({
   const position = (id: DeskObjectId) => layout[id];
 
   return (
-    <div className="menu-desk" data-testid="menu-desk">
+    <div
+      className="menu-desk"
+      data-testid="menu-desk"
+      data-scene-scale={sceneScale}
+      style={{ '--scene-scale': sceneScale } as CSSProperties}
+    >
       <DeskObject
         id="campaign"
         name={t('menu.mark.campaign')}
@@ -342,7 +379,7 @@ export function MenuDesk({
         />
       </DeskObject>
 
-      {/* add-map-editor: the theodolite does not open in place; it goes to the editor page. */}
+      {/* add-map-editor: the field glasses do not open in place; they go to the editor page. */}
       <DeskObject
         id="editor"
         name={t('menu.maps.editor')}
@@ -358,7 +395,7 @@ export function MenuDesk({
         moveLabel={t('menu.desk.move')}
         testId="menu-mark-editor"
       >
-        <MapEditorTheodolite locale={locale} />
+        <MapEditorBinoculars locale={locale} />
       </DeskObject>
 
       <p className="desk-hint" aria-hidden="true">
