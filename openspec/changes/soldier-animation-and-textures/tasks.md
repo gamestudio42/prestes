@@ -27,7 +27,8 @@
 
 ## 3. Textures
 
-- [ ] 3.1 The larger atlas and the painted layers in `make_textures.py` (folds, belts, leg wear, headgear, wear), regions updated; verify on the review sheet and by the texture size check
+- [x] 3.1 The larger atlas and the painted layers in `make_textures.py` (folds, belts, leg wear, headgear, wear), regions updated; verify on the review sheet and by the texture size check
+  - Apply note (2026-11-11): soldier atlases are 128 x 128 with 16 x 16 swatches, painted in layers (`layered`: weave, folds, wear, pockets and buttons, back seam, rubbed knees and hem dust, wound puttees, belt buckle, hat band and badge, crown crease, a face). New swatches `tunic-front`, `tunic-back`, `trousers-front`, `belt-front`, `hat-front`, `hat-top`, `face`; `MeshBuilder.box` takes `front` and `back`. About 2.3 KB per atlas; `soldier-textures.test.ts` checks the size, the regions and an 8 KB budget. Review in `docs/review/soldier-clips/textures-128-2026-11-11.png`. Visual e2e baselines with soldiers will need re-recording at 4.2.
 - [ ] 3.2 Uniform sets for the three armies' rank and file and officers from `docs/history/FORCES.md`, with unsourced details listed as placeholders in `docs/assets.md`; verify: the content check finds a uniform set for every army, and the three read apart in a greyscale screenshot
 - [ ] 3.3 Three variants per set chosen by soldier id; verify with a unit test and a screenshot of a section of eleven
 - [ ] 3.4 The blood overlay on the wound's side; verify with a view test that a wounded soldier's material carries the overlay and an unwounded one does not

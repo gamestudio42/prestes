@@ -2,7 +2,7 @@
 
 Draws three small atlases in the sepia palette and writes their region index:
 
-  soldier-<outfit>.png  64 x 64  same layout per outfit (column, legalist, officer)
+  soldier-<outfit>.png  128 x 128  same layout per outfit (column, legalist, officer)
   environment.png  128 x 128 16 x 16 swatches: plaster, tile, timber, stone...
   effects.png      64 x 16   8 x 8 sprite frames: muzzle, smoke, dust, splinter
   regions.json     swatch name -> [x, y, w, h] in pixels, per atlas
@@ -88,22 +88,171 @@ OUTFITS = {
 }
 
 
+SOLDIER_SIZE = 128
+SWATCH = 16
+
+
+def shade(colour, by: int):
+    """`colour` lighter (by > 0) or darker (by < 0), clamped."""
+    return tuple(max(0, min(255, c + by)) for c in colour)
+
+
+def layered(base, dark, *layers):
+    """soldier-animation-and-textures 3.1: cloth painted in layers. The base
+    weave and grain first, then each layer may replace the pixel: a layer is
+    `fn(i, j, rng, colour) -> colour`."""
+    def paint(i, j, rng):
+        colour = dark if rng.random() < 0.1 else base
+        for layer in layers:
+            colour = layer(i, j, rng, colour)
+        return colour
+    return paint
+
+
+def folds(dark, rows=(5, 11), slope=1):
+    """Creases: short diagonal dark runs across the given rows."""
+    def layer(i, j, rng, colour):
+        for row in rows:
+            if j == row + ((i * slope) // 5) % 2 and rng.random() < 0.7:
+                return dark
+        return colour
+    return layer
+
+
+def wear(light, chance=0.05, low_rows=0, grime=None):
+    """Worn cloth: pale scuffs everywhere, grime on the bottom `low_rows`."""
+    def layer(i, j, rng, colour):
+        if grime is not None and j >= SWATCH - low_rows and rng.random() < 0.35:
+            return grime
+        if rng.random() < chance:
+            return light
+        return colour
+    return layer
+
+
+def pockets(dark, button):
+    """Two breast pockets with flaps and a button line down the front."""
+    def layer(i, j, rng, colour):
+        if i in (7, 8) and j % 3 == 1:
+            return button
+        for x0 in (2, 10):
+            if x0 <= i <= x0 + 3 and j in (3, 7):
+                return dark
+            if i in (x0, x0 + 3) and 3 <= j <= 7:
+                return dark
+            if i == x0 + 1 and j == 4:
+                return button
+        return colour
+    return layer
+
+
+def back_seam(dark):
+    def layer(i, j, rng, colour):
+        return dark if i == 8 and rng.random() < 0.8 else colour
+    return layer
+
+
+def knees(light, grime):
+    """Trouser fronts: knees rubbed pale, dust at the hems."""
+    def layer(i, j, rng, colour):
+        if 6 <= j <= 9 and 3 <= i <= 12 and rng.random() < 0.45:
+            return light
+        if j >= 13 and rng.random() < 0.4:
+            return grime
+        return colour
+    return layer
+
+
+def puttee_wrap(base, dark):
+    """Puttees wound in diagonal turns."""
+    return lambda i, j, rng: dark if (i + 2 * j) % 6 in (0, 1) else (shade(base, 12) if rng.random() < 0.05 else base)
+
+
+def belt(leather, buckle, edge):
+    def paint(i, j, rng):
+        if j in (0, SWATCH - 1):
+            return edge
+        if 5 <= i <= 10 and 4 <= j <= 11:
+            return buckle if (i in (5, 10) or j in (4, 11)) else leather
+        return shade(leather, 10) if rng.random() < 0.08 else leather
+    return paint
+
+
+def face(skin, dark, ink, moustache):
+    """The front of the head: brows, eyes, nose shadow and, for some, a moustache."""
+    def paint(i, j, rng):
+        if j == 5 and i in (3, 4, 5, 10, 11, 12):
+            return dark
+        if j == 7 and i in (4, 11):
+            return ink
+        if 8 <= j <= 10 and i in (7, 8):
+            return dark
+        if moustache and j == 11 and 4 <= i <= 11:
+            return ink
+        if j == 13 and 6 <= i <= 9:
+            return dark
+        return dark if rng.random() < 0.06 else skin
+    return paint
+
+
+def hat_band(base, dark, band, badge=None):
+    """Headgear sides: a band at the bottom, sweat stains, and a badge on the front."""
+    def paint(i, j, rng):
+        if badge is not None and 6 <= i <= 9 and 4 <= j <= 7:
+            return badge
+        if j >= 11:
+            return band
+        if j == 10 and rng.random() < 0.5:
+            return dark
+        return dark if rng.random() < 0.12 else base
+    return paint
+
+
+def crown(base, dark):
+    """The top of the hat: the crease of the crown down the middle."""
+    return lambda i, j, rng: dark if i == 8 or (j in (4, 11) and 5 <= i <= 11) else (dark if rng.random() < 0.1 else base)
+
+
+OUTFIT_DETAIL = {
+    "column": dict(button=MID, band=RED_DARK, badge=None, moustache=True),
+    "legalist": dict(button=METAL_LIGHT, band=DARK, badge=METAL_LIGHT, moustache=False),
+    "officer": dict(button=GOLD, band=BROWN, badge=GOLD, moustache=True),
+}
+
+
 def soldier_atlas(outfit: str) -> Atlas:
-    """One atlas per outfit with the same layout, so one model wears all three."""
-    atlas = Atlas(64, 64)
+    """One atlas per outfit with the same layout, so one model wears all three.
+    3.1: 128 x 128, 16 x 16 swatches, each face painted in layers."""
+    atlas = Atlas(SOLDIER_SIZE, SOLDIER_SIZE)
     colours = OUTFITS[outfit]
-    atlas.swatch("tunic", 0, 0, 8, 8, cloth(*colours["tunic"]))
-    atlas.swatch("trousers", 8, 0, 8, 8, cloth(*colours["trousers"], seam_every=8))
-    atlas.swatch("hat", 16, 0, 8, 8, noise(colours["hat"][0], colours["hat"][1], 0.15))
-    atlas.swatch("scarf", 24, 0, 8, 8, noise(colours["scarf"][0], colours["scarf"][1], 0.2))
-    atlas.swatch("puttees", 32, 0, 8, 8, lambda i, j, rng, c=colours["puttees"]: c[1] if (i + j) % 3 == 0 else c[0])
-    y = 24
-    atlas.swatch("skin", 0, y, 8, 8, noise(SKIN, SKIN_DARK, 0.1))
-    atlas.swatch("boots", 8, y, 8, 8, noise(DARK, INK, 0.2))
-    atlas.swatch("leather", 16, y, 8, 8, lambda i, j, rng: GOLD if (i % 3 == 1 and j % 4 == 1) else BROWN)
-    atlas.swatch("rifle.wood", 24, y, 8, 8, lambda i, j, rng: WOOD_DARK if j % 3 == 0 else WOOD)
-    atlas.swatch("rifle.metal", 32, y, 8, 8, noise(METAL, METAL_LIGHT, 0.15))
-    atlas.swatch("blood", 40, y, 8, 8, noise(RED_DARK, (80, 28, 22), 0.3))
+    detail = OUTFIT_DETAIL[outfit]
+    tunic, tunic_dark = colours["tunic"]
+    trousers, trousers_dark = colours["trousers"]
+    hat, hat_dark = colours["hat"]
+    dust = shade(SAND, -10)
+    n = SWATCH
+    # Row 0: the uniform.
+    atlas.swatch("tunic", 0, 0, n, n, layered(tunic, tunic_dark, folds(tunic_dark, (6, 12)), wear(shade(tunic, 18))))
+    atlas.swatch("tunic-front", n, 0, n, n, layered(tunic, tunic_dark, folds(tunic_dark, (12,)), pockets(tunic_dark, detail["button"]), wear(shade(tunic, 18))))
+    atlas.swatch("tunic-back", 2 * n, 0, n, n, layered(tunic, tunic_dark, back_seam(tunic_dark), folds(tunic_dark, (10, 13)), wear(shade(tunic, 18))))
+    atlas.swatch("trousers", 3 * n, 0, n, n, layered(trousers, trousers_dark, folds(trousers_dark, (4, 9), slope=2), wear(shade(trousers, 16), 0.04, 3, dust)))
+    atlas.swatch("trousers-front", 4 * n, 0, n, n, layered(trousers, trousers_dark, knees(shade(trousers, 22), dust), folds(trousers_dark, (3,), slope=2)))
+    atlas.swatch("hat", 5 * n, 0, n, n, hat_band(hat, hat_dark, detail["band"]))
+    atlas.swatch("hat-front", 6 * n, 0, n, n, hat_band(hat, hat_dark, detail["band"], detail["badge"]))
+    atlas.swatch("hat-top", 7 * n, 0, n, n, crown(hat, hat_dark))
+    # Row 1: neck, legs.
+    atlas.swatch("scarf", 0, n, n, n, layered(colours["scarf"][0], colours["scarf"][1], folds(colours["scarf"][1], (4, 9, 13))))
+    atlas.swatch("puttees", n, n, n, n, puttee_wrap(*colours["puttees"]))
+    # Row 3: skin, kit and rifle.
+    y = 3 * n
+    atlas.swatch("skin", 0, y, n, n, noise(SKIN, SKIN_DARK, 0.1))
+    atlas.swatch("face", n, y, n, n, face(SKIN, SKIN_DARK, INK, detail["moustache"]))
+    atlas.swatch("boots", 2 * n, y, n, n, layered(DARK, INK, wear(dust, 0.0, 4, dust)))
+    atlas.swatch("leather", 3 * n, y, n, n, lambda i, j, rng: GOLD if (i % 5 == 2 and j % 6 == 2) else (shade(BROWN, 12) if rng.random() < 0.08 else BROWN))
+    atlas.swatch("belt-front", 4 * n, y, n, n, belt(BROWN, METAL_LIGHT if outfit == "legalist" else GOLD, DARK))
+    atlas.swatch("rifle.wood", 5 * n, y, n, n, lambda i, j, rng: WOOD_DARK if j % 5 == 0 else WOOD)
+    atlas.swatch("rifle.metal", 6 * n, y, n, n, noise(METAL, METAL_LIGHT, 0.15))
+    atlas.swatch("blood", 7 * n, y, n, n, noise(RED_DARK, (80, 28, 22), 0.3))
     return atlas
 
 

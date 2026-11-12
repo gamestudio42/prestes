@@ -113,9 +113,10 @@ class MeshBuilder:
             vert[self.deform][index] = 1.0
         return vert
 
-    def box(self, center, size, swatch, top=None, bottom=None, group=None, matrix=None, tile=None) -> None:
+    def box(self, center, size, swatch, top=None, bottom=None, group=None, matrix=None, tile=None, front=None, back=None) -> None:
         """An axis-aligned box (then `matrix`), faces textured by swatch; with
-        `tile` each face repeats the swatch about every `tile` metres."""
+        `tile` each face repeats the swatch about every `tile` metres;
+        `front` and `back` texture the y+ and y- faces (a soldier faces +y)."""
         cx, cy, cz = center
         sx, sy, sz = (s / 2 for s in size)
         corners = [
@@ -131,8 +132,8 @@ class MeshBuilder:
         # 0..3 bottom (z-), 4..7 top (z+); order x-,x+ within y-,y+
         self.quad([b[0], b[2], b[3], b[1]], bottom or swatch, index, tile)  # bottom
         self.quad([b[4], b[5], b[7], b[6]], top or swatch, index, tile)  # top
-        self.quad([b[0], b[1], b[5], b[4]], swatch, index, tile)  # y-
-        self.quad([b[3], b[2], b[6], b[7]], swatch, index, tile)  # y+
+        self.quad([b[0], b[1], b[5], b[4]], back or swatch, index, tile)  # y-
+        self.quad([b[3], b[2], b[6], b[7]], front or swatch, index, tile)  # y+
         self.quad([b[2], b[0], b[4], b[6]], swatch, index, tile)  # x-
         self.quad([b[1], b[3], b[7], b[5]], swatch, index, tile)  # x+
 

@@ -58,15 +58,15 @@ def body_mesh() -> bpy.types.Object:
     for side, x in (("L", 0.1), ("R", -0.1)):
         b.box((x, 0.03, 0.05), (0.12, 0.26, 0.1), "boots", group=f"shin.{side}")
         b.box((x, 0, 0.31), (0.11, 0.12, 0.42), "puttees", group=f"shin.{side}")
-        b.box((x, 0, 0.72), (0.15, 0.17, 0.42), "trousers", group=f"thigh.{side}")
+        b.box((x, 0, 0.72), (0.15, 0.17, 0.42), "trousers", group=f"thigh.{side}", front="trousers-front")
     b.box((0, 0, 0.96), (0.36, 0.21, 0.14), "trousers", group="hips")
-    b.box((0, 0, 1.2), (0.38, 0.23, 0.44), "tunic", group="chest")
-    b.box((0, 0.005, 1.0), (0.4, 0.25, 0.06), "leather", group="hips")
+    b.box((0, 0, 1.2), (0.38, 0.23, 0.44), "tunic", group="chest", front="tunic-front", back="tunic-back")
+    b.box((0, 0.005, 1.0), (0.4, 0.25, 0.06), "leather", group="hips", front="belt-front")
     # Bandolier across the chest, from the left shoulder to the right hip.
     sash = Matrix.Translation((0, 0.12, 1.22)) @ Matrix.Rotation(math.radians(38), 4, "Y")
     b.box((0, 0, 0), (0.07, 0.03, 0.56), "leather", group="chest", matrix=sash)
     b.box((0, 0.01, 1.43), (0.24, 0.21, 0.06), "scarf", group="chest")
-    b.box((0, 0.01, 1.57), (0.19, 0.21, 0.22), "skin", group="head")
+    b.box((0, 0.01, 1.57), (0.19, 0.21, 0.22), "skin", group="head", front="face")
     for side, x in (("L", 0.24), ("R", -0.24)):
         b.box((x, 0, 1.27), (0.1, 0.11, 0.3), "tunic", group=f"upper_arm.{side}")
         b.box((x, 0, 1.0), (0.09, 0.1, 0.26), "tunic", group=f"forearm.{side}")
@@ -82,7 +82,7 @@ def body_mesh() -> bpy.types.Object:
 
 def kepi() -> bpy.types.Object:
     b = MeshBuilder("soldier", "soldier-column")
-    b.box((0, 0.0, 1.73), (0.2, 0.22, 0.1), "hat", group="head")
+    b.box((0, 0.0, 1.73), (0.2, 0.22, 0.1), "hat", group="head", front="hat-front", top="hat-top")
     b.box((0, 0.13, 1.685), (0.2, 0.08, 0.02), "leather", group="head")
     return b.to_object("Kepi")
 
@@ -90,7 +90,7 @@ def kepi() -> bpy.types.Object:
 def slouch() -> bpy.types.Object:
     b = MeshBuilder("soldier", "soldier-column")
     b.box((0, 0, 1.69), (0.38, 0.38, 0.03), "hat", group="head")
-    b.box((0, 0, 1.75), (0.2, 0.2, 0.1), "hat", group="head")
+    b.box((0, 0, 1.75), (0.2, 0.2, 0.1), "hat", group="head", top="hat-top")
     b.box((0, 0, 1.715), (0.21, 0.21, 0.02), "scarf", group="head")
     return b.to_object("Slouch")
 
