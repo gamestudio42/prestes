@@ -8,6 +8,8 @@ height for sight), so the game places them without scaling.
 """
 import math
 
+from mathutils import Matrix
+
 import buildings_kit as kit
 from common import MeshBuilder, reset, rotation_z, save_and_export
 
@@ -169,6 +171,194 @@ def ferry_house():
     _finish(b, m)
 
 
+# --- town buildings (revise-buildings-and-stone 3.3) --------------------------
+
+
+def _pilasters(b: MeshBuilder, hw: float, hd: float, height: float, swatch: str = "plaster.shade") -> None:
+    """Pilasters at the two street corners, up to `height`."""
+    for side in (-1, 1):
+        b.box(tuple(kit.at(side * (hw - 0.15), hd + 0.06, height / 2)), (0.4, 0.14, height), swatch)
+
+
+def _terraced(model: str, wash: str, mouldings: bool) -> None:
+    hw, hd, wall, rise = _frame(model)
+    b = MeshBuilder("environment")
+    kit.walls(b, hw, hd, wall, wash=wash)
+    kit.all_openings(b, model)
+    kit.roof_gable(b, hw, hd - 0.3, wall, rise - 0.3, along="x", overhang=0.1)
+    kit.platband(b, hw, hd, wall, 1.0)
+    if mouldings:
+        _pilasters(b, hw, hd, wall + 0.9)
+        b.box(tuple(kit.at(0, hd + 0.06, 2.9)), (2 * hw - 0.8, 0.1, 0.14), "plaster.shade")
+    _finish(b, model)
+
+
+def terraced_house():
+    """Casa geminada: a pink platband facade with cornices over a tiled
+    roof, a door and two windows on the street."""
+    _terraced("terraced-house", "wash.rose", mouldings=False)
+
+
+def terraced_house_wide():
+    """The wide casa geminada: blue wash, pilasters and a moulded band."""
+    _terraced("terraced-house-wide", "wash.blue", mouldings=True)
+
+
+def sobrado():
+    """Sobrado: two floors in ochre, a storey cornice, an iron balcony along
+    the upper windows, a platband over a hip roof."""
+    m = "sobrado"
+    hw, hd, wall, rise = _frame(m)
+    storey = kit.openings(m)["storey"]
+    b = MeshBuilder("environment")
+    kit.walls(b, hw, hd, wall, wash="wash.ochre")
+    kit.cornice(b, hw, hd, storey, depth=0.1)
+    kit.all_openings(b, m)
+    kit.roof_hip(b, hw, hd - 0.3, wall, rise, overhang=0.1)
+    kit.platband(b, hw, hd, wall, 0.8)
+    _pilasters(b, hw, hd, wall + 0.7)
+    kit.balcony(b, 0, hd, storey + 0.85, 2 * hw - 1.4)
+    _finish(b, m)
+
+
+def casa_terrea():
+    """Casa terrea: ochre wash with a rose dado, framed windows with
+    shutters, a hip roof with deep eaves, plaster worn at the foot."""
+    m = "casa-terrea"
+    hw, hd, wall, rise = _frame(m)
+    b = MeshBuilder("environment")
+    kit.walls(b, hw, hd, wall, wash="wash.ochre", band="wash.rose")
+    kit.cornice(b, hw, hd, wall)
+    kit.all_openings(b, m)
+    kit.wear(b, hw, hd, patches=((-0.3, 1.2, 0.5), (0.35, 1.0, 0.4)))
+    kit.roof_hip(b, hw, hd, wall + 0.1, rise, overhang=0.6)
+    _finish(b, m)
+
+
+def venda():
+    """Venda: blue wash, a gable to the street, wide double doors under a
+    zinc awning on posts, a painted sign board."""
+    m = "venda"
+    hw, hd, wall, rise = _frame(m)
+    b = MeshBuilder("environment")
+    kit.walls(b, hw, hd, wall, wash="wash.blue")
+    kit.all_openings(b, m)
+    b.box(tuple(kit.at(0, hd + 0.09, 1.1)), (0.06, 0.04, 2.2), "timber")  # the two leaves' join
+    kit.roof_gable(b, hw, hd, wall, rise, along="y", overhang=0.3)
+    kit.awning(b, 0, hd, 2.9, 3.6)
+    kit.posts(b, [(-1.7, hd + 1.1), (1.7, hd + 1.1)], 2.5)
+    kit.sign_board(b, 0, hd, wall - 0.25, 3.0)
+    _finish(b, m)
+
+
+def armazem():
+    """Armazem: worn plaster, a zinc gable, tall double doors, a timber
+    loading platform along the street wall either side of them."""
+    m = "armazem"
+    hw, hd, wall, rise = _frame(m)
+    b = MeshBuilder("environment")
+    kit.walls(b, hw, hd, wall, wash="plaster.worn")
+    kit.all_openings(b, m, shutters=False, frame="timber")
+    b.box(tuple(kit.at(0, hd + 0.09, 1.6)), (0.06, 0.04, 3.2), "timber")
+    kit.roof_gable(b, hw, hd, wall, rise, swatch="zinc", end="plaster.worn", along="y", overhang=0.3)
+    for side in (-1, 1):
+        b.box(tuple(kit.at(side * (hw / 2 + 0.9), hd + 0.9, 0.45)), (hw - 1.4, 1.8, 0.9), "timber", tile=1.0)
+    kit.sign_board(b, 0, hd, wall - 0.3, 3.6)
+    _finish(b, m)
+
+
+def coreto():
+    """Coreto: an octagonal bandstand on a stone plinth, a low balustrade
+    between cast-iron columns, a pointed zinc roof with a finial. Its
+    openings are the spans between the columns."""
+    m = "coreto"
+    hw, hd, wall, rise = _frame(m)
+    b = MeshBuilder("environment")
+    turn = kit.rotation_z(math.pi / 8)
+    b.cylinder((0, 0, 0), hw * 1.08, 0.3, "stone", sides=8, matrix=Matrix.Translation((0, 0, 0.15)) @ turn)
+    for side in (-1, 1):
+        for k in (-1, 1):
+            b.box(tuple(kit.at(k * 1.5, side * hd, 0.65)), (1.6, 0.14, 0.7), "plaster")
+            b.box(tuple(kit.at(side * hw, k * 1.5, 0.65)), (0.14, 1.6, 0.7), "plaster")
+    columns = [(sx * hw, sy * hd) for sx in (-1, 1) for sy in (-1, 1)]
+    columns += [(-0.7, hd), (0.7, hd), (-0.7, -hd), (0.7, -hd), (hw, 0), (-hw, 0)]
+    kit.posts(b, columns, wall, swatch="iron", size=0.14)
+    b.box(tuple(kit.at(0, 0, wall + 0.1)), (2 * hw + 0.3, 2 * hd + 0.3, 0.2), "plaster.shade")
+    b.cone((0, 0, 0), hw * 1.35, rise + 0.6, "zinc", sides=8, matrix=Matrix.Translation((0, 0, wall + 0.2)) @ turn)
+    b.box(tuple(kit.at(0, 0, wall + rise + 1.0)), (0.08, 0.08, 0.6), "iron")
+    kit.steps(b, 0, hd, 1.2, count=2)
+    b.box(tuple(kit.at(0, -hd - 0.3, 0.1)), (1.2, 0.6, 0.2), "stone")
+    _finish(b, m)
+
+
+def church():
+    """Igreja matriz: whitewash with ochre trim, a pediment front, the bell
+    tower on the front over the main door, tall side windows, front steps."""
+    m = "church"
+    hw, hd, wall, rise = _frame(m)
+    tower = kit.openings(m)["tower"]
+    b = MeshBuilder("environment")
+    kit.walls(b, hw, hd, wall, band="wash.ochre")
+    kit.cornice(b, hw, hd, wall, swatch="wash.ochre")
+    kit.all_openings(b, m, shutters=False, frame="wash.ochre")
+    kit.roof_gable(b, hw, hd, wall + 0.1, rise, along="y", overhang=0.1)
+    # The pediment: the front gable carried up as a wall.
+    kit.face_out(b, [(-hw - 0.1, hd + 0.05, wall + 0.1), (hw + 0.1, hd + 0.05, wall + 0.1), (0, hd + 0.05, wall + rise + 0.3)],
+                 "plaster", (0, 1, 0), kit.WALL_TILE)
+    # The tower stands proud of the front by a little, the main door at its foot.
+    kit.tower(b, tower["x"], tower["y"], tower["side"] + 0.3, tower["top"], trim="wash.ochre")
+    main = next(entry for entry in kit.openings(m)["doors"] if entry["wall"] == "front")
+    face = tower["y"] + (tower["side"] + 0.3) / 2
+    b.box(tuple(kit.at(main["x"], face + 0.04, main["height"] / 2)), (main["width"], 0.08, main["height"]), "door", tile=1.4)
+    b.box(tuple(kit.at(main["x"], face + 0.07, main["height"] + 0.1)), (main["width"] + 0.4, 0.1, 0.2), "wash.ochre")
+    _pilasters(b, hw, hd, wall, swatch="wash.ochre")
+    kit.steps(b, 0, hd + 0.05, 4.4, count=3)
+    _finish(b, m)
+
+
+def _row_of_gables(b: MeshBuilder, hw: float, hd: float, z: float, rise: float, bays: int, swatch: str, end: str) -> None:
+    """A factory's row of gable roofs side by side, each ridge along the depth."""
+    bay = 2 * hw / bays
+    for k in range(bays):
+        x = -hw + bay * (k + 0.5)
+        b.prism((0, 0, 0), 2 * hd + 0.6, bay + 0.1, rise, swatch, end=end,
+                matrix=Matrix.Translation(kit.at(x, 0, z)) @ kit.rotation_z(math.pi / 2), tile=kit.ROOF_TILE)
+
+
+def factory():
+    """Fabrica: brick walls on a stone plinth, stone cornices, framed windows
+    on both floors, a row of gable roofs, a tall brick chimney."""
+    m = "factory"
+    hw, hd, wall, rise = _frame(m)
+    storey = kit.openings(m)["storey"]
+    b = MeshBuilder("environment")
+    kit.walls(b, hw, hd, wall, wash="brick")
+    kit.cornice(b, hw, hd, storey, swatch="stone", depth=0.1)
+    kit.cornice(b, hw, hd, wall, swatch="stone")
+    kit.all_openings(b, m, shutters=False)
+    _row_of_gables(b, hw, hd, wall + 0.1, rise, 4, "tile", "brick")
+    kit.chimney(b, hw - 3.0, -hd + 3.0, 0, wall + rise + 9.0, size=1.6)
+    kit.sign_board(b, 0, hd, wall - 0.6, 8.0)
+    _finish(b, m)
+
+
+def warehouse():
+    """Galpao: worn plaster, a long zinc gable, sliding doors on an iron
+    rail, a low timber platform along the rail side (the back)."""
+    m = "warehouse"
+    hw, hd, wall, rise = _frame(m)
+    b = MeshBuilder("environment")
+    kit.walls(b, hw, hd, wall, wash="plaster.worn")
+    kit.all_openings(b, m, shutters=False, frame="timber")
+    for entry in kit.openings(m)["doors"]:
+        side = 1 if entry["wall"] == "front" else -1
+        b.box(tuple(kit.at(entry["x"], side * (hd + 0.12), entry["height"] + 0.3)), (entry["width"] * 2 + 0.6, 0.12, 0.14), "iron")
+    kit.roof_gable(b, hw, hd, wall, rise, swatch="zinc", end="plaster.worn", overhang=0.4)
+    for side in (-1, 1):
+        b.box(tuple(kit.at(side * (hw / 2 + 0.75), -hd - 1.0, 0.25)), (hw - 1.5, 2.0, 0.5), "timber", tile=1.0)
+    _finish(b, m)
+
+
 def aid_tent():
     """A ridge tent of canvas with red crosses on the gable ends."""
     b = MeshBuilder("environment")
@@ -188,5 +378,15 @@ def build():
     colonist_house()
     engenho()
     ferry_house()
+    terraced_house()
+    terraced_house_wide()
+    sobrado()
+    casa_terrea()
+    venda()
+    armazem()
+    coreto()
+    church()
+    factory()
+    warehouse()
     aid_tent()
     return [save_and_export("buildings", "environment")]

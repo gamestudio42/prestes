@@ -290,16 +290,19 @@ def chimney(b: MeshBuilder, x: float, y: float, base: float, height: float, size
     b.box(tuple(at(x, y, base + height + 0.06)), (size + 0.14, size + 0.14, 0.12), "stone")
 
 
-def tower(b: MeshBuilder, x: float, y: float, side: float, top: float, wash: str = "plaster") -> None:
+def tower(b: MeshBuilder, x: float, y: float, side: float, top: float, wash: str = "plaster", trim: str = "plaster.shade") -> None:
     """A square bell tower with a belfry opening on each face and a pyramid cap."""
     body = top - side * 0.9
     b.box(tuple(at(x, y, body / 2)), (side, side, body), wash, top="plaster.shade", tile=WALL_TILE)
     cornice_z = body * 0.7
-    b.box(tuple(at(x, y, cornice_z)), (side + 0.2, side + 0.2, 0.18), "plaster.shade")
+    b.box(tuple(at(x, y, cornice_z)), (side + 0.2, side + 0.2, 0.18), trim)
+    for cx in (-1, 1):
+        for cy in (-1, 1):
+            b.box(tuple(at(x + cx * (side / 2 - 0.1), y + cy * (side / 2 - 0.1), body / 2)), (0.3, 0.3, body), trim)
     for dx, dy in ((0, 1), (0, -1), (1, 0), (-1, 0)):
         bx, by = x + dx * (side / 2 + 0.02), y + dy * (side / 2 + 0.02)
         b.box(tuple(at(bx, by, body - 0.9)), (0.8, 0.06, 1.2) if dx == 0 else (0.06, 0.8, 1.2), "ink")
-    b.box(tuple(at(x, y, body)), (side + 0.3, side + 0.3, 0.2), "plaster.shade")
+    b.box(tuple(at(x, y, body)), (side + 0.3, side + 0.3, 0.2), trim)
     b.cone((0, 0, 0), side * 0.75, side * 0.8, "tile", sides=4,
            matrix=Matrix.Translation(at(x, y, body + 0.1)) @ rotation_z(math.pi / 4))
     cross(b, x, y, top - 0.1)

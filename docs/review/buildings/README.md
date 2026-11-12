@@ -63,3 +63,9 @@ and back, as the battle draws them; the single pictures are in `after/`.
 All seven pass the model check (`pnpm check:content`).
 
 Approved by the owner, 2026-11-12.
+
+## Town buildings (3.3)
+
+`sheet-town.png` sets the ten town buildings before and after, front and
+back. All seventeen buildings are models now and pass the model check; the
+coded boxes are no longer drawn (their code goes in 3.6).

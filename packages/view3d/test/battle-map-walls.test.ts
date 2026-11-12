@@ -48,23 +48,21 @@ describe('battle map walls', () => {
   });
 });
 
-// refine-battle-maps 5.2: the buildings have doors, shuttered windows, shop
-// awnings and blank sign boards, drawn as instanced pieces.
+// revise-buildings-and-stone 3.3: every catalog building is a model now; the
+// street's buildings are placed as models and no coded box is drawn for them.
 describe('battle map buildings', () => {
-  it('a street has doors on the street, awnings on the shops and an open coreto', () => {
+  it('the street buildings are placed as their models, not drawn as boxes', () => {
     const map = street();
     const layer = new BattleMapLayer(map);
-    const doors = instancesOf(layer.group, PALETTE.door);
-    const shops = map.buildings.filter((building) => building.model === 'venda' || building.model === 'armazem').length;
-    // Every building but the open coreto has a street door.
-    expect(doors).toBeGreaterThanOrEqual(map.buildings.length - 1);
-    expect(instancesOf(layer.group, PALETTE.awning) + instancesOf(layer.group, PALETTE.awningAlt)).toBe(shops);
-    expect(instancesOf(layer.group, PALETTE.sign)).toBe(shops);
     let meshes = 0;
     layer.group.getObjectByName('battle-map-buildings')!.traverse((object) => {
       if (object instanceof THREE.Mesh) meshes += 1;
     });
-    // Instanced: a few dozen meshes, not one per window.
-    expect(meshes).toBeLessThan(40);
+    expect(meshes).toBe(0);
+    // An asset with no geometry reports every placed model as missing.
+    const placed = (layer as unknown as { placements: { missing: (asset: { geometry: () => undefined }) => string[] } }).placements.missing({
+      geometry: () => undefined,
+    });
+    expect(placed).toEqual(expect.arrayContaining(map.buildings.map((building) => building.model)));
   });
 });
