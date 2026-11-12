@@ -1,4 +1,5 @@
 import type { Document } from '@gltf-transform/core';
+import budgets from './tree-budgets.json';
 
 /**
  * biome-trees-and-plants 1.2 (design D2): every tree model stays inside a
@@ -11,11 +12,12 @@ import type { Document } from '@gltf-transform/core';
  */
 export type SizeClass = 'bush' | 'small-tree' | 'tree' | 'giant';
 
+/** In `tools/tree-budgets.json`, which the Blender build reads too. */
 export const TREE_BUDGETS: Record<SizeClass, number> = {
-  bush: 300,
-  'small-tree': 600,
-  tree: 800,
-  giant: 1200,
+  bush: budgets.bush,
+  'small-tree': budgets['small-tree'],
+  tree: budgets.tree,
+  giant: budgets.giant,
 };
 
 /** By catalog height in metres: a bush under 2 m, a small tree under 6, a giant over 15. */
@@ -29,6 +31,8 @@ export function sizeClass(height: number): SizeClass {
 export interface TreeMesh {
   name: string;
   triangles: number;
+  /** The model's own height (its Y extent), in metres. */
+  height?: number;
 }
 
 /** Each mesh node of a model file with its triangle count. */
@@ -38,26 +42,33 @@ export function meshTriangles(document: Document): TreeMesh[] {
     const mesh = node.getMesh();
     if (!mesh) continue;
     let triangles = 0;
+    let low = Infinity;
+    let high = -Infinity;
     for (const primitive of mesh.listPrimitives()) {
-      const count = primitive.getIndices()?.getCount() ?? primitive.getAttribute('POSITION')?.getCount() ?? 0;
-      triangles += count / 3;
+      const position = primitive.getAttribute('POSITION');
+      triangles += (primitive.getIndices()?.getCount() ?? position?.getCount() ?? 0) / 3;
+      if (position) {
+        low = Math.min(low, position.getMin([])[1]!);
+        high = Math.max(high, position.getMax([])[1]!);
+      }
     }
-    meshes.push({ name: node.getName(), triangles });
+    meshes.push({ name: node.getName(), triangles, ...(high > low ? { height: high - low } : {}) });
   }
   return meshes;
 }
 
 /**
  * One line per model over its class's budget, naming the species and the
- * count; a model with no catalog height is reported too, since its class is
- * unknown.
+ * count. The class comes from the catalog height, or from the model's own
+ * height for a species not in the catalog yet; a model with neither is
+ * reported, since its class is unknown.
  */
 export function treeBudgetProblems(meshes: readonly TreeMesh[], heightOf: (model: string) => number | undefined): string[] {
   const problems: string[] = [];
   for (const mesh of meshes) {
-    const height = heightOf(mesh.name);
+    const height = heightOf(mesh.name) ?? mesh.height;
     if (height === undefined) {
-      problems.push(`${mesh.name}: no catalog height, so no size class`);
+      problems.push(`${mesh.name}: no height, so no size class`);
       continue;
     }
     const size = sizeClass(height);

@@ -1,0 +1,7 @@
+{
+  "note": "biome-trees-and-plants 1.2: triangle budget per size class, read by tools/tree-budgets.ts and art-src/blender/target_trees.py. Classes by catalog height: bush under 2 m, small tree under 6 m, tree to 15 m, giant over 15 m.",
+  "bush": 300,
+  "small-tree": 600,
+  "tree": 800,
+  "giant": 1200
+}

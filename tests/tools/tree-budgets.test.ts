@@ -27,17 +27,25 @@ describe('tree triangle budgets', () => {
 
   it('a fixture over budget is named with its count; one under passes', () => {
     const over = meshTriangles(fixture('buriti', TREE_BUDGETS.tree + 1));
-    expect(over).toEqual([{ name: 'buriti', triangles: 801 }]);
+    expect(over).toMatchObject([{ name: 'buriti', triangles: 801 }]);
     expect(treeBudgetProblems(over, heightOf)).toEqual(['buriti: 801 triangles, over the tree budget of 800']);
     expect(treeBudgetProblems(meshTriangles(fixture('bush', 299)), heightOf)).toEqual([]);
-    expect(treeBudgetProblems([{ name: 'nao-existe', triangles: 10 }], heightOf)).toEqual(['nao-existe: no catalog height, so no size class']);
+    expect(treeBudgetProblems([{ name: 'nao-existe', triangles: 10 }], heightOf)).toEqual(['nao-existe: no height, so no size class']);
+    // A species not in the catalog yet is classed by its own height.
+    expect(treeBudgetProblems([{ name: 'sumauma', triangles: 1100, height: 38 }], heightOf)).toEqual([]);
+    expect(treeBudgetProblems([{ name: 'cagaita', triangles: 700, height: 5 }], heightOf)).toEqual(['cagaita: 700 triangles, over the small-tree budget of 600']);
   });
 
-  it('the five trees in the game are inside their budgets', async () => {
-    const file = fileURLToPath(new URL('../../apps/game/public/models/trees.glb', import.meta.url));
-    const meshes = meshTriangles(await new NodeIO().read(file));
-    expect(meshes).toHaveLength(5);
-    expect(treeBudgetProblems(meshes, heightOf)).toEqual([]);
+  it('every tree model in the game is inside its budget', async () => {
+    const read = async (name: string) => meshTriangles(await new NodeIO().read(fileURLToPath(new URL(`../../apps/game/public/models/${name}`, import.meta.url))));
+    expect(await read('trees.glb')).toHaveLength(5);
+    // 2.2-2.4: Refloreste's adult trees, one file per biome.
+    const counts = { 'trees-mata-atlantica.glb': 7, 'trees-cerrado.glb': 6, 'trees-amazonia.glb': 6 };
+    for (const [file, count] of Object.entries({ 'trees.glb': 5, ...counts })) {
+      const meshes = await read(file);
+      expect(meshes, file).toHaveLength(count);
+      expect(treeBudgetProblems(meshes, heightOf), file).toEqual([]);
+    }
   });
 
   it('tree model files: trees.glb and one per biome', () => {

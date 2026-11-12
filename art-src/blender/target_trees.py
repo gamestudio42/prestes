@@ -4,7 +4,8 @@
 
 Not in the default `pnpm art` run: it reads the Refloreste models from
 REFLORESTE (default C:/projetos/Refloreste) and writes
-art-src/environment/trees.glb, which `pnpm models` then prepares.
+art-src/environment/trees.glb (the five trees the maps already use) and one
+trees-<biome>.glb per biome, which `pnpm models` then prepares.
 
 Refloreste draws its crowns as leaf cards that a Godot shader turns into
 billboards, coloured by the species' leaf colour times a baked shade in the
@@ -16,6 +17,7 @@ shade. Meshes that are real geometry (palm fronds, the bush) are kept, from
 the LOD that fits the budget. Every tree is scaled to its catalog height and
 stands on the origin; trees come to 300-800 triangles, the bush under 300.
 """
+import json
 import math
 import os
 
@@ -51,6 +53,95 @@ TREES = {
 }
 
 FAMILIES = ("broadleaf", "tiered", "palm", "giant", "bush")
+for _spec in TREES.values():
+    _spec["file"] = "trees"
+
+# biome-trees-and-plants 2.2-2.4: Refloreste's adult trees, one file per biome
+# (design D3: `trees-<biome>.glb`, loaded when a map uses one of its
+# species). Heights are the ones fixed at task 1.1 (docs/status.md). The five
+# rows above stay as they are, in `trees.glb`: the maps already use them, and
+# the catalog shows them as the young forms. With no `clumps`, a crown gets as
+# many clumps as its size class's budget allows beside the trunk.
+LEAF_ATLANTIC = (0.27, 0.52, 0.17)
+LEAF_CERRADO = (0.45, 0.56, 0.21)
+LEAF_AMAZON = (0.17, 0.44, 0.15)
+
+
+def species(biome: str, folder: str, family: str, height: float, leaf, **extra):
+    """A Refloreste adult tree's row: `<biome>/<folder>/<biome>_<folder>_adulta.glb`."""
+    spec = dict(
+        path=f"{biome}/{folder}/{biome}_{folder}_adulta.glb",
+        file=f"trees-{biome.replace('_', '-')}",
+        family=family,
+        trunk=0 if family == "giant" else 1,
+        foliage=0,
+        clumps=None,
+        leaf=leaf,
+        flat=0.8,
+        height=height,
+    )
+    spec.update(extra)
+    return spec
+
+
+TREES.update({
+    # Atlantic forest
+    "araucaria": species("mata_atlantica", "araucaria", "tiered", 22.0, LEAF_ARAUCARIA, clumps=32, tiers=4, bare=0.4, lift=0.35, cap=2.6, flat=0.3),
+    "mulungu": species("mata_atlantica", "erythrina", "broadleaf", 10.0, LEAF_ATLANTIC),
+    "jequitiba": species("mata_atlantica", "jequitiba", "giant", 32.0, LEAF_ATLANTIC, flat=0.7),
+    "manaca": species("mata_atlantica", "manaca", "broadleaf", 6.0, LEAF_ATLANTIC),
+    "palmito-jucara": species("mata_atlantica", "palmito_jucara", "palm", 10.0, LEAF_ATLANTIC),
+    "pau-brasil": species("mata_atlantica", "pau_brasil", "broadleaf", 14.0, LEAF_ATLANTIC),
+    "peroba": species("mata_atlantica", "peroba", "broadleaf", 22.0, LEAF_ATLANTIC),
+    # Cerrado
+    "aroeira": species("cerrado", "aroeira", "broadleaf", 8.0, LEAF_CERRADO),
+    "barbatimao": species("cerrado", "barbatimao", "broadleaf", 4.0, LEAF_CERRADO),
+    "buriti-adult": species("cerrado", "buriti", "palm", 18.0, LEAF_CERRADO),
+    "cagaita": species("cerrado", "cagaita", "broadleaf", 5.0, LEAF_CERRADO),
+    "ipe": species("cerrado", "ipe", "broadleaf", 10.0, LEAF_CERRADO),
+    "pequi": species("cerrado", "pequi", "broadleaf", 7.0, LEAF_CERRADO),
+    # Amazon
+    "acai": species("amazonia", "acai", "palm", 14.0, LEAF_AMAZON),
+    "andiroba": species("amazonia", "andiroba", "giant", 25.0, LEAF_AMAZON),
+    "castanheira": species("amazonia", "castanheira", "giant", 32.0, LEAF_AMAZON, flat=0.7),
+    "seringueira": species("amazonia", "seringueira", "broadleaf", 22.0, LEAF_AMAZON),
+    "sumauma": species("amazonia", "sumauma", "giant", 38.0, LEAF_AMAZON, flat=0.55),
+    "tucuma": species("amazonia", "tucuma", "palm", 12.0, LEAF_AMAZON),
+})
+
+with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "tools", "tree-budgets.json"), encoding="utf-8") as _file:
+    BUDGETS = json.load(_file)
+
+
+def budget_for(height: float) -> int:
+    """The size class's triangle budget (the same classes as tools/tree-budgets.ts)."""
+    if height < 2:
+        return BUDGETS["bush"]
+    if height < 6:
+        return BUDGETS["small-tree"]
+    if height <= 15:
+        return BUDGETS["tree"]
+    return BUDGETS["giant"]
+
+
+def decimate_to(obj, target: int):
+    """Collapses a mesh to about `target` triangles (palm fronds over budget)."""
+    count = triangles(obj)
+    if count <= target:
+        return
+    bpy.ops.object.select_all(action="DESELECT")
+    obj.select_set(True)
+    bpy.context.view_layer.objects.active = obj
+    modifier = obj.modifiers.new("decimate", "DECIMATE")
+    modifier.ratio = target / count
+    bpy.ops.object.modifier_apply(modifier=modifier.name)
+    # The collapse leaves loose vertices; the export drops them, and the tree
+    # would come out short of its height (the acai stood 12.8 m of 14).
+    bm = bmesh.new()
+    bm.from_mesh(obj.data)
+    bmesh.ops.delete(bm, geom=[vertex for vertex in bm.verts if not vertex.link_faces], context="VERTS")
+    bm.to_mesh(obj.data)
+    bm.free()
 
 
 
@@ -219,9 +310,21 @@ def build_tree(name: str, spec: dict):
     trunk = pick(meshes, "tronco", spec["trunk"])
     if trunk:
         keep.append(trunk)
-    foliage = pick(meshes, "folhagem", spec["foliage"])
     family = spec["family"]
     assert family in FAMILIES, f"{name}: unknown family {family}"
+    budget = budget_for(spec["height"]) * 0.92
+    room = budget - (triangles(trunk) if trunk else 0)
+    if family == "palm" and spec["foliage"] == 0 and spec["file"] != "trees":
+        # The most detailed fronds that fit beside the trunk; else the
+        # coarsest, collapsed to fit.
+        lods = [lod for lod in (0, 1, 2) if pick(meshes, "folhagem", lod)]
+        fitting = [lod for lod in lods if triangles(pick(meshes, "folhagem", lod)) <= room]
+        foliage = pick(meshes, "folhagem", fitting[0] if fitting else lods[-1])
+        decimate_to(foliage, int(room))
+    else:
+        foliage = pick(meshes, "folhagem", spec["foliage"])
+    if spec["clumps"] is None:
+        spec = dict(spec, clumps=max(8, min(40, int(room // 20))))
     if foliage and family != "palm":
         # A card is about a twenty-fifth of the crown's width.
         xs = [v.co.x for v in foliage.data.vertices]
@@ -278,7 +381,11 @@ def build_tree(name: str, spec: dict):
 
 
 def build():
-    reset()
-    for name, spec in TREES.items():
-        build_tree(name, spec)
-    return [save_and_export("trees", "environment")]
+    built = []
+    for file in dict.fromkeys(spec["file"] for spec in TREES.values()):
+        reset()
+        for name, spec in TREES.items():
+            if spec["file"] == file:
+                build_tree(name, spec)
+        built.append(save_and_export(file, "environment"))
+    return built
