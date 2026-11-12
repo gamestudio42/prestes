@@ -31,7 +31,7 @@ start, the rules and what each change decided:
 | --- | --- | --- | --- |
 | 1 | `faction-armies` | 18/18: armies, 19 section types, successor table, map version 6, names and the Forças compendium section, values in the simulation, setup screen, editor presets and HUD done; `pnpm verify` green but the known `desk.spec` gap; hand check done; archived | three armies (the Column, the legalist regulars, the patriotic battalions), period names for armies and sections, section types per army; starts with research into `docs/history/FORCES.md`, which also answers whether the police fought for the government |
 | 2 | `soldier-animation-and-textures` | 18/18, archived | wound, carry and death clips, the crouch-walk and aim redone, blends, drawn uniform textures per army with variants |
-| 3 | `troop-thumbnails-and-panel` | 15 | a rendered thumbnail for every section type (roster, cards, panel), roster type cards, the troop panel redrawn with one figure per soldier (helmet = cover, body = health, cartridge clip = ammunition), gauges and alerts |
+| 3 | `troop-thumbnails-and-panel` | 14/15: thumbnails, roster cards, troop panel, gauges and alerts done; verify run (see below); owner's hand check pending | a rendered thumbnail for every section type (roster, cards, panel), roster type cards, the troop panel redrawn with one figure per soldier (helmet = cover, body = health, cartridge clip = ammunition), gauges and alerts |
 | 3b | `redo-battle-hud` | 17 | the battle HUD redone from the owner's reference (`referencias para hud/`): wood and leather frames drawn in Aseprite, docked panels that only collapse, the status row moved, contour and cover layers in the strategic view (off by default) |
 | 4 | `biome-trees-and-plants` | 18 | the whole Refloreste tree suite by biome adapted to Prestes, bush families, more cacti and caatinga plants |
 | 5 | `revise-buildings-and-stone` | 19 | every building modelled with openings that agree with the battle, new buildings, variants, rock kinds and built stone |
@@ -263,6 +263,27 @@ The desk replaces the bookmark shell.
 - Visual baselines re-recorded (HUD, orders column, sandbox panel, compendium); the top bar's "Leave" button in them dates from `65b1903`, not from this change.
 - Known e2e failure still open: `desk.spec.ts` label gap (since `6412ac9`).
 - Hand check (5.2, the owner, 2026-11-11): names and armies on the cards read right; card icons and the troop panel wait for `troop-thumbnails-and-panel`; the wire crossing went to `route-around-wire`.
+
+## troop-thumbnails-and-panel verify (2026-11-12)
+
+- Sizes: 19 section thumbnails in `apps/game/public/assets/sections/`,
+  96 x 96 PNG, 128 KB together, identical across `pnpm thumbs` runs; four
+  new weapon icons in the atlas.
+- Verify on a clean worktree of 6709bbc (CI=1, its own e2e server on port
+  4318 because an orphan dev server held 4317): check, build, determinism,
+  tick budget (1.5-1.8 ms a tick against 4.5) and openspec (26 specs and the
+  change, strict) pass.
+- Bundle budget fails on index CSS: 135,659 B against 120,000 B. It was
+  already 132,159 B at dafdf14, after the battle HUD redo; this change adds
+  about 3.2 KB. Raising the limit or trimming the legacy HUD sheets is the
+  owner's call.
+- e2e: 133 passed, 4 failed, none from this change: the `desk.spec` label
+  gap (known before); `editor.spec` playtest, where the HUD top bar's
+  actions cover "Back to the editor" (redo-battle-hud layout); and the two
+  frame-budget tests, which also fail at bcd9c07 before the panel work
+  (tactical 19.4 and 24.4 ms before, 22.7 to 27.9 ms after; strategic 17.4
+  before, 17.8 after; budget 16.7) on this machine with other sessions
+  running.
 
 ## soldier-animation-and-textures apply (2026-11-12)
 

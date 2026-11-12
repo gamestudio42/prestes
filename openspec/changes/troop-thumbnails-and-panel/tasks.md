@@ -27,5 +27,6 @@ Approved by the owner on 2026-11-11 ("Aprovo as três", with redo-battle-hud and
 ## 4. Gates
 
 - [x] 4.1 (`battle-hud` and `orders-column` re-recorded with the new panel (the gauges masked as live numbers), and a new `roster-builder` baseline; reviewed. The roster CSS is scoped one level up, as `troop-thumbs.css` can load before `skirmish-setup.css`. The panel body scrolls to the weapon card under the gauges) Visual baselines of the roster builder and the troop panel refreshed and reviewed; verify: `pnpm e2e`
-- [ ] 4.2 `pnpm verify` and `openspec validate troop-thumbnails-and-panel --type change --strict`; verify: all pass, sizes in `docs/status.md`
+- [x] 4.2 `pnpm verify` and `openspec validate troop-thumbnails-and-panel --type change --strict`; verify: all pass, sizes in `docs/status.md`
+  - Done 2026-11-12 on 6709bbc: all pass but the index CSS budget (over since the HUD redo) and four e2e failures not from this change; details in `docs/status.md`.
 - [ ] 4.3 Hand check by the owner: build a roster and read the panel through a skirmish; findings in `docs/status.md`
