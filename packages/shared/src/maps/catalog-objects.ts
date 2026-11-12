@@ -51,7 +51,7 @@ export interface CatalogObject {
   bushClass?: BushClass;
   /** Thorns under the footprint slow a man walking through (macambira). */
   thorns?: true;
-  /** False while the view cannot draw it yet: kept out of the editor and the trees tool (until 4.1). */
+  /** False: kept out of the editor's lists and the trees tool (the dead and flowering forms wait for the form switch, 4.2). */
   listed?: false;
 }
 
@@ -106,9 +106,9 @@ interface SpeciesSpec {
  */
 function species(name: string, spec: SpeciesSpec): CatalogObject[] {
   const trunk: Footprint = spec.solid ? SOLID_STONE : THIN;
-  const base = { biome: spec.biome, species: name, modelFile: `trees-${spec.biome}`, listed: false as const };
+  const base = { biome: spec.biome, species: name, modelFile: `trees-${spec.biome}` };
   const form = (id: string, kind: TreeForm, extra: Partial<CatalogObject> = {}) =>
-    item(id, 'tree', spec.trunk, spec.trunk, spec.height, trunk, { ...base, form: kind, ...extra });
+    item(id, 'tree', spec.trunk, spec.trunk, spec.height, trunk, { ...base, form: kind, ...(kind === 'adult' ? {} : { listed: false as const }), ...extra });
   const conceal = spec.concealRadius ? { concealRadius: spec.concealRadius } : {};
   return [
     ...(spec.deadOnly ? [] : [form(name, 'adult', conceal)]),
@@ -132,14 +132,13 @@ function bushes(biome: FloraBiome): CatalogObject[] {
         biome,
         modelFile: `trees-${biome}`,
         bushClass: size,
-        listed: false,
       });
     }),
   );
 }
 
 const stump = (biome: FloraBiome): CatalogObject =>
-  item(`stump-${biome}`, 'tree', 0.25, 0.25, 0.6, { kind: 'solid', cover: 'barrel' }, { biome, modelFile: `trees-${biome}`, listed: false });
+  item(`stump-${biome}`, 'tree', 0.25, 0.25, 0.6, { kind: 'solid', cover: 'barrel' }, { biome, modelFile: `trees-${biome}` });
 
 /** A caatinga plant of `trees-caatinga.glb` (target_caatinga.py). */
 const caatinga = (id: string, halfWidth: number, halfDepth: number, height: number, footprint: Footprint, extra: Partial<CatalogObject> = {}): CatalogObject =>
@@ -214,12 +213,12 @@ export const CATALOG_OBJECTS: readonly CatalogObject[] = [
   stump('amazonia'),
   ...bushes('amazonia'),
   // Caatinga (trees-caatinga.glb, target_caatinga.py): cacti, thorny trees and the marmeleiro.
-  caatinga('facheiro', 0.25, 0.25, 4, THIN, { listed: false }),
-  caatinga('coroa-de-frade', 0.2, 0.2, 0.4, THIN, { listed: false }),
-  caatinga('palmatoria', 0.6, 0.3, 2, FOLIAGE, { listed: false }),
-  caatinga('umbuzeiro', 0.3, 0.3, 4.5, THIN, { concealRadius: 3.5, listed: false }),
-  caatinga('catingueira', 0.25, 0.25, 4.5, THIN, { concealRadius: 1.5, listed: false }),
-  caatinga('jurema-preta', 0.2, 0.2, 3.5, THIN, { concealRadius: 2, listed: false }),
+  caatinga('facheiro', 0.25, 0.25, 4, THIN),
+  caatinga('coroa-de-frade', 0.2, 0.2, 0.4, THIN),
+  caatinga('palmatoria', 0.6, 0.3, 2, FOLIAGE),
+  caatinga('umbuzeiro', 0.3, 0.3, 4.5, THIN, { concealRadius: 3.5 }),
+  caatinga('catingueira', 0.25, 0.25, 4.5, THIN, { concealRadius: 1.5 }),
+  caatinga('jurema-preta', 0.2, 0.2, 3.5, THIN, { concealRadius: 2 }),
   ...bushes('caatinga'),
   // Posts.
   item('lamp', 'post', 0.15, 0.15, 3.8, THIN),
@@ -244,13 +243,27 @@ export const CATALOG_OBJECTS: readonly CatalogObject[] = [
 ];
 
 const BY_ID = new Map(CATALOG_OBJECTS.map((entry) => [entry.id, entry]));
+const BY_MODEL = new Map(CATALOG_OBJECTS.map((entry) => [entry.model, entry]));
 
 export function catalogObject(id: string): CatalogObject | null {
   return BY_ID.get(id) ?? null;
 }
 
-/** What the editor's lists and the trees tool offer: not the entries the view cannot draw yet. */
+/** What the editor's lists and the trees tool offer. */
 export const isListed = (entry: CatalogObject): boolean => entry.listed !== false;
+
+/**
+ * biome-trees-and-plants 4.1: the biome model files these placed models
+ * need, so a caatinga map never fetches the Atlantic forest's trees.
+ */
+export function modelFilesOf(models: Iterable<string>): string[] {
+  const files = new Set<string>();
+  for (const model of models) {
+    const file = BY_MODEL.get(model)?.modelFile;
+    if (file) files.add(file);
+  }
+  return [...files].sort();
+}
 
 /** Walls and fences, drawn as polylines. */
 export type LineKind = 'taipa-wall' | 'stone-wall' | 'brick-wall' | 'wire-fence' | 'board-fence' | 'picket-fence' | 'hedgerow';

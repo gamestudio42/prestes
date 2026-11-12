@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import {
+  modelFilesOf,
   buildingOpenings,
   BUILDING_WALL_SHARE,
   buildingTower,
@@ -1244,13 +1245,16 @@ function revetment(points: readonly Vec2[], half: number, side: 1 | -1): THREE.M
  * thumbnails): its model when the environment has one, else its placeholder.
  */
 export function propPreview(model: string, asset: EnvironmentAsset | null): THREE.Object3D | null {
-  const geometry = MODELLED_PROPS.has(model) ? asset?.geometry(model) : undefined;
+  const geometry = isModelled(model) ? asset?.geometry(model) : undefined;
   if (geometry && asset) return new THREE.Mesh(geometry, asset.materialOf(model));
   return placeholderProp(model);
 }
 
 /** Props the Blender environment already has. */
 const MODELLED_PROPS = new Set(['tree-broad', 'tree-pine', 'tree-araucaria', 'buriti', 'cerrado-tree', 'bush', 'cart', 'well', 'haystack', 'barrel', 'crate']);
+
+/** A modelled prop, or a tree or plant of a biome file (biome-trees-and-plants 4.1). */
+const isModelled = (model: string): boolean => MODELLED_PROPS.has(model) || modelFilesOf([model]).length > 0;
 
 export class BattleMapLayer {
   readonly group = new THREE.Group();
@@ -1260,6 +1264,9 @@ export class BattleMapLayer {
   private readonly plants: THREE.InstancedMesh[];
   private readonly clumps: THREE.InstancedMesh[];
   private strategicPlants = false;
+  /** The trees as drawn up close, and their strategic stand-ins (biome-trees-and-plants 4.1). */
+  private trees: THREE.Group | null = null;
+  private impostors: THREE.Group | null = null;
 
   constructor(private readonly map: BattleMap) {
     this.group.name = `battle-map:${map.id}`;
@@ -1286,7 +1293,7 @@ export class BattleMapLayer {
     placeholders.build(buildings);
     this.group.add(buildings);
     for (const prop of map.props) {
-      if (MODELLED_PROPS.has(prop.model)) {
+      if (isModelled(prop.model)) {
         this.placements.add(prop.model, prop.x, prop.y, prop.rotation ?? 0, prop.scale ?? 1);
         continue;
       }
@@ -1366,10 +1373,29 @@ export class BattleMapLayer {
     this.strategicPlants = strategic;
     for (const mesh of this.plants) mesh.visible = !strategic;
     for (const mesh of this.clumps) mesh.visible = strategic;
+    this.showImpostors();
+  }
+
+  /** The biome tree files this map's props need (biome-trees-and-plants 4.1). */
+  modelFiles(): string[] {
+    return modelFilesOf(this.map.props.map((prop) => prop.model));
   }
 
   useModels(asset: EnvironmentAsset): void {
     warnMissing('battle map', this.placements.missing(asset));
-    this.group.add(this.placements.build(asset));
+    this.trees = this.placements.build(asset);
+    this.impostors = this.placements.buildImpostors(asset);
+    this.impostors.name = 'battle-map-tree-impostors';
+    this.group.add(this.trees, this.impostors);
+    this.showImpostors();
+  }
+
+  /** At strategic span the trees give way to their stand-ins; other models stay. */
+  private showImpostors(): void {
+    if (!this.trees || !this.impostors) return;
+    const strategic = this.strategicPlants;
+    const stood = new Set(this.impostors.children.map((mesh) => mesh.name));
+    for (const mesh of this.trees.children) if (stood.has(mesh.name)) mesh.visible = !strategic;
+    this.impostors.visible = strategic;
   }
 }

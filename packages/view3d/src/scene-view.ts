@@ -685,12 +685,34 @@ export class SceneView {
         if (this.disposed) return;
         this.environment = asset;
         this.world.useModels(asset);
-        this.mapLayer?.useModels(asset);
+        this.useMapModels();
         this.covers.useModels(asset);
         this.training.useModels(asset);
       })
       .catch((error: unknown) => {
         console.error('environment models unavailable, the field is drawn without them', error);
+      });
+  }
+
+  /**
+   * biome-trees-and-plants 4.1: places the battle map's models once the
+   * biome tree files its species need are in (each fetched once); a map that
+   * holds only caatinga plants never asks for the other biomes' files.
+   */
+  private useMapModels(): void {
+    const asset = this.environment;
+    const layer = this.mapLayer;
+    if (!asset || !layer) return;
+    const files = layer.modelFiles();
+    if (asset.has(files)) {
+      layer.useModels(asset);
+      return;
+    }
+    asset
+      .include(files)
+      .catch((error: unknown) => console.error('biome tree models unavailable, those trees are not drawn', error))
+      .finally(() => {
+        if (!this.disposed && this.mapLayer === layer) layer.useModels(asset);
       });
   }
 
@@ -723,7 +745,7 @@ export class SceneView {
       if (this.coverMapOn) this.setCoverMap(true);
     }
     this.mapLayer = new BattleMapLayer(map);
-    if (this.environment) this.mapLayer.useModels(this.environment);
+    this.useMapModels();
     this.scene.add(this.mapLayer.group);
     this.scene.remove(this.world.group);
     disposeObject(this.world.group);

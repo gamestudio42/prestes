@@ -144,3 +144,54 @@ for (const map of ['campo-de-provas']) {
     expect(result.mean).toBeLessThan(BUDGET_MS);
   });
 }
+
+// biome-trees-and-plants 4.1: a dense wood of the biome trees, scattered in the editor,
+// at tactical span (the models) and strategic span (their stand-ins).
+interface EditorBridge {
+  __prestesEditor?: {
+    state: () => { objects: { type: string }[] };
+    toScreen: (x: number, y: number) => { x: number; y: number } | null;
+    topDown: () => void;
+    look: (x: number, y: number, span: number) => void;
+  };
+}
+
+test('a dense wood of biome trees stays within the frame budget at tactical and strategic span', async ({ page }) => {
+  test.setTimeout(150_000);
+  await page.goto('/editor.html');
+  const gpu = await renderer(page);
+  test.skip(/swiftshader|llvmpipe|software|none/i.test(gpu), `no GPU for the probe (${gpu})`);
+  await expect(page.getByTestId('editor-viewport')).toHaveAttribute('data-ready', 'true');
+  const editor = (fn: string, ...args: number[]) =>
+    page.evaluate(([name, values]) => {
+      const bridge = (window as unknown as EditorBridge).__prestesEditor! as unknown as Record<string, (...a: number[]) => unknown>;
+      return bridge[name as string]!(...(values as number[]));
+    }, [fn, args] as const);
+  await editor('topDown');
+  await page.waitForTimeout(1500);
+  await page.locator('[data-tool="trees"]').click();
+  await page.getByTestId('tree-mode-scatter').click();
+  await page.getByTestId('tree-density').selectOption('dense');
+  for (const id of ['acai', 'andiroba', 'castanheira', 'seringueira', 'sumauma', 'tucuma', 'bush-amazonia-head-a']) await page.locator(`[data-tree="${id}"]`).click();
+  for (let press = 0; press < 16; press += 1) await page.keyboard.press(']');
+  for (const y of [-60, -36, -12, 12, 36, 60]) {
+    const a = (await editor('toScreen', -60, y)) as { x: number; y: number };
+    const b = (await editor('toScreen', 60, y)) as { x: number; y: number };
+    await page.mouse.move(a.x, a.y);
+    await page.mouse.down();
+    await page.mouse.move(b.x, b.y, { steps: 12 });
+    await page.mouse.up();
+  }
+  const trees = await page.evaluate(() => (window as unknown as EditorBridge).__prestesEditor!.state().objects.length);
+  expect(trees).toBeGreaterThan(400);
+  for (const [band, span] of [['tactical', 60], ['strategic', 220]] as const) {
+    await editor('look', 0, 0, span);
+    await page.waitForTimeout(2500);
+    const result = await sampleFrames(page);
+    test.info().annotations.push({
+      type: 'frame-time',
+      description: `wood of ${trees} trees, ${band}, ${gpu}: mean ${result.mean.toFixed(2)} ms, p95 ${result.p95.toFixed(2)} ms, ${result.frames} frames`,
+    });
+    expect(result.mean).toBeLessThan(BUDGET_MS);
+  }
+});

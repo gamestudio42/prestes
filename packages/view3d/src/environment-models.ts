@@ -14,6 +14,16 @@ export interface EnvironmentAsset {
   readonly material: THREE.Material;
   /** A model's own material: the atlas, or vertex colours for the trees. */
   materialOf(name: string): THREE.Material;
+  /** Whether a model is a vertex-coloured tree or plant (they get strategic impostors). */
+  isTree(name: string): boolean;
+  /**
+   * biome-trees-and-plants 4.1 (D3): loads the biome tree files
+   * (`trees-<biome>`) not loaded yet; resolves once all are in. Each file is
+   * fetched once; a map only asks for the files of the species it holds.
+   */
+  include(files: readonly string[]): Promise<void>;
+  /** Whether these files are loaded already. */
+  has(files: readonly string[]): boolean;
 }
 
 /**
@@ -24,25 +34,56 @@ export interface EnvironmentAsset {
 const FILES = ['buildings', 'fortifications', 'vegetation', 'props', 'trees'];
 const VERTEX_COLOURED = new Set(['trees']);
 
-export async function loadEnvironmentAsset(base = './models/'): Promise<EnvironmentAsset> {
-  // The loader is a separate chunk, fetched only when models are wanted.
-  const { GLTFLoader } = await import('three/examples/jsm/loaders/GLTFLoader.js');
-  const loader = new GLTFLoader();
-  const [map, ...scenes] = await Promise.all([
-    new THREE.TextureLoader().loadAsync(`${base}textures/environment.png`),
-    ...FILES.map((file) => loader.loadAsync(`${base}${file}.glb`).then((gltf) => gltf.scene)),
-  ]);
-  map.magFilter = THREE.NearestFilter;
-  map.minFilter = THREE.NearestFilter;
-  map.generateMipmaps = false;
-  map.colorSpace = THREE.SRGBColorSpace;
-  map.flipY = false;
-  map.needsUpdate = true;
+/** Loads a model file's scene; the browser's is GLTFLoader, a test's records the request. */
+export type SceneLoader = (url: string) => Promise<THREE.Object3D>;
 
-  const geometries = new Map<string, THREE.BufferGeometry>();
-  const coloured = new Set<string>();
-  for (const [index, scene] of scenes.entries()) {
-    const byVertex = VERTEX_COLOURED.has(FILES[index]!);
+/**
+ * The named geometries of loaded model files. A later file replaces a name
+ * an earlier one gave (the biome caatinga plants replace vegetation.glb's).
+ */
+export class ModelLibrary {
+  private readonly geometries = new Map<string, THREE.BufferGeometry>();
+  private readonly coloured = new Set<string>();
+  private readonly files = new Map<string, Promise<void>>();
+  private readonly loaded = new Set<string>();
+
+  constructor(
+    private readonly load: SceneLoader,
+    private readonly base: string,
+  ) {}
+
+  geometry(name: string): THREE.BufferGeometry | undefined {
+    return this.geometries.get(name);
+  }
+
+  isColoured(name: string): boolean {
+    return this.coloured.has(name);
+  }
+
+  has(files: readonly string[]): boolean {
+    return files.every((file) => this.loaded.has(file));
+  }
+
+  /** Loads each file once; trees files are vertex-coloured. */
+  include(files: readonly string[]): Promise<void> {
+    return Promise.all(
+      files.map((file) => {
+        let pending = this.files.get(file);
+        if (!pending) {
+          pending = this.load(`${this.base}${file}.glb`).then((scene) => {
+            this.add(scene, VERTEX_COLOURED.has(file) || file.startsWith('trees-'));
+            this.loaded.add(file);
+          });
+          // A failed file may be asked for again.
+          pending.catch(() => this.files.delete(file));
+          this.files.set(file, pending);
+        }
+        return pending;
+      }),
+    ).then(() => undefined);
+  }
+
+  private add(scene: THREE.Object3D, byVertex: boolean): void {
     scene.updateMatrixWorld(true);
     scene.traverse((child) => {
       const mesh = child as THREE.Mesh;
@@ -50,21 +91,123 @@ export async function loadEnvironmentAsset(base = './models/'): Promise<Environm
       // Bake the node transform so every model sits in its own Blender frame.
       const geometry = mesh.geometry.clone().applyMatrix4(mesh.matrixWorld);
       geometry.computeBoundingSphere();
-      geometries.set(mesh.name, geometry);
-      if (byVertex) coloured.add(mesh.name);
-      else coloured.delete(mesh.name);
+      geometry.computeBoundingBox();
+      this.geometries.set(mesh.name, geometry);
+      if (byVertex) this.coloured.add(mesh.name);
+      else this.coloured.delete(mesh.name);
       mesh.geometry.dispose();
     });
   }
+}
+
+export async function loadEnvironmentAsset(base = './models/'): Promise<EnvironmentAsset> {
+  // The loader is a separate chunk, fetched only when models are wanted.
+  const { GLTFLoader } = await import('three/examples/jsm/loaders/GLTFLoader.js');
+  const loader = new GLTFLoader();
+  const library = new ModelLibrary((url) => loader.loadAsync(url).then((gltf) => gltf.scene), base);
+  const [map] = await Promise.all([new THREE.TextureLoader().loadAsync(`${base}textures/environment.png`), library.include(FILES)]);
+  map.magFilter = THREE.NearestFilter;
+  map.minFilter = THREE.NearestFilter;
+  map.generateMipmaps = false;
+  map.colorSpace = THREE.SRGBColorSpace;
+  map.flipY = false;
+  map.needsUpdate = true;
+
   const material = new THREE.MeshToonMaterial({ map, gradientMap: toonGradient() });
   // Double-sided: the buriti's fronds are open sheets (hand check 2026-11-09: they vanished from behind).
   const vertexMaterial = new THREE.MeshToonMaterial({ vertexColors: true, gradientMap: toonGradient(), side: THREE.DoubleSide });
   return {
-    geometry: (name) => geometries.get(name),
+    geometry: (name) => library.geometry(name),
     material,
-    materialOf: (name) => (coloured.has(name) ? vertexMaterial : material),
+    materialOf: (name) => (library.isColoured(name) ? vertexMaterial : material),
+    isTree: (name) => library.isColoured(name),
+    include: (files) => library.include(files),
+    has: (files) => library.has(files),
   };
 }
+
+/**
+ * biome-trees-and-plants 4.1: a tree's stand-in at strategic span, about 30
+ * triangles: an icosahedron crown over a box trunk, coloured by the model's
+ * own mean crown and trunk colours, so a wood still reads as its species'
+ * greens from far off. A plant lower than 2 m is one lump.
+ */
+export function impostorGeometry(model: THREE.BufferGeometry): THREE.BufferGeometry {
+  if (!model.boundingBox) model.computeBoundingBox();
+  const box = model.boundingBox!;
+  const height = box.max.y - box.min.y;
+  const position = model.getAttribute('position');
+  const colour = model.getAttribute('color');
+  const split = box.min.y + height * (height < 2 ? 0 : 0.45);
+  const crown: [number, number, number, number] = [0, 0, 0, 0];
+  const trunk: [number, number, number, number] = [0, 0, 0, 0];
+  // The crown's colour is its leaves' (greener than red and blue), not the grey branches among them.
+  const leaves: [number, number, number, number] = [0, 0, 0, 0];
+  for (let index = 0; index < position.count; index += 1) {
+    const r = colour ? colour.getX(index) : 0.3;
+    const g = colour ? colour.getY(index) : 0.45;
+    const b = colour ? colour.getZ(index) : 0.25;
+    const high = position.getY(index) >= split;
+    for (const sum of high ? (g > r && g > b ? [crown, leaves] : [crown]) : [trunk]) {
+      sum[0] += r;
+      sum[1] += g;
+      sum[2] += b;
+      sum[3] += 1;
+    }
+  }
+  if (leaves[3] > crown[3] * 0.2) crown.splice(0, 4, ...leaves);
+  const mean = (sum: readonly number[]) => (sum[3] ? [sum[0]! / sum[3], sum[1]! / sum[3], sum[2]! / sum[3]] : [0.35, 0.25, 0.15]);
+  const parts: THREE.BufferGeometry[] = [];
+  const paint = (geometry: THREE.BufferGeometry, rgb: number[]) => {
+    const flat = geometry.index ? geometry.toNonIndexed() : geometry;
+    const count = flat.getAttribute('position').count;
+    const colours = new Float32Array(count * 3);
+    for (let index = 0; index < count; index += 1) colours.set(rgb, index * 3);
+    flat.setAttribute('color', new THREE.BufferAttribute(colours, 3));
+    flat.deleteAttribute('uv');
+    parts.push(flat);
+  };
+  const width = Math.max(box.max.x - box.min.x, 0.4);
+  const depth = Math.max(box.max.z - box.min.z, 0.4);
+  const crownHeight = box.max.y - split;
+  const lump = new THREE.IcosahedronGeometry(0.5, 0);
+  // Fitted to the crown's box: an icosahedron does not reach its radius on every axis.
+  lump.computeBoundingBox();
+  const unit = lump.boundingBox!.getSize(new THREE.Vector3());
+  lump.translate(0, -(lump.boundingBox!.min.y + lump.boundingBox!.max.y) / 2, 0);
+  lump.scale((width * 0.9) / unit.x, Math.max(crownHeight, 0.3) / unit.y, (depth * 0.9) / unit.z);
+  lump.translate((box.min.x + box.max.x) / 2, split + crownHeight / 2, (box.min.z + box.max.z) / 2);
+  paint(lump, mean(crown));
+  if (height >= 2) {
+    const post = new THREE.BoxGeometry(Math.max(width * 0.08, 0.3), split - box.min.y, Math.max(depth * 0.08, 0.3));
+    post.translate(0, box.min.y + (split - box.min.y) / 2, 0);
+    paint(post, mean(trunk));
+  }
+  const merged = mergeFlat(parts);
+  merged.computeVertexNormals();
+  merged.computeBoundingSphere();
+  return merged;
+}
+
+/** Joins non-indexed geometries of position, normal and colour. */
+function mergeFlat(parts: readonly THREE.BufferGeometry[]): THREE.BufferGeometry {
+  const names = ['position', 'color'] as const;
+  const out = new THREE.BufferGeometry();
+  for (const name of names) {
+    const arrays = parts.map((part) => part.getAttribute(name).array as Float32Array);
+    const joined = new Float32Array(arrays.reduce((sum, array) => sum + array.length, 0));
+    let offset = 0;
+    for (const array of arrays) {
+      joined.set(array, offset);
+      offset += array.length;
+    }
+    out.setAttribute(name, new THREE.BufferAttribute(joined, 3));
+  }
+  return out;
+}
+
+/** Each tree model's stand-in, made once. */
+const IMPOSTORS = new WeakMap<THREE.BufferGeometry, THREE.BufferGeometry>();
 
 /**
  * Collects model placements and turns them into one instanced mesh per model.
@@ -95,9 +238,30 @@ export class ModelPlacements {
   }
 
   build(asset: EnvironmentAsset): THREE.Group {
+    return this.instanced(asset, (name) => asset.geometry(name));
+  }
+
+  /**
+   * biome-trees-and-plants 4.1: the trees' strategic stand-ins, one instanced
+   * mesh per species at the same placements; other models are left out.
+   */
+  buildImpostors(asset: EnvironmentAsset): THREE.Group {
+    return this.instanced(asset, (name) => {
+      const model = asset.isTree(name) ? asset.geometry(name) : undefined;
+      if (!model) return undefined;
+      let impostor = IMPOSTORS.get(model);
+      if (!impostor) {
+        impostor = impostorGeometry(model);
+        IMPOSTORS.set(model, impostor);
+      }
+      return impostor;
+    });
+  }
+
+  private instanced(asset: EnvironmentAsset, geometryOf: (name: string) => THREE.BufferGeometry | undefined): THREE.Group {
     const group = new THREE.Group();
     for (const [name, list] of this.matrices) {
-      const geometry = asset.geometry(name);
+      const geometry = geometryOf(name);
       if (!geometry) continue;
       const mesh = new THREE.InstancedMesh(geometry, asset.materialOf(name), list.length);
       list.forEach((matrix, index) => mesh.setMatrixAt(index, matrix));

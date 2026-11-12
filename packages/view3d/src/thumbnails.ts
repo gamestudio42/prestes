@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { propPreview } from './battle-map-layer';
 import { loadEnvironmentAsset, type EnvironmentAsset } from './environment-models';
 import { PALETTE } from './palette';
-import { ARMIES, SECTION_TYPES, type SectionMan, type SectionRole, type SectionTypeId, type WeaponId } from '@prestes/shared';
+import { ARMIES, modelFilesOf, SECTION_TYPES, type SectionMan, type SectionRole, type SectionTypeId, type WeaponId } from '@prestes/shared';
 import { UNIFORM_VARIANTS, type SoldierClip, type SoldierOutfit } from './soldier-clips';
 import { loadSoldierAsset, SoldierInstance, type SoldierAsset } from './soldier-models';
 import { weaponLook, WeaponProps } from './weapon-placeholders';
@@ -16,6 +16,8 @@ export async function renderThumbnails(models: readonly string[], size = 64, bas
   let asset: EnvironmentAsset | null = null;
   try {
     asset = await loadEnvironmentAsset(base);
+    // biome-trees-and-plants 4.1: the biome files of the species pictured.
+    await asset.include(modelFilesOf(models)).catch(() => undefined);
   } catch {
     // Without the models every prop shows its placeholder.
   }
