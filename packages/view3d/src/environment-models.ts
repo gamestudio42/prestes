@@ -1,5 +1,6 @@
 import * as THREE from 'three';
-import { terrainHeightAt } from '@prestes/shared';
+import { terrainHeightAt, VARIANT_SWATCHES, type BuildingVariant } from '@prestes/shared';
+import { ENVIRONMENT_ATLAS } from './environment-atlas';
 import { toonGradient } from './materials';
 import { lowestLeaf } from './canopy';
 
@@ -54,11 +55,19 @@ export class ModelLibrary {
   ) {}
 
   geometry(name: string): THREE.BufferGeometry | undefined {
-    return this.geometries.get(name);
+    const found = this.geometries.get(name);
+    if (found || !name.includes('@')) return found;
+    // revise-buildings-and-stone 3.5: `<model>@<variant>` is the model with the variant's swatches swapped.
+    const [model, variant] = name.split('@') as [string, BuildingVariant];
+    const base = this.geometries.get(model);
+    if (!base || !VARIANT_SWATCHES[variant]) return undefined;
+    const geometry = withSwatches(base, VARIANT_SWATCHES[variant]);
+    this.geometries.set(name, geometry);
+    return geometry;
   }
 
   isColoured(name: string): boolean {
-    return this.coloured.has(name);
+    return this.coloured.has(name.split('@')[0]!);
   }
 
   has(files: readonly string[]): boolean {
@@ -99,6 +108,31 @@ export class ModelLibrary {
       mesh.geometry.dispose();
     });
   }
+}
+
+/**
+ * A copy of a model whose faces on one atlas swatch are moved onto another
+ * (`from` -> `to`). The model's UVs sit half a texel inside their cells, so
+ * each vertex names its swatch; cells are all the same size.
+ */
+export function withSwatches(base: THREE.BufferGeometry, swaps: Readonly<Record<string, string>>): THREE.BufferGeometry {
+  const geometry = base.clone();
+  const uv = geometry.getAttribute('uv') as THREE.BufferAttribute | undefined;
+  if (!uv) return geometry;
+  const [width, height] = ENVIRONMENT_ATLAS.size;
+  const moves = Object.entries(swaps).flatMap(([from, to]) => {
+    const a = ENVIRONMENT_ATLAS.regions[from];
+    const b = ENVIRONMENT_ATLAS.regions[to];
+    return a && b ? [{ a, du: (b[0] - a[0]) / width, dv: (b[1] - a[1]) / height }] : [];
+  });
+  for (let index = 0; index < uv.count; index += 1) {
+    const x = uv.getX(index) * width;
+    const y = uv.getY(index) * height;
+    const move = moves.find(({ a }) => x >= a[0] && x < a[0] + a[2] && y >= a[1] && y < a[1] + a[3]);
+    if (move) uv.setXY(index, uv.getX(index) + move.du, uv.getY(index) + move.dv);
+  }
+  uv.needsUpdate = true;
+  return geometry;
 }
 
 export async function loadEnvironmentAsset(base = './models/'): Promise<EnvironmentAsset> {

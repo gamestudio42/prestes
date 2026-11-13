@@ -59,6 +59,7 @@ import {
   mapLight,
   mapNorth,
   type MapLight,
+  buildingVariants,
 } from '@prestes/shared';
 import { LOCALES, translate, type Locale, type MessageKey } from '@prestes/content';
 import { loadLocale, saveLocale } from '../storage';
@@ -827,6 +828,29 @@ function SelectionPanel({ store, viewport, t }: { store: EditorStore; viewport: 
             step={0.1}
             onChange={(scale) => store.editVector((draft) => { const target = draft.objects.find((item) => item.id === object.id); if (target) target.scale = scale; })}
           />
+          {entry.footprint.kind === 'building' && buildingVariants(entry.footprint.model).length > 0 ? (
+            <div className="editor-segmented" role="radiogroup" aria-label={t('editor.prop.variant')} data-testid="object-variant">
+              {[undefined, ...buildingVariants(entry.footprint.model)].map((variant) => (
+                <button
+                  key={variant ?? 'default'}
+                  type="button"
+                  role="radio"
+                  aria-checked={(object.variant ?? undefined) === variant}
+                  data-variant={variant ?? 'default'}
+                  onClick={() =>
+                    store.editVector((draft) => {
+                      const target = draft.objects.find((item) => item.id === object.id);
+                      if (!target) return;
+                      if (variant) target.variant = variant;
+                      else delete target.variant;
+                    })
+                  }
+                >
+                  {t(`editor.variant.${variant ?? 'default'}`)}
+                </button>
+              ))}
+            </div>
+          ) : null}
           <div className="editor-footprint">
             <h4>{t('editor.prop.footprint')}</h4>
             <ul>

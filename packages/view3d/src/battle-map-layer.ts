@@ -1290,7 +1290,7 @@ export class BattleMapLayer {
     const placeholders = new Instancer();
     for (const building of map.buildings) {
       if (MODELLED.has(building.model)) {
-        this.placements.add(building.model, building.x, building.y, building.rotation);
+        this.placements.add(building.variant ? `${building.model}@${building.variant}` : building.model, building.x, building.y, building.rotation);
       } else {
         placeholderBuilding(building, placeholders);
       }

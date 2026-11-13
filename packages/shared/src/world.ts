@@ -143,6 +143,8 @@ export const TRAINING_SIGHT_OBSTACLES = [
   { id: 8, x: 15, y: -12, halfWidth: 1.1, halfDepth: 1.1, height: 4.2 },
 ];
 
+import type { BuildingVariant } from './maps/building-variants';
+
 export type BuildingModel =
   | 'farmhouse'
   | 'barn'
@@ -194,6 +196,8 @@ export interface Building {
   height: number;
   /** View (refine-battle-maps 5.2): the long face toward the street, local +y (1) or -y (-1). */
   front?: 1 | -1;
+  /** View (revise-buildings-and-stone 3.5): the look it is drawn in; the battle never reads it. */
+  variant?: BuildingVariant;
 }
 
 export const BUILDINGS: readonly Building[] = [

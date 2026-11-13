@@ -15,7 +15,7 @@ export interface EditorBridge {
     tool: string;
     overlay: string;
     bounds: { minX: number; minY: number; maxX: number; maxY: number };
-    objects: { id: number; type: string; x: number; y: number }[];
+    objects: { id: number; type: string; x: number; y: number; variant?: string }[];
     roads: number;
     lines: number;
     rivers: number;
@@ -71,7 +71,7 @@ export function editorBridge(store: EditorStore, viewport: () => EditorViewport 
       tool: store.tool,
       overlay: store.view.overlay,
       bounds: { ...store.compiled.bounds },
-      objects: store.map.objects.map(({ id, type, x, y }) => ({ id, type, x, y })),
+      objects: store.map.objects.map(({ id, type, x, y, variant }) => ({ id, type, x, y, ...(variant ? { variant } : {}) })),
       roads: store.map.roads.length,
       lines: store.map.lines.length,
       rivers: store.map.rivers.length,

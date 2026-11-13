@@ -1,6 +1,6 @@
 import { NodeIO } from '@gltf-transform/core';
 import { dedup, prune } from '@gltf-transform/functions';
-import { copyFileSync, existsSync, mkdirSync, readdirSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { basename, join } from 'node:path';
 import { CATALOG_OBJECTS } from '../packages/shared/src';
 import { isTreeModel, meshTriangles, treeBudgetProblems } from './tree-budgets';
@@ -48,3 +48,14 @@ for (const file of readdirSync(TEXTURES).filter((name) => name.endsWith('.png'))
   copyFileSync(join(TEXTURES, file), join(TEXTURE_OUT, file));
 }
 console.log(`${TEXTURE_OUT}: textures copied`);
+
+// revise-buildings-and-stone 3.5: the environment atlas's swatches, for the building variants' swaps.
+const regions = JSON.parse(readFileSync(join(TEXTURES, 'regions.json'), 'utf8')) as Record<string, unknown>;
+const ATLAS_OUT = 'packages/view3d/src/environment-atlas.ts';
+writeFileSync(
+  ATLAS_OUT,
+  `// Written by tools/prepare-models.ts from art-src/textures/regions.json; do not edit.\n` +
+    `/** The environment atlas: its size and each swatch's cell (x, y, width, height in pixels, rows down). */\n` +
+    `export const ENVIRONMENT_ATLAS: { size: [number, number]; regions: Record<string, [number, number, number, number]> } = ${JSON.stringify(regions.environment)};\n`,
+);
+console.log(`${ATLAS_OUT}: atlas swatches written`);

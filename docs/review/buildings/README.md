@@ -82,3 +82,10 @@ cemetery wall are built stone and walls (4.2, 5.3), the wayside cross an
 object (5.1). Sources are noted on each catalog row.
 
 Approved by the owner, 2026-11-12.
+
+## Variants (3.5)
+
+`sheet-variants.png` shows a casa terrea in each look, set with the
+editor's picker by `tests/e2e/review-building-variants.spec.ts`: as built,
+whitewash, ochre, blue, rose, bare adobe (old tiles) and zinc roof. A look
+swaps atlas swatches on the model in the view; the battle never reads it.

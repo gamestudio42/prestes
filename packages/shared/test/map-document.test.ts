@@ -150,8 +150,7 @@ describe('map document', () => {
     const parsed = parseMapDocument({ ...document, version: 6 });
     expect(parsed.ok).toBe(true);
     if (!parsed.ok) return;
-    expect(MAP_DOCUMENT_VERSION).toBe(7);
-    expect(parsed.document.version).toBe(7);
+    expect(parsed.document.version).toBe(MAP_DOCUMENT_VERSION);
     expect(parsed.document.north).toBeUndefined();
     expect(compileMapDocument(parsed.document).north).toBe(0);
   });

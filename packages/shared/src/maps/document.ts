@@ -10,6 +10,7 @@ import {
   type CatalogObject,
   type LineKind,
 } from './catalog-objects';
+import { isBuildingVariant } from './building-variants';
 import { distanceToPolyline, pointInPolygon, pointsBox, polygonBox, smooth, type Box } from './geometry';
 import { GROUND_MATERIAL_IDS, groundMaterial, groundMaterialIndex, type GroundMaterialId } from './ground-materials';
 import { VEGETATION } from './concealment';
@@ -34,7 +35,7 @@ import { DEFAULT_MAP_LIGHT, MAP_LIGHT_TIME, type BattleMap, type DeploymentZone,
  */
 
 export const MAP_DOCUMENT_FORMAT = 'prestes-map';
-export const MAP_DOCUMENT_VERSION = 7;
+export const MAP_DOCUMENT_VERSION = 8;
 
 /** Heights the editor allows (m). */
 export const MIN_HEIGHT = -12;
@@ -130,6 +131,8 @@ export interface DocObject {
   /** Radians, the simulation's convention (the view turns by -rotation). */
   rotation: number;
   scale?: number;
+  /** revise-buildings-and-stone 3.5: a building's look (`BUILDING_VARIANTS`); unset is the model's own. */
+  variant?: string;
 }
 
 /** author-game-maps: a skirmish map, a campaign mission's map, or the test map. */
@@ -357,6 +360,9 @@ const isZone = (value: unknown): value is DeploymentZone => isObject(value) && i
  *
  * 6 -> 7 (add-map-compass): `north` is new and optional; a version 6 map
  * keeps the top edge as north.
+ *
+ * 7 -> 8 (revise-buildings-and-stone 3.5): an object's `variant` is new and
+ * optional; a version 7 map's buildings keep their default look.
  */
 function migrate(document: Record<string, unknown>): Record<string, unknown> {
   let doc = document;
@@ -366,6 +372,7 @@ function migrate(document: Record<string, unknown>): Record<string, unknown> {
   if (doc.version === 4) doc = { ...doc, version: 5 };
   if (doc.version === 5) doc = migrateV5(doc);
   if (doc.version === 6) doc = { ...doc, version: 7 };
+  if (doc.version === 7) doc = { ...doc, version: 8 };
   return doc;
 }
 
@@ -465,7 +472,7 @@ export function parseMapDocument(value: unknown): ParseResult {
   if (!(doc.ferries as unknown[]).every((ferry) => isObject(ferry) && isNumber(ferry.id) && isPoint(ferry.landingA) && isPoint(ferry.landingB))) return fail('ferries');
   if (!(doc.lines as unknown[]).every((line) => isObject(line) && isNumber(line.id) && isNumber(line.height) && isPoints(line.points, 2) && isString(line.kind))) return fail('lines');
   if (!(doc.trenches as unknown[]).every(isTrenchLine)) return fail('trenches');
-  if (!(doc.objects as unknown[]).every((object) => isObject(object) && isNumber(object.id) && isString(object.type) && isNumber(object.x) && isNumber(object.y) && isNumber(object.rotation))) return fail('objects');
+  if (!(doc.objects as unknown[]).every((object) => isObject(object) && isNumber(object.id) && isString(object.type) && isNumber(object.x) && isNumber(object.y) && isNumber(object.rotation) && (object.variant === undefined || isString(object.variant)))) return fail('objects');
   if (!isObject(doc.deployment) || !isZone(doc.deployment.column) || !isZone(doc.deployment.legalist)) return fail('deployment');
   const document = doc as unknown as MapDocument;
   try {
@@ -934,6 +941,8 @@ export function compileMapDocument(source: EditableMap | MapDocument): BattleMap
           halfDepth,
           height: entry.height * scale,
         };
+        // 3.5: a look the building does not have is dropped, not an error.
+        if (isBuildingVariant(building.model, object.variant)) building.variant = object.variant;
         buildings.push(building);
         covers.push(buildingCover(building));
         coverPieces.set(building.id, { kind: 'object', id: object.id });
