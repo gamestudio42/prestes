@@ -35,6 +35,47 @@ export const PORT_EVERY = 10;
 /** A defender's cover inside never exceeds this. */
 export const GARRISON_COVER_CAP = 0.75;
 
+/**
+ * A man at a building's window sees and fires only within its arc (PORT_ARC,
+ * 120 degrees): the cosine and sine of the half-arc, so the simulation needs
+ * no trigonometry. Beyond it his own walls stand in the way; the men re-pick
+ * their windows (PORT_EVERY) to face an enemy there.
+ */
+const PORT_HALF_ARC_COS = 0.5;
+const PORT_HALF_ARC_SIN = Math.sqrt(0.75);
+
+/** The window whose arc bounds a man inside a building; null outside one, or in the tower. */
+function windowPort(ctx: SimContext, unit: MutableUnit): PositionPort | null {
+  if (unit.garrison === undefined || unit.port === undefined) return null;
+  const position = ctx.positionById.get(unit.garrison);
+  if (!position || position.kind !== 'building') return null;
+  const port = position.ports[unit.port];
+  return port && port.arcDeg < 360 ? port : null;
+}
+
+/** Whether a point lies outside the arc of the window this man stands at. */
+export function outsidePortArc(ctx: SimContext, unit: MutableUnit, x: number, y: number): boolean {
+  const port = windowPort(ctx, unit);
+  if (!port) return false;
+  const dx = x - unit.x;
+  const dy = y - unit.y;
+  const length = Math.sqrt(dx * dx + dy * dy);
+  if (length < 1e-6) return false;
+  return (port.facing.x * dx + port.facing.y * dy) / length < PORT_HALF_ARC_COS - 1e-9;
+}
+
+/** Turns a man at a window back to the edge of its arc when he faces past it. */
+export function clampFacingToPort(ctx: SimContext, unit: MutableUnit): void {
+  const port = windowPort(ctx, unit);
+  if (!port) return;
+  const { x: fx, y: fy } = port.facing;
+  if (fx * unit.facingX + fy * unit.facingY >= PORT_HALF_ARC_COS) return;
+  // The arc's edge on the side he turned toward.
+  const side = fx * unit.facingY - fy * unit.facingX >= 0 ? 1 : -1;
+  unit.facingX = fx * PORT_HALF_ARC_COS - fy * PORT_HALF_ARC_SIN * side;
+  unit.facingY = fy * PORT_HALF_ARC_COS + fx * PORT_HALF_ARC_SIN * side;
+}
+
 export function createPositions(map: Parameters<typeof positionsFor>[0] | null): { positions: PositionDef[]; byId: Map<number, PositionDef> } {
   const positions = map ? positionsFor(map) : [];
   return { positions, byId: new Map(positions.map((position) => [position.id, position])) };

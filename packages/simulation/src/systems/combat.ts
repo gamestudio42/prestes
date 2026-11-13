@@ -20,7 +20,7 @@ import { markUnderFire, shooterOf } from './fire-reaction';
 import { VISION_RANGE, unseenFireMarker } from './vision';
 import { hiddenByVegetation, revealShooter } from './concealment';
 import { drawBelt, feedingGun, gunReady } from './machine-gun';
-import { facingDefender, garrisonCover } from './garrison';
+import { clampFacingToPort, facingDefender, garrisonCover, outsidePortArc } from './garrison';
 import {
   AREA_FIRE_ACCURACY,
   AREA_FIRE_MARGIN,
@@ -256,6 +256,10 @@ export function visible(ctx: SimContext, shooter: MutableUnit, target: MutableUn
     return false;
   }
   if (!isPointInVision(shooter, target)) {
+    return false;
+  }
+  // A man at a window fires only out of it, within its arc.
+  if (outsidePortArc(ctx, shooter, target.x, target.y)) {
     return false;
   }
   if (!beyondSightSpotted(ctx, shooter, target, dx * dx + dy * dy)) {
@@ -632,7 +636,7 @@ function areaFireRound(ctx: SimContext, unit: MutableUnit, weapon: Weapon, tick:
       undefined,
       true,
     );
-    if (!blocked) aim = { x, y };
+    if (!blocked && !outsidePortArc(ctx, unit, x, y)) aim = { x, y };
   }
   if (aim === null) {
     unit.cooldown = LOOK_AGAIN_TICKS;
@@ -841,6 +845,8 @@ export function updateFacing(ctx: SimContext): void {
         unit.facingY = dy / length;
       }
     }
+    // A man at a window looks out of it: never past its arc, through his own wall.
+    clampFacingToPort(ctx, unit);
   }
 }
 
