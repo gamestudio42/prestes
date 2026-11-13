@@ -4,6 +4,7 @@ import type { Building } from '../world';
 import type { Roster } from '../sections';
 import type { TrenchLineDef } from './trench-lines';
 import type { RockKind } from './rock-kinds';
+import type { BattleEvent, EventPlace } from './events';
 
 /** A battle map id: an authored map document's (author-game-maps; the hand-written maps are gone). */
 export type BattleMapId = string;
@@ -245,4 +246,8 @@ export interface BattleMap {
   enemyForces?: readonly Roster[];
   /** add-map-objectives: the map's objectives (absent or empty: none). */
   objectives?: readonly Objective[];
+  /** add-battle-events: the events the battle runs, in id order (absent: none). */
+  events?: readonly BattleEvent[];
+  /** add-battle-events: the places those events name (present when `events` is). */
+  eventPlaces?: readonly EventPlace[];
 }

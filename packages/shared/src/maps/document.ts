@@ -26,6 +26,7 @@ import { defaultDeploymentArea, sectionStartsFromArea } from './deployment-areas
 import { smoothCentreline } from './water-outline';
 import { detectWallYards, type YardWall } from './wall-yards';
 import { migrateEnemyPreset, type Roster } from '../sections';
+import { compileEventPlaces, compileEvents, isBattleEvent, isEventPlace, type BattleEvent, type EventPlace } from './events';
 import { DEFAULT_MAP_LIGHT, MAP_LIGHT_TIME, type BattleMap, type DeploymentZone, type HeightShape, type LocalizedText, type MapLight, type Objective, type MapLine, type PropPlacement, type WaterArea } from './types';
 
 /**
@@ -37,7 +38,7 @@ import { DEFAULT_MAP_LIGHT, MAP_LIGHT_TIME, type BattleMap, type DeploymentZone,
  */
 
 export const MAP_DOCUMENT_FORMAT = 'prestes-map';
-export const MAP_DOCUMENT_VERSION = 8;
+export const MAP_DOCUMENT_VERSION = 9;
 
 /** Heights the editor allows (m). */
 export const MIN_HEIGHT = -12;
@@ -170,6 +171,10 @@ interface MapDocumentBody {
   enemyForces?: Roster[];
   /** add-map-objectives 1.3: regions to take and hold; absent = none. */
   objectives?: Objective[];
+  /** add-battle-events 1.1: what happens during the battle; absent = nothing. */
+  events?: BattleEvent[];
+  /** add-battle-events 1.1: entry points and trigger areas the events name. */
+  eventPlaces?: EventPlace[];
   setting: { label: SettingLabel; sourceNote: string };
   codexKey?: string;
   palette: MapPalette;
@@ -372,6 +377,9 @@ const isZone = (value: unknown): value is DeploymentZone => isObject(value) && i
  * 7 -> 8 (revise-buildings-and-stone 3.5, 4.2): an object's and a line's
  * `variant` are new and optional; a version 7 map's buildings keep their
  * default look and its stones and walls are granite.
+ *
+ * 8 -> 9 (add-battle-events 1.2): `events` and `eventPlaces` are new and
+ * optional; a version 8 map opens with none.
  */
 function migrate(document: Record<string, unknown>): Record<string, unknown> {
   let doc = document;
@@ -382,6 +390,7 @@ function migrate(document: Record<string, unknown>): Record<string, unknown> {
   if (doc.version === 5) doc = migrateV5(doc);
   if (doc.version === 6) doc = { ...doc, version: 7 };
   if (doc.version === 7) doc = { ...doc, version: 8 };
+  if (doc.version === 8) doc = { ...doc, version: 9 };
   return doc;
 }
 
@@ -464,6 +473,8 @@ export function parseMapDocument(value: unknown): ParseResult {
   if (doc.north !== undefined && !isNumber(doc.north)) return fail('north');
   if (doc.enemyForces !== undefined && !(Array.isArray(doc.enemyForces) && doc.enemyForces.every((roster) => isObject(roster) && Array.isArray(roster.sections) && roster.sections.every(isString)))) return fail('enemyForces');
   if (doc.objectives !== undefined && !(Array.isArray(doc.objectives) && doc.objectives.every(isObjective))) return fail('objectives');
+  if (doc.events !== undefined && !(Array.isArray(doc.events) && doc.events.every(isBattleEvent))) return fail('events');
+  if (doc.eventPlaces !== undefined && !(Array.isArray(doc.eventPlaces) && doc.eventPlaces.every(isEventPlace))) return fail('eventPlaces');
   if (!isObject(doc.setting) || !isString(doc.setting.label) || !isString(doc.setting.sourceNote)) return fail('setting');
   if (!['training-ground', 'historical-setting-fictional-place', 'reconstructed-historical-place'].includes(doc.setting.label)) return fail('setting');
   if (!['temperate', 'cerrado', 'caatinga', 'urban'].includes(doc.palette as string)) return fail('palette');
@@ -1158,9 +1169,17 @@ export function compileMapDocument(source: EditableMap | MapDocument): BattleMap
           })),
         }
       : {}),
+    ...compiledEvents(map),
   };
   noteCoverPieces(compiled, coverPieces);
   return compiled;
+}
+
+/** add-battle-events 1.1: a map's runnable events and their places; nothing for a map without events. */
+function compiledEvents(map: MapDocumentBody): Pick<BattleMap, 'events' | 'eventPlaces'> {
+  const events = compileEvents(map.events);
+  if (events.length === 0) return {};
+  return { events, eventPlaces: compileEventPlaces(map.eventPlaces) };
 }
 
 /** The name or description of a map in a language: an authored map's own text, else null (use its locale key). */

@@ -1,5 +1,6 @@
 export * from './types';
 export * from './objectives';
+export * from './events';
 export {
   activeMapGeneration,
   activeMapRuntime,

@@ -98,7 +98,7 @@ test('north set in the editor is saved, read back and shown by the battle compas
   expect(await page.evaluate(() => (window as unknown as Bridge).__prestesEditor!.sun())).not.toEqual(sunBefore);
   await page.getByTestId('map-submit').click();
   expect((await editorState(page)).north).toBe(90);
-  expect(await page.evaluate(() => (window as unknown as Bridge).__prestesEditor!.document())).toMatchObject({ north: 90, version: 8 });
+  expect(await page.evaluate(() => (window as unknown as Bridge).__prestesEditor!.document())).toMatchObject({ north: 90, version: 9 });
   await page.screenshot({ path: testInfo.outputPath('editor-north-90.png') });
 
   // Undo restores the top edge; redo brings 90 back.
