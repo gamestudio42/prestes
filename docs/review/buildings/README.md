@@ -153,13 +153,15 @@ Approved by the owner, 2026-11-13.
 `sheet-camp.png` shows the thirteen camp objects built in the props target
 (`art-src/blender/camp_objects.py`), rendered by
 `art-src/blender/review_objects.py --camp`; the fourteenth, the aid tent, is
-the kit's. They are the editor's new camp group. Canvas gives no cover;
+the kit's. They are the editor's new camp group. After the owner's first look
+(2026-11-13) the pack saddles and the horse line went, the campfire's tripod
+meets over the pot, and a field kitchen and a mess tent were added. Canvas gives no cover;
 boxes, barrels, carts and saddles cover like a barrel; the abandoned 75 mm
 gun like stone. Where the sources differ (D11) a camp object comes per side:
 the Column's worn, patched canvas and requisitioned boxes, or the
 government's issue canvas and painted boxes, set with the selection
 panel's side picker. `camp-sides.png` (taken by
-`tests/e2e/review-camp.spec.ts`) shows the tents, the lean-to, the boxes and
-the cart in the Column's looks (behind) and the government's (in front).
+`tests/e2e/review-camp.spec.ts`) shows the tents, the kitchen, the mess, the
+lean-to, the boxes and the cart in the Column's looks (behind) and the government's (in front).
 The side is drawing only: `packages/simulation/test/camp-sides.test.ts`
 runs both camps to the same hashes tick by tick.

@@ -16,7 +16,7 @@ interface Bridge {
   };
 }
 
-const SIDED = ['ridge-tent', 'bell-tent', 'poncho-lean-to', 'ammo-boxes', 'supply-cart'];
+const SIDED = ['ridge-tent', 'bell-tent', 'field-kitchen', 'mess-tent', 'poncho-lean-to', 'ammo-boxes', 'supply-cart'];
 
 test.skip(!process.env.PRESTES_REVIEW, 'review pictures only on demand');
 
@@ -34,8 +34,8 @@ test("the camp in the Column's looks and the government's", async ({ page }) => 
     await page.mouse.click(point.x, point.y);
   };
   const spots = SIDED.flatMap((type, index) => [
-    { type, x: -20 + index * 10, y: -5, side: 'column' },
-    { type, x: -20 + index * 10, y: 6, side: 'legalist' },
+    { type, x: -33 + index * 11, y: -7, side: 'column' },
+    { type, x: -33 + index * 11, y: 8, side: 'legalist' },
   ]);
   await page.locator('[data-tool="place"]').click();
   for (const spot of spots) {
@@ -55,7 +55,7 @@ test("the camp in the Column's looks and the government's", async ({ page }) => 
   await page.keyboard.press('Escape');
   await page.evaluate(() => {
     const editor = (window as unknown as Bridge).__prestesEditor!;
-    editor.look(0, 0, 40);
+    editor.look(0, 0, 80);
     editor.viewport()!.view.camera.targetYaw = 0;
   });
   await page.waitForTimeout(2500);

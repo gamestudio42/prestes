@@ -13,7 +13,7 @@ export type CampSide = 'column' | 'legalist';
 export const CAMP_SIDES: readonly CampSide[] = ['column', 'legalist'];
 
 /** The camp objects drawn per side. */
-export const SIDED_CAMP: readonly string[] = ['ridge-tent', 'bell-tent', 'poncho-lean-to', 'ammo-boxes', 'supply-cart'];
+export const SIDED_CAMP: readonly string[] = ['ridge-tent', 'bell-tent', 'field-kitchen', 'mess-tent', 'poncho-lean-to', 'ammo-boxes', 'supply-cart'];
 
 /** The government's swatches over the Column's. */
 export const CAMP_SIDE_SWATCHES: Readonly<Record<string, string>> = {

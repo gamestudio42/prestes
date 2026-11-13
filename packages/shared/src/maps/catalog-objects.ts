@@ -333,17 +333,17 @@ export const CATALOG_OBJECTS: readonly CatalogObject[] = [
   // steel like stone. The side is drawing only (camp-sides.ts).
   camp('ridge-tent', 1.5, 2, 2, THIN), // officers' tents with a cot and a hammock, pp. 142-143
   camp('bell-tent', 2, 2, 3, THIN), // generic period type
+  camp('field-kitchen', 2.5, 2, 2.6, THIN), // a field kitchen under a canvas fly, generic period type
+  camp('mess-tent', 4, 2.5, 2.8, THIN), // a mess fly over trestle tables, generic period type
   camp('camp-aid-tent', 2.8, 2.3, 2.8, THIN, 'aid-tent'), // the kit's aid tent
   camp('poncho-lean-to', 1, 1, 1.2, THIN), // generic period type
   camp('supply-cart', 1.1, 2, 2, WOOD), // the convoys' carts of ammunition, pp. 102, 125
-  camp('pack-saddles', 0.8, 0.5, 0.8, WOOD), // the mules' pack saddles, pp. 93, 143
   camp('hammock', 1.6, 0.2, 1.6, THIN), // slung between two posts, p. 143
   camp('camp-barrels', 0.8, 0.6, 1, WOOD), // barrels, p. 110
   camp('ammo-boxes', 0.7, 0.5, 0.7, WOOD), // generic period type
   camp('campfire', 0.6, 0.6, 1.2, THIN), // generic period type
   camp('rifle-stack', 0.4, 0.4, 1.4, THIN), // generic period type
   camp('saddle-rail', 1.5, 0.3, 1.1, THIN), // saddles, pp. 51, 141
-  camp('horse-line', 5, 0.1, 1.3, THIN), // posts and rope, no animals, pp. 93, 111
   camp('field-gun-75', 0.9, 2.2, 1.5, SOLID_STONE), // a 75 mm field gun left behind, pp. 93-95
   // Flat decals.
   item('pebbles', 'decal', 2, 2, 0, { kind: 'decal', material: 'pebbles' }),

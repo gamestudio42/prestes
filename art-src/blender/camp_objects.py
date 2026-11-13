@@ -9,12 +9,33 @@ The kit's aid tent is target_buildings.aid_tent().
 """
 import math
 
-from mathutils import Vector
+from mathutils import Matrix, Vector
 
 from common import MeshBuilder, placed
 from props_objects import ALONG_X, two_sided, wheel
 
 ALONG_Y = math.pi / 2
+
+
+def stick(b: MeshBuilder, p0: Vector, p1: Vector, width: float, swatch: str) -> None:
+    """A square stick from p0 to p1."""
+    direction = p1 - p0
+    turn = direction.to_track_quat("Z", "Y").to_matrix().to_4x4()
+    b.box((0, 0, direction.length / 2), (width, width, direction.length), swatch, matrix=Matrix.Translation(p0) @ turn)
+
+
+def fly(b: MeshBuilder, length: float, width: float, eave: float, ridge: float, swatch: str, poles: int) -> None:
+    """An open-sided canvas fly along X on its poles: a ridge, two slopes
+    down to the eaves, no walls."""
+    hl, hw = length / 2, width / 2
+    for s in (1, -1):
+        slope = [Vector((-hl, 0, ridge)), Vector((hl, 0, ridge)), Vector((hl, s * hw, eave)), Vector((-hl, s * hw, eave))]
+        two_sided(b, slope, swatch)
+    for k in range(poles):
+        x = -hl + 0.1 + k * (length - 0.2) / (poles - 1)
+        for s in (1, -1):
+            b.box((x, s * (hw - 0.05), eave / 2), (0.08, 0.08, eave), "timber")
+        b.box((x, 0, ridge / 2), (0.08, 0.08, ridge), "timber")
 
 
 def ridge_tent():
@@ -67,18 +88,6 @@ def supply_cart():
     b.to_object("supply-cart")
 
 
-def pack_saddles():
-    """Two mule pack saddles (cangalhas) set down with their loads."""
-    b = MeshBuilder("environment")
-    for x in (-0.4, 0.4):
-        for s in (1, -1):
-            b.box((x, s * 0.12, 0.35), (0.06, 0.06, 0.75), "timber", matrix=placed(0, 0, 0, rx=s * 0.45))
-        b.box((x, 0, 0.62), (0.08, 0.5, 0.06), "timber")
-        b.box((x, 0, 0.18), (0.55, 0.85, 0.36), "hay")
-    b.box((0, 0.3, 0.55), (1.2, 0.3, 0.3), "canvas.worn")
-    b.to_object("pack-saddles")
-
-
 def hammock():
     b = MeshBuilder("environment")
     for x in (-1.5, 1.5):
@@ -119,10 +128,13 @@ def campfire():
         b.box((0, 0, 0), (0.8, 0.09, 0.09), "bark", matrix=placed(0, 0, 0.08, rz=a))
     b.cone((0, 0, 0.08), 0.28, 0.4, "flag", sides=5)
     b.cone((0, 0, 0.08), 0.16, 0.5, "hay", sides=5)
+    top = Vector((0, 0, 1.25))
     for k in range(3):
-        a = k / 3 * math.tau
-        b.box((0, 0, 0), (0.04, 0.04, 1.25), "bark", matrix=placed(math.cos(a) * 0.32, math.sin(a) * 0.32, 0.58, rx=0.25 if k == 0 else -0.25, rz=a))
-    b.cylinder((0, 0, 0.72), 0.17, 0.24, "iron", sides=8, top="ink")
+        a = k / 3 * math.tau + 0.5
+        stick(b, Vector((math.cos(a) * 0.55, math.sin(a) * 0.55, 0)), top, 0.04, "bark")
+    # The pot hangs from the top on its chain.
+    b.box((0, 0, 1.0), (0.015, 0.015, 0.5), "iron")
+    b.cylinder((0, 0, 0.63), 0.17, 0.24, "iron", sides=8, top="ink")
     b.to_object("campfire")
 
 
@@ -150,17 +162,6 @@ def saddle_rail():
     b.to_object("saddle-rail")
 
 
-def horse_line():
-    """The picket line: posts and a rope, nosebags and buckets (no animals)."""
-    b = MeshBuilder("environment")
-    for x in (-4.9, 0.0, 4.9):
-        b.box((x, 0, 0.65), (0.12, 0.12, 1.3), "timber")
-    b.box((0, 0, 1.2), (9.8, 0.03, 0.03), "bark")
-    for x in (-3.0, -1.4, 1.8, 3.4):
-        b.cylinder((x, 0.35, 0.13), 0.14, 0.26, "timber", sides=6, top="ink")
-    b.to_object("horse-line")
-
-
 def field_gun_75():
     """A 75 mm field gun left behind: spoked wheels, shield, barrel, its trail down."""
     b = MeshBuilder("environment")
@@ -174,8 +175,44 @@ def field_gun_75():
     b.to_object("field-gun-75")
 
 
-BUILDERS = [ridge_tent, bell_tent, poncho_lean_to, supply_cart, pack_saddles, hammock, camp_barrels, ammo_boxes,
-            campfire, rifle_stack, saddle_rail, horse_line, field_gun_75]
+def field_kitchen():
+    """A field kitchen under an open canvas fly: a stove of bricks and clay
+    with two cauldrons, a work table, firewood and the water barrel."""
+    b = MeshBuilder("environment")
+    fly(b, 5.0, 4.0, 1.9, 2.6, "canvas.worn", 3)
+    b.box((-1.0, 0.6, 0.4), (2.0, 1.0, 0.8), "brick", top="ink")
+    for x in (-1.5, -0.5):
+        b.cylinder((x, 0.6, 0.98), 0.32, 0.36, "iron", sides=8, top="ink")
+    b.box((-1.9, 1.0, 1.35), (0.25, 0.25, 1.1), "brick")
+    b.box((1.2, -0.7, 0.8), (1.6, 0.8, 0.08), "timber")
+    for x in (0.5, 1.9):
+        for y in (-1.0, -0.4):
+            b.box((x, y, 0.4), (0.07, 0.07, 0.8), "timber")
+    for k in range(4):
+        b.cylinder((0, 0, 0), 0.08, 1.1, "bark", sides=6, matrix=placed(1.6, 1.0 + k * 0.17, 0.08 + (k % 2) * 0.14, rx=math.pi / 2, rz=ALONG_X))
+    b.cylinder((2.1, -1.5, 0.45), 0.32, 0.9, "timber", sides=8, top="ink")
+    b.to_object("field-kitchen")
+
+
+def mess_tent():
+    """A mess under a long open canvas fly: two trestle tables and their benches."""
+    b = MeshBuilder("environment")
+    fly(b, 8.0, 5.0, 2.0, 2.8, "canvas.worn", 4)
+    for y in (-1.1, 1.1):
+        b.box((0, y, 0.78), (6.6, 0.8, 0.06), "timber")
+        for x in (-3.0, 0.0, 3.0):
+            b.box((x, y, 0.38), (0.08, 0.6, 0.76), "timber")
+        for s in (1, -1):
+            b.box((0, y + s * 0.65, 0.45), (6.6, 0.28, 0.05), "timber")
+            for x in (-3.0, 0.0, 3.0):
+                b.box((x, y + s * 0.65, 0.22), (0.06, 0.24, 0.44), "timber")
+    for x in (-2.2, -0.6, 1.0, 2.4):
+        b.cylinder((x, -1.0, 0.85), 0.1, 0.09, "metal", sides=6, top="ink")
+    b.to_object("mess-tent")
+
+
+BUILDERS = [ridge_tent, bell_tent, field_kitchen, mess_tent, poncho_lean_to, supply_cart, hammock, camp_barrels, ammo_boxes,
+            campfire, rifle_stack, saddle_rail, field_gun_75]
 
 
 def build_all() -> None:
