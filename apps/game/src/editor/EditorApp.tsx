@@ -65,7 +65,7 @@ import { LOCALES, translate, type Locale, type MessageKey } from '@prestes/conte
 import { loadLocale, saveLocale } from '../storage';
 import { autosave, exportDocument, listProjectMaps, loadLast, loadProjectMap, readDocumentFile, saveThumbnail, saveToProject, storePlaytest } from './persistence';
 import { missionLabel, OpenDialog, slotOf, SlotSelect, type Slot } from './MapSlots';
-import { EditorStore, objectiveCircle, replaceCommand, type SelectionItem, type ToolId } from './store';
+import { EditorStore, objectiveCircle, replaceCommand, type SelectionItem, type ToolId, type ToolSettings } from './store';
 import { editorBridge, type EditorBridge } from './test-bridge';
 import { EditorViewport, PROTECTION_COLORS, type CursorInfo } from './viewport';
 import { useThumbnails } from './thumbnails';
@@ -80,15 +80,21 @@ import { Compass } from '../ui/hud/Compass';
 
 type T = (key: string, values?: Readonly<Record<string, string | number>>) => string;
 
-const TOOL_GROUPS: readonly { layer: string; tools: readonly ToolId[] }[] = [
+/**
+ * The erasers are modes of the trees and vegetation tools (trees: erase;
+ * vegetation: clear), given their own buttons so they are found.
+ */
+type PaletteEntry = ToolId | 'eraseTrees' | 'eraseVegetation';
+
+const TOOL_GROUPS: readonly { layer: string; tools: readonly PaletteEntry[] }[] = [
   { layer: 'editor.layers', tools: ['select'] },
   { layer: 'editor.layer.paint', tools: ['paint', 'fill', 'erase'] },
   { layer: 'editor.layer.terrain', tools: ['raise', 'lower', 'smooth', 'flatten', 'setHeight', 'noise'] },
   { layer: 'editor.layer.roads', tools: ['road'] },
   { layer: 'editor.layer.water', tools: ['river', 'pond', 'bridge', 'ferry'] },
   { layer: 'editor.layer.structures', tools: ['line', 'trench'] },
-  { layer: 'editor.layer.objects', tools: ['place', 'trees'] },
-  { layer: 'editor.layer.vegetation', tools: ['vegetation'] },
+  { layer: 'editor.layer.objects', tools: ['place', 'trees', 'eraseTrees'] },
+  { layer: 'editor.layer.vegetation', tools: ['vegetation', 'eraseVegetation'] },
   { layer: 'editor.layer.gameplay', tools: ['deployment', 'objective'] },
 ];
 
@@ -126,6 +132,27 @@ const PALETTES: readonly MapPalette[] = ['temperate', 'cerrado', 'caatinga', 'ur
 const SETTINGS: readonly SettingLabel[] = ['historical-setting-fictional-place', 'reconstructed-historical-place', 'training-ground'];
 const AUTOSAVE_DELAY = 1500;
 
+/** The vegetation kind the vegetation tool goes back to after the eraser. */
+let lastVegetation = 2;
+
+function paletteActive(entry: PaletteEntry, tool: ToolId, settings: ToolSettings): boolean {
+  if (entry === 'eraseTrees') return tool === 'trees' && settings.treeMode === 'erase';
+  if (entry === 'eraseVegetation') return tool === 'vegetation' && settings.vegetation === 0;
+  if (entry === 'trees') return tool === 'trees' && settings.treeMode !== 'erase';
+  if (entry === 'vegetation') return tool === 'vegetation' && settings.vegetation !== 0;
+  return tool === entry;
+}
+
+function choosePaletteEntry(store: EditorStore, entry: PaletteEntry): void {
+  const { settings } = store;
+  if (settings.vegetation !== 0) lastVegetation = settings.vegetation;
+  if (entry === 'eraseTrees') store.updateSettings({ treeMode: 'erase' });
+  else if (entry === 'trees' && settings.treeMode === 'erase') store.updateSettings({ treeMode: 'scatter' });
+  else if (entry === 'eraseVegetation') store.updateSettings({ vegetation: 0 });
+  else if (entry === 'vegetation' && settings.vegetation === 0) store.updateSettings({ vegetation: lastVegetation });
+  store.setTool(entry === 'eraseTrees' ? 'trees' : entry === 'eraseVegetation' ? 'vegetation' : entry);
+}
+
 function hintKey(tool: ToolId): string {
   if (tool === 'paint' || tool === 'erase' || tool === 'fill' || tool === 'vegetation') return 'editor.tool.hint.paint';
   if (['raise', 'lower', 'smooth', 'flatten', 'setHeight', 'noise'].includes(tool)) return 'editor.tool.hint.height';
@@ -152,6 +179,10 @@ export function footprintFacts(entry: CatalogObject, t: T): string[] {
       break;
     case 'thin':
       facts.push(t('editor.prop.blocksMovement'), t('editor.prop.noCover'), t('editor.prop.seeThrough'));
+      break;
+    case 'enclosure':
+      // revise-buildings-and-stone 4.2: a corral's walls cover as dry stone wall lines.
+      facts.push(t('editor.prop.blocksMovement'), t('editor.prop.cover', { quality: (entry.height >= 1.2 ? 0.4 : 0.35).toFixed(2) }), t('editor.prop.seeThrough'));
       break;
     case 'foliage':
       facts.push(t('editor.prop.conceals'), t('editor.prop.noCover'));
@@ -410,6 +441,16 @@ export function EditorApp(): ReactNode {
         <span className="editor-separator" />
         <button type="button" data-testid="editor-undo" disabled={!store.canUndo} onClick={() => store.undo()}>{t('editor.file.undo')}</button>
         <button type="button" data-testid="editor-redo" disabled={!store.canRedo} onClick={() => store.redo()}>{t('editor.file.redo')}</button>
+        <button
+          type="button"
+          data-testid="editor-clear"
+          title={t('editor.file.clearHint')}
+          onClick={() => {
+            if (window.confirm(t('editor.file.clearConfirm'))) store.clearMap();
+          }}
+        >
+          {t('editor.file.clear')}
+        </button>
         <span className="editor-separator" />
         <button type="button" aria-pressed={!view.topDown} onClick={() => store.updateView({ topDown: false })}>{t('editor.view.3d')}</button>
         <button type="button" aria-pressed={view.topDown} onClick={() => store.updateView({ topDown: true })}>{t('editor.view.2d')}</button>
@@ -441,9 +482,9 @@ export function EditorApp(): ReactNode {
                 key={id}
                 type="button"
                 data-tool={id}
-                aria-pressed={tool === id}
-                title={TOOL_KEYS[id] ? `${t(`editor.tool.${id}`)} (${TOOL_KEYS[id]})` : t(`editor.tool.${id}`)}
-                onClick={() => store.setTool(id)}
+                aria-pressed={paletteActive(id, tool, settings)}
+                title={id in TOOL_KEYS && TOOL_KEYS[id as ToolId] ? `${t(`editor.tool.${id}`)} (${TOOL_KEYS[id as ToolId]})` : t(`editor.tool.${id}`)}
+                onClick={() => choosePaletteEntry(store, id)}
               >
                 {t(`editor.tool.${id}`)}
               </button>

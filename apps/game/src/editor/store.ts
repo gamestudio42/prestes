@@ -421,6 +421,23 @@ export class EditorStore {
     this.emit();
   }
 
+  /**
+   * Clears what is drawn on the map: flat ground of the base material, no
+   * plants, trees, objects, roads, water, lines, trenches or objectives. The
+   * properties and the deployment areas stay. One step of the history.
+   */
+  clearMap(): void {
+    const blank = createEditableMap({ id: this.map.id, size: this.map.size, baseMaterial: this.map.baseMaterial });
+    const cleared = cloneMap(this.map);
+    cleared.heights = blank.heights;
+    cleared.paint = blank.paint;
+    cleared.vegetation = blank.vegetation;
+    for (const key of ['roads', 'rivers', 'ponds', 'bridges', 'ferries', 'lines', 'trenches', 'objects'] as const) cleared[key] = [];
+    delete cleared.objectives;
+    this.selection = [];
+    this.execute(replaceCommand(this.map, cleared));
+  }
+
   /** Applies a vector edit made on a draft copy of the map. */
   editVector(edit: (draft: EditableMap) => void): void {
     const draft = { ...vectorSnapshot(this.map) } as EditableMap;
