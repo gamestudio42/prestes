@@ -24,7 +24,7 @@ import { CanopyFade } from './canopy';
 import { ModelPlacements, warnMissing, type EnvironmentAsset } from './environment-models';
 import { toon } from './materials';
 import { PALETTE } from './palette';
-import { placeBuildings, stoneModelName } from './structures-layer';
+import { placeBuildings, placeStoneWalls, stoneModelName } from './structures-layer';
 import { clumpGeometry, PLANT_LOOK, PLANT_SWAY, plantGeometry, plantSpots, STRATEGIC_CLUMP_CAP, swayingMaterial } from './plant-meshes';
 
 /** Past this span (m) the plants give way to their clumps. */
@@ -935,10 +935,12 @@ function placeholderProp(name: string): THREE.Group | null {
   }
 }
 
-/** The look of each authored wall or fence kind (add-map-editor); wire fences are the world layer's. */
+/**
+ * The look of each authored wall or fence kind (add-map-editor); wire fences
+ * are the world layer's, dry stone walls the structures layer's models (4.2).
+ */
 const LINE_LOOK: Readonly<Record<string, { color: number; thickness: number; kind: 'solid' | 'boards' | 'pickets' | 'hedge' }>> = {
   'taipa-wall': { color: PALETTE.adobe, thickness: 0.6, kind: 'solid' },
-  'stone-wall': { color: PALETTE.stone, thickness: 0.7, kind: 'solid' },
   'brick-wall': { color: PALETTE.whitewash, thickness: 0.3, kind: 'solid' },
   'board-fence': { color: PALETTE.wood, thickness: 0.08, kind: 'boards' },
   'picket-fence': { color: PALETTE.whitewash, thickness: 0.06, kind: 'pickets' },
@@ -974,9 +976,8 @@ export function lines(map: BattleMap): THREE.Group {
         if (look.kind === 'solid') {
           // Sunk a little so a piece on a slope shows no gap under it.
           pieces.add(unitBox, look.color, frame, [0, line.height / 2 - 0.15, 0], [width + 0.02, line.height + 0.3, look.thickness]);
-          // A tiled coping on plastered and taipa walls; a stone wall's top stones.
-          if (line.kind !== 'stone-wall') pieces.add(unitBox, PALETTE.roofDark, frame, [0, line.height + 0.05, 0], [width + 0.04, 0.1, look.thickness + 0.12]);
-          else pieces.add(unitRock, PALETTE.stoneDark, frame, [0, line.height, 0], [width * 0.45, 0.14, look.thickness * 0.5], piece);
+          // A tiled coping on plastered and taipa walls.
+          pieces.add(unitBox, PALETTE.roofDark, frame, [0, line.height + 0.05, 0], [width + 0.04, 0.1, look.thickness + 0.12]);
         } else if (look.kind === 'boards') {
           pieces.add(unitBox, look.color, frame, [0, line.height / 2, 0], [width, line.height, look.thickness]);
           pieces.add(unitBox, PALETTE.bark, frame, [-width / 2, line.height / 2, 0.06], [0.12, line.height + 0.1, 0.12]);
@@ -1109,6 +1110,8 @@ export class BattleMapLayer {
     this.group.add(trenchWorks(map));
     // revise-buildings-and-stone 3.6: every building is its model.
     placeBuildings(map, this.placements);
+    // 4.2: dry stone walls are their rock kind's model, piece by piece.
+    placeStoneWalls(map, this.placements);
     for (const prop of map.props) {
       if (isModelled(prop.model)) {
         this.placements.add(stoneModelName(prop), prop.x, prop.y, prop.rotation ?? 0, prop.scale ?? 1);

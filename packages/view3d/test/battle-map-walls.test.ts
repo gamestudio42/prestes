@@ -1,9 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import * as THREE from 'three';
-import { battleMap, compileMapDocument, createEditableMap, toMapDocument, type BattleMap } from '@prestes/shared';
+import { battleMap, compileMapDocument, createEditableMap, setActiveMap, terrainHeightAt, toMapDocument, type BattleMap } from '@prestes/shared';
 import { BattleMapLayer, lines } from '../src/battle-map-layer';
 import { PALETTE } from '../src/palette';
-import { buildingModelName } from '../src/structures-layer';
+import { buildingModelName, placeStoneWalls, STONE_WALL_PIECE } from '../src/structures-layer';
+import { ModelPlacements } from '../src/environment-models';
+import { hillside } from '../../shared/test/fixtures/hillside';
+import { TEST_MAP } from '../../shared/test/fixtures/test-map';
 
 // refine-battle-maps 5.1: a battle map's walls are the map layer's, plastered
 // or stone, not the cover layer's fortification blocks.
@@ -45,9 +48,39 @@ describe('battle map walls', () => {
   it('the test map field walls are dry stone', () => {
     const map = battleMap('campo-de-provas');
     expect(map.covers.filter((cover) => cover.kind === 'low-wall').every((cover) => cover.drawnBy === 'map')).toBe(true);
-    expect(instancesOf(lines(map), PALETTE.stone)).toBeGreaterThan(0);
+    expect(placedModels(new BattleMapLayer(map))).toContain('dry-wall');
+  });
+
+  // revise-buildings-and-stone 4.2: a dry stone wall down a hillside is its
+  // rock kind's model in pieces of at most 2 m, each sunk deeper than the
+  // ground falls away under its ends, so no gap shows under it.
+  it('a dry stone wall follows a slope with no gap under it', () => {
+    const map = hillside('basalt');
+    setActiveMap(map);
+    const placements = new ModelPlacements();
+    placeStoneWalls({ lines: (map.lines ?? []).filter((line) => line.points[0]!.x === 0) }, placements);
+    const matrices = (placements as unknown as { matrices: Map<string, THREE.Matrix4[]> }).matrices;
+    expect([...matrices.keys()]).toEqual(['dry-wall@basalt']);
+    const pieces = matrices.get('dry-wall@basalt')!;
+    expect(pieces).toHaveLength(40);
+    const position = new THREE.Vector3();
+    const scale = new THREE.Vector3();
+    for (const matrix of pieces) {
+      matrix.decompose(position, new THREE.Quaternion(), scale);
+      const length = scale.x * STONE_WALL_PIECE;
+      expect(length).toBeLessThanOrEqual(2.1);
+      expect(position.y).toBeCloseTo(terrainHeightAt(position.x, position.z), 5);
+      // The model reaches 0.3 m below its base at height 1, stretched to the line's.
+      const footing = 0.3 * scale.y;
+      for (const end of [-1, 1]) expect(position.y - terrainHeightAt(position.x, position.z + (end * length) / 2)).toBeLessThan(footing);
+    }
+    setActiveMap(TEST_MAP);
   });
 });
+
+function placedModels(layer: BattleMapLayer): string[] {
+  return (layer as unknown as { placements: { missing: (asset: { geometry: () => undefined }) => string[] } }).placements.missing({ geometry: () => undefined });
+}
 
 // revise-buildings-and-stone 3.6: every building is its model, placed by the
 // structures layer; no coded box is drawn for any of them.

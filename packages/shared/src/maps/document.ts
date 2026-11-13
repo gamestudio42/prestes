@@ -11,7 +11,7 @@ import {
   type LineKind,
 } from './catalog-objects';
 import { isBuildingVariant } from './building-variants';
-import { isRockKind } from './rock-kinds';
+import { corralWalls, isRockKind } from './rock-kinds';
 import { distanceToPolyline, pointInPolygon, pointsBox, polygonBox, smooth, type Box } from './geometry';
 import { GROUND_MATERIAL_IDS, groundMaterial, groundMaterialIndex, type GroundMaterialId } from './ground-materials';
 import { VEGETATION } from './concealment';
@@ -118,6 +118,8 @@ export interface DocLine {
   kind: LineKind;
   height: number;
   points: Vec2[];
+  /** revise-buildings-and-stone 4.2: a dry stone wall's rock kind (`ROCK_KINDS`); unset is granite. */
+  variant?: string;
 }
 
 /** refine-map-editor D6: a trench line, as `buildTrenchLine` takes it. */
@@ -365,8 +367,9 @@ const isZone = (value: unknown): value is DeploymentZone => isObject(value) && i
  * 6 -> 7 (add-map-compass): `north` is new and optional; a version 6 map
  * keeps the top edge as north.
  *
- * 7 -> 8 (revise-buildings-and-stone 3.5): an object's `variant` is new and
- * optional; a version 7 map's buildings keep their default look.
+ * 7 -> 8 (revise-buildings-and-stone 3.5, 4.2): an object's and a line's
+ * `variant` are new and optional; a version 7 map's buildings keep their
+ * default look and its stones and walls are granite.
  */
 function migrate(document: Record<string, unknown>): Record<string, unknown> {
   let doc = document;
@@ -474,7 +477,7 @@ export function parseMapDocument(value: unknown): ParseResult {
   if (!(doc.ponds as unknown[]).every((pond) => isObject(pond) && isNumber(pond.id) && (pond.kind === 'deep' || pond.kind === 'ford') && isPoints(pond.polygon, 3))) return fail('ponds');
   if (!(doc.bridges as unknown[]).every((bridge) => isObject(bridge) && ['id', 'x', 'y', 'rotation', 'halfWidth', 'halfDepth', 'deckHeight'].every((key) => isNumber(bridge[key])))) return fail('bridges');
   if (!(doc.ferries as unknown[]).every((ferry) => isObject(ferry) && isNumber(ferry.id) && isPoint(ferry.landingA) && isPoint(ferry.landingB))) return fail('ferries');
-  if (!(doc.lines as unknown[]).every((line) => isObject(line) && isNumber(line.id) && isNumber(line.height) && isPoints(line.points, 2) && isString(line.kind))) return fail('lines');
+  if (!(doc.lines as unknown[]).every((line) => isObject(line) && isNumber(line.id) && isNumber(line.height) && isPoints(line.points, 2) && isString(line.kind) && (line.variant === undefined || isString(line.variant)))) return fail('lines');
   if (!(doc.trenches as unknown[]).every(isTrenchLine)) return fail('trenches');
   if (!(doc.objects as unknown[]).every((object) => isObject(object) && isNumber(object.id) && isString(object.type) && isNumber(object.x) && isNumber(object.y) && isNumber(object.rotation) && (object.variant === undefined || isString(object.variant)))) return fail('objects');
   if (!isObject(doc.deployment) || !isZone(doc.deployment.column) || !isZone(doc.deployment.legalist)) return fail('deployment');
@@ -840,6 +843,8 @@ export function compileMapDocument(source: EditableMap | MapDocument): BattleMap
   const covers: CoverPoint[] = [];
   /** refine-map-editor 6.1: the piece each cover came from, for the editor's cover preview. */
   const coverPieces = new Map<number, CoverPiece>();
+  /** 4.2: the corrals' walls, compiled after the objects with the wall lines. */
+  const enclosureWalls: { object: number; points: Vec2[]; height: number; variant?: string }[] = [];
   let coverId = 5000;
   const roadSurface = new Map<number, TerrainSurface>();
   for (const road of [...map.roads].sort((a, b) => a.id - b.id)) {
@@ -954,6 +959,14 @@ export function compileMapDocument(source: EditableMap | MapDocument): BattleMap
       }
       case 'decal':
         footprintCells((index) => stampMaterial(index, entry.footprint.kind === 'decal' ? entry.footprint.material : map.baseMaterial));
+        // 4.2: stone steps are also drawn.
+        if (!entry.drawn) continue;
+        break;
+      case 'enclosure':
+        // 4.2: a corral is its walls, compiled with the wall lines below.
+        for (const points of corralWalls(object.x, object.y, halfWidth, halfDepth, object.rotation)) {
+          enclosureWalls.push({ object: object.id, points, height: entry.height * scale, variant: object.variant });
+        }
         continue;
       case 'foliage': {
         const kind = BUSH_VEGETATION[entry.bushClass ?? 'waist'];
@@ -996,15 +1009,27 @@ export function compileMapDocument(source: EditableMap | MapDocument): BattleMap
   const lines: MapLine[] = [];
   const fences: Vec2[][] = [];
   const yardWalls: YardWall[] = [];
-  for (const line of [...map.lines].sort((a, b) => a.id - b.id)) {
+  // 4.2: the corrals' walls are dry stone wall lines of their objects, not yards.
+  const wallLines = [
+    ...[...map.lines].sort((a, b) => a.id - b.id).map((line) => ({ line, piece: { kind: 'line', id: line.id } as CoverPiece, yard: true })),
+    ...enclosureWalls.map(({ object, points, height, variant }) => ({
+      line: { id: -object, kind: 'stone-wall' as const, height, points, variant },
+      piece: { kind: 'object', id: object } as CoverPiece,
+      yard: false,
+    })),
+  ];
+  for (const { line, piece: source, yard } of wallLines) {
     const info = lineKind(line.kind);
-    lines.push({ kind: line.kind, points: line.points, height: line.height });
+    const mapLine: MapLine = { kind: line.kind, points: line.points, height: line.height };
+    // 4.2: a dry stone wall's rock kind is drawing only.
+    if (isRockKind(line.kind, line.variant)) mapLine.rock = line.variant;
+    lines.push(mapLine);
     if (line.kind === 'wire-fence') fences.push(line.points);
     const lineCoverIds: number[] = [];
-    if (info.wall) yardWalls.push({ id: line.id, points: line.points, height: line.height, coverIds: lineCoverIds });
+    if (info.wall && yard) yardWalls.push({ id: line.id, points: line.points, height: line.height, coverIds: lineCoverIds });
     for (const piece of pieces(line.points, 12)) {
       lineCoverIds.push(coverId);
-      coverPieces.set(coverId, { kind: 'line', id: line.id });
+      coverPieces.set(coverId, source);
       covers.push({
         id: coverId++,
         kind: info.wall ? 'low-wall' : 'fence',

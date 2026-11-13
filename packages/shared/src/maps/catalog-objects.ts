@@ -24,7 +24,9 @@ export type Footprint =
   | { kind: 'solid'; cover: CoverKind }
   | { kind: 'thin' }
   | { kind: 'foliage' }
-  | { kind: 'decal'; material: GroundMaterialId };
+  | { kind: 'decal'; material: GroundMaterialId }
+  /** 4.2: dry stone walls round the footprint with a gate in front (`corralWalls`), compiled as stone wall lines. */
+  | { kind: 'enclosure' };
 
 export interface CatalogObject {
   id: string;
@@ -51,6 +53,8 @@ export interface CatalogObject {
   bushClass?: BushClass;
   /** Thorns under the footprint slow a man walking through (macambira). */
   thorns?: true;
+  /** 4.2: a decal also drawn as its model (stone steps: walked over, no cover). */
+  drawn?: true;
   /** False: kept out of the editor's lists and the trees tool (the dead and flowering forms wait for the form switch, 4.2). */
   listed?: false;
 }
@@ -197,6 +201,14 @@ export const CATALOG_OBJECTS: readonly CatalogObject[] = [
   item('outcrop', 'stone', 4, 1.6, 1.8, SOLID_STONE),
   item('lajedo-slab', 'stone', 5, 4, 0.4, SOLID_STONE, { paints: 'lajedo' }),
   item('stone-pile', 'stone', 1.1, 1, 0.9, SOLID_STONE),
+  // Built stone (revise-buildings-and-stone 4.2, D5): the dry stone wall is the
+  // stone-wall line; these come in its rock kinds. A stone corral of the
+  // southern ranches and the sertao (generic period type), walls 1.2 m.
+  item('stone-corral', 'stone', 7, 5, 1.2, { kind: 'enclosure' }),
+  // A dry stone retaining wall holding a terrace or a road cut; low-wall cover.
+  item('retaining-wall', 'stone', 3, 0.5, 1.4, { kind: 'solid', cover: 'low-wall' }),
+  // Stone steps up a bank: walked over, no cover.
+  item('stone-steps', 'stone', 1.5, 1.2, 0.6, { kind: 'decal', material: 'stone' }, { drawn: true }),
   // Trees and plants. Battle scale, no tree over 9 m (biome-trees-and-plants D5c).
   // The older ids are their species' adults, drawn from trees.glb.
   item('tree-broad', 'tree', 0.35, 0.35, 6, SOLID_STONE, { concealRadius: 0, biome: 'mata-atlantica', species: 'peroba', form: 'adult' }),

@@ -114,6 +114,8 @@ export interface MapLine {
   kind: string;
   points: readonly Vec2[];
   height: number;
+  /** View (revise-buildings-and-stone 4.2): a dry stone wall's rock kind other than granite; the battle never reads it. */
+  rock?: RockKind;
 }
 
 export interface GarrisonYard {

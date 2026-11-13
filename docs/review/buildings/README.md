@@ -103,3 +103,16 @@ lands on `prop.kind`; cover and sight stay the size's
 (`packages/shared/test/rock-kinds.test.ts`). The editor picker comes in 4.3.
 
 Approved by the owner, 2026-11-12.
+
+## Built stone (4.2)
+
+`sheet-built-stone.png` shows, in each rock kind, three 2 m pieces of a dry
+stone wall, the retaining wall and the stone steps, rendered from
+`stones.glb` by `art-src/blender/review_built_stone.py`. The dry stone wall
+is the `stone-wall` line with a rock kind (the line's `variant`), drawn as
+the `dry-wall` model in pieces of at most 2 m set on the ground and sunk into
+it. The stone corral (generic period type) compiles to dry stone wall lines
+round its footprint with a 3 m gate in front; the retaining wall gives
+low-wall cover; the steps are walked over. Tests: a wall down a hillside in
+`battle-map-walls.test.ts` and cover along it and in a corral in
+`packages/simulation/test/built-stone.test.ts`.
