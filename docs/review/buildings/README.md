@@ -206,3 +206,5 @@ shows the waterside, camp, props (with the gates apart) and stone groups
 and the line kinds. The spec places one object of each group and draws a
 rail fence; `tests/hud/editor-names.test.ts` checks every object and line
 kind is named in English and Portuguese, no two alike.
+
+Approved by the owner, 2026-11-13.
