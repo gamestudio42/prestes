@@ -474,3 +474,14 @@ corrugated asbestos appears.
   the near and the far mesh, not a fault of the split. Shots re-taken. Still
   open: the open iron gate is a few thin dark bars at the tactical band;
   the owner keeps it as is (2026-11-13).
+
+## ambient-sound-and-voices: the list of sounds (3.1, approved by the owner 2026-11-13)
+
+- `docs/audio/SOUND_LIST.md`: five air beds and four hour layers, fifteen
+  one-shots, five water sounds, eight footstep surfaces by three loops plus
+  crawling and rattle; about 6 MB, loaded per map.
+- The owner records only the voices; every other sound is a CC0 recording
+  from an online library, registered in `docs/assets.md` before it ships,
+  with synthesis only as a fallback for wind and running water.
+- Maps run from 06:00 to 18:00 (`MAP_LIGHT_TIME`): the night layer waits
+  for maps that can be set at night.
