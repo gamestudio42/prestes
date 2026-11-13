@@ -6,7 +6,7 @@
 
 - [x] 1.1 Event types (`BattleEvent`, `EventTrigger`, `EventAction`, `EventPlace`) in `packages/shared/src/maps/`, `events?`/`eventPlaces?` on the document body and `BattleMap`, compile step that drops events with no trigger or no action; verify with unit tests of the compile on a fixture with every trigger and action kind
 - [x] 1.2 Document version 9 with the 8 → 9 migration step; verify with unit tests: a version 8 fixture loads with no events, a round trip keeps events and places in order and ids, export writes version 9
-- [ ] 1.3 Event checks in `validate-document.ts` (missing references, wrong side's section, entry point off the edge or not walkable, unreachable move point, card missing a language, `after` loops, time over 30 min, no action, over 24 events, the "can never fire" warning); verify with one unit test per check
+- [x] 1.3 Event checks in `validate-document.ts` (missing references, wrong side's section, entry point off the edge or not walkable, unreachable move point, card missing a language, `after` loops, time over 30 min, no action, over 24 events, the "can never fire" warning); verify with one unit test per check
 
 ## 2. Simulation
 

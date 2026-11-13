@@ -9,6 +9,7 @@ import { maskedVegetation } from './growth-mask';
 import { isDeepWater, vegetationAt } from './runtime';
 import type { BattleMap } from './types';
 import { insideDeploymentArea, polygonsOverlap } from './deployment-areas';
+import { checkEvents, type EventProblemCode } from './validate-events';
 import { MIN_DEPLOYMENT_GAP, MIN_WALKABLE_AREA_SHARE, walkableShare } from './validate';
 
 /**
@@ -41,7 +42,8 @@ export type ProblemCode =
   | 'objective-name-missing'
   | 'objective-in-deep-water'
   | 'objective-unreachable'
-  | 'objectives-overlap';
+  | 'objectives-overlap'
+  | EventProblemCode;
 
 export interface MapProblem {
   code: ProblemCode;
@@ -49,7 +51,7 @@ export interface MapProblem {
   params: Record<string, string | number>;
   at?: Vec2;
   /** What to select when the problem is chosen. */
-  target?: { kind: 'object' | 'section' | 'area' | 'bridge' | 'objective'; id: number | string };
+  target?: { kind: 'object' | 'section' | 'area' | 'bridge' | 'objective' | 'event' | 'event-place'; id: number | string };
 }
 
 /** Longest stretch without cover on the line between the zones (m) before a warning. */
@@ -238,6 +240,8 @@ export function validateEditableMap(map: EditableMap): MapProblem[] {
   const masked = maskedVegetation(map);
   if (masked.count > 0) add({ code: 'masked-vegetation', severity: 'warning', params: { count: masked.count }, ...(masked.at ? { at: masked.at } : {}) });
   checkObjectives(map, compiled, add);
+  // add-battle-events 1.3: the events and their places.
+  for (const problem of checkEvents(map, compiled)) add(problem);
   return problems;
 }
 

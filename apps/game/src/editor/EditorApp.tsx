@@ -228,6 +228,8 @@ function problemSelection(problem: MapProblem): SelectionItem[] {
   }
   if (target.kind === 'area') return target.id === 'column' || target.id === 'legalist' ? [{ kind: 'area', side: target.id }] : [];
   if (typeof target.id !== 'number') return [];
+  // add-battle-events 4.3 selects events and their places; until then the camera only moves to the spot.
+  if (target.kind === 'event' || target.kind === 'event-place') return [];
   return [{ kind: target.kind, id: target.id }];
 }
 
