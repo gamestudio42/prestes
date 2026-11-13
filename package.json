@@ -35,6 +35,7 @@
     "battle:report": "tsx tools/battle-report.ts",
     "models": "tsx tools/prepare-models.ts",
     "optimize:music": "tsx tools/optimize-gramophone.ts",
+    "cut:audio": "tsx tools/cut-audio-sources.ts",
     "prepare:audio": "tsx tools/prepare-audio.ts",
     "icons": "tsx tools/export-icons.ts",
     "hud-art": "tsx tools/export-hud.ts",

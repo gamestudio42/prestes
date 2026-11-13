@@ -121,3 +121,59 @@ Approved by the owner, 2026-11-13.
   of its own.
 
 Approved by the owner, 2026-11-13.
+
+## 3.2 Ambient beds by place and hour, and the one-shots (2026-11-13)
+
+- Two looped layers play under the battle: the air of the place around the
+  listening point (cerrado, forest edge, caatinga, pasture, town) and the
+  hour over it (dawn, day, dusk; night is ready for maps set at night).
+  The place is read within 60 m: a town where three buildings stand, a
+  forest edge where fourteen trees stand, else the painted ground's
+  majority, else the map's colour family. It must hold for two readings
+  (half a second) before the bed changes, so a border does not flap.
+- A change of bed or hour cross-fades over 2.5 s: the old one goes down as
+  the new one comes up, with no silence and no cut. A bed not loaded yet
+  leaves the old one playing until it is. Zooming out thins the ambience
+  (1.2).
+- One-shots every 7 to 22 s, only those that fit the place and the hour,
+  never the same one twice in a row, panned a little left or right.
+- The recordings: 21 CC0 field recordings from Freesound, picked from
+  Brazilian interior recordings where one exists (Goiás, Minas Gerais);
+  each in `docs/assets.md` with its author, page and the
+  excerpt used. Downloaded with the owner's leave, 2026-11-13.
+  - Beds, 44 to 53 s each: cerrado and pasture (afternoons in Mineiros,
+    Goiás), forest edge (the edge of the Atlantic forest near Foz do Iguaçu,
+    an afternoon with a faint wind), caatinga
+    (wind in dry grass, recorded in Texas: no Brazilian caatinga recording
+    is CC0), dawn (birds at a fazenda in Goiás), day (a Brazilian cricket
+    at midday), dusk (crickets and cicadas, Minas Gerais), night (frogs and
+    crickets in the Brazilian countryside).
+  - One-shots: seriema, bem-te-vi, maritaca, inhambu, urutau, dogs far
+    off, rooster, cattle, horse, ox cart, church bell, a gust, a creaking
+    branch.
+  - None yet: the town bed (no CC0 village recording without engines),
+    the anu and the hawk. The town plays its hour layer and its one-shots
+    alone; the list skips what is missing.
+- New tool: `tools/cut-audio-sources.ts` (`pnpm cut:audio`) cuts each
+  excerpt from the originals in the gitignored `audio-src/raw/`, with a
+  0.12 s fade at both ends of a one-shot; `pnpm prepare:audio` then levels,
+  loops and encodes, and writes `apps/game/src/audio/sound-files.ts`.
+  About 3.7 MB in all (beds 3.0 MB, one-shots 0.7 MB), each fetched only
+  when its place and hour come up.
+- Checked: `tests/audio/ambience.test.ts` (bed choice by buildings, trees,
+  paint, border and palette; the hour; the 2.5 s cross-fade with no gap;
+  no change on one reading at a border; the old bed kept while the new one
+  loads; one-shots fitting and never repeated); all 114 audio and tool
+  tests pass. In the preview, Paiolzinho at dawn: the forest-edge bed and
+  the dawn layer load and play, then the maritaca, horse, gust and branch
+  one-shots, no console error.
+- The owner played Paiolzinho (2026-11-13): a constant sound ran over the
+  whole map. It was a river inside the first forest-edge recording
+  (felix.blume 466046, recorded by a stream), so the woods sounded of water
+  far from the river. Replaced, with the owner's leave, by tvilgiat 516295,
+  a forest edge with no water. The river is heard only near it with the
+  water emitters of 3.3.
+- For the owner to hear: start a skirmish with the sound on and move the
+  camera from the woods to the open ground and the houses.
+
+Approved by the owner, 2026-11-13.

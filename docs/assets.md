@@ -64,6 +64,39 @@ no third-party model is used.
 | Machine-gun and automatic-rifle reports | `apps/game/src/audio/ShotAudio.ts` (`MACHINE_GUN_REPORT`, `AUTOMATIC_REPORT`) | Prestes project | CC-BY-4.0 | Original procedural reports synthesized at runtime from a fixed seed (crack, filtered noise body, low thump; 0.16 s and 0.13 s), one per round of automatic fire (machine-gun-fire-feedback) |
 | Menu gramophone art  | `apps/game/src/ui/Gramophone.tsx`                                                                          | Prestes project                                                                          | AGPL-3.0-or-later                                 | Inline pixel SVG: cabinet, horn, record and crank. The record turns only while a track plays and stops under reduced motion                                                                        |
 
+## Battle ambience (ambient-sound-and-voices 3.2)
+
+Field recordings from Freesound under CC0 1.0 (public domain dedication; no
+attribution required, credited here all the same). The originals stay in the
+gitignored `audio-src/raw/`; `tools/cut-audio-sources.ts` (`pnpm cut:audio`)
+cuts the excerpt named below and `tools/prepare-audio.ts` (`pnpm prepare:audio`)
+levels it, loops a bed or trims a one-shot, and writes the mono MP3. Played by
+`AmbientPlayer` by place and hour (`docs/audio/SOUND_LIST.md`).
+
+| Asset | Path | Author / source | Licence | Notes |
+| ----- | ---- | --------------- | ------- | ----- |
+| `bed-cerrado` | `apps/game/public/audio/beds/bed-cerrado.mp3` | samwd, Freesound [414413](https://freesound.org/people/samwd/sounds/414413/) | CC0-1.0 | Mineiros Brasil selva, 6.12.17, afternoon: birds, breeze and cicadas (Mineiros, Goiás); excerpt 0.5 to 46.5 s |
+| `bed-forest-edge` | `apps/game/public/audio/beds/bed-forest-edge.mp3` | tvilgiat, Freesound [516295](https://freesound.org/people/tvilgiat/sounds/516295/) | CC0-1.0 | Sounds from the Atlantic Rainforest: the edge of the forest near Foz do Iguaçu, an afternoon, faint wind (no water: the river is its own sound, 3.3); excerpt 50 to 100 s |
+| `bed-caatinga` | `apps/game/public/audio/beds/bed-caatinga.mp3` | felix.blume, Freesound [215853](https://freesound.org/people/felix.blume/sounds/215853/) | CC0-1.0 | Wind blowing in dry grass, in a field in Texas, USA; excerpt 15 to 65 s |
+| `bed-pasture` | `apps/game/public/audio/beds/bed-pasture.mp3` | samwd, Freesound [414410](https://freesound.org/people/samwd/sounds/414410/) | CC0-1.0 | Mineiros Brasil selva, 7.12.17, afternoon: crickets on a farm (Mineiros, Goiás); excerpt 0.5 to 50 s |
+| `hour-dawn` | `apps/game/public/audio/beds/hour-dawn.mp3` | marc.om, Freesound [426276](https://freesound.org/people/marc.om/sounds/426276/) | CC0-1.0 | Early morning birds at a fazenda in Goiás, Brazil; excerpt 30 to 80 s |
+| `hour-day` | `apps/game/public/audio/beds/hour-day.mp3` | jmbphilmes, Freesound [194851](https://freesound.org/people/jmbphilmes/sounds/194851/) | CC0-1.0 | Brazilian cricket, sunny afternoon; excerpt 5 to 60 s |
+| `hour-dusk` | `apps/game/public/audio/beds/hour-dusk.mp3` | saralana, Freesound [559114](https://freesound.org/people/saralana/sounds/559114/) | CC0-1.0 | Crickets and cicadas, late afternoon (interior of Minas Gerais); excerpt 145 to 195 s |
+| `hour-night` | `apps/game/public/audio/beds/hour-night.mp3` | felix.blume, Freesound [777702](https://freesound.org/people/felix.blume/sounds/777702/) | CC0-1.0 | Night in the countryside in Brazil: toads, frogs, crickets; for maps set at night (none yet); excerpt 30 to 80 s |
+| `bird-seriema` | `apps/game/public/audio/oneshots/bird-seriema.mp3` | saralana, Freesound [560319](https://freesound.org/people/saralana/sounds/560319/) | CC0-1.0 | Seriema, early morning (interior of Minas Gerais); excerpt 8 to 16 s |
+| `bird-bem-te-vi` | `apps/game/public/audio/oneshots/bird-bem-te-vi.mp3` | dtmendes, Freesound [591058](https://freesound.org/people/dtmendes/sounds/591058/) | CC0-1.0 | Coró-coró and bem-te-vi (Goiânia, Goiás); excerpt 20.6 to 22.4 s |
+| `bird-maritaca` | `apps/game/public/audio/oneshots/bird-maritaca.mp3` | saralana, Freesound [559294](https://freesound.org/people/saralana/sounds/559294/) | CC0-1.0 | Baby pionus (maitacas) screaming (interior of Minas Gerais); excerpt 63.8 to 66 s |
+| `bird-inhambu` | `apps/game/public/audio/oneshots/bird-inhambu.mp3` | nonamethefish, Freesound [798321](https://freesound.org/people/nonamethefish/sounds/798321/) | CC0-1.0 | Undulated tinamou, Peruvian Amazon (a species of Brazil too); excerpt 42.6 to 45 s |
+| `bird-urutau` | `apps/game/public/audio/oneshots/bird-urutau.mp3` | deleted_user_162443 (account since deleted), Freesound [532268](https://freesound.org/people/deleted_user_162443/sounds/532268/) | CC0-1.0 | Common potoo night call, Brazil; excerpt 27 to 35.6 s |
+| `dog-far` | `apps/game/public/audio/oneshots/dog-far.mp3` | felix.blume, Freesound [705299](https://freesound.org/people/felix.blume/sounds/705299/) | CC0-1.0 | Dogs barking far with echo in a small village at night; excerpt 112.5 to 121 s |
+| `ox-cart` | `apps/game/public/audio/oneshots/ox-cart.mp3` | craigsmith, Freesound [437078](https://freesound.org/people/craigsmith/sounds/437078/) | CC0-1.0 | G52-05 Ox cart: wooden wheels, rumble and squeak; excerpt 9 to 17.5 s |
+| `church-bell` | `apps/game/public/audio/oneshots/church-bell.mp3` | jerry.berumen, Freesound [511681](https://freesound.org/people/jerry.berumen/sounds/511681/) | CC0-1.0 | Church bell far, small town in Hidalgo, Mexico; excerpt 10 to 23 s |
+| `branch` | `apps/game/public/audio/oneshots/branch.mp3` | Department64, Freesound [95263](https://freesound.org/people/Department64/sounds/95263/) | CC0-1.0 | Tree creak 05; excerpt 3.5 to 6 s |
+| `gust` | `apps/game/public/audio/oneshots/gust.mp3` | ZIP.Creates, Freesound [726319](https://freesound.org/people/ZIP.Creates/sounds/726319/) | CC0-1.0 | Wind 8, a small gust; excerpt whole |
+| `cattle` | `apps/game/public/audio/oneshots/cattle.mp3` | spurioustransients, Freesound [513565](https://freesound.org/people/spurioustransients/sounds/513565/) | CC0-1.0 | Cow moo #8, two moos at medium distance; excerpt whole |
+| `horse` | `apps/game/public/audio/oneshots/horse.mp3` | Kubuzz, Freesound [347036](https://freesound.org/people/Kubuzz/sounds/347036/) | CC0-1.0 | Horse's whinny; excerpt 1 to 4.6 s |
+| `rooster` | `apps/game/public/audio/oneshots/rooster.mp3` | matiasromero, Freesound [21711](https://freesound.org/people/matiasromero/sounds/21711/) | CC0-1.0 | Galo: rooster on a farm in São Thomé das Letras, Minas Gerais; excerpt whole |
+
 ## Menu gramophone recordings
 
 The 17 recordings below are public domain; Discografia Brasileira marks each
