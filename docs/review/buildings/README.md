@@ -116,3 +116,5 @@ round its footprint with a 3 m gate in front; the retaining wall gives
 low-wall cover; the steps are walked over. Tests: a wall down a hillside in
 `battle-map-walls.test.ts` and cover along it and in a corral in
 `packages/simulation/test/built-stone.test.ts`.
+
+Approved by the owner, 2026-11-13.
