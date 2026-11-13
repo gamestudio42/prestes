@@ -179,7 +179,7 @@ function areaBox(area: { polygon?: Polygon; strip?: Strip }): Box {
   return { minX: 0, minY: 0, maxX: -1, maxY: -1 };
 }
 
-function inArea(area: { polygon?: Polygon; strip?: Strip }, x: number, y: number): boolean {
+export function inArea(area: { polygon?: Polygon; strip?: Strip }, x: number, y: number): boolean {
   if (area.polygon) return pointInPolygon(x, y, area.polygon);
   if (area.strip) return pointInStrip(x, y, area.strip);
   return false;

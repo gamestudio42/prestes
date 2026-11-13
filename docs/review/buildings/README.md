@@ -129,3 +129,19 @@ the selection panel changes a stone's, corral's or wall's kind. Names in EN
 and PT-BR.
 
 Approved by the owner, 2026-11-13.
+
+## Waterside, farm and town objects (5.1)
+
+`sheet-objects.png` shows the 29 approved objects, rendered from
+`props.glb` by `art-src/blender/review_objects.py` (builders in
+`art-src/blender/props_objects.py`): twelve waterside, nine farm, eight
+town. Each catalog row has its footprint, height and cover class (D9): wood
+covers like a barrel, iron and stone like stone, sacks like sandbags, posts
+and nets are thin. The waterside objects are the editor's new `water`
+group; the farm and town objects are props under their own sub-headings. A
+waterside object in water is drawing only (no cover, no block) and rides on
+the surface: `waterside-afloat.png`, taken by
+`tests/e2e/review-waterside.spec.ts`, shows a canoe and a canoa de tolda
+afloat and a canoe drawn up on the bank. Tests:
+`packages/shared/test/waterside-objects.test.ts` and
+`packages/simulation/test/waterside-cover.test.ts`.

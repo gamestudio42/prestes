@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, useSyncExternalStore, type CSSProperties, type ReactNode } from 'react';
+import { Fragment, useEffect, useMemo, useRef, useState, useSyncExternalStore, type CSSProperties, type ReactNode } from 'react';
 import {
   BIOME_MIX,
   CATALOG_OBJECTS,
@@ -130,7 +130,9 @@ const TOOL_KEYS: Record<ToolId, string> = {
   objective: 'J',
 };
 
-const OBJECT_GROUPS = ['building', 'stone', 'tree', 'post', 'cover', 'prop', 'decal'] as const;
+const OBJECT_GROUPS = ['building', 'stone', 'water', 'tree', 'post', 'cover', 'prop', 'decal'] as const;
+/** revise-buildings-and-stone D9: the props' sub-headings, in order; the older props come first, unheaded. */
+const PROP_SUBGROUPS = [undefined, 'farm', 'town'] as const;
 const PALETTES: readonly MapPalette[] = ['temperate', 'cerrado', 'caatinga', 'urban'];
 const SETTINGS: readonly SettingLabel[] = ['historical-setting-fictional-place', 'reconstructed-historical-place', 'training-ground'];
 const AUTOSAVE_DELAY = 1500;
@@ -802,7 +804,10 @@ function ToolProperties({ store, t }: { store: EditorStore; t: T }): ReactNode {
             {group === 'stone' ? (
               <StoneTiles t={t} objectType={settings.objectType} rockKind={settings.rockKind} onType={(objectType) => set({ objectType })} onKind={(rockKind) => set({ rockKind })} />
             ) : null}
-            {group === 'stone' ? null : CATALOG_OBJECTS.filter((object) => object.group === group && isListed(object)).map((object) => (
+            {group === 'stone' ? null : (group === 'prop' ? PROP_SUBGROUPS : [undefined]).map((subgroup) => (
+              <Fragment key={subgroup ?? 'all'}>
+                {subgroup ? <h4 className="editor-subgroup">{t(`editor.subgroup.${subgroup}`)}</h4> : null}
+                {CATALOG_OBJECTS.filter((object) => object.group === group && isListed(object) && (group !== 'prop' || object.subgroup === subgroup)).map((object) => (
               // D5b: one tile per species; its forms are chosen with the switch below.
               <button
                 key={object.id}
@@ -813,6 +818,8 @@ function ToolProperties({ store, t }: { store: EditorStore; t: T }): ReactNode {
               >
                 {t(object.nameKey)}
               </button>
+            ))}
+              </Fragment>
             ))}
           </details>
         ))}

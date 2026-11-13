@@ -16,7 +16,7 @@ import { distanceToPolyline, pointInPolygon, pointsBox, polygonBox, smooth, type
 import { GROUND_MATERIAL_IDS, groundMaterial, groundMaterialIndex, type GroundMaterialId } from './ground-materials';
 import { VEGETATION } from './concealment';
 import { decodeRaster, encodeRaster, type EncodedRaster } from './raster';
-import { BRIDGE_RAMP, bridgeDeckHeight, bridgeLandings, bridgePolygon, HEIGHT_SPACING, SURFACES, VEGETATION_KINDS, vegetationDensityOf, vegetationKindOf } from './runtime';
+import { BRIDGE_RAMP, bridgeDeckHeight, bridgeLandings, bridgePolygon, HEIGHT_SPACING, inArea, SURFACES, VEGETATION_KINDS, vegetationDensityOf, vegetationKindOf } from './runtime';
 import { boundsForSize, MAP_SIZE_METRES, MAP_SIZES, type MapSize } from './sizes';
 import { growthMask } from './growth-mask';
 import { buildTrenchLines, TRENCH, type TrenchLineDef } from './trench-lines';
@@ -977,6 +977,12 @@ export function compileMapDocument(source: EditableMap | MapDocument): BattleMap
         break;
       }
       default: {
+        // 5.1 (D9): a waterside object in water is drawing only: water already
+        // stops or slows a man, and a boat afloat shelters no one.
+        if (entry.group === 'water' && water.some((area) => inArea(area, object.x, object.y))) {
+          props.push({ model: entry.model, x: object.x, y: object.y, rotation: object.rotation, scale, afloat: true });
+          continue;
+        }
         const cover = objectCover(entry, object, coverId);
         if (cover) {
           // Sandbags and barricades are drawn by the cover layer, like the hand-written maps'.

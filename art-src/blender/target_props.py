@@ -7,6 +7,7 @@ south (Blender -Y).
 import math
 
 from common import MeshBuilder, placed, reset, save_and_export
+import props_objects
 
 
 def flagpole():
@@ -78,4 +79,6 @@ def build():
     well()
     cart()
     signpost()
+    # revise-buildings-and-stone 5.1: the waterside, farm and town objects.
+    props_objects.build_all()
     return [save_and_export("props", "environment")]

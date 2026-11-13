@@ -79,6 +79,8 @@ export interface PropPlacement {
   scale?: number;
   /** View (revise-buildings-and-stone 4.1): a stone's rock kind other than granite; the battle never reads it. */
   kind?: RockKind;
+  /** View (revise-buildings-and-stone 5.1): a waterside object in water, drawn on the water's surface. */
+  afloat?: true;
 }
 
 /** A side's three section start centres and the way it faces. */

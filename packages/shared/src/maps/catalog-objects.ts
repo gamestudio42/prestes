@@ -17,7 +17,10 @@ import type { GroundMaterialId } from './ground-materials';
  * A tree is a trunk (`solid` or `thin`) and may add `foliage` with
  * `concealRadius`.
  */
-export type ObjectGroup = 'building' | 'stone' | 'tree' | 'post' | 'cover' | 'prop' | 'decal';
+export type ObjectGroup = 'building' | 'stone' | 'water' | 'tree' | 'post' | 'cover' | 'prop' | 'decal';
+
+/** revise-buildings-and-stone D9: the sub-headings of the props in the editor's list. */
+export type ObjectSubgroup = 'farm' | 'town';
 
 export type Footprint =
   | { kind: 'building'; model: BuildingModel }
@@ -53,6 +56,8 @@ export interface CatalogObject {
   bushClass?: BushClass;
   /** Thorns under the footprint slow a man walking through (macambira). */
   thorns?: true;
+  /** D9: the sub-heading a prop is listed under (farm, town). */
+  subgroup?: ObjectSubgroup;
   /** 4.2: a decal also drawn as its model (stone steps: walked over, no cover). */
   drawn?: true;
   /** False: kept out of the editor's lists and the trees tool (the dead and flowering forms wait for the form switch, 4.2). */
@@ -87,6 +92,14 @@ const item = (
 ): CatalogObject => ({ id, group, nameKey: `editor.object.${id}`, model: id, halfWidth, halfDepth, height, footprint, ...extra });
 
 const SOLID_STONE: Footprint = { kind: 'solid', cover: 'stone' };
+const water = (id: string, halfWidth: number, halfDepth: number, height: number, footprint: Footprint): CatalogObject =>
+  item(id, 'water', halfWidth, halfDepth, height, footprint);
+const farm = (id: string, halfWidth: number, halfDepth: number, height: number, footprint: Footprint): CatalogObject =>
+  item(id, 'prop', halfWidth, halfDepth, height, footprint, { subgroup: 'farm' });
+const town = (id: string, halfWidth: number, halfDepth: number, height: number, footprint: Footprint): CatalogObject =>
+  item(id, 'prop', halfWidth, halfDepth, height, footprint, { subgroup: 'town' });
+/** D9: wood and wicker stuff covers like a barrel. */
+const WOOD: Footprint = { kind: 'solid', cover: 'barrel' };
 const THIN: Footprint = { kind: 'thin' };
 const FOLIAGE: Footprint = { kind: 'foliage' };
 
@@ -276,6 +289,42 @@ export const CATALOG_OBJECTS: readonly CatalogObject[] = [
   item('water-trough', 'prop', 1.5, 0.4, 0.7, SOLID_STONE),
   item('woodpile', 'prop', 1.4, 0.6, 1.1, { kind: 'solid', cover: 'barrel' }),
   item('fallen-log', 'prop', 3, 0.35, 0.6, { kind: 'solid', cover: 'barrel' }),
+  // revise-buildings-and-stone 5.1 (D9): waterside objects, on a bank, a beach
+  // or in shallow water. In water each is drawing only (no cover, no block);
+  // on land it covers by its size and stuff. Macaulay page numbers.
+  water('dugout-canoe', 3, 0.4, 0.5, WOOD), // p. 75
+  water('motor-launch', 3.5, 1, 1.6, WOOD), // p. 75
+  water('river-raft', 3, 2, 0.4, WOOD), // pp. 56, 76, 169, 180
+  water('river-barge', 7, 2.5, 1.4, WOOD), // pp. 22, 24, 139, 155
+  water('horse-boat', 5, 2, 1.2, WOOD), // p. 75
+  water('canoa-de-tolda', 6, 1.4, 2.2, WOOD), // generic period type (Sao Francisco)
+  water('jangada', 3, 1, 4, WOOD), // generic period type (the coast: skirmish maps)
+  water('boat-overturned', 2.5, 0.8, 0.6, WOOD), // generic period type
+  water('net-line', 2.5, 0.15, 1.8, THIN), // generic period type
+  water('fish-trap', 0.4, 0.4, 0.6, THIN), // generic period type
+  water('landing-stage', 4, 1.5, 1, SOLID_STONE), // generic period type
+  water('mooring-post', 0.15, 0.15, 1, THIN), // generic period type
+  // Farm objects. The ox cart: pp. 102, 125; the rest generic period types
+  // (the tractor of the Fordson type, imported from about 1917).
+  farm('ox-cart', 1, 3, 1.8, WOOD),
+  farm('tractor', 0.9, 1.5, 1.5, SOLID_STONE),
+  farm('plough', 0.4, 1.2, 0.8, THIN),
+  farm('cane-press', 0.8, 0.8, 1.4, WOOD),
+  farm('coffee-sacks', 1.2, 0.8, 1, { kind: 'solid', cover: 'sandbag' }),
+  farm('hen-house', 1, 0.8, 1.4, WOOD),
+  farm('pigsty', 2, 1.5, 1, WOOD),
+  farm('cart-wheel', 0.6, 0.15, 1.2, THIN),
+  farm('millstone', 0.6, 0.6, 0.35, SOLID_STONE),
+  // Town objects. Motor car and lorry of the Ford T and TT types (pp. 43-58,
+  // 101-110); the rest generic period types.
+  town('motor-car', 0.85, 1.7, 1.9, SOLID_STONE),
+  town('lorry', 1, 2.6, 2.2, SOLID_STONE),
+  town('square-bench', 1, 0.3, 0.9, THIN),
+  town('fountain', 1.2, 1.2, 1.8, SOLID_STONE),
+  town('market-stall', 1.2, 0.9, 2.2, WOOD),
+  town('fuel-tins', 0.6, 0.4, 0.8, WOOD),
+  town('street-sign', 0.1, 0.1, 2.2, THIN),
+  town('kiosk', 1.3, 1.3, 3.2, WOOD),
   // Flat decals.
   item('pebbles', 'decal', 2, 2, 0, { kind: 'decal', material: 'pebbles' }),
   item('leaf-patch', 'decal', 2, 2, 0, { kind: 'decal', material: 'leaf-litter' }),
