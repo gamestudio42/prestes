@@ -545,3 +545,31 @@
 .editor-stretch-near {
   outline: 1px solid var(--px-gold, #d6b25e);
 }
+
+/* revise-buildings-and-stone 4.3: the stones, pictured in the chosen rock kind. */
+.editor-stone-tiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.editor-catalog .editor-stone-tiles button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0;
+  padding: 2px;
+  text-align: center;
+  font-size: 11px;
+}
+
+.editor-stone-tiles img {
+  image-rendering: pixelated;
+}
+
+/* Six rock kinds: three to a row. */
+.editor-rock-kinds {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+}

@@ -5,6 +5,7 @@ import {
   trenchLength,
   bridgePolygon,
   catalogObject,
+  isRockKind,
   clusterBadges,
   insideDeploymentArea,
   vegetationAt,
@@ -478,10 +479,10 @@ export class EditorViewport {
     }
     if (tool === 'place') {
       const snapped = this.snap(point);
-      const { objectType, rotation, scale } = this.store.settings;
+      const { objectType, rotation, scale, rockKind } = this.store.settings;
       if (!catalogObject(objectType)) return;
       this.store.editVector((draft) => {
-        draft.objects.push({ id: this.store.nextId(draft.objects), type: objectType, x: snapped.x, y: snapped.y, rotation: (rotation * Math.PI) / 180, ...(scale !== 1 ? { scale } : {}) });
+        draft.objects.push({ id: this.store.nextId(draft.objects), type: objectType, x: snapped.x, y: snapped.y, rotation: (rotation * Math.PI) / 180, ...(scale !== 1 ? { scale } : {}), ...(isRockKind(objectType, rockKind) ? { variant: rockKind } : {}) });
       });
       return;
     }
@@ -757,7 +758,13 @@ export class EditorViewport {
           draft.ponds.push({ id: this.store.nextId(draft.ponds), kind: settings.waterKind, polygon: points });
           break;
         case 'line':
-          draft.lines.push({ id: this.store.nextId(draft.lines), kind: settings.lineKind, height: settings.lineHeight, points });
+          draft.lines.push({
+            id: this.store.nextId(draft.lines),
+            kind: settings.lineKind,
+            height: settings.lineHeight,
+            points,
+            ...(isRockKind(settings.lineKind, settings.rockKind) ? { variant: settings.rockKind } : {}),
+          });
           break;
         case 'trench':
           draft.trenches.push({

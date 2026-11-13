@@ -19,6 +19,8 @@ import {
   type Strip,
   type Vec2,
   KINDED_STONES,
+  corralWalls,
+  type RockKind,
 } from '@prestes/shared';
 import { CanopyFade } from './canopy';
 import { ModelPlacements, warnMissing, type EnvironmentAsset } from './environment-models';
@@ -1071,9 +1073,22 @@ function revetment(points: readonly Vec2[], half: number, side: 1 | -1): THREE.M
  * thumbnails): its model when the environment has one, else its placeholder.
  */
 export function propPreview(model: string, asset: EnvironmentAsset | null): THREE.Object3D | null {
-  const geometry = isModelled(model) ? asset?.geometry(model) : undefined;
+  // revise-buildings-and-stone 4.3: a stone in a rock kind is `<id>@<kind>`; a corral is its walls.
+  const [base, kind] = model.split('@') as [string, string | undefined];
+  if (base === 'stone-corral') return corralPreview(kind as RockKind | undefined, asset);
+  const geometry = isModelled(base) ? asset?.geometry(model) : undefined;
   if (geometry && asset) return new THREE.Mesh(geometry, asset.materialOf(model));
   return placeholderProp(model);
+}
+
+/** A stone corral as the battle draws it: its dry stone walls round the catalog footprint. */
+function corralPreview(kind: RockKind | undefined, asset: EnvironmentAsset | null): THREE.Object3D | null {
+  const entry = catalogObject('stone-corral')!;
+  const map = { lines: corralWalls(0, 0, entry.halfWidth, entry.halfDepth, 0).map((points) => ({ kind: 'stone-wall', points, height: entry.height, rock: kind })) };
+  const placements = new ModelPlacements();
+  placeStoneWalls(map, placements);
+  if (!asset || placements.missing(asset).length > 0) return null;
+  return placements.build(asset);
 }
 
 /** Props the Blender environment already has. */

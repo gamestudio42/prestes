@@ -27,6 +27,11 @@ export const KINDED_STONES: readonly string[] = ['rock-small', 'boulder', 'matac
 /** 4.2 (D5): built stone drawn as dry stone walls, by rock kind: the wall line and the corral. */
 export const KINDED_WALLS: readonly string[] = ['stone-wall', 'stone-corral'];
 
+/** 4.3: a catalog object or line kind the editor offers rock kinds for. */
+export function takesRockKind(type: string): boolean {
+  return KINDED_STONES.includes(type) || KINDED_WALLS.includes(type);
+}
+
 /** A rock kind other than granite on a kinded stone, wall line or corral (`type` is its catalog id or line kind). */
 export function isRockKind(type: string, value: unknown): value is RockKind {
   return (

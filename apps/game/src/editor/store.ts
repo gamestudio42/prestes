@@ -20,6 +20,7 @@ import {
   type TreeBiome,
   type TreeDensity,
   objectiveCircle,
+  type RockKind,
 } from '@prestes/shared';
 
 /**
@@ -71,6 +72,8 @@ export interface ToolSettings {
   waterKind: 'deep' | 'ford';
   lineKind: LineKind;
   lineHeight: number;
+  /** revise-buildings-and-stone 4.3: the rock kind of the next stone, corral or dry stone wall. */
+  rockKind: RockKind;
   /** refine-map-editor 2.5: the next trench line drawn. */
   trenchKind: TrenchKind;
   trenchDepth: TrenchDepth;
@@ -215,6 +218,7 @@ export class EditorStore {
     waterKind: 'deep',
     lineKind: 'stone-wall',
     lineHeight: 1.2,
+    rockKind: 'granite',
     trenchKind: 'fire',
     trenchDepth: 1.2,
     trenchFacing: 'left',

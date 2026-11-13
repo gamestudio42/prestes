@@ -60,6 +60,9 @@ import {
   mapNorth,
   type MapLight,
   buildingVariants,
+  ROCK_KINDS,
+  takesRockKind,
+  type RockKind,
 } from '@prestes/shared';
 import { LOCALES, translate, type Locale, type MessageKey } from '@prestes/content';
 import { loadLocale, saveLocale } from '../storage';
@@ -764,6 +767,9 @@ function ToolProperties({ store, t }: { store: EditorStore; t: T }): ReactNode {
       </label>,
       <NumberField key="lineHeight" label={t('editor.prop.height')} value={settings.lineHeight} min={0.5} max={3} step={0.1} onChange={(lineHeight) => set({ lineHeight })} />,
     );
+    if (takesRockKind(settings.lineKind)) {
+      fields.push(<RockKindPicker key="rockKind" t={t} value={settings.rockKind} onChange={(rockKind) => set({ rockKind })} testId="line-rock-kind" />);
+    }
   }
   if (tool === 'trench') {
     fields.push(
@@ -793,7 +799,10 @@ function ToolProperties({ store, t }: { store: EditorStore; t: T }): ReactNode {
         {OBJECT_GROUPS.map((group) => (
           <details key={group} open={entry?.group === group}>
             <summary>{t(`editor.group.${group}`)}</summary>
-            {CATALOG_OBJECTS.filter((object) => object.group === group && isListed(object)).map((object) => (
+            {group === 'stone' ? (
+              <StoneTiles t={t} objectType={settings.objectType} rockKind={settings.rockKind} onType={(objectType) => set({ objectType })} onKind={(rockKind) => set({ rockKind })} />
+            ) : null}
+            {group === 'stone' ? null : CATALOG_OBJECTS.filter((object) => object.group === group && isListed(object)).map((object) => (
               // D5b: one tile per species; its forms are chosen with the switch below.
               <button
                 key={object.id}
@@ -869,6 +878,21 @@ function SelectionPanel({ store, viewport, t }: { store: EditorStore; viewport: 
             step={0.1}
             onChange={(scale) => store.editVector((draft) => { const target = draft.objects.find((item) => item.id === object.id); if (target) target.scale = scale; })}
           />
+          {takesRockKind(entry.id) ? (
+            <RockKindPicker
+              t={t}
+              value={(object.variant as RockKind | undefined) ?? 'granite'}
+              testId="object-rock-kind"
+              onChange={(kind) =>
+                store.editVector((draft) => {
+                  const target = draft.objects.find((item) => item.id === object.id);
+                  if (!target) return;
+                  if (kind === 'granite') delete target.variant;
+                  else target.variant = kind;
+                })
+              }
+            />
+          ) : null}
           {entry.footprint.kind === 'building' && buildingVariants(entry.footprint.model).length > 0 ? (
             <div className="editor-segmented" role="radiogroup" aria-label={t('editor.prop.variant')} data-testid="object-variant">
               {[undefined, ...buildingVariants(entry.footprint.model)].map((variant) => (
@@ -941,6 +965,21 @@ function SelectionPanel({ store, viewport, t }: { store: EditorStore; viewport: 
       {line ? (
         <>
           <p>{t(`editor.line.${line.kind}`)}</p>
+          {takesRockKind(line.kind) ? (
+            <RockKindPicker
+              t={t}
+              value={(line.variant as RockKind | undefined) ?? 'granite'}
+              testId="line-rock-kind"
+              onChange={(kind) =>
+                store.editVector((draft) => {
+                  const target = draft.lines.find((item) => item.id === line.id);
+                  if (!target) return;
+                  if (kind === 'granite') delete target.variant;
+                  else target.variant = kind;
+                })
+              }
+            />
+          ) : null}
           <NumberField label={t('editor.prop.height')} value={line.height} min={0.5} max={3} step={0.1} onChange={(height) => store.editVector((draft) => { const target = draft.lines.find((item) => item.id === line.id); if (target) target.height = height; })} />
         </>
       ) : null}
@@ -1105,6 +1144,53 @@ function TreeFields({ store, t }: { store: EditorStore; t: T }): ReactNode {
  * biome-trees-and-plants D5b: the Adult / Flowering / Dead switch for a
  * species with more than one form; nothing for any other object.
  */
+/** revise-buildings-and-stone 4.3: the rock kind of a stone, corral or dry stone wall. */
+function RockKindPicker({ t, value, onChange, testId }: { t: T; value: RockKind; onChange: (kind: RockKind) => void; testId: string }): ReactNode {
+  return (
+    <div className="editor-segmented editor-rock-kinds" role="radiogroup" aria-label={t('editor.prop.rockKind')} data-testid={testId}>
+      {ROCK_KINDS.map((kind) => (
+        <button key={kind} type="button" role="radio" aria-checked={value === kind} data-rock={kind} onClick={() => onChange(kind)}>
+          {t(`editor.rock.${kind}`)}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/**
+ * revise-buildings-and-stone 4.3: the stones of the catalog grouped by rock
+ * kind: the kind first, then each stone pictured in it. The lajedo slab
+ * comes in one rock only.
+ */
+function StoneTiles({ t, objectType, rockKind, onType, onKind }: {
+  t: T;
+  objectType: string;
+  rockKind: RockKind;
+  onType: (objectType: string) => void;
+  onKind: (kind: RockKind) => void;
+}): ReactNode {
+  const stones = CATALOG_OBJECTS.filter((object) => object.group === 'stone' && isListed(object));
+  const modelOf = (object: { id: string; model: string }): string =>
+    takesRockKind(object.id) && rockKind !== 'granite' ? `${object.model}@${rockKind}` : object.model;
+  const pictures = useThumbnails(stones.map(modelOf));
+  return (
+    <>
+      <RockKindPicker t={t} value={rockKind} onChange={onKind} testId="stone-rock-kind" />
+      <div className="editor-stone-tiles" data-testid="stone-tiles" data-kind={rockKind}>
+        {stones.map((object) => {
+          const picture = pictures.get(modelOf(object));
+          return (
+            <button key={object.id} type="button" data-object={object.id} aria-pressed={objectType === object.id} title={t(object.nameKey)} onClick={() => onType(object.id)}>
+              {picture ? <img src={picture} width={48} height={48} alt="" data-thumbnail={modelOf(object)} /> : <span className="editor-tree-blank" aria-hidden="true" />}
+              <span>{t(object.nameKey)}</span>
+            </button>
+          );
+        })}
+      </div>
+    </>
+  );
+}
+
 function formSwitch(objectType: string, t: T, choose: (objectType: string) => void): ReactNode[] {
   const forms = speciesForms(objectType);
   const kinds = (['adult', 'flowering', 'dead'] as const).filter((form) => forms[form]);

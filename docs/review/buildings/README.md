@@ -118,3 +118,12 @@ low-wall cover; the steps are walked over. Tests: a wall down a hillside in
 `packages/simulation/test/built-stone.test.ts`.
 
 Approved by the owner, 2026-11-13.
+
+## Editor (4.3)
+
+`sheet-editor-stones.png` shows the editor's stone list in each rock kind,
+saved by `tests/e2e/editor-rock-kinds.spec.ts` (with PRESTES_REVIEW=1): the
+kind is chosen first and every stone is pictured in it (the lajedo slab
+comes in one rock). The line tool offers the kinds for a dry stone wall, and
+the selection panel changes a stone's, corral's or wall's kind. Names in EN
+and PT-BR.

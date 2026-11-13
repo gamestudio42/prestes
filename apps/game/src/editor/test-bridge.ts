@@ -18,6 +18,8 @@ export interface EditorBridge {
     objects: { id: number; type: string; x: number; y: number; variant?: string }[];
     roads: number;
     lines: number;
+    /** revise-buildings-and-stone 4.3: each line's kind and rock kind. */
+    lineKinds: { kind: string; variant?: string }[];
     rivers: number;
     ponds: number;
     bridges: number;
@@ -74,6 +76,7 @@ export function editorBridge(store: EditorStore, viewport: () => EditorViewport 
       objects: store.map.objects.map(({ id, type, x, y, variant }) => ({ id, type, x, y, ...(variant ? { variant } : {}) })),
       roads: store.map.roads.length,
       lines: store.map.lines.length,
+      lineKinds: store.map.lines.map(({ kind, variant }) => ({ kind, ...(variant ? { variant } : {}) })),
       rivers: store.map.rivers.length,
       ponds: store.map.ponds.length,
       bridges: store.map.bridges.length,
