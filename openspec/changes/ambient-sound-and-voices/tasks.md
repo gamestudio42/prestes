@@ -21,7 +21,7 @@
 
 ## 4. Footsteps
 
-- [ ] 4.1 Footstep groups by section, surface, pace and number of men moving, limited to units the listener's side sees, with a cap; verify with unit tests of surface change, the one-or-eleven layers, the fog rule and the cap
+- [x] 4.1 Footstep groups by section, surface, pace and number of men moving, limited to units the listener's side sees, with a cap; verify with unit tests of surface change, the one-or-eleven layers, the fog rule and the cap
 
 ## 5. Voices
 

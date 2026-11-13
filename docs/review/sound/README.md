@@ -246,3 +246,53 @@ Approved by the owner, 2026-11-13.
   with the camera near it.
 
 Approved by the owner, 2026-11-13.
+
+## 4.1 Footsteps by ground, pace and number (2026-11-13)
+
+- `apps/game/src/audio/footsteps.ts` (design D4): on the slow clock the
+  moving men of each section are bucketed by the ground under them and
+  their pace, and each bucket is one loop at the men's average place, by
+  the rule for nearness (30 m at the nearest zoom) and panned on screen.
+  - Grounds: road (roads, packed and red earth, yard floor), dirt (sand,
+    crater, trench), grass (grass, pasture), mud, stone (cobbles, rock,
+    lajedo), wood (bridges), brush (crops, scrub, thorns, and any plants
+    such as cane or tall grass). Men in a ford are the wading's (3.4).
+  - Pace: walk (slow or walk), run (quick or run, with equipment rattle
+    over it), crawl (prone; wet on mud, dry elsewhere).
+  - Number: one man walking has his own loop; two or more are the
+    section's loop, many feet out of step rather than one man louder; two
+    to four men play it thinner, five or more at full.
+  - Own side always, the enemy only while seen under fog of war; the dead,
+    dummies and men in a building are silent. At most six footstep loops
+    at once (rattle included), the nearest.
+- Recordings, CC0 from Freesound, registered in `docs/assets.md`
+  (downloaded with the owner's leave): one set of boots for every ground
+  where it has one (Nox_Sound, mountain boots: gravel for the road, wet
+  sand for dirt, grass, mud, rock, and movement through high grass for
+  brush); a wooden bridge walked by one and by several (OBXJohn); a soldier
+  in Second World War gear crawling (elonen); a group running with its
+  equipment rattling (craigsmith). A twelfth download, a vintage group of
+  men walking and running (craigsmith 480450), is not used and does not
+  ship.
+- `tools/cut-audio-sources.ts` now builds a section from one man: the same
+  steps laid over themselves six times, each layer up to 0.4 s later and
+  up to 8 % higher or lower, mixed down by the square root of six; a run
+  with no recording (mud, brush, wood) is the walk played faster, pitch
+  kept; the wet crawl is the crawl with the mud steps under it. 24 loops,
+  2.4 MB.
+- Checked: `tests/audio/footsteps.test.ts` (12 tests: grounds and paces;
+  a section walking from a dirt road into cane changes from the road loop
+  to the crop loop as its men enter, half and half on the way; men still,
+  dead, dummies, garrisoned or in water silent; the enemy only while seen;
+  one man and eleven as different loops, a few thinner; run and crawl
+  loops; one man handed over to the section loop when ten join him;
+  rattle over a run, panned left; the cap and the range; a missing file).
+  All audio and tool tests pass (143). In the preview, Paiolzinho: a
+  section walking through the brush played `steps-brush-many`; ordered to
+  run, `steps-brush-run` with `rattle`. Crawling was not heard there: the
+  pane lost its animation frames (the window out of view) before it could
+  be checked, so the crawl rests on the tests.
+- For the owner to hear: walk, run and crawl a section near the camera,
+  across a road and into a field.
+
+Approved by the owner, 2026-11-13.
