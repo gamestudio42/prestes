@@ -23,6 +23,7 @@ export const SOUND_FILES: Readonly<Record<string, string>> = {
   'hour-day': 'beds/hour-day.mp3',
   'hour-dusk': 'beds/hour-dusk.mp3',
   'hour-night': 'beds/hour-night.mp3',
+  'wading': 'water/wading.mp3',
   'water-ford': 'water/water-ford.mp3',
   'water-pond': 'water/water-pond.mp3',
   'water-river': 'water/water-river.mp3',

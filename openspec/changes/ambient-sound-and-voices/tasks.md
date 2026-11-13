@@ -17,7 +17,7 @@
 - [x] 3.1 The list of beds, one-shots, water and footstep sounds with a proposed source for each (the owner's recording, synthesis, or a named CC0 recording); verify: the owner approves the list, recorded in `docs/status.md`
 - [x] 3.2 Ambient beds by ground and hour with cross-fades and non-repeating one-shots; verify with unit tests of bed choice and the fade, and by ear in the preview
 - [x] 3.3 A shared helper for the nearest water of each kind to a point (river by width, ford, pond) and the water emitters; verify with unit tests of the helper on a test map and of the river/stream/ford scenarios
-- [ ] 3.4 Wading sound for men in a ford; verify with a unit test from a mirror frame with men in water
+- [x] 3.4 Wading sound for men in a ford; verify with a unit test from a mirror frame with men in water
 
 ## 4. Footsteps
 

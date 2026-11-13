@@ -214,3 +214,35 @@ Approved by the owner, 2026-11-13.
   wide river and the pond are heard only on maps that have them.
 
 Approved by the owner, 2026-11-13.
+
+## 3.4 Men wading in a ford (2026-11-13)
+
+- `apps/game/src/audio/wading.ts`: on the slow clock the men of each
+  section standing in shallow water (a ford, `waterAt` 1) make one looped
+  wading sound, placed at their average position, by the rule for nearness
+  (40 m at the nearest zoom) and panned on screen. One man is a splash, a
+  section a fuller sound (the level grows with the number in the water,
+  not just louder). It stops when the last of them leaves the water. Men
+  halted in the ford still count: they stand in the water.
+- Heard for the player's own side, and for the enemy only while seen under
+  fog of war (as the footsteps will be); the dead, training dummies and men
+  inside a building are left out. At most the three nearest sections.
+- The battle view now hands the audio the frame on screen
+  (`AudioListener.frame`), read only; the simulation is untouched.
+- Recording: "Wading in Shallow Water" by ryansitz, Freesound 342932, CC0,
+  registered in `docs/assets.md` (downloaded with the owner's leave); a
+  23.5 s loop, 184 KB.
+- Checked: `tests/audio/wading.test.ts` (6 tests, from mirror frames: men
+  in the ford grouped by section at their average place; the dead,
+  dummies and garrisoned men left out; the enemy only while seen; a
+  section of eleven crossing a ford heard from the first man in to the
+  last man out, unbroken, then stopped; a section fuller than one man and
+  silent out of range; the three nearest sections, panned). All 89 audio
+  tests pass. In the preview, Paiolzinho: a section ordered across the
+  shallow brook was heard wading (`wading: [2]`) once its first men stood
+  in the water; the pane then lost its animation frames (the window out of
+  view), so leaving the water was checked by the test, not in the preview.
+- For the owner to hear: order a section across Paiolzinho's shallow brook
+  with the camera near it.
+
+Approved by the owner, 2026-11-13.

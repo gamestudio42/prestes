@@ -1,4 +1,4 @@
-﻿import { getWeapon, type SimEvent, type WeaponId } from '@prestes/shared';
+﻿import { getWeapon, type Frame, type SimEvent, type WeaponId } from '@prestes/shared';
 import { panAt } from './listening';
 import { AudioEngine } from './mixer';
 
@@ -86,6 +86,8 @@ export interface AudioListener {
   factionOf: (unitId: number) => string | undefined;
   /** Weapon of a unit by id (the shooter's), for the sound of his fire. */
   weaponOf?: (unitId: number) => WeaponId | undefined;
+  /** The frame on screen, for the sounds of the men themselves (wading, 3.4). */
+  frame?: Pick<Frame, 'units' | 'seen' | 'fog'>;
 }
 
 /**

@@ -203,6 +203,7 @@ export function GameCanvas({
             faction: 'column',
             factionOf: (id) => units.get(id)?.faction,
             weaponOf: (id) => units.get(id)?.weaponId,
+            frame,
           });
         }
       }
