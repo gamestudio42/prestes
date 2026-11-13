@@ -1,5 +1,5 @@
 ﻿import { getWeapon, type SimEvent, type WeaponId } from '@prestes/shared';
-import { openAudioContext } from './context';
+import { AudioEngine } from './mixer';
 
 /**
  * machine-gun-fire-feedback 4.1: the sound of a kind of fire. Rifles and
@@ -243,15 +243,44 @@ export class ShotAudio {
   }
 }
 
-function playBuffer(context: AudioContext, buffer: AudioBuffer, volume: number, rate = 1, delay = 0): void {
+function playBuffer(context: BaseAudioContext, destination: AudioNode, buffer: AudioBuffer, volume: number, rate = 1, delay = 0): void {
   const source = context.createBufferSource();
   const gain = context.createGain();
   source.buffer = buffer;
   source.playbackRate.value = rate;
   gain.gain.value = volume;
   source.connect(gain);
-  gain.connect(context.destination);
+  gain.connect(destination);
   source.start(context.currentTime + delay);
+}
+
+/**
+ * ambient-sound-and-voices 1.1: shots play on the mixer's effects bus. An
+ * output given no engine makes its own and closes it on dispose; a shared
+ * engine is its owner's to close.
+ */
+abstract class EffectsOutput {
+  protected readonly engine: AudioEngine;
+  private readonly ownsEngine: boolean;
+
+  constructor(engine?: AudioEngine) {
+    this.engine = engine ?? new AudioEngine();
+    this.ownsEngine = !engine;
+  }
+
+  protected get context(): AudioContext | null {
+    return this.engine.context;
+  }
+
+  protected playOnEffects(buffer: AudioBuffer, volume: number, rate: number, delay: number): void {
+    const context = this.engine.context;
+    const mixer = this.engine.mixer;
+    if (context && mixer) playBuffer(context, mixer.input('effects'), buffer, volume, rate, delay);
+  }
+
+  protected releaseEngine(): void {
+    if (this.ownsEngine) this.engine.dispose();
+  }
 }
 
 /** The synthesized reports of automatic fire, made once per context. */
@@ -270,17 +299,20 @@ function automaticBuffers(context: AudioContext): Record<'automatic' | 'machine-
  * 1.3 s later. Falls back to the synthesized shot if the files do not load.
  * Automatic fire plays the synthesized reports.
  */
-export class RecordedGunshotOutput implements GunshotOutput {
-  private context: AudioContext | null = null;
+export class RecordedGunshotOutput extends EffectsOutput implements GunshotOutput {
   private shot: AudioBuffer | null = null;
   private bolt: AudioBuffer | null = null;
   private automatic: Record<'automatic' | 'machine-gun', AudioBuffer> | null = null;
 
-  constructor(private readonly base = './audio/') {}
+  constructor(
+    private readonly base = './audio/',
+    engine?: AudioEngine,
+  ) {
+    super(engine);
+  }
 
   async unlock(): Promise<boolean> {
-    this.context = await openAudioContext(this.context);
-    if (!this.context) {
+    if (!(await this.engine.unlock()) || !this.context) {
       return false;
     }
     if (!this.shot) {
@@ -298,16 +330,15 @@ export class RecordedGunshotOutput implements GunshotOutput {
   play(volume: number, rate = 1, sound: ShotSound = 'rifle', delay = 0): void {
     if (!this.context) return;
     const buffer = sound === 'rifle' ? this.shot : this.automatic?.[sound];
-    if (buffer) playBuffer(this.context, buffer, volume, rate, delay);
+    if (buffer) this.playOnEffects(buffer, volume, rate, delay);
   }
 
   playBolt(volume: number, delay: number, rate = 1): void {
-    if (this.context && this.bolt) playBuffer(this.context, this.bolt, volume, rate, delay);
+    if (this.bolt) this.playOnEffects(this.bolt, volume, rate, delay);
   }
 
   dispose(): void {
-    void this.context?.close();
-    this.context = null;
+    this.releaseEngine();
     this.shot = null;
     this.bolt = null;
     this.automatic = null;
@@ -325,14 +356,12 @@ export class RecordedGunshotOutput implements GunshotOutput {
 }
 
 /** A procedural shot, used when the recording is not available. */
-export class SynthesizedGunshotOutput implements GunshotOutput {
-  private context: AudioContext | null = null;
+export class SynthesizedGunshotOutput extends EffectsOutput implements GunshotOutput {
   private buffer: AudioBuffer | null = null;
   private automatic: Record<'automatic' | 'machine-gun', AudioBuffer> | null = null;
 
   async unlock(): Promise<boolean> {
-    this.context = await openAudioContext(this.context);
-    if (!this.context) {
+    if (!(await this.engine.unlock()) || !this.context) {
       return false;
     }
     this.buffer ??= synthesizeGunshot(this.context);
@@ -343,12 +372,11 @@ export class SynthesizedGunshotOutput implements GunshotOutput {
   play(volume: number, rate = 1, sound: ShotSound = 'rifle', delay = 0): void {
     if (!this.context) return;
     const buffer = sound === 'rifle' ? this.buffer : this.automatic?.[sound];
-    if (buffer) playBuffer(this.context, buffer, volume, rate, delay);
+    if (buffer) this.playOnEffects(buffer, volume, rate, delay);
   }
 
   dispose(): void {
-    void this.context?.close();
-    this.context = null;
+    this.releaseEngine();
     this.buffer = null;
     this.automatic = null;
   }

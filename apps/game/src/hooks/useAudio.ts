@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { AudioEngine } from '../audio/mixer';
 import { RecordedGunshotOutput, ShotAudio } from '../audio/ShotAudio';
 import { loadAudioSettings, saveAudioSettings } from '../storage';
 
@@ -9,13 +10,16 @@ export function useAudio() {
   const audioRef = useRef<ShotAudio | null>(null);
 
   useEffect(() => {
-    const audio = new ShotAudio(new RecordedGunshotOutput(), {
+    // One context and mixer for the battle's sound (ambient-sound-and-voices 1.1).
+    const engine = new AudioEngine();
+    const audio = new ShotAudio(new RecordedGunshotOutput('./audio/', engine), {
       muted: audioMuted,
       volume: audioVolume,
     });
     audioRef.current = audio;
     return () => {
       audio.dispose();
+      engine.dispose();
       audioRef.current = null;
     };
   }, []);

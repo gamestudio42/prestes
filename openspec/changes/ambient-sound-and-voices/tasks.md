@@ -1,6 +1,6 @@
 ## 0. Before starting
 
-- [ ] 0.1 Read `docs/handoff.md`, then this change's proposal, design and specs. Prerequisites: ffmpeg on the machine (as `tools/optimize-gramophone.ts` needs); keep the game muted (`prestes.audio.v1`) in the preview pane unless the task is to listen; the voice lines (5.1) wait for the forms of address in `docs/history/FORCES.md` and for the owner's review of the text; verify: `pnpm optimize:music` still runs
+- [x] 0.1 Read `docs/handoff.md`, then this change's proposal, design and specs. Prerequisites: ffmpeg on the machine (as `tools/optimize-gramophone.ts` needs); keep the game muted (`prestes.audio.v1`) in the preview pane unless the task is to listen; the voice lines (5.1) wait for the forms of address in `docs/history/FORCES.md` and for the owner's review of the text; verify: `pnpm optimize:music` still runs
 
 ## 1. Mixer and the nearness rule
 
