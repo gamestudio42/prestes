@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { AudioEngine, DUCK_ATTACK, DUCK_LEVEL, DUCK_RELEASE, Mixer } from '../../apps/game/src/audio/mixer';
-import { ShotAudio, SynthesizedGunshotOutput } from '../../apps/game/src/audio/ShotAudio';
+import { ShotAudio, SynthesizedGunshotOutput, shotPan, type AudioListener } from '../../apps/game/src/audio/ShotAudio';
 
 // ambient-sound-and-voices 1.1: the mixer's buses and duck, on a fake
 // context that records the graph and the gain automation.
@@ -31,6 +31,7 @@ class FakeNode {
   readonly outputs: FakeNode[] = [];
   readonly gain = new FakeParam();
   readonly playbackRate = new FakeParam();
+  readonly pan = new FakeParam();
   buffer: unknown = null;
   startedAt: number | null = null;
   constructor(readonly kind: string) {}
@@ -52,6 +53,9 @@ class FakeContext {
   closed = false;
   createGain(): FakeNode {
     return new FakeNode('gain');
+  }
+  createStereoPanner(): FakeNode {
+    return new FakeNode('panner');
   }
   createBufferSource(): FakeNode {
     const source = new FakeNode('source');
@@ -179,5 +183,36 @@ describe('Shots on the effects bus', () => {
     expect(shared.closed).toBe(false);
     engine.dispose();
     expect(shared.closed).toBe(true);
+  });
+
+  it('are panned by where they lie on screen (the owner, 2026-11-13)', async () => {
+    const context = new FakeContext();
+    const engine = new AudioEngine(() => context as unknown as AudioContext);
+    const audio = new ShotAudio(new SynthesizedGunshotOutput(engine), { volume: 0.4 });
+    await audio.unlock();
+    const listener: AudioListener = { x: 0, y: 0, span: 100, right: { x: 1, y: 0 }, faction: 'column', factionOf: () => 'legalist' };
+    audio.setListener(listener);
+    audio.handleEvent({ type: 'shot', tick: 1, source: 1, target: 2, x: -40, y: 0, x2: 1, y2: 1, hit: true });
+    const gain = context.sources[0]!.outputs[0]!;
+    // Loudness unchanged (inside the view), pan to the left.
+    expect(gain.gain.value).toBe(0.4);
+    const panner = gain.outputs[0]!;
+    expect(panner.kind).toBe('panner');
+    expect(panner.pan.value).toBeLessThan(0);
+    expect(panner.outputs[0]).toBe(engine.mixer!.input('effects'));
+  });
+});
+
+describe('shotPan', () => {
+  const base = { x: 0, y: 0, span: 100, faction: 'column', factionOf: () => undefined };
+  it('is left, centre and right by place across the screen', () => {
+    const listener = { ...base, right: { x: 1, y: 0 } };
+    expect(shotPan(listener, -30, 0)).toBeLessThan(0);
+    expect(shotPan(listener, 0, 20)).toBe(0);
+    expect(shotPan(listener, 30, 0)).toBeGreaterThan(0);
+  });
+  it('is centred with no listener or no screen direction', () => {
+    expect(shotPan(null, 30, 0)).toBe(0);
+    expect(shotPan(base, 30, 0)).toBe(0);
   });
 });

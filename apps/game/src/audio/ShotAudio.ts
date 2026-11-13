@@ -1,4 +1,5 @@
 ﻿import { getWeapon, type SimEvent, type WeaponId } from '@prestes/shared';
+import { panAt } from './listening';
 import { AudioEngine } from './mixer';
 
 /**
@@ -12,11 +13,12 @@ export interface GunshotOutput {
   unlock(): Promise<boolean>;
   /**
    * One shot; `rate` shifts the pitch a little so a volley does not repeat,
-   * `sound` picks the weapon's report and `delay` (s) schedules it.
+   * `sound` picks the weapon's report, `delay` (s) schedules it and `pan`
+   * (-1 left to +1 right) places it.
    */
-  play(volume: number, rate?: number, sound?: ShotSound, delay?: number): void;
+  play(volume: number, rate?: number, sound?: ShotSound, delay?: number, pan?: number): void;
   /** The rifle's bolt worked `delay` seconds later (outputs that have it). */
-  playBolt?(volume: number, delay: number, rate?: number): void;
+  playBolt?(volume: number, delay: number, rate?: number, pan?: number): void;
   dispose(): void;
 }
 
@@ -84,6 +86,16 @@ export interface AudioListener {
   factionOf: (unitId: number) => string | undefined;
   /** Weapon of a unit by id (the shooter's), for the sound of his fire. */
   weaponOf?: (unitId: number) => WeaponId | undefined;
+}
+
+/**
+ * ambient-sound-and-voices 1.2, the owner (2026-11-13): shots are panned left
+ * or right by where they lie on screen, like every positioned sound; their
+ * loudness keeps its own rule below. Centred when the view gives no right.
+ */
+export function shotPan(listener: AudioListener | null, x: number, y: number): number {
+  if (!listener?.right) return 0;
+  return panAt({ x: listener.x, y: listener.y, span: listener.span, right: listener.right }, x, y);
 }
 
 /**
@@ -160,6 +172,7 @@ export class ShotAudio {
     const delay = this.delayFor(event.tick);
     const rate = shotRate(key);
     const loudness = shotLoudness(this.listener, event.x, event.y);
+    const pan = shotPan(this.listener, event.x, event.y);
     if (sound !== 'rifle') {
       // Every round of a burst is heard, spaced as it was fired; a burst
       // holds one voice of the automatic budget, so rifles still sound.
@@ -167,21 +180,21 @@ export class ShotAudio {
       const gun = sound === 'machine-gun';
       const gain = gun ? MACHINE_GUN_GAIN : 1;
       const pitch = gun ? 1 + (rate - 1) * MACHINE_GUN_PITCH_SPREAD : rate;
-      this.output.play(Math.min(1, this.volume * gain) * loudness, pitch, sound, delay);
+      this.output.play(Math.min(1, this.volume * gain) * loudness, pitch, sound, delay, pan);
       return;
     }
     if (this.activeVoices >= this.maxVoices) {
       return;
     }
     this.activeVoices += 1;
-    this.output.play(this.volume * loudness, rate, 'rifle', delay);
+    this.output.play(this.volume * loudness, rate, 'rifle', delay, pan);
     // Only the player's own bolt-action rifles are heard working their bolts:
     // the enemy's would double every shot into noise.
     const side = this.listener?.factionOf(event.source);
     const weaponId = this.listener?.weaponOf?.(event.source);
     const boltAction = weaponId === undefined || getWeapon(weaponId)?.kind === 'bolt-rifle';
     if (boltAction && (!this.listener || side === this.listener.faction)) {
-      this.output.playBolt?.(this.volume * BOLT_LEVEL * loudness, BOLT_DELAY + delay, rate);
+      this.output.playBolt?.(this.volume * BOLT_LEVEL * loudness, BOLT_DELAY + delay, rate, pan);
     }
     globalThis.setTimeout(() => {
       this.activeVoices = Math.max(0, this.activeVoices - 1);
@@ -245,14 +258,21 @@ export class ShotAudio {
   }
 }
 
-function playBuffer(context: BaseAudioContext, destination: AudioNode, buffer: AudioBuffer, volume: number, rate = 1, delay = 0): void {
+function playBuffer(context: BaseAudioContext, destination: AudioNode, buffer: AudioBuffer, volume: number, rate = 1, delay = 0, pan = 0): void {
   const source = context.createBufferSource();
   const gain = context.createGain();
   source.buffer = buffer;
   source.playbackRate.value = rate;
   gain.gain.value = volume;
   source.connect(gain);
-  gain.connect(destination);
+  if (pan !== 0 && typeof context.createStereoPanner === 'function') {
+    const panner = context.createStereoPanner();
+    panner.pan.value = Math.max(-1, Math.min(1, pan));
+    gain.connect(panner);
+    panner.connect(destination);
+  } else {
+    gain.connect(destination);
+  }
   source.start(context.currentTime + delay);
 }
 
@@ -274,10 +294,10 @@ abstract class EffectsOutput {
     return this.engine.context;
   }
 
-  protected playOnEffects(buffer: AudioBuffer, volume: number, rate: number, delay: number): void {
+  protected playOnEffects(buffer: AudioBuffer, volume: number, rate: number, delay: number, pan = 0): void {
     const context = this.engine.context;
     const mixer = this.engine.mixer;
-    if (context && mixer) playBuffer(context, mixer.input('effects'), buffer, volume, rate, delay);
+    if (context && mixer) playBuffer(context, mixer.input('effects'), buffer, volume, rate, delay, pan);
   }
 
   protected releaseEngine(): void {
@@ -329,14 +349,14 @@ export class RecordedGunshotOutput extends EffectsOutput implements GunshotOutpu
     return true;
   }
 
-  play(volume: number, rate = 1, sound: ShotSound = 'rifle', delay = 0): void {
+  play(volume: number, rate = 1, sound: ShotSound = 'rifle', delay = 0, pan = 0): void {
     if (!this.context) return;
     const buffer = sound === 'rifle' ? this.shot : this.automatic?.[sound];
-    if (buffer) this.playOnEffects(buffer, volume, rate, delay);
+    if (buffer) this.playOnEffects(buffer, volume, rate, delay, pan);
   }
 
-  playBolt(volume: number, delay: number, rate = 1): void {
-    if (this.bolt) this.playOnEffects(this.bolt, volume, rate, delay);
+  playBolt(volume: number, delay: number, rate = 1, pan = 0): void {
+    if (this.bolt) this.playOnEffects(this.bolt, volume, rate, delay, pan);
   }
 
   dispose(): void {
@@ -371,10 +391,10 @@ export class SynthesizedGunshotOutput extends EffectsOutput implements GunshotOu
     return true;
   }
 
-  play(volume: number, rate = 1, sound: ShotSound = 'rifle', delay = 0): void {
+  play(volume: number, rate = 1, sound: ShotSound = 'rifle', delay = 0, pan = 0): void {
     if (!this.context) return;
     const buffer = sound === 'rifle' ? this.buffer : this.automatic?.[sound];
-    if (buffer) this.playOnEffects(buffer, volume, rate, delay);
+    if (buffer) this.playOnEffects(buffer, volume, rate, delay, pan);
   }
 
   dispose(): void {

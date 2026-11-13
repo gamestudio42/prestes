@@ -49,7 +49,11 @@ Approved by the owner after listening in the preview, 2026-11-13.
   right, a turned camera, the 80 % limit); in the game, at three camera
   turns, 10 m along that "right" lands 106 px right of the screen's
   centre.
-- Not changed: the shots keep their own loudness rule (approved in 1.1),
-  and nothing is panned yet. The water, footsteps and call-outs use this
-  rule as they arrive (3.3, 4.1, 5.4). Moving the shots onto it (same
-  nearness, panned) is a question for the owner.
+- The owner asked (2026-11-13) for the shots to be panned too: each shot
+  and bolt goes through a stereo panner by `panAt`; their loudness keeps
+  its own rule, approved in 1.1. The water, footsteps and call-outs use
+  `gainAt` and `panAt` as they arrive (3.3, 4.1, 5.4).
+- Checked: 3 more tests (a shot on the left of the view panned left at its
+  old volume, `shotPan` left, centre and right, centred with no view); a
+  skirmish with sound on: all 116 shots went through the panner, none
+  centred, no console error.
