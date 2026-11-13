@@ -10,7 +10,7 @@
 
 ## 2. Simulation
 
-- [ ] 2.1 Extract `spawnSection` from `spawnTroop` (no sandbox check), with `spawnTroop` using it; verify: existing sandbox spawn tests and the determinism goldens unchanged
+- [x] 2.1 Extract `spawnSection` from `spawnTroop` (no sandbox check), with `spawnTroop` using it; verify: existing sandbox spawn tests and the determinism goldens unchanged
 - [ ] 2.2 `battle-events.ts`: event state, fielded counts from deployment end, the five triggers, delay, fire-once, `battle_event_fired` sim event, wired into the engine after objectives and casualties; event state hashed only when the map has events; verify with unit tests for each trigger scenario in the battle-events spec (delay, fires once, objective taken, area entered unseen, losses with reinforcements, chain, not during deployment) and the test-map determinism goldens unchanged
 - [ ] 2.3 "Troops enter": queued arrivals 5 s apart at the entry point, file inward, blocked spots skipped, first orders for both sides (column move/stay; legalist move/objective/commander, tagged until arrived or engaged); verify with unit tests of the three troops scenarios (fog for the unseen arrival via the column's vision) and a test that arrivals take ids in spawn order
 - [ ] 2.4 Enemy posture in `enemy-commander.ts` (offensive, fall back to area or own area, hold; for a time or until an event; replaced by a later posture; routed keep routing; broken-side fall-back still wins); verify with unit tests of the three posture scenarios and the map-objectives "Posture overrides the guards" scenario, plus the existing Retake and Last minutes tests unchanged

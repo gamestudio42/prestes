@@ -21,6 +21,8 @@ import type {
   Vec2,
   UnitRole,
   TrainingPhaseSetup,
+  SectionTypeId,
+  Faction,
 } from '@prestes/shared';
 import { TRAINING_ENEMY_HP } from './model';
 import type { MutableUnit } from './model';
@@ -170,6 +172,7 @@ export function spawnTroop(
   const rotation = command.rotation ?? 0;
   const offsets = troopFormationOffsets(count, 6, spacing, rotation);
   const formationFacing = rotateOffset({ x: 0, y: 1 }, rotation);
+  const slots: SectionSlot[] = [];
   for (let index = 0; index < count; index += 1) {
     const offset = offsets[index]!;
     const to = {
@@ -185,25 +188,81 @@ export function spawnTroop(
     ) {
       continue;
     }
-    const man = section?.men[index];
+    slots.push({ x: to.x, y: to.y, index });
+  }
+  spawnSection(ctx, {
+    faction: command.faction,
+    ...(section ? { section: section.id } : {}),
+    slots,
+    facing: formationFacing,
+    holdPosition: true,
+    holdFire: command.holdFire ?? command.dummy === true,
+    dummy: command.dummy === true,
+    ...(command.role ? { role: command.role } : {}),
+    nonLethal: command.nonLethal === true,
+  });
+  // A training troop is tougher and starts crouched, however it was spawned.
+  if (command.role === 'training-enemy') {
+    for (const unit of ctx.units) {
+      if (unit.squadId === squadId && unit.role === 'training-enemy') {
+        unit.hp = TRAINING_ENEMY_HP;
+        unit.stance = 'crouched';
+        unit.stanceLocked = true;
+      }
+    }
+  }
+}
+
+/** A man's place in a new section: where he stands and which of the type's men he is. */
+export interface SectionSlot {
+  x: number;
+  y: number;
+  index: number;
+}
+
+export interface SectionSpec {
+  faction: Faction;
+  /** Absent: plain riflemen with the default weapon (the sandbox's troops). */
+  section?: SectionTypeId;
+  slots: readonly SectionSlot[];
+  facing: Vec2;
+  holdPosition: boolean;
+  holdFire: boolean;
+  dummy?: boolean;
+  role?: UnitRole;
+  nonLethal?: boolean;
+}
+
+/**
+ * add-battle-events 2.1: puts one section on the map, a man per slot, with
+ * its type's men, weapons, speed, ammunition, morale and cohesion, and its
+ * machine gun's belts; takes the next squad id and returns it. No sandbox
+ * check: the sandbox's spawn and the battle events' arrivals both use it.
+ */
+export function spawnSection(ctx: SimContext, spec: SectionSpec): number {
+  const section = spec.section !== undefined ? SECTION_TYPES[spec.section] : undefined;
+  const squadId = ctx.nextSquadId;
+  const dummy = spec.dummy === true;
+  for (const slot of spec.slots) {
+    const man = section?.men[slot.index];
     const weaponId = man?.weapon ?? DEFAULT_WEAPON_ID;
     const load = man ? trainingLoad(weaponId) : WEAPONS[DEFAULT_WEAPON_ID];
     ctx.units.push({
       id: ctx.nextUnitId,
-      x: to.x,
-      y: to.y,
-      targetX: to.x,
-      targetY: to.y,
+      x: slot.x,
+      y: slot.y,
+      targetX: slot.x,
+      targetY: slot.y,
       speed: 2 * (section?.speedFactor ?? 1),
       kind: man?.role === 'officer' ? 'officer' : 'infantry',
-      faction: command.faction,
+      faction: spec.faction,
       stance: 'standing',
       squadId,
       hp: MAX_HP,
       weaponId,
-      magazine: command.dummy ? 0 : load.magazine,
+      magazine: dummy ? 0 : load.magazine,
       // faction-armies 3.1: a section's ammunition, morale and cohesion are its army's and type's.
-      reserve: command.dummy ? 0 : section?.ammunitionFactor !== undefined ? Math.round(load.reserve * section.ammunitionFactor) : load.reserve,
+      reserve: dummy ? 0 : section?.ammunitionFactor !== undefined ? Math.round(load.reserve * section.ammunitionFactor) : load.reserve,
       ...(man?.sidearm ? { sidearmId: man.sidearm } : {}),
       ...(section ? { sectionType: section.id } : {}),
       morale: section ? unitValues({ sectionType: section.id }).morale : MAX_MORALE,
@@ -228,8 +287,8 @@ export function spawnTroop(
       reload: 0,
       path: [],
       pathIndex: 0,
-      facingX: formationFacing.x,
-      facingY: formationFacing.y,
+      facingX: spec.facing.x,
+      facingY: spec.facing.y,
       aimX: null,
       aimY: null,
       stanceLocked: false,
@@ -238,17 +297,17 @@ export function spawnTroop(
       flankCooldown: 0,
       suppressionCooldown: 0,
       suppress: false,
-      holdPosition: true,
-      holdFire: command.holdFire ?? command.dummy === true,
+      holdPosition: spec.holdPosition,
+      holdFire: spec.holdFire,
       posture: 'balanced',
       boundTeam: null,
       boundPhase: null,
       targetLocked: false,
       currentOrder: null,
       lineMove: false,
-      dummy: command.dummy === true,
-      role: command.role,
-      nonLethal: command.nonLethal === true,
+      dummy,
+      role: spec.role,
+      nonLethal: spec.nonLethal === true,
       ambush: false,
       officerLossApplied: false,
       slotId: null,
@@ -267,20 +326,11 @@ export function spawnTroop(
     });
     ctx.nextUnitId += 1;
   }
-  // A training troop is tougher and starts crouched, however it was spawned.
-  if (command.role === 'training-enemy') {
-    for (const unit of ctx.units) {
-      if (unit.squadId === squadId && unit.role === 'training-enemy') {
-        unit.hp = TRAINING_ENEMY_HP;
-        unit.stance = 'crouched';
-        unit.stanceLocked = true;
-      }
-    }
-  }
   // A machine-gun crew brings its belts: the squad's pool.
   const gun = section?.men.find((man) => getWeapon(man.weapon)?.fire === 'belt');
-  if (gun && !command.dummy) ctx.gunPools = { ...(ctx.gunPools ?? {}), [squadId]: trainingLoad(gun.weapon).pool ?? 0 };
+  if (gun && !dummy) ctx.gunPools = { ...(ctx.gunPools ?? {}), [squadId]: trainingLoad(gun.weapon).pool ?? 0 };
   ctx.nextSquadId += 1;
+  return squadId;
 }
 
 export function setTrainingPhase(
