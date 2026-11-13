@@ -27,7 +27,7 @@
 
 - [x] 4.1 Rock kind builders and palettes, three sizes each, as a kind axis on the present stone ids; verify on the review sheet and with a unit test that cover and sight depend on size only
 - [x] 4.2 Built stone: the dry stone wall line by rock kind, the corral, steps and retaining wall; verify with a view test of the wall on a slope and a simulation test of cover along it
-- [ ] 4.3 Names in EN and PT-BR, editor list grouped by kind with thumbnails; verify with `pnpm check:locales` and an editor e2e
+- [x] 4.3 Names in EN and PT-BR, editor list grouped by kind with thumbnails; verify with `pnpm check:locales` and an editor e2e
 
 ## 5. Objects, fences and walls
 

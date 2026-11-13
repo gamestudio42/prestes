@@ -127,3 +127,5 @@ kind is chosen first and every stone is pictured in it (the lajedo slab
 comes in one rock). The line tool offers the kinds for a dry stone wall, and
 the selection panel changes a stone's, corral's or wall's kind. Names in EN
 and PT-BR.
+
+Approved by the owner, 2026-11-13.
