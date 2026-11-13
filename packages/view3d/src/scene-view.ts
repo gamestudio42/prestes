@@ -401,9 +401,15 @@ export class SceneView {
     return { count: this.effects.count, ready: this.effects.ready, tracers: this.tracers.count, markers: this.markers.count };
   }
 
-  /** The ground point the camera looks at and the metres across the view. */
-  view(): { x: number; y: number; span: number } {
-    return { x: this.rig.focusX, y: this.rig.focusY, span: this.rig.span };
+  /**
+   * The ground point the camera looks at, the metres across the view, and
+   * the screen's rightward direction on the ground (a unit vector), which
+   * the sound pans by (ambient-sound-and-voices 1.2).
+   */
+  view(): { x: number; y: number; span: number; right: Vec2 } {
+    const m = this.rig.camera.matrixWorld.elements;
+    const length = Math.hypot(m[0]!, m[2]!) || 1;
+    return { x: this.rig.focusX, y: this.rig.focusY, span: this.rig.span, right: { x: m[0]! / length, y: m[2]! / length } };
   }
 
   /** garrison-and-assault 1.4: barrels out of windows and markers over raised floors drawn now (dev checks). */

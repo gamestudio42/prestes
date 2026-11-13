@@ -31,3 +31,25 @@ One section per task, in the order the owner reviews them.
   voices (5.4).
 
 Approved by the owner after listening in the preview, 2026-11-13.
+
+## 1.2 The listening point (2026-11-13)
+
+- `apps/game/src/audio/listening.ts`: the battle is heard from the ground
+  point the camera looks at. `gainAt(distance, range, zoom)` is full at
+  the point, falls smoothly and is silent at the sound's range; zoomed all
+  the way out, a range is twice as long and a near sound 60 % thinner,
+  while the general ambience goes from 60 % (closest zoom) to full.
+  `panAt` places a source left or right by where it lies across the
+  screen, never more than 80 % into one ear.
+- The camera now gives the screen's right on the ground with its focus
+  and span (`SceneView.view().right`), so the pan follows the camera when
+  it turns (Q/E).
+- Checked: `tests/audio/listening.test.ts` (11 tests: range, the river
+  silent 200 m away, zoom thinning and reach, ambience share, pan left and
+  right, a turned camera, the 80 % limit); in the game, at three camera
+  turns, 10 m along that "right" lands 106 px right of the screen's
+  centre.
+- Not changed: the shots keep their own loudness rule (approved in 1.1),
+  and nothing is panned yet. The water, footsteps and call-outs use this
+  rule as they arrive (3.3, 4.1, 5.4). Moving the shots onto it (same
+  nearness, panned) is a question for the owner.

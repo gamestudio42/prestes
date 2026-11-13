@@ -76,6 +76,8 @@ export interface AudioListener {
   y: number;
   /** Ground metres across the view. */
   span: number;
+  /** The screen's rightward direction on the ground (ambient-sound-and-voices 1.2), for panning. */
+  right?: { x: number; y: number };
   /** The player's side: only its rifles' bolts are heard. */
   faction: string;
   /** Faction of a unit by id (the shooter's side). */
