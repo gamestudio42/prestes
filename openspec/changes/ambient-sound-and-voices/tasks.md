@@ -10,7 +10,7 @@
 
 ## 2. Settings
 
-- [ ] 2.1 Three channel volumes and the mute in the HUD overflow and the options compass, stored with migration from `prestes.audio.v1`; labels in EN and PT-BR; verify with unit tests of the migration and an e2e of "voices without ambience"
+- [x] 2.1 Three channel volumes and the mute in the HUD overflow and the options compass, stored with migration from `prestes.audio.v1`; labels in EN and PT-BR; verify with unit tests of the migration and an e2e of "voices without ambience"
 
 ## 3. Ambience and water
 

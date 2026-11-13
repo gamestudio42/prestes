@@ -119,3 +119,5 @@ Approved by the owner, 2026-11-13.
   and gramophone e2e pass.
 - Not yet: Save and Load. The game has no saved battles; that is a change
   of its own.
+
+Approved by the owner, 2026-11-13.
