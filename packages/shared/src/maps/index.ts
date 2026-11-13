@@ -68,6 +68,7 @@ export * from './camp-sides';
 export * from './document';
 export * from './trench-lines';
 export * from './water-outline';
+export * from './water-near';
 export * from './tree-scatter';
 export * from './cover-preview';
 export * from './deployment-areas';

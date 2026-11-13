@@ -177,3 +177,40 @@ Approved by the owner, 2026-11-13.
   camera from the woods to the open ground and the houses.
 
 Approved by the owner, 2026-11-13.
+
+## 3.3 Water by its kind, near the listening point (2026-11-13)
+
+- `packages/shared/src/maps/water-near.ts`: the nearest water of each kind
+  to a point, shared so the footsteps' shallow water (4.1) reads the map the
+  same way. A deep river wider than 8 m is a river, 8 m or narrower a
+  stream; a ford (river stretch or pond) is a ford; deep still water is a
+  pond. The distance is to the water's edge (0 on the water), and the point
+  is on the near bank. At most two stretches of a kind, the second only
+  when it lies 40 m from the first, so a river's next segment is the same
+  water.
+- `apps/game/src/audio/water-player.ts`: one looped bed per kind placed at
+  the nearest stretch, heard by the rule for nearness of 1.2 (river 70 m,
+  ford 45 m, stream 35 m, pond 25 m at the nearest zoom, longer and thinner
+  zoomed out) and panned by where it lies on screen; on the water itself it
+  is centred. Out of range a kind falls silent and its loop stops. Along a
+  river towards a ford both play, the deep one falling as the shallow one
+  rises: the change runs over the stretch between, with no jump.
+- Recordings, CC0 from Freesound, registered in `docs/assets.md`
+  (downloaded with the owner's leave): river, a wide rocky river flowing
+  calmly (Julian_Eftei; no Brazilian one is CC0); stream, a stream on a
+  dirt road in Minas Gerais (saralana); ford, a forest river over rocks
+  (BonnyOrbit); pond, frogs and toads at a riverside in Brazil
+  (felix.blume). 38 s loops, 1.2 MB in all.
+- Checked: `tests/audio/water.test.ts` (11 tests: kind by width, shape
+  and ford; distance and near bank; nothing out of range; one emitter for
+  one stretch, two for two rivers 80 m apart; 10 m from a wide river and
+  from a stream give two sounds; deep to ford along a river with a steady
+  change; silence and stopped loops away from water; panning; a missing
+  file). In the preview, Paiolzinho (a 4 m stream and a 3 m shallow brook
+  drawn as a ford): at (-100, -100) no water; on the stream the stream
+  plays; on the brook the ford plays, two emitters where the brook runs by
+  on both sides; no console error.
+- For the owner to hear: Paiolzinho's water is a stream and a ford, so the
+  wide river and the pond are heard only on maps that have them.
+
+Approved by the owner, 2026-11-13.

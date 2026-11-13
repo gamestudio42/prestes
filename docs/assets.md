@@ -64,7 +64,7 @@ no third-party model is used.
 | Machine-gun and automatic-rifle reports | `apps/game/src/audio/ShotAudio.ts` (`MACHINE_GUN_REPORT`, `AUTOMATIC_REPORT`) | Prestes project | CC-BY-4.0 | Original procedural reports synthesized at runtime from a fixed seed (crack, filtered noise body, low thump; 0.16 s and 0.13 s), one per round of automatic fire (machine-gun-fire-feedback) |
 | Menu gramophone art  | `apps/game/src/ui/Gramophone.tsx`                                                                          | Prestes project                                                                          | AGPL-3.0-or-later                                 | Inline pixel SVG: cabinet, horn, record and crank. The record turns only while a track plays and stops under reduced motion                                                                        |
 
-## Battle ambience (ambient-sound-and-voices 3.2)
+## Battle ambience and water (ambient-sound-and-voices 3.2, 3.3)
 
 Field recordings from Freesound under CC0 1.0 (public domain dedication; no
 attribution required, credited here all the same). The originals stay in the
@@ -96,6 +96,10 @@ levels it, loops a bed or trims a one-shot, and writes the mono MP3. Played by
 | `cattle` | `apps/game/public/audio/oneshots/cattle.mp3` | spurioustransients, Freesound [513565](https://freesound.org/people/spurioustransients/sounds/513565/) | CC0-1.0 | Cow moo #8, two moos at medium distance; excerpt whole |
 | `horse` | `apps/game/public/audio/oneshots/horse.mp3` | Kubuzz, Freesound [347036](https://freesound.org/people/Kubuzz/sounds/347036/) | CC0-1.0 | Horse's whinny; excerpt 1 to 4.6 s |
 | `rooster` | `apps/game/public/audio/oneshots/rooster.mp3` | matiasromero, Freesound [21711](https://freesound.org/people/matiasromero/sounds/21711/) | CC0-1.0 | Galo: rooster on a farm in São Thomé das Letras, Minas Gerais; excerpt whole |
+| `water-river` | `apps/game/public/audio/water/water-river.mp3` | Julian_Eftei, Freesound [831414](https://freesound.org/people/Julian_Eftei/sounds/831414/) | CC0-1.0 | Rocky River: a wide river flowing calmly towards an open lake (not Brazilian: no CC0 recording of a wide, calm Brazilian river was found); played at the nearest stretch of its kind (3.3); excerpt 10 to 50 s |
+| `water-stream` | `apps/game/public/audio/water/water-stream.mp3` | saralana, Freesound [560276](https://freesound.org/people/saralana/sounds/560276/) | CC0-1.0 | Stream in a dirt road (interior of Minas Gerais); played at the nearest stretch of its kind (3.3); excerpt 50 to 90 s |
+| `water-ford` | `apps/game/public/audio/water/water-ford.mp3` | BonnyOrbit, Freesound [442478](https://freesound.org/people/BonnyOrbit/sounds/442478/) | CC0-1.0 | Forest river flows over rocks: shallow water over stones; played at the nearest stretch of its kind (3.3); excerpt 60 to 100 s |
+| `water-pond` | `apps/game/public/audio/water/water-pond.mp3` | felix.blume, Freesound [376813](https://freesound.org/people/felix.blume/sounds/376813/) | CC0-1.0 | Frogs and toads at the edge of the river, Brazil; played at the nearest stretch of its kind (3.3); excerpt 15 to 55 s |
 
 ## Menu gramophone recordings
 

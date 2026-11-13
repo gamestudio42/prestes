@@ -10,7 +10,8 @@
  * (the steadiest stretch for a bed, one clear call for a one-shot); the
  * sources and their authors are in `docs/assets.md`. One-shots get a short
  * fade at each end, since a field recording has air under the call; beds
- * need none, because the preparation cross-fades their end into their start.
+ * and water need none, because the preparation cross-fades their end into
+ * their start.
  */
 import { spawnSync } from 'node:child_process';
 import { existsSync, mkdirSync } from 'node:fs';
@@ -22,7 +23,7 @@ const FADE = 0.12;
 
 export interface Cut {
   id: string;
-  group: 'beds' | 'oneshots';
+  group: 'beds' | 'oneshots' | 'water';
   /** The Freesound sound number (`docs/assets.md`). */
   freesound: number;
   /** Seconds into the original; `end` null keeps it to the end. */
@@ -52,6 +53,10 @@ export const CUTS: readonly Cut[] = [
   { id: 'cattle', group: 'oneshots', freesound: 513565, start: 0, end: null },
   { id: 'horse', group: 'oneshots', freesound: 347036, start: 1, end: 4.6 },
   { id: 'rooster', group: 'oneshots', freesound: 21711, start: 0, end: null },
+  { id: 'water-river', group: 'water', freesound: 831414, start: 10, end: 50 },
+  { id: 'water-stream', group: 'water', freesound: 560276, start: 50, end: 90 },
+  { id: 'water-ford', group: 'water', freesound: 442478, start: 60, end: 100 },
+  { id: 'water-pond', group: 'water', freesound: 376813, start: 15, end: 55 },
 ];
 
 function cut(ffmpeg: string, entry: Cut): void {

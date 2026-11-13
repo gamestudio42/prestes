@@ -16,11 +16,13 @@ export class WebAmbientOutput implements AmbientOutput {
     if (!context || !mixer || !buffer) return null;
     const source = context.createBufferSource();
     const gain = context.createGain();
+    const panner = context.createStereoPanner();
     source.buffer = buffer;
     source.loop = true;
     gain.gain.value = 0;
     source.connect(gain);
-    gain.connect(mixer.input('ambience'));
+    gain.connect(panner);
+    panner.connect(mixer.input('ambience'));
     // Each loop starts at its own point, so two beds never beat together.
     source.start(context.currentTime, Math.random() * buffer.duration);
     let stopped = false;
@@ -30,6 +32,12 @@ export class WebAmbientOutput implements AmbientOutput {
         gain.gain.cancelScheduledValues(now);
         gain.gain.setValueAtTime(gain.gain.value, now);
         gain.gain.linearRampToValueAtTime(value, now + seconds);
+      },
+      setPan(value, seconds) {
+        const now = context.currentTime;
+        panner.pan.cancelScheduledValues(now);
+        panner.pan.setValueAtTime(panner.pan.value, now);
+        panner.pan.linearRampToValueAtTime(value, now + seconds);
       },
       stop(seconds) {
         if (stopped) return;

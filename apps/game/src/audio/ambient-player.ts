@@ -13,6 +13,8 @@ import { ambienceShare } from './listening';
 export interface LoopHandle {
   /** Glide to `gain` over `seconds`. */
   setGain(gain: number, seconds: number): void;
+  /** Glide to `pan` (-1 left to +1 right) over `seconds`: positioned loops (water, 3.3). */
+  setPan?(pan: number, seconds: number): void;
   /** Stop `seconds` from now. */
   stop(seconds: number): void;
 }
