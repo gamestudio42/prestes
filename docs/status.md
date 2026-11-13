@@ -432,3 +432,30 @@ corrugated asbestos appears.
 - Review sheet (1.2): `docs/review/buildings/sheet-before.png`; the owner
   approved the suggested features of all seventeen buildings as listed in
   `docs/review/buildings/README.md` (2026-11-12).
+
+## revise-buildings-and-stone verify (6.3, 2026-11-13)
+
+- `pnpm verify`: check, build, bundle budget (index JS 726 KB / 760 KB),
+  determinism, tick budget and `openspec validate --strict` pass. e2e: 150
+  passed, 6 skipped, 2 failed, both looked into:
+  - `compass.spec.ts` still expected map document version 7; this change
+    moved it to 8 (variants, rock kinds). Corrected; it passes.
+  - The section probe at tactical span measured 17.3 ms. Run again against
+    this tree and a worktree of the commit before the model split (6.1),
+    alternately: 23.3 and 5.2 ms before, 5.1 and 5.5 ms after. It is the
+    probe's swing on this machine, not the change.
+- Determinism goldens unchanged by this change (seed 1922 0ae3084b; campo
+  3v3 94b68f47; paiolzinho 3v3 06d97225; mixed-roster 60476373): every
+  variant, rock kind, camp side and afloat flag is drawing only.
+- Model files (uncompressed, bytes): `buildings-rural.glb` 1,212,408,
+  `buildings-town.glb` 4,419,896, `buildings-military.glb` 679,356 (with
+  each building's strategic mesh); `stones.glb` 358,056 (granite),
+  `stones-basalt.glb` 442,976, `stones-sandstone.glb` 406,820,
+  `stones-quartzite.glb` 396,084, `stones-cobble.glb` 733,048,
+  `stones-lajedo.glb` 586,980; `props.glb` 644,020. Before the change:
+  `buildings.glb` 138,492 and `props.glb` 41,752, no stones file. Always
+  loaded: the rural and military buildings and the granite stones (2.2 MB);
+  the town's buildings and the other rock kinds load with the maps that use
+  them.
+- Frame time (RTX 3050): a town of sixty buildings on a large map 2.0 ms
+  tactical, 3.0 ms strategic.
