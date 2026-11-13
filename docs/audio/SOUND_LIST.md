@@ -5,17 +5,16 @@ footstep sound the battle will play, with a proposed source for each, for
 the owner to approve or change. The voice lines are not here: they are the
 catalog and recording script of tasks 5.1 and 5.2.
 
-Sources, as the design allows (D10):
+Sources (the owner, 2026-11-13: he records only the voices; every other
+sound is found in sound libraries on the internet):
 
-- **Owner**: recorded by the owner (WAV, any phone or recorder), prepared
-  with `pnpm prepare:audio`.
-- **Synth**: made in code or with ffmpeg from noise and tones, no
-  recording; reads well for wind and running water.
-- **CC0**: a public-domain field recording, chosen at task 3.2 from a CC0
-  library (Freesound with the CC0 filter), its author, page and licence
-  entered in `docs/assets.md` before it ships. No recording is named yet:
-  each is picked by ear when the sound is built, and the owner hears it in
-  the review.
+- **CC0**: a public-domain recording from an online library (Freesound
+  with the CC0 filter, or another CC0 or public-domain collection), its
+  author, page and licence entered in `docs/assets.md` before it ships. No
+  recording is named yet: each is picked by ear when the sound is built
+  (3.2 to 4.1), and the owner hears it in the review.
+- **Synth** only as a fallback, where no CC0 recording fits and noise reads
+  well (wind, running water).
 
 Everything must belong to the 1920s interior: no engines, no electric hum,
 no radio, no birds or animals foreign to the biome.
@@ -33,13 +32,13 @@ hours need nine loops rather than twenty: an **air bed per place**, and an
 
 | Id | What it sounds like | Source |
 | -- | -- | -- |
-| `bed-cerrado` | Open cerrado: dry wind in the grass and the twisted trees, wide and thin | Synth wind under a CC0 cerrado field recording |
+| `bed-cerrado` | Open cerrado: dry wind in the grass and the twisted trees, wide and thin | CC0 cerrado field recording (Synth wind as fallback) |
 | `bed-forest-edge` | Forest edge: leaves moving, a closer, fuller air | CC0 |
-| `bed-caatinga` | Caatinga: hot, sparse, a dry rattle of thorn scrub in the wind | Synth wind with a CC0 dry-scrub texture |
-| `bed-pasture` | Pasture: open wind, a far fence wire humming, grass | Synth wind, CC0 grass |
-| `bed-town` | Small interior town: a far murmur, a door, a hen, no traffic | CC0 village ambience with no engines, or Owner |
+| `bed-caatinga` | Caatinga: hot, sparse, a dry rattle of thorn scrub in the wind | CC0 dry-scrub recording (Synth wind as fallback) |
+| `bed-pasture` | Pasture: open wind, a far fence wire humming, grass | CC0 (Synth wind as fallback) |
+| `bed-town` | Small interior town: a far murmur, a door, a hen, no traffic | CC0 village ambience with no engines |
 | `hour-dawn` | Dawn chorus of the interior, rising | CC0 |
-| `hour-day` | Midday cicadas and insects, heat | CC0, or Synth cicada |
+| `hour-day` | Midday cicadas and insects, heat | CC0 |
 | `hour-dusk` | Dusk: fewer birds, the first crickets | CC0 |
 | `hour-night` | Night: crickets, frogs, an owl | CC0 (see the note below) |
 
@@ -59,24 +58,24 @@ for when maps can be set at night; it is not needed for the first set.
 | `bird-inhambu` | Tinamou whistle | Forest edge, cerrado; dusk | CC0 |
 | `bird-gaviao` | Hawk's cry overhead | All; day | CC0 |
 | `bird-urutau` | Potoo's lament | Forest edge; night only | CC0 |
-| `dog-far` | A dog barking far off | Town, pasture | Owner or CC0 |
-| `rooster` | A rooster | Town, pasture; dawn | Owner or CC0 |
+| `dog-far` | A dog barking far off | Town, pasture | CC0 |
+| `rooster` | A rooster | Town, pasture; dawn | CC0 |
 | `cattle` | Cattle lowing far | Pasture | CC0 |
-| `horse` | A horse snorting and stamping | All; near the camp | Owner or CC0 |
+| `horse` | A horse snorting and stamping | All; near the camp | CC0 |
 | `ox-cart` | An ox-cart's axle singing far off (carro de boi) | Pasture, town | CC0 |
 | `church-bell` | One distant church bell | Town | CC0 |
-| `gust` | A gust through the trees | All | Synth |
-| `branch` | A dry branch cracking | Forest edge, caatinga | Owner or CC0 |
+| `gust` | A gust through the trees | All | CC0 (Synth as fallback) |
+| `branch` | A dry branch cracking | Forest edge, caatinga | CC0 |
 
 ## Water (loops, positioned at the nearest stretch, design D5)
 
 | Id | What | Source |
 | -- | -- | -- |
-| `water-river` | A wide river: a deep, slow wash | Synth (low-passed noise, slow swell), CC0 if it reads thin |
-| `water-stream` | A narrow stream: brighter, faster trickle | Synth, CC0 if it reads thin |
+| `water-river` | A wide river: a deep, slow wash | CC0 (Synth as fallback) |
+| `water-stream` | A narrow stream: brighter, faster trickle | CC0 (Synth as fallback) |
 | `water-ford` | Shallow water over stones, broken and bright | CC0 |
 | `water-pond` | Still water: a faint lap, frogs | CC0 |
-| `wading` | Men wading, legs pushing through water (loop by group) | Owner (a bucket or a tank and boots) or CC0 |
+| `wading` | Men wading, legs pushing through water (loop by group) | CC0 |
 
 ## Footsteps (loops by group, design D4)
 
@@ -87,20 +86,21 @@ or the section), and a few men play the section loop thinner.
 
 | Surface | Map grounds it covers | Source |
 | -- | -- | -- |
-| `road` | `road`, `dirt-road`, packed earth, red earth | Owner (boots on a dirt track) |
-| `dirt` | `grass` worn, `sand`, field soil, cerrado and caatinga soil | Owner |
-| `grass` | `grass`, `pasture`, `tall-grass`, cerrado grass | Owner |
-| `mud` | `mud` | Owner (a garden after rain) or CC0 |
-| `stone` | `cobbles`, `stone`, `gravel`, `lajedo`, pebbles | Owner |
-| `wood` | bridges, landing stages | Owner (a wooden deck or floor) |
+| `road` | `road`, `dirt-road`, packed earth, red earth | CC0 |
+| `dirt` | `grass` worn, `sand`, field soil, cerrado and caatinga soil | CC0 |
+| `grass` | `grass`, `pasture`, `tall-grass`, cerrado grass | CC0 |
+| `mud` | `mud` | CC0 |
+| `stone` | `cobbles`, `stone`, `gravel`, `lajedo`, pebbles | CC0 |
+| `wood` | bridges, landing stages | CC0 |
 | `water` | fords, shallow water | shared with `wading` |
-| `brush` | `crop`, `scrub`, leaf litter (cane, scrub, dry leaves) | Owner (walking through tall dry plants) or CC0 |
-| `crawl-dry`, `crawl-wet` | every ground | Owner |
-| `rattle` | over a running section | Owner (a canteen, a belt and a rifle sling shaken) |
+| `brush` | `crop`, `scrub`, leaf litter (cane, scrub, dry leaves) | CC0 |
+| `crawl-dry`, `crawl-wet` | every ground | CC0 |
+| `rattle` | over a running section | CC0 |
 
-Footsteps are best recorded by the owner: they are many short loops, they
-must sound like boots of the period (leather soles, hobnails on stone),
-and a CC0 set rarely matches across surfaces.
+Footsteps are many short loops that must sound like boots of the period
+(leather soles, hobnails on stone) and match from one ground to the next:
+where possible they come from one CC0 set recorded by one author, so the
+boots are the same on every surface.
 
 ## Sizes (estimate, for the budget of 6.2)
 
