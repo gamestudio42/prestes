@@ -26,7 +26,11 @@ const OUT = 'docs/review/buildings/hand-check';
 
 async function at(page: Page, x: number, y: number): Promise<{ x: number; y: number }> {
   const point = await page.evaluate(([px, py]) => (window as unknown as Bridge).__prestesEditor!.toScreen(px!, py!), [x, y]);
-  if (!point) throw new Error(`${x}, ${y} is off screen`);
+  // A point past the viewport's edge would land on the page around it: the
+  // first hand check lost a corner of the pond that way.
+  const box = (await page.getByTestId('editor-viewport').boundingBox())!;
+  const inside = point && point.x > box.x + 4 && point.x < box.x + box.width - 4 && point.y > box.y + 4 && point.y < box.y + box.height - 4;
+  if (!inside) throw new Error(`${x}, ${y} is off screen`);
   return point;
 }
 
@@ -122,15 +126,16 @@ for (const [name, build] of [
     'town',
     async (page: Page) => {
       await newMap(page, 'teste-vila', 'Test town', 'Vila de teste');
-      // The church in its yard behind a coped wall, the iron gate in its front.
+      // The church in its yard behind a coped wall, the iron gate before its
+      // door (the church's front faces +y).
       await draw(page, [
-        ['coped-wall', [[-2.2, -4], [-12, -4], [-12, 24], [12, 24], [12, -4], [2.2, -4]]],
+        ['coped-wall', [[-2.2, 24], [-12, 24], [-12, -4], [12, -4], [12, 24], [2.2, 24]]],
         ['iron-railing', [[-14, -30], [14, -30]]],
         ['adobe-wall', [[26, 4], [26, 26]]],
       ]);
       await place(page, [
         ['church', 0, 10],
-        ['iron-gate', 0, -4],
+        ['iron-gate', 0, 24],
         ['sobrado', -24, -12, 'blue'],
         ['casa-terrea', -36, 16, 'whitewash'],
         ['casa-terrea', -26, 16, 'ochre'],
@@ -154,12 +159,13 @@ for (const [name, build] of [
     async (page: Page) => {
       await newMap(page, 'teste-acampamento', 'Test river camp', 'Acampamento de teste');
       // A wide bend of the river on the east side.
+      await page.evaluate(() => (window as unknown as Bridge).__prestesEditor!.look(50, 0, 130));
+      await page.waitForTimeout(1500);
       await page.locator('[data-tool="pond"]').click();
-      for (const [x, y] of [[30, -30], [70, -30], [70, 30], [30, 30]] as const) {
-        await click(page, x, y);
-        await page.waitForTimeout(400);
-      }
+      for (const [x, y] of [[30, -30], [70, -30], [70, 30], [30, 30]] as const) await click(page, x, y);
       await page.keyboard.press('Enter');
+      await page.evaluate(() => (window as unknown as Bridge).__prestesEditor!.look(0, 0, 130));
+      await page.waitForTimeout(1500);
       await draw(page, [
         ['rail-fence', [[-40, -26], [-1.9, -26]]],
         ['rail-fence', [[1.9, -26], [22, -26]]],

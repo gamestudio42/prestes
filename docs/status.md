@@ -465,8 +465,11 @@ corrugated asbestos appears.
   `docs/review/buildings/sheet-hand-check.png` shows both in the tactical
   and strategic bands. Both opened in the playtest, went through deployment
   and ran 8 s of battle with no console error. The owner approved them as
-  they are. Open, noted for later: the river camp's pond came out with three
-  corners instead of four (the test's clicks or the pond tool, not looked
-  into); the iron gate barely shows behind the church in that view; at the
-  strategic band the church's roof shows a dark cross where the tower is,
-  worth a look at its far mesh.
+  they are. Three points noted then, looked into on 2026-11-13: the pond's
+  missing corner was the test's own click, off the viewport's edge (the
+  pond tool is right; the script now looks at the pond first and refuses an
+  off-screen point); the iron gate was behind the church, whose front faces
+  +y (the script moved the gap and the gate before the door); the dark cross
+  at the strategic band is the tower's four-sided pyramid cap, the same in
+  the near and the far mesh, not a fault of the split. Shots re-taken. Still
+  open: the open iron gate is a few thin dark bars at the tactical band.
