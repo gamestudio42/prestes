@@ -3,6 +3,7 @@ import type { TerrainFeature, TerrainSurface } from '../terrain';
 import type { Building } from '../world';
 import type { Roster } from '../sections';
 import type { TrenchLineDef } from './trench-lines';
+import type { RockKind } from './rock-kinds';
 
 /** A battle map id: an authored map document's (author-game-maps; the hand-written maps are gone). */
 export type BattleMapId = string;
@@ -76,6 +77,8 @@ export interface PropPlacement {
   y: number;
   rotation?: number;
   scale?: number;
+  /** View (revise-buildings-and-stone 4.1): a stone's rock kind other than granite; the battle never reads it. */
+  kind?: RockKind;
 }
 
 /** A side's three section start centres and the way it faces. */

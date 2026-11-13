@@ -53,8 +53,8 @@ describe('battle map walls', () => {
 // structures layer; no coded box is drawn for any of them.
 describe('battle map buildings', () => {
   it('the street buildings are placed as their models, in their looks, not drawn as boxes', () => {
-    const map = street();
-    map.buildings[1] = { ...map.buildings[1]!, variant: 'adobe' };
+    const base = street();
+    const map = { ...base, buildings: base.buildings.map((building, index) => (index === 1 ? { ...building, variant: 'adobe' as const } : building)) };
     const layer = new BattleMapLayer(map);
     expect(layer.group.getObjectByName('battle-map-buildings')).toBeUndefined();
     // An asset with no geometry reports every placed model as missing.
@@ -63,5 +63,22 @@ describe('battle map buildings', () => {
     });
     expect(placed).toEqual(expect.arrayContaining(map.buildings.map(buildingModelName)));
     expect(placed).toContain(`${map.buildings[1]!.model}@adobe`);
+  });
+
+  // revise-buildings-and-stone 4.1: a stone is its rock kind's model.
+  it('stones are placed as their rock kind models', () => {
+    const base = street();
+    const map = {
+      ...base,
+      props: [
+        { model: 'boulder', x: 0, y: 40 },
+        { model: 'outcrop', x: 10, y: 40, kind: 'basalt' as const },
+      ],
+    };
+    const layer = new BattleMapLayer(map);
+    const placed = (layer as unknown as { placements: { missing: (asset: { geometry: () => undefined }) => string[] } }).placements.missing({
+      geometry: () => undefined,
+    });
+    expect(placed).toEqual(expect.arrayContaining(['boulder', 'outcrop@basalt']));
   });
 });

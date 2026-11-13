@@ -1,4 +1,4 @@
-import type { BattleMap, Building } from '@prestes/shared';
+import type { BattleMap, Building, PropPlacement } from '@prestes/shared';
 import type { ModelPlacements } from './environment-models';
 
 /**
@@ -15,6 +15,14 @@ export function buildingModelName(building: Pick<Building, 'model' | 'variant'>)
 }
 
 /** Adds every building of the map to the model placements, on the ground at its place. */
+/**
+ * revise-buildings-and-stone 4.1: a stone's model, by its rock kind; granite
+ * (no kind) is the bare id, the others `<id>@<kind>`. Any other prop is its id.
+ */
+export function stoneModelName(prop: Pick<PropPlacement, 'model' | 'kind'>): string {
+  return prop.kind ? `${prop.model}@${prop.kind}` : prop.model;
+}
+
 export function placeBuildings(map: Pick<BattleMap, 'buildings'>, placements: ModelPlacements): void {
   for (const building of map.buildings) placements.add(buildingModelName(building), building.x, building.y, building.rotation);
 }

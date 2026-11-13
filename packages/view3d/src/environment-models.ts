@@ -33,7 +33,7 @@ export interface EnvironmentAsset {
  * last, so their broad-leaved tree and araucaria replace the older ones; they
  * are coloured per vertex, not by the atlas.
  */
-const FILES = ['buildings', 'fortifications', 'vegetation', 'props', 'trees'];
+const FILES = ['buildings', 'fortifications', 'vegetation', 'props', 'trees', 'stones'];
 const VERTEX_COLOURED = new Set(['trees']);
 
 /** Loads a model file's scene; the browser's is GLTFLoader, a test's records the request. */

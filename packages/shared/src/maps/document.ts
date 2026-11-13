@@ -11,6 +11,7 @@ import {
   type LineKind,
 } from './catalog-objects';
 import { isBuildingVariant } from './building-variants';
+import { isRockKind } from './rock-kinds';
 import { distanceToPolyline, pointInPolygon, pointsBox, polygonBox, smooth, type Box } from './geometry';
 import { GROUND_MATERIAL_IDS, groundMaterial, groundMaterialIndex, type GroundMaterialId } from './ground-materials';
 import { VEGETATION } from './concealment';
@@ -131,7 +132,10 @@ export interface DocObject {
   /** Radians, the simulation's convention (the view turns by -rotation). */
   rotation: number;
   scale?: number;
-  /** revise-buildings-and-stone 3.5: a building's look (`BUILDING_VARIANTS`); unset is the model's own. */
+  /**
+   * revise-buildings-and-stone: a building's look (`BUILDING_VARIANTS`, 3.5)
+   * or a stone's rock kind (`ROCK_KINDS`, 4.1); unset is the model's own.
+   */
   variant?: string;
 }
 
@@ -982,7 +986,10 @@ export function compileMapDocument(source: EditableMap | MapDocument): BattleMap
         stampVegetation(index, SCRUB);
       });
     }
-    props.push({ model: entry.model, x: object.x, y: object.y, rotation: object.rotation, scale });
+    const prop: PropPlacement = { model: entry.model, x: object.x, y: object.y, rotation: object.rotation, scale };
+    // 4.1: a stone's rock kind is drawing only, like a building's look.
+    if (isRockKind(object.type, object.variant)) prop.kind = object.variant;
+    props.push(prop);
   }
 
   // Walls and fences.

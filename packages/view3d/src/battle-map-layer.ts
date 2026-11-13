@@ -18,12 +18,13 @@ import {
   type Polygon,
   type Strip,
   type Vec2,
+  KINDED_STONES,
 } from '@prestes/shared';
 import { CanopyFade } from './canopy';
 import { ModelPlacements, warnMissing, type EnvironmentAsset } from './environment-models';
 import { toon } from './materials';
 import { PALETTE } from './palette';
-import { placeBuildings } from './structures-layer';
+import { placeBuildings, stoneModelName } from './structures-layer';
 import { clumpGeometry, PLANT_LOOK, PLANT_SWAY, plantGeometry, plantSpots, STRATEGIC_CLUMP_CAP, swayingMaterial } from './plant-meshes';
 
 /** Past this span (m) the plants give way to their clumps. */
@@ -852,40 +853,6 @@ function placeholderProp(name: string): THREE.Group | null {
     case 'haystack':
       return null;
     // add-map-editor: the catalog's stones, plants, posts and props.
-    case 'rock-small':
-    case 'boulder':
-    case 'matacao':
-    case 'stone-pile': {
-      const entry = catalogObject(name)!;
-      const stones = name === 'stone-pile' ? 5 : 1;
-      for (let index = 0; index < stones; index += 1) {
-        const spread = stones > 1 ? 0.55 : 0;
-        const angle = (index / stones) * Math.PI * 2;
-        const size = stones > 1 ? 0.55 : 1;
-        placed(
-          group,
-          unitRock,
-          index % 2 === 0 ? PALETTE.rock : PALETTE.stoneDark,
-          Math.cos(angle) * entry.halfWidth * spread,
-          (entry.height * size) / 2,
-          Math.sin(angle) * entry.halfDepth * spread,
-          [entry.halfWidth * size, (entry.height * size) / 2, entry.halfDepth * size],
-          angle,
-        );
-      }
-      return group;
-    }
-    case 'outcrop': {
-      const entry = catalogObject(name)!;
-      for (const [dx, sx, sy] of [
-        [-0.55, 0.5, 1],
-        [0, 0.6, 0.8],
-        [0.55, 0.45, 0.65],
-      ] as const) {
-        placed(group, unitRock, PALETTE.stone, dx * entry.halfWidth, (entry.height * sy) / 2, 0, [entry.halfWidth * sx, (entry.height * sy) / 2, entry.halfDepth], dx);
-      }
-      return group;
-    }
     case 'lajedo-slab': {
       const entry = catalogObject(name)!;
       placed(group, unitBox, PALETTE.stone, 0, entry.height / 2, 0, [entry.halfWidth * 2, entry.height, entry.halfDepth * 2]);
@@ -1112,7 +1079,8 @@ export function propPreview(model: string, asset: EnvironmentAsset | null): THRE
 const MODELLED_PROPS = new Set(['tree-broad', 'tree-pine', 'tree-araucaria', 'buriti', 'cerrado-tree', 'bush', 'cart', 'well', 'haystack', 'barrel', 'crate']);
 
 /** A modelled prop, or a tree or plant of a biome file (biome-trees-and-plants 4.1). */
-const isModelled = (model: string): boolean => MODELLED_PROPS.has(model) || !!catalogObject(model)?.modelFile;
+const isModelled = (model: string): boolean =>
+  MODELLED_PROPS.has(model) || KINDED_STONES.includes(model) || !!catalogObject(model)?.modelFile;
 
 export class BattleMapLayer {
   readonly group = new THREE.Group();
@@ -1143,7 +1111,7 @@ export class BattleMapLayer {
     placeBuildings(map, this.placements);
     for (const prop of map.props) {
       if (isModelled(prop.model)) {
-        this.placements.add(prop.model, prop.x, prop.y, prop.rotation ?? 0, prop.scale ?? 1);
+        this.placements.add(stoneModelName(prop), prop.x, prop.y, prop.rotation ?? 0, prop.scale ?? 1);
         continue;
       }
       const piece = placeholderProp(prop.model);

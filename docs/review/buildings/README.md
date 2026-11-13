@@ -91,3 +91,13 @@ whitewash, ochre, blue, rose, bare adobe (old tiles) and zinc roof. A look
 swaps atlas swatches on the model in the view; the battle never reads it.
 
 Approved by the owner, 2026-11-12.
+
+## Rock kinds (4.1)
+
+`sheet-stones.png` shows each stone (small rock, boulder, matacao, pile,
+outcrop) in each rock kind, rendered from `stones.glb` by
+`art-src/blender/review_stones.py`: granite (the old look), basalt,
+sandstone, quartzite with canga, river cobble and lajedo. The angular kinds
+are faceted, not boxes. A kind is the map document's `variant` on a stone and
+lands on `prop.kind`; cover and sight stay the size's
+(`packages/shared/test/rock-kinds.test.ts`). The editor picker comes in 4.3.

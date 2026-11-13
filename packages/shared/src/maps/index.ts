@@ -63,6 +63,7 @@ export * from './raster';
 export * from './ground-materials';
 export * from './catalog-objects';
 export * from './building-variants';
+export * from './rock-kinds';
 export * from './document';
 export * from './trench-lines';
 export * from './water-outline';

@@ -434,6 +434,35 @@ def environment_atlas() -> Atlas:
             return (136, 78, 54)
         return (120, 68, 48)
 
+    # revise-buildings-and-stone 4.1: the rock kinds.
+    def granite(i, j, rng):
+        r = rng.random()
+        return (92, 92, 90) if r < 0.18 else (176, 160, 150) if r < 0.3 else (140, 138, 132)
+
+    def basalt(i, j, rng):
+        if j % 5 == 4 and rng.random() < 0.7:
+            return (40, 42, 44)
+        return (70, 72, 74) if rng.random() > 0.15 else (56, 58, 60)
+
+    def sandstone(i, j, rng):
+        band = (j // 3) % 3
+        base = ((178, 120, 78), (196, 142, 96), (160, 104, 66))[band]
+        return base if rng.random() > 0.1 else (140, 92, 60)
+
+    def quartzite(i, j, rng):
+        r = rng.random()
+        if (i * 5 + j * 3) % 13 < 2:
+            return (150, 84, 50)
+        return (214, 206, 190) if r > 0.2 else (186, 178, 164)
+
+    def canga(i, j, rng):
+        r = rng.random()
+        return (96, 50, 32) if r < 0.25 else (150, 82, 46) if r < 0.75 else (122, 66, 40)
+
+    def cobble(i, j, rng):
+        r = rng.random()
+        return (130, 118, 100) if r < 0.4 else (108, 100, 88) if r < 0.8 else (152, 140, 120)
+
     swatches = [
         ("plaster", plaster(PAPER, LIGHT)),
         ("plaster.shade", plaster(LIGHT, SAND)),
@@ -470,6 +499,12 @@ def environment_atlas() -> Atlas:
         ("shutter", shutter),
         ("iron", noise((46, 44, 40), (70, 68, 62), 0.15)),
         ("tile.old", tile_old),
+        ("granite", granite),
+        ("basalt", basalt),
+        ("sandstone", sandstone),
+        ("quartzite", quartzite),
+        ("canga", canga),
+        ("cobble", cobble),
     ]
     for index, (name, paint) in enumerate(swatches):
         x, y = cell(index)

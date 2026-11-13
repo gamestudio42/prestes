@@ -14,7 +14,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-TARGETS = ["soldier", "buildings", "fortifications", "vegetation", "props"]
+TARGETS = ["soldier", "buildings", "fortifications", "vegetation", "props", "stones"]
 
 args = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
 selected = args or TARGETS
