@@ -213,8 +213,8 @@ Approved by the owner, 2026-11-13.
 
 The game's models now come split by group (D8, design risk "buildings.glb
 grows"): `tools/prepare-models.ts` writes the buildings as
-`buildings-rural.glb` (1.2 MB), `buildings-town.glb` (4.6 MB) and
-`buildings-military.glb` (0.5 MB), and the stones as `stones.glb` (granite,
+`buildings-rural.glb` (1.2 MB), `buildings-town.glb` (4.2 MB) and
+`buildings-military.glb` (0.6 MB, with the depot since 6.2), and the stones as `stones.glb` (granite,
 0.4 MB) and one `stones-<kind>.glb` per other rock kind (0.4 to 0.7 MB).
 The countryside's and the soldiers' buildings and the granite stones are
 always loaded (the sandbox and the training ground stand on them): 2.1 MB
@@ -235,3 +235,17 @@ tactical span and 3.0 ms at strategic span against the 16.7 ms budget
 (RTX 3050 laptop).
 
 Approved by the owner, 2026-11-13.
+
+## Asset register (6.2)
+
+`docs/assets.md` has a section for this change: the rural, town and
+military buildings, the stones and built stone, the waterside, farm, town
+and camp objects, the gates, the older catalog objects, the walls and
+fences, and the model split, each row with its paths, its source (generic
+period types, or Macaulay's page numbers where the catalog row cites them)
+and its licence. The older environment and battle map rows now point to it.
+`tests/tools/structures-register.test.ts` is the register check: every
+catalog object but the trees (they have theirs), every line kind and every
+model file the game ships must be on a row with an author and a licence.
+Writing it showed the depot in the town's file where 3.4 has it a military
+building; it moved to `buildings-military.glb`.

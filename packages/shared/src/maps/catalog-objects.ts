@@ -400,10 +400,10 @@ export const BUILDING_FILES: Readonly<Record<string, BuildingFile>> = {
   ...Object.fromEntries(
     [
       'terraced-house', 'terraced-house-wide', 'sobrado', 'factory', 'church', 'warehouse', 'casa-terrea', 'venda', 'armazem', 'coreto',
-      'railway-station', 'telegraph-office', 'jail', 'town-hall', 'school', 'market-shed', 'water-tank', 'depot',
+      'railway-station', 'telegraph-office', 'jail', 'town-hall', 'school', 'market-shed', 'water-tank',
     ].map((model) => [model, 'buildings-town']),
   ),
-  ...Object.fromEntries(['barracks', 'barracks-block', 'guardhouse', 'aid-tent'].map((model) => [model, 'buildings-military'])),
+  ...Object.fromEntries(['barracks', 'barracks-block', 'guardhouse', 'depot', 'aid-tent'].map((model) => [model, 'buildings-military'])),
 };
 
 /**
