@@ -36,7 +36,8 @@ export interface EnvironmentAsset {
  * last, so their broad-leaved tree and araucaria replace the older ones; they
  * are coloured per vertex, not by the atlas.
  */
-const FILES = ['buildings', 'fortifications', 'vegetation', 'props', 'trees', 'stones'];
+// revise-buildings-and-stone 6.1: the town's buildings and the other rock kinds' stones load with the maps that use them.
+const FILES = ['buildings-rural', 'buildings-military', 'fortifications', 'vegetation', 'props', 'trees', 'stones'];
 const VERTEX_COLOURED = new Set(['trees']);
 
 /** Loads a model file's scene; the browser's is GLTFLoader, a test's records the request. */
@@ -346,11 +347,14 @@ export class ModelPlacements {
 
   /**
    * biome-trees-and-plants 4.1: the trees' strategic stand-ins, one instanced
-   * mesh per species at the same placements; other models are left out.
+   * mesh per species at the same placements; revise-buildings-and-stone 6.1
+   * (D8): a building's its strategic-band mesh, `<model>.far`, without its
+   * small features. Other models are left out.
    */
   buildImpostors(asset: EnvironmentAsset): THREE.Group {
     return this.instanced(asset, (name) => {
-      const model = asset.isTree(name) ? asset.geometry(name) : undefined;
+      if (!asset.isTree(name)) return asset.geometry(farName(name));
+      const model = asset.geometry(name);
       if (!model) return undefined;
       let impostor = IMPOSTORS.get(model);
       if (!impostor) {
@@ -377,6 +381,12 @@ export class ModelPlacements {
     }
     return group;
   }
+}
+
+/** A model's strategic-band mesh: `casa-terrea@blue` is `casa-terrea.far@blue`. */
+export function farName(name: string): string {
+  const [model, variant] = name.split('@') as [string, string | undefined];
+  return variant ? `${model}.far@${variant}` : `${model}.far`;
 }
 
 /** Logs the placed names the loaded models do not provide (they are not drawn). */

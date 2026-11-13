@@ -1291,9 +1291,14 @@ export class BattleMapLayer {
     this.showImpostors();
   }
 
-  /** The biome tree files this map's props need (biome-trees-and-plants 4.1). */
+  /**
+   * The model files this map needs beyond the always-loaded ones: its biome
+   * trees (biome-trees-and-plants 4.1), its town's buildings and its rock
+   * kinds' stones and walls (revise-buildings-and-stone 6.1).
+   */
   modelFiles(): string[] {
-    return modelFilesOf(this.map.props.map((prop) => prop.model));
+    const walls = (this.map.lines ?? []).filter((line) => line.kind === 'stone-wall').map((line) => (line.rock ? `dry-wall@${line.rock}` : 'dry-wall'));
+    return modelFilesOf([...this.map.props.map(propModelName), ...this.map.buildings.map((building) => building.model), ...walls]);
   }
 
   useModels(asset: EnvironmentAsset): void {
@@ -1306,7 +1311,7 @@ export class BattleMapLayer {
     this.showImpostors();
   }
 
-  /** At strategic span the trees give way to their stand-ins; other models stay. */
+  /** At strategic span the trees and buildings give way to their stand-ins; other models stay. */
   private showImpostors(): void {
     if (!this.trees || !this.impostors) return;
     const strategic = this.strategicPlants;

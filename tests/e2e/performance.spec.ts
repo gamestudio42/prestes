@@ -265,3 +265,66 @@ test('a large map a third under the Atlantic forest mix stays within the frame b
     expect(result.mean).toBeLessThan(BUDGET_MS);
   }
 });
+
+// revise-buildings-and-stone 6.1 (spec "Structures stay inside the frame
+// budget"): a large map with a town of sixty buildings of mixed types, both
+// camera bands; at strategic span each building is its mesh without small
+// features (D8), and the town's file is loaded because the map has a town.
+const TOWN = [
+  'casa-terrea', 'sobrado', 'venda', 'armazem', 'church', 'school', 'town-hall', 'jail', 'terraced-house', 'terraced-house-wide',
+  'market-shed', 'coreto', 'telegraph-office', 'railway-station', 'warehouse', 'factory', 'depot', 'water-tank',
+  'farmhouse', 'barn', 'chapel', 'casa-sede', 'engenho', 'rancho', 'barracks-block', 'guardhouse',
+];
+
+test('a large map with a town of sixty buildings stays within the frame budget', async ({ page }) => {
+  test.setTimeout(300_000);
+  await page.goto('/editor.html');
+  const gpu = await renderer(page);
+  test.skip(/swiftshader|llvmpipe|software|none/i.test(gpu), `no GPU for the probe (${gpu})`);
+  await page.addInitScript(() => localStorage.setItem('prestes.audio.v1', JSON.stringify({ muted: true })));
+  await expect(page.getByTestId('editor-viewport')).toHaveAttribute('data-ready', 'true');
+  const editor = (fn: string, ...args: number[]) =>
+    page.evaluate(([name, values]) => {
+      const bridge = (window as unknown as EditorBridge).__prestesEditor! as unknown as Record<string, (...a: number[]) => unknown>;
+      return bridge[name as string]!(...(values as number[]));
+    }, [fn, args] as const);
+  await page.getByTestId('editor-new').click();
+  await page.getByTestId('map-id').fill('vila-grande');
+  await page.getByTestId('map-size').selectOption('large');
+  await page.getByTestId('map-name-en').fill('Large town');
+  await page.getByTestId('map-name-pt').fill('Vila grande');
+  await page.getByTestId('map-submit').click();
+  await page.waitForTimeout(1000);
+  await editor('topDown');
+  await editor('look', 0, 0, 340);
+  let last = '';
+  await expect
+    .poll(async () => {
+      const now = JSON.stringify(await editor('toScreen', 0, 0));
+      const still = now === last;
+      last = now;
+      return still;
+    }, { intervals: [500] })
+    .toBe(true);
+  await page.locator('[data-tool="place"]').click();
+  const buildings = page.locator('.editor-catalog details[data-group="building"]');
+  if (!(await buildings.evaluate((element) => (element as HTMLDetailsElement).open))) await buildings.locator('summary').click();
+  // Ten blocks across, six down, 28 m apart.
+  for (let index = 0; index < 60; index += 1) {
+    await buildings.locator(`[data-object="${TOWN[index % TOWN.length]}"]`).click();
+    const at = (await editor('toScreen', -126 + (index % 10) * 28, -70 + Math.floor(index / 10) * 28)) as { x: number; y: number };
+    await page.mouse.click(at.x, at.y);
+  }
+  const placed = await page.evaluate(() => (window as unknown as EditorBridge).__prestesEditor!.state().objects.length);
+  expect(placed).toBe(60);
+  for (const [band, span] of [['tactical', 60], ['strategic', 400]] as const) {
+    await editor('look', 0, 0, span);
+    await page.waitForTimeout(3000);
+    const result = await sampleFrames(page);
+    test.info().annotations.push({
+      type: 'frame-time',
+      description: `town of ${placed} buildings, ${band}, ${gpu}: mean ${result.mean.toFixed(2)} ms, p95 ${result.p95.toFixed(2)} ms, ${result.frames} frames`,
+    });
+    expect(result.mean).toBeLessThan(BUDGET_MS);
+  }
+});

@@ -1,4 +1,6 @@
 import { NodeIO, type Document } from '@gltf-transform/core';
+import { existsSync, readdirSync } from 'node:fs';
+import { dirname, join } from 'node:path';
 import type { BuildingWall } from '../packages/shared/src';
 import type { ExportedBuilding } from './export-openings';
 
@@ -116,7 +118,12 @@ export function readBuildingMarks(document: Document): Map<string, BuildingModel
 
 /** Checks every marked building of a model file against the exported battle data. */
 export async function buildingFileProblems(file: string, buildings: readonly ExportedBuilding[]): Promise<string[]> {
-  const marks = readBuildingMarks(await new NodeIO().read(file));
+  // revise-buildings-and-stone 6.1: the game's buildings come split by group
+  // (buildings-rural.glb and so on) beside where the one file stood.
+  const files = existsSync(file) ? [file] : readdirSync(dirname(file)).filter((name) => /^buildings-[a-z]+\.glb$/.test(name)).map((name) => join(dirname(file), name));
+  if (files.length === 0) return [`${file}: no building model files`];
+  const marks = new Map<string, BuildingModelMarks>();
+  for (const part of files) for (const [model, entry] of readBuildingMarks(await new NodeIO().read(part))) marks.set(model, entry);
   const problems: string[] = [];
   for (const [model, entry] of marks) {
     const building = buildings.find((candidate) => candidate.model === model);

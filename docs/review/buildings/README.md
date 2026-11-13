@@ -208,3 +208,28 @@ rail fence; `tests/hud/editor-names.test.ts` checks every object and line
 kind is named in English and Portuguese, no two alike.
 
 Approved by the owner, 2026-11-13.
+
+## Model files and the strategic band (6.1)
+
+The game's models now come split by group (D8, design risk "buildings.glb
+grows"): `tools/prepare-models.ts` writes the buildings as
+`buildings-rural.glb` (1.2 MB), `buildings-town.glb` (4.6 MB) and
+`buildings-military.glb` (0.5 MB), and the stones as `stones.glb` (granite,
+0.4 MB) and one `stones-<kind>.glb` per other rock kind (0.4 to 0.7 MB).
+The countryside's and the soldiers' buildings and the granite stones are
+always loaded (the sandbox and the training ground stand on them): 2.1 MB
+where the one buildings file and the one stones file were 8.8 MB. A map
+loads the town's buildings and its other rock kinds only when it has them
+(`packages/view3d/test/model-files.test.ts`).
+
+Each building also has a strategic-band mesh, `<model>.far`, made when the
+models are prepared (`tools/model-split.ts`): the same model without its
+small features, the frames, sills, bars and trims too thin or short to see
+from the strategic band (82,728 triangles down to 65,892 over the 32
+buildings; `tests/tools/model-split.test.ts`). The map draws it beyond the
+span where the trees give way to their stand-ins. `sheet-town-bands.png`
+(taken by `tests/e2e/review-town-bands.spec.ts`) shows a town close, left,
+and from the strategic band, right. The new performance probe places a
+town of sixty buildings of mixed types on a large map: 2.0 ms a frame at
+tactical span and 3.0 ms at strategic span against the 16.7 ms budget
+(RTX 3050 laptop).

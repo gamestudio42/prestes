@@ -1,8 +1,9 @@
-import { NodeIO } from '@gltf-transform/core';
+import { NodeIO, type Document } from '@gltf-transform/core';
 import { dedup, prune } from '@gltf-transform/functions';
-import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { basename, join } from 'node:path';
-import { CATALOG_OBJECTS } from '../packages/shared/src';
+import { BUILDING_FILES, CATALOG_OBJECTS, ROCK_KINDS } from '../packages/shared/src';
+import { addFarMeshes, ownerOf, subset, variantOf } from './model-split';
 import { isTreeModel, meshTriangles, treeBudgetProblems } from './tree-budgets';
 
 const SOURCES = ['art-src/characters', 'art-src/environment'];
@@ -36,6 +37,30 @@ for (const input of files) {
       process.exit(1);
     }
   }
+  // revise-buildings-and-stone 6.1: the buildings by group, each with its
+  // strategic-band meshes (D8); the stones by rock kind. A map loads the
+  // files it uses (packages/shared modelFilesOf).
+  if (file === 'buildings.glb') {
+    const counts = addFarMeshes(document, Object.keys(BUILDING_FILES));
+    const [before, after] = [...counts.values()].reduce(([a, b], [c, d]) => [a + c, b + d], [0, 0]);
+    console.log(`buildings: strategic meshes for ${counts.size} models, ${before} -> ${after} triangles`);
+    rmSync(output, { force: true });
+    for (const group of new Set(Object.values(BUILDING_FILES))) {
+      await writeSplit(join(OUTPUT, `${group}.glb`), await subset(document, (name) => BUILDING_FILES[ownerOf(name)] === group, true));
+    }
+    continue;
+  }
+  if (file === 'stones.glb') {
+    for (const kind of ROCK_KINDS) {
+      const target = kind === 'granite' ? 'stones' : `stones-${kind}`;
+      await writeSplit(join(OUTPUT, `${target}.glb`), await subset(document, (name) => (variantOf(name) ?? 'granite') === kind, false));
+    }
+    continue;
+  }
+  await writeSplit(output, document);
+}
+
+async function writeSplit(output: string, document: Document): Promise<void> {
   await io.write(output, document);
   console.log(`${output}: ${document.getRoot().listMeshes().length} meshes`);
 }

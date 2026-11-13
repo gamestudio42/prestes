@@ -1,6 +1,7 @@
 import type { CoverKind } from '../protocol';
 import type { BuildingModel } from '../world';
 import type { GroundMaterialId } from './ground-materials';
+import { ROCK_KINDS } from './rock-kinds';
 
 /**
  * Everything the map editor places (add-map-editor). Every entry declares
@@ -385,14 +386,41 @@ export function speciesForms(id: string): Partial<Record<TreeForm, string>> {
 export const isListed = (entry: CatalogObject): boolean => entry.listed !== false;
 
 /**
- * biome-trees-and-plants 4.1: the biome model files these placed models
- * need, so a caatinga map never fetches the Atlantic forest's trees.
+ * revise-buildings-and-stone 6.1 (D8): the buildings come in three files, by
+ * where they stand: the countryside's, the town's and the soldiers'. The
+ * countryside's and the soldiers' are always loaded (the sandbox and the
+ * training ground stand on them); the town's only for a map that has one.
+ */
+export type BuildingFile = 'buildings-rural' | 'buildings-town' | 'buildings-military';
+
+export const BUILDING_FILES: Readonly<Record<string, BuildingFile>> = {
+  ...Object.fromEntries(
+    ['farmhouse', 'barn', 'chapel', 'casa-sede', 'colonist-house', 'engenho', 'ferry-house', 'wattle-house', 'rancho', 'flour-house'].map((model) => [model, 'buildings-rural']),
+  ),
+  ...Object.fromEntries(
+    [
+      'terraced-house', 'terraced-house-wide', 'sobrado', 'factory', 'church', 'warehouse', 'casa-terrea', 'venda', 'armazem', 'coreto',
+      'railway-station', 'telegraph-office', 'jail', 'town-hall', 'school', 'market-shed', 'water-tank', 'depot',
+    ].map((model) => [model, 'buildings-town']),
+  ),
+  ...Object.fromEntries(['barracks', 'barracks-block', 'guardhouse', 'aid-tent'].map((model) => [model, 'buildings-military'])),
+};
+
+/**
+ * biome-trees-and-plants 4.1: the model files these placed models need, so
+ * a caatinga map never fetches the Atlantic forest's trees;
+ * revise-buildings-and-stone 6.1: nor a farm map the town's buildings, nor a
+ * granite map the other rock kinds' stones (`<model>@<kind>`, in
+ * `stones-<kind>`). A name may carry a variant (`<model>@<variant>`) or be a
+ * line kind's thumbnail (`line:<kind>[@<kind>]`).
  */
 export function modelFilesOf(models: Iterable<string>): string[] {
   const files = new Set<string>();
   for (const model of models) {
-    const file = BY_MODEL.get(model)?.modelFile;
+    const [base, variant] = model.split('@') as [string, string | undefined];
+    const file = BUILDING_FILES[base] ?? BY_MODEL.get(base)?.modelFile;
     if (file) files.add(file);
+    if (variant && variant !== 'granite' && (ROCK_KINDS as readonly string[]).includes(variant)) files.add(`stones-${variant}`);
   }
   return [...files].sort();
 }
