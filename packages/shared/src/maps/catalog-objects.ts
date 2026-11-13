@@ -17,7 +17,7 @@ import type { GroundMaterialId } from './ground-materials';
  * A tree is a trunk (`solid` or `thin`) and may add `foliage` with
  * `concealRadius`.
  */
-export type ObjectGroup = 'building' | 'stone' | 'water' | 'tree' | 'post' | 'cover' | 'prop' | 'decal';
+export type ObjectGroup = 'building' | 'stone' | 'water' | 'camp' | 'tree' | 'post' | 'cover' | 'prop' | 'decal';
 
 /** revise-buildings-and-stone D9: the sub-headings of the props in the editor's list. */
 export type ObjectSubgroup = 'farm' | 'town';
@@ -94,6 +94,8 @@ const item = (
 const SOLID_STONE: Footprint = { kind: 'solid', cover: 'stone' };
 const water = (id: string, halfWidth: number, halfDepth: number, height: number, footprint: Footprint): CatalogObject =>
   item(id, 'water', halfWidth, halfDepth, height, footprint);
+const camp = (id: string, halfWidth: number, halfDepth: number, height: number, footprint: Footprint, model = id): CatalogObject =>
+  item(id, 'camp', halfWidth, halfDepth, height, footprint, { model });
 const farm = (id: string, halfWidth: number, halfDepth: number, height: number, footprint: Footprint): CatalogObject =>
   item(id, 'prop', halfWidth, halfDepth, height, footprint, { subgroup: 'farm' });
 const town = (id: string, halfWidth: number, halfDepth: number, height: number, footprint: Footprint): CatalogObject =>
@@ -325,6 +327,24 @@ export const CATALOG_OBJECTS: readonly CatalogObject[] = [
   town('fuel-tins', 0.6, 0.4, 0.8, WOOD),
   town('street-sign', 0.1, 0.1, 2.2, THIN),
   town('kiosk', 1.3, 1.3, 3.2, WOOD),
+  // revise-buildings-and-stone 5.2 (D11): the Column's camp and train
+  // (Macaulay page numbers; "generic" a generic period type). Canvas gives no
+  // cover; boxes, barrels, carts and saddles cover like a barrel; the gun's
+  // steel like stone. The side is drawing only (camp-sides.ts).
+  camp('ridge-tent', 1.5, 2, 2, THIN), // officers' tents with a cot and a hammock, pp. 142-143
+  camp('bell-tent', 2, 2, 3, THIN), // generic period type
+  camp('camp-aid-tent', 2.8, 2.3, 2.8, THIN, 'aid-tent'), // the kit's aid tent
+  camp('poncho-lean-to', 1, 1, 1.2, THIN), // generic period type
+  camp('supply-cart', 1.1, 2, 2, WOOD), // the convoys' carts of ammunition, pp. 102, 125
+  camp('pack-saddles', 0.8, 0.5, 0.8, WOOD), // the mules' pack saddles, pp. 93, 143
+  camp('hammock', 1.6, 0.2, 1.6, THIN), // slung between two posts, p. 143
+  camp('camp-barrels', 0.8, 0.6, 1, WOOD), // barrels, p. 110
+  camp('ammo-boxes', 0.7, 0.5, 0.7, WOOD), // generic period type
+  camp('campfire', 0.6, 0.6, 1.2, THIN), // generic period type
+  camp('rifle-stack', 0.4, 0.4, 1.4, THIN), // generic period type
+  camp('saddle-rail', 1.5, 0.3, 1.1, THIN), // saddles, pp. 51, 141
+  camp('horse-line', 5, 0.1, 1.3, THIN), // posts and rope, no animals, pp. 93, 111
+  camp('field-gun-75', 0.9, 2.2, 1.5, SOLID_STONE), // a 75 mm field gun left behind, pp. 93-95
   // Flat decals.
   item('pebbles', 'decal', 2, 2, 0, { kind: 'decal', material: 'pebbles' }),
   item('leaf-patch', 'decal', 2, 2, 0, { kind: 'decal', material: 'leaf-litter' }),

@@ -78,6 +78,15 @@ describe('battle map walls', () => {
   });
 });
 
+// revise-buildings-and-stone 5.2: a camp object on the government's side is its model in their looks.
+describe('camp sides', () => {
+  it("the government's ammunition boxes are placed in their looks, the Column's as built", () => {
+    const base = street();
+    const map = { ...base, props: [{ model: 'ammo-boxes', x: 0, y: 40 }, { model: 'ammo-boxes', x: 4, y: 40, side: 'legalist' as const }, { model: 'aid-tent', x: 8, y: 40 }] };
+    expect(placedModels(new BattleMapLayer(map))).toEqual(expect.arrayContaining(['ammo-boxes', 'ammo-boxes@legalist', 'aid-tent']));
+  });
+});
+
 function placedModels(layer: BattleMapLayer): string[] {
   return (layer as unknown as { placements: { missing: (asset: { geometry: () => undefined }) => string[] } }).placements.missing({ geometry: () => undefined });
 }

@@ -81,6 +81,8 @@ export interface PropPlacement {
   kind?: RockKind;
   /** View (revise-buildings-and-stone 5.1): a waterside object in water, drawn on the water's surface. */
   afloat?: true;
+  /** View (revise-buildings-and-stone 5.2): a camp object in the government's looks; the battle never reads it. */
+  side?: 'legalist';
 }
 
 /** A side's three section start centres and the way it faces. */

@@ -7,6 +7,7 @@ south (Blender -Y).
 import math
 
 from common import MeshBuilder, placed, reset, save_and_export
+import camp_objects
 import props_objects
 
 
@@ -81,4 +82,6 @@ def build():
     signpost()
     # revise-buildings-and-stone 5.1: the waterside, farm and town objects.
     props_objects.build_all()
+    # 5.2: the Column's camp and train.
+    camp_objects.build_all()
     return [save_and_export("props", "environment")]

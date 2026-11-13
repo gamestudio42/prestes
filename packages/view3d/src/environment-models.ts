@@ -1,5 +1,8 @@
 import * as THREE from 'three';
-import { terrainHeightAt, VARIANT_SWATCHES, type BuildingVariant } from '@prestes/shared';
+import { CAMP_SIDE_SWATCHES, terrainHeightAt, VARIANT_SWATCHES } from '@prestes/shared';
+
+/** A model's looks by variant name: a building's (3.5) and a camp object's side (5.2). */
+const LOOK_SWATCHES: Readonly<Record<string, Readonly<Record<string, string>>>> = { ...VARIANT_SWATCHES, legalist: CAMP_SIDE_SWATCHES };
 import { ENVIRONMENT_ATLAS } from './environment-atlas';
 import { toonGradient } from './materials';
 import { lowestLeaf } from './canopy';
@@ -58,10 +61,11 @@ export class ModelLibrary {
     const found = this.geometries.get(name);
     if (found || !name.includes('@')) return found;
     // revise-buildings-and-stone 3.5: `<model>@<variant>` is the model with the variant's swatches swapped.
-    const [model, variant] = name.split('@') as [string, BuildingVariant];
+    const [model, variant] = name.split('@') as [string, string];
     const base = this.geometries.get(model);
-    if (!base || !VARIANT_SWATCHES[variant]) return undefined;
-    const geometry = withSwatches(base, VARIANT_SWATCHES[variant]);
+    const swaps = LOOK_SWATCHES[variant];
+    if (!base || !swaps) return undefined;
+    const geometry = withSwatches(base, swaps);
     this.geometries.set(name, geometry);
     return geometry;
   }

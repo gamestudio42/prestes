@@ -1,4 +1,4 @@
-"""Review sheet of the waterside, farm and town objects (revise-buildings-and-stone 5.1).
+"""Review sheet of the waterside, farm and town objects (5.1) or, with --camp, the camp (5.2).
 
   blender -b art-src/environment/props.blend -P art-src/blender/review_objects.py -- <out_dir>
 
@@ -12,11 +12,12 @@ import bpy
 from mathutils import Vector
 
 sys.path.insert(0, os.path.dirname(__file__))
+from camp_objects import BUILDERS as CAMP  # noqa: E402
 from props_objects import BUILDERS  # noqa: E402
 
 out_dir = sys.argv[sys.argv.index("--") + 1]
 os.makedirs(out_dir, exist_ok=True)
-names = [builder.__name__.replace("_", "-") for builder in BUILDERS]
+names = [builder.__name__.replace("_", "-") for builder in (CAMP if "--camp" in sys.argv else BUILDERS)]
 
 scene = bpy.context.scene
 scene.render.engine = "BLENDER_WORKBENCH"

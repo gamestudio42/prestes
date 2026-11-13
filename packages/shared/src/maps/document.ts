@@ -12,6 +12,7 @@ import {
 } from './catalog-objects';
 import { isBuildingVariant } from './building-variants';
 import { corralWalls, isRockKind } from './rock-kinds';
+import { isCampSide } from './camp-sides';
 import { distanceToPolyline, pointInPolygon, pointsBox, polygonBox, smooth, type Box } from './geometry';
 import { GROUND_MATERIAL_IDS, groundMaterial, groundMaterialIndex, type GroundMaterialId } from './ground-materials';
 import { VEGETATION } from './concealment';
@@ -136,7 +137,8 @@ export interface DocObject {
   scale?: number;
   /**
    * revise-buildings-and-stone: a building's look (`BUILDING_VARIANTS`, 3.5)
-   * or a stone's rock kind (`ROCK_KINDS`, 4.1); unset is the model's own.
+   * or a stone's rock kind (`ROCK_KINDS`, 4.1) or a camp object's side
+   * (`CAMP_SIDES`, 5.2); unset is the model's own.
    */
   variant?: string;
 }
@@ -1008,6 +1010,8 @@ export function compileMapDocument(source: EditableMap | MapDocument): BattleMap
     const prop: PropPlacement = { model: entry.model, x: object.x, y: object.y, rotation: object.rotation, scale };
     // 4.1: a stone's rock kind is drawing only, like a building's look.
     if (isRockKind(object.type, object.variant)) prop.kind = object.variant;
+    // 5.2 (D11): a camp object's side is drawing only.
+    if (isCampSide(object.type, object.variant)) prop.side = object.variant;
     props.push(prop);
   }
 

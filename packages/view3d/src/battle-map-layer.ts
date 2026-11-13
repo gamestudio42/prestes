@@ -26,7 +26,7 @@ import { CanopyFade } from './canopy';
 import { ModelPlacements, warnMissing, type EnvironmentAsset } from './environment-models';
 import { toon } from './materials';
 import { PALETTE } from './palette';
-import { placeBuildings, placeStoneWalls, stoneModelName } from './structures-layer';
+import { placeBuildings, placeStoneWalls, propModelName } from './structures-layer';
 import { clumpGeometry, PLANT_LOOK, PLANT_SWAY, plantGeometry, plantSpots, STRATEGIC_CLUMP_CAP, swayingMaterial } from './plant-meshes';
 
 /** Past this span (m) the plants give way to their clumps. */
@@ -1092,13 +1092,15 @@ function corralPreview(kind: RockKind | undefined, asset: EnvironmentAsset | nul
 }
 
 /** Props the Blender environment already has. */
-const MODELLED_PROPS = new Set(['tree-broad', 'tree-pine', 'tree-araucaria', 'buriti', 'cerrado-tree', 'bush', 'cart', 'well', 'haystack', 'barrel', 'crate']);
+const MODELLED_PROPS = new Set(['tree-broad', 'tree-pine', 'tree-araucaria', 'buriti', 'cerrado-tree', 'bush', 'cart', 'well', 'haystack', 'barrel', 'crate', 'aid-tent']);
 
 /** A modelled prop, or a tree or plant of a biome file (biome-trees-and-plants 4.1). */
 const isModelled = (model: string): boolean => {
   const entry = catalogObject(model);
   // revise-buildings-and-stone 5.1: the waterside, farm and town objects are props.glb models.
-  return MODELLED_PROPS.has(model) || KINDED_STONES.includes(model) || !!entry?.modelFile || entry?.group === 'water' || !!entry?.subgroup;
+  return (
+    MODELLED_PROPS.has(model) || KINDED_STONES.includes(model) || !!entry?.modelFile || entry?.group === 'water' || entry?.group === 'camp' || !!entry?.subgroup
+  );
 };
 
 export class BattleMapLayer {
@@ -1134,7 +1136,7 @@ export class BattleMapLayer {
       if (isModelled(prop.model)) {
         // 5.1: a boat afloat rides on the water's surface, not on the bed.
         const lift = prop.afloat ? Math.max(0, map.waterLevel - terrainHeightAt(prop.x, prop.y)) : 0;
-        this.placements.add(stoneModelName(prop), prop.x, prop.y, prop.rotation ?? 0, prop.scale ?? 1, lift);
+        this.placements.add(propModelName(prop), prop.x, prop.y, prop.rotation ?? 0, prop.scale ?? 1, lift);
         continue;
       }
       const piece = placeholderProp(prop.model);

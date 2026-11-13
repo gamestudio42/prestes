@@ -18,10 +18,13 @@ export function buildingModelName(building: Pick<Building, 'model' | 'variant'>)
 /** Adds every building of the map to the model placements, on the ground at its place. */
 /**
  * revise-buildings-and-stone 4.1: a stone's model, by its rock kind; granite
- * (no kind) is the bare id, the others `<id>@<kind>`. Any other prop is its id.
+ * (no kind) is the bare id, the others `<id>@<kind>`; a camp object on the
+ * government's side `<id>@legalist` (5.2). Any other prop is its id.
  */
-export function stoneModelName(prop: Pick<PropPlacement, 'model' | 'kind'>): string {
-  return prop.kind ? `${prop.model}@${prop.kind}` : prop.model;
+export function propModelName(prop: Pick<PropPlacement, 'model' | 'kind' | 'side'>): string {
+  if (prop.kind) return `${prop.model}@${prop.kind}`;
+  // 5.2: a camp object in the government's looks.
+  return prop.side ? `${prop.model}@${prop.side}` : prop.model;
 }
 
 export function placeBuildings(map: Pick<BattleMap, 'buildings'>, placements: ModelPlacements): void {

@@ -374,6 +374,25 @@ def environment_atlas() -> Atlas:
             return WOOD_DARK
         return WOOD
 
+    def canvas_worn(i, j, rng):
+        if 2 <= i <= 6 and 9 <= j <= 13:
+            return (150, 136, 108) if i not in (2, 6) and j not in (9, 13) else (116, 104, 82)
+        if rng.random() < 0.08:
+            return (148, 140, 120)
+        return (186, 176, 150) if (i + j) % 7 else (166, 156, 132)
+
+    def canvas_army(i, j, rng):
+        if j % 8 == 7:
+            return (104, 108, 70)
+        return (132, 136, 92) if (i + j) % 7 else (118, 122, 80)
+
+    def crate_army(i, j, rng):
+        if i in (0, S - 1) or j in (0, S - 1):
+            return (60, 66, 44)
+        if 5 <= j <= 9 and 3 <= i <= 12 and (i + j) % 3 == 0:
+            return (220, 214, 190)
+        return (90, 98, 64) if rng.random() > 0.06 else (74, 82, 52)
+
     def window(i, j, rng):
         if i in (0, 1, S - 2, S - 1) or j in (0, 1, S - 2, S - 1) or i in (7, 8) or j in (7, 8):
             return WOOD_DARK
@@ -505,6 +524,12 @@ def environment_atlas() -> Atlas:
         ("quartzite", quartzite),
         ("canga", canga),
         ("cobble", cobble),
+        # revise-buildings-and-stone 5.2 (D11): the camp by side. The Column's
+        # canvas worn, stained and patched; the government's issue canvas and
+        # its painted ammunition boxes.
+        ("canvas.worn", canvas_worn),
+        ("canvas.army", canvas_army),
+        ("crate.army", crate_army),
     ]
     for index, (name, paint) in enumerate(swatches):
         x, y = cell(index)

@@ -62,6 +62,8 @@ import {
   buildingVariants,
   ROCK_KINDS,
   takesRockKind,
+  CAMP_SIDES,
+  SIDED_CAMP,
   type RockKind,
 } from '@prestes/shared';
 import { LOCALES, translate, type Locale, type MessageKey } from '@prestes/content';
@@ -130,7 +132,7 @@ const TOOL_KEYS: Record<ToolId, string> = {
   objective: 'J',
 };
 
-const OBJECT_GROUPS = ['building', 'stone', 'water', 'tree', 'post', 'cover', 'prop', 'decal'] as const;
+const OBJECT_GROUPS = ['building', 'stone', 'water', 'camp', 'tree', 'post', 'cover', 'prop', 'decal'] as const;
 /** revise-buildings-and-stone D9: the props' sub-headings, in order; the older props come first, unheaded. */
 const PROP_SUBGROUPS = [undefined, 'farm', 'town'] as const;
 const PALETTES: readonly MapPalette[] = ['temperate', 'cerrado', 'caatinga', 'urban'];
@@ -885,6 +887,29 @@ function SelectionPanel({ store, viewport, t }: { store: EditorStore; viewport: 
             step={0.1}
             onChange={(scale) => store.editVector((draft) => { const target = draft.objects.find((item) => item.id === object.id); if (target) target.scale = scale; })}
           />
+          {SIDED_CAMP.includes(entry.id) ? (
+            <div className="editor-segmented" role="radiogroup" aria-label={t('editor.prop.side')} data-testid="object-side">
+              {CAMP_SIDES.map((side) => (
+                <button
+                  key={side}
+                  type="button"
+                  role="radio"
+                  aria-checked={(object.variant === 'legalist' ? 'legalist' : 'column') === side}
+                  data-side={side}
+                  onClick={() =>
+                    store.editVector((draft) => {
+                      const target = draft.objects.find((item) => item.id === object.id);
+                      if (!target) return;
+                      if (side === 'legalist') target.variant = side;
+                      else delete target.variant;
+                    })
+                  }
+                >
+                  {t(`editor.side.${side}`)}
+                </button>
+              ))}
+            </div>
+          ) : null}
           {takesRockKind(entry.id) ? (
             <RockKindPicker
               t={t}
