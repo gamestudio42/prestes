@@ -249,3 +249,5 @@ catalog object but the trees (they have theirs), every line kind and every
 model file the game ships must be on a row with an author and a licence.
 Writing it showed the depot in the town's file where 3.4 has it a military
 building; it moved to `buildings-military.glb`.
+
+Approved by the owner, 2026-11-13.
