@@ -125,7 +125,7 @@ export function App() {
   const selectionInitialized = useRef(false);
   const selectedCountRef = useRef(0);
 
-  const { audioRef, audioMuted, handleToggleAudio } = useAudio();
+  const { audioRef, audioMuted, handleToggleAudio, handleAudioView } = useAudio();
   // machine-gun-fire-feedback 4.2: a burst's rounds keep their spacing at the game speed.
   useEffect(() => audioRef.current?.setSpeed(speed), [audioRef, speed]);
   // remove-sandbox-panel D1: both-sides control, set only by tests through the bridge.
@@ -388,7 +388,7 @@ export function App() {
         deploymentAreas={deploying}
         postStrong={postStrong}
         routesVisible={routesVisible}
-        onAudioView={(listener) => audioRef.current?.setListener(listener)}
+        onAudioView={handleAudioView}
         cameraRequest={cameraRequest}
         preview={previewPlan}
         slotMarkers={deploymentSlots?.markers ?? slotView?.markers}

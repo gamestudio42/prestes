@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterAll, describe, expect, it } from 'vitest';
 import { findBinary, loopCrossfade, seamStep, testWind, trimSilence, wavBytes } from '../../tools/audio-tools';
-import { prepareAudio } from '../../tools/prepare-audio';
+import { prepareAudio, soundFiles, soundFilesModule } from '../../tools/prepare-audio';
 
 // ambient-sound-and-voices 1.3: the audio preparation tool.
 
@@ -108,5 +108,25 @@ describe.skipIf(!ffmpeg)('prepareAudio with ffmpeg', () => {
     expect(voice.seconds).toBeGreaterThan(0.95);
     expect(voice.seconds).toBeLessThan(1.2);
     expect(bed.seconds).toBeCloseTo(6, 1);
+  });
+});
+
+describe('soundFiles and the client list', () => {
+  it('lists every prepared sound by id, across groups and folders', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'prestes-files-'));
+    try {
+      mkdirSync(join(dir, 'beds'), { recursive: true });
+      mkdirSync(join(dir, 'voice', 'commander'), { recursive: true });
+      writeFileSync(join(dir, 'beds', 'bed-town.mp3'), '');
+      writeFileSync(join(dir, 'voice', 'commander', 'avancar-1.mp3'), '');
+      writeFileSync(join(dir, 'beds', 'notes.txt'), '');
+      const files = soundFiles(dir);
+      expect(files).toEqual({ 'avancar-1': 'voice/commander/avancar-1.mp3', 'bed-town': 'beds/bed-town.mp3' });
+      const module = soundFilesModule(files);
+      expect(module).toContain("  'bed-town': 'beds/bed-town.mp3',");
+      expect(soundFilesModule({})).toContain('= {};');
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
   });
 });
