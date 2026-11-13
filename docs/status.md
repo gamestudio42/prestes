@@ -472,4 +472,5 @@ corrugated asbestos appears.
   +y (the script moved the gap and the gate before the door); the dark cross
   at the strategic band is the tower's four-sided pyramid cap, the same in
   the near and the far mesh, not a fault of the split. Shots re-taken. Still
-  open: the open iron gate is a few thin dark bars at the tactical band.
+  open: the open iron gate is a few thin dark bars at the tactical band;
+  the owner keeps it as is (2026-11-13).
