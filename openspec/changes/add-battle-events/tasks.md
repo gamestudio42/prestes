@@ -24,8 +24,8 @@
 
 ## 4. Editor
 
-- [ ] 4.1 Store: `entry-point` and `event-area` tools (entry snapped within 10 m of the edge, facing inward; area corners as for deployment areas), event and place selections, add/update/delete/duplicate/reorder events with id renumbering and reference rewrite, each one undo step, delete of a used place or event asks first; verify with unit tests of snapping, renumbering, the delete-referenced-event scenario and undo
-- [ ] 4.2 Places drawn labelled in the viewport while the Events panel is open, and the selected event's places, objectives and move points highlighted; verify by screenshot in the preview pane of the editor with the test map's in-memory copy (not saved)
+- [x] 4.1 Store: `entry-point` and `event-area` tools (entry snapped within 10 m of the edge, facing inward; area corners as for deployment areas), event and place selections, add/update/delete/duplicate/reorder events with id renumbering and reference rewrite, each one undo step, delete of a used place or event asks first; verify with unit tests of snapping, renumbering, the delete-referenced-event scenario and undo
+- [x] 4.2 Places drawn labelled in the viewport while the Events panel is open, and the selected event's places, objectives and move points highlighted; verify by screenshot in the preview pane of the editor with the test map's in-memory copy (not saved)
 - [ ] 4.3 `EventsPanel`: list with one-line summaries and the form for every trigger and action (mm:ss, side and objective lists, place pickers, losses share, after-event list, section pickers by the side's armies, card PT-BR/EN side by side); labels in EN and PT-BR; check problems select the event and place; verify with `pnpm check:locales` and the e2e of 5.1
 - [ ] 4.4 Playtest: `playtest: true` start flag from the editor, a playtest-only events panel in the HUD with each event's state and fire time and a "fire now" button; verify with the e2e of 5.1
 

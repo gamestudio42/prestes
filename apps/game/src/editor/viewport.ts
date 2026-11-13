@@ -532,7 +532,9 @@ export class EditorViewport {
         return;
       }
       let id = 0;
-      const name = (placeId: number) => this.placeName?.(kind, placeId) ?? `${kind} ${placeId}`;
+      // Places are numbered per kind in their names ("Entry 2", "Area 1"); ids are shared.
+      const number = (this.store.map.eventPlaces ?? []).filter((place) => place.kind === kind).length + 1;
+      const name = () => this.placeName?.(kind, number) ?? `${kind} ${number}`;
       this.store.editVector((draft) => {
         id = kind === 'entry' ? addEntryPoint(draft, point, name) : addTriggerArea(draft, this.snap(point), name);
       });

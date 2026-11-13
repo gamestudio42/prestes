@@ -76,6 +76,7 @@ import { editorBridge, type EditorBridge } from './test-bridge';
 import { EditorViewport, PROTECTION_COLORS, type CursorInfo } from './viewport';
 import { useThumbnails } from './thumbnails';
 import { EnemyForces } from './EnemyForces';
+import { EventsPanel } from './EventsPanel';
 import { Compass } from '../ui/hud/Compass';
 
 /**
@@ -232,8 +233,6 @@ function problemSelection(problem: MapProblem): SelectionItem[] {
   }
   if (target.kind === 'area') return target.id === 'column' || target.id === 'legalist' ? [{ kind: 'area', side: target.id }] : [];
   if (typeof target.id !== 'number') return [];
-  // add-battle-events 4.3 selects events and their places; until then the camera only moves to the spot.
-  if (target.kind === 'event' || target.kind === 'event-place') return [];
   return [{ kind: target.kind, id: target.id }];
 }
 
@@ -426,7 +425,13 @@ export function EditorApp(): ReactNode {
     if (problem.at) viewport.current?.centreOn(problem.at);
     const selection = problemSelection(problem);
     if (selection.length > 0) {
-      store.setTool(selection[0]!.kind === 'section' || selection[0]!.kind === 'area' ? 'deployment' : selection[0]!.kind === 'objective' ? 'objective' : 'select');
+      const first = selection[0]!;
+      if (first.kind === 'event' || first.kind === 'event-place') {
+        // add-battle-events 4.3: the Events panel opens on the event; a place is selected with its tool.
+        store.updateView({ events: true });
+        const place = first.kind === 'event-place' ? (store.map.eventPlaces ?? []).find((entry) => entry.id === first.id) : undefined;
+        store.setTool(place ? (place.kind === 'entry' ? 'entry-point' : 'event-area') : 'select');
+      } else store.setTool(first.kind === 'section' || first.kind === 'area' ? 'deployment' : first.kind === 'objective' ? 'objective' : 'select');
       store.setSelection(selection);
     }
   };
@@ -477,6 +482,7 @@ export function EditorApp(): ReactNode {
         <button type="button" aria-pressed={view.topDown} onClick={() => store.updateView({ topDown: true })}>{t('editor.view.2d')}</button>
         <button type="button" aria-pressed={view.grid} onClick={() => store.updateView({ grid: !view.grid })}>{t('editor.view.grid')}</button>
         <button type="button" data-testid="editor-cover" aria-pressed={view.cover} onClick={() => store.updateView({ cover: !view.cover })}>{t('editor.view.cover')}</button>
+        <button type="button" data-testid="editor-events-toggle" aria-pressed={view.events} onClick={() => store.updateView({ events: !view.events })}>{t('editor.view.events')}</button>
         <select data-testid="editor-overlay" value={view.overlay} onChange={(event) => store.updateView({ overlay: event.target.value as typeof view.overlay })}>
           {(['none', 'relief', 'contours', 'slope'] as const).map((overlay) => (
             <option key={overlay} value={overlay}>{t(`editor.overlay.${overlay}`)}</option>
@@ -531,6 +537,7 @@ export function EditorApp(): ReactNode {
         <p className="editor-hint">{t(hintKey(tool))}</p>
         <ToolProperties store={store} t={t} />
         {view.cover ? <CoverPanel store={store} t={t} /> : null}
+        {view.events || tool === 'entry-point' || tool === 'event-area' ? <EventsPanel store={store} t={t} /> : null}
         {tool === 'select' || tool === 'objective' ? <SelectionPanel store={store} viewport={viewport.current} t={t} /> : null}
         {settings.snap !== undefined && ['road', 'river', 'pond', 'line', 'bridge', 'ferry', 'place', 'select', 'deployment'].includes(tool) ? (
           <label>

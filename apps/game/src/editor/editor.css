@@ -494,6 +494,105 @@
 }
 
 /* author-game-maps: the map's enemy presets in the properties dialog. */
+/* add-battle-events 4.3: the Events panel. */
+.editor-events {
+  margin-top: 10px;
+  padding-top: 6px;
+  border-top: 1px solid #4a5240;
+  font-size: 12px;
+}
+
+.editor-events h3 {
+  margin: 0 0 4px;
+  font-size: 13px;
+}
+
+.editor-events-list,
+.editor-events-places {
+  list-style: none;
+  margin: 4px 0;
+  padding: 0;
+}
+
+.editor-events-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+  padding: 3px 0;
+  border-bottom: 1px solid #3a4032;
+}
+
+.editor-events-list li[aria-current='true'] {
+  background: rgba(214, 190, 120, 0.12);
+}
+
+.editor-events-open {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+}
+
+.editor-events-open span {
+  color: #b4ab90;
+}
+
+.editor-events-places li {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.editor-event-form fieldset {
+  min-width: 0;
+  border: 1px solid #4a5240;
+  margin: 6px 0;
+  padding: 4px 6px;
+}
+
+.editor-event-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: 3px 0;
+}
+
+.editor-event-action {
+  border-top: 1px dashed #4a5240;
+  padding: 4px 0;
+}
+
+.editor-event-card {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.editor-event-card h5 {
+  margin: 2px 0;
+}
+
+.editor-event-card textarea {
+  resize: vertical;
+}
+
+.editor-events input,
+.editor-events select,
+.editor-events textarea {
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.editor-event-form .editor-row {
+  flex-wrap: wrap;
+}
+
 .editor-enemy {
   border: 1px solid #4a5240;
   padding: 6px 8px;
