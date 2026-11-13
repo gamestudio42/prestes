@@ -191,3 +191,5 @@ bullet; an open gate is drawn only, gives no cover and is walked through
 (`packages/simulation/test/fences-cover.test.ts`). Each line follows a
 hillside (`packages/view3d/test/fences-on-slope.test.ts`), and a version 7
 map's lines load unchanged (`packages/shared/test/line-kinds.test.ts`).
+
+Approved by the owner, 2026-11-13.
