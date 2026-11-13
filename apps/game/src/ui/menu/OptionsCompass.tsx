@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { translate, type Locale, type MessageKey } from '@prestes/content';
 import { loadGraphicsSettings, saveGraphicsSettings } from '../../storage';
+import { AudioChannels } from '../AudioChannels';
 import { Languages, PostEffect, SoundOff, SoundOn } from '../icons';
 import { DESK_ART, deskArtData, deskArtStyle } from './deskArt';
 
@@ -75,6 +76,8 @@ export function OptionsCompass({
           </span>
           <span>{audioMuted ? t('start.audioOff') : t('start.audioOn')}</span>
         </button>
+        {/* ambient-sound-and-voices 2.1: the three channel volumes. */}
+        <AudioChannels t={t} className="desk-audio-channels" rowClassName="desk-options-row desk-audio-row" />
         <button
           type="button"
           className="desk-options-row"

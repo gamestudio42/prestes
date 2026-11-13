@@ -1,4 +1,7 @@
-import { Camera, PostEffect as Contrast, Eye, EyeOff, Languages, Pause, Play } from '../icons';
+import { useEffect, useRef, useState } from 'react';
+import { Camera, PostEffect as Contrast, Eye, EyeOff, Languages, Pause, Play, SoundOff, SoundOn } from '../icons';
+import { audioSettings, useAudioSettings } from '../../audio/settings-store';
+import { AudioChannels } from '../AudioChannels';
 import type { Locale } from '@prestes/content';
 import type { ObjectiveSnapshot } from '@prestes/shared';
 import type { CameraBand } from '@prestes/view3d';
@@ -38,6 +41,78 @@ interface TopBarProps {
 }
 
 const SPEED_LABEL = { 1: '0.5x', 2: '1x', 4: '2x', 8: '4x' } as const;
+
+/**
+ * The battle's one menu (the owner, 2026-11-13): a dropdown under the top
+ * bar with the sound (ambient-sound-and-voices 2.1: the mute and the three
+ * channel volumes) and leaving the battle. Closes on Escape or a click
+ * outside it.
+ */
+function GameMenu({ t, onLeave }: { t: Translate; onLeave: () => void }) {
+  const [open, setOpen] = useState(false);
+  const { muted } = useAudioSettings();
+  const box = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!open) return undefined;
+    const outside = (event: PointerEvent): void => {
+      if (box.current && !box.current.contains(event.target as Node)) setOpen(false);
+    };
+    const escape = (event: KeyboardEvent): void => {
+      if (event.key === 'Escape') setOpen(false);
+    };
+    window.addEventListener('pointerdown', outside);
+    window.addEventListener('keydown', escape);
+    return () => {
+      window.removeEventListener('pointerdown', outside);
+      window.removeEventListener('keydown', escape);
+    };
+  }, [open]);
+  return (
+    <div className="hud-menu" ref={box}>
+      <button
+        type="button"
+        className="post-button"
+        onClick={() => setOpen((value) => !value)}
+        title={t('hud.tip.menu')}
+        aria-expanded={open}
+        aria-haspopup="true"
+        data-testid="hud-menu"
+      >
+        {muted ? <SoundOff aria-hidden="true" size={15} /> : <SoundOn aria-hidden="true" size={15} />}
+        <span>{t('hud.menu')}</span>
+        <span className="hud-menu-caret" aria-hidden="true">▾</span>
+      </button>
+      {open ? (
+        <div className="hud-menu-panel" data-testid="hud-menu-panel">
+          <p className="hud-menu-heading">{t('hud.sound')}</p>
+          <button
+            type="button"
+            className="hud-menu-item"
+            onClick={audioSettings.toggleMuted}
+            aria-pressed={!muted}
+            data-testid="hud-audio-toggle"
+          >
+            {muted ? <SoundOff aria-hidden="true" size={15} /> : <SoundOn aria-hidden="true" size={15} />}
+            <span>{muted ? t('start.audioOff') : t('start.audioOn')}</span>
+          </button>
+          <AudioChannels t={t} rowClassName="hud-menu-row" />
+          <hr className="hud-menu-rule" />
+          <button
+            type="button"
+            className="hud-menu-item hud-leave"
+            data-testid="leave-battle"
+            onClick={() => {
+              setOpen(false);
+              onLeave();
+            }}
+          >
+            <span>{t('hud.leave')}</span>
+          </button>
+        </div>
+      ) : null}
+    </div>
+  );
+}
 
 export function TopBar({
   t,
@@ -178,9 +253,7 @@ export function TopBar({
             <option value="pt-BR">{t('language.ptBR')}</option>
           </select>
         </label>
-        <button type="button" className="hud-leave" data-testid="leave-battle" onClick={onLeave}>
-          {t('hud.leave')}
-        </button>
+        <GameMenu t={t} onLeave={onLeave} />
         {deploying ? null : (
         <div className="speed-control">
           <IconButton

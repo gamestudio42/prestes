@@ -49,23 +49,50 @@ export function saveRoutesVisible(visible: boolean): void {
   }
 }
 
-export function loadAudioSettings(): { muted: boolean; volume: number } {
-  try {
-    const raw = window.localStorage.getItem(AUDIO_STORAGE_KEY);
-    if (raw) {
-      const parsed = JSON.parse(raw) as { muted?: unknown; volume?: unknown };
-      return {
-        muted: parsed.muted === true,
-        volume: typeof parsed.volume === 'number' ? Math.max(0, Math.min(1, parsed.volume)) : 0.35,
-      };
-    }
-  } catch {
-    // Storage can be unavailable; audio still works for this session.
-  }
-  return { muted: false, volume: 0.35 };
+/**
+ * ambient-sound-and-voices 2.1: the mute and the three channel volumes
+ * (0 to 1, each the level of its mixer bus). Kept under the same key as the
+ * one mute and volume before them: a stored `{ muted, volume }` reads as the
+ * mute and the effects volume (the old 0.35 is the effects at full), with
+ * ambience and voices at their defaults.
+ */
+export interface AudioSettings {
+  muted: boolean;
+  effects: number;
+  ambience: number;
+  voices: number;
 }
 
-export function saveAudioSettings(settings: { muted: boolean; volume: number }): void {
+export const AUDIO_DEFAULTS: AudioSettings = { muted: false, effects: 1, ambience: 0.8, voices: 1 };
+/** The one volume stored before the channels; it was the shots' gain, 0.35 by default. */
+const OLD_SHOT_VOLUME = 0.35;
+
+const unit = (value: unknown): number | null => (typeof value === 'number' && Number.isFinite(value) ? Math.max(0, Math.min(1, value)) : null);
+
+/** The settings from what storage held (anything, even nothing). */
+export function parseAudioSettings(stored: unknown): AudioSettings {
+  if (!stored || typeof stored !== 'object') return { ...AUDIO_DEFAULTS };
+  const value = stored as Record<string, unknown>;
+  const old = unit(value.volume);
+  return {
+    muted: value.muted === true,
+    effects: unit(value.effects) ?? (old === null ? AUDIO_DEFAULTS.effects : Math.min(1, old / OLD_SHOT_VOLUME)),
+    ambience: unit(value.ambience) ?? AUDIO_DEFAULTS.ambience,
+    voices: unit(value.voices) ?? AUDIO_DEFAULTS.voices,
+  };
+}
+
+export function loadAudioSettings(): AudioSettings {
+  try {
+    const raw = window.localStorage.getItem(AUDIO_STORAGE_KEY);
+    return parseAudioSettings(raw ? JSON.parse(raw) : null);
+  } catch {
+    // Storage can be unavailable; audio still works for this session.
+    return { ...AUDIO_DEFAULTS };
+  }
+}
+
+export function saveAudioSettings(settings: AudioSettings): void {
   try {
     window.localStorage.setItem(AUDIO_STORAGE_KEY, JSON.stringify(settings));
   } catch {

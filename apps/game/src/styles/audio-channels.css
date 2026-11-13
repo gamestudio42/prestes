@@ -1,0 +1,14 @@
+/* ambient-sound-and-voices 2.1: the channel volumes in the options compass,
+   aligned with the rows' labels (their icon column is about 40 px). */
+.desk-options-list .desk-audio-row {
+  display: grid;
+  grid-template-columns: 1fr 55%;
+  align-items: center;
+  gap: 12px;
+  padding-left: 40px;
+}
+
+.desk-options-list .desk-audio-row input[type='range'] {
+  width: 100%;
+  accent-color: #7a4a1e;
+}

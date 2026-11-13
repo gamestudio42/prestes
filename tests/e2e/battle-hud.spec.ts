@@ -62,12 +62,14 @@ test('a double-click centres the selected section, and the card double-click sel
 test('the top bar leaves the battle only after confirmation, and the battle has no codex', async ({ page }) => {
   await startBattle(page);
   await expect(page.getByTestId('codex-toggle')).toHaveCount(0);
+  await page.getByTestId('hud-menu').click();
   await page.getByTestId('leave-battle').click();
   await expect(page.getByTestId('leave-battle-dialog')).toBeVisible();
   await page.getByTestId('leave-cancel').click();
   await expect(page.getByTestId('leave-battle-dialog')).toHaveCount(0);
   await expect(page.getByTestId('hud')).toBeVisible();
 
+  await page.getByTestId('hud-menu').click();
   await page.getByTestId('leave-battle').click();
   await page.getByTestId('leave-confirm').click();
   await expect(page.getByTestId('start-screen')).toBeVisible();

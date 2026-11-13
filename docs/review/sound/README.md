@@ -88,3 +88,34 @@ Approved by the owner, 2026-11-13.
   shortened by its fade, the gapless header written).
 
 Approved by the owner, 2026-11-13.
+
+## 2.1 The mute and three channel volumes (2026-11-13)
+
+- The battle's top bar has one menu, a dropdown (the owner, 2026-11-13:
+  sound and leaving in a single menu): the mute, the volumes of effects,
+  ambience and voices, and "Leave", which still asks for confirmation.
+  The separate "Leave" button is gone. Escape or a click outside closes it.
+  Picture: `battle-menu.png`.
+- The options compass has the same three volumes under the sound switch:
+  `options-compass.png`.
+- Stored under the same key as before, `prestes.audio.v1`, with the new
+  fields: `{ muted, effects, ambience, voices }`. An older `{ muted,
+  volume }` reads as the mute and the effects volume (the old 0.35 is the
+  effects at full), ambience at 80 % and voices at full. A muted game stays
+  muted. Kept under the old key rather than a new one so every place that
+  writes the old setting (the e2e tests, the preview's mute) still works.
+- The volumes are the levels of the mixer's buses (1.1); the menu, the
+  compass and the engine share one store, so a change shows in both and is
+  saved at once.
+- Labels in EN and PT-BR: Effects / Efeitos, Ambience / Ambiente, Voices /
+  Vozes, Menu, Sound / Som.
+- Checked: `tests/audio/audio-settings.test.ts` (8 tests: the old setting
+  read as mute and effects, the new fields, nonsense and clamping, the
+  store saving and surviving a reload, levels set before the mixer exists);
+  `tests/e2e/audio-channels.spec.ts` (voices without ambience: the
+  ambience bus at 0 and voices at full in the battle, kept over a reload;
+  an older muted setting stays muted and the menu unmutes it; the compass
+  sliders); the battle HUD's leave test now opens the menu first; the desk
+  and gramophone e2e pass.
+- Not yet: Save and Load. The game has no saved battles; that is a change
+  of its own.

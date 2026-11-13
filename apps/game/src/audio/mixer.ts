@@ -112,6 +112,9 @@ export class Mixer {
 export class AudioEngine {
   private contextValue: AudioContext | null = null;
   private mixerValue: Mixer | null = null;
+  /** The player's levels, kept until the mixer exists and applied to it then. */
+  private volumes: Record<Bus, number> = { effects: 1, ambience: 1, voices: 1 };
+  private mutedValue = false;
 
   constructor(private readonly create: () => AudioContext | null = createAudioContext) {}
 
@@ -128,9 +131,26 @@ export class AudioEngine {
     this.contextValue ??= this.create();
     const context = this.contextValue;
     if (!context) return false;
-    this.mixerValue ??= new Mixer(context);
+    if (!this.mixerValue) {
+      this.mixerValue = new Mixer(context);
+      this.applyLevels();
+    }
     if (context.state === 'suspended') await context.resume();
     return true;
+  }
+
+  /** The player's mute and channel volumes (ambient-sound-and-voices 2.1). */
+  setLevels(muted: boolean, volumes: Readonly<Record<Bus, number>>): void {
+    this.mutedValue = muted;
+    this.volumes = { ...volumes };
+    this.applyLevels();
+  }
+
+  private applyLevels(): void {
+    const mixer = this.mixerValue;
+    if (!mixer) return;
+    mixer.setMuted(this.mutedValue);
+    for (const bus of BUSES) mixer.setVolume(bus, this.volumes[bus]);
   }
 
   dispose(): void {
