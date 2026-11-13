@@ -145,3 +145,5 @@ the surface: `waterside-afloat.png`, taken by
 afloat and a canoe drawn up on the bank. Tests:
 `packages/shared/test/waterside-objects.test.ts` and
 `packages/simulation/test/waterside-cover.test.ts`.
+
+Approved by the owner, 2026-11-13.
