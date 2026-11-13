@@ -24,6 +24,8 @@ import { Compass } from './ui/hud/Compass';
 import { StartScreenDesk } from './ui/menu/StartScreenDesk';
 import { battleRosters, loadSetup, saveSetup, type SkirmishSetup } from './ui/menu/setupState';
 import { BattleEndPanel } from './ui/BattleEndPanel';
+import { EventCardPanel } from './ui/EventCardPanel';
+import { closeEventCard, NO_EVENT_CARDS, openEventCards, type EventCardState } from './client/event-cards';
 import { clearBootcampProgress, loadLocale, loadRoutesVisible, saveLocale, saveRoutesVisible } from './storage';
 import { useAudio } from './hooks/useAudio';
 import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
@@ -64,6 +66,16 @@ export function App() {
   useEffect(() => showMapLayers(sceneRef.current), [band, mapLayers]);
   useEffect(() => saveRoutesVisible(routesVisible), [routesVisible]);
   const [speed, setSpeed] = useState<0 | 1 | 2 | 4 | 8>(DEFAULT_SPEED);
+  // add-battle-events 3.1: the events' narrative cards; one open pauses the battle.
+  const [eventCards, setEventCards] = useState<EventCardState>(NO_EVENT_CARDS);
+  const speedRef = useRef<0 | 1 | 2 | 4 | 8>(DEFAULT_SPEED);
+  useEffect(() => {
+    speedRef.current = speed;
+  }, [speed]);
+  const cardOpenRef = useRef(false);
+  useEffect(() => {
+    cardOpenRef.current = eventCards.cards.length > 0;
+  }, [eventCards]);
   const [hudHidden, setHudHidden] = useState(false);
   const [cursor, setCursor] = useState<{ x: number; y: number } | null>(null);
   const [hoverHint, setHoverHint] = useState<{
@@ -234,6 +246,15 @@ export function App() {
         // add-deployment-phase 3.1: a refused deployment order says why, for a few seconds.
         if (event.type === 'command_rejected' && isDeploymentRefusal(event.reason)) showDeploymentRefusal(event.reason);
         else if (event.type === 'command_rejected') showOrderNotice(event.reason);
+        // add-battle-events 3.1: an event's cards pause the battle until the player closes them.
+        if (event.type === 'battle_event_fired' && event.cards && event.cards.length > 0) {
+          const cards = event.cards.map((card) => ({ eventId: event.eventId, ...card }));
+          const open = cardOpenRef.current;
+          cardOpenRef.current = true;
+          setEventCards((state) => openEventCards(state, cards, open ? state.resume : speedRef.current));
+          client.setSpeed(0);
+          setSpeed(0);
+        }
       },
       onFrame: (next) => {
         setFrame(next);
@@ -313,6 +334,8 @@ export function App() {
     setPreviewEnabled(false);
     setMapLayers(NO_MAP_LAYERS);
     setSpeed(DEFAULT_SPEED);
+    setEventCards(NO_EVENT_CARDS);
+    cardOpenRef.current = false;
     setStarted(true);
     createClient(map, rosters, timeLimitTicks);
   };
@@ -345,8 +368,20 @@ export function App() {
   };
 
   const handleSetSpeed = (next: 0 | 1 | 2 | 4 | 8): void => {
+    // add-battle-events 3.1: the speed stays put while a card is open.
+    if (cardOpenRef.current) return;
     setSpeed(next);
     clientRef.current?.setSpeed(next);
+  };
+
+  /** add-battle-events 3.1: closes the open card; after the last one the battle goes on at its speed. */
+  const handleCloseEventCard = (): void => {
+    const { state, resume } = closeEventCard(eventCards);
+    setEventCards(state);
+    if (resume === null) return;
+    cardOpenRef.current = false;
+    setSpeed(resume);
+    clientRef.current?.setSpeed(resume);
   };
 
   const handleTogglePause = (): void => {
@@ -506,6 +541,14 @@ export function App() {
         hoverHint={hoverHint}
         slotView={slotView}
       />
+      {eventCards.cards[0] ? (
+        <EventCardPanel
+          locale={locale}
+          card={eventCards.cards[0]}
+          waiting={eventCards.cards.length - 1}
+          onClose={handleCloseEventCard}
+        />
+      ) : null}
       {frame && frame.outcome !== 'playing' ? (
         <BattleEndPanel
           locale={locale}

@@ -10,6 +10,7 @@
 @import './skirmish-setup.css';
 @import './compass.css';
 @import './battle-hud.css';
+@import './event-card.css';
 
 /* add-map-editor: back to the editor during a playtest. */
 .playtest-back {

@@ -1,0 +1,75 @@
+/*
+ * add-battle-events 3.1: a map event's narrative card, a parchment page over
+ * the paused battle. Pixel-kit rules: hard steps, no blur, no rounded corners.
+ */
+.event-card-backdrop {
+  --card-paper: #efe2c4;
+  --card-paper-shade: #e2d1aa;
+  --card-paper-deep: #cdb88b;
+  --card-edge: #b29a6c;
+  --card-ink: #2a1f14;
+  --card-ink-soft: #5a4a30;
+  --card-accent: #8e3a2c;
+
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgb(20 14 8 / 55%);
+}
+
+.event-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: min(520px, 100%);
+  max-height: calc(100vh - 32px);
+  overflow: auto;
+  padding: 24px 28px 22px;
+  color: var(--card-ink);
+  background: linear-gradient(90deg, var(--card-paper-shade) 0 6px, var(--card-paper) 6px);
+  border: 2px solid var(--card-ink);
+  box-shadow:
+    4px 4px 0 var(--card-edge),
+    8px 8px 0 var(--card-paper-deep);
+}
+
+.event-card-paused {
+  margin: 0;
+  color: var(--card-ink-soft);
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.event-card-title {
+  margin: 0;
+  color: var(--card-accent);
+  font-size: 1.4rem;
+  line-height: 1.2;
+}
+
+.event-card-text {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.5;
+  white-space: pre-line;
+}
+
+.event-card-close {
+  align-self: flex-end;
+  padding: 6px 16px;
+  color: var(--card-paper);
+  background: var(--card-ink);
+  border: 2px solid var(--card-ink);
+  cursor: pointer;
+}
+
+.event-card-close:hover,
+.event-card-close:focus-visible {
+  background: var(--card-accent);
+  outline: 2px solid var(--card-ink);
+  outline-offset: 2px;
+}

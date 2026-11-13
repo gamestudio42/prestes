@@ -19,7 +19,7 @@
 
 ## 3. Card and pause (game)
 
-- [ ] 3.1 Card queue and pause in `GameClient` (remember speed, speed 0, restore on last close, speed control disabled while open) and the book-style card component in the HUD, title and text in the game's language, close button; HUD strings in EN and PT-BR; verify with unit tests of the queue and speed restore, and `pnpm check:locales`
+- [x] 3.1 Card queue and pause in `GameClient` (remember speed, speed 0, restore on last close, speed control disabled while open) and the book-style card component in the HUD, title and text in the game's language, close button; HUD strings in EN and PT-BR; verify with unit tests of the queue and speed restore, and `pnpm check:locales`
 - [ ] 3.2 Column arrivals in the troop panel; verify in the e2e of 5.1 that an arriving column section can be selected and ordered (fix the panel if it is keyed by the deployment roster)
 
 ## 4. Editor
