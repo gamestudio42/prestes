@@ -165,3 +165,5 @@ panel's side picker. `camp-sides.png` (taken by
 lean-to, the boxes and the cart in the Column's looks (behind) and the government's (in front).
 The side is drawing only: `packages/simulation/test/camp-sides.test.ts`
 runs both camps to the same hashes tick by tick.
+
+Approved by the owner, 2026-11-13.

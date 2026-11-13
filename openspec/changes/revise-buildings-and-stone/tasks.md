@@ -32,7 +32,7 @@
 ## 5. Objects, fences and walls
 
 - [x] 5.1 The approved waterside, farm and town objects: builders in the props target, catalog rows with footprint, height and cover class (D9), the `water` group and its placement on water and banks; verify with the review sheet, a unit test that a boat in water leaves passability and cover unchanged, and a simulation test of cover behind a canoe on a bank
-- [ ] 5.2 The Column's camp and train: tents (with the kit's aid tent), carts, pack saddles, barrels, ammunition boxes, campfire, rifle stack, saddle rail, horse line and the abandoned 75 mm gun as approved, the `camp` group and the per-side variants (D11); verify with the review sheet and the variant determinism test
+- [x] 5.2 The Column's camp and train: tents (with the kit's aid tent), carts, pack saddles, barrels, ammunition boxes, campfire, rifle stack, saddle rail, horse line and the abandoned 75 mm gun as approved, the `camp` group and the per-side variants (D11); verify with the review sheet and the variant determinism test
 - [ ] 5.3 The approved fences and walls as appended `LINE_KINDS` (D10); verify with a view test of each on a slope, a simulation test of a fence's and a wall's cover, and a loader test of an older map's lines
 - [ ] 5.4 Names in EN and PT-BR and thumbnails for every new object and line; verify with `pnpm check:locales`, `pnpm check:content` and an editor e2e placing one object of each group and drawing one new line
 
