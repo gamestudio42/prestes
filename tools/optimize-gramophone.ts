@@ -18,6 +18,7 @@ import {
   statSync,
 } from 'node:fs';
 import { join, resolve } from 'node:path';
+import { findBinary } from './audio-tools';
 
 const ROOT = resolve(import.meta.dirname, '..');
 const SOURCE = join(ROOT, 'gramofone');
@@ -33,38 +34,6 @@ const TRUE_PEAK_DB = -2;
 const LOUDNESS_RANGE = 11;
 const MAX_FILE_BYTES = 800 * 1024;
 const MAX_TOTAL_BYTES = 10 * 1024 * 1024;
-
-function isExecutable(command: string): boolean {
-  const result = spawnSync(command, ['-version'], { encoding: 'utf8' });
-  return result.status === 0;
-}
-
-function findBinary(name: 'ffmpeg' | 'ffprobe'): string {
-  const fromEnv = process.env[name.toUpperCase()];
-  if (fromEnv && isExecutable(fromEnv)) return fromEnv;
-
-  const localAppData = process.env.LOCALAPPDATA;
-  const candidates = [
-    localAppData && join(localAppData, 'Programs/kdenlive/bin', `${name}.exe`),
-    localAppData &&
-      join(
-        localAppData,
-        'Programs/Open Design/resources/app/node_modules/@ffmpeg-installer/win32-x64',
-        `${name}.exe`,
-      ),
-    `C:/ffmpeg/bin/${name}.exe`,
-    `C:/Program Files/ffmpeg/bin/${name}.exe`,
-  ].filter((path): path is string => Boolean(path));
-
-  for (const candidate of candidates) {
-    if (existsSync(candidate) && isExecutable(candidate)) return candidate;
-  }
-  if (isExecutable(name)) return name;
-
-  throw new Error(
-    `${name} not found. Set ${name.toUpperCase()} to its executable, or put it on PATH.`,
-  );
-}
 
 interface LoudnessMeasurement {
   input_i: string;

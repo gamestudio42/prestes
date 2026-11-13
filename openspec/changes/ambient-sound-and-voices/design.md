@@ -93,6 +93,16 @@ format follows the gramophone tool (mono MP3) unless a measurement at task
 1.3 shows looping gaps in the ambient beds, in which case beds use a
 gapless format and the decision is recorded. Voice files are mono.
 
+Decided at task 1.3 (2026-11-13): mono MP3 for every group, beds
+included. `tools/audio-loop-check.ts` encodes a 30 s looped test bed and
+decodes it in Chromium as the game does: MP3, Ogg Vorbis, Ogg Opus and
+WAV all decode to the exact sample count, no gap. MP3 is gapless only with
+its encoder header, which ffmpeg writes to a file but not to a pipe (piped,
+the bed gained 60 ms of silence), so `tools/prepare-audio.ts` encodes to a
+file. Firefox and Safari were not measured (only Chromium is installed for
+the tests); a browser that ignores the header would loop with a short gap,
+which the hand check (6.3) would hear.
+
 **D9. Loading.** Audio is fetched after the battle starts, in priority
 order: order lines and answers for the board, then the map's water and
 beds, then footsteps, then call-outs. Each sound plays when decoded.

@@ -59,3 +59,30 @@ Approved by the owner after listening in the preview, 2026-11-13.
   centred, no console error.
 
 Approved by the owner, 2026-11-13.
+
+## 1.3 The audio preparation tool and the loop test (2026-11-13)
+
+- `pnpm prepare:audio` (`tools/prepare-audio.ts`): the owner's WAV files
+  go under `audio-src/<group>/` (gitignored, like `gramofone/`), and come
+  out as mono MP3 in `apps/game/public/audio/<group>/`. Per group:
+  - `voice`: silence trimmed at both ends, -16 LUFS, 22.05 kHz, 48 kbps;
+  - `oneshots`: trimmed, -20 LUFS, 32 kHz, 64 kbps;
+  - `beds`, `water`: the last 2 s cross-faded into the start so they loop,
+    -24 / -22 LUFS, 32 kHz, 64 kbps;
+  - `footsteps`: looped with a 0.5 s cross-fade, -22 LUFS.
+- Repeatable: the same sources give the same bytes (a test runs it twice).
+- The loop test (`tools/audio-loop-check.ts`): a 30 s wind bed, made to
+  loop, decoded in Chromium as the game does. MP3, Ogg Vorbis, Ogg Opus,
+  WAV and the bed as the tool prepares it all decode to exactly 960,000
+  samples, with no silence at the seam. Decision, in the design (D8): mono
+  MP3 for everything.
+- Found on the way: ffmpeg writes the MP3's gapless header only to a file;
+  piped, the prepared bed gained 60 ms of silence at the seam (a click
+  every 30 s). The tool now encodes to a file.
+- Not measured: Firefox and Safari (only Chromium is installed).
+- `findBinary` moved from the gramophone tool to `tools/audio-tools.ts`;
+  `pnpm optimize:music` still runs and leaves the music unchanged.
+- Checked: `tests/tools/prepare-audio.test.ts` (9 tests: trimming, the
+  loop's seam no bigger than any step inside the sound, the WAV writer,
+  and with ffmpeg the same bytes twice, a line trimmed to its sound, a bed
+  shortened by its fade, the gapless header written).
