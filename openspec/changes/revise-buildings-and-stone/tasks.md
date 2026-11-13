@@ -21,7 +21,7 @@
 - [x] 3.3 Town buildings remodelled (terraced-house, terraced-house-wide, sobrado, casa-terrea, venda, armazem, coreto, church, factory, warehouse); verify as 3.2
 - [x] 3.4 The approved new buildings: builder, catalog row, openings, capacity, names in EN and PT-BR; verify with the model check, `pnpm check:content`, and a simulation test that a section enters, mans and is assaulted in one new building of each group
 - [x] 3.5 Variants: atlas regions, the map document's `variant` (a new version that loads the older ones), the editor's picker; verify with the two-looks determinism test and a loader test of an older map
-- [ ] 3.6 The coded box buildings are removed and placement moves to `structures-layer.ts`; verify: `pnpm test`, the battle-map e2e and unchanged goldens
+- [x] 3.6 The coded box buildings are removed and placement moves to `structures-layer.ts`; verify: `pnpm test`, the battle-map e2e and unchanged goldens
 
 ## 4. Stone
 
