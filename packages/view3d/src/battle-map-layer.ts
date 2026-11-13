@@ -1170,8 +1170,15 @@ const MODELLED_PROPS = new Set(['tree-broad', 'tree-pine', 'tree-araucaria', 'bu
 const isModelled = (model: string): boolean => {
   const entry = catalogObject(model);
   // revise-buildings-and-stone 5.1: the waterside, farm and town objects are props.glb models.
+  // 3.6 (D7): every catalog building is a Blender model too; the editor's tiles picture it.
   return (
-    MODELLED_PROPS.has(model) || KINDED_STONES.includes(model) || !!entry?.modelFile || entry?.group === 'water' || entry?.group === 'camp' || !!entry?.subgroup
+    MODELLED_PROPS.has(model) ||
+    KINDED_STONES.includes(model) ||
+    !!entry?.modelFile ||
+    entry?.group === 'building' ||
+    entry?.group === 'water' ||
+    entry?.group === 'camp' ||
+    !!entry?.subgroup
   );
 };
 
