@@ -198,6 +198,10 @@ function endPosture(ctx: SimContext, state: ScriptedState, tick: number): void {
   const over = (posture.endsAt !== undefined && tick >= posture.endsAt) || (posture.untilEvent !== undefined && state.fired.has(posture.untilEvent));
   if (!over) return;
   state.posture = null;
+  // The sections the offensive sent go back into the commander's pool, so it plans them again (guards first).
+  if (posture.posture === 'offensive') {
+    for (const squadId of posture.ordered) if (ctx.battle.plans.get(squadId) === 'attack') ctx.battle.plans.set(squadId, 'hold');
+  }
   // An objective lost while the posture held is still to retake: the commander's clock for it starts now.
   if (ctx.battle.retake) ctx.battle.retake = { ...ctx.battle.retake, tick };
 }

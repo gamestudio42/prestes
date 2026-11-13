@@ -194,7 +194,7 @@ describe('battle events: troops enter', () => {
     run(10);
     const arrived = engine.units.filter((unit) => !before.has(unit.id)).map((unit) => unit.id);
     expect(arrived.length).toBeGreaterThan(0);
-    const seenByColumn = new Set(engine.frame().seen.column);
+    const seenByColumn = new Set(engine.frame().seen?.column ?? []);
     expect(arrived.some((id) => seenByColumn.has(id))).toBe(false);
   });
 

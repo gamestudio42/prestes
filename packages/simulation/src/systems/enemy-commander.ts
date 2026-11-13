@@ -701,6 +701,7 @@ function commandPosture(ctx: SimContext, own: Map<number, MutableUnit[]>, postur
   if (posture.posture === 'offensive') {
     for (const [squadId, section] of sectionsInOrder) {
       ctx.scripted?.arriving.delete(squadId);
+      if (!posture.ordered.includes(squadId)) posture.ordered.push(squadId);
       if (plans.get(squadId) === 'attack' && goingFor(ctx, section)) continue;
       const ids = section.map((unit) => unit.id);
       const here = centroid(section);
