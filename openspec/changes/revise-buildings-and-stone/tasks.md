@@ -38,7 +38,7 @@
 
 ## 6. Gates
 
-- [ ] 6.1 Models split by group and loaded by what the map uses; strategic-band meshes; verify with the sixty-building performance e2e
+- [x] 6.1 Models split by group and loaded by what the map uses; strategic-band meshes; verify with the sixty-building performance e2e
 - [ ] 6.2 `docs/assets.md`: every building, stone, object and line with source and licence; verify: the register check passes
 - [ ] 6.3 `pnpm verify` and `openspec validate revise-buildings-and-stone --type change --strict`; verify: all pass, model sizes in `docs/status.md`
 - [ ] 6.4 Hand check by the owner: the two authored maps before and after, a town and a river camp built in the editor; findings in `docs/status.md`

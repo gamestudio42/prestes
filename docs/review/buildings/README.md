@@ -233,3 +233,5 @@ and from the strategic band, right. The new performance probe places a
 town of sixty buildings of mixed types on a large map: 2.0 ms a frame at
 tactical span and 3.0 ms at strategic span against the 16.7 ms budget
 (RTX 3050 laptop).
+
+Approved by the owner, 2026-11-13.
