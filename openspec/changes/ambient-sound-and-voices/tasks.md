@@ -4,7 +4,7 @@
 
 ## 1. Mixer and the nearness rule
 
-- [ ] 1.1 A mixer with effects, ambience and voices buses under a master, the ducking side-chain, and the shot audio moved onto effects; verify with unit tests on a fake output that shots still play as before and that a priority voice lowers the other buses and releases within 1 s
+- [x] 1.1 A mixer with effects, ambience and voices buses under a master, the ducking side-chain, and the shot audio moved onto effects; verify with unit tests on a fake output that shots still play as before and that a priority voice lowers the other buses and releases within 1 s
 - [ ] 1.2 The listening point from the camera's ground focus and `gainAt(distance, range, zoom)` with left-right panning by screen position; verify with unit tests of range, zoom and pan
 - [ ] 1.3 The audio preparation tool (trim, level, encode) and a loop test of one ambient bed in the target format; verify: the tool is repeatable (same input, same output) and the bed loops without an audible gap, with the format decision recorded in the design
 

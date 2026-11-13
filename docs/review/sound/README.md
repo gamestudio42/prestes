@@ -29,3 +29,5 @@ One section per task, in the order the owner reviews them.
   buses, no console error.
 - Nothing to listen to yet that differs: the duck has no caller until the
   voices (5.4).
+
+Approved by the owner after listening in the preview, 2026-11-13.
