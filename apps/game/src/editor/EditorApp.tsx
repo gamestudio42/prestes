@@ -101,7 +101,7 @@ const TOOL_GROUPS: readonly { layer: string; tools: readonly PaletteEntry[] }[] 
   { layer: 'editor.layer.structures', tools: ['line', 'trench'] },
   { layer: 'editor.layer.objects', tools: ['place', 'trees', 'eraseTrees'] },
   { layer: 'editor.layer.vegetation', tools: ['vegetation', 'eraseVegetation'] },
-  { layer: 'editor.layer.gameplay', tools: ['deployment', 'objective'] },
+  { layer: 'editor.layer.gameplay', tools: ['deployment', 'objective', 'entry-point', 'event-area'] },
 ];
 
 /**
@@ -131,6 +131,8 @@ const TOOL_KEYS: Record<ToolId, string> = {
   vegetation: 'P',
   deployment: 'K',
   objective: 'J',
+  'entry-point': '',
+  'event-area': '',
 };
 
 const OBJECT_GROUPS = ['building', 'stone', 'water', 'camp', 'tree', 'post', 'cover', 'prop', 'decal'] as const;
@@ -170,6 +172,8 @@ function hintKey(tool: ToolId): string {
   if (tool === 'trees') return 'editor.tool.hint.trees';
   if (tool === 'deployment') return 'editor.tool.hint.deployment';
   if (tool === 'objective') return 'editor.tool.hint.objective';
+  if (tool === 'entry-point') return 'editor.tool.hint.entry-point';
+  if (tool === 'event-area') return 'editor.tool.hint.event-area';
   return 'editor.tool.hint.select';
 }
 
@@ -274,6 +278,9 @@ export function EditorApp(): ReactNode {
       }),
     );
     view.onCursor = setCursor;
+    // add-battle-events 4.1: new places are named in the editor's language; deleting a used one asks first.
+    view.placeName = (kind, id) => tRef.current(`editor.event.place.${kind}`, { n: id });
+    view.confirmPlaceDelete = (users) => window.confirm(tRef.current('editor.event.place.confirmDelete', { events: users.join(', ') }));
     viewport.current = view;
     let cancelled = false;
     void loadLast().then((document) => {

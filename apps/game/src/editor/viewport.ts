@@ -28,6 +28,7 @@ import { loadGraphicsSettings } from '../storage';
 import { fill, layerOf, sampleHeight, Stroke } from './brush';
 import { chooseScaleBar, drawScaleBar, EDITOR_SCALE_STYLE, scaleBarBox, THUMBNAIL_SCALE_STYLE, type ScaleBar, type ScaleBarText } from './scale-bar';
 import { OBJECTIVE_RADIUS, objectiveCircle, rasterCommand, type EditorStore, type SelectionItem } from './store';
+import { addEntryPoint, addTriggerArea, deletePlace, movePlace, placeUsers } from './events';
 
 /**
  * The editor's view (add-map-editor): the game's own SceneView showing the
@@ -53,6 +54,9 @@ const COLORS = {
   hatch: 0xa6d96a,
   port: 0xf4ead2,
   objective: 0xf4ead2,
+  /** add-battle-events 4.2: event places, and what the selected event uses. */
+  eventPlace: 0xd98cf2,
+  eventHighlight: 0xffd54a,
 };
 
 /** refine-map-editor 6.1: slot dots by what they protect (the panel's legend uses the same). */
@@ -96,6 +100,8 @@ export class EditorViewport {
   scaleBar: (ScaleBar & { metresPerPixel: number }) | null = null;
   private readonly sectionLabels: HTMLDivElement[] = [];
   private readonly badgeLabels: HTMLDivElement[] = [];
+  /** add-battle-events 4.2: the event places' names. */
+  private readonly placeLabels_: HTMLDivElement[] = [];
   private cursor: Vec2 | null = null;
   private draft: Vec2[] = [];
   private draftTool: string;
@@ -104,6 +110,10 @@ export class EditorViewport {
   private disposed = false;
   private readonly unsubscribe: () => void;
   onCursor: ((cursor: CursorInfo | null) => void) | null = null;
+  /** add-battle-events 4.1: a new place's default name, in the editor's language. */
+  placeName: ((kind: 'entry' | 'area', id: number) => string) | null = null;
+  /** add-battle-events 4.1: asks before deleting a place events use (their labels); true deletes. */
+  confirmPlaceDelete: ((users: string[]) => boolean) | null = null;
 
   constructor(
     private readonly container: HTMLElement,
@@ -512,6 +522,23 @@ export class EditorViewport {
       this.store.setSelection([{ kind: 'objective', id }]);
       return;
     }
+    if (tool === 'entry-point' || tool === 'event-area') {
+      // add-battle-events 4.1: a click on a place of the tool's kind takes it (drag moves it); elsewhere adds one.
+      const kind = tool === 'entry-point' ? 'entry' : 'area';
+      const hit = this.eventPlaceAt(point, kind);
+      if (hit) {
+        this.store.setSelection([hit]);
+        this.drag = { kind: 'move', start: point, current: point, items: [hit] };
+        return;
+      }
+      let id = 0;
+      const name = (placeId: number) => this.placeName?.(kind, placeId) ?? `${kind} ${placeId}`;
+      this.store.editVector((draft) => {
+        id = kind === 'entry' ? addEntryPoint(draft, point, name) : addTriggerArea(draft, this.snap(point), name);
+      });
+      this.store.setSelection([{ kind: 'event-place', id }]);
+      return;
+    }
     if (tool === 'deployment' || tool === 'select') {
       const hit = this.hitTest(point, tool === 'deployment');
       if (hit) {
@@ -625,6 +652,28 @@ export class EditorViewport {
     // Insert a point on the selected polyline's nearest segment.
     const ground = this.groundAt(event);
     const item = this.store.selection[0];
+    if (ground && item?.kind === 'event-place') {
+      const point = this.snap(ground);
+      this.store.editVector((draft) => {
+        const place = (draft.eventPlaces ?? []).find((entry) => entry.id === item.id);
+        if (place?.kind !== 'area') return;
+        const polygon = place.polygon.map((corner) => ({ ...corner }));
+        if (polygon.length >= 16) return;
+        let best = 0;
+        let bestDistance = Infinity;
+        for (let index = 0; index < polygon.length; index += 1) {
+          const distance = segmentDistance(point, polygon[index]!, polygon[(index + 1) % polygon.length]!);
+          if (distance < bestDistance) {
+            bestDistance = distance;
+            best = index + 1;
+          }
+        }
+        polygon.splice(best, 0, point);
+        draft.eventPlaces = (draft.eventPlaces ?? []).map((entry) => (entry.id === item.id ? { ...place, polygon } : entry));
+      });
+      this.store.setSelection([{ kind: 'event-place', id: item.id }]);
+      return;
+    }
     if (!ground || !item || !['road', 'river', 'line', 'trench', 'pond', 'area'].includes(item.kind)) return;
     const point = this.snap(ground);
     if (item.kind === 'area') {
@@ -835,6 +884,11 @@ export class EditorViewport {
             }
             break;
           }
+          case 'event-place':
+            movePlace(draft, item.id, dx, dy, item.point, round);
+            break;
+          case 'event':
+            break;
           case 'objective': {
             draft.objectives = (draft.objectives ?? []).map((objective) =>
               objective.id === item.id
@@ -862,7 +916,12 @@ export class EditorViewport {
   }
 
   deleteSelection(): void {
-    const items = this.store.selection;
+    const items = this.store.selection.filter((item) => item.kind !== 'event');
+    if (items.length === 0) return;
+    // add-battle-events 4.1: deleting a place that events use asks first, naming them.
+    const doomed = items.filter((item): item is Extract<SelectionItem, { kind: 'event-place' }> => item.kind === 'event-place' && item.point === undefined);
+    const users = doomed.flatMap((item) => placeUsers(this.store.map.events ?? [], item.id).map((event) => event.label || String(event.id)));
+    if (users.length > 0 && this.confirmPlaceDelete && !this.confirmPlaceDelete([...new Set(users)])) return;
     this.store.editVector((draft) => {
       for (const item of items) {
         switch (item.kind) {
@@ -880,6 +939,16 @@ export class EditorViewport {
           case 'objective':
             draft.objectives = (draft.objectives ?? []).filter((objective) => objective.id !== item.id);
             break;
+          case 'event-place': {
+            const place = (draft.eventPlaces ?? []).find((entry) => entry.id === item.id);
+            if (item.point !== undefined && place?.kind === 'area') {
+              // A corner goes while three remain.
+              if (place.polygon.length > 3) {
+                draft.eventPlaces = (draft.eventPlaces ?? []).map((entry) => (entry.id === item.id ? { ...place, polygon: place.polygon.filter((_, index) => index !== item.point) } : entry));
+              }
+            } else deletePlace(draft, item.id);
+            break;
+          }
           case 'area': {
             // A corner goes while three remain; the area itself cannot be deleted.
             const area = draft.deployment[item.side].area as Vec2[];
@@ -927,6 +996,25 @@ export class EditorViewport {
     if (flag) return { kind: 'objective', id: flag.id };
     const inside = objectives.find((objective) => insideDeploymentArea(objective.area as Vec2[], point.x, point.y));
     return inside ? { kind: 'objective', id: inside.id } : null;
+  }
+
+  /** add-battle-events 4.1: an entry point under the pointer, or a trigger area's corner, edge or inside. */
+  private eventPlaceAt(point: Vec2, kind: 'entry' | 'area'): SelectionItem | null {
+    const pick = this.pick;
+    const places = (this.store.map.eventPlaces ?? []).filter((place) => place.kind === kind);
+    for (const place of places) {
+      if (place.kind === 'entry' && Math.hypot(place.point.x - point.x, place.point.y - point.y) <= pick * 1.5) return { kind: 'event-place', id: place.id };
+      if (place.kind === 'area') {
+        const corner = place.polygon.findIndex((p) => Math.hypot(p.x - point.x, p.y - point.y) <= pick);
+        if (corner >= 0) return { kind: 'event-place', id: place.id, point: corner };
+      }
+    }
+    for (const place of places) {
+      if (place.kind !== 'area') continue;
+      const nearEdge = place.polygon.some((corner, index) => segmentDistance(point, corner, place.polygon[(index + 1) % place.polygon.length]!) <= pick);
+      if (nearEdge || insideDeploymentArea(place.polygon, point.x, point.y)) return { kind: 'event-place', id: place.id };
+    }
+    return null;
   }
 
   private hitTest(point: Vec2, sectionsOnly: boolean): SelectionItem | null {
@@ -1016,6 +1104,7 @@ export class EditorViewport {
       }
     }
     this.placeLabels();
+    this.placeEventLabels();
     this.placeBadges();
     this.drawScaleBar();
     this.frame = requestAnimationFrame(this.tick);
@@ -1048,6 +1137,83 @@ export class EditorViewport {
     if (!context) return;
     context.clearRect(0, 0, box.width, box.height);
     drawScaleBar(context, scaled, 0, 0, style, text);
+  }
+
+  /** add-battle-events 4.2: whether event places are shown (the Events panel or a place tool). */
+  private eventPlacesShown(): boolean {
+    return this.store.view.events || this.store.tool === 'entry-point' || this.store.tool === 'event-area';
+  }
+
+  /** What the selected event uses: its places, objectives and move points. */
+  private eventUses(): { places: Set<number>; objectives: Set<number>; points: Vec2[] } {
+    const uses = { places: new Set<number>(), objectives: new Set<number>(), points: [] as Vec2[] };
+    const selectedEvents = new Set(this.store.selection.filter((item) => item.kind === 'event').map((item) => ('id' in item ? item.id : -1)));
+    for (const event of this.store.map.events ?? []) {
+      if (!selectedEvents.has(event.id)) continue;
+      const trigger = event.trigger;
+      if (trigger?.kind === 'area') uses.places.add(trigger.area);
+      if (trigger?.kind === 'objective') uses.objectives.add(trigger.objective);
+      for (const action of event.actions) {
+        if (action.kind === 'troops') {
+          uses.places.add(action.entry);
+          if (action.order.kind === 'objective') uses.objectives.add(action.order.objective);
+          if (action.order.kind === 'move') uses.points.push(action.order.to);
+        } else if (action.kind === 'posture' && action.area !== undefined) uses.places.add(action.area);
+      }
+    }
+    return uses;
+  }
+
+  private drawEventPlaces(selected: (item: SelectionItem) => boolean): void {
+    if (!this.eventPlacesShown()) return;
+    const pick = this.pick;
+    const uses = this.eventUses();
+    for (const place of this.store.map.eventPlaces ?? []) {
+      const isSelected = selected({ kind: 'event-place', id: place.id });
+      const colour = isSelected ? COLORS.selection : uses.places.has(place.id) ? COLORS.eventHighlight : COLORS.eventPlace;
+      if (place.kind === 'entry') {
+        this.overlay.add(this.marker(place.point, colour, pick * 1.1));
+        const tip = { x: place.point.x + place.facing.x * 8, y: place.point.y + place.facing.y * 8 };
+        this.overlay.add(this.line([place.point, tip], colour));
+      } else {
+        this.overlay.add(this.line(place.polygon, colour, true));
+        if (isSelected || this.store.tool === 'event-area') {
+          place.polygon.forEach((corner, point) => this.overlay.add(this.marker(corner, isSelected || selected({ kind: 'event-place', id: place.id, point }) ? COLORS.selection : colour, pick * 0.6)));
+        }
+      }
+    }
+    for (const objective of this.store.map.objectives ?? []) {
+      if (uses.objectives.has(objective.id)) this.overlay.add(this.line(objective.area as Vec2[], COLORS.eventHighlight, true, 0.6));
+    }
+    for (const point of uses.points) this.overlay.add(this.ring(point, 3, COLORS.eventHighlight));
+  }
+
+  /** add-battle-events 4.2: each event place's name over it while places are shown. */
+  private placeEventLabels(): void {
+    let index = 0;
+    if (this.eventPlacesShown()) {
+      for (const place of this.store.map.eventPlaces ?? []) {
+        const at = place.kind === 'entry' ? place.point : {
+          x: place.polygon.reduce((sum, p) => sum + p.x, 0) / place.polygon.length,
+          y: place.polygon.reduce((sum, p) => sum + p.y, 0) / place.polygon.length,
+        };
+        const screen = this.view.groundToScreen(at.x, at.y);
+        if (!screen) continue;
+        let label = this.placeLabels_[index];
+        if (!label) {
+          label = document.createElement('div');
+          label.className = 'editor-label editor-place-label';
+          this.labels.appendChild(label);
+          this.placeLabels_[index] = label;
+        }
+        label.style.display = 'block';
+        label.style.transform = `translate(${Math.round(screen.x)}px, ${Math.round(screen.y) - 24}px) translateX(-50%)`;
+        if (label.textContent !== place.name) label.textContent = place.name;
+        label.dataset.place = String(place.id);
+        index += 1;
+      }
+    }
+    for (; index < this.placeLabels_.length; index += 1) this.placeLabels_[index]!.style.display = 'none';
   }
 
   private placeLabels(): void {
@@ -1213,6 +1379,7 @@ export class EditorViewport {
       this.overlay.add(this.line(objective.area as Vec2[], colour, true));
       this.overlay.add(this.marker(objective.flag, colour, pick * (tool === 'objective' ? 0.9 : 0.6)));
     }
+    this.drawEventPlaces(selected);
     this.drawCoverHover();
     // Drafts and the cursor.
     const drag = this.drag;
@@ -1327,6 +1494,13 @@ function itemPoint(map: EditableMap, item: SelectionItem): Vec2 | null {
     }
     case 'objective':
       return (map.objectives ?? []).find((entry) => entry.id === item.id)?.flag ?? null;
+    case 'event':
+      return null;
+    case 'event-place': {
+      const place = (map.eventPlaces ?? []).find((entry) => entry.id === item.id);
+      if (!place) return null;
+      return place.kind === 'entry' ? place.point : (place.polygon[item.point ?? 0] ?? null);
+    }
     default: {
       const target = polylineOf(map, item);
       if (!target) return null;

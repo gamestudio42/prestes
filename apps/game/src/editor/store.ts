@@ -51,7 +51,10 @@ export type ToolId =
   | 'trees'
   | 'vegetation'
   | 'deployment'
-  | 'objective';
+  | 'objective'
+  /** add-battle-events 4.1: entry points on the edge and trigger areas. */
+  | 'entry-point'
+  | 'event-area';
 
 export interface ToolSettings {
   size: number;
@@ -100,6 +103,8 @@ export interface ViewSettings {
   topDown: boolean;
   /** refine-map-editor 6.1: the cover overlay (slots, badges, concealment, zone totals). */
   cover: boolean;
+  /** add-battle-events 4.2: the Events panel is open: event places are drawn labelled. */
+  events: boolean;
 }
 
 /** What a selection points at. */
@@ -111,7 +116,11 @@ export type SelectionItem =
   /** add-deployment-phase 1.2: a side's deployment area, or one of its corners. */
   | { kind: 'area'; side: 'column' | 'legalist'; point?: number }
   /** add-map-objectives 1.3: an objective (area and flag move together). */
-  | { kind: 'objective'; id: number };
+  | { kind: 'objective'; id: number }
+  /** add-battle-events 4.1: an event place, or one corner of a trigger area. */
+  | { kind: 'event-place'; id: number; point?: number }
+  /** add-battle-events 4.1: an event in the Events panel (its places and objectives are highlighted). */
+  | { kind: 'event'; id: number };
 
 /** add-map-objectives 1.3: a new objective's area is this circle (m), as a 16-gon. */
 export const OBJECTIVE_RADIUS = 16;
@@ -144,9 +153,16 @@ export function vectorCommand(before: EditableMap, after: VectorBody): Command {
   const old = vectorSnapshot(before);
   const next = JSON.parse(JSON.stringify(after)) as VectorBody;
   return {
-    apply: (map) => Object.assign(map, JSON.parse(JSON.stringify(next)) as VectorBody),
-    revert: (map) => Object.assign(map, JSON.parse(JSON.stringify(old)) as VectorBody),
+    apply: (map) => assignVector(map, next),
+    revert: (map) => assignVector(map, old),
   };
+}
+
+/** Puts a vector snapshot on the map; an optional field the snapshot lacks (the first objective or event undone) is removed. */
+function assignVector(map: EditableMap, body: VectorBody): void {
+  const target = map as unknown as Record<string, unknown>;
+  for (const key of Object.keys(target)) if (key !== 'heights' && key !== 'paint' && key !== 'vegetation' && !(key in body)) delete target[key];
+  Object.assign(map, JSON.parse(JSON.stringify(body)) as VectorBody);
 }
 
 /** Replaces the whole map (resize, import). */
@@ -235,7 +251,7 @@ export class EditorStore {
     snap: 1,
     rotateStep: true,
   };
-  view: ViewSettings = { overlay: 'none', grid: false, topDown: false, cover: false };
+  view: ViewSettings = { overlay: 'none', grid: false, topDown: false, cover: false, events: false };
   /** The cover piece under the pointer while the cover overlay is on (its preview key). */
   coverHover: string | null = null;
   private preview: { map: BattleMap; preview: CoverPreview } | null = null;
@@ -394,6 +410,12 @@ export class EditorStore {
         return item.point === undefined || item.point < this.map.deployment[item.side].area.length;
       case 'objective':
         return (this.map.objectives ?? []).some((objective) => objective.id === item.id);
+      case 'event-place': {
+        const place = (this.map.eventPlaces ?? []).find((entry) => entry.id === item.id);
+        return place !== undefined && (item.point === undefined || (place.kind === 'area' && item.point < place.polygon.length));
+      }
+      case 'event':
+        return (this.map.events ?? []).some((event) => event.id === item.id);
     }
   }
 
