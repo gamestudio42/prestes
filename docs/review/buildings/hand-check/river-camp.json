@@ -1,0 +1,232 @@
+{
+  "id": "teste-acampamento",
+  "size": "small",
+  "tool": "select",
+  "overlay": "none",
+  "bounds": {
+    "minX": -120,
+    "minY": -120,
+    "maxX": 120,
+    "maxY": 120
+  },
+  "objects": [
+    {
+      "id": 1,
+      "type": "farm-gate",
+      "x": 0,
+      "y": -26
+    },
+    {
+      "id": 2,
+      "type": "landing-stage",
+      "x": 28,
+      "y": 0
+    },
+    {
+      "id": 3,
+      "type": "mooring-post",
+      "x": 29,
+      "y": 5
+    },
+    {
+      "id": 4,
+      "type": "dugout-canoe",
+      "x": 36,
+      "y": 4
+    },
+    {
+      "id": 5,
+      "type": "canoa-de-tolda",
+      "x": 42,
+      "y": -10
+    },
+    {
+      "id": 6,
+      "type": "river-raft",
+      "x": 40,
+      "y": 14
+    },
+    {
+      "id": 7,
+      "type": "boat-overturned",
+      "x": 24,
+      "y": 12
+    },
+    {
+      "id": 8,
+      "type": "ridge-tent",
+      "x": -30,
+      "y": 4
+    },
+    {
+      "id": 9,
+      "type": "ridge-tent",
+      "x": -22,
+      "y": 4
+    },
+    {
+      "id": 10,
+      "type": "bell-tent",
+      "x": -30,
+      "y": -12,
+      "variant": "legalist"
+    },
+    {
+      "id": 11,
+      "type": "poncho-lean-to",
+      "x": -14,
+      "y": 12
+    },
+    {
+      "id": 12,
+      "type": "field-kitchen",
+      "x": 0,
+      "y": -10
+    },
+    {
+      "id": 13,
+      "type": "mess-tent",
+      "x": 12,
+      "y": 4
+    },
+    {
+      "id": 14,
+      "type": "campfire",
+      "x": -8,
+      "y": 0
+    },
+    {
+      "id": 15,
+      "type": "rifle-stack",
+      "x": -12,
+      "y": -4
+    },
+    {
+      "id": 16,
+      "type": "ammo-boxes",
+      "x": 14,
+      "y": -14,
+      "variant": "legalist"
+    },
+    {
+      "id": 17,
+      "type": "supply-cart",
+      "x": 20,
+      "y": -18,
+      "variant": "legalist"
+    },
+    {
+      "id": 18,
+      "type": "camp-barrels",
+      "x": -2,
+      "y": 4
+    },
+    {
+      "id": 19,
+      "type": "hammock",
+      "x": -24,
+      "y": 14
+    }
+  ],
+  "roads": 0,
+  "lines": 3,
+  "lineKinds": [
+    {
+      "kind": "rail-fence"
+    },
+    {
+      "kind": "rail-fence"
+    },
+    {
+      "kind": "bamboo-fence"
+    }
+  ],
+  "rivers": 0,
+  "ponds": 1,
+  "bridges": 0,
+  "trenches": [],
+  "sections": {
+    "column": [
+      {
+        "x": -44,
+        "y": 93
+      },
+      {
+        "x": 0,
+        "y": 93
+      },
+      {
+        "x": 44,
+        "y": 93
+      }
+    ],
+    "legalist": [
+      {
+        "x": -44,
+        "y": -92
+      },
+      {
+        "x": 0,
+        "y": -92
+      },
+      {
+        "x": 44,
+        "y": -92
+      }
+    ]
+  },
+  "areas": {
+    "column": [
+      {
+        "x": -74,
+        "y": 65
+      },
+      {
+        "x": 74,
+        "y": 65
+      },
+      {
+        "x": 74,
+        "y": 120
+      },
+      {
+        "x": -74,
+        "y": 120
+      }
+    ],
+    "legalist": [
+      {
+        "x": -74,
+        "y": -120
+      },
+      {
+        "x": 74,
+        "y": -120
+      },
+      {
+        "x": 74,
+        "y": -65
+      },
+      {
+        "x": -74,
+        "y": -65
+      }
+    ]
+  },
+  "selection": [
+    {
+      "kind": "object",
+      "id": 17
+    }
+  ],
+  "problems": null,
+  "enemyForces": [],
+  "light": {
+    "time": 12,
+    "bearing": 45
+  },
+  "north": null,
+  "canUndo": true,
+  "saveState": "unsaved",
+  "message": null
+}

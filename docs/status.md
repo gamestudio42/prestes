@@ -459,3 +459,14 @@ corrugated asbestos appears.
   them.
 - Frame time (RTX 3050): a town of sixty buildings on a large map 2.0 ms
   tactical, 3.0 ms strategic.
+- Hand check (6.4, 2026-11-13): at the owner's request a town and a river
+  camp were built in the editor and played by
+  `tests/e2e/review-hand-check.spec.ts` (throwaway maps, nothing saved);
+  `docs/review/buildings/sheet-hand-check.png` shows both in the tactical
+  and strategic bands. Both opened in the playtest, went through deployment
+  and ran 8 s of battle with no console error. The owner approved them as
+  they are. Open, noted for later: the river camp's pond came out with three
+  corners instead of four (the test's clicks or the pond tool, not looked
+  into); the iron gate barely shows behind the church in that view; at the
+  strategic band the church's roof shows a dark cross where the tower is,
+  worth a look at its far mesh.
