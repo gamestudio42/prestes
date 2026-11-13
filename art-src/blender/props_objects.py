@@ -385,11 +385,77 @@ def kiosk():
     b.to_object("kiosk")
 
 
+# --- Gates, standing open (5.3) ----------------------------------------------
+
+def _leaf(b: MeshBuilder, hinge_x: float, length: float, height: float, swing: float, parts) -> None:
+    """A gate leaf hinged at (hinge_x, 0), swung `swing` radians about its hinge;
+    `parts` are (x0, x1, z0, z1, swatch) boxes in the leaf's own frame."""
+    turn = placed(hinge_x, 0, 0, rz=swing)
+    for x0, x1, z0, z1, swatch in parts:
+        b.box(((x0 + x1) / 2, 0, (z0 + z1) / 2), (x1 - x0, 0.07, z1 - z0), swatch, matrix=turn)
+
+
+def farm_gate():
+    """A farm gate (porteira) of five bars and a brace, swung wide open."""
+    b = MeshBuilder("environment")
+    for x in (-1.8, 1.8):
+        b.box((x, 0, 0.8), (0.22, 0.22, 1.9), "bark")
+    length = 3.4
+    parts = [(0.05, 0.15, 0.1, 1.45, "timber"), (length - 0.1, length, 0.1, 1.45, "timber")]
+    parts += [(0.05, length, z, z + 0.1, "timber") for z in (0.15, 0.45, 0.75, 1.05, 1.35)]
+    _leaf(b, -1.8, length, 1.5, -math.pi / 2, parts)
+    # The brace in the leaf's plane, from the hinge's foot up to the far top rail.
+    x0, z0, x1, z1 = 0.15, 0.2, length - 0.1, 1.4
+    rise = math.atan2(z1 - z0, x1 - x0)
+    brace = placed(-1.8, 0, 0, rz=-math.pi / 2) @ Matrix.Translation(((x0 + x1) / 2, 0, (z0 + z1) / 2)) @ Matrix.Rotation(-rise, 4, "Y")
+    b.box((0, 0, 0), (math.hypot(x1 - x0, z1 - z0), 0.06, 0.09), "timber", matrix=brace)
+    b.to_object("farm-gate")
+
+
+def rail_gate():
+    """A rail gate (cancela de varas): two slotted posts, the rails slid out
+    and laid on the ground beside the gap."""
+    b = MeshBuilder("environment")
+    for x in (-1.6, 1.6):
+        b.box((x, 0, 0.7), (0.2, 0.2, 1.5), "bark")
+    for k, y in enumerate((-0.25, -0.4, -0.55)):
+        b.cylinder((0, 0, 0), 0.06, 3.4, "bark", sides=6, matrix=placed(0.1 * k, y, 0.06, rx=math.pi / 2, rz=ALONG_X + 0.05 * k))
+    b.to_object("rail-gate")
+
+
+def yard_gate():
+    """A yard gate of boards on two posts, standing open."""
+    b = MeshBuilder("environment")
+    for x in (-0.93, 0.93):
+        b.box((x, 0, 0.9), (0.14, 0.14, 1.8), "timber")
+    parts = [(0.05 + k * 0.18, 0.05 + k * 0.18 + 0.16, 0.08, 1.6, "timber") for k in range(10)]
+    parts += [(0.05, 1.79, z, z + 0.1, "bark") for z in (0.3, 1.3)]
+    _leaf(b, -0.93, 1.8, 1.6, -1.75, parts)
+    b.to_object("yard-gate")
+
+
+def iron_gate():
+    """A town gate: two plastered pillars, the iron leaves swung in."""
+    b = MeshBuilder("environment")
+    for x in (-1.95, 1.95):
+        b.box((x, 0, 1.2), (0.5, 0.5, 2.4), "plaster")
+        b.box((x, 0, 2.45), (0.62, 0.62, 0.12), "trim")
+        b.box((x, 0, 2.6), (0.3, 0.3, 0.2), "plaster")
+    for hinge, sign in ((-1.7, 1), (1.7, -1)):
+        parts = [(0.0, 1.6, 0.1, 0.18, "iron"), (0.0, 1.6, 1.0, 1.06, "iron"), (0.0, 1.6, 2.0, 2.06, "iron")]
+        parts += [(x, x + 0.03, 0.1, 2.15, "iron") for x in [0.05 + k * 0.13 for k in range(12)]]
+        turn = placed(hinge, 0, 0, rz=sign * 1.3 + (0 if sign > 0 else math.pi))
+        for x0, x1, z0, z1, swatch in parts:
+            b.box(((x0 + x1) / 2, 0, (z0 + z1) / 2), (x1 - x0, 0.03, z1 - z0), swatch, matrix=turn)
+    b.to_object("iron-gate")
+
+
 BUILDERS = [
     dugout_canoe, motor_launch, river_raft, river_barge, horse_boat, canoa_de_tolda, jangada, boat_overturned,
     net_line, fish_trap, landing_stage, mooring_post,
     ox_cart, tractor, plough, cane_press, coffee_sacks, hen_house, pigsty, cart_wheel, millstone,
     motor_car, lorry, square_bench, fountain, market_stall, fuel_tins, street_sign, kiosk,
+    farm_gate, rail_gate, yard_gate, iron_gate,
 ]
 
 

@@ -20,7 +20,7 @@ import type { GroundMaterialId } from './ground-materials';
 export type ObjectGroup = 'building' | 'stone' | 'water' | 'camp' | 'tree' | 'post' | 'cover' | 'prop' | 'decal';
 
 /** revise-buildings-and-stone D9: the sub-headings of the props in the editor's list. */
-export type ObjectSubgroup = 'farm' | 'town';
+export type ObjectSubgroup = 'farm' | 'town' | 'gate';
 
 export type Footprint =
   | { kind: 'building'; model: BuildingModel }
@@ -29,7 +29,9 @@ export type Footprint =
   | { kind: 'foliage' }
   | { kind: 'decal'; material: GroundMaterialId }
   /** 4.2: dry stone walls round the footprint with a gate in front (`corralWalls`), compiled as stone wall lines. */
-  | { kind: 'enclosure' };
+  | { kind: 'enclosure' }
+  /** 5.3: a gate standing open: drawn only, walked through, no cover. */
+  | { kind: 'open' };
 
 export interface CatalogObject {
   id: string;
@@ -96,6 +98,8 @@ const water = (id: string, halfWidth: number, halfDepth: number, height: number,
   item(id, 'water', halfWidth, halfDepth, height, footprint);
 const camp = (id: string, halfWidth: number, halfDepth: number, height: number, footprint: Footprint, model = id): CatalogObject =>
   item(id, 'camp', halfWidth, halfDepth, height, footprint, { model });
+const gate = (id: string, halfWidth: number, halfDepth: number, height: number): CatalogObject =>
+  item(id, 'prop', halfWidth, halfDepth, height, { kind: 'open' }, { subgroup: 'gate' });
 const farm = (id: string, halfWidth: number, halfDepth: number, height: number, footprint: Footprint): CatalogObject =>
   item(id, 'prop', halfWidth, halfDepth, height, footprint, { subgroup: 'farm' });
 const town = (id: string, halfWidth: number, halfDepth: number, height: number, footprint: Footprint): CatalogObject =>
@@ -345,6 +349,13 @@ export const CATALOG_OBJECTS: readonly CatalogObject[] = [
   camp('rifle-stack', 0.4, 0.4, 1.4, THIN), // generic period type
   camp('saddle-rail', 1.5, 0.3, 1.1, THIN), // saddles, pp. 51, 141
   camp('field-gun-75', 0.9, 2.2, 1.5, SOLID_STONE), // a 75 mm field gun left behind, pp. 93-95
+  // revise-buildings-and-stone 5.3: gates, standing open (generic period
+  // types): placed in a gap left in a fence or wall line, walked through.
+  // Half widths reach the posts' outer faces: the fence is drawn up to them.
+  gate('farm-gate', 1.9, 3.4, 1.9),
+  gate('rail-gate', 1.7, 0.7, 1.5),
+  gate('yard-gate', 1, 1.8, 1.8),
+  gate('iron-gate', 2.2, 1.8, 2.7),
   // Flat decals.
   item('pebbles', 'decal', 2, 2, 0, { kind: 'decal', material: 'pebbles' }),
   item('leaf-patch', 'decal', 2, 2, 0, { kind: 'decal', material: 'leaf-litter' }),
@@ -387,7 +398,21 @@ export function modelFilesOf(models: Iterable<string>): string[] {
 }
 
 /** Walls and fences, drawn as polylines. */
-export type LineKind = 'taipa-wall' | 'stone-wall' | 'brick-wall' | 'wire-fence' | 'board-fence' | 'picket-fence' | 'hedgerow';
+export type LineKind =
+  | 'taipa-wall'
+  | 'stone-wall'
+  | 'brick-wall'
+  | 'wire-fence'
+  | 'board-fence'
+  | 'picket-fence'
+  | 'hedgerow'
+  // revise-buildings-and-stone 5.3 (D10): appended, so every saved map's kinds stay put.
+  | 'rail-fence'
+  | 'bamboo-fence'
+  | 'wattle-fence'
+  | 'adobe-wall'
+  | 'coped-wall'
+  | 'iron-railing';
 
 export interface LineCatalogEntry {
   kind: LineKind;
@@ -398,6 +423,8 @@ export interface LineCatalogEntry {
   halfDepth: number;
   /** A hedgerow also conceals (stamps scrub). */
   conceals: boolean;
+  /** 5.3: a fence close enough to hide a man at its full height (bamboo, wattle). */
+  opaque?: true;
 }
 
 export const LINE_KINDS: readonly LineCatalogEntry[] = [
@@ -408,6 +435,17 @@ export const LINE_KINDS: readonly LineCatalogEntry[] = [
   { kind: 'board-fence', nameKey: 'editor.line.board-fence', wall: false, defaultHeight: 1.8, halfDepth: 0.1, conceals: false },
   { kind: 'picket-fence', nameKey: 'editor.line.picket-fence', wall: false, defaultHeight: 1, halfDepth: 0.1, conceals: false },
   { kind: 'hedgerow', nameKey: 'editor.line.hedgerow', wall: false, defaultHeight: 1.8, halfDepth: 0.8, conceals: true },
+  // revise-buildings-and-stone 5.3 (D10), generic period types: a rail fence
+  // (tronqueira), a taquara bamboo fence, a wattle fence (pau-a-pique), an
+  // adobe wall, a whitewashed wall with its coping and pillars, an iron
+  // railing on a low base. A wall covers as a wall of its height; a fence as
+  // the present fences, the close ones hiding a man at full height.
+  { kind: 'rail-fence', nameKey: 'editor.line.rail-fence', wall: false, defaultHeight: 1.4, halfDepth: 0.12, conceals: false },
+  { kind: 'bamboo-fence', nameKey: 'editor.line.bamboo-fence', wall: false, defaultHeight: 1.9, halfDepth: 0.08, conceals: false, opaque: true },
+  { kind: 'wattle-fence', nameKey: 'editor.line.wattle-fence', wall: false, defaultHeight: 1.8, halfDepth: 0.1, conceals: false, opaque: true },
+  { kind: 'adobe-wall', nameKey: 'editor.line.adobe-wall', wall: true, defaultHeight: 2, halfDepth: 0.3, conceals: false },
+  { kind: 'coped-wall', nameKey: 'editor.line.coped-wall', wall: true, defaultHeight: 2.2, halfDepth: 0.2, conceals: false },
+  { kind: 'iron-railing', nameKey: 'editor.line.iron-railing', wall: false, defaultHeight: 1.8, halfDepth: 0.15, conceals: false },
 ];
 
 export function lineKind(kind: LineKind): LineCatalogEntry {

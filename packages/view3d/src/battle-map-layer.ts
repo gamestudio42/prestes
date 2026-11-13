@@ -941,12 +941,19 @@ function placeholderProp(name: string): THREE.Group | null {
  * The look of each authored wall or fence kind (add-map-editor); wire fences
  * are the world layer's, dry stone walls the structures layer's models (4.2).
  */
-const LINE_LOOK: Readonly<Record<string, { color: number; thickness: number; kind: 'solid' | 'boards' | 'pickets' | 'hedge' }>> = {
+const LINE_LOOK: Readonly<Record<string, { color: number; thickness: number; kind: 'solid' | 'boards' | 'pickets' | 'hedge' | 'rails' | 'canes' | 'wattle' | 'railing' }>> = {
   'taipa-wall': { color: PALETTE.adobe, thickness: 0.6, kind: 'solid' },
   'brick-wall': { color: PALETTE.whitewash, thickness: 0.3, kind: 'solid' },
   'board-fence': { color: PALETTE.wood, thickness: 0.08, kind: 'boards' },
   'picket-fence': { color: PALETTE.whitewash, thickness: 0.06, kind: 'pickets' },
   hedgerow: { color: PALETTE.leafDark, thickness: 1.4, kind: 'hedge' },
+  // revise-buildings-and-stone 5.3 (D10).
+  'rail-fence': { color: PALETTE.bark, thickness: 0.12, kind: 'rails' },
+  'bamboo-fence': { color: PALETTE.hay, thickness: 0.06, kind: 'canes' },
+  'wattle-fence': { color: PALETTE.wood, thickness: 0.12, kind: 'wattle' },
+  'adobe-wall': { color: PALETTE.adobe, thickness: 0.55, kind: 'solid' },
+  'coped-wall': { color: PALETTE.whitewash, thickness: 0.35, kind: 'solid' },
+  'iron-railing': { color: PALETTE.steel, thickness: 0.04, kind: 'railing' },
 };
 
 /** The lines the map layer draws: authored walls and fences, and a hand-written map's board fences. */
@@ -980,6 +987,18 @@ export function lines(map: BattleMap): THREE.Group {
           pieces.add(unitBox, look.color, frame, [0, line.height / 2 - 0.15, 0], [width + 0.02, line.height + 0.3, look.thickness]);
           // A tiled coping on plastered and taipa walls.
           pieces.add(unitBox, PALETTE.roofDark, frame, [0, line.height + 0.05, 0], [width + 0.04, 0.1, look.thickness + 0.12]);
+          // 5.3: the whitewashed wall's pillars, capped: at each corner, every
+          // third piece between, and at the line's far end.
+          if (line.kind === 'coped-wall') {
+            const ends = piece % 3 === 0 ? [-width / 2] : [];
+            if (piece === count - 1 && index === line.points.length - 1) ends.push(width / 2);
+            for (const at of ends) {
+              pieces.add(unitBox, look.color, frame, [at, line.height / 2 + 0.05, 0], [0.45, line.height + 0.4, look.thickness + 0.2]);
+              pieces.add(unitBox, PALETTE.roofDark, frame, [at, line.height + 0.3, 0], [0.55, 0.1, look.thickness + 0.3]);
+            }
+          }
+          // An adobe wall's bare foot, darker where the rain splashes.
+          if (line.kind === 'adobe-wall') pieces.add(unitBox, PALETTE.adobeDark, frame, [0, 0.12, 0], [width + 0.03, 0.3, look.thickness + 0.02]);
         } else if (look.kind === 'boards') {
           pieces.add(unitBox, look.color, frame, [0, line.height / 2, 0], [width, line.height, look.thickness]);
           pieces.add(unitBox, PALETTE.bark, frame, [-width / 2, line.height / 2, 0.06], [0.12, line.height + 0.1, 0.12]);
@@ -987,6 +1006,32 @@ export function lines(map: BattleMap): THREE.Group {
           const pickets = Math.max(2, Math.round(width / 0.25));
           for (let n = 0; n < pickets; n += 1) pieces.add(unitBox, look.color, frame, [-width / 2 + (n + 0.5) * (width / pickets), line.height / 2, 0], [0.08, line.height, look.thickness]);
           pieces.add(unitBox, look.color, frame, [0, line.height * 0.7, 0.05], [width, 0.08, 0.04]);
+        } else if (look.kind === 'rails') {
+          // 5.3: a rail fence (tronqueira): a post at each piece's start, three rails.
+          pieces.add(unitBox, look.color, frame, [-width / 2, line.height / 2 - 0.15, 0], [0.16, line.height + 0.3, 0.16]);
+          for (const rail of [0.35, 0.7, 1]) pieces.add(unitBox, PALETTE.wood, frame, [0, line.height * rail - 0.05, 0.08], [width + 0.2, 0.1, 0.08]);
+        } else if (look.kind === 'canes') {
+          // A taquara fence: canes side by side, tied to two rails.
+          const canes = Math.max(2, Math.round(width / 0.09));
+          for (let n = 0; n < canes; n += 1) {
+            const h = line.height * (0.94 + 0.06 * ((n * 7) % 3) / 2);
+            pieces.add(unitBox, n % 4 === 0 ? PALETTE.hayDark : look.color, frame, [-width / 2 + (n + 0.5) * (width / canes), (h - 0.25) / 2, 0], [0.06, h + 0.25, look.thickness]);
+          }
+          for (const tie of [0.3, 0.8]) pieces.add(unitBox, PALETTE.bark, frame, [0, line.height * tie, 0.05], [width, 0.05, 0.04]);
+        } else if (look.kind === 'wattle') {
+          // A wattle fence (pau-a-pique): stakes and woven withies.
+          const stakes = Math.max(2, Math.round(width / 0.4));
+          for (let n = 0; n < stakes; n += 1) pieces.add(unitBox, PALETTE.bark, frame, [-width / 2 + (n + 0.5) * (width / stakes), (line.height - 0.25) / 2, 0], [0.07, line.height + 0.25, 0.07]);
+          for (let row = 0; row < Math.round(line.height / 0.14); row += 1) {
+            pieces.add(unitBox, row % 2 === 0 ? look.color : PALETTE.barn, frame, [0, 0.1 + row * 0.14, (row % 2 === 0 ? 1 : -1) * 0.025], [width, 0.1, look.thickness * 0.6]);
+          }
+        } else if (look.kind === 'railing') {
+          // An iron railing on a low plastered base, bars and a top rail.
+          pieces.add(unitBox, PALETTE.whitewash, frame, [0, 0.1, 0], [width + 0.02, 0.7, 0.3]);
+          pieces.add(unitBox, PALETTE.roofDark, frame, [0, 0.47, 0], [width + 0.04, 0.06, 0.36]);
+          const bars = Math.max(2, Math.round(width / 0.14));
+          for (let n = 0; n < bars; n += 1) pieces.add(unitBox, look.color, frame, [-width / 2 + (n + 0.5) * (width / bars), (line.height + 0.5) / 2, 0], [0.025, line.height - 0.5, 0.025]);
+          pieces.add(unitBox, look.color, frame, [0, line.height - 0.04, 0], [width, 0.05, 0.05]);
         } else {
           pieces.add(unitRock, look.color, frame, [0, line.height / 2, 0], [width * 0.7, line.height / 2, look.thickness / 2], piece);
         }

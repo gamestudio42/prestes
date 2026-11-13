@@ -1052,7 +1052,7 @@ export function compileMapDocument(source: EditableMap | MapDocument): BattleMap
         radius: info.wall ? piece.halfLength + 1.2 : 0.5,
         quality: info.wall ? (line.height >= 1.2 ? 0.4 : 0.35) : 0,
         blocksMovement: true,
-        blocksSight: (info.wall || line.kind === 'board-fence' || line.kind === 'hedgerow') && line.height >= 1.75,
+        blocksSight: (info.wall || info.opaque === true || line.kind === 'board-fence' || line.kind === 'hedgerow') && line.height >= 1.75,
         ...(line.kind === 'wire-fence' ? { wire: true } : {}),
         drawnBy: 'map',
       });

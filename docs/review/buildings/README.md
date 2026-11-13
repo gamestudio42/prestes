@@ -167,3 +167,27 @@ The side is drawing only: `packages/simulation/test/camp-sides.test.ts`
 runs both camps to the same hashes tick by tick.
 
 Approved by the owner, 2026-11-13.
+
+## Fences, walls and gates (5.3)
+
+`sheet-fences.png` shows the six fences and walls appended to the line
+kinds (D10), drawn in the editor by `tests/e2e/review-fences.spec.ts`, back
+to front: a rail fence (tronqueira), a taquara bamboo fence, a wattle fence
+(pau-a-pique), an adobe wall, a whitewashed wall with its coping and capped
+pillars, and an iron railing on a plastered base. At the owner's asking the
+pack also has four gates, standing open: a farm gate (porteira), a rail gate
+with its rails slid out, a yard gate of boards and an iron gate between
+plastered pillars. A gate is placed in a gap left in a line, its half width
+reaching its posts so the line meets them; the close shots show the gates in
+their gaps, the strip below them the models (props target,
+`review_objects.py`). After the owner's first look (2026-11-13) the rail
+gate's crossing rail went, the farm gate's brace was set in its plane, the
+coped wall's pillars stand every third piece and the yard gate is as wide as
+its gap.
+
+A wall covers as a wall of its height; a rail fence or an iron railing gives
+none; the bamboo and wattle fences hide a man at full height but stop no
+bullet; an open gate is drawn only, gives no cover and is walked through
+(`packages/simulation/test/fences-cover.test.ts`). Each line follows a
+hillside (`packages/view3d/test/fences-on-slope.test.ts`), and a version 7
+map's lines load unchanged (`packages/shared/test/line-kinds.test.ts`).

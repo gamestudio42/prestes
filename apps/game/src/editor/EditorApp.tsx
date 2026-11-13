@@ -134,7 +134,7 @@ const TOOL_KEYS: Record<ToolId, string> = {
 
 const OBJECT_GROUPS = ['building', 'stone', 'water', 'camp', 'tree', 'post', 'cover', 'prop', 'decal'] as const;
 /** revise-buildings-and-stone D9: the props' sub-headings, in order; the older props come first, unheaded. */
-const PROP_SUBGROUPS = [undefined, 'farm', 'town'] as const;
+const PROP_SUBGROUPS = [undefined, 'farm', 'town', 'gate'] as const;
 const PALETTES: readonly MapPalette[] = ['temperate', 'cerrado', 'caatinga', 'urban'];
 const SETTINGS: readonly SettingLabel[] = ['historical-setting-fictional-place', 'reconstructed-historical-place', 'training-ground'];
 const AUTOSAVE_DELAY = 1500;
@@ -186,6 +186,10 @@ export function footprintFacts(entry: CatalogObject, t: T): string[] {
       break;
     case 'thin':
       facts.push(t('editor.prop.blocksMovement'), t('editor.prop.noCover'), t('editor.prop.seeThrough'));
+      break;
+    case 'open':
+      // revise-buildings-and-stone 5.3: a gate standing open.
+      facts.push(t('editor.prop.walkThrough'), t('editor.prop.noCover'));
       break;
     case 'enclosure':
       // revise-buildings-and-stone 4.2: a corral's walls cover as dry stone wall lines.
