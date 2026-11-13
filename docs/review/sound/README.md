@@ -57,3 +57,5 @@ Approved by the owner after listening in the preview, 2026-11-13.
   old volume, `shotPan` left, centre and right, centred with no view); a
   skirmish with sound on: all 116 shots went through the panner, none
   centred, no console error.
+
+Approved by the owner, 2026-11-13.
