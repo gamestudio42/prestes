@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { battleMap, compileMapDocument, createEditableMap, toMapDocument, type BattleMap } from '@prestes/shared';
 import { BattleMapLayer, lines } from '../src/battle-map-layer';
 import { PALETTE } from '../src/palette';
+import { buildingModelName } from '../src/structures-layer';
 
 // refine-battle-maps 5.1: a battle map's walls are the map layer's, plastered
 // or stone, not the cover layer's fortification blocks.
@@ -48,21 +49,19 @@ describe('battle map walls', () => {
   });
 });
 
-// revise-buildings-and-stone 3.3: every catalog building is a model now; the
-// street's buildings are placed as models and no coded box is drawn for them.
+// revise-buildings-and-stone 3.6: every building is its model, placed by the
+// structures layer; no coded box is drawn for any of them.
 describe('battle map buildings', () => {
-  it('the street buildings are placed as their models, not drawn as boxes', () => {
+  it('the street buildings are placed as their models, in their looks, not drawn as boxes', () => {
     const map = street();
+    map.buildings[1] = { ...map.buildings[1]!, variant: 'adobe' };
     const layer = new BattleMapLayer(map);
-    let meshes = 0;
-    layer.group.getObjectByName('battle-map-buildings')!.traverse((object) => {
-      if (object instanceof THREE.Mesh) meshes += 1;
-    });
-    expect(meshes).toBe(0);
+    expect(layer.group.getObjectByName('battle-map-buildings')).toBeUndefined();
     // An asset with no geometry reports every placed model as missing.
     const placed = (layer as unknown as { placements: { missing: (asset: { geometry: () => undefined }) => string[] } }).placements.missing({
       geometry: () => undefined,
     });
-    expect(placed).toEqual(expect.arrayContaining(map.buildings.map((building) => building.model)));
+    expect(placed).toEqual(expect.arrayContaining(map.buildings.map(buildingModelName)));
+    expect(placed).toContain(`${map.buildings[1]!.model}@adobe`);
   });
 });

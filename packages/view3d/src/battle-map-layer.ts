@@ -1,13 +1,6 @@
 import * as THREE from 'three';
 import {
   modelFilesOf,
-  buildingOpenings,
-  BUILDING_WALL_SHARE,
-  buildingTower,
-  TOWER_EYE,
-  windowHeight,
-  windowMiddleHeight,
-  type BuildingWall,
   activeMapRuntime,
   bridgeDeckHeight,
   buildTrenchLine,
@@ -21,7 +14,6 @@ import {
   terrainHeightAt,
   TRENCH,
   type BattleMap,
-  type Building,
   type MapLine,
   type Polygon,
   type Strip,
@@ -31,6 +23,7 @@ import { CanopyFade } from './canopy';
 import { ModelPlacements, warnMissing, type EnvironmentAsset } from './environment-models';
 import { toon } from './materials';
 import { PALETTE } from './palette';
+import { placeBuildings } from './structures-layer';
 import { clumpGeometry, PLANT_LOOK, PLANT_SWAY, plantGeometry, plantSpots, STRATEGIC_CLUMP_CAP, swayingMaterial } from './plant-meshes';
 
 /** Past this span (m) the plants give way to their clumps. */
@@ -39,17 +32,10 @@ export const STRATEGIC_PLANT_SPAN = 110;
 /**
  * A battle map's countryside (add-battle-maps): water, bridges, the ferry,
  * crops and grass, buildings and props, all placed from the map data the
- * simulation reads. Pieces without a Blender model yet are drawn as named
- * low-poly placeholders (`placeholder:<model>`), never passed off as the
- * finished kit.
+ * simulation reads. The buildings are their models (`structures-layer.ts`);
+ * props without a Blender model yet are drawn as named low-poly placeholders
+ * (`placeholder:<model>`), never passed off as the finished kit.
  */
-
-/** Building models the Blender environment already has. */
-const MODELLED = new Set(['farmhouse', 'barn', 'chapel', 'casa-sede', 'colonist-house', 'engenho', 'ferry-house', 'terraced-house', 'terraced-house-wide', 'sobrado', 'casa-terrea', 'venda', 'armazem', 'coreto', 'church', 'factory', 'warehouse',
-  // revise-buildings-and-stone 3.4: the new buildings.
-  'wattle-house', 'rancho', 'flour-house', 'railway-station', 'telegraph-office', 'jail', 'town-hall', 'school', 'market-shed',
-  'water-tank', 'barracks-block', 'guardhouse', 'depot',
-]);
 
 const materials = new Map<number, THREE.Material>();
 function material(color: number): THREE.Material {
@@ -65,14 +51,6 @@ const unitBox = new THREE.BoxGeometry(1, 1, 1);
 const unitCylinder = new THREE.CylinderGeometry(1, 1, 1, 6);
 const unitCone = new THREE.ConeGeometry(1, 1, 4);
 const unitRock = new THREE.IcosahedronGeometry(1, 0);
-const unitPrism = (() => {
-  // A gable roof: a triangular prism one unit on each side.
-  const shape = new THREE.Shape([new THREE.Vector2(-0.5, 0), new THREE.Vector2(0.5, 0), new THREE.Vector2(0, 0.5)]);
-  const geometry = new THREE.ExtrudeGeometry(shape, { depth: 1, bevelEnabled: false });
-  geometry.translate(0, 0, -0.5);
-  return geometry;
-})();
-
 function seededRandom(seed: number): () => number {
   let state = seed >>> 0;
   return () => {
@@ -106,25 +84,6 @@ function placed(
   parent.add(mesh);
   return mesh;
 }
-
-/** The look of each placeholder building: walls, roof and height. */
-const BUILDING_LOOK: Readonly<Record<string, { wall: number; roof: number; tower?: 'chimney' | 'bell' }>> = {
-  'casa-sede': { wall: PALETTE.whitewash, roof: PALETTE.tile },
-  'colonist-house': { wall: PALETTE.adobe, roof: PALETTE.roof },
-  engenho: { wall: PALETTE.plaster, roof: PALETTE.tile, tower: 'chimney' },
-  'ferry-house': { wall: PALETTE.wood, roof: PALETTE.roofDark },
-  'terraced-house': { wall: PALETTE.plaster, roof: PALETTE.tile },
-  'terraced-house-wide': { wall: PALETTE.plasterShade, roof: PALETTE.tile },
-  sobrado: { wall: PALETTE.whitewash, roof: PALETTE.roofDark },
-  factory: { wall: PALETTE.brick, roof: PALETTE.roofDark, tower: 'chimney' },
-  church: { wall: PALETTE.whitewash, roof: PALETTE.tile, tower: 'bell' },
-  warehouse: { wall: PALETTE.brickDark, roof: PALETTE.metal },
-  'casa-terrea': { wall: PALETTE.adobe, roof: PALETTE.tile },
-  venda: { wall: PALETTE.whitewash, roof: PALETTE.tile },
-  armazem: { wall: PALETTE.plasterShade, roof: PALETTE.roofDark },
-  coreto: { wall: PALETTE.whitewash, roof: PALETTE.roof },
-  'training-house': { wall: PALETTE.plaster, roof: PALETTE.roof },
-};
 
 /**
  * Instances of one geometry and colour, gathered while walking the lines and
@@ -172,10 +131,7 @@ class Instancer {
   }
 }
 
-/** Shops with an awning and a blank sign board over the street door. */
-const SHOPS = new Set(['venda', 'armazem']);
-
-/** Places one piece of a building in its own frame. */
+/** Places one piece in a holder's own frame. */
 type Put = (
   geometry: THREE.BufferGeometry,
   color: number,
@@ -186,109 +142,6 @@ type Put = (
   spin?: number,
   tilt?: number,
 ) => void;
-
-const unitOctagon = new THREE.CylinderGeometry(1, 1, 1, 8);
-
-/** A coreto: an open octagonal bandstand on a plinth, posts and a pointed roof. */
-function coreto(building: Building, look: { wall: number; roof: number }, put: Put): void {
-  const radius = Math.min(building.halfWidth, building.halfDepth);
-  put(unitOctagon, look.wall, 0, 0.5, 0, [radius, 1, radius]);
-  for (let index = 0; index < 8; index += 1) {
-    const angle = (index / 8) * Math.PI * 2 + Math.PI / 8;
-    put(unitBox, PALETTE.whitewash, Math.cos(angle) * radius * 0.88, 1 + (building.height - 2) / 2, Math.sin(angle) * radius * 0.88, [0.18, building.height - 2, 0.18]);
-  }
-  put(unitCone, look.roof, 0, building.height - 0.4, 0, [radius * 1.15, 1.8, radius * 1.15], Math.PI / 8);
-}
-
-/**
- * A placeholder building from its footprint (refine-battle-maps 5.2): block,
- * gable roof, a door with windows either side on the street face (shuttered),
- * an awning and a blank sign board on shops, two rows of windows and a
- * balcony on a sobrado, a chimney or a bell tower. Signs carry no text.
- */
-function placeholderBuilding(building: Building, pieces: Instancer): void {
-  const look = BUILDING_LOOK[building.model] ?? { wall: PALETTE.plaster, roof: PALETTE.roof };
-  const frame = { x: building.x, ground: terrainHeightAt(building.x, building.y), y: building.y, rotation: -building.rotation };
-  const put: Put = (geometry, color, x, y, z, scale, spin = 0, tilt = 0) => pieces.add(geometry, color, frame, [x, y, z], scale, spin, tilt);
-  if (building.model === 'coreto') {
-    coreto(building, look, put);
-    return;
-  }
-  const width = building.halfWidth * 2;
-  const depth = building.halfDepth * 2;
-  const wall = building.height * BUILDING_WALL_SHARE;
-  // Sunk a little so a block on a slope shows no gap under it.
-  put(unitBox, look.wall, 0, wall / 2 - 0.2, 0, [width, wall + 0.4, depth]);
-  // The ridge runs along the long side.
-  if (depth > width) put(unitPrism, look.roof, 0, wall, 0, [depth + 0.4, (building.height - wall) * 2, width + 0.4], Math.PI / 2);
-  else put(unitPrism, look.roof, 0, wall, 0, [width + 0.4, (building.height - wall) * 2, depth + 0.4]);
-  // garrison-and-assault 4.7: the doors and windows are the simulation's entrances and ports.
-  const openings = buildingOpenings(building);
-  const front = building.front ?? 1;
-  const shop = SHOPS.has(building.model);
-  const church = building.model === 'church';
-  const face = (wall: BuildingWall) => wall === 'front' || wall === 'back';
-  for (const door of openings.doors) {
-    const x = door.x + door.outX * 0.03;
-    const z = door.y + door.outY * 0.03;
-    const across = face(door.wall);
-    put(unitBox, PALETTE.door, x, door.height / 2, z, across ? [door.width, door.height, 0.06] : [0.06, door.height, door.width]);
-    if (church && door.wall === 'front') {
-      // A stone frame round the portal.
-      put(unitBox, PALETTE.plasterShade, x, door.height + 0.25, z, [door.width + 0.8, 0.5, 0.1]);
-      put(unitBox, PALETTE.plasterShade, x - door.width / 2 - 0.2, door.height / 2, z, [0.4, door.height, 0.1]);
-      put(unitBox, PALETTE.plasterShade, x + door.width / 2 + 0.2, door.height / 2, z, [0.4, door.height, 0.1]);
-    }
-  }
-  for (const window of openings.windows) {
-    const x = window.x + window.outX * 0.03;
-    const z = window.y + window.outY * 0.03;
-    const across = face(window.wall);
-    // The church's are tall and narrow; the rest have shutters folded back on the street face.
-    const height = windowHeight(openings, window, building.model);
-    const y = windowMiddleHeight(openings, window, building.model);
-    const width = church ? 0.7 : 0.8;
-    put(unitBox, PALETTE.window, x, y, z, across ? [width, height, 0.05] : [0.05, height, width]);
-    if (window.wall === 'front' && !church) {
-      put(unitBox, PALETTE.shutter, x - 0.62, y, z, [0.4, height, 0.06]);
-      put(unitBox, PALETTE.shutter, x + 0.62, y, z, [0.4, height, 0.06]);
-    }
-  }
-  const frontZ = front * (depth / 2 + 0.03);
-  const upperFloor = openings.windows.find((window) => window.level > 0)?.elevation;
-  if (building.model === 'sobrado' && upperFloor !== undefined) {
-    // A balcony along the upper floor.
-    put(unitBox, PALETTE.wood, 0, upperFloor, frontZ + front * 0.45, [width * 0.7, 0.12, 0.9]);
-    put(unitBox, PALETTE.wire, 0, upperFloor + 0.5, frontZ + front * 0.88, [width * 0.7, 0.06, 0.04]);
-  }
-  if (shop) {
-    // A canvas awning sloping out over the door, and a blank sign board.
-    put(unitBox, building.id % 2 === 0 ? PALETTE.awning : PALETTE.awningAlt, 0, 2.55, frontZ + front * 0.8, [width * 0.86, 0.08, 1.6], 0, front * 0.25);
-    put(unitBox, PALETTE.sign, 0, Math.min(wall - 0.4, 3.2), frontZ + front * 0.02, [width * 0.5, 0.55, 0.06]);
-  }
-  if (look.tower === 'chimney') {
-    put(unitCylinder, PALETTE.brickDark, width * 0.32, building.height * 0.9, 0, [0.6, building.height * 1.8, 0.6]);
-  } else if (look.tower === 'bell') {
-    // The bell tower rises over the façade, above the portal, with a cross on its spire.
-    const tower = buildingTower(building)!;
-    const { side, top } = tower;
-    const towerZ = tower.y;
-    put(unitBox, look.wall, 0, top / 2, towerZ, [side, top, side]);
-    put(unitBox, PALETTE.plasterShade, 0, wall + 0.2, towerZ, [side + 0.3, 0.3, side + 0.3]);
-    // garrison-and-assault 1.4: the posts' openings on every face (a man's eye at 9 m),
-    // and the belfry's openings near the top.
-    const post = TOWER_EYE - 0.2;
-    for (const [height, tall] of [[post, 1.2], [top - 1.6, 1.4]] as const) {
-      put(unitBox, PALETTE.window, 0, height, towerZ + side / 2 + 0.03, [0.9, tall, 0.05]);
-      put(unitBox, PALETTE.window, 0, height, towerZ - side / 2 - 0.03, [0.9, tall, 0.05]);
-      put(unitBox, PALETTE.window, side / 2 + 0.03, height, towerZ, [0.05, tall, 0.9]);
-      put(unitBox, PALETTE.window, -side / 2 - 0.03, height, towerZ, [0.05, tall, 0.9]);
-    }
-    put(unitCone, look.roof, 0, top + 1.2, towerZ, [2.6, 2.4, 2.6], Math.PI / 4);
-    put(unitBox, PALETTE.wood, 0, top + 3, towerZ, [0.12, 1.2, 0.12]);
-    put(unitBox, PALETTE.wood, 0, top + 3.2, towerZ, [0.6, 0.12, 0.12]);
-  }
-}
 
 /** A flat mesh over a polygon at a fixed height (water, a ford). */
 function polygonMesh(polygon: Polygon, height: number, color: number, opacity: number): THREE.Mesh {
@@ -1286,19 +1139,8 @@ export class BattleMapLayer {
     this.group.add(plants.group);
     this.group.add(lines(map));
     this.group.add(trenchWorks(map));
-    // Placeholder buildings as instanced pieces (the Bairro has over a hundred).
-    const placeholders = new Instancer();
-    for (const building of map.buildings) {
-      if (MODELLED.has(building.model)) {
-        this.placements.add(building.variant ? `${building.model}@${building.variant}` : building.model, building.x, building.y, building.rotation);
-      } else {
-        placeholderBuilding(building, placeholders);
-      }
-    }
-    const buildings = new THREE.Group();
-    buildings.name = 'battle-map-buildings';
-    placeholders.build(buildings);
-    this.group.add(buildings);
+    // revise-buildings-and-stone 3.6: every building is its model.
+    placeBuildings(map, this.placements);
     for (const prop of map.props) {
       if (isModelled(prop.model)) {
         this.placements.add(prop.model, prop.x, prop.y, prop.rotation ?? 0, prop.scale ?? 1);
