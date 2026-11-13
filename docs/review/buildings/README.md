@@ -89,3 +89,5 @@ Approved by the owner, 2026-11-12.
 editor's picker by `tests/e2e/review-building-variants.spec.ts`: as built,
 whitewash, ochre, blue, rose, bare adobe (old tiles) and zinc roof. A look
 swaps atlas swatches on the model in the view; the battle never reads it.
+
+Approved by the owner, 2026-11-12.
