@@ -291,7 +291,9 @@ export type RejectionReason =
   /** refine-battle-controls: a section already holds three queued orders. */
   | 'queue_full'
   /** scrub-concealment-and-area-fire: area fire on a point near no contact the side holds. */
-  | 'no_suspected_contact';
+  | 'no_suspected_contact'
+  /** add-battle-events 2.5: firing an event by hand belongs to the editor's playtest. */
+  | 'playtest_only';
 
 export type Command =
   /** `facing`: the way the section faces on arrival, formation kept. */
@@ -358,6 +360,8 @@ export type Command =
   | { type: 'start_battle' }
   /** add-deployment-phase: puts the player's sections back at their default places. */
   | { type: 'reset_deployment' }
+  /** add-battle-events 2.5: the editor's playtest fires a map event now, its delay skipped. */
+  | { type: 'fire_battle_event'; eventId: number }
   | { type: 'noop' };
 
 export interface CommandEnvelope {
@@ -427,7 +431,18 @@ export type SimEvent =
   | { type: 'unit_entered'; tick: number; unitId: number; positionId: number }
   | { type: 'unit_left'; tick: number; unitId: number; positionId: number }
   | { type: 'assault_started'; tick: number; positionId: number }
-  | { type: 'assault_ended'; tick: number; positionId: number; winner: 'column' | 'legalist' };
+  | { type: 'assault_ended'; tick: number; positionId: number; winner: 'column' | 'legalist' }
+  /** add-battle-events: a map event fired; `cards` are its narrative cards, in order. */
+  | { type: 'battle_event_fired'; tick: number; eventId: number; cards?: Array<{ title: LocalizedText; text: LocalizedText }> };
+
+/** add-battle-events 2.5: a map event's state, for the editor's playtest panel. */
+export interface BattleEventState {
+  id: number;
+  label: string;
+  state: 'waiting' | 'triggered' | 'fired';
+  /** Battle ticks from the start when it fired. */
+  firedAt?: number;
+}
 
 /** pre-battle-roster 5.4: whether a shot is drawn and heard: aimed fire, or the first round of a burst. */
 export function shotShown(event: { burstStart?: boolean }): boolean {
@@ -465,6 +480,8 @@ export interface Frame {
   clock?: { tick: number; limit: number };
   /** refine-battle-controls: the orders queued with Shift, one entry per waiting order. */
   queuedOrders?: readonly QueuedOrderSnapshot[];
+  /** add-battle-events 2.5: the map events' states, in the editor's playtest only. */
+  battleEvents?: readonly BattleEventState[];
 }
 
 /** refine-battle-controls: an order waiting behind a section's current one. */

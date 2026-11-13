@@ -28,6 +28,7 @@ import { routeFor, sectionRoutes } from './routes';
 import { incapacitate, wound, releaseCarry } from './casualties';
 import { applyTacticalOrder, assignFlankPaths, beginWithdraw } from './orders';
 import { spawnDummy, spawnTroop, setTrainingPhase, despawnRole, reinforce } from './spawning';
+import { fireBattleEventNow } from './battle-events';
 import { orderEnter, orderExit, releaseForOrder } from './garrison';
 import { orderAssault } from './assault';
 import { endAreaFire, orderAreaFire } from './area-fire';
@@ -279,6 +280,11 @@ export function applyCommand(
     return;
   }
 
+  // add-battle-events 2.5: only the editor's playtest fires an event by hand.
+  if (command.type === 'fire_battle_event') {
+    if (!ctx.playtest || !fireBattleEventNow(ctx, command.eventId, tick)) reject(ctx, tick, envelope.seq, 'playtest_only', events);
+    return;
+  }
   if (command.type === 'reinforce') {
     reinforce(ctx, command.faction, tick, envelope.seq, events);
     return;

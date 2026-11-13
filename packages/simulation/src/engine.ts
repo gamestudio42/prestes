@@ -90,6 +90,7 @@ import {
 import { applyCommand, applyQueuedOrders, queuedOrdersSnapshot } from './systems/commands';
 import { createBattleMemory, updateBattleFlow } from './systems/enemy-commander';
 import { createObjectives, objectiveHashState, objectiveSnapshot, updateObjectives, type ObjectiveState } from './systems/objectives';
+import { createScriptedState, scriptedHashState, scriptedSnapshot, updateBattleEvents, type ScriptedState } from './systems/battle-events';
 import { createVisionState, seenSnapshot, updateVision } from './systems/vision';
 import { createFerries, ferrySnapshot, headingForLanding, heldByFerry, updateFerries } from './systems/ferry';
 import { defaultConcealedFire, settleLowInScrub } from './systems/concealment';
@@ -140,6 +141,8 @@ export interface SimulationOptions {
   enemyDeployment?: boolean;
   /** add-map-objectives: the battle's time limit in ticks; absent, DEFAULT_TIME_LIMIT (used from 2.3). */
   timeLimitTicks?: number;
+  /** add-battle-events 2.5: the editor's playtest; map events can be fired by hand and their states ride the frame. */
+  playtest?: boolean;
 }
 
 /** faction-armies 3.1: a section short of ammunition carries less in reserve. */
@@ -217,6 +220,10 @@ export class SimulationEngine implements SimContext {
   readonly allHeldSince: { column: number | null; legalist: number | null } = { column: null, legalist: null };
   /** pre-battle-roster 4.3: the machine-gun squads' belt pools (rostered battles with a gun only). */
   gunPools?: Record<number, number>;
+  /** add-battle-events: the map's events and their state (battle maps with events only). */
+  readonly scripted?: ScriptedState;
+  /** add-battle-events 2.5: the editor's playtest. */
+  readonly playtest: boolean;
   fog: boolean;
   /** add-deployment-phase D1: no tick passes in deployment; `start_battle` begins the battle. */
   phase: BattlePhase;
@@ -270,6 +277,8 @@ export class SimulationEngine implements SimContext {
     this.positions = positions.positions;
     this.objectives = createObjectives(this.battleMap);
     this.timeLimitTicks = options.timeLimitTicks ?? DEFAULT_TIME_LIMIT;
+    this.playtest = options.playtest === true;
+    if (this.battleMap?.events && this.battleMap.events.length > 0) this.scripted = createScriptedState(this.battleMap.events, this.battleMap.eventPlaces);
     this.positionById = positions.byId;
     this.selectTerrain();
     this.rosters = this.battleMap ? resolveRosters(this.battleMap, options.rosters, this.rng) : undefined;
@@ -524,6 +533,8 @@ export class SimulationEngine implements SimContext {
       updateFacing(this);
       if (this.battleMap?.height.kind === 'field') keepOffFordFloor(this);
       if (this.objectives.length > 0) updateObjectives(this, nextTick, events);
+      // add-battle-events D3: after objectives and casualties, before the outcome.
+      if (this.scripted) updateBattleEvents(this, nextTick, events);
       updateOutcome(this, nextTick, events);
     } else {
       this.queue.length = 0;
@@ -578,6 +589,7 @@ export class SimulationEngine implements SimContext {
         ? { clock: { tick: this.tickCount - this.battleStartTick, limit: this.timeLimitTicks } }
         : {}),
       ...(this.orderQueues.size > 0 ? { queuedOrders: queuedOrdersSnapshot(this) } : {}),
+      ...(this.playtest && this.scripted ? { battleEvents: scriptedSnapshot(this) } : {}),
       hash: options?.hash === false ? '' : this.hashState(),
     };
   }
@@ -667,6 +679,8 @@ export class SimulationEngine implements SimContext {
         ...(this.objectives.length > 0 ? { objectives: objectiveHashState(this) } : {}),
         // refine-battle-controls: the queued orders are state too.
         ...(this.orderQueues.size > 0 ? { orderQueues: [...this.orderQueues] } : {}),
+        // add-battle-events D3: hashed only on maps with events, so other maps hash as before.
+        ...(this.scripted ? { scripted: scriptedHashState(this.scripted) } : {}),
       }),
     );
   }

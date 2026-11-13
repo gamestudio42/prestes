@@ -6,6 +6,7 @@ import { applyCommand } from './commands';
 import { MARKER_TICKS, REMEMBER_TICKS, otherSide, type Side } from './vision';
 import { dealWithGarrison, garrisonOnDeploy, leaveIfLost } from './commander-positions';
 import { objectiveValues, type ObjectiveState } from './objectives';
+import { arrivalSettled, fallBackPoint, type ActivePosture } from './battle-events';
 
 /**
  * The 3v3 battle's flow (battle-feel-3v3): the legalist commander and the rule
@@ -14,7 +15,7 @@ import { objectiveValues, type ObjectiveState } from './objectives';
  */
 
 /** A withdrawn section that has stopped rallies: it defends where it stands and is never pulled back again. */
-export type SectionPlan = 'hold' | 'attack' | 'withdraw' | 'rallied' | 'garrison' | 'hold-objective';
+export type SectionPlan = 'hold' | 'attack' | 'withdraw' | 'rallied' | 'garrison' | 'hold-objective' | 'arriving';
 
 export interface BattleMemory {
   /** Each side's deployment line (centroid at the start): a fact of the map both sides know. */
@@ -574,6 +575,12 @@ function commandLegalists(ctx: SimContext, tick: number, events: SimEvent[]): vo
 
   const command = (order: Command) => issue(ctx, order, tick, events);
   const home = ctx.battle.deployment.get('legalist')!;
+  // add-battle-events D5: an event's posture replaces the commander's own rules while it lasts.
+  const posture = ctx.scripted?.posture;
+  if (posture) {
+    commandPosture(ctx, own, posture, tick, events);
+    return;
+  }
   for (const [squadId, section] of own) {
     // garrison-and-assault 3.4: a section going in or assaulting keeps to it;
     // one inside holds it, and leaves it only when it is lost.
@@ -582,6 +589,11 @@ function commandLegalists(ctx: SimContext, tick: number, events: SimEvent[]): vo
       plans.set(squadId, 'garrison');
       leaveIfLost(ctx, 'legalist', section, home, knownEnemies(ctx, 'legalist', tick), command);
       continue;
+    }
+    // add-battle-events D4: an arriving section keeps to its first order until it stops or meets the enemy.
+    if (plans.get(squadId) === 'arriving') {
+      if (!arrivalSettled(ctx.scripted, squadId, section)) continue;
+      plans.set(squadId, 'hold');
     }
     const plan = plans.get(squadId);
     const ids = section.map((unit) => unit.id);
@@ -669,6 +681,53 @@ function commandLegalists(ctx: SimContext, tick: number, events: SimEvent[]): vo
   }
 
   commitLastMinutes(ctx, own, plans, tick, events);
+}
+
+/** add-battle-events D5: metres between the sections of a fall-back line. */
+const FALL_BACK_SPREAD = 10;
+
+/**
+ * add-battle-events D5: every fit legalist section under an event's posture.
+ * Offensive: each goes for the objective of most value it does not hold
+ * (nearest first), else for the enemy, and is sent again when it stops.
+ * Fall back: each defends at the named area (else its own deployment area),
+ * spread along a line facing the column. Hold: each defends where it stands.
+ * Fall back and hold order a section once (arrivals get theirs when they come).
+ */
+function commandPosture(ctx: SimContext, own: Map<number, MutableUnit[]>, posture: ActivePosture, tick: number, events: SimEvent[]): void {
+  const plans = ctx.battle.plans;
+  const enemyCentre = ctx.battle.deployment.get('column');
+  const sectionsInOrder = [...own].filter(([, section]) => section.every((unit) => unit.entering === undefined && unit.assaulting === undefined));
+  if (posture.posture === 'offensive') {
+    for (const [squadId, section] of sectionsInOrder) {
+      ctx.scripted?.arriving.delete(squadId);
+      if (plans.get(squadId) === 'attack' && goingFor(ctx, section)) continue;
+      const ids = section.map((unit) => unit.id);
+      const here = centroid(section);
+      const objective = attackObjective(ctx, here);
+      if (objective) issue(ctx, { type: 'order', order: 'advance', unitIds: ids, to: { x: objective.flag.x, y: objective.flag.y } }, tick, events);
+      else goFor(ctx, 'legalist', ids, here, squadId, tick, events);
+      plans.set(squadId, 'attack');
+    }
+    return;
+  }
+  const point = posture.posture === 'fall-back' ? fallBackPoint(ctx, posture) : null;
+  const waiting = sectionsInOrder.filter(([squadId, section]) => !posture.ordered.includes(squadId) && !(posture.posture === 'hold' && section.some((unit) => unit.garrison !== undefined)));
+  waiting.forEach(([squadId, section], index) => {
+    ctx.scripted?.arriving.delete(squadId);
+    const ids = section.map((unit) => unit.id);
+    let to = centroid(section);
+    if (point) {
+      const facing = enemyCentre ? facingFrom(point, enemyCentre) : undefined;
+      const across = facing ? { x: -facing.y, y: facing.x } : { x: 1, y: 0 };
+      const slot = (posture.ordered.length + index) - (own.size - 1) / 2;
+      to = { x: point.x + across.x * slot * FALL_BACK_SPREAD, y: point.y + across.y * slot * FALL_BACK_SPREAD };
+    }
+    const facing = enemyCentre ? facingFrom(to, enemyCentre) : undefined;
+    issue(ctx, { type: 'order', order: 'defend', unitIds: ids, to, ...(facing ? { facing } : {}) }, tick, events);
+    plans.set(squadId, 'hold');
+  });
+  posture.ordered.push(...waiting.map(([squadId]) => squadId));
 }
 
 /**

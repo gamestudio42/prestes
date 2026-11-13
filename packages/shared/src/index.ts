@@ -1,4 +1,5 @@
 export type {
+  BattleEventState,
   BattlePhase,
   Command,
   CoverKind,

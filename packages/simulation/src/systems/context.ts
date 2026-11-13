@@ -17,6 +17,7 @@ import type { ObjectiveState } from './objectives';
 import type { FerryState } from './ferry';
 import type { Garrison } from './garrison';
 import type { Assault } from './assault';
+import type { ScriptedState } from './battle-events';
 
 /**
  * The mutable simulation state every system reads and writes. The engine
@@ -77,4 +78,8 @@ export interface SimContext {
   readonly garrisons: Map<number, Garrison>;
   /** garrison-and-assault D5: the close fights under way, by position id. */
   readonly assaults: Map<number, Assault>;
+  /** add-battle-events: the map's planned events and their state (battle maps with events). */
+  readonly scripted?: ScriptedState;
+  /** add-battle-events 2.5: the battle is the editor's playtest (events can be fired by hand). */
+  readonly playtest?: boolean;
 }
