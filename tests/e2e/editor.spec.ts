@@ -821,7 +821,7 @@ test('painted ground, walls, fences and posts draw as pixel art', async ({ page 
   }
   await tool(page, 'line');
   for (const [kind, y] of [['stone-wall', -55], ['wire-fence', -60], ['board-fence', -65], ['hedgerow', 50]] as const) {
-    await page.getByTestId('prop-line-kind').selectOption(kind);
+    await page.getByTestId('prop-line-kind').locator(`[data-line-kind="${kind}"]`).click();
     await clickGround(page, -40, y);
     await clickGround(page, 40, y);
     await page.keyboard.press('Enter');

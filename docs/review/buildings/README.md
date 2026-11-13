@@ -193,3 +193,16 @@ hillside (`packages/view3d/test/fences-on-slope.test.ts`), and a version 7
 map's lines load unchanged (`packages/shared/test/line-kinds.test.ts`).
 
 Approved by the owner, 2026-11-13.
+
+## Names and thumbnails (5.4)
+
+`sheet-editor-catalog.png` shows the editor's catalog as it now reads,
+taken by `tests/e2e/editor-catalog.spec.ts`: every object group but the
+trees (their own list in the trees tool) is a grid of pictured tiles, the
+thumbnails rendered from the models once a group is opened, and the line
+kinds are pictured tiles too (four metres of each as the battle draws it,
+a stone wall in the chosen rock), in place of the old drop-down. The sheet
+shows the waterside, camp, props (with the gates apart) and stone groups
+and the line kinds. The spec places one object of each group and draws a
+rail fence; `tests/hud/editor-names.test.ts` checks every object and line
+kind is named in English and Portuguese, no two alike.

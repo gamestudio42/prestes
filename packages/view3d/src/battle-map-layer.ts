@@ -5,6 +5,8 @@ import {
   bridgeDeckHeight,
   buildTrenchLine,
   catalogObject,
+  lineKind,
+  type LineKind,
   outlineShapes,
   runtimeBridgeLandings,
   traceWaterOutlines,
@@ -957,13 +959,16 @@ const LINE_LOOK: Readonly<Record<string, { color: number; thickness: number; kin
 };
 
 /** The lines the map layer draws: authored walls and fences, and a hand-written map's board fences. */
-function mapLines(map: BattleMap): readonly MapLine[] {
+function mapLines(map: Pick<BattleMap, 'lines' | 'fences' | 'fenceStyle'>): readonly MapLine[] {
   if (map.fenceStyle !== 'boards') return map.lines ?? [];
   return [...(map.lines ?? []), ...map.fences.map((points) => ({ kind: 'board-fence', points, height: 1.5 }))];
 }
 
-/** Walls and fences drawn along their polylines, in pieces of at most 2 m that follow the ground. */
-export function lines(map: BattleMap): THREE.Group {
+/**
+ * Walls and fences drawn along their polylines, in pieces of at most 2 m that
+ * follow the ground (`ground`: the map's terrain; a thumbnail's flat floor).
+ */
+export function lines(map: Pick<BattleMap, 'lines' | 'fences' | 'fenceStyle'>, ground: (x: number, y: number) => number = terrainHeightAt): THREE.Group {
   const group = new THREE.Group();
   group.name = 'battle-map-lines';
   const pieces = new Instancer();
@@ -980,7 +985,7 @@ export function lines(map: BattleMap): THREE.Group {
         const t = (piece + 0.5) / count;
         const x = from.x + (to.x - from.x) * t;
         const y = from.y + (to.y - from.y) * t;
-        const frame = { x, ground: terrainHeightAt(x, y), y, rotation };
+        const frame = { x, ground: ground(x, y), y, rotation };
         const width = length / count;
         if (look.kind === 'solid') {
           // Sunk a little so a piece on a slope shows no gap under it.
@@ -1120,10 +1125,32 @@ function revetment(points: readonly Vec2[], half: number, side: 1 | -1): THREE.M
 export function propPreview(model: string, asset: EnvironmentAsset | null): THREE.Object3D | null {
   // revise-buildings-and-stone 4.3: a stone in a rock kind is `<id>@<kind>`; a corral is its walls.
   const [base, kind] = model.split('@') as [string, string | undefined];
+  // revise-buildings-and-stone 5.4: a line kind's thumbnail is `line:<kind>[@rock]`.
+  if (base.startsWith('line:')) return linePreview(base.slice(5) as LineKind, kind as RockKind | undefined, asset);
   if (base === 'stone-corral') return corralPreview(kind as RockKind | undefined, asset);
   const geometry = isModelled(base) ? asset?.geometry(model) : undefined;
   if (geometry && asset) return new THREE.Mesh(geometry, asset.materialOf(model));
   return placeholderProp(model);
+}
+
+/** Four metres of a line kind at its default height, as the battle draws it, on flat ground. */
+function linePreview(kind: LineKind, rock: RockKind | undefined, asset: EnvironmentAsset | null): THREE.Object3D | null {
+  const line = { kind, points: [{ x: -2, y: 0 }, { x: 2, y: 0 }], height: lineKind(kind).defaultHeight, rock };
+  if (kind === 'wire-fence') {
+    // The world layer draws wire fences in the battle; the thumbnail draws its posts and wires here.
+    const group = new THREE.Group();
+    const pieces = new Instancer();
+    const frame = { x: 0, ground: 0, y: 0, rotation: 0 };
+    for (const x of [-2, 0, 2]) pieces.add(unitBox, PALETTE.bark, frame, [x, line.height / 2, 0], [0.1, line.height, 0.1]);
+    for (const z of [0.35, 0.7, 1.05]) pieces.add(unitBox, PALETTE.steel, frame, [0, line.height * (z / 1.2), 0.05], [4, 0.03, 0.03]);
+    pieces.build(group);
+    return group;
+  }
+  if (kind !== 'stone-wall') return lines({ lines: [line], fences: [] }, () => 0);
+  const placements = new ModelPlacements();
+  placeStoneWalls({ lines: [line] }, placements);
+  if (!asset || placements.missing(asset).length > 0) return null;
+  return placements.build(asset);
 }
 
 /** A stone corral as the battle draws it: its dry stone walls round the catalog footprint. */

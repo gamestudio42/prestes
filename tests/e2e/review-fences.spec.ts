@@ -45,7 +45,7 @@ test('the new fences and walls, and the open gates', async ({ page }) => {
   const y = (row: number) => -25 + row * 10;
   await page.locator('[data-tool="line"]').click();
   for (const [row, [kind, gate, half]] of ROWS.entries()) {
-    await page.getByTestId('prop-line-kind').selectOption(kind);
+    await page.getByTestId('prop-line-kind').locator(`[data-line-kind="${kind}"]`).click();
     const runs = gate ? [[-18, -half], [half, 18]] : [[-18, 18]];
     for (const [from, to] of runs) {
       await click(from!, y(row));

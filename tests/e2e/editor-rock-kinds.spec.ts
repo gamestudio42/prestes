@@ -58,7 +58,7 @@ test('stones and dry stone walls take a rock kind in the editor', async ({ page 
 
   // A dry stone wall drawn in sandstone.
   await page.locator('[data-tool="line"]').click();
-  await page.getByTestId('prop-line-kind').selectOption('stone-wall');
+  await page.getByTestId('prop-line-kind').locator(`[data-line-kind="stone-wall"]`).click();
   await page.getByTestId('line-rock-kind').locator('[data-rock="sandstone"]').click();
   await clickGround(page, -30, 30);
   await clickGround(page, 30, 30);

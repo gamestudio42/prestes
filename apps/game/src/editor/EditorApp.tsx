@@ -33,6 +33,7 @@ import {
   PAINTED_VEGETATION_KINDS,
   isListed,
   type CatalogObject,
+  type ObjectGroup,
   type EditableMap,
   type GroundMaterialId,
   type LineKind,
@@ -759,20 +760,7 @@ function ToolProperties({ store, t }: { store: EditorStore; t: T }): ReactNode {
   }
   if (tool === 'line') {
     fields.push(
-      <label key="lineKind">
-        {t('editor.prop.lineKind')}
-        <select data-testid="prop-line-kind"
-          value={settings.lineKind}
-          onChange={(event) => {
-            const lineKind = event.target.value as LineKind;
-            set({ lineKind, lineHeight: lineKindEntry(lineKind).defaultHeight });
-          }}
-        >
-          {LINE_KINDS.map(({ kind: id }) => (
-            <option key={id} value={id}>{t(`editor.line.${id}`)}</option>
-          ))}
-        </select>
-      </label>,
+      <LineTiles key="lineKind" t={t} value={settings.lineKind} rockKind={settings.rockKind} onChange={(lineKind) => set({ lineKind, lineHeight: lineKindEntry(lineKind).defaultHeight })} />,
       <NumberField key="lineHeight" label={t('editor.prop.height')} value={settings.lineHeight} min={0.5} max={3} step={0.1} onChange={(lineHeight) => set({ lineHeight })} />,
     );
     if (takesRockKind(settings.lineKind)) {
@@ -805,29 +793,35 @@ function ToolProperties({ store, t }: { store: EditorStore; t: T }): ReactNode {
     fields.push(
       <div key="catalog" className="editor-catalog">
         {OBJECT_GROUPS.map((group) => (
-          <details key={group} open={entry?.group === group}>
-            <summary>{t(`editor.group.${group}`)}</summary>
-            {group === 'stone' ? (
+          <CatalogGroup key={group} group={group} initiallyOpen={entry?.group === group} t={t}>
+            {(open) => group === 'stone' ? (
               <StoneTiles t={t} objectType={settings.objectType} rockKind={settings.rockKind} onType={(objectType) => set({ objectType })} onKind={(rockKind) => set({ rockKind })} />
-            ) : null}
-            {group === 'stone' ? null : (group === 'prop' ? PROP_SUBGROUPS : [undefined]).map((subgroup) => (
+            ) : group === 'tree' ? (
+              CATALOG_OBJECTS.filter((object) => object.group === group && isListed(object)).map((object) => (
+                // D5b: one tile per species; its forms are chosen with the switch below.
+                <button
+                  key={object.id}
+                  type="button"
+                  data-object={object.id}
+                  aria-pressed={settings.objectType === object.id || (!!object.species && entry?.species === object.species)}
+                  onClick={() => set({ objectType: object.id })}
+                >
+                  {t(object.nameKey)}
+                </button>
+              ))
+            ) : (group === 'prop' ? PROP_SUBGROUPS : [undefined]).map((subgroup) => (
               <Fragment key={subgroup ?? 'all'}>
                 {subgroup ? <h4 className="editor-subgroup">{t(`editor.subgroup.${subgroup}`)}</h4> : null}
-                {CATALOG_OBJECTS.filter((object) => object.group === group && isListed(object) && (group !== 'prop' || object.subgroup === subgroup)).map((object) => (
-              // D5b: one tile per species; its forms are chosen with the switch below.
-              <button
-                key={object.id}
-                type="button"
-                data-object={object.id}
-                aria-pressed={settings.objectType === object.id || (!!object.species && entry?.species === object.species)}
-                onClick={() => set({ objectType: object.id })}
-              >
-                {t(object.nameKey)}
-              </button>
-            ))}
+                <ObjectTiles
+                  t={t}
+                  objects={CATALOG_OBJECTS.filter((object) => object.group === group && isListed(object) && (group !== 'prop' || object.subgroup === subgroup))}
+                  objectType={settings.objectType}
+                  onType={(objectType) => set({ objectType })}
+                  pictured={open}
+                />
               </Fragment>
             ))}
-          </details>
+          </CatalogGroup>
         ))}
       </div>,
       ...formSwitch(settings.objectType, t, (objectType) => set({ objectType })),
@@ -1189,6 +1183,67 @@ function RockKindPicker({ t, value, onChange, testId }: { t: T; value: RockKind;
           {t(`editor.rock.${kind}`)}
         </button>
       ))}
+    </div>
+  );
+}
+
+/**
+ * revise-buildings-and-stone 5.4: a catalog group, folded; its tiles'
+ * thumbnails are only rendered once it is opened.
+ */
+function CatalogGroup({ group, initiallyOpen, t, children }: { group: ObjectGroup; initiallyOpen: boolean; t: T; children: (open: boolean) => ReactNode }): ReactNode {
+  const [open, setOpen] = useState(initiallyOpen);
+  return (
+    <details open={open} onToggle={(event) => setOpen(event.currentTarget.open)} data-group={group}>
+      <summary>{t(`editor.group.${group}`)}</summary>
+      {children(open)}
+    </details>
+  );
+}
+
+/** revise-buildings-and-stone 5.4: catalog objects as pictured tiles. */
+function ObjectTiles({ t, objects, objectType, onType, pictured }: {
+  t: T;
+  objects: readonly CatalogObject[];
+  objectType: string;
+  onType: (objectType: string) => void;
+  /** False while the group is folded: no thumbnails rendered yet. */
+  pictured: boolean;
+}): ReactNode {
+  const pictures = useThumbnails(pictured ? objects.map((object) => object.model) : []);
+  return (
+    <div className="editor-stone-tiles editor-tiles">
+      {objects.map((object) => {
+        const picture = pictures.get(object.model);
+        return (
+          <button key={object.id} type="button" data-object={object.id} aria-pressed={objectType === object.id} title={t(object.nameKey)} onClick={() => onType(object.id)}>
+            {picture ? <img src={picture} width={48} height={48} alt="" data-thumbnail={object.model} /> : <span className="editor-tree-blank" aria-hidden="true" />}
+            <span>{t(object.nameKey)}</span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+/** revise-buildings-and-stone 5.4: the line kinds as pictured tiles, a stone wall in the chosen rock. */
+function LineTiles({ t, value, rockKind, onChange }: { t: T; value: LineKind; rockKind: RockKind; onChange: (kind: LineKind) => void }): ReactNode {
+  const modelOf = (kind: LineKind): string => (takesRockKind(kind) && rockKind !== 'granite' ? `line:${kind}@${rockKind}` : `line:${kind}`);
+  const pictures = useThumbnails(LINE_KINDS.map(({ kind }) => modelOf(kind)));
+  return (
+    <div className="editor-line-kind">
+      <h4>{t('editor.prop.lineKind')}</h4>
+      <div className="editor-stone-tiles editor-tiles" data-testid="prop-line-kind" data-value={value}>
+        {LINE_KINDS.map(({ kind }) => {
+          const picture = pictures.get(modelOf(kind));
+          return (
+            <button key={kind} type="button" data-line-kind={kind} aria-pressed={value === kind} title={t(`editor.line.${kind}`)} onClick={() => onChange(kind)}>
+              {picture ? <img src={picture} width={48} height={48} alt="" data-thumbnail={modelOf(kind)} /> : <span className="editor-tree-blank" aria-hidden="true" />}
+              <span>{t(`editor.line.${kind}`)}</span>
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }
