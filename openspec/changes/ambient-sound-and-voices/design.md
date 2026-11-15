@@ -75,7 +75,14 @@ point; two emitters when two stretches of a kind are both in range.
 **D6. The voice director.** A small state machine owns speech: a priority
 queue with three levels (order line, answer, call-out), the no-repeat rule
 per line, the quiet time per section and kind, and the replacement rule
-for rapid orders. Commander lines are triggered by the client's own order
+for rapid orders. Curses and the enemy's speech sit on the call-out level
+and are the first dropped. A curse is a call-out kind of its own: it may
+play only while the speaker's section is firing or under fire, with a
+chance per opportunity and a longer quiet time (about 25 s per section,
+and a global cap) so it stays sporadic; the numbers are tuned in the hand
+check. The enemy's lines are gated by the player's side's sight, as his
+footsteps are; their files sit under their own speaker so the owner can
+record them in a second voice. Commander lines are triggered by the client's own order
 command once the simulation accepts it (no `command_rejected` for its
 sequence number); answers follow by a short gap.
 
@@ -83,7 +90,8 @@ sequence number); answers follow by a short gap.
 `packages/content` (id, speaker, order or event, Portuguese text, takes).
 `tools/voice-script.ts` writes `docs/audio/VOICE_SCRIPT.md`: per line the
 text, the mood, the takes and file names
-(`voice/<speaker>/<line>-<take>.<ext>`), marked recorded or to record by
+(`voice/<speaker>/<line>-<take>.<ext>`, speakers `comandante`, `soldado`
+and `inimigo`), marked recorded or to record by
 looking at the files. A manifest of existing files is generated at build,
 so the client never requests a missing take.
 
@@ -122,8 +130,14 @@ registered before they ship. Each source is the owner's choice at task 3.1.
 - [Looping beds click or repeat audibly] → beds of 30 s or more with
   cross-faded loop points; one-shots carry the variety.
 - [Speech in Portuguese for English players] → captions on by default in EN.
+- [Curses become chatter, or grate] → a chance per opportunity, a long
+  quiet time and a cap; the owner can turn the kind off in the catalog.
+- [The enemy's voice betrays him] → sight gating and the nearness rule;
+  an unseen enemy is silent.
 
 ## Open Questions
 
 - Whether the commander has one voice or one per army: one voice in this
   change; a second is new catalog rows, not new code.
+- Which side-specific curses ship: those whose period source has a page;
+  the others wait for one (see `docs/audio/ROTEIRO_RASCUNHO.md`).

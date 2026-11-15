@@ -131,8 +131,6 @@ contact with the enemy, a man down, out of ammunition, reloading, pinned,
 the machine gun set, an objective taken, and falling back. A call-out SHALL
 follow the nearness rule, SHALL NOT repeat for the same section and kind
 within a quiet time (at least 8 s), and SHALL give way to an order line.
-Enemy soldiers SHALL be heard only as shouts without words, and only when
-the player's side sees them.
 
 #### Scenario: A man down nearby
 - **WHEN** a soldier of the player's side is incapacitated near the listening point
@@ -146,10 +144,57 @@ the player's side sees them.
 - **WHEN** three soldiers of one section run out of ammunition within four seconds
 - **THEN** one out-of-ammunition call-out plays for that section
 
+### Requirement: Curses under fire
+
+Now and then a soldier of the player's side SHALL swear, from where he
+is: only while his section is firing or under fire, by chance, and not
+again for that section within a quiet time (at least 20 s), with a cap on
+curses heard at once across the field. A curse SHALL follow the nearness
+rule and SHALL give way to an order line and to any other call-out. Curses
+SHALL keep to the strength of the period, with no modern obscenity and no
+slur, and a curse that names a side SHALL be spoken only by the side that
+used it.
+
+#### Scenario: Sporadic, not constant
+- **WHEN** a section fires for a full minute near the listening point
+- **THEN** at most a few curses are heard from it, never two within the quiet time
+
+#### Scenario: No curse in a quiet field
+- **WHEN** no shot has been fired near a section
+- **THEN** no curse plays for it
+
+#### Scenario: A side's word
+- **WHEN** a curse names the government's men as "chimangos"
+- **THEN** only a soldier of the column speaks it
+
+### Requirement: The enemy is heard when seen
+
+Enemy soldiers SHALL be heard, from where they are and by the nearness
+rule, with call-outs of their own (contact, advancing, holding, a man
+down, out of ammunition, pinned, under machine-gun fire, falling back, an
+objective taken), curses and shouts without words, and SHALL be heard only
+while the player's side sees the speaker. Their lines SHALL follow the
+same quiet times as the player's side, SHALL give way to an order line,
+and SHALL be recorded under their own speaker so they can have a voice of
+their own. No enemy line SHALL carry information the player's side could
+not see.
+
+#### Scenario: An unseen enemy is silent
+- **WHEN** an enemy section the player's side does not see falls back near the listening point
+- **THEN** none of its lines are heard
+
+#### Scenario: A seen enemy breaks
+- **WHEN** a seen enemy section falls back near the listening point
+- **THEN** one of its falling-back lines is heard from its position
+
+#### Scenario: Orders first
+- **WHEN** an enemy shout and the commander's order would play together
+- **THEN** the order plays and the shout is dropped
+
 ### Requirement: Voice line catalog and recording script
 
 Every voice line SHALL be an entry of a catalog with an id, its speaker
-(commander or soldier), its text in Portuguese, the order or event it
+(commander, soldier or enemy), its text in Portuguese, the order or event it
 belongs to, its takes and their file names. The project SHALL keep a
 recording script generated from the catalog that lists every take still to
 record. A line or take with no recording SHALL be skipped in silence,

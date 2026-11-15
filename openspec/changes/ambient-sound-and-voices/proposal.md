@@ -28,8 +28,12 @@ always be clear.
 - **Voices.** The commander speaks each order the player gives, and the
   section that receives it answers. Soldiers also call out what happens to
   them: contact, a man down, out of ammunition, reloading, pinned, the gun
-  set, an objective taken, falling back. Lines are short Portuguese speech
-  recorded by the owner, with several takes each so they do not repeat.
+  set, an objective taken, falling back. Now and then, under fire, a
+  soldier swears. The enemy is heard too, when the player's side sees him:
+  his own call-outs, curses and wordless shouts. Lines are short Portuguese
+  speech recorded by the owner (the enemy in another voice or register),
+  with several takes each so they do not repeat. The owner widened the
+  voices to the enemy and to curses on 2026-11-13.
 - **Orders are always clear.** The commander's order and the section's
   answer are not thinned by distance and lower the rest of the mix while
   they play. Every other voice is heard by nearness, like any sound.
@@ -51,9 +55,9 @@ trouble, without looking at the panel.
 
 MVP: the listening point, air beds for the four biomes and four hours,
 river, stream and pond, footsteps on six surfaces, the commander's order
-lines and the sections' answers for every order of the board, six event
-call-outs, the mix controls and captions. Non-goals: music in battle,
-enemy speech as intelligible lines (the enemy is heard as distant shouts),
+lines and the sections' answers for every order of the board, the eight
+event call-outs, sporadic curses, the enemy's call-outs, curses and
+wordless shouts, the mix controls and captions. Non-goals: music in battle,
 radio or bugle signalling as a mechanic, lip sync, English voice
 recordings, and positional audio for headphones beyond left-right panning.
 
@@ -64,7 +68,14 @@ and a line that leans on a period expression notes its source. No line is
 taken from a book. The owner's recordings are original work; every ambient
 recording that is not his is CC0 or public domain, or synthesized, and is
 registered in `docs/assets.md` with its source and licence before it
-ships. The wounded and the dying are voiced with restraint. The campaign's
+ships. The wounded and the dying are voiced with restraint. Curses stay at
+the strength of the period ("com mil diabos", "filho da mãe", "cambada");
+no modern obscenity and no slur, even one the period used (the police
+nickname "macacos" is left out because it reads as a racial slur today).
+A curse that names a side ("chimangos", "revoltosos") is a period
+expression and records its source like any other. The enemy's speech
+gives away nothing his sight would not: it is heard only when the
+player's side sees him. The campaign's
 multi-perspective approach is unchanged: the commander's voice is a
 generic officer in the skirmish; a named historical figure's voice is a
 later, per-mission decision.
