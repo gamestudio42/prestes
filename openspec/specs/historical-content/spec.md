@@ -11,7 +11,9 @@ later campaign changes must satisfy.
 
 The project SHALL provide a machine-readable registry of historical figures. Each
 entry SHALL include an id, a display name, a role, a playable flag, content labels
-and at least one source reference.
+and at least one source reference. Siqueira Campos, Luís Carlos Prestes, Miguel
+Costa and Isidoro Dias Lopes SHALL be playable, since each commands a campaign
+map (on the field or as a voice).
 
 #### Scenario: Registry contains the vertical-slice figures
 
@@ -22,6 +24,11 @@ and at least one source reference.
 
 - **WHEN** a registry entry has no source reference
 - **THEN** the historical-content validation fails and names the figure id
+
+#### Scenario: Chapter commanders are playable
+
+- **WHEN** the registry is loaded
+- **THEN** Miguel Costa and Isidoro Dias Lopes are playable
 
 ### Requirement: Source documents
 
@@ -101,7 +108,8 @@ page citations.
 
 The project SHALL provide a validation contract that ties a mission to one
 playable historical figure and one perspective. A mission SHALL NOT reference an
-unknown or non-playable commander.
+unknown or non-playable commander. A campaign map that declares a commander
+SHALL declare the `commanderId` of the chapter its mission belongs to.
 
 #### Scenario: Valid commander is accepted
 
@@ -117,6 +125,11 @@ unknown or non-playable commander.
 
 - **WHEN** a mission declares a figure id absent from the registry
 - **THEN** validation fails with an unknown-figure error
+
+#### Scenario: Map commander differs from the chapter's
+
+- **WHEN** the map Porto Mendes (mission `a-divisao`, chapter commander Miguel Costa) declares Luís Carlos Prestes as its commander
+- **THEN** validation fails with a commander error naming the map
 
 ### Requirement: Content labels
 

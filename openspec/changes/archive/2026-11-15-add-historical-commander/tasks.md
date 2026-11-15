@@ -35,4 +35,4 @@
 ## 6. Docs and close
 
 - [x] 6.1 Update `docs/campaign/CAMPAIGN.md` (commander presence per mission, Miguel Costa and Isidoro playable) and close the related open questions in the mission docs, including the prologue's "command voice only, or a unit?" (answer: a unit, the Comando's officer); verify with `pnpm check:content`
-- [ ] 6.2 Full check; verify with `pnpm check` and `openspec validate add-historical-commander --strict`, and a muted playthrough of Serra Nova in the preview pane where the figure is named, his radius steadies a pinned section, and his fall ends the battle as a defeat
+- [x] 6.2 Full check; verify with `pnpm check` and `openspec validate add-historical-commander --strict`, and a muted playthrough of Serra Nova in the preview pane where the figure is named, his radius steadies a pinned section, and his fall ends the battle as a defeat

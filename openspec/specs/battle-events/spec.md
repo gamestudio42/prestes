@@ -52,7 +52,10 @@ An event's trigger SHALL be one of:
 - **losses**: a side's soldiers who are dead, incapacitated or routed reach
   a share (10 % to 90 %, in steps of 5 %) of all the men that side has
   fielded so far, reinforcements included;
-- **after event**: another event of the map has fired.
+- **after event**: another event of the map has fired;
+- **commander down**: the map's field commander is killed or incapacitated.
+  The map check SHALL report this trigger on a map without a field
+  commander.
 Fit soldiers SHALL be counted as for objective capture. Triggers SHALL be checked
 against the simulation's own state, not against what either side sees.
 Triggers SHALL be checked only after the deployment phase ends, and the
@@ -77,6 +80,14 @@ battle clock for time triggers SHALL start when it ends.
 #### Scenario: Not during deployment
 - **WHEN** an event's trigger is "time 0:00"
 - **THEN** it fires on the first tick after the deployment phase ends
+
+#### Scenario: Commander down with a card
+- **WHEN** on a map whose loss outcome is continue an event's trigger is "commander down" with a narrative card, and the figure is incapacitated
+- **THEN** the event fires on that tick (plus its delay) and the card is shown
+
+#### Scenario: Commander down on a map without one
+- **WHEN** a map without a field commander has an event triggered by "commander down"
+- **THEN** the map check reports the event
 
 ### Requirement: Troops enter
 
