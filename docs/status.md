@@ -557,10 +557,15 @@ corrugated asbestos appears.
   through Blanc and Macaulay. Until one is found, PT-BR carries our
   translation, marked as such. Print editions of Rosa p. 82, Amado p. 131 and
   Moreira Lima p. 523 are also unchecked.
-- `pnpm verify` (2026-11-15): check, build and lint pass. The bundle budget
-  fails: index JS is 898 KB against a 760 KB budget. The new book text adds
-  about 110 KB (compendium notes and chapters, in two languages). The rest
-  comes from other uncommitted work in the tree. The owner chooses between
-  raising the budget and moving the book text into a lazily loaded chunk.
-  Determinism, tick budget and the e2e did not run, because the bundle budget
-  step stops verify before them.
+- Index JS bundle budget raised from 760 KB to 940 KB at the owner's request
+  (2026-11-15): the books add about 110 KB, and the bundle is now 898 KB,
+  partly from other uncommitted work.
+- `pnpm verify` (2026-11-15): check, build, bundle budget, determinism, tick
+  budget and openspec validate pass. e2e: 143 passed, 9 skipped, 13 failed.
+  The book failures were fixed: the pt-BR overflow in `la-gaiba-1927`, the
+  emblem test (Vila Militar now has a map, so the test uses Porto Nacional),
+  the chapter 8 farewell (now on its own page), and the two desk baselines,
+  regenerated and checked by eye. Still failing, outside the books: "a chapter
+  without a map has no play action", because every chapter has a map now;
+  area-fire, cover-slots, tactical, the three performance budgets and the HUD
+  baseline.

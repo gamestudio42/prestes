@@ -403,7 +403,7 @@ export const COMPENDIUM_BOOKS_PT_BR: Readonly<Record<string, CompendiumAddition>
       {
         heading: '5 de julho de 1927',
         paragraphs: [
-          'No quinto aniversário do levante de Copacabana e no terceiro da revolta de São Paulo, os exilados inauguraram um pequeno monumento aos mortos da Coluna: um bloco de granito com a inscrição "Glória aos Bandeirantes da Liberdade, 1924–1927" (retradução do inglês). Moreira Lima fez o discurso, que o Correio da Manhã publicou em 22 de julho (Blanc, p. 142, n. 29). A fotografia do monumento foi feita entre julho e novembro de 1927 (fig. 7.5).',
+          'No quinto aniversário do levante de Copacabana e no terceiro da revolta de São Paulo, os exilados inauguraram um pequeno monumento aos mortos da Coluna: um bloco de granito com a inscrição "Glória aos Bandeirantes da Liberdade, 1924–1927" (retradução do inglês). Moreira Lima fez o discurso, que o Correio da Manhã publicou em 22 de julho (Blanc, p. 142, n. 29).',
           'No mesmo dia, no Brasil, o jornal Vanguarda chamou Prestes de Cavaleiro da Esperança. Blanc lê a data como uma dobradiça: os "bandeirantes" coletivos enterrados no estrangeiro, a lenda de um só homem crescendo em casa.',
         ],
         quote: {

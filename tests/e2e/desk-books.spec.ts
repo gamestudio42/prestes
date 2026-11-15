@@ -127,7 +127,7 @@ test('an entry without an image shows the section emblem', async ({ page }) => {
   await openDesk(page);
   await page.getByTestId('start-codex').click();
   await page.getByTestId('codex-tab-places').click();
-  await page.getByTestId('codex-entry-vila-militar').click();
+  await page.getByTestId('codex-entry-porto-nacional').click();
   await expect(page.getByTestId('book-emblem')).toBeVisible();
   await expect(page.getByTestId('book-plate-image')).toHaveCount(0);
 });
@@ -222,10 +222,12 @@ test("chapter 8 quotes Moreira Lima's farewell with its attribution line", async
   await page.getByTestId('campaign-chapter-la-gaiba').click();
   const frame = page.getByTestId('campaign-book').locator('.desk-book-frame');
   await frame.focus();
-  for (let i = 0; i < 10 && (await page.getByTestId('book-quote').count()) === 0; i += 1) {
+  // complete-books-and-bibliography: the farewell has its own page ("The Dead"), after the Monument's speech.
+  const farewell = page.getByTestId('book-quote').filter({ hasText: 'Soldiers of Liberty!' });
+  for (let i = 0; i < 10 && (await farewell.count()) === 0; i += 1) {
     await page.keyboard.press('ArrowRight');
   }
-  const quote = page.getByTestId('book-quote').first();
+  const quote = farewell.first();
   await expect(quote).toContainText('Soldiers of Liberty!');
   await expect(quote.locator('.desk-quote-attribution')).toContainText('Lourenço Moreira Lima, La Gaiba');
   await expect(quote.locator('.desk-quote-attribution')).toContainText('(translated from the Portuguese)');
