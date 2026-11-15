@@ -39,7 +39,9 @@ export type EventTrigger =
   | { kind: 'objective'; objective: number; side: EventSide; change: 'taken' | 'lost' }
   | { kind: 'area'; area: number; side: EventSide }
   | { kind: 'losses'; side: EventSide; percent: number }
-  | { kind: 'after'; event: number };
+  | { kind: 'after'; event: number }
+  /** add-historical-commander: the map's field commander is killed or incapacitated. */
+  | { kind: 'commander' };
 
 export type ArrivalOrder =
   | { kind: 'move'; to: Vec2 }
@@ -97,6 +99,8 @@ function isTrigger(value: unknown): value is EventTrigger {
       return isSide(value.side) && isNumber(value.percent);
     case 'after':
       return isNumber(value.event);
+    case 'commander':
+      return true;
     default:
       return false;
   }

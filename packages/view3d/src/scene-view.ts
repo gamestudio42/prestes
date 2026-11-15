@@ -412,6 +412,11 @@ export class SceneView {
     return { x: this.rig.focusX, y: this.rig.focusY, span: this.rig.span, right: { x: m[0]! / length, y: m[2]! / length } };
   }
 
+  /** add-historical-commander 3.2: the pennant over the map's historical figure is drawn (dev checks). */
+  figurePennantShown(): boolean {
+    return this.characters.figurePennantShown();
+  }
+
   /** garrison-and-assault 1.4: barrels out of windows and markers over raised floors drawn now (dev checks). */
   garrisonMarks(): { barrels: number; elevated: number; banners: GarrisonBannerState[]; arrows: number; assaults: AssaultBarsState[] } {
     return {

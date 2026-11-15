@@ -441,6 +441,12 @@
   box-shadow: 2px 2px 0 rgba(8, 5, 2, 0.6);
 }
 
+/* add-historical-commander 3.3: the commander's fall, below the order notice. */
+.hud-notice-commander {
+  top: 92px;
+  border-color: #b08a4a;
+}
+
 /* refine-battle-controls: the leave-battle control in the top bar. */
 .hud-leave {
   height: 29px;

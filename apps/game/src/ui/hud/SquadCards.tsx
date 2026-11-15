@@ -3,6 +3,7 @@ import { ARMIES, type Frame } from '@prestes/shared';
 import { bar, type Translate } from './orderMeta';
 import { positionName } from './positionName';
 import { sectionThumbnail } from '../sectionThumbnail';
+import type { CommanderView } from './commander';
 import '../../styles/troop-thumbs.css';
 
 interface SquadCardsProps {
@@ -14,6 +15,8 @@ interface SquadCardsProps {
   onSelectSquad: (squadId: number) => void;
   /** refine-battle-controls: a double-click selects and centres the section. */
   onCenterSquad: (squadId: number) => void;
+  /** add-historical-commander 3.1: the map's field commander, named on his section's card. */
+  commander?: CommanderView | null;
 }
 
 export function SquadCards({
@@ -24,6 +27,7 @@ export function SquadCards({
   battleMode,
   onSelectSquad,
   onCenterSquad,
+  commander = null,
 }: SquadCardsProps) {
   const squadIds =
     frame === null
@@ -65,6 +69,7 @@ export function SquadCards({
             : (sectionNames[squadId] ?? 'hud.squad2');
           // faction-armies 4.4: the army the section belongs to, next to its name.
           const army = units.find((unit) => unit.army !== undefined)?.army;
+          const leadsSection = commander !== null && units.some((unit) => unit.figure);
           const alive = units.filter((unit) => unit.alive && !unit.routed);
           const hp = alive.reduce((sum, unit) => sum + unit.hp, 0);
           const rounds = alive.reduce((sum, unit) => sum + unit.magazine + unit.reserve, 0);
@@ -103,6 +108,11 @@ export function SquadCards({
                 />
                 <span className="section-copy">
                   <strong data-testid={`squad-name-${squadId}`}>{t(nameKey)}</strong>
+                  {leadsSection ? (
+                    <small className="section-commander" data-testid={`squad-commander-${squadId}`} title={t(commander.roleKey)}>
+                      {commander.name}
+                    </small>
+                  ) : null}
                   {army ? (
                     <small className="section-army" data-testid={`squad-army-${squadId}`}>
                       {t(ARMIES[army].nameKey as MessageKey)}

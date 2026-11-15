@@ -499,6 +499,11 @@
   font-size: 14px;
 }
 
+.app.game [data-window='troops'] .section-commander {
+  color: var(--kit-text);
+  font-size: 14px;
+}
+
 .app.game [data-window='troops'] .mini-bar {
   height: 3px;
   margin-top: 1px;

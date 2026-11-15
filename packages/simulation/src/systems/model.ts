@@ -1,5 +1,5 @@
 // Shared simulation data: unit records, templates and tuning constants.
-import { DEFAULT_ROSTER, deployRoster, SECTION_TYPES } from '@prestes/shared';
+import { DEFAULT_ROSTER, deployRoster, FIGURE_SECTION, SECTION_TYPES } from '@prestes/shared';
 import type { BattleMap, BattleRosters, Gait, SectionTypeId } from '@prestes/shared';
 import type {
   Faction,
@@ -170,6 +170,11 @@ export interface MutableUnit {
   role?: UnitRole;
   nonLethal: boolean;
   ambush: boolean;
+  /**
+   * add-historical-commander D2: this officer is the map's historical figure
+   * (field commander). Absent on every other man, so other battles hash as before.
+   */
+  figure?: true;
   /** Officers only: the loss consequence was applied for the current absence. */
   officerLossApplied: boolean;
   /** Reserved cover slot (see shared cover-slots), or null. */
@@ -399,6 +404,7 @@ export type BattleUnitSeed = (typeof DEFAULT_UNITS)[number] & {
   weaponId?: WeaponId;
   sidearmId?: WeaponId;
   sectionType?: SectionTypeId;
+  figure?: true;
 };
 
 /**
@@ -412,6 +418,8 @@ export type BattleUnitSeed = (typeof DEFAULT_UNITS)[number] & {
  */
 export function battleUnits(map: BattleMap, rosters?: BattleRosters): BattleUnitSeed[] {
   const units: BattleUnitSeed[] = [];
+  // add-historical-commander D2: the first Comando's officer of the column is the field commander.
+  let figurePending = map.commander?.presence === 'field';
   for (const faction of ['column', 'legalist'] as const) {
     if (faction === 'legalist' && map.noEnemy) continue;
     const roster = rosters ? (faction === 'column' ? rosters.column : (rosters.legalist ?? DEFAULT_ROSTER)) : DEFAULT_ROSTER;
@@ -430,6 +438,8 @@ export function battleUnits(map: BattleMap, rosters?: BattleRosters): BattleUnit
           units.push(base);
           continue;
         }
+        const figure = figurePending && faction === 'column' && section.type === FIGURE_SECTION && man.role === 'officer';
+        if (figure) figurePending = false;
         units.push({
           ...base,
           speed: INFANTRY_TEMPLATE.speed * (type.speedFactor ?? 1),
@@ -437,6 +447,7 @@ export function battleUnits(map: BattleMap, rosters?: BattleRosters): BattleUnit
           weaponId: man.weapon,
           ...(man.sidearm ? { sidearmId: man.sidearm } : {}),
           sectionType: section.type,
+          ...(figure ? { figure: true as const } : {}),
         });
       }
     }

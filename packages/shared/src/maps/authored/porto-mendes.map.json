@@ -17857,6 +17857,11 @@
    "fuzil-metralhador"
   ]
  },
+ "commander": {
+  "figure": "miguel-costa",
+  "presence": "field",
+  "loss": "defeat"
+ },
  "enemyForces": [
   {
    "sections": [

@@ -32,7 +32,7 @@ role, not a moral judgement.
 - **Role:** Major in the São Paulo state militia; formal commander of the First
   Revolutionary Division from April 1925; the column’s political-military
   counterpart to Prestes.
-- **Playable:** proposed — mission 03, “A Divisão”.
+- **Playable:** yes — mission 03, “A Divisão”, on the field (add-historical-commander).
 - **Labels:** historical.
 - **Sources:** `macaulay-1974`, ch. III, pp. 86–89; `castro-2016`;
   `tavora-1928` (citation-only).
@@ -45,7 +45,7 @@ role, not a moral judgement.
 - **Role:** Retired colonel, promoted general by the São Paulo rebels in 1924;
   overall commander of the São Paulo revolt and the Paraná front, based at Foz
   do Iguaçu.
-- **Playable:** proposed — mission 04, “A Frente do Paraná”, as the command voice.
+- **Playable:** yes — mission 04, “A Frente do Paraná”, as the command voice only (add-historical-commander).
 - **Labels:** historical.
 - **Sources:** `macaulay-1974`, ch. I, pp. 4–6; ch. III, pp. 80–89;
   `castro-2022`.
@@ -56,6 +56,5 @@ role, not a moral judgement.
 
 Add the entry here, add the id to `packages/content/src/figures.ts`, and make
 sure every `sourceRef` exists in `SOURCES.md` and `packages/content/src/sources.ts`.
-Miguel Costa and Isidoro Dias Lopes are in the runtime registry with
-`playable: false`: they command campaign chapters 3 and 4, which have no mission
-yet.
+Every figure here is `playable: true` in the runtime registry: each commands
+a campaign map (add-historical-commander), on the field or as a voice.

@@ -15426,6 +15426,11 @@
    "metralhadora"
   ]
  },
+ "commander": {
+  "figure": "isidoro-dias-lopes",
+  "presence": "voice",
+  "loss": "continue"
+ },
  "enemyForces": [
   {
    "sections": [

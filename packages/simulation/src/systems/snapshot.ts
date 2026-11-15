@@ -75,6 +75,7 @@ export function snapshotUnits(ctx: SimContext): UnitSnapshot[] {
         ? { waitingFerry: true }
         : {}),
       ...(unit.sectionType !== undefined ? { sectionType: unit.sectionType } : {}),
+      ...(unit.figure ? { figure: true } : {}),
       ...(army !== undefined ? { army } : {}),
       ...(ctx.gunPools && isBelt(unit)
         ? { gunSet: gunReady(unit), gunState: gunState(unit), gunSetupLeft: gunSetupLeft(unit) }

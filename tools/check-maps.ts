@@ -2,6 +2,7 @@ import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from '
 import { basename, dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { compileMapDocument, fromMapDocument, parseMapDocumentText, setActiveMap, validateEditableMap, validateMapRosters, validatePositions, type AuthoredMapEntry } from '../packages/shared/src';
+import { CAMPAIGN_CHAPTERS, validateMapCommander } from '../packages/content/src';
 
 /**
  * add-map-editor: checks every authored map document in
@@ -96,6 +97,8 @@ export function checkAuthoredMaps(dir = AUTHORED_DIR): string[] {
       if (other) errors.push(`${file}: mission ${document.mission} already has the map ${other}`);
       else missions.set(document.mission, document.id);
     }
+    // add-historical-commander 1.3: the commander is the chapter's, registered and playable.
+    for (const error of validateMapCommander(document, CAMPAIGN_CHAPTERS)) errors.push(`${file}: ${error}`);
     for (const problem of validateEditableMap(fromMapDocument(document))) {
       if (problem.severity === 'error') errors.push(`${file}: ${problem.code} ${JSON.stringify(problem.params)}`);
       // Warnings (masked vegetation, a cover gap) are shown and do not fail the check.

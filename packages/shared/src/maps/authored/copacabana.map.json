@@ -4326,6 +4326,11 @@
    "esquadra-4"
   ]
  },
+ "commander": {
+  "figure": "siqueira-campos",
+  "presence": "field",
+  "loss": "continue"
+ },
  "epilogue": {
   "pt-BR": "A lenda: os dezoito saíram do forte, subiram a Avenida Atlântica e morreram todos na areia de Copacabana, diante da Rua Barroso, com os pedaços da bandeira junto ao peito.\nO registro: vinte e nove ficaram no forte; vinte e oito saíram na tarde de 6 de julho; quatro desertaram na avenida e um civil, Otávio Correia, juntou-se a eles. Dezesseis chegaram à linha do governo. Sete rebeldes morreram. Siqueira Campos e Eduardo Gomes, feridos, sobreviveram com um soldado. O governo teve trinta e cinco baixas entre mortos e feridos.\nPrestes, de cama com tifo, não estava lá. A coluna começa no sul, dois anos depois.",
   "en": "The legend: the eighteen marched out of the fort, up the Avenida Atlântica, and all died on the sand of Copacabana before Rua Barroso, the pieces of the flag against their chests.\nThe record: twenty-nine held the fort; twenty-eight marched out on the afternoon of 6 July; four deserted on the avenue and a civilian, Otávio Correia, joined them. Sixteen reached the government line. Seven rebels died. Siqueira Campos and Eduardo Gomes, wounded, survived with one soldier. The government lost thirty-five killed or wounded.\nPrestes, in bed with typhoid, was not there. The column begins in the south, two years later."
@@ -4577,6 +4582,27 @@
      "posture": "offensive",
      "until": {
       "seconds": 1200
+     }
+    }
+   ]
+  },
+  {
+   "id": 8,
+   "label": "Siqueira cai",
+   "trigger": {
+    "kind": "commander"
+   },
+   "delay": 0,
+   "actions": [
+    {
+     "kind": "card",
+     "title": {
+      "pt-BR": "Siqueira Campos caiu",
+      "en": "Siqueira Campos is down"
+     },
+     "text": {
+      "pt-BR": "O tenente está no chão da avenida. Ninguém manda recuar, e ninguém recua: cada grupo segura o seu pedaço da praia sem a voz dele.\n\nNo registro, Siqueira Campos caiu ferido diante da Rua Barroso e sobreviveu.\n\n(Cena dramatizada. Fonte do registro: macaulay-1974, cap. I.)",
+      "en": "The lieutenant is down on the avenue. No one orders a retreat, and no one retreats: each group holds its stretch of the beach without his voice.\n\nIn the record, Siqueira Campos fell wounded before Rua Barroso and survived.\n\n(Dramatized scene. Source for the record: macaulay-1974, ch. I.)"
      }
     }
    ]

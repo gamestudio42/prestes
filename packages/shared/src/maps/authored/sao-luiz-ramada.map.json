@@ -16463,6 +16463,11 @@
    "esquadra-4"
   ]
  },
+ "commander": {
+  "figure": "luis-carlos-prestes",
+  "presence": "field",
+  "loss": "defeat"
+ },
  "enemyForces": [
   {
    "sections": [

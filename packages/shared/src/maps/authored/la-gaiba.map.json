@@ -5395,6 +5395,11 @@
    "esquadra-4"
   ]
  },
+ "commander": {
+  "figure": "luis-carlos-prestes",
+  "presence": "field",
+  "loss": "continue"
+ },
  "noEnemy": true,
  "eventPlaces": [],
  "events": [

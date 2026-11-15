@@ -1,4 +1,5 @@
 import { validateRoster } from '../sections';
+import { FIGURE_SECTION } from './commander';
 import type { Vec2 } from '../protocol';
 import { findPath } from '../pathfinding';
 import { isPointBlockedByCovers } from '../world';
@@ -26,6 +27,8 @@ export type ProblemCode =
   | 'source-note-missing'
   | 'mission-missing'
   | 'column-force-invalid'
+  | 'commander-not-campaign'
+  | 'commander-no-comando'
   | 'section-count'
   | 'section-out-of-bounds'
   | 'section-not-walkable'
@@ -141,6 +144,11 @@ export function validateEditableMap(map: EditableMap): MapProblem[] {
   if (map.use === 'campaign' && !map.mission) add({ code: 'mission-missing', severity: 'error', params: {} });
   // The column's fixed force keeps the roster rules, the column's army only.
   if (map.columnForce && !validateRoster(map.columnForce, 'coluna').ok) add({ code: 'column-force-invalid', severity: 'error', params: {} });
+  // add-historical-commander 1.2: a commander only on campaign maps; on the field he is a Comando's officer.
+  if (map.commander && map.use !== 'campaign') add({ code: 'commander-not-campaign', severity: 'error', params: { map: map.id } });
+  else if (map.commander?.presence === 'field' && !map.columnForce?.sections.includes(FIGURE_SECTION)) {
+    add({ code: 'commander-no-comando', severity: 'error', params: { map: map.id } });
+  }
 
   const compiled = compileMapDocument(map);
   setActiveMap(compiled);

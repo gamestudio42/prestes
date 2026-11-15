@@ -169,6 +169,8 @@ export function GameCanvas({
         // add-map-compass: the camera's yaw and tilt (radians), for the compass checks.
         camera: () => ({ yaw: scene.camera.yaw, tilt: scene.camera.tilt, targetYaw: scene.camera.targetYaw }),
         garrisonMarks: () => scene.garrisonMarks(),
+        // add-historical-commander 3.2: the pennant over the map's historical figure.
+        figurePennant: () => scene.figurePennantShown(),
     objectiveMarks: () => scene.objectiveMarks(),
         deploymentMarks: () => scene.deploymentMarksShown(),
         deploymentAreas: () => scene.deploymentAreasShown(),

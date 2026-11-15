@@ -27,7 +27,7 @@ import { smoothCentreline } from './water-outline';
 import { detectWallYards, type YardWall } from './wall-yards';
 import { migrateEnemyPreset, type Roster } from '../sections';
 import { compileEventPlaces, compileEvents, isBattleEvent, isEventPlace, type BattleEvent, type EventPlace } from './events';
-import { DEFAULT_MAP_LIGHT, MAP_LIGHT_TIME, type BattleMap, type DeploymentZone, type HeightShape, type LocalizedText, type MapLight, type Objective, type MapLine, type PropPlacement, type WaterArea } from './types';
+import { DEFAULT_MAP_LIGHT, MAP_LIGHT_TIME, type BattleMap, type DeploymentZone, type HeightShape, type LocalizedText, type MapCommander, type MapLight, type Objective, type MapLine, type PropPlacement, type WaterArea } from './types';
 
 /**
  * The map editor's document (add-map-editor): raster layers (heights, paint,
@@ -173,6 +173,8 @@ interface MapDocumentBody {
   columnForce?: Roster;
   /** A scene without an enemy (La Gaiba); absent = the enemy is fielded as usual. */
   noEnemy?: boolean;
+  /** add-historical-commander D1: the chapter's historical figure (campaign maps); absent = none. */
+  commander?: MapCommander;
   /** Shown on the battle's end panel: a mission's epilogue (the legend and the record); absent = none. */
   epilogue?: LocalizedText;
   /** add-map-objectives 1.3: regions to take and hold; absent = none. */
@@ -347,6 +349,8 @@ const isPoints = (value: unknown, min: number): value is Vec2[] => Array.isArray
 const isText = (value: unknown): value is LocalizedText => isObject(value) && isString(value.en) && isString(value['pt-BR']);
 const isRaster = (value: unknown): value is EncodedRaster =>
   isObject(value) && value.encoding === 'rle-base64' && (value.type === 'i16' || value.type === 'u8') && isNumber(value.length) && isString(value.data);
+const isMapCommander = (value: unknown): value is MapCommander =>
+  isObject(value) && isString(value.figure) && value.figure.length > 0 && (value.presence === 'field' || value.presence === 'voice') && (value.loss === 'defeat' || value.loss === 'continue');
 const isObjective = (value: unknown): value is Objective =>
   isObject(value) &&
   isNumber(value.id) &&
@@ -480,6 +484,7 @@ export function parseMapDocument(value: unknown): ParseResult {
   if (doc.enemyForces !== undefined && !(Array.isArray(doc.enemyForces) && doc.enemyForces.every((roster) => isObject(roster) && Array.isArray(roster.sections) && roster.sections.every(isString)))) return fail('enemyForces');
   if (doc.columnForce !== undefined && !(isObject(doc.columnForce) && Array.isArray(doc.columnForce.sections) && doc.columnForce.sections.every(isString))) return fail('columnForce');
   if (doc.noEnemy !== undefined && typeof doc.noEnemy !== 'boolean') return fail('noEnemy');
+  if (doc.commander !== undefined && !isMapCommander(doc.commander)) return fail('commander');
   if (doc.epilogue !== undefined && !(isObject(doc.epilogue) && isString(doc.epilogue.en) && isString(doc.epilogue['pt-BR']))) return fail('epilogue');
   if (doc.objectives !== undefined && !(Array.isArray(doc.objectives) && doc.objectives.every(isObjective))) return fail('objectives');
   if (doc.events !== undefined && !(Array.isArray(doc.events) && doc.events.every(isBattleEvent))) return fail('events');
@@ -1168,6 +1173,7 @@ export function compileMapDocument(source: EditableMap | MapDocument): BattleMap
     ...(map.enemyForces && map.enemyForces.length > 0 ? { enemyForces: map.enemyForces.map((roster) => ({ sections: [...roster.sections] })) } : {}),
     ...(map.columnForce && map.columnForce.sections.length > 0 ? { columnForce: { sections: [...map.columnForce.sections] } } : {}),
     ...(map.noEnemy ? { noEnemy: true } : {}),
+    ...(map.commander ? { commander: { presence: map.commander.presence, loss: map.commander.loss } } : {}),
     ...(map.objectives && map.objectives.length > 0
       ? {
           objectives: map.objectives.map((objective) => ({

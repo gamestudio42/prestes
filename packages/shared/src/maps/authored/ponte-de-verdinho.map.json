@@ -6225,6 +6225,11 @@
    "esquadra-5"
   ]
  },
+ "commander": {
+  "figure": "luis-carlos-prestes",
+  "presence": "field",
+  "loss": "defeat"
+ },
  "enemyForces": [
   {
    "sections": [

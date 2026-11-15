@@ -258,6 +258,12 @@ export class CharacterLayer {
    * occupied tower and upper floor (the men there are not drawn).
    */
   private readonly elevatedMarkers: THREE.InstancedMesh;
+  /**
+   * add-historical-commander 3.2: the placeholder `figure-pennant-placeholder`
+   * (a pole and a swallow-tailed cloth in primitives) over the map's historical
+   * figure, until real art exists.
+   */
+  private readonly figurePennant: THREE.Group;
   /** The active map's buildings by id: each floor's window height, and the tower's (world) when it has one. */
   private windowHeights = new Map<number, BuildingWindows>();
   private windowHeightsFor = -1;
@@ -315,6 +321,8 @@ export class CharacterLayer {
       64,
     );
     this.elevatedMarkers.name = 'garrison-elevated-markers';
+    this.figurePennant = figurePennantPlaceholder();
+    this.group.add(this.figurePennant);
     for (const mesh of [this.proxyBody, this.proxyHead, this.proxyRing, this.proxyCorpse, this.ghosts, this.canopyOutlines, this.barrels, this.elevatedMarkers]) {
       mesh.count = 0;
       mesh.frustumCulled = false;
@@ -672,6 +680,19 @@ export class CharacterLayer {
         this.views.delete(id);
       }
     }
+
+    // add-historical-commander 3.2: the pennant stands over the figure while he is on his feet.
+    const figure = frame.units.find((unit) => unit.figure && unit.alive && !unit.routed && !unit.incapacitated);
+    this.figurePennant.visible = figure !== undefined;
+    if (figure) {
+      this.figurePennant.position.set(figure.x, terrainHeightAt(figure.x, figure.y) + 1.9 * scale, figure.y);
+      this.figurePennant.scale.setScalar(scale);
+    }
+  }
+
+  /** add-historical-commander 3.2: the figure's pennant is shown (dev checks). */
+  figurePennantShown(): boolean {
+    return this.figurePennant.visible;
   }
 
   /** The active map's enterable buildings: each floor's window height, by building id. */
@@ -787,3 +808,23 @@ function disposeObject(object: THREE.Object3D): void {
   });
 }
 
+/** add-historical-commander 3.2: placeholder `figure-pennant-placeholder`, a pole and a swallow-tailed cloth. */
+function figurePennantPlaceholder(): THREE.Group {
+  const group = new THREE.Group();
+  group.name = 'figure-pennant-placeholder';
+  const pole = new THREE.Mesh(new THREE.BoxGeometry(0.05, 1.1, 0.05), new THREE.MeshBasicMaterial({ color: PALETTE.barrel }));
+  pole.position.y = 0.55;
+  const shape = new THREE.Shape();
+  shape.moveTo(0, 0);
+  shape.lineTo(0.7, 0);
+  shape.lineTo(0.5, -0.18);
+  shape.lineTo(0.7, -0.36);
+  shape.lineTo(0, -0.36);
+  shape.closePath();
+  const cloth = new THREE.Mesh(new THREE.ShapeGeometry(shape), new THREE.MeshBasicMaterial({ color: PALETTE.officer, side: THREE.DoubleSide }));
+  cloth.position.set(0.03, 1.08, 0);
+  group.add(pole, cloth);
+  group.visible = false;
+  group.frustumCulled = false;
+  return group;
+}

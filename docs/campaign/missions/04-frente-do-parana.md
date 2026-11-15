@@ -16,7 +16,9 @@ sourceRefs:
 # 04 - A Frente do Paraná
 
 > **Commander registry:** `isidoro-dias-lopes` is in `packages/content/src/figures.ts`
-> with `playable: false`. Make him playable when this mission is built.
+> with `playable: true`. On the Catanduvas map he is the command voice only: no
+> unit is Isidoro, the Comando's officer stays an ordinary officer
+> (add-historical-commander).
 
 ## Pitch
 
@@ -291,8 +293,8 @@ front is lost; the men are saved.
   only a command reference in the briefing.
 - What was the exact sequence of the withdrawal and the artillery bombardment?
 - Should off-map artillery be a scripted event or cut from the slice?
-- Is `isidoro-dias-lopes` the right command voice for the mission, and when will
-  he be registered in the runtime?
+- Answered: `isidoro-dias-lopes` is the command voice, registered and playable,
+  with no unit on the map (add-historical-commander).
 - The Catanduvas trench photograph and the Croquis 24 map are now in
   `map-fazenda`; the São Paulo 1924 legalist troops photograph is in
   `sao-paulo-1924`. The mission can use them; the exact image selection is still

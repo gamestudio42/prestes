@@ -343,8 +343,10 @@ screen.
 - The ammunition issue is answered at the level of the sortie: Macaulay says
   each rebel received a shoulder arm and at least two hundred rounds. The
   5 + 45 load is a playability abstraction.
-- Does Siqueira exist as a command voice only, or as a unit? The record says he
-  survives; the legend says the 18 died.
+- Answered (owner, 2026-11-15): Siqueira is a unit, the officer of the Comando
+  among the four groups, not a line rifleman. If he falls the battle goes on
+  (the record: he was wounded and survived), and a card says so in the
+  prologue's voice (add-historical-commander).
 - The `check:content` fixture still uses the placeholder mission id `prologue`;
   reconcile it with `prologue-18-do-forte` when the metadata enters
   `packages/content`.

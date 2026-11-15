@@ -123,7 +123,7 @@ export type FireControl = 'free' | 'contact' | 'hold';
 export type Outcome = 'playing' | 'victory' | 'defeat' | 'draw';
 
 /** add-map-objectives: how a battle was decided. */
-export type DecidedBy = 'annihilation' | 'broken' | 'all-objectives' | 'objectives' | 'draw';
+export type DecidedBy = 'annihilation' | 'broken' | 'all-objectives' | 'objectives' | 'draw' | 'commander';
 
 /** add-map-objectives: the battle's time limits (ticks at 10 a second): 15, 20 and 30 minutes. */
 export const TIME_LIMITS = [9000, 12000, 18000] as const;
@@ -224,6 +224,8 @@ export interface UnitSnapshot {
   waitingFerry?: boolean;
   /** pre-battle-roster 5.2: the section type of a rostered man (absent in the default battle). */
   sectionType?: SectionTypeId;
+  /** add-historical-commander D2: he is the map's historical figure (the view names him from the map document). */
+  figure?: boolean;
   /** faction-armies 2.1: his army (his section type's, or his side's first); absent for targets. */
   army?: ArmyId;
   /** pre-battle-roster 5.2: a machine gunner's gun is set up ("pronta"); absent for other weapons. */
@@ -404,6 +406,8 @@ export type SimEvent =
   | { type: 'unit_recovered'; tick: number; unitId: number }
   | { type: 'recon_report'; tick: number; unitId: number; enemyIds: number[] }
   | { type: 'order_interrupted'; tick: number; unitId: number; order: UnitOrder }
+  /** add-historical-commander: the map's field commander is out of action (once per absence). */
+  | { type: 'commander_down'; tick: number; unitId: number; cause: 'killed' | 'incapacitated' }
   | {
       type: 'outcome';
       tick: number;

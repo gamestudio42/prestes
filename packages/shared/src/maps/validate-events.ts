@@ -24,7 +24,8 @@ export type EventProblemCode =
   | 'event-never-fires'
   | 'entry-off-edge'
   | 'entry-not-walkable'
-  | 'event-move-unreachable';
+  | 'event-move-unreachable'
+  | 'event-commander-without-figure';
 
 export interface EventProblem {
   code: EventProblemCode;
@@ -110,6 +111,8 @@ export function checkEvents(map: EditableMap, compiled: BattleMap): EventProblem
     else if (trigger.kind === 'objective') objective(trigger.objective);
     else if (trigger.kind === 'area') place(trigger.area, 'area');
     else if (trigger.kind === 'after') other(trigger.event);
+    // add-historical-commander: only a map with a field commander can lose him.
+    else if (trigger.kind === 'commander' && map.commander?.presence !== 'field') report('event-commander-without-figure');
     if (event.actions.length === 0) report('event-no-action');
 
     for (const action of event.actions) {

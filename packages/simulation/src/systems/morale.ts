@@ -18,16 +18,49 @@ const SELF_RALLY_RATE = 0.03;
 /** Below this suppression a soldier counts as out of fire. */
 const OUT_OF_FIRE = 10;
 
+/** add-historical-commander D3: the field commander's radius (m), the rally cap inside it and its steadying per tick. */
+export const COMMAND_RADIUS = 30;
+export const COMMAND_RALLY_CAP = 75;
+const COMMAND_RATE = 0.1;
+/** add-historical-commander D4: losing the figure shakes the column this far (m), by this much, once. */
+export const FIGURE_LOSS_RADIUS = 40;
+export const FIGURE_LOSS_MORALE = 25;
+
+/** The field commander, fit to command: alive, on his feet, not panicked, not routed. */
+function fitFigures(ctx: SimContext): MutableUnit[] {
+  return ctx.units.filter((unit) => unit.figure && unit.alive && !unit.dummy && !unit.incapacitated && !unit.routed && unit.state !== 'panicked');
+}
+
+function underCommand(figures: readonly MutableUnit[], unit: MutableUnit): boolean {
+  return figures.some((figure) => figure.faction === unit.faction && (unit.x - figure.x) ** 2 + (unit.y - figure.y) ** 2 <= COMMAND_RADIUS ** 2);
+}
+
 /**
  * A soldier no longer under fire slowly regains his nerve (battle-feel-3v3):
  * without it a man pinned by low morale stayed pinned with no one shooting.
+ * Within the field commander's radius he steadies further (add-historical-commander).
  */
 export function selfRally(ctx: SimContext): void {
+  const figures = fitFigures(ctx);
   for (const unit of ctx.units) {
     if (!unit.alive || unit.dummy || unit.routed || unit.incapacitated) continue;
-    if (unit.suppression < OUT_OF_FIRE && unit.morale < SELF_RALLY_CAP) {
-      unit.morale = Math.min(SELF_RALLY_CAP, unit.morale + SELF_RALLY_RATE);
+    const cap = figures.length > 0 && underCommand(figures, unit) ? COMMAND_RALLY_CAP : SELF_RALLY_CAP;
+    if (unit.suppression < OUT_OF_FIRE && unit.morale < cap) {
+      unit.morale = Math.min(cap, unit.morale + SELF_RALLY_RATE);
     }
+  }
+}
+
+/**
+ * add-historical-commander D3: the fit figure steadies every fit man of his
+ * side within 30 m, of any of its armies, up to 75 (never past it by itself).
+ */
+export function applyCommandRadius(ctx: SimContext): void {
+  const figures = fitFigures(ctx);
+  if (figures.length === 0) return;
+  for (const ally of ctx.units) {
+    if (!ally.alive || ally.dummy || ally.routed || ally.incapacitated || ally.morale >= COMMAND_RALLY_CAP) continue;
+    if (underCommand(figures, ally)) ally.morale = Math.min(COMMAND_RALLY_CAP, ally.morale + COMMAND_RATE);
   }
 }
 
@@ -77,12 +110,18 @@ export function updateOfficerLoss(ctx: SimContext, tick: number, events: SimEven
       continue;
     }
     officer.officerLossApplied = true;
+    // add-historical-commander D4: the figure's loss replaces the ordinary one, heavier and wider.
+    const radius = officer.figure ? FIGURE_LOSS_RADIUS : OFFICER_LOSS_RADIUS;
+    const loss = officer.figure ? FIGURE_LOSS_MORALE : OFFICER_LOSS_MORALE;
+    if (officer.figure) {
+      events.push({ type: 'commander_down', tick, unitId: officer.id, cause: officer.alive ? 'incapacitated' : 'killed' });
+    }
     for (const ally of ctx.units) {
       if (ally === officer || !ally.alive || ally.dummy || ally.faction !== officer.faction) {
         continue;
       }
-      if ((ally.x - officer.x) ** 2 + (ally.y - officer.y) ** 2 <= OFFICER_LOSS_RADIUS ** 2) {
-        ally.morale = Math.max(0, ally.morale - OFFICER_LOSS_MORALE);
+      if ((ally.x - officer.x) ** 2 + (ally.y - officer.y) ** 2 <= radius ** 2) {
+        ally.morale = Math.max(0, ally.morale - loss);
       }
       if (ally.squadId === officer.squadId) {
         ally.cohesion = Math.max(0, ally.cohesion - OFFICER_LOSS_COHESION);

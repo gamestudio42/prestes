@@ -916,7 +916,13 @@ export function updateOutcome(ctx: SimContext, tick: number, events: SimEvent[])
   // A side that fell back off the field is the broken one; reporting
   // `broken` keeps the reason when its last fit men also rout (annihilation
   // would otherwise be chosen first and `broken` would never be reported).
-  if (columnBroken) {
+  // add-historical-commander D4: on a map whose commander's loss is a defeat, his fall decides first.
+  const commanderDown =
+    ctx.battleMap?.commander?.loss === 'defeat' && ctx.units.some((unit) => unit.figure && (!unit.alive || unit.incapacitated));
+  if (commanderDown) {
+    next = 'defeat';
+    decidedBy = 'commander';
+  } else if (columnBroken) {
     next = 'defeat';
     decidedBy = 'broken';
   } else if (!columnAlive) {

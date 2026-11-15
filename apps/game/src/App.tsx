@@ -33,11 +33,15 @@ import { useKeyboardShortcuts } from './hooks/useKeyboardShortcuts';
 import { useOrders } from './hooks/useOrders';
 import { useTestBridge } from './hooks/useTestBridge';
 import { isDeploymentRefusal, type DeploymentRefusal } from './ui/hud/DeploymentBanner';
+import { commanderDownText, commanderView } from './ui/hud/commander';
 
 const NO_MAP_LAYERS: MapLayers = { contours: false, cover: false };
 
 export function App() {
   const [locale, setLocale] = useState<Locale>(loadLocale);
+  // The language event callbacks translate in (they outlive the render that made them).
+  const localeRef = useRef(locale);
+  localeRef.current = locale;
   const [started, setStarted] = useState(false);
   // retire-bootcamp: old saved bootcamp progress is cleared once.
   useEffect(() => clearBootcampProgress(), []);
@@ -101,6 +105,14 @@ export function App() {
     if (orderNoticeTimer.current !== null) window.clearTimeout(orderNoticeTimer.current);
     orderNoticeTimer.current = window.setTimeout(() => setOrderNotice(null), 3000);
   };
+  // add-historical-commander 3.3: the line shown when the map's field commander falls.
+  const [commanderNotice, setCommanderNotice] = useState<string | null>(null);
+  const commanderNoticeTimer = useRef<number | null>(null);
+  const showCommanderNotice = (text: string): void => {
+    setCommanderNotice(text);
+    if (commanderNoticeTimer.current !== null) window.clearTimeout(commanderNoticeTimer.current);
+    commanderNoticeTimer.current = window.setTimeout(() => setCommanderNotice(null), 6000);
+  };
   const showDeploymentRefusal = (reason: DeploymentRefusal): void => {
     setDeploymentRefusal(reason);
     if (refusalTimer.current !== null) window.clearTimeout(refusalTimer.current);
@@ -132,6 +144,9 @@ export function App() {
   const playtestRef = useRef<MapDocument | null>(null);
   // author-game-maps D2: authored maps are fetched when a battle asks for them, then sent to the worker.
   const documentsRef = useRef(new Map<BattleMapId, MapDocument>());
+  /** The document a battle on this map plays (the editor's playtest copy first). */
+  const mapDocumentFor = (map: BattleMapId): MapDocument | undefined =>
+    playtestRef.current?.id === map ? playtestRef.current : documentsRef.current.get(map);
   const [playtest, setPlaytest] = useState(false);
   const resumeSpeed = useRef<1 | 2 | 4>(DEFAULT_SPEED);
   const cameraNonce = useRef(0);
@@ -248,6 +263,10 @@ export function App() {
         // add-deployment-phase 3.1: a refused deployment order says why, for a few seconds.
         if (event.type === 'command_rejected' && isDeploymentRefusal(event.reason)) showDeploymentRefusal(event.reason);
         else if (event.type === 'command_rejected') showOrderNotice(event.reason);
+        if (event.type === 'commander_down') {
+          const view = commanderView(mapDocumentFor(map)?.commander);
+          if (view) showCommanderNotice(commanderDownText(event, view, (key, values) => translate(localeRef.current, key, values)));
+        }
         // add-battle-events 3.1: an event's cards pause the battle until the player closes them.
         if (event.type === 'battle_event_fired' && event.cards && event.cards.length > 0) {
           const cards = event.cards.map((card) => ({ eventId: event.eventId, ...card }));
@@ -512,6 +531,8 @@ export function App() {
         onResetDeployment={handleResetDeployment}
         deploymentRefusal={deploymentRefusal}
         orderNotice={orderNotice}
+        commander={commanderView(mapDocumentFor(battleMapId)?.commander)}
+        commanderNotice={commanderNotice}
         onCenterSquad={handleCenterSquad}
         onLeave={handleBackToMenu}
         />

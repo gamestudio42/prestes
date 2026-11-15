@@ -22,7 +22,7 @@ import { addEvent, deleteEvent, deletePlace, duplicateEvent, eventDependents, mo
 type T = (key: string, values?: Readonly<Record<string, string | number>>) => string;
 
 const SIDES: readonly EventSide[] = ['column', 'legalist'];
-const TRIGGERS: readonly EventTrigger['kind'][] = ['time', 'objective', 'area', 'losses', 'after'];
+const TRIGGERS: readonly EventTrigger['kind'][] = ['time', 'objective', 'area', 'losses', 'after', 'commander'];
 const ACTIONS: readonly EventAction['kind'][] = ['troops', 'posture', 'card'];
 
 /** Seconds as m:ss. */
@@ -54,6 +54,8 @@ export function defaultTrigger(kind: EventTrigger['kind'], map: EditableMap, eve
       return { kind, side: 'column', percent: 30 };
     case 'after':
       return { kind, event: (map.events ?? []).find((event) => event.id !== eventId)?.id ?? 0 };
+    case 'commander':
+      return { kind };
   }
 }
 
@@ -84,7 +86,8 @@ export function eventSummary(event: BattleEvent, map: EditableMap, t: T): string
   else if (trigger.kind === 'objective') when = t(`editor.events.summary.objective.${trigger.change}`, { objective: objectiveName(trigger.objective), side: sideName(trigger.side, t) });
   else if (trigger.kind === 'area') when = t('editor.events.summary.area', { side: sideName(trigger.side, t), area: placeName(trigger.area) });
   else if (trigger.kind === 'losses') when = t('editor.events.summary.losses', { side: sideName(trigger.side, t), percent: trigger.percent });
-  else when = t('editor.events.summary.after', { event: trigger.event });
+  else if (trigger.kind === 'after') when = t('editor.events.summary.after', { event: trigger.event });
+  else when = t('editor.events.summary.commander');
   if (event.delay > 0) when += ` ${t('editor.events.summary.delay', { time: formatClock(event.delay) })}`;
   const what = event.actions.map((action) => t(`editor.events.action.${action.kind}`)).join(', ') || t('editor.events.summary.nothing');
   return `${when} → ${what}`;

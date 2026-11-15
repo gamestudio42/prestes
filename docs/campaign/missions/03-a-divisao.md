@@ -17,7 +17,8 @@ sourceRefs:
 # 03 - A Divisão
 
 > **Commander registry:** `miguel-costa` is in `packages/content/src/figures.ts`
-> with `playable: false`. Make him playable when this mission is built.
+> with `playable: true`. On the Porto Mendes map he is on the field: the officer
+> of the column's Comando, his loss a defeat (add-historical-commander).
 
 ## Pitch
 

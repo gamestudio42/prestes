@@ -6,6 +6,20 @@ import type { TrenchLineDef } from './trench-lines';
 import type { RockKind } from './rock-kinds';
 import type { BattleEvent, EventPlace } from './events';
 
+/**
+ * add-historical-commander D1: a campaign map's historical figure, on the
+ * field (the officer of the column's first Comando) or a command voice only,
+ * and what losing him means.
+ */
+export type CommanderPresence = 'field' | 'voice';
+export type CommanderLoss = 'defeat' | 'continue';
+export interface MapCommander {
+  /** A figure id from the content registry (checked by the content check, not here). */
+  figure: string;
+  presence: CommanderPresence;
+  loss: CommanderLoss;
+}
+
 /** A battle map id: an authored map document's (author-game-maps; the hand-written maps are gone). */
 export type BattleMapId = string;
 
@@ -254,6 +268,11 @@ export interface BattleMap {
    * the player or the playtest brings, and an empty enemy side is not a victory.
    */
   noEnemy?: boolean;
+  /**
+   * add-historical-commander D1: the commander as the simulation needs him
+   * (never the figure's id or name). Absent: no commander, the battle plays as before.
+   */
+  commander?: { presence: CommanderPresence; loss: CommanderLoss };
   /** add-map-objectives: the map's objectives (absent or empty: none). */
   objectives?: readonly Objective[];
   /** add-battle-events: the events the battle runs, in id order (absent: none). */

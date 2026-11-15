@@ -48,6 +48,7 @@ import {
   type Objective,
   type ObjectiveOwner,
   type MapSize,
+  type MapCommander,
   type MapUse,
   type PositionDef,
   type AuthoredMapEntry,
@@ -77,6 +78,7 @@ import { EditorViewport, PROTECTION_COLORS, type CursorInfo } from './viewport';
 import { useThumbnails } from './thumbnails';
 import { EnemyForces } from './EnemyForces';
 import { ColumnForce } from './ColumnForce';
+import { CommanderField, offersCommander } from './CommanderField';
 // add-battle-events 4.3: the Events panel loads when first opened (the editor chunk stays in its budget).
 const EventsPanel = lazy(() => import('./EventsPanel').then((module) => ({ default: module.EventsPanel })));
 import { Compass } from '../ui/hud/Compass';
@@ -1500,6 +1502,8 @@ function MapDialog(props: {
   const [enemyForces, setEnemyForces] = useState<Roster[]>(mode === 'new' ? [] : (map.enemyForces ?? []).map((roster) => ({ sections: [...roster.sections] })));
   const [columnForce, setColumnForce] = useState<Roster | undefined>(mode === 'new' || !map.columnForce ? undefined : { sections: [...map.columnForce.sections] });
   const [noEnemy, setNoEnemy] = useState(mode === 'new' ? false : map.noEnemy === true);
+  // add-historical-commander 4.1: the chapter's figure, campaign maps only.
+  const [commander, setCommander] = useState<MapCommander | undefined>(mode === 'new' || !map.commander ? undefined : { ...map.commander });
   const [epiloguePt, setEpiloguePt] = useState(mode === 'new' ? '' : (map.epilogue?.['pt-BR'] ?? ''));
   const [epilogueEn, setEpilogueEn] = useState(mode === 'new' ? '' : (map.epilogue?.en ?? ''));
   const valid = isValidMapId(id);
@@ -1525,6 +1529,8 @@ function MapDialog(props: {
       columnForce,
       // Saved only when set: a scene without an enemy (La Gaiba).
       noEnemy: noEnemy ? true : undefined,
+      // Saved only on a campaign map, and only when set.
+      commander: offersCommander(slot.use as MapUse) ? commander : undefined,
       // Both texts empty: the field is left out.
       epilogue: epiloguePt.trim() || epilogueEn.trim() ? { 'pt-BR': epiloguePt.trim(), en: epilogueEn.trim() } : undefined,
     };
@@ -1653,6 +1659,7 @@ function MapDialog(props: {
           <p className="editor-hint">{t('editor.north.hint')}</p>
         </fieldset>
         <ColumnForce force={columnForce} onChange={setColumnForce} t={t} />
+        {offersCommander(slot.use as MapUse) ? <CommanderField commander={commander} mission={slot.use === 'campaign' ? slot.mission : undefined} onChange={setCommander} t={t} /> : null}
         <fieldset className="editor-enemy" data-testid="map-no-enemy">
           <legend>{t('editor.noEnemy.title')}</legend>
           <label className="editor-row">

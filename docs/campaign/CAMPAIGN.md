@@ -122,7 +122,29 @@ A row with `pending` cannot move to `locked`. Name a figure already registered
 in [`docs/history/FIGURES.md`](../history/FIGURES.md), or add the figure
 through the proper source and registry work first. Do not invent a commander to
 fill the row. Miguel Costa and Isidoro Dias Lopes are in `FIGURES.md` and in the runtime
-registry with `playable: false`.
+registry with `playable: true`.
+
+### The commander on the battlefield
+
+Each campaign map declares its chapter's commander (add-historical-commander).
+On the field he is the officer of the column's first Comando: the same revolver
+and hit points as any officer, no combat bonus, a 30 m radius in which the
+column steadies (out of fire, up to 75 morale instead of 60), and a fall that
+shakes every man within 40 m. As a voice he puts no unit on the map.
+
+| Map | Commander | Presence | If he falls |
+| --- | --- | --- | --- |
+| Copacabana (01) | Siqueira Campos | field | the battle goes on (he was wounded and survived) |
+| São Luiz e Ramada (02) | Luís Carlos Prestes | field | defeat |
+| Porto Mendes (03) | Miguel Costa | field | defeat |
+| Catanduvas (04) | Isidoro Dias Lopes | voice (at Foz do Iguaçu) | no unit |
+| Ponte de Verdinho (05) | Luís Carlos Prestes | field | defeat |
+| Serra Nova (06) | Luís Carlos Prestes | field | defeat |
+| Pantanal (07) | Luís Carlos Prestes | field | defeat |
+| La Gaiba (08) | Luís Carlos Prestes | field | the scene goes on (no enemy) |
+
+Cordeiro (05) and Estilac Leal (04) are not registered and are not named on the
+map. A generic officer for the skirmish is a later change.
 
 The campaign book reads its chapters from
 `packages/content/src/campaign/chapters.ts` and

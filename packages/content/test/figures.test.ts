@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest';
 import {
   FIGURES,
   SOURCE_KEYS,
+  CAMPAIGN_CHAPTERS,
   validateFigures,
+  validateMapCommander,
   validateMissionCommander,
   type HistoricalFigure,
   type MissionMetadata,
@@ -20,11 +22,8 @@ describe('historical figures', () => {
       'miguel-costa',
       'isidoro-dias-lopes',
     ]);
-    // Chapter commanders, not playable until their missions exist.
-    expect(FIGURES.filter((figure) => !figure.playable).map((figure) => figure.id)).toEqual([
-      'miguel-costa',
-      'isidoro-dias-lopes',
-    ]);
+    // add-historical-commander: every chapter commander commands a map, so all are playable.
+    expect(FIGURES.filter((figure) => !figure.playable).map((figure) => figure.id)).toEqual([]);
   });
 
   it('rejects a figure without a source', () => {
@@ -85,5 +84,19 @@ describe('mission commanders', () => {
         'mission without sources: prologue',
       ]),
     );
+  });
+
+  it('add-historical-commander 1.3: a map commander must be registered, playable and the chapter commander', () => {
+    const map = { id: 'porto-mendes', use: 'campaign', mission: 'a-divisao' };
+    expect(validateMapCommander({ ...map, commander: { figure: 'miguel-costa' } }, CAMPAIGN_CHAPTERS)).toEqual([]);
+    expect(validateMapCommander({ ...map, commander: { figure: 'luis-carlos-prestes' } }, CAMPAIGN_CHAPTERS)).toEqual([
+      "map porto-mendes: commander luis-carlos-prestes is not the chapter's (miguel-costa)",
+    ]);
+    expect(validateMapCommander({ ...map, commander: { figure: 'cordeiro' } }, CAMPAIGN_CHAPTERS)).toEqual(['map porto-mendes: unknown commander: cordeiro']);
+    const retired: HistoricalFigure = { ...baseFigure, id: 'miguel-costa', playable: false };
+    expect(validateMapCommander({ ...map, commander: { figure: 'miguel-costa' } }, CAMPAIGN_CHAPTERS, [retired])).toEqual([
+      'map porto-mendes: non-playable commander: miguel-costa',
+    ]);
+    expect(validateMapCommander(map, CAMPAIGN_CHAPTERS)).toEqual([]);
   });
 });

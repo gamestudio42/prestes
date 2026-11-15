@@ -37,12 +37,12 @@ export const FIGURES: readonly HistoricalFigure[] = [
     labels: ['historical'],
     sourceRefs: ['macaulay-1974', 'blanc-2024', 'amado-1942', 'anita-1991'],
   },
-  // polish-menu-desk: chapter commanders, not playable until their missions exist.
+  // add-historical-commander: chapter commanders, playable since they command a campaign map.
   {
     id: 'miguel-costa',
     displayName: 'Miguel Costa',
     roleKey: 'figure.miguel-costa.role',
-    playable: false,
+    playable: true,
     labels: ['historical'],
     sourceRefs: ['macaulay-1974', 'castro-2016', 'tavora-1928'],
   },
@@ -50,7 +50,7 @@ export const FIGURES: readonly HistoricalFigure[] = [
     id: 'isidoro-dias-lopes',
     displayName: 'Isidoro Dias Lopes',
     roleKey: 'figure.isidoro.role',
-    playable: false,
+    playable: true,
     labels: ['historical'],
     sourceRefs: ['macaulay-1974', 'castro-2022'],
   },
@@ -120,4 +120,33 @@ export function validateMissionCommander(
     }
   }
   return errors;
+}
+
+/** What the map commander check needs of a map document (add-historical-commander 1.3). */
+export interface MapCommanderRef {
+  id: string;
+  use: string;
+  mission?: string;
+  commander?: { figure: string };
+}
+
+/**
+ * add-historical-commander 1.3: a campaign map's commander is a registered,
+ * playable figure and the commander of its mission's chapter.
+ */
+export function validateMapCommander(
+  map: MapCommanderRef,
+  chapters: readonly { id: string; commanderId: string }[],
+  figures: readonly HistoricalFigure[] = FIGURES,
+): string[] {
+  if (!map.commander) return [];
+  const figureId = map.commander.figure;
+  const figure = figures.find((entry) => entry.id === figureId);
+  if (!figure) return [`map ${map.id}: unknown commander: ${figureId}`];
+  if (!figure.playable) return [`map ${map.id}: non-playable commander: ${figureId}`];
+  const chapter = chapters.find((entry) => entry.id === map.mission);
+  if (map.use === 'campaign' && chapter && chapter.commanderId !== figureId) {
+    return [`map ${map.id}: commander ${figureId} is not the chapter's (${chapter.commanderId})`];
+  }
+  return [];
 }

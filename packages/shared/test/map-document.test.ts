@@ -191,6 +191,47 @@ describe('map document', () => {
     expect(parseMapDocument({ ...toMapDocument(map), noEnemy: 'yes' })).toMatchObject({ ok: false, detail: 'noEnemy' });
   });
 
+  it('add-historical-commander 1.1: a commander survives a save and reaches the battle map without the figure', () => {
+    const map = createEditableMap({ id: 'verdinho', size: 'small', use: 'campaign', name: { en: 'X', 'pt-BR': 'X' } });
+    expect(compileMapDocument(toMapDocument(map)).commander).toBeUndefined();
+    map.commander = { figure: 'luis-carlos-prestes', presence: 'field', loss: 'defeat' };
+    const parsed = parseMapDocument(JSON.parse(JSON.stringify(toMapDocument(map))));
+    expect(parsed.ok && parsed.document.commander).toEqual({ figure: 'luis-carlos-prestes', presence: 'field', loss: 'defeat' });
+    expect(parsed.ok && fromMapDocument(parsed.document).commander).toEqual(map.commander);
+    expect(parsed.ok && compileMapDocument(parsed.document).commander).toEqual({ presence: 'field', loss: 'defeat' });
+    expect(parseMapDocument({ ...toMapDocument(map), commander: { figure: 'x', presence: 'nearby', loss: 'defeat' } })).toMatchObject({ ok: false, detail: 'commander' });
+  });
+
+  it('add-historical-commander 1.2: a commander only on a campaign map, and on the field only with a Comando', () => {
+    const codes = (map: ReturnType<typeof createEditableMap>) => validateEditableMap(map).map((problem) => problem.code);
+    const skirmish = createEditableMap({ id: 'paiol', size: 'small', use: 'skirmish', name: { en: 'X', 'pt-BR': 'X' } });
+    skirmish.commander = { figure: 'luis-carlos-prestes', presence: 'field', loss: 'defeat' };
+    expect(codes(skirmish)).toContain('commander-not-campaign');
+    const campaign = createEditableMap({ id: 'serra', size: 'small', use: 'campaign', name: { en: 'X', 'pt-BR': 'X' } });
+    campaign.commander = { figure: 'luis-carlos-prestes', presence: 'field', loss: 'defeat' };
+    expect(codes(campaign)).toContain('commander-no-comando');
+    campaign.columnForce = { sections: ['fuzileiros', 'esquadra-5'] };
+    expect(codes(campaign)).toContain('commander-no-comando');
+    campaign.columnForce = { sections: ['comando', 'esquadra-5'] };
+    expect(codes(campaign)).not.toContain('commander-no-comando');
+    campaign.columnForce = undefined;
+    campaign.commander = { figure: 'isidoro-dias-lopes', presence: 'voice', loss: 'continue' };
+    expect(codes(campaign).filter((code) => code.startsWith('commander-'))).toEqual([]);
+  });
+
+  it('add-historical-commander 2.4: a "commander down" event on a map without a field commander is reported', () => {
+    const map = createEditableMap({ id: 'serra', size: 'small', use: 'campaign', name: { en: 'X', 'pt-BR': 'X' } });
+    map.events = [{ id: 1, label: 'cai', trigger: { kind: 'commander' }, delay: 0, actions: [{ kind: 'card', title: { en: 'T', 'pt-BR': 'T' }, text: { en: 'T', 'pt-BR': 'T' } }] }];
+    map.eventPlaces = [];
+    const reported = () => validateEditableMap(map).some((problem) => problem.code === 'event-commander-without-figure');
+    expect(reported()).toBe(true);
+    map.commander = { figure: 'isidoro-dias-lopes', presence: 'voice', loss: 'continue' };
+    expect(reported()).toBe(true);
+    map.commander = { figure: 'luis-carlos-prestes', presence: 'field', loss: 'continue' };
+    map.columnForce = { sections: ['comando', 'esquadra-5'] };
+    expect(reported()).toBe(false);
+  });
+
   it('shrinking lists the objects that fall outside', () => {
     const map = createEditableMap({ id: 'big', size: 'large' });
     map.objects.push({ id: 7, type: 'casa-terrea', x: 280, y: 0, rotation: 0 });

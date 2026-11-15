@@ -12,9 +12,11 @@ export {
 export {
   FIGURES,
   validateFigures,
+  validateMapCommander,
   validateMissionCommander,
   type ContentLabel,
   type HistoricalFigure,
+  type MapCommanderRef,
   type MissionMetadata,
 } from './figures';
 export { CONTENT_LABELS, validateCodexEntry, type CodexEntry } from './codex';

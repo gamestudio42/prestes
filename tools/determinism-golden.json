@@ -5,17 +5,17 @@
   "battleMaps": {
     "campo-de-provas": "94b68f47",
     "catanduvas": "9bb6a14b",
-    "copacabana": "cd41d5bb",
-    "la-gaiba": "254c06ac",
+    "copacabana": "3d4d534d",
+    "la-gaiba": "b1d3e8a2",
     "paiolzinho": "06d97225",
-    "pantanal": "5671b40b",
-    "ponte-de-verdinho": "cff703bf",
-    "porto-mendes": "3033d41f",
-    "sao-luiz-ramada": "0bab46d2",
-    "serra-nova": "96ba1a31"
+    "pantanal": "9c6ee651",
+    "ponte-de-verdinho": "71337a15",
+    "porto-mendes": "aad94d41",
+    "sao-luiz-ramada": "de48ddf4",
+    "serra-nova": "4ab759d7"
   },
   "mixedRosters": {
     "campo-de-provas": "60476373"
   },
-  "reason": "La Gaiba fields no enemy (noEnemy)"
+  "reason": "add-historical-commander: the campaign maps' field commanders (figure flag, command radius, loss)"
 }

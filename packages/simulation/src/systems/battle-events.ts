@@ -109,6 +109,9 @@ function triggerMet(ctx: SimContext, state: ScriptedState, event: BattleEvent, t
     }
     case 'after':
       return state.fired.has(trigger.event);
+    case 'commander':
+      // add-historical-commander D5: the field commander is killed or incapacitated.
+      return ctx.units.some((unit) => unit.figure && (!unit.alive || unit.incapacitated));
   }
 }
 

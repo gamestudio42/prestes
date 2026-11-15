@@ -717,6 +717,7 @@
 }
 
 .section-army,
+.section-commander,
 .troop-heading small {
   display: block;
   font-size: 0.75em;
@@ -725,4 +726,10 @@
 
 .troop-heading {
   margin: 0 0 4px;
+}
+
+/* add-historical-commander 3.1: the map's historical figure, named on his section's card. */
+.section-commander {
+  opacity: 1;
+  font-style: italic;
 }

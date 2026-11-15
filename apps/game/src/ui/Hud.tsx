@@ -14,6 +14,7 @@ import { DockedPanel } from './DockedPanel';
 import { CommandStatus, OrderPrompt } from './hud/CommandStatus';
 import { OrderBoard } from './hud/OrderBoard';
 import { SquadCards } from './hud/SquadCards';
+import type { CommanderView } from './hud/commander';
 import { TopBar, type MapLayers } from './hud/TopBar';
 import { orderLetter } from './hud/orderMeta';
 import { DeploymentBanner, type DeploymentRefusal } from './hud/DeploymentBanner';
@@ -91,6 +92,9 @@ export interface HudProps {
   deploymentRefusal?: DeploymentRefusal | null;
   /** refine-battle-controls: a refused battle order, shown for a few seconds. */
   orderNotice?: string | null;
+  /** add-historical-commander: the map's field commander, and the line shown when he falls. */
+  commander?: CommanderView | null;
+  commanderNotice?: string | null;
 }
 
 export function Hud({
@@ -134,6 +138,8 @@ export function Hud({
   onResetDeployment,
   deploymentRefusal = null,
   orderNotice = null,
+  commander = null,
+  commanderNotice = null,
 }: HudProps) {
   // redo-battle-hud D3: which docked panels are collapsed.
   const [docks, setDocks] = useState<DockLayout>(() => loadDocks(layoutStorage()));
@@ -194,12 +200,18 @@ export function Hud({
           {t(`rejection.${orderNotice}` as MessageKey)}
         </div>
       ) : null}
+      {commanderNotice ? (
+        <div className="hud-notice hud-notice-commander" data-testid="commander-notice" role="status">
+          {commanderNotice}
+        </div>
+      ) : null}
 
       <div className="hud-docks" data-testid="squad-status">
         <div className="hud-dock-left">
           <DockedPanel id="troops" title={t('hud.windowTroops')} collapsed={docks.troops} onToggle={toggle('troops')} {...panelLabels}>
             <SquadCards
               t={t}
+              commander={commander}
               frame={frame}
               selectedSquadId={selectedSquadId}
               controlBothSides={controlBothSides}

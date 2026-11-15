@@ -74,6 +74,7 @@ import {
   fleePanicked,
   checkRouted,
   applyOfficerAura,
+  applyCommandRadius,
   selfRally,
   updateCohesion,
   updateSoldierStates,
@@ -523,6 +524,7 @@ export class SimulationEngine implements SimContext {
       defaultConcealedFire(this);
       updateOfficerLoss(this, nextTick, events);
       applyOfficerAura(this);
+      applyCommandRadius(this);
       selfRally(this);
       updateCohesion(this);
       updateMoraleStates(this);
