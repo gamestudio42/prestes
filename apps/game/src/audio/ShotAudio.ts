@@ -1,6 +1,7 @@
 ﻿import { getWeapon, type Frame, type SimEvent, type WeaponId } from '@prestes/shared';
 import { panAt } from './listening';
 import { AudioEngine } from './mixer';
+import { burstLoudness, burstSound, shellSamples, WHISTLE_CUTOFF, whistleOffset, type ShellSound } from './artillery-audio';
 
 /**
  * machine-gun-fire-feedback 4.1: the sound of a kind of fire. Rifles and
@@ -19,6 +20,8 @@ export interface GunshotOutput {
   play(volume: number, rate?: number, sound?: ShotSound, delay?: number, pan?: number): void;
   /** The rifle's bolt worked `delay` seconds later (outputs that have it). */
   playBolt?(volume: number, delay: number, rate?: number, pan?: number): void;
+  /** add-artillery-bombardment 3.5: a shell's whistle or burst, `offset` seconds into the sound (outputs that have it). */
+  playShell?(sound: ShellSound, volume: number, delay: number, pan: number, offset?: number): void;
   dispose(): void;
 }
 
@@ -156,6 +159,10 @@ export class ShotAudio {
   }
 
   handleEvent(event: SimEvent): void {
+    if ((event.type === 'shell_incoming' || event.type === 'shell_impact') && !this.muted && this.ready) {
+      this.shell(event);
+      return;
+    }
     if (event.type !== 'shot' || this.muted || !this.ready) {
       return;
     }
@@ -201,6 +208,26 @@ export class ShotAudio {
     globalThis.setTimeout(() => {
       this.activeVoices = Math.max(0, this.activeVoices - 1);
     }, this.voiceMs);
+  }
+
+  /**
+   * add-artillery-bombardment 3.5: the whistle of a shell on its way, timed to
+   * end as it lands (none beyond WHISTLE_CUTOFF), and its burst, near or far.
+   */
+  private shell(event: Extract<SimEvent, { type: 'shell_incoming' | 'shell_impact' }>): void {
+    const key = `${event.type}:${event.tick}:${event.x}:${event.y}`;
+    if (this.seen.has(key)) return;
+    this.seen.add(key);
+    const distance = this.listener ? Math.hypot(event.x - this.listener.x, event.y - this.listener.y) : 0;
+    const delay = this.delayFor(event.tick);
+    const pan = shotPan(this.listener, event.x, event.y);
+    if (event.type === 'shell_incoming') {
+      if (distance > WHISTLE_CUTOFF) return;
+      const flight = (event.landsAt - event.tick) * this.tickSeconds;
+      this.output.playShell?.('whistle', this.volume * 0.8 * burstLoudness(distance), delay, pan, whistleOffset(flight));
+      return;
+    }
+    this.output.playShell?.(burstSound(distance, event.x, event.y, event.tick), Math.min(1, this.volume * 2.2 * burstLoudness(distance)), delay, pan);
   }
 
   /**
@@ -260,7 +287,7 @@ export class ShotAudio {
   }
 }
 
-function playBuffer(context: BaseAudioContext, destination: AudioNode, buffer: AudioBuffer, volume: number, rate = 1, delay = 0, pan = 0): void {
+function playBuffer(context: BaseAudioContext, destination: AudioNode, buffer: AudioBuffer, volume: number, rate = 1, delay = 0, pan = 0, offset = 0): void {
   const source = context.createBufferSource();
   const gain = context.createGain();
   source.buffer = buffer;
@@ -275,7 +302,7 @@ function playBuffer(context: BaseAudioContext, destination: AudioNode, buffer: A
   } else {
     gain.connect(destination);
   }
-  source.start(context.currentTime + delay);
+  source.start(context.currentTime + delay, offset);
 }
 
 /**
@@ -296,10 +323,29 @@ abstract class EffectsOutput {
     return this.engine.context;
   }
 
-  protected playOnEffects(buffer: AudioBuffer, volume: number, rate: number, delay: number, pan = 0): void {
+  protected playOnEffects(buffer: AudioBuffer, volume: number, rate: number, delay: number, pan = 0, offset = 0): void {
     const context = this.engine.context;
     const mixer = this.engine.mixer;
-    if (context && mixer) playBuffer(context, mixer.input('effects'), buffer, volume, rate, delay, pan);
+    if (context && mixer) playBuffer(context, mixer.input('effects'), buffer, volume, rate, delay, pan, offset);
+  }
+
+  private shells: Record<ShellSound, AudioBuffer> | null = null;
+
+  /** add-artillery-bombardment 3.5: the shell sounds, made once per context (placeholders, see artillery-audio.ts). */
+  playShell(sound: ShellSound, volume: number, delay: number, pan: number, offset = 0): void {
+    const context = this.engine.context;
+    if (!context) return;
+    if (!this.shells) {
+      const samples = shellSamples(context.sampleRate);
+      const made = {} as Record<ShellSound, AudioBuffer>;
+      for (const [name, data] of Object.entries(samples) as Array<[ShellSound, Float32Array]>) {
+        const buffer = context.createBuffer(1, data.length, context.sampleRate);
+        buffer.getChannelData(0).set(data);
+        made[name] = buffer;
+      }
+      this.shells = made;
+    }
+    this.playOnEffects(this.shells[sound], volume, 1, delay, pan, offset);
   }
 
   protected releaseEngine(): void {
