@@ -124,11 +124,22 @@ const round2 = (value: number) => Math.round(value * 100) / 100;
 function announce(ctx: SimContext, state: ScriptedState, bombardment: ActiveBombardment, tick: number, events: SimEvent[]): void {
   const aim = aimPoint(ctx, state, bombardment, tick);
   if (aim) {
-    const radius = bombardment.spread * Math.sqrt(ctx.rng.nextFloat());
-    const angle = 2 * Math.PI * ctx.rng.nextFloat();
+    // Uniform over the disc, without trigonometry (the simulation avoids it):
+    // a point of the square kept when it falls inside the circle.
+    let dx = 0;
+    let dy = 0;
+    for (let tries = 0; tries < 16; tries += 1) {
+      const u = ctx.rng.nextFloat() * 2 - 1;
+      const v = ctx.rng.nextFloat() * 2 - 1;
+      if (u * u + v * v <= 1) {
+        dx = u;
+        dy = v;
+        break;
+      }
+    }
     const bounds = ctx.battleMap?.bounds ?? MAP_BOUNDS;
-    const x = round2(clamp(aim.x + Math.cos(angle) * radius, bounds.minX, bounds.maxX));
-    const y = round2(clamp(aim.y + Math.sin(angle) * radius, bounds.minY, bounds.maxY));
+    const x = round2(clamp(aim.x + dx * bombardment.spread, bounds.minX, bounds.maxX));
+    const y = round2(clamp(aim.y + dy * bombardment.spread, bounds.minY, bounds.maxY));
     const landsAt = tick + SHELL_FLIGHT_TICKS;
     state.shells.push({ gun: bombardment.gun, side: bombardment.side, x, y, landsAt });
     events.push({ type: 'shell_incoming', tick, gun: bombardment.gun, x, y, landsAt });
