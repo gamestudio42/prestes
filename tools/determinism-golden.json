@@ -6,12 +6,16 @@
     "campo-de-provas": "94b68f47",
     "catanduvas": "9bb6a14b",
     "copacabana": "cd41d5bb",
+    "la-gaiba": "be55284f",
     "paiolzinho": "06d97225",
+    "pantanal": "5671b40b",
+    "ponte-de-verdinho": "cff703bf",
     "porto-mendes": "3033d41f",
-    "sao-luiz-ramada": "0bab46d2"
+    "sao-luiz-ramada": "0bab46d2",
+    "serra-nova": "96ba1a31"
   },
   "mixedRosters": {
     "campo-de-provas": "60476373"
   },
-  "reason": "campaign maps 02-04 authored: sao-luiz-ramada, porto-mendes, catanduvas"
+  "reason": "campaign maps 05-08 authored: ponte-de-verdinho, serra-nova, pantanal, la-gaiba"
 }
