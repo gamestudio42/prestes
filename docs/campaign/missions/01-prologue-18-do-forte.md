@@ -25,8 +25,7 @@ sortie to the legendary eighteen, divided into four groups — five, five, four,
 four. Historically the fort held twenty-nine, twenty-eight marched out, and
 sixteen reached the government line; the reduction to eighteen is the legend,
 not the head count. There is no relief and no victory. The player commands the
-four groups through a fighting retreat on the sand, from the gate to the rocks to
-the last stretch of beach. Prestes is absent with typhoid. The prologue is
+four groups out of the gate and up the Avenida Atlântica, past the fishermen's boats and the avenue works, to the last stretch of sand before the government's line at Rua Barroso. Prestes is absent with typhoid. The prologue is
 Siqueira's; the column will be Prestes's.
 
 Target length: 15-20 minutes at 1x, in one sitting. The mission is a certain
@@ -45,16 +44,13 @@ Shown in the campaign book. Keep it in step with the sections above.
 **Briefing:**
 
 The fort at night. The rising has failed elsewhere; the government is closing
-in. Siqueira Campos tells the 18 that there will be no surrender: they will
-march out along the beach and make the government pay for every metre. Prestes
-is absent with fever. There is no relief and no victory; the task is to hold
-each position long enough for the next group to fall back.
+in. Siqueira Campos tells the 18 that there will be no surrender: they will march out along the avenue and make the government pay for every metre. Prestes is absent with fever. There is no relief and no victory; the task is to make every metre of the avenue cost the government time and blood.
 
 **Objectives:**
 
-- Hold the first beach position until the government commits its second section.
-- Withdraw the four groups to the rocks in order.
-- Make the last stand.
+- Leave the fort and reach the fishermen's boats.
+- Hold the avenue works while the government commits section after section.
+- Make the last stand on the sand before Rua Barroso.
 
 ### Português (BR)
 
@@ -65,16 +61,13 @@ each position long enough for the next group to fall back.
 **Briefing:**
 
 O forte à noite. O levante fracassou nos outros pontos; o governo está
-fechando o cerco. Siqueira Campos diz aos 18 que não haverá rendição: eles
-sairão marchando pela praia e farão o governo pagar por cada metro. Prestes está
-ausente, com febre. Não há reforço nem vitória; a tarefa é manter cada posição o
-bastante para o grupo seguinte recuar.
+fechando o cerco. Siqueira Campos diz aos 18 que não haverá rendição: eles sairão marchando pela avenida e farão o governo pagar por cada metro. Prestes está ausente, com febre. Não há reforço nem vitória; a tarefa é fazer cada metro da avenida custar tempo e sangue ao governo.
 
 **Objetivos:**
 
-- Manter a primeira posição na praia até o governo empenhar sua segunda seção.
-- Recuar os quatro grupos para as pedras, em ordem.
-- Resistir até o fim.
+- Sair do forte e chegar aos barcos dos pescadores.
+- Segurar as obras da avenida enquanto o governo empenha seção após seção.
+- Resistir até o fim na areia diante da Rua Barroso.
 
 ## Historical frame
 
@@ -140,12 +133,12 @@ column.
 
 ## Player fantasy and pillar
 
-- **Fantasy:** Command the legendary 18 through a fighting retreat on the beach,
+- **Fantasy:** Command the legendary 18 up the avenue against the government,
   knowing the end is certain, and make the stand cost the government time and
   blood.
 - **Pillar:** 1, command the section, not the hero; 3, the march costs more
   than the battle; 4, history with receipts. The mission also teaches pillar 2
-  by making the rocks the only cover and the sand the worst ground.
+  by making the sidewalk, the boats and the avenue works the only cover and the sand the worst ground.
 - **Loop beat:** Command -> Sustain -> Decide. The Decide beat is not "how do
   we win" but "where do we make the next stand".
 
@@ -153,11 +146,9 @@ column.
 
 ### Primary
 
-- Hold the first beach position until the government commits its second
-  section.
-- Withdraw the four groups to the rocks in order; at least two groups reach the
-  second position.
-- Make the last stand; the mission ends when the last line soldier falls.
+- Leave the fort and take the fishermen's boats; taking them commits the government's second section.
+- Hold the avenue works while the government feeds in section after section.
+- Make the last stand on the sand before Rua Barroso; the mission ends when the last line soldier falls.
 
 ### Optional
 
@@ -176,18 +167,11 @@ column.
 
 ## Map and terrain
 
-- Copacabana beach, Rio de Janeiro, afternoon of 6 July 1922, with the fort and
-  the approach in the hours before. The map starts at the fort gate and runs
-  along the beach to the rocks and the last stretch of sand.
-- The sea is a hard boundary on one side; the government comes from the city
-  and the fort side. The beach road, the rocks and the sand are the only
-  ground.
-- Cover: the fort gate, the beach wall, the rocks, the sandbags and the
-  scattered beach props. The sand is open and slow; the rocks are the only real
-  cover. Height: the government has the inland side; the beach is low.
-- The map teaches open-ground danger, rock cover, withdrawal under fire and the
-  cost of holding a line that cannot be held. The real fort and beach plan is
-  not in the repository; this layout is a game abstraction.
+- Map `copacabana` (small, 240 m): the Avenida Atlântica on the afternoon of 6 July 1922. The fort's wall and gate at the south end, the Ponta de Copacabana rocks by the sea and the Morro do Cantagalo behind; the avenue, its stone sidewalk and a low parapet; the fishermen's boats on the sand; the avenue works (stone, timber, a cart: there is no pipe model yet); the town of 1922 with gardens and empty lots; the government's line, lorries and barricade at Rua Barroso. True north turns 315 degrees on the grid, as the real beach runs north-east.
+- The fort-to-Barroso distance (about 1.5 km) is compressed. The sea is a hard boundary; the government holds Rua Barroso and comes down it, along the avenue and from the cross street.
+- Objectives: Fort Gate (1, the column), Fishermen's Boats (1), Avenue Works (2), Rua Barroso Sand (3, the government). The government starts ahead on value, so the column cannot win on objectives.
+- Battle events (`docs/maps/EVENTOS_DE_BATALHA.md`): the speech in the fort at the start; "On the avenue" and the second government section when the boats are taken; two sections down the cross street at 5:00; "The sidewalk" and two more sections at 40% losses; a general offensive with three sections at 10:00; "The sand" at 75% losses. The cards' lines are dramatized and say so; the facts in them follow the record.
+- The real fort and beach plan is not in the repository; this layout is a game abstraction.
 
 ## Images
 
@@ -205,8 +189,8 @@ historical photograph. Credit: Zenóbio Couto._
 
 | Side   | Sections               | Soldiers | Weapons           | Notes                                                                                          |
 | ------ | ---------------------- | -------- | ----------------- | ---------------------------------------------------------------------------------------------- |
-| Player | 4: two of 5, two of 4  | 18       | Fuzil Mauser 7 mm | Siqueira Campos is the command voice; the groups are the 18; 5 + 45 draft load                 |
-| Enemy  | 5 or more, reinforcing | 30+      | Fuzil Mauser 7 mm | Government infantry; no artillery in play; off-map bombardment is optional and not implemented |
+| Player | 4: 4 + 5 + 5 + 4       | 18       | Fuzil Mauser 7 mm; two automatic rifles | Fixed by the map (`columnForce`): `comando` (Siqueira Campos, bugler, two men), two `esquadra-5`, one `esquadra-4` |
+| Enemy  | 4 at the start, 11 more by events | 100+ | Fuzil Mauser 7 mm; machine guns | Two presets of company command, two infantry and a machine gun or automatic rifle; reinforcements by battle events |
 
 The numbers are a draft balance pass. The player is outnumbered and the ground
 is open; the mission must be survivable only as a delay, never as a victory. Do
@@ -225,11 +209,12 @@ not tune the government down until the beach is played.
 
 ### Requires new capability
 
-- Multi-section command: four player groups with independent orders. The
-  current game supports one player section.
-- Campaign mission scripting: the withdrawal phases, the certain-defeat end,
-  the legend-versus-record epilogue and the delay measure are not implemented.
-- A beach map and the fort gate as a playable start are new content.
+- Multi-section command and the fixed force exist: the map's `columnForce`
+  gives the player the four groups of the 18 (2026-11-14).
+- The phases, the reinforcements and the cards run as battle events on the map
+  (2026-11-14). Still missing: a campaign wrapper that ends on the last line
+  soldier with the legend-versus-record epilogue, and the delay measure.
+- The beach map exists: `copacabana` (see Map and terrain).
 - Campaign book and compendium integration are content, not code; the
   compendium texts are drafts in `docs/campaign/compendium/`.
 - Campaign progression is not implemented. The prologue's 18 do not carry into
@@ -253,20 +238,16 @@ position long enough for the next group to fall back.
 
 ### Opening
 
-The gate opens. The four groups deploy along the beach road. The government
-opens fire from the inland side. The player learns the difference between the
-rocks and the sand: the rocks stop bullets, the sand only slows men down.
+The gate opens. The four groups deploy on the avenue. The government waits at Rua Barroso. The player learns the difference between the sidewalk, the boats and the sand: the parapet and the hulls stop bullets, the sand only slows men down.
 
 ### Mid-mission
 
-The first group is gone. The government brings up a second section. The player
-must close the gap, fall back to the rocks and keep the remaining groups in
-order. The wounded can be rescued, but every rescue costs time the line does
+Some fall away on the avenue; a civilian, Otávio Correia, joins. The government brings up a second section, then more down the cross street. The player must hold the avenue works and keep the remaining groups in order. The wounded can be rescued, but every rescue costs time the line does
 not have. The sea is behind the groups; there is no flank to turn.
 
 ### Climax
 
-The government forms for the last assault. The rocks are lost or nearly lost.
+The government forms for the last assault. The avenue works are lost or nearly lost.
 The player must choose the final line: the last stretch of sand, with the sea
 behind and no cover ahead. The four groups are down to a handful.
 
@@ -294,8 +275,8 @@ screen.
 | Key                                        | EN (source)                                                                                                                                                                                                                               | PT-BR                                                                                                                                                                                                    |
 | ------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `campaign.prologue-18-do-forte.briefing`   | The rising has failed. The fort is surrounded, and we will not surrender it. We go out through the gate, along the beach, and make them pay for every meter. Prestes is down with fever; he will not come. We are eighteen. It is enough. | O levante fracassou. O forte está cercado, e não vamos entregá-lo. Saímos pelo portão, pela praia, e fazemos eles pagarem por cada metro. Prestes está com febre; não virá. Somos dezoito. É o bastante. |
-| `campaign.prologue-18-do-forte.opening`    | The gate is open. Four groups: five, five, four, four. Keep the rocks on your left and the sea on your right. Do not stop on the sand.                                                                                                    | O portão está aberto. Quatro grupos: cinco, cinco, quatro, quatro. Mantenham as pedras à esquerda e o mar à direita. Não parem na areia.                                                                 |
-| `campaign.prologue-18-do-forte.mid`        | The first group is gone. Close the gap. The rocks are the next line; hold them until the others are through.                                                                                                                              | O primeiro grupo caiu. Fechem o vão. As pedras são a próxima linha; segurem até os outros passarem.                                                                                                      |
+| `campaign.prologue-18-do-forte.opening`    | The gate is open. Four groups: five, five, four, four. Keep the houses on your left and the sea on your right. Do not stop on the sand.                                                                                                    | O portão está aberto. Quatro grupos: cinco, cinco, quatro, quatro. Mantenham as casas à esquerda e o mar à direita. Não parem na areia.                                                                 |
+| `campaign.prologue-18-do-forte.mid`        | The first group is gone. Close the gap. The avenue works are the next line; hold them until the others are through.                                                                                                                              | O primeiro grupo caiu. Fechem o vão. As obras da avenida são a próxima linha; segurem até os outros passarem.                                                                                                      |
 | `campaign.prologue-18-do-forte.climax`     | The government is on the sand. There is no relief coming. We hold here. Make every round count.                                                                                                                                           | O governo está na areia. Não vem socorro. Seguramos aqui. Façam cada tiro contar.                                                                                                                        |
 | `campaign.prologue-18-do-forte.last-stand` | The groups are down to a handful. The sea is behind us. This is the line. Stay with me.                                                                                                                                                   | Os grupos estão reduzidos a um punhado. O mar está atrás de nós. Esta é a linha. Fiquem comigo.                                                                                                          |
 | `campaign.prologue-18-do-forte.defeat`     | The last soldier falls. The beach is taken. The 18 are dead.                                                                                                                                                                              | O último soldado cai. A praia é tomada. Os 18 estão mortos.                                                                                                                                              |

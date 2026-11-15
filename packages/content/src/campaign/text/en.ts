@@ -18,7 +18,7 @@ export const CHAPTER_TEXT_EN: Readonly<Record<string, ChapterText>> = {
       {
         heading: 'The Eighteen',
         paragraphs: [
-          'At the fort, the legend gives Siqueira Campos eighteen men and a decision. The record gives twenty-nine in the fort after the commander was taken prisoner, and twenty-eight marching out on the afternoon of 6 July. The rising had failed elsewhere; the government was closing in; surrender would end it without a story. In the legend he divides the men into four groups — five, five, four, four — and takes them out through the gate and onto the beach. The sea was on one side, the government on the other, and the sand offered nothing. They fought from the gate to the rocks, from the rocks to the last stretch of beach, and the line grew shorter with every position. The four groups were not a victory waiting to happen. They were a delay, measured in minutes and in blood. The legend says the eighteen died there. The record says Siqueira Campos and two others survived, and seven rebels died. Both are part of the story.',
+          'At the fort, the legend gives Siqueira Campos eighteen men and a decision. The record gives twenty-nine in the fort after the commander was taken prisoner, and twenty-eight marching out on the afternoon of 6 July. The rising had failed elsewhere; the government was closing in; surrender would end it without a story. In the legend he divides the men into four groups — five, five, four, four — and takes them out through the gate and onto the beach. The sea was on one side, the government on the other, and the sand offered nothing. They fought from the gate up the Avenida Atlântica, from the avenue works to the last stretch of sand before Rua Barroso, and the line grew shorter with every position. The four groups were not a victory waiting to happen. They were a delay, measured in minutes and in blood. The legend says the eighteen died there. The record says Siqueira Campos and two others survived, and seven rebels died. Both are part of the story.',
         ],
       },
       {
@@ -30,11 +30,11 @@ export const CHAPTER_TEXT_EN: Readonly<Record<string, ChapterText>> = {
     ],
     briefing: {
       pitch:
-        'The fort at night. The rising has failed elsewhere; the government is closing in. Siqueira Campos tells the 18 that there will be no surrender: they will march out along the beach and make the government pay for every metre. Prestes is absent with fever. There is no relief and no victory; the task is to hold each position long enough for the next group to fall back.',
+        'The fort at night. The rising has failed elsewhere; the government is closing in. Siqueira Campos tells the 18 that there will be no surrender: they will march out along the avenue and make the government pay for every metre. Prestes is absent with fever. There is no relief and no victory; the task is to make every metre of the avenue cost the government time and blood.',
       objectives: [
-        'Hold the first beach position until the government commits its second section.',
-        'Withdraw the four groups to the rocks in order.',
-        'Make the last stand.',
+        "Leave the fort and reach the fishermen's boats.",
+        'Hold the avenue works while the government commits section after section.',
+        'Make the last stand on the sand before Rua Barroso.',
       ],
     },
   },

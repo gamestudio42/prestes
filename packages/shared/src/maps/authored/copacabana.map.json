@@ -436,7 +436,7 @@
      "y": 100
     },
     {
-     "x": 1,
+     "x": -1,
      "y": 100
     }
    ]
@@ -447,7 +447,7 @@
    "height": 3.2,
    "points": [
     {
-     "x": 8,
+     "x": 9,
      "y": 100
     },
     {
@@ -4324,7 +4324,33 @@
     "y": -70
    },
    "value": 3,
-   "owner": "neutral"
+   "owner": "legalist"
+  }
+ ],
+ "columnForce": {
+  "sections": [
+   "comando",
+   "esquadra-5",
+   "esquadra-5",
+   "esquadra-4"
+  ]
+ },
+ "enemyForces": [
+  {
+   "sections": [
+    "comando-companhia",
+    "infantaria-exercito",
+    "infantaria-exercito",
+    "metralhadora-legalista"
+   ]
+  },
+  {
+   "sections": [
+    "comando-companhia",
+    "infantaria-exercito",
+    "infantaria-exercito",
+    "fuzil-metralhador-legalista"
+   ]
   }
  ],
  "eventPlaces": [
@@ -4353,41 +4379,76 @@
     "x": 0,
     "y": 1
    }
+  },
+  {
+   "id": 3,
+   "name": "Rua transversal (oeste)",
+   "kind": "entry",
+   "point": {
+    "x": -116,
+    "y": -2
+   },
+   "facing": {
+    "x": 1,
+    "y": 0
+   }
   }
  ],
  "events": [
   {
    "id": 1,
-   "label": "Saída do forte",
+   "label": "O discurso no forte",
    "trigger": {
     "kind": "time",
-    "seconds": 2
+    "seconds": 1
    },
    "delay": 0,
    "actions": [
     {
      "kind": "card",
      "title": {
-      "en": "Out of the fort",
-      "pt-BR": "A saída do forte"
+      "pt-BR": "O forte não se entrega",
+      "en": "The fort will not surrender"
      },
      "text": {
-      "en": "6 July 1922, afternoon. The fort will not be surrendered. Siqueira Campos leads the men out through the gate and up the Avenida Atlântica, towards the government's troops waiting at Rua Barroso.",
-      "pt-BR": "6 de julho de 1922, à tarde. O forte não será entregue. Siqueira Campos leva os homens pelo portão e sobe a Avenida Atlântica, rumo às tropas do governo que esperam na Rua Barroso."
+      "pt-BR": "Forte de Copacabana, 6 de julho de 1922. Os encouraçados bombardearam o forte de madrugada; o comandante, Euclides Hermes, saiu para negociar e foi preso. O governo exige rendição sem condições. No pátio, Siqueira Campos fala aos que restam:\n\n— Quem quiser ir embora, vai agora, e ninguém aqui vai chamar de covarde. Quem ficar não se rende.\n\nA bandeira do forte é cortada em pedaços, um para cada homem, guardado junto ao peito.\n\n— Não vamos esperar que venham nos buscar aqui dentro. Vamos sair pela avenida, de pé, e eles que nos encontrem na areia.\n\nNa lenda, são dezoito. Não há reforço a caminho, e não haverá vitória.\n\n(Falas dramatizadas. A bandeira repartida pertence à tradição dos 18 do Forte.)",
+      "en": "Fort Copacabana, 6 July 1922. The battleships shelled the fort before dawn; its commander, Euclides Hermes, went out to negotiate and was arrested. The government demands unconditional surrender. In the yard, Siqueira Campos speaks to those who are left:\n\n\"Whoever wants to go, go now, and no one here will call you a coward. Whoever stays does not surrender.\"\n\nThe fort's flag is cut into pieces, one for each man, kept against his chest.\n\n\"We will not wait for them to come for us in here. We go out along the avenue, on our feet, and they can find us on the sand.\"\n\nIn the legend they are eighteen. No relief is coming, and there will be no victory.\n\n(Dramatized lines. The divided flag belongs to the tradition of the 18 of the Fort.)"
      }
     }
    ]
   },
   {
    "id": 2,
-   "label": "Segunda seção do governo",
+   "label": "Na avenida",
    "trigger": {
     "kind": "objective",
     "objective": 2,
     "side": "column",
     "change": "taken"
    },
-   "delay": 20,
+   "delay": 0,
+   "actions": [
+    {
+     "kind": "card",
+     "title": {
+      "pt-BR": "Na avenida",
+      "en": "On the avenue"
+     },
+     "text": {
+      "pt-BR": "Pela Avenida Atlântica, alguns ficam pelo caminho. Um civil, Otávio Correia, vê os homens passarem, pede um fuzil e entra na fila.\n\n— Para onde vão?\n— Para a Rua Barroso.\n\nNa esquina da Rua Barroso, o governo empenha sua segunda seção.\n\n(O registro: vinte e oito saíram do forte; quatro desertaram na avenida; Otávio Correia se juntou a eles. Falas dramatizadas.)",
+      "en": "Along the Avenida Atlântica, some fall away. A civilian, Otávio Correia, watches the men go by, asks for a rifle and falls in.\n\n\"Where are you going?\"\n\"To Rua Barroso.\"\n\nAt the corner of Rua Barroso, the government commits its second section.\n\n(The record: twenty-eight left the fort; four deserted on the avenue; Otávio Correia joined them. Dramatized lines.)"
+     }
+    }
+   ]
+  },
+  {
+   "id": 3,
+   "label": "Segunda seção do governo",
+   "trigger": {
+    "kind": "after",
+    "event": 2
+   },
+   "delay": 15,
    "actions": [
     {
      "kind": "troops",
@@ -4405,7 +4466,67 @@
    ]
   },
   {
-   "id": 3,
+   "id": 4,
+   "label": "Reforço pela transversal",
+   "trigger": {
+    "kind": "time",
+    "seconds": 300
+   },
+   "delay": 0,
+   "actions": [
+    {
+     "kind": "troops",
+     "side": "legalist",
+     "entry": 3,
+     "sections": [
+      "infantaria-exercito",
+      "infantaria-exercito"
+     ],
+     "order": {
+      "kind": "objective",
+      "objective": 2
+     }
+    }
+   ]
+  },
+  {
+   "id": 5,
+   "label": "A calçada",
+   "trigger": {
+    "kind": "losses",
+    "side": "column",
+    "percent": 40
+   },
+   "delay": 0,
+   "actions": [
+    {
+     "kind": "card",
+     "title": {
+      "pt-BR": "A calçada",
+      "en": "The sidewalk"
+     },
+     "text": {
+      "pt-BR": "Os homens se deitam na calçada de pedra e atiram dali; quatro se abrigam nos tubos da obra da avenida. Siqueira Campos passa de grupo em grupo:\n\n— Cada metro, rapazes. Eles vão pagar cada metro.\n\nDo outro lado, o governo não para de chegar.\n\n(O registro: onze sustentaram a calçada e quatro se abrigaram em tubos de construção. Fala dramatizada.)",
+      "en": "The men lie down on the stone sidewalk and fire from there; four take cover in the pipes of the avenue works. Siqueira Campos goes from group to group:\n\n\"Every metre, boys. They will pay for every metre.\"\n\nOn the other side, the government keeps coming.\n\n(The record: eleven held the sidewalk and four took cover in construction pipes. Dramatized line.)"
+     }
+    },
+    {
+     "kind": "troops",
+     "side": "legalist",
+     "entry": 2,
+     "sections": [
+      "infantaria-exercito",
+      "fuzil-metralhador-legalista"
+     ],
+     "order": {
+      "kind": "objective",
+      "objective": 3
+     }
+    }
+   ]
+  },
+  {
+   "id": 6,
    "label": "Ofensiva geral",
    "trigger": {
     "kind": "time",
@@ -4418,18 +4539,49 @@
      "side": "legalist",
      "entry": 2,
      "sections": [
-      "infantaria-exercito"
+      "infantaria-exercito",
+      "infantaria-exercito",
+      "metralhadora-legalista"
      ],
      "order": {
-      "kind": "objective",
-      "objective": 4
+      "kind": "commander"
      }
     },
     {
      "kind": "posture",
      "posture": "offensive",
      "until": {
-      "seconds": 300
+      "seconds": 600
+     }
+    }
+   ]
+  },
+  {
+   "id": 7,
+   "label": "A areia",
+   "trigger": {
+    "kind": "losses",
+    "side": "column",
+    "percent": 75
+   },
+   "delay": 0,
+   "actions": [
+    {
+     "kind": "card",
+     "title": {
+      "pt-BR": "A areia",
+      "en": "The sand"
+     },
+     "text": {
+      "pt-BR": "Diante da Rua Barroso, o que resta dos dezoito avança pela areia contra a linha do governo. Siqueira Campos cai ferido; Eduardo Gomes também.\n\n— Até o fim.\n\nA lenda diz que os dezoito morreram ali. O registro diz que sete rebeldes morreram, que Siqueira Campos, Eduardo Gomes e um soldado sobreviveram, e que o governo teve trinta e cinco baixas entre mortos e feridos. As duas coisas fazem parte da história.\n\n(Fala dramatizada. Fonte do registro: macaulay-1974, cap. I.)",
+      "en": "Before Rua Barroso, what is left of the eighteen advances across the sand against the government's line. Siqueira Campos falls wounded; so does Eduardo Gomes.\n\n\"To the end.\"\n\nThe legend says the eighteen died there. The record says seven rebels died, that Siqueira Campos, Eduardo Gomes and one soldier survived, and that the government lost thirty-five killed or wounded. Both are part of the story.\n\n(Dramatized line. Source of the record: macaulay-1974, ch. I.)"
+     }
+    },
+    {
+     "kind": "posture",
+     "posture": "offensive",
+     "until": {
+      "seconds": 1200
      }
     }
    ]

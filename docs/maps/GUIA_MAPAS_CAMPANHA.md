@@ -92,7 +92,7 @@ aparecem nas vistas **Vista de cima**, **Relevo**, **Curvas** e **Cobertura**.
 
 Antes de pintar, escreva em uma frase o que o mapa ensina:
 
-- Copacabana: areia aberta é morte; as pedras são a única cobertura.
+- Copacabana: areia aberta é morte; a calçada, os barcos e as obras da avenida são a única cobertura.
 - Anel de Ferro: segurar uma cidade não é o mesmo que manter uma coluna andando.
 - A Divisão: duas brigadas, um comando, uma travessia.
 - Frente do Paraná: a frente se perde; os homens passam.
@@ -253,84 +253,79 @@ editor, clique no lugar real e ajuste o raio.
 ## 01 · Os Dezoito do Forte
 
 **Vaga:** Campanha → 01 Os Dezoito do Forte  
-**ID do arquivo:** `copacabana-1922`  
+**ID do arquivo:** `copacabana` (pronto em 14 nov. 2026)  
 **Data:** 6 de julho de 1922, tarde  
 **Comandante:** Siqueira Campos  
 **Rótulo:** dramatizado
 
 ### O que o mapa precisa provar
 
-Areia aberta é o pior terreno; as pedras são a única cobertura real; a retirada
-tem que ser feita por grupos, não em debandada. A vitória não existe: o jogador
-mede tempo, baixas do governo e quantos grupos chegam à última linha.
+Os 18 não recuaram: saíram do forte e subiram a Avenida Atlântica contra a
+linha do governo na Rua Barroso. A areia é o pior terreno; a calçada, os
+barcos dos pescadores e as obras da avenida são a única cobertura. A vitória
+não existe: o jogador mede tempo e baixas do governo, e o mapa garante a
+derrota com reforços do governo seção após seção.
 
-### Ficha técnica
+### Ficha técnica (como está)
 
-| Campo | Sugestão |
+| Campo | Valor |
 | --- | --- |
-| Tamanho | Médio (400 m) |
+| Tamanho | Pequeno (240 m) |
 | Paleta | `urban` |
 | Chão base | `sand` |
-| Nível da água | −1,2 m (mar como água funda) |
-| Luz | 15h, sol a oeste (bearing 250) |
-| Norte | 0° |
+| Nível da água | −1,2 m (mar como água funda, arrebentação como vau) |
+| Luz | 14h, sol do noroeste (direção 320, contada do norte verdadeiro) |
+| Norte | 315° (a praia real corre para nordeste) |
 | Cenário | `historical-setting-fictional-place` |
-| Codex | `forte-copacabana` |
-| Nota de fonte | `macaulay-1974`, cap. I, pp. 26–29; mapa de Copacabana de 1922 (domínio público, Serviço Geográfico Militar). |
-| Forças inimigas (opcional) | 2 composições: `infantaria-exercito`; `infantaria-exercito` + `metralhadora-legalista`. |
-
-### Croqui
-
-![Croqui 01: Praia de Copacabana, 1922](croquis/01-copacabana.svg)
+| Nota de fonte | `macaulay-1974`, cap. I, pp. 26–29; mapa de Copacabana de 1922; a distância do forte à Rua Barroso (cerca de 1,5 km) foi comprimida. |
+| Força da coluna | Fixa (`columnForce`): `comando` (Siqueira Campos, corneteiro e dois), duas `esquadra-5`, uma `esquadra-4` — 18 homens em quatro grupos. |
+| Forças inimigas | 2 composições: comando de companhia, duas infantarias e metralhadora ou fuzil-metralhador. |
 
 ### Leitura do terreno
 
-- **Mar** a leste: água funda, borda dura. O jogador não pode flanquear pelo mar.
-- **Cidade e forte** a oeste: o governo pressiona pela esquerda e pelo portão.
-- **Praia** no centro: areia, aberta, lenta. É o corredor da retirada.
-- **Pedras** no meio: a única cobertura que para bala. Não pinte mata.
-- **Muro da praia** a oeste: cobertura linear, com brechas para o mar.
-- **Última areia** ao norte: sem cobertura, apenas o fim.
+- **Forte** no sul: muro, portão de ferro na avenida, guaritas e quartel. As
+  pedras da Ponta de Copacabana ficam junto ao mar; o Morro do Cantagalo, com
+  mata, atrás.
+- **Avenida Atlântica**: a rua, a calçada de pedra portuguesa e a mureta baixa
+  com passagens para a areia.
+- **Praia**: areia aberta; os barcos dos pescadores perto do forte; as obras
+  da avenida (pedra, madeira, carroça) no meio do caminho. Ainda não há modelo
+  de tubo (manilha).
+- **Cidade de 1922** a oeste: casas, sobrados e vendas com quintais e
+  terrenos vazios, a Av. N. S. de Copacabana e as transversais.
+- **Rua Barroso** no norte: barricada, sacos de areia e caminhões do governo.
 
-### Ordem de desenho
+### Objetivos
 
-1. Pinte o mar como água funda na faixa leste; a borda pode ser irregular, mas
-   precisa ser intransponível.
-2. Pinte a faixa de areia e a cidade/forte a oeste.
-3. Coloque o forte (`barracks-block` ou `warehouse` + `brick-wall`) e o portão.
-4. Desenhe o muro da praia com brechas; deixe passagens de 3–5 m.
-5. Coloque as pedras (`boulder`, `matacao`, `outcrop`) no meio, formando uma
-   linha de cobertura, não um labirinto.
-6. Espalhe poucos objetos de praia: `fallen-log`, `pebbles`, `sandbags` no
-   portão. Nada de árvores.
-7. Desenhe as áreas de desdobramento no portão e na cidade.
-8. Coloque os objetivos nas quatro posições do croqui.
-9. Rode **Verificar mapa**. O aviso de 60 m na areia é esperado; reduza-o com
-   pedras e troncos, sem fechar a praia.
+| # | PT-BR | EN | Valor | Dono inicial |
+| --- | --- | --- | --- | --- |
+| 1 | Portão do Forte | Fort Gate | 1 | A coluna |
+| 2 | Barcos dos Pescadores | Fishermen's Boats | 1 | Ninguém |
+| 3 | Obras da Avenida | Avenue Works | 2 | Ninguém |
+| 4 | Areia da Rua Barroso | Rua Barroso Sand | 3 | O governo |
 
-### Objetivos sugeridos
+O governo começa na frente em valor: a coluna não ganha por objetivos.
 
-| # | PT-BR | EN | Valor | Raio | Dono inicial | Onde |
-| --- | --- | --- | --- | --- | --- | --- |
-| 1 | Portão do Forte | Fort Gate | 1 | 16 m | A coluna | No portão, junto ao desdobramento |
-| 2 | Muro da Praia | Beach Wall | 1 | 18 m | Ninguém | No muro, a 1/3 do caminho |
-| 3 | Pedras | Rocks | 2 | 20 m | Ninguém | No centro da linha de pedras |
-| 4 | Última Areia | Last Sand | 3 | 22 m | Ninguém | No fim norte da praia |
+### Eventos
 
-Os objetivos 2–4 são **medidores de demora** no desenho da missão. Como o jogo
-hoje só tem captura e manutenção, o mapa jogado como escaramuça vai tratá-los
-como objetivos normais. O final de derrota certa precisa de script de missão,
-que ainda não existe.
+| # | Quando | O que acontece |
+| --- | --- | --- |
+| 1 | 0:01 | Cartão "O forte não se entrega": o discurso de Siqueira Campos no pátio e a bandeira repartida. |
+| 2 | A coluna toma os barcos | Cartão "Na avenida": os que ficam pelo caminho e Otávio Correia. |
+| 3 | 15 s depois do 2 | Segunda seção do governo pela Rua Barroso (infantaria e metralhadora). |
+| 4 | 5:00 | Duas infantarias pela transversal. |
+| 5 | Coluna com 40% de baixas | Cartão "A calçada" e mais duas seções pela avenida. |
+| 6 | 10:00 | Ofensiva geral: três seções e postura ofensiva. |
+| 7 | Coluna com 75% de baixas | Cartão "A areia": a lenda e o registro. |
+
+As falas dos cartões são dramatizadas e dizem isso; os fatos seguem o registro
+(macaulay-1974, cap. I). Para mudar um texto, abra **Eventos** no editor.
 
 ### Cobertura e cuidados
 
-- Pedras a cada 40–50 m; muro com brechas; sacos de areia no portão.
-- Não coloque mata nem capim na areia: a lição é o contraste entre areia e
-  pedra.
-- O objetivo “Última Areia” não pode ficar na água; deixe a bandeira na areia
-  seca.
-- Se o mar for água funda, o **Verificar mapa** não deve acusar desdobramento
-  dentro dela. Afaste as áreas da borda.
+- Não feche a praia: a lição é a areia aberta.
+- A primeira versão desenhada à mão está em
+  `docs/maps/rascunhos/copacabana-v1-mao.map.json`.
 
 ### Referências
 
@@ -1093,7 +1088,7 @@ para consulta. Não use uma imagem gerada como se fosse fotografia histórica.
 Se for desenhar os oito, esta ordem reduz retrabalho:
 
 1. **05 Verdinho** (pequeno): aprende rio, ponte, vau e objetivos.
-2. **01 Copacabana** (médio): aprende borda de água, corredor e retirada.
+2. **01 Copacabana** (pequeno, pronto): aprende borda de água, avenida e derrota certa.
 3. **02 Anel de Ferro** (médio): aprende estrada, cidade, vau e rio.
 4. **06 Serra Nova** (médio): aprende relevo, estradas e cruzamento.
 5. **04 Frente do Paraná** (médio): aprende trincheiras, fazenda e retirada.

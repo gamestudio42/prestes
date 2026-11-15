@@ -18,7 +18,7 @@ export const CHAPTER_TEXT_PT_BR: Readonly<Record<string, ChapterText>> = {
       {
         heading: 'Os Dezoito',
         paragraphs: [
-          'No forte, a lenda dá a Siqueira Campos dezoito homens e uma decisão. O registro dá vinte e nove no forte depois que o comandante foi preso, e vinte e oito saindo na tarde de 6 de julho. O levante fracassara em outros pontos; o governo fechava o cerco; a rendição acabaria com tudo sem deixar história. Na lenda, ele divide os homens em quatro grupos — cinco, cinco, quatro, quatro — e os leva pelo portão até a praia. O mar ficava de um lado, o governo do outro, e a areia não oferecia nada. Lutaram do portão às pedras, das pedras ao último trecho de praia, e a linha encurtava a cada posição. Os quatro grupos não eram uma vitória à espera de acontecer. Eram uma demora, medida em minutos e em sangue. A lenda diz que os dezoito morreram ali. O registro diz que Siqueira Campos e outros dois sobreviveram, e que sete rebeldes morreram. As duas coisas fazem parte da história.',
+          'No forte, a lenda dá a Siqueira Campos dezoito homens e uma decisão. O registro dá vinte e nove no forte depois que o comandante foi preso, e vinte e oito saindo na tarde de 6 de julho. O levante fracassara em outros pontos; o governo fechava o cerco; a rendição acabaria com tudo sem deixar história. Na lenda, ele divide os homens em quatro grupos — cinco, cinco, quatro, quatro — e os leva pelo portão até a praia. O mar ficava de um lado, o governo do outro, e a areia não oferecia nada. Lutaram do portão pela Avenida Atlântica, das obras da avenida ao último trecho de areia diante da Rua Barroso, e a linha encurtava a cada posição. Os quatro grupos não eram uma vitória à espera de acontecer. Eram uma demora, medida em minutos e em sangue. A lenda diz que os dezoito morreram ali. O registro diz que Siqueira Campos e outros dois sobreviveram, e que sete rebeldes morreram. As duas coisas fazem parte da história.',
         ],
       },
       {
@@ -30,11 +30,11 @@ export const CHAPTER_TEXT_PT_BR: Readonly<Record<string, ChapterText>> = {
     ],
     briefing: {
       pitch:
-        'O forte à noite. O levante fracassou nos outros pontos; o governo está fechando o cerco. Siqueira Campos diz aos 18 que não haverá rendição: eles sairão marchando pela praia e farão o governo pagar por cada metro. Prestes está ausente, com febre. Não há reforço nem vitória; a tarefa é manter cada posição o bastante para o grupo seguinte recuar.',
+        'O forte à noite. O levante fracassou nos outros pontos; o governo está fechando o cerco. Siqueira Campos diz aos 18 que não haverá rendição: eles sairão marchando pela avenida e farão o governo pagar por cada metro. Prestes está ausente, com febre. Não há reforço nem vitória; a tarefa é fazer cada metro da avenida custar tempo e sangue ao governo.',
       objectives: [
-        'Manter a primeira posição na praia até o governo empenhar sua segunda seção.',
-        'Recuar os quatro grupos para as pedras, em ordem.',
-        'Resistir até o fim.',
+        'Sair do forte e chegar aos barcos dos pescadores.',
+        'Segurar as obras da avenida enquanto o governo empenha seção após seção.',
+        'Resistir até o fim na areia diante da Rua Barroso.',
       ],
     },
   },

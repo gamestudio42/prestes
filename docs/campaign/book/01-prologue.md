@@ -40,9 +40,7 @@ twenty-eight marching out on the afternoon of 6 July. The rising had failed
 elsewhere; the government was closing in; surrender would end it without a
 story. In the legend he divides the men into four groups — five, five, four,
 four — and takes them out through the gate and onto the beach. The sea was on
-one side, the government on the other, and the sand offered nothing. They fought
-from the gate to the rocks, from the rocks to the last stretch of beach, and the
-line grew shorter with every position. The four groups were not a victory waiting
+one side, the government on the other, and the sand offered nothing. They fought from the gate up the Avenida Atlântica, from the avenue works to the last stretch of sand before Rua Barroso, and the line grew shorter with every position. The four groups were not a victory waiting
 to happen. They were a delay, measured in minutes and in blood. The legend says
 the eighteen died there. The record says Siqueira Campos and two others survived,
 and seven rebels died. Both are part of the story.
@@ -78,8 +76,7 @@ saindo na tarde de 6 de julho. O levante fracassara em outros pontos; o governo
 fechava o cerco; a rendição acabaria com tudo sem deixar história. Na lenda, ele
 divide os homens em quatro grupos — cinco, cinco, quatro, quatro — e os leva pelo
 portão até a praia. O mar ficava de um lado, o governo do outro, e a areia não
-oferecia nada. Lutaram do portão às pedras, das pedras ao último trecho de
-praia, e a linha encurtava a cada posição. Os quatro grupos não eram uma vitória
+oferecia nada. Lutaram do portão pela Avenida Atlântica, das obras da avenida ao último trecho de areia diante da Rua Barroso, e a linha encurtava a cada posição. Os quatro grupos não eram uma vitória
 à espera de acontecer. Eram uma demora, medida em minutos e em sangue. A lenda
 diz que os dezoito morreram ali. O registro diz que Siqueira Campos e outros dois
 sobreviveram, e que sete rebeldes morreram. As duas coisas fazem parte da
