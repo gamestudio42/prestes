@@ -12,6 +12,8 @@ test-results/
 art-src/**/*.blend
 art-src/**/*.blend1
 fotos dos personages/
+# Downloaded image references; never committed or redistributed.
+referencias imagens/
 sons referencia/
 # Local source for the menu gramophone; the optimized set is committed.
 gramofone/

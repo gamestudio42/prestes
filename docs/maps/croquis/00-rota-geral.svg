@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 700" role="img" aria-labelledby="rotaTitle rotaDesc">
+  <title id="rotaTitle">Rota esquemática da campanha em oito mapas</title>
+  <desc id="rotaDesc">Croqui de conjunto: o prologo no Rio de Janeiro, a coluna no sul, a divisao no oeste do Parana, Catanduvas, Mineiros, Serra Nova, Pantanal e La Gaiba.</desc>
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#6b5a3e"/>
+    </marker>
+    <style>
+      .title { font: 700 26px 'Segoe UI', Arial, sans-serif; fill: #3f321f; }
+      .sub { font: 13px 'Segoe UI', Arial, sans-serif; fill: #6b5a3e; }
+      .land { fill: #e8dcc0; stroke: #8a7550; stroke-width: 2; }
+      .route { fill: none; stroke: #6b5a3e; stroke-width: 2.5; stroke-dasharray: 8 6; marker-end: url(#arrowhead); }
+      .routePrologue { fill: none; stroke: #7b4a7d; stroke-width: 2.5; stroke-dasharray: 4 5; }
+      .point { fill: #fbf5e7; stroke: #3f321f; stroke-width: 2; }
+      .pointPrologue { fill: #f0e3f2; stroke: #6a3a6c; stroke-width: 2; }
+      .num { font: 700 14px 'Segoe UI', Arial, sans-serif; fill: #2b2418; text-anchor: middle; dominant-baseline: middle; }
+      .label { font: 700 14px 'Segoe UI', Arial, sans-serif; fill: #3c311f; }
+      .small { font: 12px 'Segoe UI', Arial, sans-serif; fill: #5f5038; }
+      .note { font: 11px 'Segoe UI', Arial, sans-serif; fill: #6b5a3e; }
+      .river { fill: none; stroke: #8bb7c9; stroke-width: 4; opacity: .75; }
+    </style>
+  </defs>
+
+  <rect width="1000" height="700" fill="#f7f0df"/>
+  <text x="40" y="42" class="title">A campanha em oito mapas</text>
+  <text x="40" y="64" class="sub">Croqui de conjunto, fora de escala. A numeração é a das fichas e das vagas do editor.</text>
+
+  <path class="land" d="M 360 126 L 430 112 L 510 128 L 580 118 L 650 150 L 708 206 L 738 280 L 728 356 L 690 430 L 660 500 L 606 570 L 540 622 L 470 646 L 410 618 L 366 566 L 318 532 L 280 470 L 256 402 L 244 330 L 262 256 L 300 196 L 330 158 Z"/>
+
+  <path class="river" d="M 300 250 C 360 290, 420 300, 480 282 C 540 264, 600 300, 650 350"/>
+  <path class="river" d="M 360 520 C 420 500, 470 510, 520 540"/>
+
+  <circle cx="620" cy="512" r="17" class="pointPrologue"/>
+  <text x="620" y="513" class="num">1</text>
+  <text x="646" y="506" class="label">Rio de Janeiro</text>
+  <text x="646" y="524" class="small">Prólogo: Copacabana, 1922</text>
+
+  <circle cx="486" cy="596" r="17" class="point"/>
+  <text x="486" y="597" class="num">2</text>
+  <text x="512" y="590" class="label">Rio Grande do Sul</text>
+  <text x="512" y="608" class="small">São Luiz, Ramada, Uruguai</text>
+
+  <circle cx="430" cy="512" r="17" class="point"/>
+  <text x="430" y="513" class="num">3</text>
+  <text x="456" y="506" class="label">Oeste do Paraná</text>
+  <text x="456" y="524" class="small">Porto Mendes a Puerto Adela</text>
+
+  <circle cx="470" cy="466" r="17" class="point"/>
+  <text x="470" y="467" class="num">4</text>
+  <text x="496" y="460" class="label">Catanduvas</text>
+  <text x="496" y="478" class="small">A Frente do Paraná</text>
+
+  <circle cx="510" cy="388" r="17" class="point"/>
+  <text x="510" y="389" class="num">5</text>
+  <text x="536" y="382" class="label">Mineiros, Goiás</text>
+  <text x="536" y="400" class="small">Ponte de Verdinho</text>
+
+  <circle cx="570" cy="326" r="17" class="point"/>
+  <text x="570" y="327" class="num">6</text>
+  <text x="596" y="320" class="label">Serra Nova</text>
+  <text x="596" y="338" class="small">Taiobeiras, Minas Gerais</text>
+
+  <circle cx="440" cy="300" r="17" class="point"/>
+  <text x="440" y="301" class="num">7</text>
+  <text x="330" y="300" class="label">Pantanal</text>
+  <text x="330" y="318" class="small">Fronteira Bolívia-Paraguai</text>
+
+  <circle cx="384" cy="252" r="17" class="point"/>
+  <text x="384" y="253" class="num">8</text>
+  <text x="410" y="246" class="label">La Gaiba</text>
+  <text x="410" y="264" class="small">Bolívia, 1927</text>
+
+  <path class="route" d="M 486 579 C 470 552, 444 538, 430 529"/>
+  <path class="route" d="M 442 500 C 454 488, 460 478, 466 476"/>
+  <path class="route" d="M 486 456 C 496 436, 504 414, 508 405"/>
+  <path class="route" d="M 526 382 C 546 360, 560 344, 566 336"/>
+  <path class="route" d="M 554 316 C 526 308, 480 306, 455 303"/>
+  <path class="route" d="M 426 292 C 410 282, 398 268, 390 258"/>
+
+  <text x="646" y="548" class="small">o prólogo não se liga à coluna</text>
+
+  <g transform="translate(70 540)">
+    <circle cx="26" cy="26" r="20" fill="#fbf5e7" stroke="#3f321f" stroke-width="1.5"/>
+    <path d="M26 46 L 26 12 M 26 12 L 42 19 L 26 26" fill="none" stroke="#3f321f" stroke-width="2"/>
+    <text x="58" y="22" class="label">Norte</text>
+    <text x="58" y="40" class="small">orientação aproximada</text>
+  </g>
+
+  <text x="70" y="620" class="note">O prólogo (1) é no Rio e não leva os mortos para a coluna. A coluna começa no sul (2) e segue para o norte pelo interior.</text>
+  <text x="70" y="640" class="note">As posições são didáticas. Para a geografia histórica, use docs/history/TIMELINE.md e os mapas citados em docs/campaign/compendium/images.md.</text>
+  <text x="70" y="664" class="note">Cada ficha traz o tamanho, a paleta, a luz, o norte e os objetivos sugeridos para a vaga correspondente.</text>
+</svg>

@@ -1,0 +1,107 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 700" role="img" aria-labelledby="m4Title m4Desc">
+  <title id="m4Title">Croqui do mapa 04: A Frente do Paraná</title>
+  <desc id="m4Desc">Linha de trincheiras no centro, fazenda e cafezais à direita, mata à esquerda e estrada de retirada ao sul. Os legalistas atacam do norte; a coluna recua em ordem.</desc>
+  <defs>
+    <pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse">
+      <path d="M 50 0 L 0 0 0 50" fill="none" stroke="#c9b58d" stroke-width="0.55"/>
+    </pattern>
+    <marker id="arrowheadColumn" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#1f6574"/>
+    </marker>
+    <marker id="arrowheadLegalist" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#8a2f24"/>
+    </marker>
+    <style>
+      .title { font: 700 24px 'Segoe UI', Arial, sans-serif; fill: #3f321f; }
+      .sub { font: 13px 'Segoe UI', Arial, sans-serif; fill: #6b5a3e; }
+      .frame { fill: #efe3c3; stroke: #5a4628; stroke-width: 2; }
+      .woods { fill: #8faa6a; stroke: #5f7b43; stroke-width: 1.2; }
+      .field { fill: #cfc27a; stroke: #9c8c48; stroke-width: 1; opacity: .8; }
+      .coffee { fill: none; stroke: #6f7a3f; stroke-width: 2; opacity: .9; }
+      .road { fill: none; stroke: #8b6a45; stroke-width: 7; stroke-linecap: round; stroke-linejoin: round; }
+      .trail { fill: none; stroke: #9c7d53; stroke-width: 4; stroke-dasharray: 8 5; stroke-linecap: round; }
+      .trench { fill: none; stroke: #6c4e30; stroke-width: 6; stroke-dasharray: 10 4; }
+      .trench2 { fill: none; stroke: #6c4e30; stroke-width: 3; stroke-dasharray: 5 4; }
+      .fence { fill: none; stroke: #8a7454; stroke-width: 2; stroke-dasharray: 3 3; }
+      .building { fill: #b98f63; stroke: #6d4d2f; stroke-width: 1.5; }
+      .zone-column { fill: #2f7f8f; fill-opacity: .18; stroke: #1f6574; stroke-width: 2; stroke-dasharray: 7 4; }
+      .zone-legalist { fill: #a33f32; fill-opacity: .16; stroke: #8a2f24; stroke-width: 2; stroke-dasharray: 7 4; }
+      .objective { fill: #fff8e8; stroke: #3f321f; stroke-width: 2; }
+      .objective.column { fill: #d7eef1; stroke: #1f6574; }
+      .objective.legalist { fill: #f3d9d4; stroke: #8a2f24; }
+      .objText { font: 700 15px 'Segoe UI', Arial, sans-serif; fill: #2b2418; text-anchor: middle; dominant-baseline: middle; }
+      .objValue { font: 700 10px 'Segoe UI', Arial, sans-serif; fill: #5a4628; text-anchor: middle; }
+      .label { font: 700 14px 'Segoe UI', Arial, sans-serif; fill: #3c311f; }
+      .small { font: 12px 'Segoe UI', Arial, sans-serif; fill: #5f5038; }
+      .zoneLabel { font: 700 12px 'Segoe UI', Arial, sans-serif; letter-spacing: .08em; }
+      .arrowColumn { fill: none; stroke: #1f6574; stroke-width: 3.5; marker-end: url(#arrowheadColumn); }
+      .arrowLegalist { fill: none; stroke: #8a2f24; stroke-width: 3.5; marker-end: url(#arrowheadLegalist); }
+      .bomb { fill: none; stroke: #8a2f24; stroke-width: 2; stroke-dasharray: 3 5; opacity: .7; }
+      .note { font: 11px 'Segoe UI', Arial, sans-serif; fill: #6b5a3e; }
+    </style>
+  </defs>
+
+  <rect width="1000" height="700" fill="#f7f0df"/>
+  <text x="40" y="40" class="title">04 · A Frente do Paraná</text>
+  <text x="40" y="62" class="sub">Segurar a linha para evacuar feridos e suprimentos; depois trocar a trincheira pela estrada. A frente se perde; os homens passam.</text>
+
+  <rect x="50" y="86" width="900" height="560" class="frame"/>
+  <rect x="50" y="86" width="900" height="560" fill="url(#grid)"/>
+
+  <path d="M 50 170 C 140 140, 220 190, 310 170 C 380 154, 420 210, 400 280 C 380 350, 300 380, 250 430 C 210 470, 210 530, 160 560 L 50 560 Z" class="woods"/>
+  <path d="M 560 120 L 950 120 L 950 330 C 860 350, 760 320, 680 340 C 620 355, 580 330, 560 300 Z" class="field"/>
+
+  <path d="M 600 150 L 900 150 M 600 180 L 900 180 M 600 210 L 900 210 M 600 240 L 900 240 M 600 270 L 900 270" class="coffee"/>
+  <text x="770" y="190" class="small">cafezais</text>
+
+  <path d="M 180 340 C 250 320, 320 355, 390 338 C 460 322, 530 352, 600 335 C 680 316, 750 346, 820 332 C 850 326, 870 330, 885 338" class="trench"/>
+  <path d="M 170 440 C 250 420, 330 452, 410 436 C 490 420, 570 448, 640 434" class="trench2"/>
+  <text x="190" y="320" class="small">linha avançada</text>
+  <text x="190" y="420" class="small">segunda linha</text>
+
+  <rect x="650" y="300" width="75" height="55" class="building"/>
+  <path d="M 642 300 L 688 278 L 733 300" fill="none" stroke="#6d4d2f" stroke-width="2"/>
+  <rect x="750" y="315" width="40" height="35" class="building"/>
+  <text x="648" y="378" class="label">FAZENDA</text>
+
+  <path d="M 470 646 C 455 590, 430 540, 400 490 C 375 450, 340 420, 300 410" class="road"/>
+  <text x="484" y="610" class="small">estrada de retirada</text>
+  <path d="M 250 430 L 180 500" class="trail"/>
+  <path d="M 400 490 L 650 490" class="trail"/>
+
+  <path d="M 110 520 L 400 520 L 400 620 L 110 620 Z" class="zone-column"/>
+  <text x="126" y="544" class="zoneLabel" fill="#1f6574">COLUNA</text>
+  <text x="126" y="562" class="small">retaguarda e feridos</text>
+
+  <path d="M 650 100 L 910 100 L 910 200 L 650 200 Z" class="zone-legalist"/>
+  <text x="666" y="124" class="zoneLabel" fill="#8a2f24">LEGALISTAS</text>
+  <text x="666" y="142" class="small">ataque e bombardeio fora do mapa</text>
+
+  <circle cx="500" cy="340" r="21" class="objective legalist"/>
+  <text x="500" y="340" class="objText">1</text>
+  <text x="500" y="364" class="objValue">v2</text>
+  <circle cx="700" cy="330" r="21" class="objective"/>
+  <text x="700" y="330" class="objText">2</text>
+  <text x="700" y="354" class="objValue">v2</text>
+  <circle cx="430" cy="470" r="21" class="objective"/>
+  <text x="430" y="470" class="objText">3</text>
+  <text x="430" y="494" class="objValue">v1</text>
+  <circle cx="300" cy="550" r="21" class="objective column"/>
+  <text x="300" y="550" class="objText">4</text>
+  <text x="300" y="574" class="objValue">v1</text>
+  <circle cx="250" cy="395" r="21" class="objective column"/>
+  <text x="250" y="395" class="objText">5</text>
+  <text x="250" y="419" class="objValue">v1</text>
+
+  <path d="M 700 200 C 680 250, 640 300, 560 325" class="arrowLegalist"/>
+  <path d="M 820 200 C 800 270, 760 320, 740 330" class="arrowLegalist"/>
+  <path d="M 480 400 C 470 440, 460 470, 450 500" class="arrowColumn"/>
+  <path d="M 380 470 C 350 510, 330 540, 320 560" class="arrowColumn"/>
+
+  <path d="M 640 205 C 690 240, 760 250, 820 240" class="bomb"/>
+  <path d="M 600 220 C 650 260, 720 275, 780 270" class="bomb"/>
+  <text x="610" y="255" class="small">bombardeio (script futuro)</text>
+
+  <text x="70" y="668" class="note">Tamanho sugerido: médio (400 m) · paleta temperada · 16h, sol a oeste · norte 0° · base terra de cultivo · trincheiras de 1,2 m com baias.</text>
+  <text x="70" y="686" class="note">Não coloque peças de artilharia: o bombardeio é pressão de missão, ainda não implementado. Cafezais podem ser linhas de cerca viva ou mato.</text>
+</svg>

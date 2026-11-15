@@ -1,0 +1,105 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 700" role="img" aria-labelledby="m2Title m2Desc">
+  <title id="m2Title">Croqui do mapa 02: O Anel de Ferro</title>
+  <desc id="m2Desc">Rota para o norte: São Luiz Gonzaga ao sul, Ramada no centro, riacho e vau, e a passagem do rio Uruguai ao norte. A coluna sai pelo oeste; os legalistas vêm do leste e do sul.</desc>
+  <defs>
+    <pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse">
+      <path d="M 50 0 L 0 0 0 50" fill="none" stroke="#c9b58d" stroke-width="0.55"/>
+    </pattern>
+    <marker id="arrowheadColumn" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#1f6574"/>
+    </marker>
+    <marker id="arrowheadLegalist" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#8a2f24"/>
+    </marker>
+    <style>
+      .title { font: 700 24px 'Segoe UI', Arial, sans-serif; fill: #3f321f; }
+      .sub { font: 13px 'Segoe UI', Arial, sans-serif; fill: #6b5a3e; }
+      .frame { fill: #efe3c3; stroke: #5a4628; stroke-width: 2; }
+      .water { fill: #8bb7c9; stroke: #4d7d90; stroke-width: 1.5; }
+      .ford { fill: #c9d9c6; stroke: #5b8a78; stroke-width: 1.2; stroke-dasharray: 4 3; }
+      .field { fill: #cfc27a; stroke: #9c8c48; stroke-width: 1; opacity: .85; }
+      .woods { fill: #8faa6a; stroke: #5f7b43; stroke-width: 1.2; }
+      .scrub { fill: #b7b47a; stroke: #7d7a48; stroke-width: 1; }
+      .road { fill: none; stroke: #8b6a45; stroke-width: 7; stroke-linecap: round; stroke-linejoin: round; }
+      .trail { fill: none; stroke: #9c7d53; stroke-width: 4; stroke-dasharray: 8 5; stroke-linecap: round; }
+      .fence { fill: none; stroke: #8a7454; stroke-width: 2; stroke-dasharray: 3 3; }
+      .building { fill: #b98f63; stroke: #6d4d2f; stroke-width: 1.5; }
+      .bridge { fill: #a98255; stroke: #5f4428; stroke-width: 1.5; }
+      .zone-column { fill: #2f7f8f; fill-opacity: .18; stroke: #1f6574; stroke-width: 2; stroke-dasharray: 7 4; }
+      .zone-legalist { fill: #a33f32; fill-opacity: .16; stroke: #8a2f24; stroke-width: 2; stroke-dasharray: 7 4; }
+      .objective { fill: #fff8e8; stroke: #3f321f; stroke-width: 2; }
+      .objective.column { fill: #d7eef1; stroke: #1f6574; }
+      .objText { font: 700 15px 'Segoe UI', Arial, sans-serif; fill: #2b2418; text-anchor: middle; dominant-baseline: middle; }
+      .objValue { font: 700 10px 'Segoe UI', Arial, sans-serif; fill: #5a4628; text-anchor: middle; }
+      .label { font: 700 14px 'Segoe UI', Arial, sans-serif; fill: #3c311f; }
+      .small { font: 12px 'Segoe UI', Arial, sans-serif; fill: #5f5038; }
+      .zoneLabel { font: 700 12px 'Segoe UI', Arial, sans-serif; letter-spacing: .08em; }
+      .arrowColumn { fill: none; stroke: #1f6574; stroke-width: 3.5; marker-end: url(#arrowheadColumn); }
+      .arrowLegalist { fill: none; stroke: #8a2f24; stroke-width: 3.5; marker-end: url(#arrowheadLegalist); }
+      .note { font: 11px 'Segoe UI', Arial, sans-serif; fill: #6b5a3e; }
+    </style>
+  </defs>
+
+  <rect width="1000" height="700" fill="#f7f0df"/>
+  <text x="40" y="40" class="title">02 · O Anel de Ferro</text>
+  <text x="40" y="62" class="sub">A coluna não segura a cidade: sai por uma rota norte, segura Ramada e cruza o Uruguai. O governo fecha pelo leste e pelo sul.</text>
+
+  <rect x="50" y="86" width="900" height="560" class="frame"/>
+  <rect x="50" y="86" width="900" height="560" fill="url(#grid)"/>
+
+  <path d="M 50 86 L 950 86 L 950 165 C 880 180, 820 145, 740 158 C 660 171, 590 145, 510 160 C 430 175, 360 148, 280 162 C 200 176, 120 150, 50 166 Z" class="water"/>
+  <text x="640" y="125" class="label" fill="#2f5f70">RIO URUGUAI</text>
+
+  <rect x="282" y="120" width="40" height="42" class="bridge" transform="rotate(16 302 141)"/>
+  <text x="150" y="150" class="small">balsa / vau</text>
+
+  <path d="M 50 220 C 120 190, 190 230, 250 210 C 310 190, 350 235, 330 300 C 315 350, 260 370, 230 420 C 205 465, 220 510, 180 520 L 50 520 Z" class="woods"/>
+  <path d="M 500 190 L 950 190 L 950 620 L 540 620 C 520 560, 560 520, 535 460 C 510 405, 555 350, 530 300 C 510 255, 535 220, 500 190 Z" class="field"/>
+
+  <path d="M 50 455 C 180 430, 280 455, 360 485 C 450 520, 540 545, 620 565" fill="none" stroke="#8bb7c9" stroke-width="15"/>
+  <path d="M 290 462 C 320 466, 340 474, 365 486" class="ford"/>
+  <text x="230" y="445" class="small">riacho · vau</text>
+
+  <path d="M 600 646 C 585 570, 555 510, 500 455 C 455 408, 420 330, 380 270 C 345 215, 310 185, 290 160" class="road"/>
+  <text x="610" y="610" class="small">estrada para o norte</text>
+  <path d="M 500 455 C 540 430, 590 420, 650 410" class="trail"/>
+
+  <rect x="470" y="548" width="48" height="32" class="building"/>
+  <rect x="530" y="555" width="38" height="25" class="building"/>
+  <rect x="585" y="545" width="55" height="35" class="building"/>
+  <text x="470" y="608" class="label">SÃO LUIZ GONZAGA</text>
+  <path d="M 450 620 L 670 620" class="fence"/>
+
+  <path d="M 170 520 L 390 520 L 420 620 L 170 620 Z" class="zone-column"/>
+  <text x="188" y="544" class="zoneLabel" fill="#1f6574">COLUNA</text>
+  <text x="188" y="562" class="small">retaguarda e carroças</text>
+
+  <path d="M 700 470 L 920 470 L 920 620 L 700 620 Z" class="zone-legalist"/>
+  <text x="716" y="494" class="zoneLabel" fill="#8a2f24">LEGALISTAS</text>
+  <text x="716" y="512" class="small">convergem do leste e do sul</text>
+
+  <circle cx="450" cy="560" r="21" class="objective column"/>
+  <text x="450" y="560" class="objText">1</text>
+  <text x="450" y="584" class="objValue">v1</text>
+  <circle cx="450" cy="390" r="21" class="objective"/>
+  <text x="450" y="390" class="objText">2</text>
+  <text x="450" y="414" class="objValue">v2</text>
+  <circle cx="335" cy="480" r="21" class="objective"/>
+  <text x="335" y="480" class="objText">3</text>
+  <text x="335" y="504" class="objValue">v1</text>
+  <circle cx="300" cy="130" r="21" class="objective"/>
+  <text x="300" y="130" class="objText">4</text>
+  <text x="300" y="154" class="objValue">v3</text>
+
+  <path d="M 400 520 C 410 480, 430 430, 445 412" class="arrowColumn"/>
+  <path d="M 445 370 C 420 330, 380 270, 330 175" class="arrowColumn"/>
+  <path d="M 700 520 C 630 500, 560 470, 500 430" class="arrowLegalist"/>
+  <path d="M 760 600 C 650 570, 550 520, 475 425" class="arrowLegalist"/>
+
+  <text x="456" y="350" class="small">RAMADA · segurar até as carroças passarem</text>
+  <text x="360" y="112" class="small">passagem do Uruguai</text>
+  <text x="350" y="545" class="small">saída da cidade</text>
+
+  <text x="70" y="668" class="note">Tamanho sugerido: médio (400 m) · paleta temperada · 06h30, sol a leste · norte 0° · base grama seca · água em −1,2 m.</text>
+  <text x="70" y="686" class="note">O rio Uruguai é a borda norte do mapa; use balsa ou vau. A cidade não é o objetivo: a rota é.</text>
+</svg>

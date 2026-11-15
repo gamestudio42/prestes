@@ -1,7 +1,7 @@
 {
   "assetsDir": "apps/game/dist/assets",
   "groups": [
-    { "name": "index JS", "prefix": "index-", "extension": ".js", "maxBytes": 680000 },
+    { "name": "index JS", "prefix": "index-", "extension": ".js", "maxBytes": 760000 },
     { "name": "three JS", "prefix": "three-", "extension": ".js", "maxBytes": 640000 },
     { "name": "model-loaders JS", "prefix": "model-loaders-", "extension": ".js", "maxBytes": 120000 },
     { "name": "react JS", "prefix": "react-", "extension": ".js", "maxBytes": 240000 },

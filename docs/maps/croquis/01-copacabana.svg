@@ -1,0 +1,105 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 700" role="img" aria-labelledby="m1Title m1Desc">
+  <title id="m1Title">Croqui do mapa 01: Praia de Copacabana, 1922</title>
+  <desc id="m1Desc">Praia estreita com o mar a leste, o forte e a cidade a oeste, pedras no meio e a última areia ao norte. A coluna recua do portão para as pedras e para a areia final.</desc>
+  <defs>
+    <pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse">
+      <path d="M 50 0 L 0 0 0 50" fill="none" stroke="#c9b58d" stroke-width="0.55"/>
+    </pattern>
+    <marker id="arrowheadColumn" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#1f6574"/>
+    </marker>
+    <marker id="arrowheadLegalist" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#8a2f24"/>
+    </marker>
+    <style>
+      .title { font: 700 24px 'Segoe UI', Arial, sans-serif; fill: #3f321f; }
+      .sub { font: 13px 'Segoe UI', Arial, sans-serif; fill: #6b5a3e; }
+      .frame { fill: #efe3c3; stroke: #5a4628; stroke-width: 2; }
+      .water { fill: #8bb7c9; stroke: #4d7d90; stroke-width: 1.5; }
+      .sand { fill: #e3d19d; stroke: #b9a36b; stroke-width: 1; }
+      .urban { fill: #d9cdb2; stroke: #8f7f60; stroke-width: 1; }
+      .road { fill: none; stroke: #8b6a45; stroke-width: 6; stroke-linecap: round; }
+      .wall { fill: none; stroke: #7a6a54; stroke-width: 4; }
+      .building { fill: #b98f63; stroke: #6d4d2f; stroke-width: 1.5; }
+      .stone { fill: #9b9486; stroke: #6d675c; stroke-width: 1; }
+      .zone-column { fill: #2f7f8f; fill-opacity: .18; stroke: #1f6574; stroke-width: 2; stroke-dasharray: 7 4; }
+      .zone-legalist { fill: #a33f32; fill-opacity: .16; stroke: #8a2f24; stroke-width: 2; stroke-dasharray: 7 4; }
+      .objective { fill: #fff8e8; stroke: #3f321f; stroke-width: 2; }
+      .objective.column { fill: #d7eef1; stroke: #1f6574; }
+      .objText { font: 700 15px 'Segoe UI', Arial, sans-serif; fill: #2b2418; text-anchor: middle; dominant-baseline: middle; }
+      .objValue { font: 700 10px 'Segoe UI', Arial, sans-serif; fill: #5a4628; text-anchor: middle; }
+      .label { font: 700 14px 'Segoe UI', Arial, sans-serif; fill: #3c311f; }
+      .small { font: 12px 'Segoe UI', Arial, sans-serif; fill: #5f5038; }
+      .zoneLabel { font: 700 12px 'Segoe UI', Arial, sans-serif; letter-spacing: .08em; }
+      .arrowColumn { fill: none; stroke: #1f6574; stroke-width: 3.5; marker-end: url(#arrowheadColumn); }
+      .arrowLegalist { fill: none; stroke: #8a2f24; stroke-width: 3.5; marker-end: url(#arrowheadLegalist); }
+      .note { font: 11px 'Segoe UI', Arial, sans-serif; fill: #6b5a3e; }
+    </style>
+  </defs>
+
+  <rect width="1000" height="700" fill="#f7f0df"/>
+  <text x="40" y="40" class="title">01 · Praia de Copacabana, 1922</text>
+  <text x="40" y="62" class="sub">Retirada combatente do portão do forte até a última areia. O mar fecha o flanco direito; a cidade pressiona pela esquerda.</text>
+
+  <rect x="50" y="86" width="900" height="560" class="frame"/>
+  <rect x="50" y="86" width="900" height="560" fill="url(#grid)"/>
+
+  <path d="M 50 86 L 620 86 L 620 646 L 50 646 Z" class="urban"/>
+  <path d="M 620 86 C 650 160, 610 230, 645 300 C 675 370, 625 440, 650 510 C 670 570, 650 620, 640 646 L 950 646 L 950 86 Z" class="sand"/>
+  <path d="M 782 86 C 760 160, 800 230, 770 300 C 744 370, 790 440, 764 510 C 744 570, 770 620, 780 646 L 950 646 L 950 86 Z" class="water"/>
+
+  <path d="M 120 520 L 210 520 L 210 585 L 120 585 Z" class="building"/>
+  <path d="M 112 520 L 165 495 L 218 520" fill="none" stroke="#6d4d2f" stroke-width="2"/>
+  <text x="128" y="608" class="small">FORTE</text>
+  <circle cx="210" cy="552" r="5" fill="#6d4d2f"/>
+  <text x="222" y="556" class="small">portão</text>
+
+  <path d="M 558 120 L 558 300 M 558 330 L 558 470 M 558 500 L 558 620" class="wall"/>
+  <text x="566" y="250" class="small">muro da praia</text>
+
+  <path d="M 600 110 C 640 180, 600 260, 630 340 C 660 420, 610 500, 640 580 C 660 620, 650 636, 646 646" fill="none" stroke="#c9b47d" stroke-width="3" opacity=".8"/>
+  <text x="668" y="610" class="small" transform="rotate(-72 668 610)">PRAIA · areia funda</text>
+  <text x="820" y="370" class="label" transform="rotate(-72 820 370)">MAR</text>
+
+  <path d="M 280 350 C 310 330, 340 340, 350 365 C 360 390, 330 405, 305 395 C 280 385, 265 370, 280 350 Z" class="stone"/>
+  <circle cx="300" cy="330" r="18" class="stone"/>
+  <circle cx="335" cy="320" r="22" class="stone"/>
+  <circle cx="365" cy="345" r="15" class="stone"/>
+  <text x="292" y="300" class="label">PEDRAS</text>
+  <text x="292" y="318" class="small">única cobertura real</text>
+
+  <path d="M 150 620 C 220 590, 300 590, 360 610" class="road"/>
+
+  <path d="M 70 500 L 230 500 L 250 620 L 70 620 Z" class="zone-legalist"/>
+  <text x="86" y="524" class="zoneLabel" fill="#8a2f24">LEGALISTAS</text>
+  <text x="86" y="542" class="small">cidade e forte</text>
+
+  <path d="M 250 505 L 470 505 L 470 620 L 250 620 Z" class="zone-column"/>
+  <text x="266" y="529" class="zoneLabel" fill="#1f6574">COLUNA</text>
+  <text x="266" y="547" class="small">os 18, em quatro grupos</text>
+
+  <circle cx="330" cy="560" r="21" class="objective column"/>
+  <text x="330" y="560" class="objText">1</text>
+  <text x="330" y="584" class="objValue">v1</text>
+  <circle cx="590" cy="450" r="21" class="objective"/>
+  <text x="590" y="450" class="objText">2</text>
+  <text x="590" y="474" class="objValue">v1</text>
+  <circle cx="360" cy="350" r="21" class="objective"/>
+  <text x="360" y="350" class="objText">3</text>
+  <text x="360" y="374" class="objValue">v2</text>
+  <circle cx="680" cy="160" r="21" class="objective"/>
+  <text x="680" y="160" class="objText">4</text>
+  <text x="680" y="184" class="objValue">v3</text>
+
+  <path d="M 220 540 C 300 520, 380 480, 450 450" class="arrowLegalist"/>
+  <path d="M 260 470 C 330 430, 380 390, 410 365" class="arrowLegalist"/>
+  <path d="M 330 520 C 390 480, 500 450, 560 450" class="arrowColumn"/>
+  <path d="M 380 330 C 450 300, 560 230, 655 180" class="arrowColumn"/>
+
+  <text x="350" y="490" class="small">1 · segurar o portão</text>
+  <text x="450" y="430" class="small">2 · cair para as pedras</text>
+  <text x="470" y="250" class="small">3 · última areia</text>
+
+  <text x="70" y="668" class="note">Tamanho sugerido: médio (400 m) · paleta urbana/temperada · 15h, sol a oeste · norte 0° · sem água doce jogável além do mar.</text>
+  <text x="70" y="686" class="note">Objetivo: medir a demora, não vencer. Use 3 seções da coluna (o jogo atual) como os grupos da retirada.</text>
+</svg>

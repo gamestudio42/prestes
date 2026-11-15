@@ -1,0 +1,111 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 700" role="img" aria-labelledby="m3Title m3Desc">
+  <title id="m3Title">Croqui do mapa 03: A Divisão</title>
+  <desc id="m3Desc">O rio Paraná corta o mapa; Porto Mendes fica na margem próxima e Puerto Adela na margem oposta. A divisão cruza por balsa e vau, com os legalistas pressionando a margem de trás.</desc>
+  <defs>
+    <pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse">
+      <path d="M 50 0 L 0 0 0 50" fill="none" stroke="#c9b58d" stroke-width="0.55"/>
+    </pattern>
+    <marker id="arrowheadColumn" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#1f6574"/>
+    </marker>
+    <marker id="arrowheadLegalist" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#8a2f24"/>
+    </marker>
+    <style>
+      .title { font: 700 24px 'Segoe UI', Arial, sans-serif; fill: #3f321f; }
+      .sub { font: 13px 'Segoe UI', Arial, sans-serif; fill: #6b5a3e; }
+      .frame { fill: #efe3c3; stroke: #5a4628; stroke-width: 2; }
+      .water { fill: #8bb7c9; stroke: #4d7d90; stroke-width: 1.5; }
+      .ford { fill: #c9d9c6; stroke: #5b8a78; stroke-width: 1.2; stroke-dasharray: 4 3; }
+      .woods { fill: #8faa6a; stroke: #5f7b43; stroke-width: 1.2; }
+      .field { fill: #cfc27a; stroke: #9c8c48; stroke-width: 1; opacity: .8; }
+      .road { fill: none; stroke: #8b6a45; stroke-width: 7; stroke-linecap: round; stroke-linejoin: round; }
+      .trail { fill: none; stroke: #9c7d53; stroke-width: 4; stroke-dasharray: 8 5; stroke-linecap: round; }
+      .building { fill: #b98f63; stroke: #6d4d2f; stroke-width: 1.5; }
+      .bridge { fill: #a98255; stroke: #5f4428; stroke-width: 1.5; }
+      .zone-column { fill: #2f7f8f; fill-opacity: .18; stroke: #1f6574; stroke-width: 2; stroke-dasharray: 7 4; }
+      .zone-legalist { fill: #a33f32; fill-opacity: .16; stroke: #8a2f24; stroke-width: 2; stroke-dasharray: 7 4; }
+      .objective { fill: #fff8e8; stroke: #3f321f; stroke-width: 2; }
+      .objective.column { fill: #d7eef1; stroke: #1f6574; }
+      .objText { font: 700 15px 'Segoe UI', Arial, sans-serif; fill: #2b2418; text-anchor: middle; dominant-baseline: middle; }
+      .objValue { font: 700 10px 'Segoe UI', Arial, sans-serif; fill: #5a4628; text-anchor: middle; }
+      .label { font: 700 14px 'Segoe UI', Arial, sans-serif; fill: #3c311f; }
+      .small { font: 12px 'Segoe UI', Arial, sans-serif; fill: #5f5038; }
+      .zoneLabel { font: 700 12px 'Segoe UI', Arial, sans-serif; letter-spacing: .08em; }
+      .arrowColumn { fill: none; stroke: #1f6574; stroke-width: 3.5; marker-end: url(#arrowheadColumn); }
+      .arrowLegalist { fill: none; stroke: #8a2f24; stroke-width: 3.5; marker-end: url(#arrowheadLegalist); }
+      .note { font: 11px 'Segoe UI', Arial, sans-serif; fill: #6b5a3e; }
+    </style>
+  </defs>
+
+  <rect width="1000" height="700" fill="#f7f0df"/>
+  <text x="40" y="40" class="title">03 · A Divisão</text>
+  <text x="40" y="62" class="sub">Duas brigadas, um comando, uma travessia. O Paraná é o portão; a margem oposta é o objetivo.</text>
+
+  <rect x="50" y="86" width="900" height="560" class="frame"/>
+  <rect x="50" y="86" width="900" height="560" fill="url(#grid)"/>
+
+  <path d="M 50 285 C 180 265, 300 310, 430 292 C 560 274, 690 312, 820 290 C 880 280, 920 288, 950 296 L 950 405 C 900 396, 850 410, 790 400 C 660 380, 540 418, 420 400 C 300 382, 190 416, 50 396 Z" class="water"/>
+  <text x="440" y="345" class="label" fill="#2f5f70">RIO PARANÁ</text>
+
+  <path d="M 50 190 L 300 190 C 330 230, 300 270, 260 290 L 50 290 Z" class="woods"/>
+  <path d="M 680 410 L 950 410 L 950 520 C 850 540, 760 500, 680 520 Z" class="woods"/>
+
+  <path d="M 50 510 L 360 510 C 370 550, 340 580, 300 620 L 50 620 Z" class="field"/>
+  <path d="M 720 170 L 950 170 L 950 260 C 880 280, 800 250, 720 260 Z" class="field"/>
+
+  <path d="M 245 620 C 260 560, 270 510, 300 470 C 330 430, 330 400, 340 385" class="road"/>
+  <path d="M 620 385 C 630 340, 640 300, 660 260 C 680 220, 720 200, 770 180" class="road"/>
+
+  <rect x="210" y="520" width="55" height="38" class="building"/>
+  <rect x="275" y="530" width="38" height="30" class="building"/>
+  <text x="190" y="590" class="label">PORTO MENDES</text>
+
+  <rect x="650" y="170" width="55" height="38" class="building"/>
+  <rect x="715" y="180" width="42" height="30" class="building"/>
+  <text x="630" y="150" class="label">PUERTO ADELA</text>
+
+  <path d="M 560 335 L 640 335 M 575 315 L 625 355" stroke="#6b4a2d" stroke-width="3"/>
+  <rect x="582" y="318" width="36" height="34" class="bridge"/>
+  <text x="556" y="306" class="small">balsa</text>
+
+  <path d="M 330 300 C 345 320, 355 350, 350 375" class="ford"/>
+  <text x="300" y="420" class="small">vau</text>
+
+  <path d="M 110 520 L 350 520 L 350 620 L 110 620 Z" class="zone-column"/>
+  <text x="126" y="544" class="zoneLabel" fill="#1f6574">DIVISÃO</text>
+  <text x="126" y="562" class="small">as duas brigadas</text>
+
+  <path d="M 650 500 L 910 500 L 910 620 L 650 620 Z" class="zone-legalist"/>
+  <text x="666" y="524" class="zoneLabel" fill="#8a2f24">LEGALISTAS</text>
+  <text x="666" y="542" class="small">perseguição pela estrada</text>
+
+  <circle cx="270" cy="550" r="21" class="objective column"/>
+  <text x="270" y="550" class="objText">1</text>
+  <text x="270" y="574" class="objValue">v1</text>
+  <circle cx="600" cy="345" r="21" class="objective"/>
+  <text x="600" y="345" class="objText">2</text>
+  <text x="600" y="369" class="objValue">v2</text>
+  <circle cx="345" cy="335" r="21" class="objective"/>
+  <text x="345" y="335" class="objText">3</text>
+  <text x="345" y="359" class="objValue">v1</text>
+  <circle cx="660" cy="205" r="21" class="objective"/>
+  <text x="660" y="205" class="objText">4</text>
+  <text x="660" y="229" class="objValue">v3</text>
+  <circle cx="850" cy="230" r="21" class="objective"/>
+  <text x="850" y="230" class="objText">5</text>
+  <text x="850" y="254" class="objValue">v1</text>
+
+  <path d="M 300 520 C 330 470, 340 410, 350 375" class="arrowColumn"/>
+  <path d="M 355 320 C 430 330, 520 335, 570 340" class="arrowColumn"/>
+  <path d="M 590 320 C 600 285, 620 250, 645 225" class="arrowColumn"/>
+  <path d="M 680 500 C 660 460, 640 420, 620 390" class="arrowLegalist"/>
+  <path d="M 780 560 C 720 510, 680 450, 650 400" class="arrowLegalist"/>
+
+  <text x="380" y="455" class="small">1 · margem de Porto Mendes</text>
+  <text x="610" y="290" class="small">2 · balsa</text>
+  <text x="660" y="190" class="small">3 · cabeça de ponte</text>
+
+  <text x="70" y="668" class="note">Tamanho sugerido: grande (640 m) · paleta temperada · 07h, sol a leste · norte 0° · rio largo com balsa e vau · base grama seca.</text>
+  <text x="70" y="686" class="note">O vau e a balsa precisam ser caminhos válidos para os dois lados; a ponte não existia — use balsa, não ponte.</text>
+</svg>

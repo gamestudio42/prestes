@@ -1,0 +1,220 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 700" role="img" aria-labelledby="legendaTitle legendaDesc">
+  <title id="legendaTitle">Legenda dos croquis de mapas da campanha</title>
+  <desc id="legendaDesc">Símbolos usados nos croquis: desdobramento, objetivos, estradas, água, trincheiras, vegetação, construções e setas de movimento.</desc>
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#3b3b3b"/>
+    </marker>
+    <marker id="arrowheadColumn" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#1f6574"/>
+    </marker>
+    <marker id="arrowheadLegalist" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#8a2f24"/>
+    </marker>
+    <style>
+      .title { font: 700 26px 'Segoe UI', Arial, sans-serif; fill: #3f321f; }
+      .sub { font: 13px 'Segoe UI', Arial, sans-serif; fill: #6b5a3e; }
+      .cell { fill: #fbf5e7; stroke: #d8c7a5; stroke-width: 1; }
+      .label { font: 700 14px 'Segoe UI', Arial, sans-serif; fill: #3c311f; }
+      .small { font: 11px 'Segoe UI', Arial, sans-serif; fill: #6b5a3e; }
+      .zone-column { fill: #2f7f8f; fill-opacity: .18; stroke: #1f6574; stroke-width: 2; stroke-dasharray: 7 4; }
+      .zone-legalist { fill: #a33f32; fill-opacity: .16; stroke: #8a2f24; stroke-width: 2; stroke-dasharray: 7 4; }
+      .objective { fill: #fff8e8; stroke: #3f321f; stroke-width: 2; }
+      .objective-owned { fill: #d7eef1; stroke: #1f6574; }
+      .objective-enemy { fill: #f3d9d4; stroke: #8a2f24; }
+      .objText { font: 700 13px 'Segoe UI', Arial, sans-serif; fill: #2b2418; text-anchor: middle; dominant-baseline: middle; }
+      .road { fill: none; stroke: #8b6a45; stroke-width: 7; stroke-linecap: round; }
+      .trail { fill: none; stroke: #9c7d53; stroke-width: 4; stroke-dasharray: 8 5; stroke-linecap: round; }
+      .water { fill: #8bb7c9; stroke: #4d7d90; stroke-width: 1.5; }
+      .ford { fill: #c9d9c6; stroke: #5b8a78; stroke-width: 1.2; stroke-dasharray: 4 3; }
+      .bridge { fill: #a98255; stroke: #5f4428; stroke-width: 1.5; }
+      .trench { fill: none; stroke: #6c4e30; stroke-width: 6; stroke-dasharray: 10 4; }
+      .trench2 { fill: none; stroke: #6c4e30; stroke-width: 3; stroke-dasharray: 5 4; }
+      .wall { fill: none; stroke: #7a6a54; stroke-width: 4; }
+      .fence { fill: none; stroke: #8a7454; stroke-width: 2; stroke-dasharray: 3 3; }
+      .woods { fill: #8faa6a; stroke: #5f7b43; stroke-width: 1.2; }
+      .scrub { fill: #b7b47a; stroke: #7d7a48; stroke-width: 1; }
+      .building { fill: #b98f63; stroke: #6d4d2f; stroke-width: 1.5; }
+      .stone { fill: #9b9486; stroke: #6d675c; stroke-width: 1; }
+      .ridge { fill: none; stroke: #9a744c; stroke-width: 1.4; }
+      .arrow { fill: none; stroke: #3b3b3b; stroke-width: 3; marker-end: url(#arrowhead); }
+      .arrowColumn { fill: none; stroke: #1f6574; stroke-width: 3.5; marker-end: url(#arrowheadColumn); }
+      .arrowLegalist { fill: none; stroke: #8a2f24; stroke-width: 3.5; marker-end: url(#arrowheadLegalist); }
+      .note { font: 11px 'Segoe UI', Arial, sans-serif; fill: #6b5a3e; }
+    </style>
+  </defs>
+
+  <rect width="1000" height="700" fill="#f7f0df"/>
+  <text x="40" y="42" class="title">Legenda dos croquis</text>
+  <text x="40" y="64" class="sub">Os mesmos símbolos aparecem nas oito fichas. O croqui é esquemático: não está em escala.</text>
+
+  <g transform="translate(40 90)">
+    <rect class="cell" width="220" height="92"/>
+    <rect x="14" y="18" width="78" height="56" class="zone-column"/>
+    <text x="104" y="38" class="label">Desdobramento</text>
+    <text x="104" y="56" class="small">azul: a coluna</text>
+    <text x="104" y="72" class="small">vermelho: legalistas</text>
+  </g>
+  <g transform="translate(270 90)">
+    <rect class="cell" width="220" height="92"/>
+    <rect x="14" y="18" width="78" height="56" class="zone-legalist"/>
+    <text x="104" y="38" class="label">Área de desdobramento</text>
+    <text x="104" y="56" class="small">3 seções por lado no editor</text>
+    <text x="104" y="72" class="small">mínimo de 160 m entre centros</text>
+  </g>
+  <g transform="translate(500 90)">
+    <rect class="cell" width="220" height="92"/>
+    <circle cx="52" cy="46" r="22" class="objective"/>
+    <text x="52" y="47" class="objText">2</text>
+    <text x="104" y="38" class="label">Objetivo</text>
+    <text x="104" y="56" class="small">número = ordem</text>
+    <text x="104" y="72" class="small">valor 1 a 3 no painel</text>
+  </g>
+  <g transform="translate(730 90)">
+    <rect class="cell" width="220" height="92"/>
+    <circle cx="34" cy="46" r="22" class="objective-owned"/>
+    <text x="34" y="47" class="objText">1</text>
+    <circle cx="88" cy="46" r="22" class="objective-enemy"/>
+    <text x="88" y="47" class="objText">3</text>
+    <text x="122" y="38" class="label">Dono inicial</text>
+    <text x="122" y="56" class="small">azul: coluna</text>
+    <text x="122" y="72" class="small">vermelho: legalistas</text>
+  </g>
+
+  <g transform="translate(40 192)">
+    <rect class="cell" width="220" height="76"/>
+    <path d="M18 52 C 50 20, 90 68, 130 34" class="road"/>
+    <text x="146" y="34" class="label">Estrada</text>
+    <text x="146" y="52" class="small">terra, pedra ou calçamento</text>
+  </g>
+  <g transform="translate(270 192)">
+    <rect class="cell" width="220" height="76"/>
+    <path d="M18 52 C 50 20, 90 68, 130 34" class="trail"/>
+    <text x="146" y="34" class="label">Trilha</text>
+    <text x="146" y="52" class="small">picada, trilha de gado</text>
+  </g>
+  <g transform="translate(500 192)">
+    <rect class="cell" width="220" height="76"/>
+    <path d="M14 52 C 50 26, 92 70, 136 38" fill="none" stroke="#8bb7c9" stroke-width="22"/>
+    <text x="152" y="34" class="label">Água funda</text>
+    <text x="152" y="52" class="small">não atravessa a pé</text>
+  </g>
+  <g transform="translate(730 192)">
+    <rect class="cell" width="220" height="76"/>
+    <path d="M14 52 C 50 26, 92 70, 136 38" fill="none" stroke="#8bb7c9" stroke-width="22"/>
+    <path d="M28 52 C 56 36, 88 62, 122 44" class="ford"/>
+    <text x="152" y="34" class="label">Vau</text>
+    <text x="152" y="52" class="small">água rasa: passagem lenta</text>
+  </g>
+
+  <g transform="translate(40 278)">
+    <rect class="cell" width="220" height="76"/>
+    <path d="M14 52 C 50 26, 92 70, 136 38" fill="none" stroke="#8bb7c9" stroke-width="22"/>
+    <rect x="58" y="26" width="42" height="42" class="bridge"/>
+    <text x="152" y="34" class="label">Ponte</text>
+    <text x="152" y="52" class="small">passagem seca</text>
+  </g>
+  <g transform="translate(270 278)">
+    <rect class="cell" width="220" height="76"/>
+    <path d="M14 52 C 50 26, 92 70, 136 38" fill="none" stroke="#8bb7c9" stroke-width="22"/>
+    <path d="M42 48 L 96 42 M 56 38 L 84 56" stroke="#6b4a2d" stroke-width="2"/>
+    <text x="152" y="34" class="label">Balsa</text>
+    <text x="152" y="52" class="small">duas margens ligadas</text>
+  </g>
+  <g transform="translate(500 278)">
+    <rect class="cell" width="220" height="76"/>
+    <path d="M16 52 L 132 44" class="trench"/>
+    <text x="150" y="34" class="label">Trincheira de tiro</text>
+    <text x="150" y="52" class="small">degrau e parapeito</text>
+  </g>
+  <g transform="translate(730 278)">
+    <rect class="cell" width="220" height="76"/>
+    <path d="M16 52 L 132 44" class="trench2"/>
+    <text x="150" y="34" class="label">Comunicação</text>
+    <text x="150" y="52" class="small">abriga dos dois lados</text>
+  </g>
+
+  <g transform="translate(40 364)">
+    <rect class="cell" width="220" height="76"/>
+    <path d="M18 52 L 132 44" class="wall"/>
+    <text x="148" y="34" class="label">Muro</text>
+    <text x="148" y="52" class="small">taipa, pedra ou tijolo</text>
+  </g>
+  <g transform="translate(270 364)">
+    <rect class="cell" width="220" height="76"/>
+    <path d="M18 52 L 132 44" class="fence"/>
+    <text x="148" y="34" class="label">Cerca</text>
+    <text x="148" y="52" class="small">arame, tábua ou ripado</text>
+  </g>
+  <g transform="translate(500 364)">
+    <rect class="cell" width="220" height="76"/>
+    <path d="M18 52 C 34 20, 62 24, 70 46 C 86 18, 116 24, 128 46 C 128 60, 30 66, 18 52 Z" class="woods"/>
+    <text x="150" y="34" class="label">Mata</text>
+    <text x="150" y="52" class="small">esconde e bloqueia visão</text>
+  </g>
+  <g transform="translate(730 364)">
+    <rect class="cell" width="220" height="76"/>
+    <path d="M20 58 L 30 38 M 30 58 L 40 42 M 44 58 L 54 38 M 58 58 L 68 42 M 72 58 L 82 38" stroke="#6f7a3f" stroke-width="2"/>
+    <text x="104" y="34" class="label">Mato e capim</text>
+    <text x="104" y="52" class="small">oculta; não é cobertura</text>
+  </g>
+
+  <g transform="translate(40 450)">
+    <rect class="cell" width="220" height="76"/>
+    <rect x="28" y="26" width="70" height="38" class="building"/>
+    <path d="M24 26 L 63 12 L 102 26" fill="none" stroke="#6d4d2f" stroke-width="2"/>
+    <text x="120" y="34" class="label">Construção</text>
+    <text x="120" y="52" class="small">guarnição e cobertura</text>
+  </g>
+  <g transform="translate(270 450)">
+    <rect class="cell" width="220" height="76"/>
+    <circle cx="36" cy="46" r="14" class="stone"/>
+    <circle cx="70" cy="52" r="10" class="stone"/>
+    <circle cx="98" cy="42" r="17" class="stone"/>
+    <text x="126" y="34" class="label">Pedras</text>
+    <text x="126" y="52" class="small">cobertura; algumas bloqueiam</text>
+  </g>
+  <g transform="translate(500 450)">
+    <rect class="cell" width="220" height="76"/>
+    <path d="M12 58 C 40 20, 70 68, 104 30 C 120 14, 146 26, 160 44" class="ridge"/>
+    <path d="M12 68 C 42 34, 74 76, 106 42 C 124 28, 148 38, 160 54" class="ridge"/>
+    <text x="174" y="34" class="label">Curva de nível</text>
+    <text x="174" y="52" class="small">relevo a cada 1 m</text>
+  </g>
+  <g transform="translate(730 450)">
+    <rect class="cell" width="220" height="76"/>
+    <path d="M20 58 C 48 58, 70 36, 104 30" class="arrowColumn"/>
+    <path d="M20 48 C 48 48, 70 26, 104 20" class="arrowLegalist"/>
+    <text x="122" y="34" class="label">Setas</text>
+    <text x="122" y="52" class="small">azul: coluna; vermelho: inimigo</text>
+  </g>
+
+  <g transform="translate(40 536)">
+    <rect class="cell" width="220" height="76"/>
+    <circle cx="46" cy="38" r="20" fill="#fbf5e7" stroke="#3f321f" stroke-width="1.5"/>
+    <path d="M46 58 L 46 24 M 46 24 L 62 31 L 46 38" fill="none" stroke="#3f321f" stroke-width="2"/>
+    <text x="78" y="34" class="label">Norte</text>
+    <text x="78" y="52" class="small">use a bússola do editor</text>
+  </g>
+  <g transform="translate(270 536)">
+    <rect class="cell" width="220" height="76"/>
+    <path d="M20 46 L 130 46 M 20 38 L 20 54 M 75 40 L 75 52 M 130 38 L 130 54" stroke="#3f321f" stroke-width="2"/>
+    <text x="146" y="34" class="label">Escala</text>
+    <text x="146" y="52" class="small">0 · 50 · 100 m</text>
+  </g>
+  <g transform="translate(500 536)">
+    <rect class="cell" width="220" height="76"/>
+    <text x="16" y="34" class="label">Ficha técnica</text>
+    <text x="16" y="52" class="small">tamanho, paleta, luz, norte</text>
+    <text x="16" y="68" class="small">e nota de fonte no texto</text>
+  </g>
+  <g transform="translate(730 536)">
+    <rect class="cell" width="220" height="76"/>
+    <text x="16" y="34" class="label">Aviso</text>
+    <text x="16" y="52" class="small">croqui de trabalho: não é</text>
+    <text x="16" y="68" class="small">planta histórica nem medida</text>
+  </g>
+
+  <text x="40" y="660" class="note">Baseado no editor de mapas atual: 240, 400 e 640 m; 3 seções por lado; objetivos de 12 a 30 m de raio; cobertura a cada 60 m no eixo de ataque.</text>
+  <text x="40" y="680" class="note">Fontes e limites: docs/map-editor.md, openspec/specs/battle-maps/spec.md e openspec/specs/map-objectives/spec.md.</text>
+</svg>

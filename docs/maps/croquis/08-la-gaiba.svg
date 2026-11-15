@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 700" role="img" aria-labelledby="m8Title m8Desc">
+  <title id="m8Title">Croqui do mapa 08: La Gaiba</title>
+  <desc id="m8Desc">Clareira seca no Chaco boliviano, com o monumento de granito, uma trilha, mata baixa e a lagoa. Não é uma batalha: é a cena de memória dos exilados.</desc>
+  <defs>
+    <pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse">
+      <path d="M 50 0 L 0 0 0 50" fill="none" stroke="#c9b58d" stroke-width="0.55"/>
+    </pattern>
+    <style>
+      .title { font: 700 24px 'Segoe UI', Arial, sans-serif; fill: #3f321f; }
+      .sub { font: 13px 'Segoe UI', Arial, sans-serif; fill: #6b5a3e; }
+      .frame { fill: #e6d7b3; stroke: #5a4628; stroke-width: 2; }
+      .scrub { fill: #b7b47a; stroke: #7d7a48; stroke-width: 1; }
+      .scrub2 { fill: #c9c08a; stroke: #8f8755; stroke-width: 1; }
+      .water { fill: #8bb7c9; stroke: #4d7d90; stroke-width: 1.5; }
+      .trail { fill: none; stroke: #9c7d53; stroke-width: 5; stroke-dasharray: 8 5; stroke-linecap: round; }
+      .stone { fill: #9b9486; stroke: #6d675c; stroke-width: 1.5; }
+      .monument { fill: #aaa396; stroke: #5e574c; stroke-width: 2; }
+      .zone-column { fill: #2f7f8f; fill-opacity: .18; stroke: #1f6574; stroke-width: 2; stroke-dasharray: 7 4; }
+      .zone-empty { fill: #8a2f24; fill-opacity: .08; stroke: #8a2f24; stroke-width: 2; stroke-dasharray: 3 5; }
+      .label { font: 700 14px 'Segoe UI', Arial, sans-serif; fill: #3c311f; }
+      .small { font: 12px 'Segoe UI', Arial, sans-serif; fill: #5f5038; }
+      .zoneLabel { font: 700 12px 'Segoe UI', Arial, sans-serif; letter-spacing: .08em; }
+      .note { font: 11px 'Segoe UI', Arial, sans-serif; fill: #6b5a3e; }
+      .arrival { fill: none; stroke: #1f6574; stroke-width: 3.5; stroke-dasharray: 8 6; }
+    </style>
+  </defs>
+
+  <rect width="1000" height="700" fill="#f7f0df"/>
+  <text x="40" y="40" class="title">08 · La Gaiba</text>
+  <text x="40" y="62" class="sub">Epílogo sem combate: a clareira, o monumento e os exilados. Não coloque inimigo nem objetivos de captura.</text>
+
+  <rect x="50" y="86" width="900" height="560" class="frame"/>
+  <rect x="50" y="86" width="900" height="560" fill="url(#grid)"/>
+
+  <path d="M 50 150 C 130 130, 200 170, 270 160 C 330 152, 360 200, 330 250 C 300 300, 230 310, 190 360 C 150 410, 170 480, 110 510 L 50 510 Z" class="scrub"/>
+  <path d="M 600 120 L 950 120 L 950 330 C 880 350, 800 320, 740 350 C 680 380, 620 360, 600 320 Z" class="scrub2"/>
+  <path d="M 520 430 C 600 410, 680 430, 760 410 C 840 390, 900 410, 950 430 L 950 620 L 520 620 C 500 560, 540 500, 520 430 Z" class="scrub"/>
+
+  <path d="M 740 240 C 760 300, 730 360, 760 430 C 785 490, 755 560, 780 610 C 800 635, 790 642, 800 646 L 950 646 L 950 240 Z" class="water"/>
+  <text x="850" y="360" class="label" fill="#2f5f70" transform="rotate(-72 850 360)">LAGOA LA GAIBA</text>
+
+  <path d="M 80 560 C 160 540, 240 500, 320 450 C 400 400, 470 370, 540 350" class="trail"/>
+  <text x="340" y="560" class="small">trilha de chegada</text>
+
+  <rect x="500" y="300" width="62" height="72" class="monument"/>
+  <path d="M 506 315 L 556 315 M 506 330 L 550 330 M 506 345 L 556 345" stroke="#5e574c" stroke-width="1.5"/>
+  <text x="500" y="288" class="label">MONUMENTO</text>
+  <text x="500" y="392" class="small">“Glória aos Bandeirantes da Liberdade, 1924–1927”</text>
+
+  <circle cx="530" cy="430" r="5" fill="#6b5a3e"/>
+  <circle cx="470" cy="410" r="4" fill="#6b5a3e"/>
+  <circle cx="560" cy="400" r="4" fill="#6b5a3e"/>
+  <text x="410" y="460" class="small">clareira · os exilados</text>
+
+  <path d="M 110 520 L 320 520 L 320 620 L 110 620 Z" class="zone-column"/>
+  <text x="126" y="544" class="zoneLabel" fill="#1f6574">EXILADOS</text>
+  <text x="126" y="562" class="small">Prestes e a coluna</text>
+
+  <path d="M 690 110 L 910 110 L 910 220 L 690 220 Z" class="zone-empty"/>
+  <text x="706" y="134" class="zoneLabel" fill="#8a2f24">SEM INIMIGO</text>
+  <text x="706" y="152" class="small">não use esta área</text>
+
+  <path d="M 280 520 C 360 470, 430 420, 490 380" class="arrival"/>
+
+
+  <text x="70" y="668" class="note">Tamanho sugerido: pequeno (240 m) · paleta cerrado/caatinga · 16h30, sol a oeste · norte 0° · base grama seca · sem objetivos de captura.</text>
+  <text x="70" y="686" class="note">O jogo atual não tem epílogo não-combatente; este croqui é uma cena de referência, não um mapa de escaramuça. Não invente um inimigo simbólico.</text>
+</svg>

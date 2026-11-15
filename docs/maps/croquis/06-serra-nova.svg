@@ -1,0 +1,109 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 700" role="img" aria-labelledby="m6Title m6Desc">
+  <title id="m6Title">Croqui do mapa 06: Serra Nova</title>
+  <desc id="m6Desc">Serras, estradas e cerrado no norte de Minas. A retaguarda segura a serra, cede terreno e cobre a virada da coluna para Taiobeiras; os jagunços e as tropas federais vêm do sul e do leste.</desc>
+  <defs>
+    <pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse">
+      <path d="M 50 0 L 0 0 0 50" fill="none" stroke="#c9b58d" stroke-width="0.55"/>
+    </pattern>
+    <marker id="arrowheadColumn" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#1f6574"/>
+    </marker>
+    <marker id="arrowheadLegalist" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#8a2f24"/>
+    </marker>
+    <marker id="arrowheadLoop" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#6b5a3e"/>
+    </marker>
+    <style>
+      .title { font: 700 24px 'Segoe UI', Arial, sans-serif; fill: #3f321f; }
+      .sub { font: 13px 'Segoe UI', Arial, sans-serif; fill: #6b5a3e; }
+      .frame { fill: #efe3c3; stroke: #5a4628; stroke-width: 2; }
+      .woods { fill: #8faa6a; stroke: #5f7b43; stroke-width: 1.2; }
+      .scrub { fill: #b7b47a; stroke: #7d7a48; stroke-width: 1; }
+      .field { fill: #cfc27a; stroke: #9c8c48; stroke-width: 1; opacity: .7; }
+      .ridge { fill: none; stroke: #9a744c; stroke-width: 1.4; }
+      .road { fill: none; stroke: #8b6a45; stroke-width: 7; stroke-linecap: round; stroke-linejoin: round; }
+      .trail { fill: none; stroke: #9c7d53; stroke-width: 4; stroke-dasharray: 8 5; stroke-linecap: round; }
+      .stone { fill: #9b9486; stroke: #6d675c; stroke-width: 1; }
+      .building { fill: #b98f63; stroke: #6d4d2f; stroke-width: 1.5; }
+      .zone-column { fill: #2f7f8f; fill-opacity: .18; stroke: #1f6574; stroke-width: 2; stroke-dasharray: 7 4; }
+      .zone-legalist { fill: #a33f32; fill-opacity: .16; stroke: #8a2f24; stroke-width: 2; stroke-dasharray: 7 4; }
+      .objective { fill: #fff8e8; stroke: #3f321f; stroke-width: 2; }
+      .objective.column { fill: #d7eef1; stroke: #1f6574; }
+      .objText { font: 700 15px 'Segoe UI', Arial, sans-serif; fill: #2b2418; text-anchor: middle; dominant-baseline: middle; }
+      .objValue { font: 700 10px 'Segoe UI', Arial, sans-serif; fill: #5a4628; text-anchor: middle; }
+      .label { font: 700 14px 'Segoe UI', Arial, sans-serif; fill: #3c311f; }
+      .small { font: 12px 'Segoe UI', Arial, sans-serif; fill: #5f5038; }
+      .zoneLabel { font: 700 12px 'Segoe UI', Arial, sans-serif; letter-spacing: .08em; }
+      .arrowColumn { fill: none; stroke: #1f6574; stroke-width: 3.5; marker-end: url(#arrowheadColumn); }
+      .arrowLegalist { fill: none; stroke: #8a2f24; stroke-width: 3.5; marker-end: url(#arrowheadLegalist); }
+      .arrowLoop { fill: none; stroke: #6b5a3e; stroke-width: 2.5; stroke-dasharray: 8 6; marker-end: url(#arrowheadLoop); }
+      .note { font: 11px 'Segoe UI', Arial, sans-serif; fill: #6b5a3e; }
+    </style>
+  </defs>
+
+  <rect width="1000" height="700" fill="#f7f0df"/>
+  <text x="40" y="40" class="title">06 · Serra Nova</text>
+  <text x="40" y="62" class="sub">Não é um desfiladeiro: é uma serra com estradas, cerrado e retaguarda. A coluna vira; a retaguarda quebra o contato e segue para Taiobeiras.</text>
+
+  <rect x="50" y="86" width="900" height="560" class="frame"/>
+  <rect x="50" y="86" width="900" height="560" fill="url(#grid)"/>
+
+  <path d="M 50 150 C 150 120, 230 170, 300 150 C 370 130, 420 180, 400 245 C 380 305, 310 330, 260 380 C 215 425, 220 490, 170 520 L 50 520 Z" class="woods"/>
+  <path d="M 600 120 L 950 120 L 950 260 C 870 280, 800 250, 730 270 C 680 284, 630 260, 600 230 Z" class="scrub"/>
+  <path d="M 520 420 L 950 420 L 950 620 L 560 620 C 540 570, 570 520, 550 480 Z" class="field"/>
+
+  <path d="M 70 520 C 180 470, 260 420, 340 360 C 420 300, 500 260, 600 230 C 700 200, 800 190, 930 180" class="ridge"/>
+  <path d="M 90 550 C 200 500, 280 450, 360 390 C 440 330, 520 290, 620 260 C 720 230, 820 220, 940 210" class="ridge"/>
+  <path d="M 150 600 C 250 550, 330 500, 410 440 C 490 380, 570 340, 670 310 C 770 280, 870 270, 950 260" class="ridge"/>
+  <path d="M 500 170 C 560 200, 620 240, 670 300 C 720 360, 760 410, 810 450" class="ridge"/>
+  <path d="M 530 150 C 590 180, 650 220, 700 280 C 750 340, 790 390, 840 430" class="ridge"/>
+
+  <path d="M 760 646 C 730 570, 690 510, 630 460 C 570 410, 520 360, 480 300 C 440 240, 380 200, 320 170" class="road"/>
+  <path d="M 480 300 C 430 260, 370 250, 310 250" class="trail"/>
+  <path d="M 630 460 C 700 470, 770 500, 840 540" class="trail"/>
+  <text x="380" y="132" class="small">estrada para Taiobeiras</text>
+
+  <circle cx="390" cy="255" r="16" class="stone"/>
+  <circle cx="420" cy="270" r="12" class="stone"/>
+  <circle cx="760" cy="390" r="18" class="stone"/>
+  <circle cx="800" cy="410" r="11" class="stone"/>
+  <text x="360" y="235" class="small">pedras</text>
+
+  <rect x="270" y="230" width="45" height="30" class="building"/>
+  <text x="200" y="248" class="small">rancho</text>
+
+  <path d="M 100 110 L 340 110 L 340 220 L 100 220 Z" class="zone-column"/>
+  <text x="116" y="134" class="zoneLabel" fill="#1f6574">COLUNA</text>
+  <text x="116" y="185" class="small">comboio e retaguarda</text>
+
+  <path d="M 650 500 L 910 500 L 910 620 L 650 620 Z" class="zone-legalist"/>
+  <text x="666" y="524" class="zoneLabel" fill="#8a2f24">JAGUNÇOS E FEDERAIS</text>
+  <text x="666" y="542" class="small">vêm do sul e do leste</text>
+
+  <circle cx="450" cy="300" r="21" class="objective"/>
+  <text x="450" y="300" class="objText">1</text>
+  <text x="450" y="324" class="objValue">v2</text>
+  <circle cx="540" cy="360" r="21" class="objective"/>
+  <text x="540" y="360" class="objText">2</text>
+  <text x="540" y="384" class="objValue">v2</text>
+  <circle cx="320" cy="180" r="21" class="objective column"/>
+  <text x="320" y="180" class="objText">3</text>
+  <text x="320" y="204" class="objValue">v1</text>
+  <circle cx="220" cy="150" r="21" class="objective column"/>
+  <text x="220" y="150" class="objText">4</text>
+  <text x="220" y="174" class="objValue">v1</text>
+  <circle cx="740" cy="300" r="21" class="objective"/>
+  <text x="740" y="300" class="objText">5</text>
+  <text x="740" y="324" class="objValue">v1</text>
+
+  <path d="M 700 500 C 650 450, 600 400, 560 380" class="arrowLegalist"/>
+  <path d="M 820 540 C 740 470, 680 420, 610 380" class="arrowLegalist"/>
+  <path d="M 300 220 C 360 240, 420 270, 440 295" class="arrowColumn"/>
+  <path d="M 440 275 C 400 230, 360 205, 340 195" class="arrowColumn"/>
+  <path d="M 560 370 C 610 330, 660 310, 710 300 C 760 290, 820 280, 860 270" class="arrowLoop"/>
+  <text x="620" y="335" class="small">manobra circular</text>
+
+  <text x="70" y="668" class="note">Tamanho sugerido: médio (400 m) · paleta cerrado · 06h30, sol a leste · norte 0° · base grama de cerrado · sem rio ou desfiladeiro.</text>
+  <text x="70" y="686" class="note">O relevo é a lição: cristas, cortes de estrada e mato que esconde. Não transforme a serra em parede; o jogo precisa de rotas.</text>
+</svg>

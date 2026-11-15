@@ -1,0 +1,108 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 700" role="img" aria-labelledby="m5Title m5Desc">
+  <title id="m5Title">Croqui do mapa 05: A Ponte de Verdinho</title>
+  <desc id="m5Desc">Rio diagonal com ponte no centro e vau a leste; estrada de Mineiros cruzando o rio; mata de galeria nas margens e campo aberto nos acessos. A coluna segura a ponte e sai pelo vau.</desc>
+  <defs>
+    <pattern id="grid" width="50" height="50" patternUnits="userSpaceOnUse">
+      <path d="M 50 0 L 0 0 0 50" fill="none" stroke="#c9b58d" stroke-width="0.55"/>
+    </pattern>
+    <marker id="arrowheadColumn" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#1f6574"/>
+    </marker>
+    <marker id="arrowheadLegalist" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#8a2f24"/>
+    </marker>
+    <style>
+      .title { font: 700 24px 'Segoe UI', Arial, sans-serif; fill: #3f321f; }
+      .sub { font: 13px 'Segoe UI', Arial, sans-serif; fill: #6b5a3e; }
+      .frame { fill: #efe3c3; stroke: #5a4628; stroke-width: 2; }
+      .water { fill: #8bb7c9; stroke: #4d7d90; stroke-width: 1.5; }
+      .ford { fill: #c9d9c6; stroke: #5b8a78; stroke-width: 1.2; stroke-dasharray: 4 3; }
+      .woods { fill: #8faa6a; stroke: #5f7b43; stroke-width: 1.2; }
+      .scrub { fill: #b7b47a; stroke: #7d7a48; stroke-width: 1; }
+      .field { fill: #cfc27a; stroke: #9c8c48; stroke-width: 1; opacity: .75; }
+      .road { fill: none; stroke: #8b6a45; stroke-width: 7; stroke-linecap: round; stroke-linejoin: round; }
+      .trail { fill: none; stroke: #9c7d53; stroke-width: 4; stroke-dasharray: 8 5; stroke-linecap: round; }
+      .bridge { fill: #a98255; stroke: #5f4428; stroke-width: 1.5; }
+      .building { fill: #b98f63; stroke: #6d4d2f; stroke-width: 1.5; }
+      .zone-column { fill: #2f7f8f; fill-opacity: .18; stroke: #1f6574; stroke-width: 2; stroke-dasharray: 7 4; }
+      .zone-legalist { fill: #a33f32; fill-opacity: .16; stroke: #8a2f24; stroke-width: 2; stroke-dasharray: 7 4; }
+      .objective { fill: #fff8e8; stroke: #3f321f; stroke-width: 2; }
+      .objective.column { fill: #d7eef1; stroke: #1f6574; }
+      .objective.legalist { fill: #f3d9d4; stroke: #8a2f24; }
+      .objText { font: 700 15px 'Segoe UI', Arial, sans-serif; fill: #2b2418; text-anchor: middle; dominant-baseline: middle; }
+      .objValue { font: 700 10px 'Segoe UI', Arial, sans-serif; fill: #5a4628; text-anchor: middle; }
+      .label { font: 700 14px 'Segoe UI', Arial, sans-serif; fill: #3c311f; }
+      .small { font: 12px 'Segoe UI', Arial, sans-serif; fill: #5f5038; }
+      .zoneLabel { font: 700 12px 'Segoe UI', Arial, sans-serif; letter-spacing: .08em; }
+      .arrowColumn { fill: none; stroke: #1f6574; stroke-width: 3.5; marker-end: url(#arrowheadColumn); }
+      .arrowLegalist { fill: none; stroke: #8a2f24; stroke-width: 3.5; marker-end: url(#arrowheadLegalist); }
+      .note { font: 11px 'Segoe UI', Arial, sans-serif; fill: #6b5a3e; }
+    </style>
+  </defs>
+
+  <rect width="1000" height="700" fill="#f7f0df"/>
+  <text x="40" y="40" class="title">05 · A Ponte de Verdinho</text>
+  <text x="40" y="62" class="sub">A ponte é o relógio: cada minuto segurado é um minuto da coluna. O vau é a saída da retaguarda.</text>
+
+  <rect x="50" y="86" width="900" height="560" class="frame"/>
+  <rect x="50" y="86" width="900" height="560" fill="url(#grid)"/>
+
+  <path d="M 50 500 C 220 450, 380 400, 540 350 C 700 300, 830 250, 950 210 L 950 280 C 830 320, 700 370, 540 420 C 380 470, 220 520, 50 570 Z" class="water"/>
+  <text x="690" y="430" class="label" fill="#2f5f70" transform="rotate(-19 690 430)">RIO VERDINHO</text>
+
+  <path d="M 50 300 C 160 280, 240 330, 330 310 C 400 295, 450 330, 440 380 C 430 425, 360 440, 300 470 C 230 505, 180 520, 130 520 L 50 520 Z" class="woods"/>
+  <path d="M 500 520 C 620 490, 700 450, 780 420 C 850 395, 900 390, 950 395 L 950 500 C 860 510, 760 540, 660 570 C 590 590, 540 600, 500 600 Z" class="woods"/>
+
+  <path d="M 50 200 L 380 200 L 380 300 L 50 300 Z" class="field"/>
+  <path d="M 700 120 L 950 120 L 950 230 L 700 230 Z" class="field"/>
+  <text x="760" y="160" class="small">campo aberto</text>
+
+  <path d="M 150 646 C 250 590, 350 510, 460 420 C 540 355, 620 300, 700 250 C 760 210, 810 190, 860 175" class="road"/>
+  <text x="160" y="625" class="small">estrada de Mineiros</text>
+
+  <path d="M 470 420 C 510 390, 540 370, 570 350 C 620 320, 670 300, 720 285 C 760 275, 800 270, 830 268 L 830 300 C 780 305, 730 320, 680 345 C 620 375, 570 405, 530 435 Z" class="ford"/>
+  <text x="790" y="340" class="small">vau</text>
+
+  <rect x="540" y="330" width="60" height="90" class="bridge" transform="rotate(-19 570 375)"/>
+  <text x="520" y="320" class="small">ponte</text>
+  <text x="490" y="330" class="small" fill="#8a2f24">queimar</text>
+
+  <rect x="360" y="230" width="55" height="35" class="building"/>
+  <text x="365" y="215" class="small">casa de passagem</text>
+
+  <path d="M 100 110 L 340 110 L 340 220 L 100 220 Z" class="zone-column"/>
+  <text x="116" y="134" class="zoneLabel" fill="#1f6574">COLUNA</text>
+  <text x="116" y="185" class="small">margem oeste</text>
+  <text x="116" y="203" class="small">carroças</text>
+
+  <path d="M 660 500 L 910 500 L 910 620 L 660 620 Z" class="zone-legalist"/>
+  <text x="676" y="524" class="zoneLabel" fill="#8a2f24">LEGALISTAS</text>
+  <text x="676" y="542" class="small">Klinger vem pela estrada</text>
+
+  <circle cx="570" cy="375" r="21" class="objective"/>
+  <text x="570" y="375" class="objText">1</text>
+  <text x="570" y="399" class="objValue">v3</text>
+  <circle cx="830" cy="285" r="21" class="objective"/>
+  <text x="830" y="285" class="objText">2</text>
+  <text x="830" y="309" class="objValue">v2</text>
+  <circle cx="350" cy="300" r="21" class="objective column"/>
+  <text x="350" y="300" class="objText">3</text>
+  <text x="350" y="324" class="objValue">v1</text>
+  <circle cx="220" cy="165" r="21" class="objective column"/>
+  <text x="220" y="165" class="objText">4</text>
+  <text x="220" y="189" class="objValue">v1</text>
+  <circle cx="700" cy="500" r="21" class="objective legalist"/>
+  <text x="700" y="500" class="objText">5</text>
+  <text x="700" y="524" class="objValue">v1</text>
+
+  <path d="M 260 220 C 350 270, 440 320, 520 355" class="arrowColumn"/>
+  <path d="M 560 370 C 650 350, 740 320, 800 300" class="arrowColumn"/>
+  <path d="M 680 500 C 640 450, 610 420, 590 395" class="arrowLegalist"/>
+  <path d="M 800 540 C 740 470, 700 420, 650 385" class="arrowLegalist"/>
+
+  <text x="430" y="260" class="small">1 · segurar a ponte até as carroças passarem</text>
+  <text x="610" y="440" class="small">2 · sair pelo vau</text>
+
+  <text x="70" y="668" class="note">Tamanho sugerido: pequeno (240 m) · paleta cerrado · 06h30, sol a leste · norte 0° · base grama de cerrado · rio raso com vau.</text>
+  <text x="70" y="686" class="note">A demolição da ponte ainda não existe: o mapa é a batalha da ponte, não o incêndio. O vau precisa ser caminhável.</text>
+</svg>
