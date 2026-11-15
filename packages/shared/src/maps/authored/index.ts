@@ -10,6 +10,7 @@ export const AUTHORED_MAP_INDEX: readonly AuthoredMapEntry[] = [
   {"id":"ponte-de-verdinho","use":"campaign","mission":"ponte-de-verdinho","size":"small","name":{"pt-BR":"A Ponte de Verdinho","en":"The Verdinho Bridge"},"description":{"pt-BR":"27 e 28 de junho de 1925, perto de Mineiros, Goiás: a retaguarda de Cordeiro segura a ponte do Verdinho até as carroças passarem e sai pelo vau.","en":"27-28 June 1925, outside Mineiros, Goiás: Cordeiro's rearguard holds the Verdinho bridge until the wagons are through and leaves by the ford."},"preview":false},
   {"id":"porto-mendes","use":"campaign","mission":"a-divisao","size":"medium","name":{"pt-BR":"A Divisão: Porto Mendes","en":"The Division: Porto Mendes"},"description":{"pt-BR":"Abril de 1925: a Primeira Divisão Revolucionária atravessa o rio Paraná de Porto Mendes a Puerto Adela, pela balsa e pelas canoas, com o governo na estrada.","en":"April 1925: the First Revolutionary Division crosses the Paraná from Porto Mendes to Puerto Adela, by the ferry and the canoes, with the government on the road."},"preview":false},
   {"id":"sao-luiz-ramada","use":"campaign","mission":"anel-de-ferro","size":"medium","name":{"pt-BR":"O Anel de Ferro: Ramada e o Uruguai","en":"The Iron Ring: Ramada and the Uruguay"},"description":{"pt-BR":"Dezembro de 1924 a janeiro de 1925: a coluna deixa São Luiz Gonzaga, a retaguarda segura a encruzilhada de Ramada e o rio Uruguai é o portão para o norte.","en":"December 1924 to January 1925: the column leaves São Luiz Gonzaga, the rearguard holds the Ramada crossroads and the Uruguay River is the gate north."},"preview":false},
+  {"id":"serra-nova","use":"campaign","mission":"serra-nova","size":"medium","name":{"pt-BR":"Serra Nova","en":"Serra Nova"},"description":{"pt-BR":"22 de abril de 1926, norte de Minas Gerais: os jagunços atacam a retaguarda na Serra Nova; a coluna vira, quebra o contato e segue para Taiobeiras.","en":"22 April 1926, northern Minas Gerais: the jagunços attack the rearguard at Serra Nova; the column turns, breaks contact and goes on to Taiobeiras."},"preview":false},
 ];
 
 /** Every authored map, loaded on demand (no map document is in the bundles). */
@@ -21,4 +22,5 @@ export const AUTHORED_MAP_LOADERS: Readonly<Record<string, () => Promise<MapDocu
   'ponte-de-verdinho': () => import('./ponte-de-verdinho.map.json').then((module) => module.default as unknown as MapDocument),
   'porto-mendes': () => import('./porto-mendes.map.json').then((module) => module.default as unknown as MapDocument),
   'sao-luiz-ramada': () => import('./sao-luiz-ramada.map.json').then((module) => module.default as unknown as MapDocument),
+  'serra-nova': () => import('./serra-nova.map.json').then((module) => module.default as unknown as MapDocument),
 };
