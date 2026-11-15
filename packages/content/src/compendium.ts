@@ -114,24 +114,24 @@ const BASE: readonly CompendiumEntry[] = [
   { id: 'positivismo-militar', section: 'events', date: '1889-11-15', sourceRefs: [M], cite: 'Macaulay, ch. II, pp. 33–34; ch. III, pp. 64–66', confidence: 'high' },
   { id: 'tenentismo', section: 'events', date: '1922-07-05', sourceRefs: [M], cite: 'Macaulay, ch. I, pp. 4–5', confidence: 'high' },
   { id: 'revolt-1922', section: 'events', date: '1922-07-05', sourceRefs: [M], cite: 'Macaulay, ch. II, pp. 37–38', confidence: 'high' },
-  { id: 'rs-civil-war-1923', section: 'events', date: '1923-01', sourceRefs: [M], cite: 'Macaulay, ch. I, pp. 7–8, 44, 48', confidence: 'high' },
+  { id: 'rs-civil-war-1923', section: 'events', date: '1923-01', sourceRefs: [M], cite: 'Macaulay, ch. I, pp. 7–8, 44, 48', confidence: 'high', label: 'historical' },
   { id: 'sao-paulo-1924', section: 'events', date: '1924-07-05', sourceRefs: [M], cite: 'Macaulay, ch. I, pp. 4–6', confidence: 'high' },
-  { id: 'sao-paulo-retaken-1924', section: 'events', date: '1924-07-27', sourceRefs: [M, 'cohen-2007'], cite: 'Macaulay, ch. I, pp. 15–17', confidence: 'high' },
+  { id: 'sao-paulo-retaken-1924', section: 'events', date: '1924-07-27', sourceRefs: [M, 'cohen-2007'], cite: 'Macaulay, ch. I, pp. 15–17', confidence: 'high', label: 'historical' },
   { id: 'rs-revolt-1924', section: 'events', date: '1924-10-28', sourceRefs: [M], cite: 'Macaulay, ch. II, pp. 43–48', confidence: 'high' },
   { id: 'o-libertador-1924', section: 'events', date: '1924-11', sourceRefs: [M], cite: 'Macaulay, ch. VI, p. 165; ch. VII, pp. 172, 196', confidence: 'medium' },
   { id: 'sao-luiz-1924', section: 'events', date: '1924-12', sourceRefs: [M], cite: 'Macaulay, ch. II–III', confidence: 'medium' },
   { id: 'ramada-1925', section: 'events', date: '1925-01-03', sourceRefs: [M], cite: 'Macaulay, ch. II–III', confidence: 'medium' },
-  { id: 'iguacu-1925', section: 'events', date: '1925-04-03', sourceRefs: [M, 'blanc-2024'], cite: 'Macaulay, ch. III, pp. 85–89', confidence: 'medium' },
-  { id: 'parana-crossing-1925', section: 'events', date: '1925-04-27', sourceRefs: [M], cite: 'Macaulay, ch. III–IV, pp. 88–89, 93, 95', confidence: 'high' },
+  { id: 'iguacu-1925', section: 'events', date: '1925-04-03', sourceRefs: [M, 'blanc-2024'], cite: 'Macaulay, ch. III, pp. 85–89', confidence: 'medium', label: 'historical' },
+  { id: 'parana-crossing-1925', section: 'events', date: '1925-04-27', sourceRefs: [M], cite: 'Macaulay, ch. III–IV, pp. 88–89, 93, 95', confidence: 'high', label: 'historical' },
   { id: 'manifesto-porto-nacional-1925', section: 'events', date: '1925-10-19', sourceRefs: ['manifesto-1925'], cite: 'Manifesto, 19 Oct. 1925; Macaulay, ch. VI, pp. 163–166', confidence: 'high' },
-  { id: 'serra-nova-1926', section: 'events', date: '1926-04-22', sourceRefs: [M, 'nascimento-2026', 'almg-2026'], cite: 'Macaulay, ch. VIII, pp. 220–221; frontispiece map', confidence: 'medium' },
-  { id: 'exile-1927', section: 'events', date: '1927-02-03', sourceRefs: [M, 'blanc-2024'], cite: 'Macaulay, ch. IX, pp. 232–234; Blanc, ch. 7, pp. 132–143', confidence: 'high' },
-  { id: 'la-gaiba-1927', section: 'events', date: '1927-07-05', sourceRefs: ['blanc-2024'], cite: 'Blanc, ch. 7, pp. 132, 142, figs. 7.1, 7.5; Correio da Manhã, 22 July 1927, p. 5', confidence: 'medium' },
+  { id: 'serra-nova-1926', section: 'events', date: '1926-04-22', sourceRefs: [M, 'nascimento-2026', 'almg-2026'], cite: 'Macaulay, ch. VIII, pp. 220–221; frontispiece map', confidence: 'medium', label: 'historical' },
+  { id: 'exile-1927', section: 'events', date: '1927-02-03', sourceRefs: [M, 'blanc-2024'], cite: 'Macaulay, ch. IX, pp. 232–234; Blanc, ch. 7, pp. 132–143', confidence: 'high', label: 'historical' },
+  { id: 'la-gaiba-1927', section: 'events', date: '1927-07-05', sourceRefs: ['blanc-2024'], cite: 'Blanc, ch. 7, pp. 132, 142, figs. 7.1, 7.5; Correio da Manhã, 22 July 1927, p. 5', confidence: 'medium', label: 'historical' },
   { id: 'coluna-no-grande-sertao', section: 'events', date: '1956', sourceRefs: ['mozzer-2009'], cite: 'Mozzer 2009, pp. 246–257; Rosa 1956, p. 82', confidence: 'low', label: 'dramatized' },
 
   // Places named in those events
   { id: 'forte-copacabana', section: 'places', sourceRefs: [M], cite: 'Macaulay, ch. II, pp. 37–38', confidence: 'high' },
-  { id: 'vila-militar', section: 'places', sourceRefs: [M], cite: 'Macaulay, ch. II, pp. 37–38', confidence: 'high' },
+  { id: 'vila-militar', section: 'places', sourceRefs: [M], cite: 'Macaulay, ch. II, pp. 37–38', confidence: 'high', label: 'historical' },
   { id: 'sao-luiz-gonzaga', section: 'places', sourceRefs: [M], cite: 'Macaulay, ch. II–III', confidence: 'medium' },
   { id: 'foz-do-iguacu', section: 'places', sourceRefs: [M], cite: 'Macaulay, ch. IV, p. 93', confidence: 'medium' },
   { id: 'porto-mendes', section: 'places', sourceRefs: [M], cite: 'Macaulay, ch. IV, p. 93', confidence: 'high' },
@@ -142,17 +142,17 @@ const BASE: readonly CompendiumEntry[] = [
   // Battlefields (add-battle-maps): fictional places in sourced settings.
   { id: 'map-fazenda', section: 'places', sourceRefs: [M], cite: 'Macaulay, ch. III, pp. 71, 82, 85', confidence: 'high' },
   { id: 'map-serra-rio', section: 'places', sourceRefs: [M], cite: 'Macaulay, pp. 122–124', confidence: 'high' },
-  { id: 'map-bairro', section: 'places', sourceRefs: [M, 'cohen-2007', 'fapesp-2007'], cite: 'Macaulay, ch. I, pp. 4–6, 10, 15', confidence: 'high' },
+  { id: 'map-bairro', section: 'places', sourceRefs: [M, 'cohen-2007', 'fapesp-2007'], cite: 'Macaulay, ch. I, pp. 4–6, 10, 15', confidence: 'high', label: 'historical' },
 
   // Weapons (docs/history/WEAPONS.md)
   { id: 'mauser-7mm', section: 'weapons', sourceRefs: [M], cite: 'Macaulay, p. 113', confidence: 'high' },
-  { id: 'machine-guns-7mm', section: 'weapons', sourceRefs: [M], cite: 'Macaulay, pp. 113, 234', confidence: 'high' },
-  { id: 'automatic-rifles-7mm', section: 'weapons', sourceRefs: [M], cite: 'Macaulay, pp. 113, 234', confidence: 'high' },
-  { id: 'winchester-44', section: 'weapons', sourceRefs: [M], cite: 'Macaulay, pp. 152, 205', confidence: 'high' },
-  { id: 'irregular-arms', section: 'weapons', sourceRefs: [M], cite: 'Macaulay, pp. 44, 52, 54', confidence: 'high' },
-  { id: 'field-gun-75mm', section: 'weapons', sourceRefs: [M], cite: 'Macaulay, pp. 85, 93, 95, 113', confidence: 'high' },
-  { id: 'howitzer-105mm', section: 'weapons', sourceRefs: [M], cite: 'Macaulay, p. 85', confidence: 'high' },
-  { id: 'cartridges', section: 'weapons', sourceRefs: [M], cite: 'Macaulay, pp. 113, 234', confidence: 'high' },
+  { id: 'machine-guns-7mm', section: 'weapons', sourceRefs: [M], cite: 'Macaulay, pp. 113, 234', confidence: 'high', label: 'historical' },
+  { id: 'automatic-rifles-7mm', section: 'weapons', sourceRefs: [M], cite: 'Macaulay, pp. 113, 234', confidence: 'high', label: 'historical' },
+  { id: 'winchester-44', section: 'weapons', sourceRefs: [M], cite: 'Macaulay, pp. 152, 205', confidence: 'high', label: 'historical' },
+  { id: 'irregular-arms', section: 'weapons', sourceRefs: [M], cite: 'Macaulay, pp. 44, 52, 54', confidence: 'high', label: 'historical' },
+  { id: 'field-gun-75mm', section: 'weapons', sourceRefs: [M], cite: 'Macaulay, pp. 85, 93, 95, 113', confidence: 'high', label: 'historical' },
+  { id: 'howitzer-105mm', section: 'weapons', sourceRefs: [M], cite: 'Macaulay, p. 85', confidence: 'high', label: 'historical' },
+  { id: 'cartridges', section: 'weapons', sourceRefs: [M], cite: 'Macaulay, pp. 113, 234', confidence: 'high', label: 'historical' },
   // pre-battle-roster 2.1: the skirmish's section types are a game organization.
   { id: 'skirmish-forces', section: 'weapons', sourceRefs: [M], cite: 'Macaulay, pp. 54, 113, 152; the section types are a game organization', confidence: 'high', label: 'fictional' },
 
@@ -183,10 +183,10 @@ const BASE: readonly CompendiumEntry[] = [
   { id: 'section-cangaceiros', section: 'forces', sourceRefs: [M], cite: 'Macaulay, p. 191 (fighting the column is dramatized)', confidence: 'high', label: 'dramatized' },
 
   // Known corrections (docs/history/TIMELINE.md)
-  { id: 'sao-paulo-separate', section: 'corrections', sourceRefs: [M], cite: 'Macaulay, ch. I, pp. 16–17; ch. III, pp. 86–89', confidence: 'high' },
-  { id: 'miguel-costa-command', section: 'corrections', sourceRefs: [M], cite: 'Macaulay, ch. III, pp. 85–89', confidence: 'high' },
-  { id: 'historical-borders', section: 'corrections', sourceRefs: [M], cite: 'Macaulay, frontispiece map', confidence: 'high' },
-  { id: 'macaulay-perspective', section: 'corrections', sourceRefs: [M, 'blanc-2024', 'anita-1991'], cite: 'docs/history/SOURCE_POLICY.md', confidence: 'high' },
+  { id: 'sao-paulo-separate', section: 'corrections', sourceRefs: [M], cite: 'Macaulay, ch. I, pp. 16–17; ch. III, pp. 86–89', confidence: 'high', label: 'historical' },
+  { id: 'miguel-costa-command', section: 'corrections', sourceRefs: [M], cite: 'Macaulay, ch. III, pp. 85–89', confidence: 'high', label: 'historical' },
+  { id: 'historical-borders', section: 'corrections', sourceRefs: [M], cite: 'Macaulay, frontispiece map', confidence: 'high', label: 'historical' },
+  { id: 'macaulay-perspective', section: 'corrections', sourceRefs: [M, 'blanc-2024', 'anita-1991'], cite: 'docs/history/SOURCE_POLICY.md', confidence: 'high', label: 'historical' },
 ];
 
 /**

@@ -557,3 +557,10 @@ corrugated asbestos appears.
   through Blanc and Macaulay. Until one is found, PT-BR carries our
   translation, marked as such. Print editions of Rosa p. 82, Amado p. 131 and
   Moreira Lima p. 523 are also unchecked.
+- `pnpm verify` (2026-11-15): check, build and lint pass. The bundle budget
+  fails: index JS is 898 KB against a 760 KB budget. The new book text adds
+  about 110 KB (compendium notes and chapters, in two languages). The rest
+  comes from other uncommitted work in the tree. The owner chooses between
+  raising the budget and moving the book text into a lazily loaded chunk.
+  Determinism, tick budget and the e2e did not run, because the bundle budget
+  step stops verify before them.
