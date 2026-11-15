@@ -64,9 +64,14 @@ export class CameraRig {
     );
   }
 
+  /**
+   * The view keeps its 40° tilt at every zoom (the owner, 2026-11-14: zooming
+   * out no longer swings the camera to straight down, in the game or the
+   * editor). Only the editor's explicit top-down mode overrides it.
+   */
   get tilt(): number {
     if (this.tiltOverride !== null) return this.tiltOverride;
-    return TACTICAL_TILT + (STRATEGIC_TILT - TACTICAL_TILT) * this.strategicBlend;
+    return TACTICAL_TILT;
   }
 
   setAspect(aspect: number): void {
