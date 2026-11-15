@@ -4,11 +4,13 @@ import type { AuthoredMapEntry, MapDocument } from '../document';
 /** What the menus know of every authored map, without loading it. */
 export const AUTHORED_MAP_INDEX: readonly AuthoredMapEntry[] = [
   {"id":"campo-de-provas","use":"test","size":"medium","name":{"en":"Proving ground (test map)","pt-BR":"Campo de provas (mapa de teste)"},"description":{"en":"Test map: houses, a sobrado, the church tower, a trench, a walled yard and a ford within reach.","pt-BR":"Mapa de teste: casas, sobrado, torre da igreja, trincheira, pátio murado e vau ao alcance."},"preview":true},
+  {"id":"copacabana","use":"campaign","mission":"prologue-18-do-forte","size":"small","name":{"en":"Copacabana Beach, 1922","pt-BR":"Praia de Copacabana, 1922"},"description":{"en":"Avenida Atlântica on the afternoon of 6 July 1922: out of the fort gate, past the fishermen's boats and the avenue works, to the government's line at Rua Barroso.","pt-BR":"A Avenida Atlântica na tarde de 6 de julho de 1922: do portão do forte, pelos barcos dos pescadores e pelas obras da avenida, até a linha do governo na Rua Barroso."},"preview":false},
   {"id":"paiolzinho","use":"skirmish","size":"small","name":{"en":"Paiolzinho","pt-BR":"Paiolzinho"},"description":{"en":"Litle farm with some plantation","pt-BR":"pequena fazenda com algumas plantações, fronteira entre franca SP"},"preview":true},
 ];
 
 /** Every authored map, loaded on demand (no map document is in the bundles). */
 export const AUTHORED_MAP_LOADERS: Readonly<Record<string, () => Promise<MapDocument>>> = {
   'campo-de-provas': () => import('./campo-de-provas.map.json').then((module) => module.default as unknown as MapDocument),
+  'copacabana': () => import('./copacabana.map.json').then((module) => module.default as unknown as MapDocument),
   'paiolzinho': () => import('./paiolzinho.map.json').then((module) => module.default as unknown as MapDocument),
 };

@@ -1,0 +1,1157 @@
+{
+ "format": "prestes-map",
+ "version": 9,
+ "id": "copacabana",
+ "size": "medium",
+ "name": {
+  "en": "Copacabana Beach, 1922",
+  "pt-BR": "Praia de Copacabana, 1922"
+ },
+ "description": {
+  "en": "The fort's gate, the open sand and the rocks: a retreat along the beach against the government's lines, sea on one side and the city on the other.",
+  "pt-BR": "O portão do forte, a areia aberta e as pedras: uma retirada pela praia contra as linhas do governo, com o mar de um lado e a cidade do outro."
+ },
+ "use": "campaign",
+ "mission": "prologue-18-do-forte",
+ "light": {
+  "time": 15,
+  "bearing": 250
+ },
+ "setting": {
+  "label": "historical-setting-fictional-place",
+  "sourceNote": "Cenário histórico, lugar fictício. Praia de Copacabana, 6 jul. 1922. macaulay-1974, cap. I, pp. 26-29; mapa de Copacabana de 1922 (domínio público, Serviço Geográfico Militar). O traçado é uma abstração de jogo."
+ },
+ "palette": "urban",
+ "waterLevel": 0,
+ "baseMaterial": "sand",
+ "roads": [
+  {
+   "id": 1,
+   "type": "cobbled-street",
+   "width": 7,
+   "ditches": {
+    "left": true,
+    "right": true
+   },
+   "points": [
+    {
+     "x": -57.48,
+     "y": 200
+    },
+    {
+     "x": -37.49,
+     "y": -200
+    }
+   ]
+  },
+  {
+   "id": 2,
+   "type": "paved-road",
+   "width": 5,
+   "ditches": {
+    "left": false,
+    "right": false
+   },
+   "points": [
+    {
+     "x": -56.34,
+     "y": 110.42
+    },
+    {
+     "x": -200,
+     "y": 104.33
+    }
+   ]
+  },
+  {
+   "id": 3,
+   "type": "paved-road",
+   "width": 5,
+   "ditches": {
+    "left": false,
+    "right": false
+   },
+   "points": [
+    {
+     "x": -133.38,
+     "y": 107.79
+    },
+    {
+     "x": -134.53,
+     "y": 200
+    }
+   ]
+  },
+  {
+   "id": 4,
+   "type": "paved-road",
+   "width": 5,
+   "ditches": {
+    "left": false,
+    "right": false
+   },
+   "points": [
+    {
+     "x": -133.65,
+     "y": 107.79
+    },
+    {
+     "x": -117.97,
+     "y": -199.7
+    }
+   ]
+  },
+  {
+   "id": 5,
+   "type": "paved-road",
+   "width": 5,
+   "ditches": {
+    "left": false,
+    "right": false
+   },
+   "points": [
+    {
+     "x": -200,
+     "y": -137.53
+    },
+    {
+     "x": -45.81,
+     "y": -119.18
+    }
+   ]
+  },
+  {
+   "id": 6,
+   "type": "paved-road",
+   "width": 5,
+   "ditches": {
+    "left": false,
+    "right": false
+   },
+   "points": [
+    {
+     "x": -200,
+     "y": -22.88
+    },
+    {
+     "x": -49.58,
+     "y": -22.51
+    }
+   ]
+  },
+  {
+   "id": 7,
+   "type": "trail",
+   "width": 3,
+   "ditches": {
+    "left": false,
+    "right": false
+   },
+   "points": [
+    {
+     "x": -59,
+     "y": 158
+    },
+    {
+     "x": -125.5,
+     "y": 158
+    }
+   ]
+  },
+  {
+   "id": 8,
+   "type": "trail",
+   "width": 3,
+   "ditches": {
+    "left": false,
+    "right": false
+   },
+   "points": [
+    {
+     "x": -106.5,
+     "y": 157.5
+    },
+    {
+     "x": -108.5,
+     "y": 113.5
+    }
+   ]
+  },
+  {
+   "id": 9,
+   "type": "trail",
+   "width": 3,
+   "ditches": {
+    "left": false,
+    "right": false
+   },
+   "points": [
+    {
+     "x": -92,
+     "y": 143.5
+    },
+    {
+     "x": -92.5,
+     "y": 140.5
+    },
+    {
+     "x": -95,
+     "y": 137
+    },
+    {
+     "x": -97.5,
+     "y": 135
+    },
+    {
+     "x": -99.5,
+     "y": 132
+    },
+    {
+     "x": -100.5,
+     "y": 127.5
+    },
+    {
+     "x": -97,
+     "y": 122.5
+    },
+    {
+     "x": -92,
+     "y": 120
+    },
+    {
+     "x": -86,
+     "y": 117
+    }
+   ]
+  },
+  {
+   "id": 10,
+   "type": "trail",
+   "width": 5.5,
+   "ditches": {
+    "left": false,
+    "right": false
+   },
+   "points": [
+    {
+     "x": -119.5,
+     "y": 138
+    },
+    {
+     "x": -120,
+     "y": 158.5
+    },
+    {
+     "x": -119.5,
+     "y": 200
+    }
+   ]
+  }
+ ],
+ "rivers": [],
+ "ponds": [
+  {
+   "id": 1,
+   "kind": "deep",
+   "polygon": [
+    {
+     "x": 200,
+     "y": -200
+    },
+    {
+     "x": 200,
+     "y": 200
+    },
+    {
+     "x": 85,
+     "y": 200
+    },
+    {
+     "x": 102,
+     "y": 133
+    },
+    {
+     "x": 105,
+     "y": 104
+    },
+    {
+     "x": 105,
+     "y": 78
+    },
+    {
+     "x": 100,
+     "y": 53
+    },
+    {
+     "x": 90,
+     "y": 19
+    },
+    {
+     "x": 84,
+     "y": 0
+    },
+    {
+     "x": 83,
+     "y": -24
+    },
+    {
+     "x": 89,
+     "y": -51
+    },
+    {
+     "x": 95,
+     "y": -86
+    },
+    {
+     "x": 99,
+     "y": -115
+    },
+    {
+     "x": 96,
+     "y": -141
+    },
+    {
+     "x": 91,
+     "y": -158
+    },
+    {
+     "x": 89,
+     "y": -173
+    },
+    {
+     "x": 96,
+     "y": -200
+    }
+   ]
+  },
+  {
+   "id": 2,
+   "kind": "ford",
+   "polygon": [
+    {
+     "x": 86,
+     "y": 200
+    },
+    {
+     "x": 58,
+     "y": 200
+    },
+    {
+     "x": 63,
+     "y": 183
+    },
+    {
+     "x": 73,
+     "y": 166
+    },
+    {
+     "x": 79,
+     "y": 151
+    },
+    {
+     "x": 86,
+     "y": 127
+    },
+    {
+     "x": 86,
+     "y": 106
+    },
+    {
+     "x": 81,
+     "y": 90
+    },
+    {
+     "x": 79,
+     "y": 68
+    },
+    {
+     "x": 82,
+     "y": 53
+    },
+    {
+     "x": 77,
+     "y": 35
+    },
+    {
+     "x": 68,
+     "y": 13
+    },
+    {
+     "x": 63,
+     "y": -13
+    },
+    {
+     "x": 63,
+     "y": -28
+    },
+    {
+     "x": 76,
+     "y": -85
+    },
+    {
+     "x": 79,
+     "y": -99
+    },
+    {
+     "x": 80,
+     "y": -116
+    },
+    {
+     "x": 74,
+     "y": -136
+    },
+    {
+     "x": 70,
+     "y": -170
+    },
+    {
+     "x": 68,
+     "y": -183
+    },
+    {
+     "x": 71,
+     "y": -199
+    },
+    {
+     "x": 99,
+     "y": -200
+    },
+    {
+     "x": 93,
+     "y": -177
+    },
+    {
+     "x": 92,
+     "y": -172
+    },
+    {
+     "x": 93,
+     "y": -161
+    },
+    {
+     "x": 97,
+     "y": -148
+    },
+    {
+     "x": 102,
+     "y": -128
+    },
+    {
+     "x": 100,
+     "y": -106
+    },
+    {
+     "x": 97,
+     "y": -82
+    },
+    {
+     "x": 91,
+     "y": -49
+    },
+    {
+     "x": 87,
+     "y": -24
+    },
+    {
+     "x": 90,
+     "y": -1
+    },
+    {
+     "x": 93,
+     "y": 20
+    },
+    {
+     "x": 99,
+     "y": 36
+    },
+    {
+     "x": 106,
+     "y": 64
+    },
+    {
+     "x": 110,
+     "y": 82
+    },
+    {
+     "x": 109,
+     "y": 109
+    },
+    {
+     "x": 104,
+     "y": 139
+    },
+    {
+     "x": 92,
+     "y": 187
+    }
+   ]
+  }
+ ],
+ "bridges": [],
+ "ferries": [],
+ "lines": [
+  {
+   "id": 1,
+   "kind": "brick-wall",
+   "height": 2,
+   "points": [
+    {
+     "x": -62.5,
+     "y": 200
+    },
+    {
+     "x": -60.5,
+     "y": 161
+    }
+   ]
+  },
+  {
+   "id": 2,
+   "kind": "brick-wall",
+   "height": 2,
+   "points": [
+    {
+     "x": -59.5,
+     "y": 155.5
+    },
+    {
+     "x": -58,
+     "y": 113.5
+    },
+    {
+     "x": -129.5,
+     "y": 111
+    },
+    {
+     "x": -130,
+     "y": 200
+    }
+   ]
+  }
+ ],
+ "trenches": [],
+ "objects": [
+  {
+   "id": 1,
+   "type": "iron-gate",
+   "x": -60,
+   "y": 158,
+   "rotation": 1.6755160819145563,
+   "scale": 1.4
+  },
+  {
+   "id": 2,
+   "type": "guardhouse",
+   "x": -75,
+   "y": 151,
+   "rotation": 0
+  },
+  {
+   "id": 3,
+   "type": "barracks-block",
+   "x": -92,
+   "y": 150,
+   "rotation": 0
+  },
+  {
+   "id": 4,
+   "type": "barracks-block",
+   "x": -75,
+   "y": 172,
+   "rotation": 1.5707963267948966
+  },
+  {
+   "id": 5,
+   "type": "barracks-block",
+   "x": -109,
+   "y": 172,
+   "rotation": 4.71238898038469
+  },
+  {
+   "id": 6,
+   "type": "water-tank",
+   "x": -75.5,
+   "y": 144.5,
+   "rotation": 4.71238898038469
+  },
+  {
+   "id": 7,
+   "type": "barn",
+   "x": -125,
+   "y": 150,
+   "rotation": 4.71238898038469
+  },
+  {
+   "id": 8,
+   "type": "barn",
+   "x": -112,
+   "y": 150,
+   "rotation": 4.71238898038469
+  },
+  {
+   "id": 9,
+   "type": "cerrado-tree",
+   "x": -97.5,
+   "y": 141.5,
+   "rotation": 4.71238898038469
+  },
+  {
+   "id": 10,
+   "type": "cerrado-tree",
+   "x": -99.5,
+   "y": 138,
+   "rotation": 4.71238898038469
+  },
+  {
+   "id": 11,
+   "type": "cerrado-tree",
+   "x": -102.5,
+   "y": 141.5,
+   "rotation": 2.0943951023931953
+  },
+  {
+   "id": 12,
+   "type": "mulungu",
+   "x": -103.5,
+   "y": 135.5,
+   "rotation": 2.0943951023931953
+  },
+  {
+   "id": 13,
+   "type": "mulungu",
+   "x": -104,
+   "y": 128.5,
+   "rotation": 2.0943951023931953
+  },
+  {
+   "id": 14,
+   "type": "jequitiba",
+   "x": -102.5,
+   "y": 120.5,
+   "rotation": 2.0943951023931953
+  },
+  {
+   "id": 15,
+   "type": "jequitiba",
+   "x": -95,
+   "y": 116,
+   "rotation": 2.0943951023931953
+  },
+  {
+   "id": 16,
+   "type": "jequitiba",
+   "x": -114.5,
+   "y": 115.5,
+   "rotation": 2.0943951023931953
+  },
+  {
+   "id": 17,
+   "type": "jequitiba",
+   "x": -112.5,
+   "y": 133,
+   "rotation": 2.0943951023931953
+  },
+  {
+   "id": 18,
+   "type": "jequitiba",
+   "x": -113,
+   "y": 125.5,
+   "rotation": 2.0943951023931953
+  },
+  {
+   "id": 19,
+   "type": "tucuma",
+   "x": -103.5,
+   "y": 139,
+   "rotation": 2.0943951023931953
+  },
+  {
+   "id": 20,
+   "type": "tucuma",
+   "x": -104.5,
+   "y": 124.5,
+   "rotation": 2.0943951023931953
+  },
+  {
+   "id": 21,
+   "type": "tucuma",
+   "x": -103.5,
+   "y": 133.5,
+   "rotation": 2.0943951023931953
+  },
+  {
+   "id": 22,
+   "type": "acai",
+   "x": -98.5,
+   "y": 117.5,
+   "rotation": 2.0943951023931953
+  },
+  {
+   "id": 23,
+   "type": "acai",
+   "x": -102,
+   "y": 116,
+   "rotation": 2.0943951023931953
+  },
+  {
+   "id": 24,
+   "type": "acai",
+   "x": -99,
+   "y": 114.5,
+   "rotation": 2.0943951023931953
+  },
+  {
+   "id": 25,
+   "type": "acai",
+   "x": -64,
+   "y": 161.5,
+   "rotation": 2.0943951023931953
+  },
+  {
+   "id": 26,
+   "type": "acai",
+   "x": -63.5,
+   "y": 152.5,
+   "rotation": 2.4085543677521746
+  },
+  {
+   "id": 27,
+   "type": "guardhouse",
+   "x": -125.5,
+   "y": 163,
+   "rotation": 4.71238898038469
+  },
+  {
+   "id": 28,
+   "type": "guardhouse",
+   "x": -125.5,
+   "y": 170.5,
+   "rotation": 4.71238898038469
+  },
+  {
+   "id": 29,
+   "type": "guardhouse",
+   "x": -125.5,
+   "y": 178,
+   "rotation": 4.71238898038469
+  },
+  {
+   "id": 30,
+   "type": "guardhouse",
+   "x": -125.5,
+   "y": 185.5,
+   "rotation": 4.71238898038469
+  },
+  {
+   "id": 31,
+   "type": "guardhouse",
+   "x": -125,
+   "y": 193.5,
+   "rotation": 4.71238898038469
+  },
+  {
+   "id": 32,
+   "type": "bush-mata-atlantica-knee-a",
+   "x": -111.9,
+   "y": 117.3,
+   "rotation": 0.8028514559173916,
+   "scale": 1.1
+  },
+  {
+   "id": 33,
+   "type": "pau-brasil",
+   "x": -113,
+   "y": 112.7,
+   "rotation": 5.532693728822025,
+   "scale": 0.9
+  },
+  {
+   "id": 34,
+   "type": "mulungu",
+   "x": -116.2,
+   "y": 118.3,
+   "rotation": 3.2114058236695664,
+   "scale": 0.9
+  },
+  {
+   "id": 35,
+   "type": "jequitiba",
+   "x": -118.8,
+   "y": 114.2,
+   "rotation": 2.722713633111154
+  },
+  {
+   "id": 36,
+   "type": "bush-mata-atlantica-waist-b",
+   "x": -112.9,
+   "y": 120.2,
+   "rotation": 0.05235987755982989,
+   "scale": 1.05
+  },
+  {
+   "id": 37,
+   "type": "jequitiba",
+   "x": -116.1,
+   "y": 123.6,
+   "rotation": 1.3264502315156905,
+   "scale": 1.05
+  },
+  {
+   "id": 38,
+   "type": "bush-mata-atlantica-head-a",
+   "x": -118.2,
+   "y": 120.9,
+   "rotation": 5.969026041820607,
+   "scale": 1.05
+  },
+  {
+   "id": 39,
+   "type": "manaca",
+   "x": -115.9,
+   "y": 127,
+   "rotation": 0.9948376736367679,
+   "scale": 1.15
+  },
+  {
+   "id": 40,
+   "type": "mulungu",
+   "x": -118.8,
+   "y": 125.6,
+   "rotation": 6.021385919380437,
+   "scale": 0.9
+  },
+  {
+   "id": 41,
+   "type": "tree-broad",
+   "x": -115.1,
+   "y": 130.3,
+   "rotation": 2.8623399732707004,
+   "scale": 1.15
+  },
+  {
+   "id": 42,
+   "type": "jequitiba",
+   "x": -118.4,
+   "y": 129.8,
+   "rotation": 0.4014257279586958,
+   "scale": 0.9
+  },
+  {
+   "id": 43,
+   "type": "manaca",
+   "x": -117.1,
+   "y": 133.1,
+   "rotation": 1.6406094968746698,
+   "scale": 0.85
+  },
+  {
+   "id": 44,
+   "type": "bush-mata-atlantica-knee-a",
+   "x": -114,
+   "y": 137.4,
+   "rotation": 5.235987755982989,
+   "scale": 0.9
+  },
+  {
+   "id": 45,
+   "type": "mulungu",
+   "x": -117.1,
+   "y": 136.4,
+   "rotation": 1.0471975511965976,
+   "scale": 0.9
+  },
+  {
+   "id": 46,
+   "type": "tree-broad",
+   "x": -112.5,
+   "y": 141,
+   "rotation": 1.6231562043547265,
+   "scale": 0.85
+  },
+  {
+   "id": 47,
+   "type": "jequitiba",
+   "x": -122.5,
+   "y": 141,
+   "rotation": 1.5009831567151235,
+   "scale": 0.85
+  },
+  {
+   "id": 48,
+   "type": "bush-mata-atlantica-waist-b",
+   "x": -122,
+   "y": 134,
+   "rotation": 0.8901179185171081,
+   "scale": 1.1
+  },
+  {
+   "id": 49,
+   "type": "tree-broad",
+   "x": -123.8,
+   "y": 142.3,
+   "rotation": 3.8920842319473548,
+   "scale": 1.1
+  },
+  {
+   "id": 50,
+   "type": "bush-mata-atlantica-waist-b",
+   "x": -126.7,
+   "y": 141.5,
+   "rotation": 4.886921905584122
+  },
+  {
+   "id": 51,
+   "type": "tree-broad",
+   "x": -128.9,
+   "y": 138.1,
+   "rotation": 5.532693728822025,
+   "scale": 1.1
+  },
+  {
+   "id": 52,
+   "type": "jequitiba",
+   "x": -125.7,
+   "y": 137.9,
+   "rotation": 3.6477381366681487,
+   "scale": 0.95
+  },
+  {
+   "id": 53,
+   "type": "tree-broad",
+   "x": -125.2,
+   "y": 134,
+   "rotation": 6.1086523819801535,
+   "scale": 1.1
+  },
+  {
+   "id": 54,
+   "type": "tree-broad",
+   "x": -127.2,
+   "y": 131.1,
+   "rotation": 3.7699111843077517
+  },
+  {
+   "id": 55,
+   "type": "mulungu",
+   "x": -129.3,
+   "y": 134.2,
+   "rotation": 0.6632251157578453,
+   "scale": 1.1
+  },
+  {
+   "id": 56,
+   "type": "palmito-jucara",
+   "x": -123.8,
+   "y": 130.9,
+   "rotation": 0.8028514559173916,
+   "scale": 0.9
+  },
+  {
+   "id": 57,
+   "type": "jequitiba",
+   "x": -125.7,
+   "y": 127.6,
+   "rotation": 0.6457718232379019,
+   "scale": 1.1
+  },
+  {
+   "id": 58,
+   "type": "tree-broad",
+   "x": -127.4,
+   "y": 123.3,
+   "rotation": 6.161012259539984,
+   "scale": 1.05
+  },
+  {
+   "id": 59,
+   "type": "tree-broad",
+   "x": -123.1,
+   "y": 124.8,
+   "rotation": 0.5759586531581288
+  },
+  {
+   "id": 60,
+   "type": "pau-brasil",
+   "x": -129.5,
+   "y": 127.4,
+   "rotation": 2.2689280275926285
+  },
+  {
+   "id": 61,
+   "type": "bush-mata-atlantica-waist-b",
+   "x": -127.6,
+   "y": 119.8,
+   "rotation": 5.672320068981571,
+   "scale": 0.85
+  },
+  {
+   "id": 62,
+   "type": "tree-broad",
+   "x": -123.7,
+   "y": 120.9,
+   "rotation": 0.9250245035569946,
+   "scale": 1.1
+  },
+  {
+   "id": 63,
+   "type": "bush-mata-atlantica-waist-b",
+   "x": -124.5,
+   "y": 118,
+   "rotation": 1.710422666954443,
+   "scale": 0.95
+  },
+  {
+   "id": 64,
+   "type": "palmito-jucara",
+   "x": -127,
+   "y": 115.7,
+   "rotation": 0.05235987755982989,
+   "scale": 0.85
+  },
+  {
+   "id": 65,
+   "type": "pau-brasil",
+   "x": -124.3,
+   "y": 113.6,
+   "rotation": 0.7330382858376184,
+   "scale": 0.9
+  },
+  {
+   "id": 66,
+   "type": "palmito-jucara",
+   "x": -129.8,
+   "y": 112.7,
+   "rotation": 6.1086523819801535
+  },
+  {
+   "id": 67,
+   "type": "tree-broad",
+   "x": -110,
+   "y": 126,
+   "rotation": 0.5585053606381855,
+   "scale": 0.95
+  },
+  {
+   "id": 68,
+   "type": "palmito-jucara",
+   "x": -121.4,
+   "y": 116.5,
+   "rotation": 4.60766922526503,
+   "scale": 1.15
+  },
+  {
+   "id": 69,
+   "type": "bush-mata-atlantica-waist-b",
+   "x": -121.5,
+   "y": 128.8,
+   "rotation": 5.654866776461628,
+   "scale": 0.85
+  },
+  {
+   "id": 70,
+   "type": "jequitiba",
+   "x": -120.8,
+   "y": 132.2,
+   "rotation": 2.0420352248333655,
+   "scale": 1.1
+  }
+ ],
+ "deployment": {
+  "column": {
+   "sections": [
+    {
+     "x": -44,
+     "y": 95
+    },
+    {
+     "x": 0,
+     "y": 95
+    },
+    {
+     "x": 44,
+     "y": 95
+    }
+   ],
+   "facing": {
+    "x": 0,
+    "y": -1
+   },
+   "area": [
+    {
+     "x": -74,
+     "y": 65
+    },
+    {
+     "x": 74,
+     "y": 65
+    },
+    {
+     "x": 74,
+     "y": 125
+    },
+    {
+     "x": -74,
+     "y": 125
+    }
+   ]
+  },
+  "legalist": {
+   "sections": [
+    {
+     "x": -44,
+     "y": -95
+    },
+    {
+     "x": 0,
+     "y": -95
+    },
+    {
+     "x": 44,
+     "y": -95
+    }
+   ],
+   "facing": {
+    "x": 0,
+    "y": 1
+   },
+   "area": [
+    {
+     "x": -74,
+     "y": -125
+    },
+    {
+     "x": 74,
+     "y": -125
+    },
+    {
+     "x": 74,
+     "y": -65
+    },
+    {
+     "x": -74,
+     "y": -65
+    }
+   ]
+  }
+ },
+ "layers": {
+  "height": {
+   "encoding": "rle-base64",
+   "type": "i16",
+   "length": 40401,
+   "data": "ANG7Ag=="
+  },
+  "paint": {
+   "encoding": "rle-base64",
+   "type": "u8",
+   "length": 160000,
+   "data": "BZ0BAA4FBAAEBfoCAA8FAQACBQQAAQUDAAEF9AIADwUJAAEFAgABBfQCABAFBQABBQMAAQUCAAEF8wIADwUDAAEFCgABBfICABAFAgABBQMAAQUFAAEF8wIAEAULAAEF9QIADwUFAAIFBQABBfMCABAFgAMADwUBAAEFAgACBQYAAQX0AgAPBQQAAgUCAAEF+AIADwUBAAEFAgABBQMAAQX4AgAPBQIAAQUFAAIF9wIAEgUGAAEFAQABBfQCABAFAgABBf0CABAFBQADBfgCAA8FAwACBQEAAgUBAAMFAQABBfMCABAFAQABBQEAAQUCAAMFAQACBfQCAA8FAgABBQEAAgUBAAIFAwABBQEAAQXyAgAPBQgABAUBAAEF8wIAEAUBAAEFAgABBQMAAwX1AgAPBQIABAUEAAEFAgACBfICAA8FAwADBQIAAQUCAAEFAQABBfMCAA8FAQAEBQEAAwUCAAEF9QIAEAUBAAIFAQABBQEAAQUFAAEF8wIADwUBAAIFAQADBQEAAQX4AgAPBQIAAQUHAAIF9QIADwUFAAIF+gIADwUCAAEFAQABBQIAAQUBAAIFAQACBfMCABIFAQADBQEAAQUEAAEF8wIAEAUDAAEFBAACBfUCABEFAgABBQEAAQUFAAMF8gIAEAUBAAMFAQACBQMAAQUBAAIF8gIAEgUBAAMFAQADBfYCABIFAgACBQEAAQUCAAIF9AIADwUBAAIFAgABBQEAAQUFAAEF8wIADwUCAAMFAQABBQEAAQX4AgAPBQIAAQUCAAMFAwACBfQCABEFBAACBQEAAQUBAAEF9QIAEQUBAAEFAQADBQEAAwX1AgAPBQEAAQUEAAIFAQABBQIAAgXzAgAPBQEAAgUBAAEFAQABBQIAAQX3AgAQBQEAAwUDAAEFAgACBfQCABEFAgABBQEAAQUBAAIFAQACBfQCABAFAQACBQUAAwX1AgAPBQQAAgUBAAUF9QIADwUCAAEFAgAFBfcCAA8FAQABBQIAAgUBAAIFAQABBfYCABAFBAABBQMAAwX1AgAQBQEAAgUCAAMFAQACBfUCAA8FAgABBQEAAgUBAAMF9wIAEQUBAAEFAQABBQIAAQUDAAEF8wIAEAUCAAQFAQABBfgCABIFAwABBQIAAgUCAAEF8wIADwUBAAIFBAABBQEAAgX2AgAPBQEAAQUBAAMFAwABBfcCAA8FAgACBQEABQUBAAEF9QIAEQUBAAEFAgADBQEAAgX1AgAQBQMAAQUBAAEFAwACBfUCABAFAQACBQQAAwX2AgAPBQIAAQUCAAEFAgABBQMAAQX0AgATBQEAAQUBAAIFAQABBfYCABQFAQABBQEAAwX2AgAQBQEAAgUCAAEFAQACBfcCABYFAwABBfYCABUFBAABBfYCAA4FAgABBQEABAUCAAEFAQABBfUCABAFAgABBQIABQX2AgAPBQIABAUBAAUF9QIADwUBAAIFAwADBfgCABAFBAACBQIAAwX1AgARBQMAAwUCAAEF9gIAEAUBAAYFAgADBfQCABMFAQAFBQEAAQX1AgAPBQMAAQUDAAQF9gIAFAUBAAEFAQABBfgCABQFAQADBQEAAwX0AgAVBQIAAQUDAAIF8wIAEQUCAAYFAwABBfMCABIFAQADBQIAAQUDAAEF8wIAEAUBAAMFAQABBQEAAwX2AgAPBQEABgUCAAEF9wIAEAUBAAEFAQACBQEAAQUFAAEF8wIAEQUBAAIFAQABBQQAAQUBAAEF8wIADwUBAAEFAQABBQIAAQUBAAIFAQABBQMAAQXxAgAPBQEAAQUBAAEFAQABBQEAAQX4AgASBQEABgUBAAIFAwABBfACABEFAgAFBQEAAQX2AgAVBQEAAQUDAAEF9QIAEAUBAAIFAQABBQEAAQUCAAEF9gIADwUBAAMFAQABBQEAAQUHAAEF8QIAEAUCAAQFAQABBQIAAQUCAAEF8QIAEAUBAAQFAQACBQIAAQX1AgAPBQQAAgUBAAIFAQABBQEAAQUCAAIF8AIAEQUCAAIFBAABBQEAAgXzAgAPBQMABAUBAAEFAQABBQcAAgXtAgAPBQIAAQUBAAMFAQABBQMAAQUDAAMF7gIAEAUBAAIFAQADBQEAAQUEAAIFAQABBe8CABAFBAABBQMAAgUCAAEFAgABBQIAAQXtAgAPBQEAAgUJAAMFAgACBQEAAQXsAgAPBQEAAwUBAAIFAQABBQEAAwUBAAEF8gIADwUBAAEFAQACBQEAAgUBAAEFBgABBfACABEFAQABBQEAAwX5AgAQBQIABQUDAAEFAQABBfMCAA8FAQABBQQABQUBAAEFAwACBe8CABEFAQAGBQEAAQUCAAEFAwABBe8CAA8FAQACBQIAAgUBAAMFAwABBQIAAQXvAgAQBQIAAgUBAAIFAQABBQIAAgUCAAIF7wIADwUBAAEFAQABBQIAAgUDAAIFAQABBfICABAFAgAGBQEAAQUBAAEFAwABBfACAA8FAQAHBQQAAQUCAAEFAQABBe8CABYFCQACBe8CABAFAQACBQEAAwUCAAEFBAABBfECABEFAQAIBQQAAQUBAAEF7wIADwUBAAIFAQABBQEABQUBAAEF9AIAFgUBAAMFAgACBfICABIFAQABBQIAAQUDAAEFAQABBfICABAFAQAGBQEAAwX1AgAQBQEACAUBAAQFAQABBfACABUFAQAGBQIAAQUBAAEF7wIAFgUBAAEFAgADBQMAAQXvAgAPBQEAAwUCAAYF9QIAEgUCAAEFAQABBQUAAwUBAAEF7wIADwUBAAkFBgACBe4CABAFAQAFBQEABAUGAAEF7gIAEAUBAAMFAQABBQUAAQX0AgAaBQEAAQUBAAEF8gIAGgUCAAEFAgABBfACAA8FAgACBQEAAgUBAAEFAwABBQUAAQXuAgAQBQMAAQUCAAEFAQABBQgAAQXuAgAWBQYAAgUCAAIF7gIAEAUCAAEFAQAFBfcCABIFAgABBQEAAwUBAAEFBgABBe4CAA8FAgAFBQEAAgUGAAEF8AIAEQUCAAUFBAABBQIAAQXwAgAPBQEABAUBAAMFAgACBQEAAgXxAgAPBQMAAgUCAAIFAQABBfYCABQFAQABBQIAAQUEAAEF8gIAEwUBAAMFAgABBQIAAQUCAAEF8AIAFAUBAAQFBAACBfECABMFAQADBQUAAQXzAgAQBQEAAgUBAAEFAQAEBQUAAQXwAgATBQIAAgUBAAEFAwABBQEAAQXxAgAQBQEABAUBAAEF+QIAFAUDAAEFAgABBfUCABEFAQADBQEAAQUBAAEFAgABBfQCABIFAQABBQEAAQUBAAIFAwABBQEAAQXxAgARBQEAAgUBAAEF+gIAEQUBAAQFAQACBfcCABMFAQACBQEAAgX3AgAVBQEAAQUIAAIF7wIAEQUCAAIFAgABBQEAAgUCAAEFAQABBfACABQFAQABBQEAAQUBAAEF9gIAFQUBAAEFAQACBQEAAgXzAgATBQEAAQUBAAMF9wIAGQUCAAEF9AIAFQUDAAEFAgABBQIAAQXxAgAXBQEAAQUCAAEF9AIAEQUBAAQFBQABBfQCABEFAQACBQEAAwUDAAEF9AIAEwUBAAEFAQABBQEAAgX2AgATBQEAAwUBAAEF9wIAEQUBAAUFAQABBfcCABIFAQAFBQEAAgX1AgAXBfkCABEFAQACBQQAAQUBAAEF9QIAEQUBAAEFAgADBfgCABQFAgABBQQAAQX0AgAQBQEAAQUCAAEFAQABBfkCABEFAQABBQIAAQUBAAMF9QIAEgUBAAEFAwABBfgCABMFAQACBQQAAQX1AgAUBQIAAQX5AgAQBQEAAwUBAAIF+QIAEwUBAAIFAgABBfYCABEFAQACBQMAAgX3AgARBQEAAgUDAAMF9gIAEQUBAAEFAQACBQEAAQX4AgASBQEAAwUBAAMF9gIAEAUCAAMFAgABBfgCABAFAgADBQMAAgX2AgAQBQIAAwUBAAQF9gIAEQUBAAIFAQABBQEAAgX3AgAPBQEABwUDAAEF9QIAEAUCAAMFAQADBfcCAA8FAQABBQEABAUBAAIFAQABBfUCABYFAQACBQEAAQX1AgAWBQIAAQX3AgARBQIAAgUCAAEF+AIAEQUBAAEFAQACBQEAAQUBAAEF9gIAEQUCAAQFAgABBfYCABQFAgABBQEAAQUCAAEF8wIAEgUBAAcFAgABBfMCABMFAwACBQEAAQX2AgAbBfUCABUFAQABBQIAAgX1AgAZBQEAAQX1AgAUBQEAAgUBAAEF9wIAEwUCAAEFAQACBQIAAQX0AgAXBQEAAQUCAAEF9AIAEwUBAAEFAQABBQIAAQX2AgAYBQIAAQX1AgASBQIAAQUBAAEFAgACBfUCABIFAgADBQEAAQX2AgARBQEAAwUEAAIF9QIAEgUCAAIFBQACBfMCABEFBAADBQMAAQX0AgARBQEABQUEAAEF9AIADwUCAAIFAQACBQEAAQUCAAEF9QIAEAUBAAIFAQABBQIAAgUBAAEF9QIAEAUBAAYFAgABBQEAAQX0AgAQBQEAAgUBAAUFAQACBfQCABAFAQABBQEABQUCAAIF9AIAEgUBAAQFAQABBfgCABAFAQAFBQIAAQUBAAEF9QIAEAUBAAEFAwABBQMAAgX1AgAPBQMAAgUBAAIFAgACBfUCABEFAgABBQEAAQUEAAEF9QIAEQUBAAEFAQACBfoCABMFAQACBQIAAQX3AgAPBQMAAQUBAAEF+gIAEwUBAAEF+wIAEAUDAAIF+wIAEgUBAAMF+wIADwUDAAUF+QIAEgUBAAEFAQABBfoCAA8FAQACBQEAAgX7AgARBQEAAgX8AgAPBQMAAgX7AgAQBQEAAQUCAAEF+wIAEAUBAAEFAQABBQIAAQX6AgAQBQEAAQUBAAEFAQABBfoCABQF+gIAEwUBAAIFAQABBfYCAAEFAwAPBQEAAQUBAAEFAQABBQIAAQX1AgABBQEAEAUCAAIFAQACBfkCABIFAgABBQEAAQX3AgABBQEAEQUBAAQF+AIAEgUFAAEFAgABBfcCAA8FAgADBQEAAQX4AgABBQEADwUBAAEFAwABBQEAAgX4AgATBQEAAQUCAAEF9wIAEAUBAAQF/AIADwUDAAEFAQADBQIAAQX2AgAPBQIABAUEAAEF9gIAEAUCAAEFAgABBfoCABEFAQAEBQIAAQX3AgAPBQEABQX7AgAPBQIAAgUHAAEF9QIAFAUBAAEFAgABBfcCAA8FAgABBQEABAX5AgAUBQEAAQUEAAEF9QIADwUBAAIFAQABBQEAAQUCAAEFAQABBfUCABAFAQACBQIAAQUBAAEF+AIADwUBAAEFAwACBQMAAQX1AgAQBQEABAUBAAEFAQABBfcCABEFAQAEBQEAAQX4AgAPBQEAAwUBAAMF+QIAEwUCAAEFAwABBfYCABIFAQADBfoCABIFAQABBQIAAQX5AgASBQEAAgX6AgAWBfoCABQFBQABBfYCABMFBgABBfYCABIFAQABBQEAAQUCAAEF9wIAEwUBAAEF+wIAEwUBAAEFAgABBfgCABIFAQACBfsCABEFAQACBQEAAQX6AgATBQUAAQX3AgARBQEAAQUCAAMF+AIAEQUBAAEFAwADBfcCABIFAQAEBfkCABEFAQAEBQEAAQUBAAEF9QIAEgUBAAIFAwABBQEAAQX1AgAUBQMAAQUCAAEF9gIAEAUDAAEFAwABBQIAAQX1AgAQBQEAAwUBAAUF9QIAEAUBAAMFBgABBfYCABMFAQABBQQAAQX2AgAPBQEAAgUBAAIF+QIAAQUBABAFAgABBQEAAQUBAAEF9QIAAgUCAA8FAQAHBfgCABAFAgABBQEAAQUBAAEFAQABBQEAAQXwAgACBQMAEwUBAAEFAwABBQEAAQXxAgABBQIAAQUBABMFAgABBQIAAQXzAgABBQMAEAUCAAIFAwABBfECAAEFAgABBQMAEAUEAAIFAwABBfMCAAEFAgAPBQQAAQUE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"
+  },
+  "vegetation": {
+   "encoding": "rle-base64",
+   "type": "u8",
+   "length": 160000,
+   "data": "ALjMBwMDAAEDBwABBAQA/gIDDQQGAP0CAw0EBwD8AgMNBAcDAQD7AgMNBAcDAQD7AgMOBAUDAgD8AgMOBAMDAwD8AgMTAP0CAxIA/QIDEwD9AgMTAP0CAxQA/QIDEwD9AgMTAP0CAxQA/QIDEwD9AgMTAP0CAxMA/gIDEgD+AgMSAP4CAxEA/wIDEQD/AgMQAIADAxAAgAMDEACAAwMIAAEDBwCAAwMIAAEDBwCAAwMQAIADAw4EAQMCAP8CAwwEBQD/AgMMBAYA/wIDCgQHAIEDAwgEBwCEAwMBAAcEBACMAwQDAwEAjAMEAQMDAIwDBAIDAQCNAwQDAI0DBAMAjQMEAwCNAwQDAI0DBAMAjQMEAgCOAwQBAIiPAQ=="
+  }
+ }
+}

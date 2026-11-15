@@ -1,0 +1,4458 @@
+{
+ "format": "prestes-map",
+ "version": 9,
+ "id": "copacabana",
+ "size": "small",
+ "name": {
+  "en": "Copacabana Beach, 1922",
+  "pt-BR": "Praia de Copacabana, 1922"
+ },
+ "description": {
+  "en": "Avenida Atlântica on the afternoon of 6 July 1922: out of the fort gate, past the fishermen's boats and the avenue works, to the government's line at Rua Barroso.",
+  "pt-BR": "A Avenida Atlântica na tarde de 6 de julho de 1922: do portão do forte, pelos barcos dos pescadores e pelas obras da avenida, até a linha do governo na Rua Barroso."
+ },
+ "use": "campaign",
+ "mission": "prologue-18-do-forte",
+ "light": {
+  "time": 14,
+  "bearing": 320
+ },
+ "setting": {
+  "label": "historical-setting-fictional-place",
+  "sourceNote": "Cenário histórico, lugar fictício. Avenida Atlântica, Copacabana, 6 jul. 1922. macaulay-1974, cap. I, pp. 26-29; mapa de Copacabana de 1922 (domínio público, Serviço Geográfico Militar). A distância do forte à Rua Barroso (cerca de 1,5 km) foi comprimida; o traçado é uma abstração de jogo."
+ },
+ "palette": "urban",
+ "waterLevel": -1.2,
+ "baseMaterial": "sand",
+ "roads": [
+  {
+   "id": 1,
+   "type": "paved-road",
+   "width": 8,
+   "ditches": {
+    "left": false,
+    "right": false
+   },
+   "points": [
+    {
+     "x": 4,
+     "y": -120
+    },
+    {
+     "x": 4,
+     "y": 112
+    }
+   ]
+  },
+  {
+   "id": 2,
+   "type": "cobbled-street",
+   "width": 7,
+   "ditches": {
+    "left": false,
+    "right": false
+   },
+   "points": [
+    {
+     "x": -72,
+     "y": -120
+    },
+    {
+     "x": -72,
+     "y": 40
+    },
+    {
+     "x": -60,
+     "y": 70
+    }
+   ]
+  },
+  {
+   "id": 3,
+   "type": "cobbled-street",
+   "width": 7,
+   "ditches": {
+    "left": false,
+    "right": false
+   },
+   "points": [
+    {
+     "x": -120,
+     "y": -64
+    },
+    {
+     "x": 4,
+     "y": -64
+    }
+   ]
+  },
+  {
+   "id": 4,
+   "type": "cobbled-street",
+   "width": 6,
+   "ditches": {
+    "left": false,
+    "right": false
+   },
+   "points": [
+    {
+     "x": -120,
+     "y": -2
+    },
+    {
+     "x": 4,
+     "y": -2
+    }
+   ]
+  },
+  {
+   "id": 5,
+   "type": "dirt-road",
+   "width": 5,
+   "ditches": {
+    "left": false,
+    "right": false
+   },
+   "points": [
+    {
+     "x": -60,
+     "y": 70
+    },
+    {
+     "x": 4,
+     "y": 62
+    }
+   ]
+  },
+  {
+   "id": 6,
+   "type": "trail",
+   "width": 2.5,
+   "ditches": {
+    "left": false,
+    "right": false
+   },
+   "points": [
+    {
+     "x": -60,
+     "y": 70
+    },
+    {
+     "x": -96,
+     "y": 92
+    },
+    {
+     "x": -116,
+     "y": 118
+    }
+   ]
+  }
+ ],
+ "rivers": [],
+ "ponds": [
+  {
+   "id": 1,
+   "kind": "deep",
+   "polygon": [
+    {
+     "x": 66.9,
+     "y": -120
+    },
+    {
+     "x": 68.2,
+     "y": -108
+    },
+    {
+     "x": 66.9,
+     "y": -96
+    },
+    {
+     "x": 64.4,
+     "y": -84
+    },
+    {
+     "x": 63.2,
+     "y": -72
+    },
+    {
+     "x": 63.2,
+     "y": -60
+    },
+    {
+     "x": 62.5,
+     "y": -48
+    },
+    {
+     "x": 60.8,
+     "y": -36
+    },
+    {
+     "x": 60.2,
+     "y": -24
+    },
+    {
+     "x": 62.1,
+     "y": -12
+    },
+    {
+     "x": 65,
+     "y": 0
+    },
+    {
+     "x": 66.4,
+     "y": 12
+    },
+    {
+     "x": 66,
+     "y": 24
+    },
+    {
+     "x": 65.8,
+     "y": 36
+    },
+    {
+     "x": 66.7,
+     "y": 48
+    },
+    {
+     "x": 66.7,
+     "y": 60
+    },
+    {
+     "x": 64.5,
+     "y": 72
+    },
+    {
+     "x": 63.7,
+     "y": 84
+    },
+    {
+     "x": 66.8,
+     "y": 96
+    },
+    {
+     "x": 72,
+     "y": 108
+    },
+    {
+     "x": 77.3,
+     "y": 120
+    },
+    {
+     "x": 120,
+     "y": 120
+    },
+    {
+     "x": 120,
+     "y": -120
+    }
+   ]
+  },
+  {
+   "id": 2,
+   "kind": "ford",
+   "polygon": [
+    {
+     "x": 52.9,
+     "y": -120
+    },
+    {
+     "x": 54.2,
+     "y": -108
+    },
+    {
+     "x": 52.9,
+     "y": -96
+    },
+    {
+     "x": 50.4,
+     "y": -84
+    },
+    {
+     "x": 49.2,
+     "y": -72
+    },
+    {
+     "x": 49.2,
+     "y": -60
+    },
+    {
+     "x": 48.5,
+     "y": -48
+    },
+    {
+     "x": 46.8,
+     "y": -36
+    },
+    {
+     "x": 46.2,
+     "y": -24
+    },
+    {
+     "x": 48.1,
+     "y": -12
+    },
+    {
+     "x": 51,
+     "y": 0
+    },
+    {
+     "x": 52.4,
+     "y": 12
+    },
+    {
+     "x": 52,
+     "y": 24
+    },
+    {
+     "x": 51.8,
+     "y": 36
+    },
+    {
+     "x": 52.7,
+     "y": 48
+    },
+    {
+     "x": 52.7,
+     "y": 60
+    },
+    {
+     "x": 50.5,
+     "y": 72
+    },
+    {
+     "x": 49.7,
+     "y": 84
+    },
+    {
+     "x": 52.8,
+     "y": 96
+    },
+    {
+     "x": 58,
+     "y": 108
+    },
+    {
+     "x": 63.3,
+     "y": 120
+    },
+    {
+     "x": 77.3,
+     "y": 120
+    },
+    {
+     "x": 72,
+     "y": 108
+    },
+    {
+     "x": 66.8,
+     "y": 96
+    },
+    {
+     "x": 63.7,
+     "y": 84
+    },
+    {
+     "x": 64.5,
+     "y": 72
+    },
+    {
+     "x": 66.7,
+     "y": 60
+    },
+    {
+     "x": 66.7,
+     "y": 48
+    },
+    {
+     "x": 65.8,
+     "y": 36
+    },
+    {
+     "x": 66,
+     "y": 24
+    },
+    {
+     "x": 66.4,
+     "y": 12
+    },
+    {
+     "x": 65,
+     "y": 0
+    },
+    {
+     "x": 62.1,
+     "y": -12
+    },
+    {
+     "x": 60.2,
+     "y": -24
+    },
+    {
+     "x": 60.8,
+     "y": -36
+    },
+    {
+     "x": 62.5,
+     "y": -48
+    },
+    {
+     "x": 63.2,
+     "y": -60
+    },
+    {
+     "x": 63.2,
+     "y": -72
+    },
+    {
+     "x": 64.4,
+     "y": -84
+    },
+    {
+     "x": 66.9,
+     "y": -96
+    },
+    {
+     "x": 68.2,
+     "y": -108
+    },
+    {
+     "x": 66.9,
+     "y": -120
+    }
+   ]
+  }
+ ],
+ "bridges": [],
+ "ferries": [],
+ "lines": [
+  {
+   "id": 1,
+   "kind": "coped-wall",
+   "height": 3.2,
+   "points": [
+    {
+     "x": -38,
+     "y": 100
+    },
+    {
+     "x": 1,
+     "y": 100
+    }
+   ]
+  },
+  {
+   "id": 2,
+   "kind": "coped-wall",
+   "height": 3.2,
+   "points": [
+    {
+     "x": 8,
+     "y": 100
+    },
+    {
+     "x": 46,
+     "y": 100
+    },
+    {
+     "x": 52,
+     "y": 120
+    }
+   ]
+  },
+  {
+   "id": 3,
+   "kind": "coped-wall",
+   "height": 3.2,
+   "points": [
+    {
+     "x": -38,
+     "y": 100
+    },
+    {
+     "x": -38,
+     "y": 120
+    }
+   ]
+  },
+  {
+   "id": 4,
+   "kind": "coped-wall",
+   "height": 0.8,
+   "points": [
+    {
+     "x": 13.5,
+     "y": -116
+    },
+    {
+     "x": 13.5,
+     "y": -93
+    }
+   ]
+  },
+  {
+   "id": 5,
+   "kind": "coped-wall",
+   "height": 0.8,
+   "points": [
+    {
+     "x": 13.5,
+     "y": -88
+    },
+    {
+     "x": 13.5,
+     "y": -65
+    }
+   ]
+  },
+  {
+   "id": 6,
+   "kind": "coped-wall",
+   "height": 0.8,
+   "points": [
+    {
+     "x": 13.5,
+     "y": -60
+    },
+    {
+     "x": 13.5,
+     "y": -37
+    }
+   ]
+  },
+  {
+   "id": 7,
+   "kind": "coped-wall",
+   "height": 0.8,
+   "points": [
+    {
+     "x": 13.5,
+     "y": -32
+    },
+    {
+     "x": 13.5,
+     "y": -9
+    }
+   ]
+  },
+  {
+   "id": 8,
+   "kind": "coped-wall",
+   "height": 0.8,
+   "points": [
+    {
+     "x": 13.5,
+     "y": -4
+    },
+    {
+     "x": 13.5,
+     "y": 19
+    }
+   ]
+  },
+  {
+   "id": 9,
+   "kind": "coped-wall",
+   "height": 0.8,
+   "points": [
+    {
+     "x": 13.5,
+     "y": 24
+    },
+    {
+     "x": 13.5,
+     "y": 47
+    }
+   ]
+  },
+  {
+   "id": 10,
+   "kind": "coped-wall",
+   "height": 0.8,
+   "points": [
+    {
+     "x": 13.5,
+     "y": 52
+    },
+    {
+     "x": 13.5,
+     "y": 75
+    }
+   ]
+  },
+  {
+   "id": 11,
+   "kind": "coped-wall",
+   "height": 0.8,
+   "points": [
+    {
+     "x": 13.5,
+     "y": 80
+    },
+    {
+     "x": 13.5,
+     "y": 94
+    }
+   ]
+  },
+  {
+   "id": 12,
+   "kind": "iron-railing",
+   "height": 1.4,
+   "points": [
+    {
+     "x": -2,
+     "y": -54
+    },
+    {
+     "x": -2,
+     "y": -12
+    }
+   ]
+  },
+  {
+   "id": 13,
+   "kind": "iron-railing",
+   "height": 1.4,
+   "points": [
+    {
+     "x": -2,
+     "y": 8
+    },
+    {
+     "x": -2,
+     "y": 52
+    }
+   ]
+  },
+  {
+   "id": 14,
+   "kind": "brick-wall",
+   "height": 2,
+   "points": [
+    {
+     "x": -66,
+     "y": -54
+    },
+    {
+     "x": -66,
+     "y": -12
+    }
+   ]
+  },
+  {
+   "id": 15,
+   "kind": "brick-wall",
+   "height": 2,
+   "points": [
+    {
+     "x": -110,
+     "y": 8
+    },
+    {
+     "x": -78,
+     "y": 8
+    },
+    {
+     "x": -78,
+     "y": 40
+    }
+   ]
+  }
+ ],
+ "trenches": [],
+ "objects": [
+  {
+   "id": 1,
+   "type": "iron-gate",
+   "x": 4,
+   "y": 100,
+   "rotation": 0,
+   "scale": 1.6
+  },
+  {
+   "id": 2,
+   "type": "guardhouse",
+   "x": -6,
+   "y": 109,
+   "rotation": 0
+  },
+  {
+   "id": 3,
+   "type": "guardhouse",
+   "x": 14,
+   "y": 109,
+   "rotation": 0
+  },
+  {
+   "id": 4,
+   "type": "barracks-block",
+   "x": -22,
+   "y": 110,
+   "rotation": 0
+  },
+  {
+   "id": 5,
+   "type": "flagpole",
+   "x": 22,
+   "y": 108,
+   "rotation": 0
+  },
+  {
+   "id": 6,
+   "type": "sandbags",
+   "x": -5,
+   "y": 92,
+   "rotation": 0
+  },
+  {
+   "id": 7,
+   "type": "sandbags",
+   "x": 17,
+   "y": 92,
+   "rotation": 0
+  },
+  {
+   "id": 8,
+   "type": "crate",
+   "x": 20,
+   "y": 110,
+   "rotation": 0
+  },
+  {
+   "id": 9,
+   "type": "ammo-boxes",
+   "x": 24,
+   "y": 108,
+   "rotation": 0
+  },
+  {
+   "id": 10,
+   "type": "ammo-boxes",
+   "x": 25,
+   "y": 111,
+   "rotation": 0.6
+  },
+  {
+   "id": 11,
+   "type": "outcrop",
+   "x": 52,
+   "y": 92,
+   "rotation": 0.4,
+   "scale": 1.2
+  },
+  {
+   "id": 12,
+   "type": "matacao",
+   "x": 60,
+   "y": 98,
+   "rotation": 1,
+   "scale": 1.1
+  },
+  {
+   "id": 13,
+   "type": "outcrop",
+   "x": 66,
+   "y": 90,
+   "rotation": 2.1,
+   "scale": 1
+  },
+  {
+   "id": 14,
+   "type": "matacao",
+   "x": 58,
+   "y": 108,
+   "rotation": 0.2,
+   "scale": 1.3
+  },
+  {
+   "id": 15,
+   "type": "outcrop",
+   "x": 70,
+   "y": 104,
+   "rotation": 1.2,
+   "scale": 1.3
+  },
+  {
+   "id": 16,
+   "type": "boulder",
+   "x": 76,
+   "y": 96,
+   "rotation": 0,
+   "scale": 1.2
+  },
+  {
+   "id": 17,
+   "type": "boulder",
+   "x": 48,
+   "y": 84,
+   "rotation": 0.7,
+   "scale": 1
+  },
+  {
+   "id": 18,
+   "type": "outcrop",
+   "x": 64,
+   "y": 116,
+   "rotation": 2.6,
+   "scale": 1.1
+  },
+  {
+   "id": 19,
+   "type": "sobrado",
+   "x": -10,
+   "y": -104,
+   "rotation": 1.5708,
+   "variant": "whitewash"
+  },
+  {
+   "id": 20,
+   "type": "casa-terrea",
+   "x": -10,
+   "y": -86,
+   "rotation": 1.5708,
+   "variant": "ochre"
+  },
+  {
+   "id": 21,
+   "type": "venda",
+   "x": -10,
+   "y": -54,
+   "rotation": 1.5708,
+   "variant": "rose"
+  },
+  {
+   "id": 22,
+   "type": "sobrado",
+   "x": -11,
+   "y": -24,
+   "rotation": 1.5708,
+   "variant": "blue"
+  },
+  {
+   "id": 23,
+   "type": "casa-terrea",
+   "x": -10,
+   "y": 16,
+   "rotation": 1.5708,
+   "variant": "whitewash"
+  },
+  {
+   "id": 24,
+   "type": "terraced-house-wide",
+   "x": -10,
+   "y": 36,
+   "rotation": 1.5708,
+   "variant": "ochre"
+  },
+  {
+   "id": 25,
+   "type": "casa-terrea",
+   "x": -10,
+   "y": 76,
+   "rotation": 1.5708,
+   "variant": "rose"
+  },
+  {
+   "id": 26,
+   "type": "sobrado",
+   "x": -30,
+   "y": -76,
+   "rotation": 0,
+   "variant": "ochre"
+  },
+  {
+   "id": 27,
+   "type": "casa-terrea",
+   "x": -46,
+   "y": -76,
+   "rotation": 0,
+   "variant": "whitewash"
+  },
+  {
+   "id": 28,
+   "type": "terraced-house",
+   "x": -30,
+   "y": -50,
+   "rotation": 3.1416,
+   "variant": "blue"
+  },
+  {
+   "id": 29,
+   "type": "terraced-house",
+   "x": -38,
+   "y": -50,
+   "rotation": 3.1416,
+   "variant": "blue"
+  },
+  {
+   "id": 30,
+   "type": "casa-terrea",
+   "x": -46,
+   "y": 12,
+   "rotation": 3.1416,
+   "variant": "adobe"
+  },
+  {
+   "id": 31,
+   "type": "colonist-house",
+   "x": -30,
+   "y": 46,
+   "rotation": 1.5708,
+   "variant": "whitewash"
+  },
+  {
+   "id": 32,
+   "type": "sobrado",
+   "x": -90,
+   "y": -104,
+   "rotation": 1.5708,
+   "variant": "rose"
+  },
+  {
+   "id": 33,
+   "type": "casa-terrea",
+   "x": -90,
+   "y": -50,
+   "rotation": -1.5708,
+   "variant": "ochre"
+  },
+  {
+   "id": 34,
+   "type": "venda",
+   "x": -84,
+   "y": -14,
+   "rotation": 0,
+   "variant": "whitewash"
+  },
+  {
+   "id": 35,
+   "type": "casa-terrea",
+   "x": -100,
+   "y": -14,
+   "rotation": 0,
+   "variant": "blue"
+  },
+  {
+   "id": 36,
+   "type": "chapel",
+   "x": -96,
+   "y": 24,
+   "rotation": 1.5708,
+   "variant": "whitewash"
+  },
+  {
+   "id": 37,
+   "type": "casa-terrea",
+   "x": -58,
+   "y": -104,
+   "rotation": -1.5708,
+   "variant": "ochre"
+  },
+  {
+   "id": 38,
+   "type": "lamp",
+   "x": 9.5,
+   "y": -112,
+   "rotation": 0
+  },
+  {
+   "id": 39,
+   "type": "lamp",
+   "x": 9.5,
+   "y": -88,
+   "rotation": 0
+  },
+  {
+   "id": 40,
+   "type": "lamp",
+   "x": 9.5,
+   "y": -64,
+   "rotation": 0
+  },
+  {
+   "id": 41,
+   "type": "lamp",
+   "x": 9.5,
+   "y": -40,
+   "rotation": 0
+  },
+  {
+   "id": 42,
+   "type": "lamp",
+   "x": 9.5,
+   "y": -16,
+   "rotation": 0
+  },
+  {
+   "id": 43,
+   "type": "lamp",
+   "x": 9.5,
+   "y": 8,
+   "rotation": 0
+  },
+  {
+   "id": 44,
+   "type": "lamp",
+   "x": 9.5,
+   "y": 32,
+   "rotation": 0
+  },
+  {
+   "id": 45,
+   "type": "lamp",
+   "x": 9.5,
+   "y": 56,
+   "rotation": 0
+  },
+  {
+   "id": 46,
+   "type": "lamp",
+   "x": 9.5,
+   "y": 80,
+   "rotation": 0
+  },
+  {
+   "id": 47,
+   "type": "telegraph-pole",
+   "x": -68,
+   "y": -110,
+   "rotation": 0
+  },
+  {
+   "id": 48,
+   "type": "telegraph-pole",
+   "x": -68,
+   "y": -76,
+   "rotation": 0
+  },
+  {
+   "id": 49,
+   "type": "telegraph-pole",
+   "x": -68,
+   "y": -42,
+   "rotation": 0
+  },
+  {
+   "id": 50,
+   "type": "telegraph-pole",
+   "x": -68,
+   "y": -8,
+   "rotation": 0
+  },
+  {
+   "id": 51,
+   "type": "telegraph-pole",
+   "x": -68,
+   "y": 26,
+   "rotation": 0
+  },
+  {
+   "id": 52,
+   "type": "kiosk",
+   "x": 11,
+   "y": -8,
+   "rotation": 0
+  },
+  {
+   "id": 53,
+   "type": "street-sign",
+   "x": -1,
+   "y": -59,
+   "rotation": 0
+  },
+  {
+   "id": 54,
+   "type": "square-bench",
+   "x": 11,
+   "y": 30,
+   "rotation": 1.5708
+  },
+  {
+   "id": 55,
+   "type": "square-bench",
+   "x": 11,
+   "y": -40,
+   "rotation": 1.5708
+  },
+  {
+   "id": 56,
+   "type": "jangada",
+   "x": 34,
+   "y": 54,
+   "rotation": 0.3
+  },
+  {
+   "id": 57,
+   "type": "canoa-de-tolda",
+   "x": 28,
+   "y": 66,
+   "rotation": 0.15
+  },
+  {
+   "id": 58,
+   "type": "boat-overturned",
+   "x": 40,
+   "y": 70,
+   "rotation": 1.3
+  },
+  {
+   "id": 59,
+   "type": "boat-overturned",
+   "x": 22,
+   "y": 46,
+   "rotation": 0.4
+  },
+  {
+   "id": 60,
+   "type": "dugout-canoe",
+   "x": 36,
+   "y": 40,
+   "rotation": 0.2
+  },
+  {
+   "id": 61,
+   "type": "net-line",
+   "x": 26,
+   "y": 78,
+   "rotation": 0
+  },
+  {
+   "id": 62,
+   "type": "net-line",
+   "x": 32,
+   "y": 82,
+   "rotation": 0.1
+  },
+  {
+   "id": 63,
+   "type": "fish-trap",
+   "x": 30,
+   "y": 74,
+   "rotation": 0
+  },
+  {
+   "id": 64,
+   "type": "barrel",
+   "x": 24,
+   "y": 72,
+   "rotation": 0
+  },
+  {
+   "id": 65,
+   "type": "stone-pile",
+   "x": 16,
+   "y": -26,
+   "rotation": 0
+  },
+  {
+   "id": 66,
+   "type": "stone-pile",
+   "x": 19,
+   "y": -31,
+   "rotation": 0.8
+  },
+  {
+   "id": 67,
+   "type": "stone-pile",
+   "x": 15,
+   "y": -38,
+   "rotation": 1.7
+  },
+  {
+   "id": 68,
+   "type": "woodpile",
+   "x": 20,
+   "y": -22,
+   "rotation": 0.2
+  },
+  {
+   "id": 69,
+   "type": "cart",
+   "x": 22,
+   "y": -36,
+   "rotation": 0.4
+  },
+  {
+   "id": 70,
+   "type": "fallen-log",
+   "x": 18,
+   "y": -44,
+   "rotation": 1.5
+  },
+  {
+   "id": 71,
+   "type": "fallen-log",
+   "x": 23,
+   "y": -42,
+   "rotation": 1.2
+  },
+  {
+   "id": 72,
+   "type": "crate",
+   "x": 14,
+   "y": -20,
+   "rotation": 0
+  },
+  {
+   "id": 73,
+   "type": "barrel",
+   "x": 21,
+   "y": -27,
+   "rotation": 0
+  },
+  {
+   "id": 74,
+   "type": "fallen-log",
+   "x": 34,
+   "y": 6,
+   "rotation": 0.4
+  },
+  {
+   "id": 75,
+   "type": "rock-small",
+   "x": 40,
+   "y": -10,
+   "rotation": 0,
+   "scale": 1.3
+  },
+  {
+   "id": 76,
+   "type": "fallen-log",
+   "x": 30,
+   "y": -64,
+   "rotation": 1.9
+  },
+  {
+   "id": 77,
+   "type": "barricade",
+   "x": 3,
+   "y": -76,
+   "rotation": 0
+  },
+  {
+   "id": 78,
+   "type": "sandbags",
+   "x": 12,
+   "y": -76,
+   "rotation": 0
+  },
+  {
+   "id": 79,
+   "type": "sandbags",
+   "x": 22,
+   "y": -78,
+   "rotation": 0.1
+  },
+  {
+   "id": 80,
+   "type": "lorry",
+   "x": -22,
+   "y": -70,
+   "rotation": 1.5708
+  },
+  {
+   "id": 81,
+   "type": "motor-car",
+   "x": -40,
+   "y": -59,
+   "rotation": 1.5708
+  },
+  {
+   "id": 82,
+   "type": "lorry",
+   "x": -88,
+   "y": -82,
+   "rotation": 0
+  },
+  {
+   "id": 83,
+   "type": "bush-mata-atlantica-waist-b",
+   "x": -114.1,
+   "y": 88.4,
+   "rotation": 0.7714,
+   "scale": 1
+  },
+  {
+   "id": 84,
+   "type": "bush-mata-atlantica-waist-b",
+   "x": -87.6,
+   "y": 113.7,
+   "rotation": 0.3682,
+   "scale": 0.9
+  },
+  {
+   "id": 85,
+   "type": "bush-mata-atlantica-waist-a",
+   "x": -94.3,
+   "y": 110.6,
+   "rotation": 3.9837,
+   "scale": 1
+  },
+  {
+   "id": 86,
+   "type": "tree-broad",
+   "x": -76.4,
+   "y": 90.8,
+   "rotation": 2.0762,
+   "scale": 1
+  },
+  {
+   "id": 87,
+   "type": "jequitiba",
+   "x": -107.8,
+   "y": 101.9,
+   "rotation": 0.4891,
+   "scale": 1.2
+  },
+  {
+   "id": 88,
+   "type": "palmito-jucara",
+   "x": -95.8,
+   "y": 83.2,
+   "rotation": 0.8654,
+   "scale": 1.2
+  },
+  {
+   "id": 89,
+   "type": "jequitiba",
+   "x": -78.9,
+   "y": 109.4,
+   "rotation": 5.7336,
+   "scale": 1.1
+  },
+  {
+   "id": 90,
+   "type": "bush-mata-atlantica-waist-b",
+   "x": -115.9,
+   "y": 108.3,
+   "rotation": 4.8035,
+   "scale": 1
+  },
+  {
+   "id": 91,
+   "type": "tree-broad",
+   "x": -83.1,
+   "y": 92.5,
+   "rotation": 6.1888,
+   "scale": 1.2
+  },
+  {
+   "id": 92,
+   "type": "palmito-jucara",
+   "x": -98.1,
+   "y": 84.5,
+   "rotation": 4.8444,
+   "scale": 1.2
+  },
+  {
+   "id": 93,
+   "type": "bush-mata-atlantica-head-b",
+   "x": -87.1,
+   "y": 74.2,
+   "rotation": 1.4803,
+   "scale": 1.1
+  },
+  {
+   "id": 94,
+   "type": "tree-broad",
+   "x": -103.2,
+   "y": 112.6,
+   "rotation": 3.7844,
+   "scale": 0.9
+  },
+  {
+   "id": 95,
+   "type": "bush-mata-atlantica-waist-b",
+   "x": -93.8,
+   "y": 99.8,
+   "rotation": 3.989,
+   "scale": 1.1
+  },
+  {
+   "id": 96,
+   "type": "jequitiba",
+   "x": -106.2,
+   "y": 114.9,
+   "rotation": 1.6452,
+   "scale": 1.2
+  },
+  {
+   "id": 97,
+   "type": "palmito-jucara",
+   "x": -112.8,
+   "y": 92.7,
+   "rotation": 2.4301,
+   "scale": 1
+  },
+  {
+   "id": 98,
+   "type": "manaca-flowering",
+   "x": -115.1,
+   "y": 96.8,
+   "rotation": 5.0036,
+   "scale": 0.9
+  },
+  {
+   "id": 99,
+   "type": "bush-mata-atlantica-head-a",
+   "x": -88.6,
+   "y": 91.2,
+   "rotation": 5.3087,
+   "scale": 1.1
+  },
+  {
+   "id": 100,
+   "type": "jequitiba",
+   "x": -109.9,
+   "y": 83.4,
+   "rotation": 5.2768,
+   "scale": 0.9
+  },
+  {
+   "id": 101,
+   "type": "palmito-jucara",
+   "x": -97.7,
+   "y": 63.7,
+   "rotation": 4.7349,
+   "scale": 1.1
+  },
+  {
+   "id": 102,
+   "type": "mulungu",
+   "x": -116.9,
+   "y": 93.5,
+   "rotation": 4.2813,
+   "scale": 0.9
+  },
+  {
+   "id": 103,
+   "type": "jequitiba",
+   "x": -93.6,
+   "y": 86.6,
+   "rotation": 4.7743,
+   "scale": 1
+  },
+  {
+   "id": 104,
+   "type": "mulungu",
+   "x": -102.4,
+   "y": 108.9,
+   "rotation": 2.6445,
+   "scale": 1
+  },
+  {
+   "id": 105,
+   "type": "manaca-flowering",
+   "x": -112.6,
+   "y": 83.5,
+   "rotation": 0.1289,
+   "scale": 1.2
+  },
+  {
+   "id": 106,
+   "type": "mulungu",
+   "x": -107.1,
+   "y": 60.4,
+   "rotation": 1.1677,
+   "scale": 1.2
+  },
+  {
+   "id": 107,
+   "type": "bush-mata-atlantica-waist-b",
+   "x": -106,
+   "y": 111.8,
+   "rotation": 4.3415,
+   "scale": 0.9
+  },
+  {
+   "id": 108,
+   "type": "bush-mata-atlantica-waist-b",
+   "x": -82.2,
+   "y": 116,
+   "rotation": 2.5206,
+   "scale": 1.1
+  },
+  {
+   "id": 109,
+   "type": "jequitiba",
+   "x": -80.3,
+   "y": 73.7,
+   "rotation": 3.2315,
+   "scale": 1
+  },
+  {
+   "id": 110,
+   "type": "bush-mata-atlantica-waist-b",
+   "x": -74.8,
+   "y": 104.9,
+   "rotation": 2.7779,
+   "scale": 1
+  },
+  {
+   "id": 111,
+   "type": "pau-brasil",
+   "x": -91.9,
+   "y": 81.4,
+   "rotation": 6.0494,
+   "scale": 1.1
+  },
+  {
+   "id": 112,
+   "type": "bush-mata-atlantica-head-a",
+   "x": -116.1,
+   "y": 62,
+   "rotation": 1.4754,
+   "scale": 1.1
+  },
+  {
+   "id": 113,
+   "type": "jequitiba",
+   "x": -116.2,
+   "y": 86.5,
+   "rotation": 0.2803,
+   "scale": 0.9
+  },
+  {
+   "id": 114,
+   "type": "manaca",
+   "x": -116.6,
+   "y": 69.4,
+   "rotation": 3.3785,
+   "scale": 1.2
+  },
+  {
+   "id": 115,
+   "type": "bush-mata-atlantica-waist-a",
+   "x": -92.1,
+   "y": 69.7,
+   "rotation": 2.4029,
+   "scale": 1.1
+  },
+  {
+   "id": 116,
+   "type": "jequitiba",
+   "x": -97.4,
+   "y": 100,
+   "rotation": 3.7448,
+   "scale": 0.9
+  },
+  {
+   "id": 117,
+   "type": "bush-mata-atlantica-head-a",
+   "x": -91.8,
+   "y": 112.7,
+   "rotation": 4.7042,
+   "scale": 1.1
+  },
+  {
+   "id": 118,
+   "type": "bush-mata-atlantica-head-a",
+   "x": -82.5,
+   "y": 95.1,
+   "rotation": 2.0379,
+   "scale": 0.9
+  },
+  {
+   "id": 119,
+   "type": "pau-brasil",
+   "x": -87.3,
+   "y": 99.5,
+   "rotation": 1.0624,
+   "scale": 0.9
+  },
+  {
+   "id": 120,
+   "type": "palmito-jucara",
+   "x": -107.6,
+   "y": 81.8,
+   "rotation": 0.5137,
+   "scale": 1.2
+  },
+  {
+   "id": 121,
+   "type": "jequitiba",
+   "x": -100.6,
+   "y": 82.6,
+   "rotation": 0.9916,
+   "scale": 1.1
+  },
+  {
+   "id": 122,
+   "type": "bush-mata-atlantica-head-b",
+   "x": -100.6,
+   "y": 116.2,
+   "rotation": 1.9718,
+   "scale": 1.2
+  },
+  {
+   "id": 123,
+   "type": "jequitiba",
+   "x": -115.2,
+   "y": 72.4,
+   "rotation": 2.537,
+   "scale": 1.1
+  },
+  {
+   "id": 124,
+   "type": "pau-brasil",
+   "x": -89.7,
+   "y": 104.6,
+   "rotation": 6.0212,
+   "scale": 1
+  },
+  {
+   "id": 125,
+   "type": "bush-mata-atlantica-waist-b",
+   "x": -103.2,
+   "y": 93.4,
+   "rotation": 1.4066,
+   "scale": 1
+  },
+  {
+   "id": 126,
+   "type": "bush-mata-atlantica-waist-a",
+   "x": -82.4,
+   "y": 110.1,
+   "rotation": 1.8188,
+   "scale": 1.1
+  },
+  {
+   "id": 127,
+   "type": "manaca-flowering",
+   "x": -93,
+   "y": 65,
+   "rotation": 0.6816,
+   "scale": 0.9
+  },
+  {
+   "id": 128,
+   "type": "mulungu",
+   "x": -108.2,
+   "y": 77.8,
+   "rotation": 3.9084,
+   "scale": 1.1
+  },
+  {
+   "id": 129,
+   "type": "jequitiba",
+   "x": -116.4,
+   "y": 80.7,
+   "rotation": 5.5608,
+   "scale": 0.9
+  },
+  {
+   "id": 130,
+   "type": "jequitiba",
+   "x": -103.8,
+   "y": 116.6,
+   "rotation": 3.2932,
+   "scale": 1.1
+  },
+  {
+   "id": 131,
+   "type": "manaca",
+   "x": -106.8,
+   "y": 92.9,
+   "rotation": 0.4769,
+   "scale": 1
+  },
+  {
+   "id": 132,
+   "type": "pau-brasil",
+   "x": -115.5,
+   "y": 104,
+   "rotation": 2.7005,
+   "scale": 0.9
+  },
+  {
+   "id": 133,
+   "type": "pau-brasil-flowering",
+   "x": -87.8,
+   "y": 106.9,
+   "rotation": 3.1839,
+   "scale": 1.2
+  },
+  {
+   "id": 134,
+   "type": "jequitiba",
+   "x": -111.8,
+   "y": 69.2,
+   "rotation": 0.1265,
+   "scale": 1.1
+  },
+  {
+   "id": 135,
+   "type": "bush-mata-atlantica-waist-a",
+   "x": -116.7,
+   "y": 111.5,
+   "rotation": 0.6996,
+   "scale": 1
+  },
+  {
+   "id": 136,
+   "type": "jequitiba",
+   "x": -103.6,
+   "y": 83.8,
+   "rotation": 2.3395,
+   "scale": 0.9
+  },
+  {
+   "id": 137,
+   "type": "jequitiba",
+   "x": -99.5,
+   "y": 68.3,
+   "rotation": 3.8982,
+   "scale": 1.1
+  },
+  {
+   "id": 138,
+   "type": "palmito-jucara",
+   "x": -102.5,
+   "y": 106.1,
+   "rotation": 3.1545,
+   "scale": 1
+  },
+  {
+   "id": 139,
+   "type": "palmito-jucara",
+   "x": -115,
+   "y": 54.3,
+   "rotation": 4.5569,
+   "scale": 1
+  },
+  {
+   "id": 140,
+   "type": "manaca",
+   "x": -85.6,
+   "y": 69.2,
+   "rotation": 2.8743,
+   "scale": 1
+  },
+  {
+   "id": 141,
+   "type": "bush-mata-atlantica-head-b",
+   "x": -102.9,
+   "y": 74.3,
+   "rotation": 4.3709,
+   "scale": 1.1
+  },
+  {
+   "id": 142,
+   "type": "bush-mata-atlantica-waist-b",
+   "x": -99.8,
+   "y": 106.1,
+   "rotation": 5.8946,
+   "scale": 1.1
+  },
+  {
+   "id": 143,
+   "type": "palmito-jucara",
+   "x": -76.1,
+   "y": 88,
+   "rotation": 2.6324,
+   "scale": 1.2
+  },
+  {
+   "id": 144,
+   "type": "palmito-jucara",
+   "x": -80.6,
+   "y": 106.3,
+   "rotation": 2.6346,
+   "scale": 1.2
+  },
+  {
+   "id": 145,
+   "type": "mulungu",
+   "x": -82,
+   "y": 101.3,
+   "rotation": 0.8872,
+   "scale": 1
+  },
+  {
+   "id": 146,
+   "type": "tree-broad",
+   "x": -112,
+   "y": 60.8,
+   "rotation": 4.6019,
+   "scale": 1.2
+  },
+  {
+   "id": 147,
+   "type": "jequitiba",
+   "x": -115.7,
+   "y": 48.1,
+   "rotation": 3.6137,
+   "scale": 1
+  },
+  {
+   "id": 148,
+   "type": "bush-mata-atlantica-waist-b",
+   "x": -86.2,
+   "y": 63.2,
+   "rotation": 2.0428,
+   "scale": 0.9
+  },
+  {
+   "id": 149,
+   "type": "bush-mata-atlantica-head-b",
+   "x": -78.6,
+   "y": 102.8,
+   "rotation": 5.8867,
+   "scale": 1
+  },
+  {
+   "id": 150,
+   "type": "palmito-jucara",
+   "x": -105.8,
+   "y": 87.5,
+   "rotation": 2.203,
+   "scale": 1.1
+  },
+  {
+   "id": 151,
+   "type": "bush-mata-atlantica-head-a",
+   "x": -88.4,
+   "y": 95.1,
+   "rotation": 5.8004,
+   "scale": 1
+  },
+  {
+   "id": 152,
+   "type": "bush-mata-atlantica-head-b",
+   "x": -76.7,
+   "y": 99.6,
+   "rotation": 0.303,
+   "scale": 1.1
+  },
+  {
+   "id": 153,
+   "type": "bush-mata-atlantica-waist-b",
+   "x": -113.2,
+   "y": 80.4,
+   "rotation": 6.1461,
+   "scale": 1.1
+  },
+  {
+   "id": 154,
+   "type": "jequitiba",
+   "x": -108.1,
+   "y": 89.5,
+   "rotation": 0.0231,
+   "scale": 1.1
+  },
+  {
+   "id": 155,
+   "type": "tree-broad",
+   "x": -107.3,
+   "y": 69.5,
+   "rotation": 5.5488,
+   "scale": 0.9
+  },
+  {
+   "id": 156,
+   "type": "pau-brasil",
+   "x": -97.4,
+   "y": 116.8,
+   "rotation": 3.8777,
+   "scale": 1.2
+  },
+  {
+   "id": 157,
+   "type": "tree-broad",
+   "x": -92.2,
+   "y": 73.3,
+   "rotation": 0.7462,
+   "scale": 1.2
+  },
+  {
+   "id": 158,
+   "type": "pau-brasil",
+   "x": -99.1,
+   "y": 76.9,
+   "rotation": 4.2881,
+   "scale": 0.9
+  },
+  {
+   "id": 159,
+   "type": "manaca",
+   "x": -94,
+   "y": 103.1,
+   "rotation": 5.8731,
+   "scale": 0.9
+  },
+  {
+   "id": 160,
+   "type": "pau-brasil-flowering",
+   "x": -108,
+   "y": 97.6,
+   "rotation": 0.2026,
+   "scale": 0.9
+  },
+  {
+   "id": 161,
+   "type": "palmito-jucara",
+   "x": -97.8,
+   "y": 113.9,
+   "rotation": 3.5818,
+   "scale": 1.2
+  },
+  {
+   "id": 162,
+   "type": "bush-mata-atlantica-waist-a",
+   "x": -112.4,
+   "y": 105,
+   "rotation": 1.5406,
+   "scale": 0.9
+  },
+  {
+   "id": 163,
+   "type": "pau-brasil-flowering",
+   "x": -80,
+   "y": 97.5,
+   "rotation": 1.6235,
+   "scale": 1.1
+  },
+  {
+   "id": 164,
+   "type": "mulungu",
+   "x": -93.1,
+   "y": 78.7,
+   "rotation": 4.0533,
+   "scale": 1.1
+  },
+  {
+   "id": 165,
+   "type": "palmito-jucara",
+   "x": -111.8,
+   "y": 78.1,
+   "rotation": 4.3958,
+   "scale": 1
+  },
+  {
+   "id": 166,
+   "type": "pau-brasil-flowering",
+   "x": -76.9,
+   "y": 85.1,
+   "rotation": 3.7614,
+   "scale": 1.1
+  },
+  {
+   "id": 167,
+   "type": "manaca",
+   "x": -82.1,
+   "y": 79.8,
+   "rotation": 2.1309,
+   "scale": 1.2
+  },
+  {
+   "id": 168,
+   "type": "pau-brasil-flowering",
+   "x": -108.2,
+   "y": 73.5,
+   "rotation": 4.2728,
+   "scale": 0.9
+  },
+  {
+   "id": 169,
+   "type": "bush-mata-atlantica-head-b",
+   "x": -88.4,
+   "y": 116.3,
+   "rotation": 5.6363,
+   "scale": 0.9
+  },
+  {
+   "id": 170,
+   "type": "tree-broad",
+   "x": -102.5,
+   "y": 79.2,
+   "rotation": 5.2271,
+   "scale": 0.9
+  },
+  {
+   "id": 171,
+   "type": "jequitiba",
+   "x": -85.2,
+   "y": 108.7,
+   "rotation": 5.483,
+   "scale": 1.2
+  },
+  {
+   "id": 172,
+   "type": "tree-broad",
+   "x": -116.8,
+   "y": 77.1,
+   "rotation": 6.0786,
+   "scale": 1.2
+  },
+  {
+   "id": 173,
+   "type": "bush-mata-atlantica-head-b",
+   "x": -114.4,
+   "y": 101.2,
+   "rotation": 3.519,
+   "scale": 1.1
+  },
+  {
+   "id": 174,
+   "type": "jequitiba",
+   "x": -112.6,
+   "y": 95.6,
+   "rotation": 0.8242,
+   "scale": 1.2
+  },
+  {
+   "id": 175,
+   "type": "pau-brasil",
+   "x": -108,
+   "y": 65.4,
+   "rotation": 1.9137,
+   "scale": 1.1
+  },
+  {
+   "id": 176,
+   "type": "jequitiba",
+   "x": -90.2,
+   "y": 109.2,
+   "rotation": 3.0539,
+   "scale": 1.2
+  },
+  {
+   "id": 177,
+   "type": "jequitiba",
+   "x": -80.8,
+   "y": 90.7,
+   "rotation": 5.5714,
+   "scale": 1.1
+  },
+  {
+   "id": 178,
+   "type": "tree-broad",
+   "x": -82.7,
+   "y": 77.2,
+   "rotation": 2.8897,
+   "scale": 1.1
+  },
+  {
+   "id": 179,
+   "type": "tree-broad",
+   "x": -83.3,
+   "y": 89.2,
+   "rotation": 2.9011,
+   "scale": 0.9
+  },
+  {
+   "id": 180,
+   "type": "bush-mata-atlantica-waist-a",
+   "x": -94.6,
+   "y": 107.9,
+   "rotation": 2.905,
+   "scale": 1
+  },
+  {
+   "id": 181,
+   "type": "pau-brasil",
+   "x": -111.7,
+   "y": 73.4,
+   "rotation": 2.012,
+   "scale": 1
+  },
+  {
+   "id": 182,
+   "type": "jequitiba",
+   "x": -99.4,
+   "y": 109.2,
+   "rotation": 4.9026,
+   "scale": 1.1
+  },
+  {
+   "id": 183,
+   "type": "pau-brasil",
+   "x": -105.6,
+   "y": 72.1,
+   "rotation": 5.2464,
+   "scale": 1.1
+  },
+  {
+   "id": 184,
+   "type": "bush-mata-atlantica-waist-b",
+   "x": -116.6,
+   "y": 64.6,
+   "rotation": 4.0849,
+   "scale": 0.9
+  },
+  {
+   "id": 185,
+   "type": "palmito-jucara",
+   "x": -88.8,
+   "y": 77.7,
+   "rotation": 3.0441,
+   "scale": 1.1
+  },
+  {
+   "id": 186,
+   "type": "manaca",
+   "x": -93,
+   "y": 105.7,
+   "rotation": 0.3365,
+   "scale": 1.1
+  },
+  {
+   "id": 187,
+   "type": "manaca-flowering",
+   "x": -78.6,
+   "y": 92.7,
+   "rotation": 2.604,
+   "scale": 0.9
+  },
+  {
+   "id": 188,
+   "type": "tree-broad",
+   "x": -104.3,
+   "y": 95.8,
+   "rotation": 2.3267,
+   "scale": 1.2
+  },
+  {
+   "id": 189,
+   "type": "bush-mata-atlantica-head-a",
+   "x": -74.6,
+   "y": 97.4,
+   "rotation": 0.4885,
+   "scale": 0.9
+  },
+  {
+   "id": 190,
+   "type": "palmito-jucara",
+   "x": -77.3,
+   "y": 114.1,
+   "rotation": 3.6491,
+   "scale": 1.2
+  },
+  {
+   "id": 191,
+   "type": "tree-broad",
+   "x": -100.6,
+   "y": 85.6,
+   "rotation": 1.2414,
+   "scale": 1
+  },
+  {
+   "id": 192,
+   "type": "pau-brasil",
+   "x": -20.4,
+   "y": -47.5,
+   "rotation": 0.5553,
+   "scale": 0.9
+  },
+  {
+   "id": 193,
+   "type": "tree-broad",
+   "x": -19.7,
+   "y": -55.6,
+   "rotation": 0.4111,
+   "scale": 1
+  },
+  {
+   "id": 194,
+   "type": "mulungu-flowering",
+   "x": -19.1,
+   "y": -51.9,
+   "rotation": 3.5223,
+   "scale": 1.1
+  },
+  {
+   "id": 195,
+   "type": "bush-mata-atlantica-waist-a",
+   "x": -17.9,
+   "y": -47.8,
+   "rotation": 4.9415,
+   "scale": 1.1
+  },
+  {
+   "id": 196,
+   "type": "bush-mata-atlantica-head-a",
+   "x": -10.2,
+   "y": -43.8,
+   "rotation": 4.1236,
+   "scale": 1.1
+  },
+  {
+   "id": 197,
+   "type": "bush-mata-atlantica-knee-b",
+   "x": -17.1,
+   "y": -45.2,
+   "rotation": 2.7432,
+   "scale": 1
+  },
+  {
+   "id": 198,
+   "type": "manaca-flowering",
+   "x": -5.6,
+   "y": -30.4,
+   "rotation": 3.1936,
+   "scale": 0.9
+  },
+  {
+   "id": 199,
+   "type": "mulungu-flowering",
+   "x": -4.6,
+   "y": -16.4,
+   "rotation": 4.0556,
+   "scale": 0.9
+  },
+  {
+   "id": 200,
+   "type": "palmito-jucara",
+   "x": -21.5,
+   "y": -23,
+   "rotation": 2.7616,
+   "scale": 1.1
+  },
+  {
+   "id": 201,
+   "type": "tree-broad",
+   "x": -5.6,
+   "y": -34.7,
+   "rotation": 4.7661,
+   "scale": 1
+  },
+  {
+   "id": 202,
+   "type": "bush-mata-atlantica-head-a",
+   "x": -21.2,
+   "y": -14.3,
+   "rotation": 1.9528,
+   "scale": 0.9
+  },
+  {
+   "id": 203,
+   "type": "pau-brasil",
+   "x": -20.6,
+   "y": 22.7,
+   "rotation": 2.4024,
+   "scale": 1
+  },
+  {
+   "id": 204,
+   "type": "mulungu-flowering",
+   "x": -9.5,
+   "y": 4.7,
+   "rotation": 2.1258,
+   "scale": 1
+  },
+  {
+   "id": 205,
+   "type": "manaca-flowering",
+   "x": -12.4,
+   "y": 24.9,
+   "rotation": 2.7359,
+   "scale": 0.9
+  },
+  {
+   "id": 206,
+   "type": "bush-mata-atlantica-knee-b",
+   "x": -4.1,
+   "y": 19.9,
+   "rotation": 0.3039,
+   "scale": 1
+  },
+  {
+   "id": 207,
+   "type": "manaca-flowering",
+   "x": -16.4,
+   "y": 46.5,
+   "rotation": 1.3427,
+   "scale": 1
+  },
+  {
+   "id": 208,
+   "type": "manaca-flowering",
+   "x": -21,
+   "y": 36.4,
+   "rotation": 5.928,
+   "scale": 1.2
+  },
+  {
+   "id": 209,
+   "type": "bush-mata-atlantica-knee-b",
+   "x": -20.9,
+   "y": 30.8,
+   "rotation": 0.1323,
+   "scale": 0.9
+  },
+  {
+   "id": 210,
+   "type": "palmito-jucara",
+   "x": -30.5,
+   "y": -40.2,
+   "rotation": 2.3641,
+   "scale": 0.9
+  },
+  {
+   "id": 211,
+   "type": "palmito-jucara",
+   "x": -24.8,
+   "y": -38.9,
+   "rotation": 4.6328,
+   "scale": 1.1
+  },
+  {
+   "id": 212,
+   "type": "ipe-flowering",
+   "x": -33.3,
+   "y": -42.7,
+   "rotation": 2.03,
+   "scale": 1.2
+  },
+  {
+   "id": 213,
+   "type": "tree-broad",
+   "x": -24.8,
+   "y": -42.8,
+   "rotation": 2.6365,
+   "scale": 1.2
+  },
+  {
+   "id": 214,
+   "type": "bush-mata-atlantica-head-a",
+   "x": -21.3,
+   "y": -58,
+   "rotation": 5.6376,
+   "scale": 1.1
+  },
+  {
+   "id": 215,
+   "type": "ipe-flowering",
+   "x": -44.7,
+   "y": -38.8,
+   "rotation": 3.7549,
+   "scale": 0.9
+  },
+  {
+   "id": 216,
+   "type": "manaca-flowering",
+   "x": -45,
+   "y": -45.6,
+   "rotation": 2.7906,
+   "scale": 1
+  },
+  {
+   "id": 217,
+   "type": "palmito-jucara",
+   "x": -44.4,
+   "y": -55.2,
+   "rotation": 2.5468,
+   "scale": 1.1
+  },
+  {
+   "id": 218,
+   "type": "palmito-jucara",
+   "x": -28.6,
+   "y": -57.5,
+   "rotation": 5.1936,
+   "scale": 1
+  },
+  {
+   "id": 219,
+   "type": "bush-mata-atlantica-waist-a",
+   "x": -44.3,
+   "y": -41.4,
+   "rotation": 2.8478,
+   "scale": 1
+  },
+  {
+   "id": 220,
+   "type": "pau-brasil",
+   "x": -57.7,
+   "y": 7,
+   "rotation": 0.5151,
+   "scale": 1
+  },
+  {
+   "id": 221,
+   "type": "palmito-jucara",
+   "x": -55.2,
+   "y": 18,
+   "rotation": 3.7803,
+   "scale": 0.9
+  },
+  {
+   "id": 222,
+   "type": "tree-broad",
+   "x": -38.6,
+   "y": 8.4,
+   "rotation": 4.8289,
+   "scale": 1
+  },
+  {
+   "id": 223,
+   "type": "bush-mata-atlantica-knee-b",
+   "x": -37.7,
+   "y": 19.3,
+   "rotation": 6.077,
+   "scale": 1.1
+  },
+  {
+   "id": 224,
+   "type": "bush-mata-atlantica-waist-a",
+   "x": -55.1,
+   "y": 5.2,
+   "rotation": 4.1438,
+   "scale": 0.9
+  },
+  {
+   "id": 225,
+   "type": "bush-mata-atlantica-knee-b",
+   "x": -50,
+   "y": 22.6,
+   "rotation": 3.5102,
+   "scale": 0.9
+  },
+  {
+   "id": 226,
+   "type": "manaca-flowering",
+   "x": -26.6,
+   "y": 33.8,
+   "rotation": 3.0197,
+   "scale": 1
+  },
+  {
+   "id": 227,
+   "type": "tree-broad",
+   "x": -41.8,
+   "y": 39.6,
+   "rotation": 5.3553,
+   "scale": 0.9
+  },
+  {
+   "id": 228,
+   "type": "palmito-jucara",
+   "x": -18.3,
+   "y": 40.3,
+   "rotation": 4.3973,
+   "scale": 1
+  },
+  {
+   "id": 229,
+   "type": "bush-mata-atlantica-waist-a",
+   "x": -32.6,
+   "y": 55.1,
+   "rotation": 3.3335,
+   "scale": 1
+  },
+  {
+   "id": 230,
+   "type": "bush-mata-atlantica-knee-b",
+   "x": -39.7,
+   "y": 48.9,
+   "rotation": 4.4644,
+   "scale": 1.1
+  },
+  {
+   "id": 231,
+   "type": "bush-mata-atlantica-waist-a",
+   "x": -31.4,
+   "y": 38.5,
+   "rotation": 2.1375,
+   "scale": 1
+  },
+  {
+   "id": 232,
+   "type": "bush-mata-atlantica-waist-a",
+   "x": -22.5,
+   "y": 47.7,
+   "rotation": 2.2074,
+   "scale": 1
+  },
+  {
+   "id": 233,
+   "type": "mulungu-flowering",
+   "x": -93.4,
+   "y": -96.5,
+   "rotation": 4.9251,
+   "scale": 0.9
+  },
+  {
+   "id": 234,
+   "type": "palmito-jucara",
+   "x": -97.6,
+   "y": -111.1,
+   "rotation": 2.7833,
+   "scale": 1.2
+  },
+  {
+   "id": 235,
+   "type": "manaca-flowering",
+   "x": -96.9,
+   "y": -96,
+   "rotation": 0.6471,
+   "scale": 1.1
+  },
+  {
+   "id": 236,
+   "type": "palmito-jucara",
+   "x": -79.9,
+   "y": -49.7,
+   "rotation": 2.1294,
+   "scale": 1.2
+  },
+  {
+   "id": 237,
+   "type": "palmito-jucara",
+   "x": -80.6,
+   "y": -44.3,
+   "rotation": 0.8686,
+   "scale": 1.1
+  },
+  {
+   "id": 238,
+   "type": "bush-mata-atlantica-knee-b",
+   "x": -99.6,
+   "y": -45.4,
+   "rotation": 3.4595,
+   "scale": 1.1
+  },
+  {
+   "id": 239,
+   "type": "bush-mata-atlantica-waist-a",
+   "x": -97.5,
+   "y": -54.1,
+   "rotation": 1.5981,
+   "scale": 1.2
+  },
+  {
+   "id": 240,
+   "type": "palmito-jucara",
+   "x": -87.6,
+   "y": -22.1,
+   "rotation": 1.457,
+   "scale": 1
+  },
+  {
+   "id": 241,
+   "type": "ipe-flowering",
+   "x": -94.9,
+   "y": -8.4,
+   "rotation": 0.1359,
+   "scale": 1.1
+  },
+  {
+   "id": 242,
+   "type": "bush-mata-atlantica-head-a",
+   "x": -93.5,
+   "y": -24.6,
+   "rotation": 3.6088,
+   "scale": 0.9
+  },
+  {
+   "id": 243,
+   "type": "tree-broad",
+   "x": -108.9,
+   "y": -16.4,
+   "rotation": 6.1868,
+   "scale": 1.1
+  },
+  {
+   "id": 244,
+   "type": "manaca-flowering",
+   "x": -94.3,
+   "y": -20.4,
+   "rotation": 1.4322,
+   "scale": 1.2
+  },
+  {
+   "id": 245,
+   "type": "bush-mata-atlantica-waist-a",
+   "x": -98.3,
+   "y": -23.9,
+   "rotation": 6.0443,
+   "scale": 0.9
+  },
+  {
+   "id": 246,
+   "type": "palmito-jucara",
+   "x": -94,
+   "y": 15.3,
+   "rotation": 5.6533,
+   "scale": 1.1
+  },
+  {
+   "id": 247,
+   "type": "ipe-flowering",
+   "x": -103.6,
+   "y": 28,
+   "rotation": 0.2007,
+   "scale": 0.9
+  },
+  {
+   "id": 248,
+   "type": "ipe-flowering",
+   "x": -85.1,
+   "y": 25.6,
+   "rotation": 0.52,
+   "scale": 1.1
+  },
+  {
+   "id": 249,
+   "type": "palmito-jucara",
+   "x": -107.4,
+   "y": 26.3,
+   "rotation": 3.7362,
+   "scale": 0.9
+  },
+  {
+   "id": 250,
+   "type": "bush-mata-atlantica-head-a",
+   "x": -86.5,
+   "y": 28.3,
+   "rotation": 4.3861,
+   "scale": 1
+  },
+  {
+   "id": 251,
+   "type": "bush-mata-atlantica-head-a",
+   "x": -105,
+   "y": 15.6,
+   "rotation": 2.757,
+   "scale": 1
+  },
+  {
+   "id": 252,
+   "type": "tree-broad",
+   "x": -78.5,
+   "y": -116,
+   "rotation": 4.9086,
+   "scale": 1.1
+  },
+  {
+   "id": 253,
+   "type": "tree-broad",
+   "x": -78.5,
+   "y": -105,
+   "rotation": 5.3749,
+   "scale": 1.1
+  },
+  {
+   "id": 254,
+   "type": "tree-broad",
+   "x": -78.5,
+   "y": -94,
+   "rotation": 3.6451,
+   "scale": 1
+  },
+  {
+   "id": 255,
+   "type": "tree-broad",
+   "x": -78.5,
+   "y": -83,
+   "rotation": 2.3715,
+   "scale": 1.2
+  },
+  {
+   "id": 256,
+   "type": "tree-broad",
+   "x": -78.5,
+   "y": -72,
+   "rotation": 1.1016,
+   "scale": 0.9
+  },
+  {
+   "id": 257,
+   "type": "mulungu",
+   "x": -65.5,
+   "y": -56,
+   "rotation": 0.171,
+   "scale": 1
+  },
+  {
+   "id": 258,
+   "type": "mulungu",
+   "x": -78.5,
+   "y": -39,
+   "rotation": 1.0817,
+   "scale": 1.1
+  },
+  {
+   "id": 259,
+   "type": "tree-broad",
+   "x": -78.5,
+   "y": -28,
+   "rotation": 0.9444,
+   "scale": 1.1
+  },
+  {
+   "id": 260,
+   "type": "tree-broad",
+   "x": -78.5,
+   "y": 5,
+   "rotation": 0.6776,
+   "scale": 1
+  },
+  {
+   "id": 261,
+   "type": "mulungu",
+   "x": -65.5,
+   "y": 10,
+   "rotation": 1.3352,
+   "scale": 1
+  },
+  {
+   "id": 262,
+   "type": "mulungu",
+   "x": -65.5,
+   "y": 21,
+   "rotation": 2.6903,
+   "scale": 1.2
+  },
+  {
+   "id": 263,
+   "type": "mulungu",
+   "x": -65.5,
+   "y": 32,
+   "rotation": 0.1393,
+   "scale": 1.1
+  },
+  {
+   "id": 264,
+   "type": "mulungu",
+   "x": -114,
+   "y": -70,
+   "rotation": 0.8796,
+   "scale": 0.9
+  },
+  {
+   "id": 265,
+   "type": "mulungu",
+   "x": -108,
+   "y": -58,
+   "rotation": 2.4607,
+   "scale": 1
+  },
+  {
+   "id": 266,
+   "type": "tree-broad",
+   "x": -102,
+   "y": -70,
+   "rotation": 2.7897,
+   "scale": 1.2
+  },
+  {
+   "id": 267,
+   "type": "mulungu",
+   "x": -96,
+   "y": -58,
+   "rotation": 2.3704,
+   "scale": 1.2
+  },
+  {
+   "id": 268,
+   "type": "tree-broad",
+   "x": -90,
+   "y": -70,
+   "rotation": 0.9996,
+   "scale": 0.9
+  },
+  {
+   "id": 269,
+   "type": "tree-broad",
+   "x": -84,
+   "y": -58,
+   "rotation": 3.3203,
+   "scale": 0.9
+  },
+  {
+   "id": 270,
+   "type": "tree-broad",
+   "x": -60,
+   "y": -58,
+   "rotation": 6.0964,
+   "scale": 1.1
+  },
+  {
+   "id": 271,
+   "type": "mulungu",
+   "x": -48,
+   "y": -58,
+   "rotation": 2.4123,
+   "scale": 1.2
+  },
+  {
+   "id": 272,
+   "type": "mulungu",
+   "x": -36,
+   "y": -58,
+   "rotation": 0.6484,
+   "scale": 0.9
+  },
+  {
+   "id": 273,
+   "type": "tree-broad",
+   "x": -114,
+   "y": -8,
+   "rotation": 5.0271,
+   "scale": 1.2
+  },
+  {
+   "id": 274,
+   "type": "mulungu",
+   "x": -108,
+   "y": 4,
+   "rotation": 6.1863,
+   "scale": 0.9
+  },
+  {
+   "id": 275,
+   "type": "tree-broad",
+   "x": -96,
+   "y": 4,
+   "rotation": 3.3746,
+   "scale": 0.9
+  },
+  {
+   "id": 276,
+   "type": "tree-broad",
+   "x": -90,
+   "y": -8,
+   "rotation": 2.9966,
+   "scale": 1.1
+  },
+  {
+   "id": 277,
+   "type": "tree-broad",
+   "x": -84,
+   "y": 4,
+   "rotation": 5.0014,
+   "scale": 0.9
+  },
+  {
+   "id": 278,
+   "type": "mulungu",
+   "x": -78,
+   "y": -8,
+   "rotation": 2.6591,
+   "scale": 1.1
+  },
+  {
+   "id": 279,
+   "type": "tree-broad",
+   "x": -60,
+   "y": 4,
+   "rotation": 3.6633,
+   "scale": 1.2
+  },
+  {
+   "id": 280,
+   "type": "mulungu",
+   "x": -54,
+   "y": -8,
+   "rotation": 1.0004,
+   "scale": 1
+  },
+  {
+   "id": 281,
+   "type": "tree-broad",
+   "x": -48,
+   "y": 4,
+   "rotation": 0.644,
+   "scale": 1.1
+  },
+  {
+   "id": 282,
+   "type": "mulungu",
+   "x": -42,
+   "y": -8,
+   "rotation": 6.1065,
+   "scale": 1.1
+  },
+  {
+   "id": 283,
+   "type": "tree-broad",
+   "x": -36,
+   "y": 4,
+   "rotation": 6.1117,
+   "scale": 1.1
+  },
+  {
+   "id": 284,
+   "type": "tree-broad",
+   "x": -30,
+   "y": -8,
+   "rotation": 0.1198,
+   "scale": 1
+  },
+  {
+   "id": 285,
+   "type": "tree-broad",
+   "x": -24,
+   "y": 4,
+   "rotation": 4.9822,
+   "scale": 1.1
+  },
+  {
+   "id": 286,
+   "type": "mulungu",
+   "x": -18,
+   "y": -8,
+   "rotation": 6.1439,
+   "scale": 1.1
+  },
+  {
+   "id": 287,
+   "type": "palmito-jucara",
+   "x": -3.5,
+   "y": -11,
+   "rotation": 0.616,
+   "scale": 1.1
+  },
+  {
+   "id": 288,
+   "type": "palmito-jucara",
+   "x": -3.5,
+   "y": 55,
+   "rotation": 3.8374,
+   "scale": 1.2
+  },
+  {
+   "id": 289,
+   "type": "palmito-jucara",
+   "x": -12.3,
+   "y": -13.3,
+   "rotation": 4.0478,
+   "scale": 0.9
+  },
+  {
+   "id": 290,
+   "type": "pau-brasil",
+   "x": -47.9,
+   "y": 55.3,
+   "rotation": 3.5571,
+   "scale": 1.2
+  },
+  {
+   "id": 291,
+   "type": "bush-mata-atlantica-waist-a",
+   "x": -87.8,
+   "y": -73.4,
+   "rotation": 0.5878,
+   "scale": 0.9
+  },
+  {
+   "id": 292,
+   "type": "pau-brasil",
+   "x": -31.2,
+   "y": -29.7,
+   "rotation": 0.2133,
+   "scale": 1.1
+  },
+  {
+   "id": 293,
+   "type": "bush-mata-atlantica-knee-b",
+   "x": -8.6,
+   "y": -7.3,
+   "rotation": 2.3144,
+   "scale": 1.2
+  },
+  {
+   "id": 294,
+   "type": "pau-brasil",
+   "x": -39.6,
+   "y": 23,
+   "rotation": 3.201,
+   "scale": 1.1
+  },
+  {
+   "id": 295,
+   "type": "bush-mata-atlantica-knee-a",
+   "x": -8.8,
+   "y": 49.1,
+   "rotation": 2.0238,
+   "scale": 0.9
+  },
+  {
+   "id": 296,
+   "type": "bush-mata-atlantica-waist-a",
+   "x": -14.2,
+   "y": 27.8,
+   "rotation": 3.1005,
+   "scale": 1.1
+  },
+  {
+   "id": 297,
+   "type": "palmito-jucara",
+   "x": -115,
+   "y": -20,
+   "rotation": 5.7456,
+   "scale": 1.2
+  },
+  {
+   "id": 298,
+   "type": "tree-broad",
+   "x": -60.5,
+   "y": 35.6,
+   "rotation": 0.5949,
+   "scale": 0.9
+  },
+  {
+   "id": 299,
+   "type": "bush-mata-atlantica-knee-b",
+   "x": -51.3,
+   "y": 3.8,
+   "rotation": 1.6429,
+   "scale": 1.2
+  },
+  {
+   "id": 300,
+   "type": "bush-mata-atlantica-waist-a",
+   "x": -102.8,
+   "y": 10.1,
+   "rotation": 6.0578,
+   "scale": 1
+  },
+  {
+   "id": 301,
+   "type": "bush-mata-atlantica-knee-b",
+   "x": -91.1,
+   "y": 49,
+   "rotation": 6.196,
+   "scale": 0.9
+  },
+  {
+   "id": 302,
+   "type": "bush-mata-atlantica-knee-a",
+   "x": -60.4,
+   "y": 11.5,
+   "rotation": 0.6023,
+   "scale": 0.9
+  },
+  {
+   "id": 303,
+   "type": "mulungu",
+   "x": -57.9,
+   "y": -41.1,
+   "rotation": 1.9397,
+   "scale": 0.9
+  },
+  {
+   "id": 304,
+   "type": "mulungu",
+   "x": -83.3,
+   "y": -38,
+   "rotation": 4.3479,
+   "scale": 0.9
+  },
+  {
+   "id": 305,
+   "type": "bush-mata-atlantica-waist-a",
+   "x": -95.8,
+   "y": -71.4,
+   "rotation": 5.8064,
+   "scale": 1
+  },
+  {
+   "id": 306,
+   "type": "bush-mata-atlantica-knee-b",
+   "x": -73.6,
+   "y": 53.7,
+   "rotation": 1.8053,
+   "scale": 1
+  },
+  {
+   "id": 307,
+   "type": "bush-mata-atlantica-waist-a",
+   "x": -113.1,
+   "y": -43,
+   "rotation": 5.7535,
+   "scale": 1.2
+  },
+  {
+   "id": 308,
+   "type": "bush-mata-atlantica-waist-b",
+   "x": -49.4,
+   "y": 32.2,
+   "rotation": 3.1701,
+   "scale": 0.9
+  },
+  {
+   "id": 309,
+   "type": "bush-mata-atlantica-knee-a",
+   "x": -57.8,
+   "y": 46.7,
+   "rotation": 0.5191,
+   "scale": 0.9
+  },
+  {
+   "id": 310,
+   "type": "bush-mata-atlantica-waist-b",
+   "x": -18.1,
+   "y": -36.5,
+   "rotation": 5.7693,
+   "scale": 1
+  },
+  {
+   "id": 311,
+   "type": "tree-broad",
+   "x": -102.6,
+   "y": -91.2,
+   "rotation": 5.4299,
+   "scale": 0.9
+  },
+  {
+   "id": 312,
+   "type": "bush-mata-atlantica-knee-a",
+   "x": -42.3,
+   "y": -23.1,
+   "rotation": 2.1354,
+   "scale": 1.1
+  },
+  {
+   "id": 313,
+   "type": "bush-mata-atlantica-knee-a",
+   "x": -23.9,
+   "y": -13.6,
+   "rotation": 6.2017,
+   "scale": 1
+  },
+  {
+   "id": 314,
+   "type": "tree-broad",
+   "x": -107.1,
+   "y": -50.5,
+   "rotation": 0.894,
+   "scale": 1.1
+  },
+  {
+   "id": 315,
+   "type": "palmito-jucara",
+   "x": -37,
+   "y": -20.7,
+   "rotation": 5.2417,
+   "scale": 0.9
+  },
+  {
+   "id": 316,
+   "type": "tree-broad",
+   "x": -89,
+   "y": 34.8,
+   "rotation": 5.3433,
+   "scale": 0.9
+  },
+  {
+   "id": 317,
+   "type": "tree-broad",
+   "x": -56.2,
+   "y": -20,
+   "rotation": 5.0703,
+   "scale": 1
+  },
+  {
+   "id": 318,
+   "type": "bush-mata-atlantica-waist-a",
+   "x": -98.2,
+   "y": -100.7,
+   "rotation": 3.7458,
+   "scale": 1.1
+  },
+  {
+   "id": 319,
+   "type": "bush-mata-atlantica-waist-a",
+   "x": -57.9,
+   "y": 13.7,
+   "rotation": 5.711,
+   "scale": 0.9
+  },
+  {
+   "id": 320,
+   "type": "mulungu",
+   "x": -95.5,
+   "y": -28.4,
+   "rotation": 0.6278,
+   "scale": 0.9
+  },
+  {
+   "id": 321,
+   "type": "pau-brasil",
+   "x": -49.2,
+   "y": 40.3,
+   "rotation": 4.7037,
+   "scale": 1
+  },
+  {
+   "id": 322,
+   "type": "bush-mata-atlantica-waist-b",
+   "x": -83.9,
+   "y": -45.8,
+   "rotation": 4.1078,
+   "scale": 1.1
+  },
+  {
+   "id": 323,
+   "type": "bush-mata-atlantica-knee-b",
+   "x": -30.2,
+   "y": -23.1,
+   "rotation": 4.2968,
+   "scale": 1
+  },
+  {
+   "id": 324,
+   "type": "bush-mata-atlantica-waist-b",
+   "x": -111.8,
+   "y": -76.8,
+   "rotation": 5.796,
+   "scale": 1.1
+  },
+  {
+   "id": 325,
+   "type": "tree-broad",
+   "x": -83.3,
+   "y": -109.4,
+   "rotation": 1.2979,
+   "scale": 1
+  },
+  {
+   "id": 326,
+   "type": "palmito-jucara",
+   "x": -113.3,
+   "y": -13.8,
+   "rotation": 1.658,
+   "scale": 1
+  },
+  {
+   "id": 327,
+   "type": "bush-mata-atlantica-knee-a",
+   "x": -112.3,
+   "y": -110.9,
+   "rotation": 0.271,
+   "scale": 0.9
+  },
+  {
+   "id": 328,
+   "type": "bush-mata-atlantica-waist-b",
+   "x": -46.1,
+   "y": -24.6,
+   "rotation": 3.5897,
+   "scale": 0.9
+  },
+  {
+   "id": 329,
+   "type": "tree-broad",
+   "x": -51.2,
+   "y": 45.8,
+   "rotation": 4.7031,
+   "scale": 1.1
+  },
+  {
+   "id": 330,
+   "type": "mulungu",
+   "x": -70.9,
+   "y": 63.2,
+   "rotation": 0.6857,
+   "scale": 0.9
+  },
+  {
+   "id": 331,
+   "type": "pau-brasil",
+   "x": -54.5,
+   "y": 54,
+   "rotation": 1.9096,
+   "scale": 1
+  },
+  {
+   "id": 332,
+   "type": "bush-mata-atlantica-knee-a",
+   "x": -99.6,
+   "y": -79.3,
+   "rotation": 2.7351,
+   "scale": 1.2
+  },
+  {
+   "id": 333,
+   "type": "bush-mata-atlantica-waist-a",
+   "x": -94.2,
+   "y": -40.8,
+   "rotation": 3.373,
+   "scale": 0.9
+  },
+  {
+   "id": 334,
+   "type": "bush-mata-atlantica-knee-a",
+   "x": -54.7,
+   "y": 37.1,
+   "rotation": 4.7363,
+   "scale": 1.1
+  },
+  {
+   "id": 335,
+   "type": "bush-mata-atlantica-waist-a",
+   "x": -13.5,
+   "y": -37.4,
+   "rotation": 5.1622,
+   "scale": 1
+  },
+  {
+   "id": 336,
+   "type": "bush-mata-atlantica-waist-a",
+   "x": -110.7,
+   "y": -28.9,
+   "rotation": 1.2486,
+   "scale": 1
+  },
+  {
+   "id": 337,
+   "type": "bush-mata-atlantica-knee-b",
+   "x": -14.1,
+   "y": -31.9,
+   "rotation": 2.481,
+   "scale": 1.1
+  },
+  {
+   "id": 338,
+   "type": "tree-broad",
+   "x": -31.2,
+   "y": 5.8,
+   "rotation": 0.472,
+   "scale": 1
+  },
+  {
+   "id": 339,
+   "type": "bush-mata-atlantica-knee-a",
+   "x": -16.3,
+   "y": 23.6,
+   "rotation": 2.8232,
+   "scale": 1.1
+  },
+  {
+   "id": 340,
+   "type": "pau-brasil",
+   "x": -36.3,
+   "y": 14.6,
+   "rotation": 0.9787,
+   "scale": 0.9
+  },
+  {
+   "id": 341,
+   "type": "bush-mata-atlantica-knee-a",
+   "x": -79.2,
+   "y": -24.8,
+   "rotation": 2.8043,
+   "scale": 0.9
+  },
+  {
+   "id": 342,
+   "type": "tree-broad",
+   "x": -109.7,
+   "y": -35.2,
+   "rotation": 2.5297,
+   "scale": 0.9
+  },
+  {
+   "id": 343,
+   "type": "bush-mata-atlantica-knee-b",
+   "x": -90.4,
+   "y": -26.5,
+   "rotation": 5.9627,
+   "scale": 1.1
+  },
+  {
+   "id": 344,
+   "type": "pau-brasil",
+   "x": -17.3,
+   "y": 6.2,
+   "rotation": 3.5499,
+   "scale": 1
+  },
+  {
+   "id": 345,
+   "type": "palmito-jucara",
+   "x": -92.8,
+   "y": 40.8,
+   "rotation": 3.2445,
+   "scale": 0.9
+  },
+  {
+   "id": 346,
+   "type": "bush-mata-atlantica-knee-a",
+   "x": -58.9,
+   "y": -30.2,
+   "rotation": 4.0755,
+   "scale": 0.9
+  },
+  {
+   "id": 347,
+   "type": "bush-mata-atlantica-knee-b",
+   "x": -79.2,
+   "y": 56.7,
+   "rotation": 0.8967,
+   "scale": 1.2
+  },
+  {
+   "id": 348,
+   "type": "bush-mata-atlantica-knee-a",
+   "x": -88,
+   "y": 55.3,
+   "rotation": 2.4324,
+   "scale": 1.1
+  },
+  {
+   "id": 349,
+   "type": "mulungu",
+   "x": -101.3,
+   "y": -106.9,
+   "rotation": 3.5709,
+   "scale": 1.1
+  },
+  {
+   "id": 350,
+   "type": "bush-mata-atlantica-waist-a",
+   "x": -108.2,
+   "y": 36.3,
+   "rotation": 4.9168,
+   "scale": 1.1
+  },
+  {
+   "id": 351,
+   "type": "mulungu",
+   "x": -97.7,
+   "y": -49.2,
+   "rotation": 4.2656,
+   "scale": 1.1
+  },
+  {
+   "id": 352,
+   "type": "mulungu",
+   "x": -62,
+   "y": 43,
+   "rotation": 3.0812,
+   "scale": 0.9
+  },
+  {
+   "id": 353,
+   "type": "palmito-jucara",
+   "x": -101.8,
+   "y": 39.7,
+   "rotation": 3.5609,
+   "scale": 1.1
+  },
+  {
+   "id": 354,
+   "type": "bush-mata-atlantica-waist-b",
+   "x": -76.2,
+   "y": 53.5,
+   "rotation": 2.5797,
+   "scale": 0.9
+  },
+  {
+   "id": 355,
+   "type": "mulungu",
+   "x": -20.3,
+   "y": 57.9,
+   "rotation": 0.5081,
+   "scale": 1.2
+  },
+  {
+   "id": 356,
+   "type": "bush-mata-atlantica-waist-b",
+   "x": -101.6,
+   "y": -31.4,
+   "rotation": 0.385,
+   "scale": 0.9
+  },
+  {
+   "id": 357,
+   "type": "tree-broad",
+   "x": -96.7,
+   "y": -87.8,
+   "rotation": 4.9373,
+   "scale": 1
+  },
+  {
+   "id": 358,
+   "type": "tree-broad",
+   "x": -40.8,
+   "y": 27,
+   "rotation": 1.0704,
+   "scale": 1.1
+  },
+  {
+   "id": 359,
+   "type": "bush-mata-atlantica-waist-a",
+   "x": -108.7,
+   "y": -48.3,
+   "rotation": 1.2107,
+   "scale": 0.9
+  },
+  {
+   "id": 360,
+   "type": "bush-mata-atlantica-waist-b",
+   "x": -11,
+   "y": -40.1,
+   "rotation": 1.6345,
+   "scale": 0.9
+  },
+  {
+   "id": 361,
+   "type": "palmito-jucara",
+   "x": -38.3,
+   "y": 59.7,
+   "rotation": 0.3901,
+   "scale": 1.2
+  },
+  {
+   "id": 362,
+   "type": "pau-brasil",
+   "x": -106,
+   "y": 44.9,
+   "rotation": 1.5959,
+   "scale": 1.2
+  },
+  {
+   "id": 363,
+   "type": "palmito-jucara",
+   "x": -82.3,
+   "y": -88.6,
+   "rotation": 5.8892,
+   "scale": 0.9
+  },
+  {
+   "id": 364,
+   "type": "mulungu",
+   "x": -26.2,
+   "y": -21.1,
+   "rotation": 2.3369,
+   "scale": 1
+  },
+  {
+   "id": 365,
+   "type": "pau-brasil",
+   "x": -24.6,
+   "y": 12,
+   "rotation": 4.7256,
+   "scale": 0.9
+  },
+  {
+   "id": 366,
+   "type": "palmito-jucara",
+   "x": -83.2,
+   "y": 38.1,
+   "rotation": 5.719,
+   "scale": 1.1
+  },
+  {
+   "id": 367,
+   "type": "bush-mata-atlantica-knee-a",
+   "x": -112.8,
+   "y": -116.1,
+   "rotation": 5.9716,
+   "scale": 1.1
+  },
+  {
+   "id": 368,
+   "type": "bush-mata-atlantica-waist-b",
+   "x": -82,
+   "y": -76.7,
+   "rotation": 6.2671,
+   "scale": 1
+  },
+  {
+   "id": 369,
+   "type": "pau-brasil",
+   "x": -19.2,
+   "y": -18.8,
+   "rotation": 3.0565,
+   "scale": 0.9
+  },
+  {
+   "id": 370,
+   "type": "bush-mata-atlantica-waist-a",
+   "x": -10.5,
+   "y": 59,
+   "rotation": 5.1473,
+   "scale": 1
+  },
+  {
+   "id": 371,
+   "type": "tree-broad",
+   "x": -14.5,
+   "y": 9.8,
+   "rotation": 4.5829,
+   "scale": 1.2
+  },
+  {
+   "id": 372,
+   "type": "mulungu",
+   "x": -62.2,
+   "y": -38,
+   "rotation": 3.333,
+   "scale": 0.9
+  },
+  {
+   "id": 373,
+   "type": "tree-broad",
+   "x": -91.9,
+   "y": -77.5,
+   "rotation": 1.5526,
+   "scale": 1
+  },
+  {
+   "id": 374,
+   "type": "mulungu",
+   "x": -116.4,
+   "y": -37.2,
+   "rotation": 4.2724,
+   "scale": 0.9
+  },
+  {
+   "id": 375,
+   "type": "bush-mata-atlantica-knee-a",
+   "x": -105.9,
+   "y": -71.8,
+   "rotation": 5.9859,
+   "scale": 1.2
+  },
+  {
+   "id": 376,
+   "type": "bush-mata-atlantica-knee-a",
+   "x": -29.4,
+   "y": 56,
+   "rotation": 0.849,
+   "scale": 0.9
+  },
+  {
+   "id": 377,
+   "type": "bush-mata-atlantica-waist-a",
+   "x": -115.2,
+   "y": 32,
+   "rotation": 1.834,
+   "scale": 1
+  },
+  {
+   "id": 378,
+   "type": "bush-mata-atlantica-knee-a",
+   "x": -40.7,
+   "y": 6.2,
+   "rotation": 4.1579,
+   "scale": 1.1
+  },
+  {
+   "id": 379,
+   "type": "bush-mata-atlantica-knee-a",
+   "x": -85,
+   "y": 43.3,
+   "rotation": 1.506,
+   "scale": 1.1
+  },
+  {
+   "id": 380,
+   "type": "bush-mata-atlantica-knee-a",
+   "x": -115.7,
+   "y": 42.4,
+   "rotation": 4.2509,
+   "scale": 1.1
+  },
+  {
+   "id": 381,
+   "type": "tree-broad",
+   "x": -43.2,
+   "y": 60,
+   "rotation": 3.6243,
+   "scale": 1.1
+  },
+  {
+   "id": 382,
+   "type": "tree-broad",
+   "x": -82.8,
+   "y": 15.6,
+   "rotation": 4.1837,
+   "scale": 1.1
+  },
+  {
+   "id": 383,
+   "type": "tree-broad",
+   "x": -47,
+   "y": 36.3,
+   "rotation": 1.0738,
+   "scale": 1.1
+  },
+  {
+   "id": 384,
+   "type": "bush-mata-atlantica-waist-b",
+   "x": -51.8,
+   "y": -51.9,
+   "rotation": 4.026,
+   "scale": 1.1
+  },
+  {
+   "id": 385,
+   "type": "bush-mata-atlantica-waist-b",
+   "x": -40.7,
+   "y": -32.6,
+   "rotation": 4.6426,
+   "scale": 1.1
+  },
+  {
+   "id": 386,
+   "type": "tree-broad",
+   "x": -30.9,
+   "y": 18.9,
+   "rotation": 1.342,
+   "scale": 1
+  },
+  {
+   "id": 387,
+   "type": "bush-mata-atlantica-knee-a",
+   "x": -94.7,
+   "y": -113.1,
+   "rotation": 1.2642,
+   "scale": 1
+  },
+  {
+   "id": 388,
+   "type": "tree-broad",
+   "x": -15.4,
+   "y": 51.7,
+   "rotation": 5.3159,
+   "scale": 1.1
+  },
+  {
+   "id": 389,
+   "type": "bush-mata-atlantica-waist-a",
+   "x": -76.9,
+   "y": 60.3,
+   "rotation": 0.432,
+   "scale": 0.9
+  },
+  {
+   "id": 390,
+   "type": "bush-mata-atlantica-knee-b",
+   "x": -43.6,
+   "y": -35.6,
+   "rotation": 2.4416,
+   "scale": 1
+  },
+  {
+   "id": 391,
+   "type": "pau-brasil",
+   "x": -54.1,
+   "y": -28.7,
+   "rotation": 1.2477,
+   "scale": 0.9
+  },
+  {
+   "id": 392,
+   "type": "bush-mata-atlantica-waist-b",
+   "x": -53.9,
+   "y": -17.2,
+   "rotation": 1.6899,
+   "scale": 1.1
+  },
+  {
+   "id": 393,
+   "type": "bush-mata-atlantica-knee-a",
+   "x": -112.9,
+   "y": -103.3,
+   "rotation": 3.8576,
+   "scale": 0.9
+  },
+  {
+   "id": 394,
+   "type": "palmito-jucara",
+   "x": -83.3,
+   "y": 32.1,
+   "rotation": 2.3231,
+   "scale": 0.9
+  },
+  {
+   "id": 395,
+   "type": "bush-mata-atlantica-knee-a",
+   "x": -27.8,
+   "y": 38.9,
+   "rotation": 2.7769,
+   "scale": 1.2
+  },
+  {
+   "id": 396,
+   "type": "bush-mata-atlantica-knee-a",
+   "x": -52.7,
+   "y": -10.3,
+   "rotation": 2.241,
+   "scale": 1
+  },
+  {
+   "id": 397,
+   "type": "bush-mata-atlantica-waist-a",
+   "x": -34.9,
+   "y": 31.2,
+   "rotation": 1.3595,
+   "scale": 1
+  },
+  {
+   "id": 398,
+   "type": "palmito-jucara",
+   "x": -86.1,
+   "y": -115.5,
+   "rotation": 3.1406,
+   "scale": 0.9
+  },
+  {
+   "id": 399,
+   "type": "bush-mata-atlantica-knee-a",
+   "x": -21.2,
+   "y": 10.1,
+   "rotation": 2.6101,
+   "scale": 1
+  },
+  {
+   "id": 400,
+   "type": "tree-broad",
+   "x": -83.8,
+   "y": -95.5,
+   "rotation": 2.0189,
+   "scale": 0.9
+  },
+  {
+   "id": 401,
+   "type": "pau-brasil",
+   "x": -22.4,
+   "y": 26.3,
+   "rotation": 0.5952,
+   "scale": 1.2
+  },
+  {
+   "id": 402,
+   "type": "mulungu",
+   "x": -107.1,
+   "y": -81.8,
+   "rotation": 1.8015,
+   "scale": 0.9
+  },
+  {
+   "id": 403,
+   "type": "bush-mata-atlantica-knee-b",
+   "x": -33.2,
+   "y": -18.2,
+   "rotation": 4.6589,
+   "scale": 1
+  },
+  {
+   "id": 404,
+   "type": "bush-mata-atlantica-knee-a",
+   "x": -116.5,
+   "y": -45.5,
+   "rotation": 4.3348,
+   "scale": 0.9
+  },
+  {
+   "id": 405,
+   "type": "bush-mata-atlantica-waist-b",
+   "x": -115.8,
+   "y": 13.4,
+   "rotation": 3.4456,
+   "scale": 1
+  },
+  {
+   "id": 406,
+   "type": "bush-mata-atlantica-knee-b",
+   "x": -84.8,
+   "y": 36.1,
+   "rotation": 2.4781,
+   "scale": 1.2
+  },
+  {
+   "id": 407,
+   "type": "bush-mata-atlantica-knee-a",
+   "x": -98.3,
+   "y": -29.6,
+   "rotation": 1.8155,
+   "scale": 1.1
+  },
+  {
+   "id": 408,
+   "type": "bush-mata-atlantica-knee-a",
+   "x": -53.4,
+   "y": -33.2,
+   "rotation": 0.7469,
+   "scale": 1.2
+  },
+  {
+   "id": 409,
+   "type": "tree-broad",
+   "x": -89.3,
+   "y": -58.7,
+   "rotation": 4.3009,
+   "scale": 1
+  },
+  {
+   "id": 410,
+   "type": "tree-broad",
+   "x": -62.5,
+   "y": -28,
+   "rotation": 5.7608,
+   "scale": 1
+  },
+  {
+   "id": 411,
+   "type": "pau-brasil",
+   "x": -108.9,
+   "y": -108,
+   "rotation": 6.1413,
+   "scale": 1.2
+  },
+  {
+   "id": 412,
+   "type": "tree-broad",
+   "x": -90.2,
+   "y": -87.7,
+   "rotation": 3.6272,
+   "scale": 1
+  },
+  {
+   "id": 413,
+   "type": "tree-broad",
+   "x": -35.4,
+   "y": -13.3,
+   "rotation": 3.3876,
+   "scale": 0.9
+  },
+  {
+   "id": 414,
+   "type": "bush-mata-atlantica-knee-b",
+   "x": -17.5,
+   "y": -15.7,
+   "rotation": 5.7474,
+   "scale": 1.1
+  },
+  {
+   "id": 415,
+   "type": "bush-mata-atlantica-waist-a",
+   "x": -90.6,
+   "y": -19.1,
+   "rotation": 4.2919,
+   "scale": 1
+  },
+  {
+   "id": 416,
+   "type": "bush-mata-atlantica-knee-a",
+   "x": -99.3,
+   "y": 12.5,
+   "rotation": 3.5971,
+   "scale": 1.1
+  },
+  {
+   "id": 417,
+   "type": "bush-mata-atlantica-waist-b",
+   "x": -44.8,
+   "y": 38.6,
+   "rotation": 6.1416,
+   "scale": 1
+  },
+  {
+   "id": 418,
+   "type": "bush-mata-atlantica-knee-a",
+   "x": 23.2,
+   "y": -60,
+   "rotation": 3.7795,
+   "scale": 0.9
+  },
+  {
+   "id": 419,
+   "type": "bush-mata-atlantica-knee-a",
+   "x": 15.4,
+   "y": -57.7,
+   "rotation": 0.5038,
+   "scale": 0.9
+  },
+  {
+   "id": 420,
+   "type": "bush-mata-atlantica-knee-b",
+   "x": 19.3,
+   "y": 61.4,
+   "rotation": 1.0447,
+   "scale": 1.1
+  },
+  {
+   "id": 421,
+   "type": "bush-mata-atlantica-knee-b",
+   "x": 18.7,
+   "y": -5,
+   "rotation": 5.8356,
+   "scale": 1.1
+  },
+  {
+   "id": 422,
+   "type": "bush-mata-atlantica-waist-a",
+   "x": 20.1,
+   "y": -15.3,
+   "rotation": 2.0782,
+   "scale": 1.2
+  },
+  {
+   "id": 423,
+   "type": "bush-mata-atlantica-waist-a",
+   "x": 21.2,
+   "y": 2.9,
+   "rotation": 3.0709,
+   "scale": 1
+  },
+  {
+   "id": 424,
+   "type": "bush-mata-atlantica-knee-b",
+   "x": 20.3,
+   "y": 13.9,
+   "rotation": 2.0324,
+   "scale": 0.9
+  },
+  {
+   "id": 425,
+   "type": "bush-mata-atlantica-waist-a",
+   "x": 16.1,
+   "y": 6.1,
+   "rotation": 2.2221,
+   "scale": 0.9
+  },
+  {
+   "id": 426,
+   "type": "bush-mata-atlantica-waist-a",
+   "x": 16,
+   "y": 36.9,
+   "rotation": 4.8619,
+   "scale": 1.1
+  },
+  {
+   "id": 427,
+   "type": "bush-mata-atlantica-knee-a",
+   "x": 23.9,
+   "y": 39.9,
+   "rotation": 0.6651,
+   "scale": 0.9
+  },
+  {
+   "id": 428,
+   "type": "bush-mata-atlantica-knee-a",
+   "x": 23.2,
+   "y": 29.6,
+   "rotation": 4.8131,
+   "scale": 0.9
+  },
+  {
+   "id": 429,
+   "type": "bush-mata-atlantica-waist-a",
+   "x": 21.5,
+   "y": -51.5,
+   "rotation": 4.4255,
+   "scale": 1.2
+  },
+  {
+   "id": 430,
+   "type": "bush-mata-atlantica-waist-a",
+   "x": 17.7,
+   "y": 25.2,
+   "rotation": 4.9269,
+   "scale": 1.1
+  },
+  {
+   "id": 431,
+   "type": "bush-mata-atlantica-waist-a",
+   "x": 18.5,
+   "y": 55.1,
+   "rotation": 4.143,
+   "scale": 1.1
+  }
+ ],
+ "deployment": {
+  "column": {
+   "sections": [
+    {
+     "x": -12,
+     "y": 80
+    },
+    {
+     "x": 8,
+     "y": 84
+    },
+    {
+     "x": 28,
+     "y": 80
+    }
+   ],
+   "facing": {
+    "x": 0,
+    "y": -1
+   },
+   "area": [
+    {
+     "x": -26,
+     "y": 70
+    },
+    {
+     "x": 40,
+     "y": 70
+    },
+    {
+     "x": 40,
+     "y": 96
+    },
+    {
+     "x": -26,
+     "y": 96
+    }
+   ]
+  },
+  "legalist": {
+   "sections": [
+    {
+     "x": 2,
+     "y": -102
+    },
+    {
+     "x": 20,
+     "y": -104
+    },
+    {
+     "x": 38,
+     "y": -102
+    }
+   ],
+   "facing": {
+    "x": 0,
+    "y": 1
+   },
+   "area": [
+    {
+     "x": -4,
+     "y": -118
+    },
+    {
+     "x": 46,
+     "y": -118
+    },
+    {
+     "x": 46,
+     "y": -88
+    },
+    {
+     "x": -4,
+     "y": -88
+    }
+   ]
+  }
+ },
+ "north": 315,
+ "objectives": [
+  {
+   "id": 1,
+   "name": {
+    "en": "Fort Gate",
+    "pt-BR": "Portão do Forte"
+   },
+   "area": [
+    {
+     "x": 19,
+     "y": 88
+    },
+    {
+     "x": 15.2,
+     "y": 97.2
+    },
+    {
+     "x": 6,
+     "y": 101
+    },
+    {
+     "x": -3.2,
+     "y": 97.2
+    },
+    {
+     "x": -7,
+     "y": 88
+    },
+    {
+     "x": -3.2,
+     "y": 78.8
+    },
+    {
+     "x": 6,
+     "y": 75
+    },
+    {
+     "x": 15.2,
+     "y": 78.8
+    }
+   ],
+   "flag": {
+    "x": 6,
+    "y": 88
+   },
+   "value": 1,
+   "owner": "column"
+  },
+  {
+   "id": 2,
+   "name": {
+    "en": "Fishermen's Boats",
+    "pt-BR": "Barcos dos Pescadores"
+   },
+   "area": [
+    {
+     "x": 46,
+     "y": 58
+    },
+    {
+     "x": 41.6,
+     "y": 68.6
+    },
+    {
+     "x": 31,
+     "y": 73
+    },
+    {
+     "x": 20.4,
+     "y": 68.6
+    },
+    {
+     "x": 16,
+     "y": 58
+    },
+    {
+     "x": 20.4,
+     "y": 47.4
+    },
+    {
+     "x": 31,
+     "y": 43
+    },
+    {
+     "x": 41.6,
+     "y": 47.4
+    }
+   ],
+   "flag": {
+    "x": 31,
+    "y": 58
+   },
+   "value": 1,
+   "owner": "neutral"
+  },
+  {
+   "id": 3,
+   "name": {
+    "en": "Avenue Works",
+    "pt-BR": "Obras da Avenida"
+   },
+   "area": [
+    {
+     "x": 32,
+     "y": -32
+    },
+    {
+     "x": 27.6,
+     "y": -21.4
+    },
+    {
+     "x": 17,
+     "y": -17
+    },
+    {
+     "x": 6.4,
+     "y": -21.4
+    },
+    {
+     "x": 2,
+     "y": -32
+    },
+    {
+     "x": 6.4,
+     "y": -42.6
+    },
+    {
+     "x": 17,
+     "y": -47
+    },
+    {
+     "x": 27.6,
+     "y": -42.6
+    }
+   ],
+   "flag": {
+    "x": 17,
+    "y": -32
+   },
+   "value": 2,
+   "owner": "neutral"
+  },
+  {
+   "id": 4,
+   "name": {
+    "en": "Rua Barroso Sand",
+    "pt-BR": "Areia da Rua Barroso"
+   },
+   "area": [
+    {
+     "x": 42,
+     "y": -70
+    },
+    {
+     "x": 37.9,
+     "y": -60.1
+    },
+    {
+     "x": 28,
+     "y": -56
+    },
+    {
+     "x": 18.1,
+     "y": -60.1
+    },
+    {
+     "x": 14,
+     "y": -70
+    },
+    {
+     "x": 18.1,
+     "y": -79.9
+    },
+    {
+     "x": 28,
+     "y": -84
+    },
+    {
+     "x": 37.9,
+     "y": -79.9
+    }
+   ],
+   "flag": {
+    "x": 28,
+    "y": -70
+   },
+   "value": 3,
+   "owner": "neutral"
+  }
+ ],
+ "eventPlaces": [
+  {
+   "id": 1,
+   "name": "Rua Barroso (oeste)",
+   "kind": "entry",
+   "point": {
+    "x": -116,
+    "y": -64
+   },
+   "facing": {
+    "x": 1,
+    "y": 0
+   }
+  },
+  {
+   "id": 2,
+   "name": "Avenida (norte)",
+   "kind": "entry",
+   "point": {
+    "x": 4,
+    "y": -116
+   },
+   "facing": {
+    "x": 0,
+    "y": 1
+   }
+  }
+ ],
+ "events": [
+  {
+   "id": 1,
+   "label": "Saída do forte",
+   "trigger": {
+    "kind": "time",
+    "seconds": 2
+   },
+   "delay": 0,
+   "actions": [
+    {
+     "kind": "card",
+     "title": {
+      "en": "Out of the fort",
+      "pt-BR": "A saída do forte"
+     },
+     "text": {
+      "en": "6 July 1922, afternoon. The fort will not be surrendered. Siqueira Campos leads the men out through the gate and up the Avenida Atlântica, towards the government's troops waiting at Rua Barroso.",
+      "pt-BR": "6 de julho de 1922, à tarde. O forte não será entregue. Siqueira Campos leva os homens pelo portão e sobe a Avenida Atlântica, rumo às tropas do governo que esperam na Rua Barroso."
+     }
+    }
+   ]
+  },
+  {
+   "id": 2,
+   "label": "Segunda seção do governo",
+   "trigger": {
+    "kind": "objective",
+    "objective": 2,
+    "side": "column",
+    "change": "taken"
+   },
+   "delay": 20,
+   "actions": [
+    {
+     "kind": "troops",
+     "side": "legalist",
+     "entry": 1,
+     "sections": [
+      "infantaria-exercito",
+      "metralhadora-legalista"
+     ],
+     "order": {
+      "kind": "objective",
+      "objective": 3
+     }
+    }
+   ]
+  },
+  {
+   "id": 3,
+   "label": "Ofensiva geral",
+   "trigger": {
+    "kind": "time",
+    "seconds": 600
+   },
+   "delay": 0,
+   "actions": [
+    {
+     "kind": "troops",
+     "side": "legalist",
+     "entry": 2,
+     "sections": [
+      "infantaria-exercito"
+     ],
+     "order": {
+      "kind": "objective",
+      "objective": 4
+     }
+    },
+    {
+     "kind": "posture",
+     "posture": "offensive",
+     "until": {
+      "seconds": 300
+     }
+    }
+   ]
+  }
+ ],
+ "layers": {
+  "height": {
+   "encoding": "rle-base64",
+   "type": "i16",
+   "length": 14641,
+   "data": "ZEFQAjYBKgEeARIBBgEFAREBHQEpATUBQQFNAVkBZQFxAX0BiQEBlQEBoQEBrQEB2wEB7wEBgwIBlwIBqwIBvwIB0wIB5wIB+wIBjwMBowMBtwMBywMB3wMB8wMBhwQBmwQBrwQBwwQB1wQB6wQB/wQBkwUBpwUBuwUBzwUB4wUB9wUBiwYBnwYBswYBxwYB2wYB7wYBZEFQAjYBKgEeARIBBgEFAREBHQEpATUBQQFNAVcBYwFvAXsBhwEBkwEBnwEBqwEB2wEB7wEBgwIBlwIBqwIBvwIB0wIB5wIB+wIBjwMBowMBtwMBywMB3wMB8wMBhwQBmwQBrwQBwwQB1wQB6wQB/wQBkwUBpwUBuwUBzwUB4wUB9wUBiwYBnwYBswYBxwYB2wYB7wYBZEFQAjYBKgEeARIBBgEFAQ8BGwEnATMBPwFLAVcBYwFvAXsBhwEBkQEBnQEBqQEB2wEB7wEBgwIBlwIBqwIBvwIB0wIB5wIB+wIBjwMBowMBtwMBywMB3wMB8wMBhwQBmwQBrwQBwwQB1wQB6wQB/wQBkwUBpwUBuwUBzwUB4wUB9wUBiwYBnwYBswYBxwYB2wYB7wYBZEFQAjYBKgEeARIBCAEDAQ8BGwEnATMBPwFLAVUBYQFtAXkBhQEBkQEBnQEBqQEB2wEB7wEBgwIBlwIBqwIBvwIB0wIB5wIB+wIBjwMBowMBtwMBywMB3wMB8wMBhwQBmwQBrwQBwwQB1wQB6wQB/wQBkwUBpwUBuwUBzwUB4wUB9wUBiwYBnwYBswYBxwYB2wYB7wYBZEFQAjYBKgEeARQBCAEDAQ8BGwEnATMBPQFJAVUBYQFtAXkBgwEBjwEBmwEBpwEBswEB7wEBgwIBlwIBqwIBvwIB0wIB5wIB+wIBjwMBowMBtwMBywMB3wMB8wMBhwQBmwQBrwQBwwQB1wQB6wQB/wQBkwUBpwUBuwUBzwUB4wUB9wUBiwYBnwYBswYBxwYB2wYB7wYBZEFQAjYBKgEeARQBCAEDAQ8BGwEnATEBPQFJAVUBYQFtAXcBgwEBjwEBmwEBpwEBswEB7wEBgwIBlwIBqwIBvwIB0wIB5wIB+wIBjwMBowMBtwMBywMB3wMB8wMBhwQBmwQBrwQBwwQB1wQB6wQB/wQBkwUBpwUBuwUBzwUB4wUB9wUBiwYBnwYBswYBxwYB2wYB7wYBZEFQAjYBKgEeARQBCAEDAQ8BGwEnATEBPQFJAVUBYQFrAXcBgwEBjwEBmwEBpwEBsQEB7wEBgwIBlwIBqwIBvwIB0wIB5wIB+wIBjwMBowMBtwMBywMB3wMB8wMBhwQBmwQBrwQBwwQB1wQB6wQB/wQBkwUBpwUBuwUBzwUB4wUB9wUBiwYBnwYBswYBxwYB2wYB7wYBZEFQAjYBKgEeARQBCAEDAQ8BGwEnATEBPQFJAVUBYQFtAXcBgwEBjwEBmwEBpwEBswEB7wEBgwIBlwIBqwIBvwIB0wIB5wIB+wIBjwMBowMBtwMBywMB3wMB8wMBhwQBmwQBrwQBwwQB1wQB6wQB/wQBkwUBpwUBuwUBzwUB4wUB9wUBiwYBnwYBswYBxwYB2wYB7wYBZEFQAjYBKgEeARQBCAEDAQ8BGwEnATMBPQFJAVUBYQFtAXkBhQEBjwEBmwEBpwEBswEB7wEBgwIBlwIBqwIBvwIB0wIB5wIB+wIBjwMBowMBtwMBywMB3wMB8wMBhwQBmwQBrwQBwwQB1wQB6wQB/wQBkwUBpwUBuwUBzwUB4wUB9wUBiwYBnwYBswYBxwYB2wYB7wYBZEFQAjYBKgEeARIBCAEDAQ8BGwEnATMBPwFLAVUBYQFtAXkBhQEBkQEBnQEBqQEB2wEB7wEBgwIBlwIBqwIBvwIB0wIB5wIB+wIBjwMBowMBtwMBywMB3wMB8wMBhwQBmwQBrwQBwwQB1wQB6wQB/wQBkwUBpwUBuwUBzwUB4wUB9wUBiwYBnwYBswYBxwYB2wYB7wYBZEFQAjYBKgEeARIBBgEFAQ8BGwEnATMBPwFLAVcBYwFvAXsBhwEBkwEBnQEBqQEB2wEB7wEBgwIBlwIBqwIBvwIB0wIB5wIB+wIBjwMBowMBtwMBywMB3wMB8wMBhwQBmwQBrwQBwwQB1wQB6wQB/wQBkwUBpwUBuwUBzwUB4wUB9wUBiwYBnwYBswYBxwYB2wYB7wYBZEFQAjYBKgEeARIBBgEFAREBHQEpATUBQQFNAVkBZQFvAXsBhwEBkwEBnwEBqwEB2wEB7wEBgwIBlwIBqwIBvwIB0wIB5wIB+wIBjwMBowMBtwMBywMB3wMB8wMBhwQBmwQBrwQBwwQB1wQB6wQB/wQBkwUBpwUBuwUBzwUB4wUB9wUBiwYBnwYBswYBxwYB2wYB7wYBZEFQAjYBKgEeARIBBgEFAREBHQEpATUBQQFNAVkBZQFxAX0BiQEBlQEBoQEBrQEB2wEB7wEBgwIBlwIBqwIBvwIB0wIB5wIB+wIBjwMBowMBtwMBywMB3wMB8wMBhwQBmwQBrwQBwwQB1wQB6wQB/wQBkwUBpwUBuwUBzwUB4wUB9wUBiwYBnwYBswYBxwYB2wYB7wYBZEFQAjYBKgEeARIBBgEFARMBHwErATcBQwFPAVsBZwFzAX8BiwEBlwEBpQEBsQEB2wEB7wEBgwIBlwIBqwIBvwIB0wIB5wIB+wIBjwMBowMBtwMBywMB3wMB8wMBhwQBmwQBrwQBwwQB1wQB6wQB/wQBkwUBpwUBuwUBzwUB4wUB9wUBiwYBnwYBswYBxwYB2wYB7wYBZEFQAjYBKgEeARABBAEHARMBHwErATcBRQFRAV0BaQF1AYEBAY0BAZsBAacBAbMBAdsBAe8BAYMCAZcCAasCAb8CAdMCAecCAfsCAY8DAaMDAbcDAcsDAd8DAfMDAYcEAZsEAa8EAcMEAdcEAesEAf8EAZMFAacFAbsFAc8FAeMFAfcFAYsGAZ8GAbMGAccGAdsGAe8GAWRBUAI2ASoBHAEQAQQBBwETASEBLQE5AUUBUwFfAWsBdwGDAQGRAQGdAQGpAQHHAQHbAQHvAQGDAgGXAgGrAgG/AgHTAgHnAgH7AgGPAwGjAwG3AwHLAwHfAwHzAwGHBAGbBAGvBAHDBAHXBAHrBAH/BAGTBQGnBQG7BQHPBQHjBQH3BQGLBgGfBgGzBgHHBgHbBgHvBgFkQVACNgEqARwBEAEEAQkBFQEhAS0BOwFHAVMBYQFtAXkBhQEBkwEBnwEBqwEBxwEB2wEB7wEBgwIBlwIBqwIBvwIB0wIB5wIB+wIBjwMBowMBtwMBywMB3wMB8wMBhwQBmwQBrwQBwwQB1wQB6wQB/wQBkwUBpwUBuwUBzwUB4wUB9wUBiwYBnwYBswYBxwYB2wYB7wYBZEFQAjYBKAEcARABAgEJARUBIwEvATsBSQFVAWEBbwF7AYcBAZUBAaEBAa8BAccBAdsBAe8BAYMCAZcCAasCAb8CAdMCAecCAfsCAY8DAaMDAbcDAcsDAd8DAfMDAYcEAZsEAa8EAcMEAdcEAesEAf8EAZMFAacFAbsFAc8FAeMFAfcFAYsGAZ8GAbMGAccGAdsGAe8GAWRBUAI2ASgBHAEQAQIBCQEXASMBMQE9AUkBVwFjAXEBfQGJAQGXAQGjAQGxAQHHAQHbAQHvAQGDAgGXAgGrAgG/AgHTAgHnAgH7AgGPAwGjAwG3AwHLAwHfAwHzAwGHBAGbBAGvBAHDBAHXBAHrBAH/BAGTBQGnBQG7BQHPBQHjBQH3BQGLBgGfBgGzBgHHBgHbBgHvBgFkQVACNgEoARwBDgECAQsBFwElATEBPwFLAVcBZQFxAX8BiwEBmQEBpQEBswEBxwEB2wEB7wEBgwIBlwIBqwIBvwIB0wIB5wIB+wIBjwMBowMBtwMBywMB3wMB8wMBhwQBmwQBrwQBwwQB1wQB6wQB/wQBkwUBpwUBuwUBzwUB4wUB9wUBiwYBnwYBswYBxwYB2wYB7wYBZEFQAjYBKAEcAQ4BAgELARcBJQExAT8BSwFZAWcBcwGBAQGNAQGbAQGnAQGzAQHHAQHbAQHvAQGDAgGXAgGrAgG/AgHTAgHnAgH7AgGPAwGjAwG3AwHLAwHfAwHzAwGHBAGbBAGvBAHDBAHXBAHrBAH/BAGTBQGnBQG7BQHPBQHjBQH3BQGLBgGfBgGzBgHHBgHbBgHvBgFkQVACNgEoARwBDgEAAQsBGQElATMBPwFNAVkBZwF1AYEBAY8BAZsBAakBAbMBAccBAdsBAe8BAYMCAZcCAasCAb8CAdMCAecCAfsCAY8DAaMDAbcDAcsDAd8DAfMDAYcEAZsEAa8EAcMEAdcEAesEAf8EAZMFAacFAbsFAc8FAeMFAfcFAYsGAZ8GAbMGAccGAdsGAe8GAWRBUAI2ASgBHAEOAQABCwEZASUBMwFBAU0BWwFnAXUBgwEBjwEBnQEBqQEBswEBxwEB2wEB7wEBgwIBlwIBqwIBvwIB0wIB5wIB+wIBjwMBowMBtwMBywMB3wMB8wMBhwQBmwQBrwQBwwQB1wQB6wQB/wQBkwUBpwUBuwUBzwUB4wUB9wUBiwYBnwYBswYBxwYB2wYB7wYBZEFQAjYBKAEaAQ4BAAELARkBJwEzAUEBTwFbAWkBdQGDAQGRAQGdAQGrAQGzAQHHAQHbAQHvAQGDAgGXAgGrAgG/AgHTAgHnAgH7AgGPAwGjAwG3AwHLAwHfAwHzAwGHBAGbBAGvBAHDBAHXBAHrBAH/BAGTBQGnBQG7BQHPBQHjBQH3BQGLBgGfBgGzBgHHBgHbBgHvBgFkQVACNgEoARoBDgEAAQsBGQEnATMBQQFPAVsBaQF3AYMBAZEBAZ0BAasBAbMBAccBAdsBAe8BAYMCAZcCAasCAb8CAdMCAecCAfsCAY8DAaMDAbcDAcsDAd8DAfMDAYcEAZsEAa8EAcMEAdcEAesEAf8EAZMFAacFAbsFAc8FAeMFAfcFAYsGAZ8GAbMGAccGAdsGAe8GAWRBUAI2ASgBGgEOAQABDQEZAScBMwFBAU8BWwFpAXcBgwEBkQEBnwEBqwEBswEBxwEB2wEB7wEBgwIBlwIBqwIBvwIB0wIB5wIB+wIBjwMBowMBtwMBywMB3wMB8wMBhwQBmwQBrwQBwwQB1wQB6wQB/wQBkwUBpwUBuwUBzwUB4wUB9wUBiwYBnwYBswYBxwYB2wYB7wYBZEFQAjYBKAEaAQ4BAAENARkBJwEzAUEBTwFbAWkBdwGDAQGRAQGfAQGrAQGzAQHHAQHbAQHvAQGDAgGXAgGrAgG/AgHTAgHnAgH7AgGPAwGjAwG3AwHLAwHfAwHzAwGHBAGbBAGvBAHDBAHXBAHrBAH/BAGTBQGnBQG7BQHPBQHjBQH3BQGLBgGfBgGzBgHHBgHbBgHvBgFkQVACNgEoARoBDgEAAQ0BGQEnATMBQQFPAVsBaQF3AYMBAZEBAZ8BAasBAbMBAccBAdsBAe8BAYMCAZcCAasCAb8CAdMCAecCAfsCAY8DAaMDAbcDAcsDAd8DAfMDAYcEAZsEAa8EAcMEAdcEAesEAf8EAZMFAacFAbsFAc8FAeMFAfcFAYsGAZ8GAbMGAccGAdsGAe8GAWRBUAI2ASgBGgEOAQABDQEZAScBMwFBAU8BWwFpAXcBgwEBkQEBnwEBqwEBswEBxwEB2wEB7wEBgwIBlwIBqwIBvwIB0wIB5wIB+wIBjwMBowMBtwMBywMB3wMB8wMBhwQBmwQBrwQBwwQB1wQB6wQB/wQBkwUBpwUBuwUBzwUB4wUB9wUBiwYBnwYBswYBxwYB2wYB7wYBZEFQAjYBKAEaAQ4BAAELARkBJwEzAUEBTwFbAWkBdwGDAQGRAQGdAQGrAQGzAQHHAQHbAQHvAQGDAgGXAgGrAgG/AgHTAgHnAgH7AgGPAwGjAwG3AwHLAwHfAwHzAwGHBAGbBAGvBAHDBAHXBAHrBAH/BAGTBQGnBQG7BQHPBQHjBQH3BQGLBgGfBgGzBgHHBgHbBgHvBgFkQVACNgEoARoBDgEAAQsBGQEnATMBQQFPAVsBaQF3AYMBAZEBAZ0BAasBAbMBAccBAdsBAe8BAYMCAZcCAasCAb8CAdMCAecCAfsCAY8DAaMDAbcDAcsDAd8DAfMDAYcEAZsEAa8EAcMEAdcEAesEAf8EAZMFAacFAbsFAc8FAeMFAfcFAYsGAZ8GAbMGAccGAdsGAe8GAWRBUAI2ASgBGgEOAQABDQEZAScBMwFBAU8BWwFpAXcBgwEBkQEBnwEBqwEBswEBxwEB2wEB7wEBgwIBlwIBqwIBvwIB0wIB5wIB+wIBjwMBowMBtwMBywMB3wMB8wMBhwQBmwQBrwQBwwQB1wQB6wQB/wQBkwUBpwUBuwUBzwUB4wUB9wUBiwYBnwYBswYBxwYB2wYB7wYBZEFQAjYBKAEaAQ4BAAENARkBJwE1AUEBTwFbAWkBdwGDAQGRAQGfAQGrAQGzAQHHAQHbAQHvAQGDAgGXAgGrAgG/AgHTAgHnAgH7AgGPAwGjAwG3AwHLAwHfAwHzAwGHBAGbBAGvBAHDBAHXBAHrBAH/BAGTBQGnBQG7BQHPBQHjBQH3BQGLBgGfBgGzBgHHBgHbBgHvBgFkQVACNgEoARoBDgEAAQ0BGQEnATUBQQFPAV0BaQF3AYUBAZEBAZ8BAa0BAbMBAccBAdsBAe8BAYMCAZcCAasCAb8CAdMCAecCAfsCAY8DAaMDAbcDAcsDAd8DAfMDAYcEAZsEAa8EAcMEAdcEAesEAf8EAZMFAacFAbsFAc8FAeMFAfcFAYsGAZ8GAbMGAccGAdsGAe8GAWRBUAI2ASgBGgEOAQABDQEZAScBNQFDAU8BXQFrAXcBhQEBkwEBnwEBrQEBswEBxwEB2wEB7wEBgwIBlwIBqwIBvwIB0wIB5wIB+wIBjwMBowMBtwMBywMB3wMB8wMBhwQBmwQBrwQBwwQB1wQB6wQB/wQBkwUBpwUBuwUBzwUB4wUB9wUBiwYBnwYBswYBxwYB2wYB7wYBZEFQAjYBKAEaAQwBAAENARsBJwE1AUMBUQFdAWsBeQGFAQGTAQGhAQGvAQGzAQHHAQHbAQHvAQGDAgGXAgGrAgG/AgHTAgHnAgH7AgGPAwGjAwG3AwHLAwHfAwHzAwGHBAGbBAGvBAHDBAHXBAHrBAH/BAGTBQGnBQG7BQHPBQHjBQH3BQGLBgGfBgGzBgHHBgHbBgHvBgFkQVACNgEoARoBDAEAAQ0BGwEpATUBQwFRAV8BawF5AYcBAZUBAaMBAa8BAbMBAccBAdsBAe8BAYMCAZcCAasCAb8CAdMCAecCAfsCAY8DAaMDAbcDAcsDAd8DAfMDAYcEAZsEAa8EAcMEAdcEAesEAf8EAZMFAacFAbsFAc8FAeMFAfcFAYsGAZ8GAbMGAccGAdsGAe8GAWRBUAI2ASgBGgEMAQEBDQEbASkBNwFFAVEBXwFtAXsBiQEBlQEBowEBsQEBswEBxwEB2wEB7wEBgwIBlwIBqwIBvwIB0wIB5wIB+wIBjwMBowMBtwMBywMB3wMB8wMBhwQBmwQBrwQBwwQB1wQB6wQB/wQBkwUBpwUBuwUBzwUB4wUB9wUBiwYBnwYBswYBxwYB2wYB7wYBZEFQAjYBKAEaAQwBAQEPAR0BKQE3AUUBUwFhAW8BfQGJAQGXAQGlAQGfAQGzAQHHAQHbAQHvAQGDAgGXAgGrAgG/AgHTAgHnAgH7AgGPAwGjAwG3AwHLAwHfAwHzAwGHBAGbBAGvBAHDBAHXBAHrBAH/BAGTBQGnBQG7BQHPBQHjBQH3BQGLBgGfBgGzBgHHBgHbBgHvBgFkQVACNgEoARoBDAEBAQ8BHQErATkBRwFVAWMBbwF9AYsBAZkBAacBAZ8BAbMBAccBAdsBAe8BAYMCAZcCAasCAb8CAdMCAecCAfsCAY8DAaMDAbcDAcsDAd8DAfMDAYcEAZsEAa8EAcMEAdcEAesEAf8EAZMFAacFAbsFAc8FAeMFAfcFAYsGAZ8GAbMGAccGAdsGAe8GAWRBUAI2ASgBGgEMAQEBDwEdASsBOQFHAVUBYwFxAX8BjQEBmwEBqQEBnwEBswEBxwEB2wEB7wEBgwIBlwIBqwIBvwIB0wIB5wIB+wIBjwMBowMBtwMBywMB3wMB8wMBhwQBmwQBrwQBwwQB1wQB6wQB/wQBkwUBpwUBuwUBzwUB4wUB9wUBiwYBnwYBswYBxwYB2wYB7wYBZEFQAjQBJgEYAQoBAwERAR8BLQE7AUkBVwFlAXMBgQEBjwEBnQEBqwEBnwEBswEBxwEB2wEB7wEBgwIBlwIBqwIBvwIB0wIB5wIB+wIBjwMBowMBtwMBywMB3wMB8wMBhwQBmwQBrwQBwwQB1wQB6wQB/wQBkwUBpwUBuwUBzwUB4wUB9wUBiwYBnwYBswYBxwYB2wYB7wYBZEFQAjQBJgEYAQoBAwERAR8BLQE7AUkBVwFnAXUBgwEBkQEBnwEBrQEBnwEBswEBxwEB2wEB7wEBgwIBlwIBqwIBvwIB0wIB5wIB+wIBjwMBowMBtwMBywMB3wMB8wMBhwQBmwQBrwQBwwQB1wQB6wQB/wQBkwUBpwUBuwUBzwUB4wUB9wUBiwYBnwYBswYBxwYB2wYB7wYBZEFQAjQBJgEYAQoBAwERAR8BLwE9AUsBWQFnAXUBgwEBkwEBoQEBrwEBnwEBswEBxwEB2wEB7wEBgwIBlwIBqwIBvwIB0wIB5wIB+wIBjwMBowMBtwMBywMB3wMB8wMBhwQBmwQBrwQBwwQB1wQB6wQB/wQBkwUBpwUBuwUBzwUB4wUB9wUBiwYBnwYBswYBxwYB2wYB7wYBZEFQAjQBJgEYAQoBAwETASEBLwE9AUsBWQFpAXcBhQEBkwEBoQEBsQEBnwEBswEBxwEB2wEB7wEBgwIBlwIBqwIBvwIB0wIB5wIB+wIBjwMBowMBtwMBywMB3wMB8wMBhwQBmwQBrwQBwwQB1wQB6wQB/wQBkwUBpwUBuwUBzwUB4wUB9wUBiwYBnwYBswYBxwYB2wYB7wYBZEFQAjQBJgEYAQoBAwETASEBLwE9AU0BWwFpAXcBhQEBlQEBowEBsQEBnwEBswEBxwEB2wEB7wEBgwIBlwIBqwIBvwIB0wIB5wIB+wIBjwMBowMBtwMBywMB3wMB8wMBhwQBmwQBrwQBwwQB1wQB6wQB/wQBkwUBpwUBuwUBzwUB4wUB9wUBiwYBnwYBswYBxwYB2wYB7wYBZEFQAjQBJgEYAQoBBQETASEBLwE/AU0BWwFpAXcBhwEBlQEBowEBsQEBnwEBswEBxwEB2wEB7wEBgwIBlwIBqwIBvwIB0wIB5wIB+wIBjwMBowMBtwMBywMB3wMB8wMBhwQBmwQBrwQBwwQB1wQB6wQB/wQBkwUBpwUBuwUBzwUB4wUB9wUBiwYBnwYBswYBxwYB2wYB7wYBZEFQAjQBJgEYAQoBBQETASEBLwE/AU0BWwFpAXkBhwEBlQEBowEBsQEBnwEBswEBxwEB2wEB7wEBgwIBlwIBqwIBvwIB0wIB5wIB+wIBjwMBowMBtwMBywMB3wMB8wMBhwQBmwQBrwQBwwQB1wQB6wQB/wQBkwUBpwUBuwUBzwUB4wUB9wUBiwYBnwYBswYBxwYB2wYB7wYBZEFQAjQBJgEYAQoBBQETASEBLwE9AU0BWwFpAXcBhwEBlQEBowEBsQEBnwEBswEBxwEB2wEB7wEBgwIBlwIBqwIBvwIB0wIB5wIB+wIBjwMBowMBtwMBywMB3wMB8wMBhwQBmwQBrwQBwwQB1wQB6wQB/wQBkwUBpwUBuwUBzwUB4wUB9wUBiwYBnwYBswYBxwYB2wYB7wYBZEFQAjQBJgEYAQoBAwETASEBLwE9AUsBWwFpAXcBhQEBkwEBowEBsQEBnwEBswEBxwEB2wEB7wEBgwIBlwIBqwIBvwIB0wIB5wIB+wIBjwMBowMBtwMBywMB3wMB8wMBhwQBmwQBrwQBwwQB1wQB6wQB/wQBkwUBpwUBuwUBzwUB4wUB9wUBiwYBnwYBswYBxwYB2wYB7wYBZEFQAjQBJgEYAQoBAwERAR8BLwE9AUsBWQFnAXUBgwEBkwEBoQEBrwEBnwEBswEBxwEB2wEB7wEBgwIBlwIBqwIBvwIB0wIB5wIB+wIBjwMBowMBtwMBywMB3wMB8wMBhwQBmwQBrwQBwwQB1wQB6wQB/wQBkwUBpwUBuwUBzwUB4wUB9wUBiwYBnwYBswYBxwYB2wYB7wYBZEFQAjQBJgEYAQoBAwERAR8BLQE7AUkBVwFlAXUBgwEBkQEBnwEBrQEBnwEBswEBxwEB2wEB7wEBgwIBlwIBqwIBvwIB0wIB5wIB+wIBjwMBowMBtwMBywMB3wMB8wMBhwQBmwQBrwQBwwQB1wQB6wQB/wQBkwUBpwUBuwUBzwUB4wUB9wUBiwYBnwYBswYBxwYB2wYB7wYBZEFQAjQBJgEYAQoBAwERAR8BLQE7AUkBVwFlAXMBgQEBjwEBnQEBqwEBnwEBswEBxwEB2wEB7wEBgwIBlwIBqwIBvwIB0wIB5wIB+wIBjwMBowMBtwMBywMB3wMB8wMBhwQBmwQBrwQBwwQB1wQB6wQB/wQBkwUBpwUBuwUBzwUB4wUB9wUBiwYBnwYBswYBxwYB2wYB7wYBZEFQAjYBKAEaAQwBAQEPAR0BKwE5AUcBVQFjAXEBfwGLAQGZAQGnAQGfAQGzAQHHAQHbAQHvAQGDAgGXAgGrAgG/AgHTAgHnAgH7AgGPAwGjAwG3AwHLAwHfAwHzAwGHBAGbBAGvBAHDBAHXBAHrBAH/BAGTBQGnBQG7BQHPBQHjBQH3BQGLBgGfBgGzBgHHBgHbBgHvBgFkQVACNgEoARoBDAEBAQ8BGwEpATcBRQFTAWEBbQF7AYkBAZcBAaUBAbMBAscBAdsBAe8BAYMCAZcCAasCAb8CAdMCAecCAfsCAY8DAaMDAbcDAcsDAd8DAfMDAYcEAZsEAa8EAcMEAdcEAesEAf8EAZMFAacFAbsFAc8FAeMFAfcFAYsGAZ8GAbMGAccGAdsGAe8GAWRBUAI2ASgBGgEMAQABDQEbASkBNQFDAVEBXwFrAXkBhwEBkwEBoQEBrwEBswEBxwEB2wEB7wEBgwIBlwIBqwIBvwIB0wIB5wIB+wIBjwMBowMBtwMBywMB3wMB8wMBhwQBmwQBrwQBwwQB1wQB6wQB/wQBkwUBpwUBuwUBzwUB4wUB9wUBiwYBnwYBswYBxwYB2wYB7wYBZEFQAjYBKAEaAQ4BAAENARkBJwEzAUEBTwFbAWkBdwGDAQGRAQGfAQGrAQGzAQHHAQHbAQHvAQGDAgGXAgGrAgG/AgHTAgHnAgH7AgGPAwGjAwG3AwHLAwHfAwHzAwGHBAGbBAGvBAHDBAHXBAHrBAH/BAGTBQGnBQG7BQHPBQHjBQH3BQGLBgGfBgGzBgHHBgHbBgHvBgFkQVACNgEoARwBDgECAQsBGQElATMBPwFNAVkBZwFzAYEBAY8BAZsBAakBAbMBAccBAdsBAe8BAYMCAZcCAasCAb8CAdMCAecCAfsCAY8DAaMDAbcDAcsDAd8DAfMDAYcEAZsEAa8EAcMEAdcEAesEAf8EAZMFAacFAbsFAc8FAeMFAfcFAYsGAZ8GAbMGAccGAdsGAe8GAWRBUAI2ASgBHAEOAQIBCwEXASMBMQE9AUsBVwFlAXEBfwGLAQGZAQGlAQGzAQHHAQHbAQHvAQGDAgGXAgGrAgG/AgHTAgHnAgH7AgGPAwGjAwG3AwHLAwHfAwHzAwGHBAGbBAGvBAHDBAHXBAHrBAH/BAGTBQGnBQG7BQHPBQHjBQH3BQGLBgGfBgGzBgHHBgHbBgHvBgFkQVACNgEoARwBEAECAQkBFwEjAS8BPQFJAVUBYwFvAX0BiQEBlQEBowEBrwEBxwEB2wEB7wEBgwIBlwIBqwIBvwIB0wIB5wIB+wIBjwMBowMBtwMBywMB3wMB8wMBhwQBmwQBrwQBwwQB1wQB6wQB/wQBkwUBpwUBuwUBzwUB4wUB9wUBiwYBnwYBswYBxwYB2wYB7wYBZEFQAjYBKgEcARABBAEJARUBIQEvATsBRwFVAWEBbQF7AYcBAZMBAZ8BAa0BAccBAdsBAe8BAYMCAZcCAasCAb8CAdMCAecCAfsCAY8DAaMDAbcDAcsDAd8DAfMDAYcEAZsEAa8EAcMEAdcEAesEAf8EAZMFAacFAbsFAc8FAeMFAfcFAYsGAZ8GAbMGAccGAdsGAe8GAWRBUAI2ASoBHAEQAQQBBwEVASEBLQE5AUcBUwFfAWsBeQGFAQGRAQGdAQGrAQHHAQHbAQHvAQGDAgGXAgGrAgG/AgHTAgHnAgH7AgGPAwGjAwG3AwHLAwHfAwHzAwGHBAGbBAGvBAHDBAHXBAHrBAH/BAGTBQGnBQG7BQHPBQHjBQH3BQGLBgGfBgGzBgHHBgHbBgHvBgFkQVACNgEqARwBEAEEAQcBEwEhAS0BOQFFAVEBXwFrAXcBgwEBjwEBnQEBqQEBxwEB2wEB7wEBgwIBlwIBqwIBvwIB0wIB5wIB+wIBjwMBowMBtwMBywMB3wMB8wMBhwQBmwQBrwQBwwQB1wQB6wQB/wQBkwUBpwUBuwUBzwUB4wUB9wUBiwYBnwYBswYBxwYB2wYB7wYBZEFQAjYBKgEeARABBAEHARMBHwErATkBRQFRAV0BaQF1AYEBAY8BAZsBAacBAccBAdsBAe8BAYMCAZcCAasCAb8CAdMCAecCAfsCAY8DAaMDAbcDAcsDAd8DAfMDAYcEAZsEAa8EAcMEAdcEAesEAf8EAZMFAacFAbsFAc8FAeMFAfcFAYsGAZ8GAbMGAccGAdsGAe8GAWRBUAI2ASoBHgESAQQBBwETAR8BKwE3AUMBTwFdAWkBdQGBAQGNAQGZAQGlAQGzAQHbAQHvAQGDAgGXAgGrAgG/AgHTAgHnAgH7AgGPAwGjAwG3AwHLAwHfAwHzAwGHBAGbBAGvBAHDBAHXBAHrBAH/BAGTBQGnBQG7BQHPBQHjBQH3BQGLBgGfBgGzBgHHBgHbBgHvBgFkQVACNgEqAR4BEgEGAQcBEwEfASsBNwFDAU8BWwFnAXUBgQEBjQEBmQEBpQEBsQEB2wEB7wEBgwIBlwIBqwIBvwIB0wIB5wIB+wIBjwMBowMBtwMBywMB3wMB8wMBhwQBmwQBrwQBwwQB1wQB6wQB/wQBkwUBpwUBuwUBzwUB4wUB9wUBiwYBnwYBswYBxwYB2wYB7wYBZEFQAjYBKgEeARIBBgEHARMBHwErATcBQwFPAVsBZwFzAYEBAY0BAZkBAaUBAbEBAdsBAe8BAYMCAZcCAasCAb8CAdMCAecCAfsCAY8DAaMDAbcDAcsDAd8DAfMDAYcEAZsEAa8EAcMEAdcEAesEAf8EAZMFAacFAbsFAc8FAeMFAfcFAYsGAZ8GAbMGAccGAdsGAe8GAWRBUAI2ASoBHgESAQYBBwETAR8BKwE3AUMBTwFbAWcBcwF/AY0BAZkBAaUBAbEBAdsBAe8BAYMCAZcCAasCAb8CAdMCAecCAfsCAY8DAaMDAbcDAcsDAd8DAfMDAYcEAZsEAa8EAcMEAdcEAesEAf8EAZMFAacFAbsFAc8FAeMFAfcFAYsGAZ8GAbMGAccGAdsGAe8GAWRBUAI2ASoBHgESAQYBBwETAR8BKwE3AUMBTwFbAWcBcwGBAQGNAQGZAQGlAQGxAQHbAQHvAQGDAgGXAgGrAgG/AgHTAgHnAgH7AgGPAwGjAwG3AwHLAwHfAwHzAwGHBAGbBAGvBAHDBAHXBAHrBAH/BAGTBQGnBQG7BQHPBQHjBQH3BQGLBgGfBgGzBgHHBgHbBgHvBgFkQVACNgEqAR4BEgEGAQcBEwEfASsBNwFDAU8BWwFnAXUBgQEBjQEBmQEBpQEBsQEB2wEB7wEBgwIBlwIBqwIBvwIB0wIB5wIB+wIBjwMBowMBtwMBywMB3wMB8wMBhwQBmwQBrwQBwwQB1wQB6wQB/wQBkwUBpwUBuwUBzwUB4wUB9wUBiwYBnwYBswYBxwYB2wYB7wYBZEFQAjYBKgEeARIBBAEHARMBHwErATcBQwFPAV0BaQF1AYEBAY0BAZkBAaUBAbEBAdsBAe8BAYMCAZcCAasCAb8CAdMCAecCAfsCAY8DAaMDAbcDAcsDAd8DAfMDAYcEAZsEAa8EAcMEAdcEAesEAf8EAZMFAacFAbsFAc8FAeMFAfcFAYsGAZ8GAbMGAccGAdsGAe8GAWRBUAI2ASoBHgESAQQBBwETAR8BKwE3AUMBUQFdAWkBdQGBAQGNAQGZAQGnAQGzAQHbAQHvAQGDAgGXAgGrAgG/AgHTAgHnAgH7AgGPAwGjAwG3AwHLAwHfAwHzAwGHBAGbBAGvBAHDBAHXBAHrBAH/BAGTBQGnBQG7BQHPBQHjBQH3BQGLBgGfBgGzBgHHBgHbBgHvBgFkQVACNgEqAR4BEAEEAQcBEwEfASsBNwFFAVEBXQFpAXUBgQEBjwEBmwEBpwEBxwEB2wEB7wEBgwIBlwIBqwIBvwIB0wIB5wIB+wIBjwMBowMBtwMBywMB3wMB8wMBhwQBmwQBrwQBwwQB1wQB6wQB/wQBkwUBpwUBuwUBzwUB4wUB9wUBiwYBnwYBswYBxwYB2wYB7wYBZEFQAjYBKgEeARABBAEHARMBHwErATkBRQFRAV0BaQF1AYMBAY8BAZsBAacBAccBAdsBAe8BAYMCAZcCAasCAb8CAdMCAecCAfsCAY8DAaMDAbcDAcsDAd8DAfMDAYcEAZsEAa8EAcMEAdcEAesEAf8EAZMFAacFAbsFAc8FAeMFAfcFAYsGAZ8GAbMGAccGAdsGAe8GAWRBUAI2ASoBHgEQAQQBBwETAR8BLQE5AUUBUQFdAWkBdwGDAQGPAQGbAQGnAQHHAQHbAQHvAQGDAgGXAgGrAgG/AgHTAgHnAgH7AgGPAwGjAwG3AwHLAwHfAwHzAwGHBAGbBAGvBAHDBAHXBAHrBAH/BAGTBQGnBQG7BQHPBQHjBQH3BQGLBgGfBgGzBgHHBgHbBgHvBgFkQVACNgEqAR4BEAEEAQcBEwEfAS0BOQFFAVEBXQFrAXcBgwEBjwEBmwEBpwEBxwEB2wEB7wEBgwIBlwIBqwIBvwIB0wIB5wIB+wIBjwMBowMBtwMBywMB3wMB8wMBhwQBmwQBrwQBwwQB1wQB6wQB/wQBkwUBpwUBuwUBzwUB4wUB9wUBiwYBnwYBswYBxwYB2wYB7wYBZEFQAjYBKgEeARABBAEHARMBHwEtATkBRQFRAV0BawF3AYMBAY8BAZsBAakBAccBAdsBAe8BAYMCAZcCAasCAb8CAdMCAecCAfsCAY8DAaMDAbcDAcsDAd8DAfMDAYcEAZsEAa8EAcMEAdcEAesEAf8EAZMFAacFAbsFAc8FAeMFAfcFAYsGAZ8GAbMGAccGAdsGAe8GAWYBZEBQAjYBKgEeARABBAEHARMBHwEtATkBRQFRAV0BawF3AYMBAY8BAZsBAacBAccBAdsBAe8BAYMCAZcCAasCAb8CAdMCAecCAfsCAY8DAaMDAbcDAcsDAd8DAfMDAYcEAZsEAa8EAcMEAdcEAesEAf8EAZMFAacFAbsFAc8FAeMFAfcFAYsGAZ8GAbMGAccGAdsGAe8GAZIBAYYBAXgBbAFkPVACNgEqAR4BEAEEAQcBEwEfAS0BOQFFAVEBXQFpAXcBgwEBjwEBmwEBpwEBxwEB2wEB7wEBgwIBlwIBqwIBvwIB0wIB5wIB+wIBjwMBowMBtwMBywMB3wMB8wMBhwQBmwQBrwQBwwQB1wQB6wQB/wQBkwUBpwUBuwUBzwUB4wUB9wUBiwYBnwYBswYBxwYB2wYB7wYBxgEBuAEBqAEBmAEBigEBegFqAWQ6UAI2ASoBHgEQAQQBBwETAR8BKwE5AUUBUQFdAWkBdQGDAQGPAQGbAQGnAQHHAQHbAQHvAQGDAgGXAgGrAgG/AgHTAgHnAgH7AgGPAwGjAwG3AwHLAwHfAwHzAwGHBAGbBAGvBAHDBAHXBAHrBAH/BAGTBQGnBQG7BQHPBQHjBQH3BQGLBgGfBgGzBgHHBgHbBgHvBgH+AQHuAQHeAQHMAQG6AQGoAQGWAQGEAQFyAWQ4UAI2ASoBHgEQAQQBBwETAR8BKwE3AUUBUQFdAWkBdQGBAQGNAQGbAQGnAQGzAQHbAQHvAQGDAgGXAgGrAgG/AgHTAgHnAgH7AgGPAwGjAwG3AwHLAwHfAwHzAwGHBAGbBAGvBAHDBAHXBAHrBAH/BAGTBQGnBQG7BQHPBQHjBQH3BQGLBgGfBgGzBgHHBgHbBgHvBgG4AgGoAgGWAgGEAgHwAQHcAQHIAQG0AQGgAQGMAQF4AWYBZDVQAjYBKgEeARIBBAEHARMBHwErATcBQwFPAV0BaQF1AYEBAY0BAZkBAaUBAbEBAdsBAe8BAYMCAZcCAasCAb8CAdMCAecCAfsCAY8DAaMDAbcDAcsDAd8DAfMDAYcEAZsEAa8EAcMEAdcEAesEAf8EAZMFAacFAbsFAc8FAeMFAfcFAYsGAZ8GAbMGAccGAdsGAe8GAfYCAeQCAdACAb4CAagCAZQCAf4BAegBAdIBAbwBAaQBAY4BAXgBZgFkM1ACNgEqAR4BEgEGAQcBEwEfASsBNwFDAU8BWwFnAXMBgQEBjQEBmQEBpQEBsQEB2wEB7wEBgwIBlwIBqwIBvwIB0wIB5wIB+wIBjwMBowMBtwMBywMB3wMB8wMBhwQBmwQBrwQBwwQB1wQB6wQB/wQBkwUBpwUBuwUBzwUB4wUB9wUBiwYBnwYBswYBxwYB2wYB7wYBtAMBoAMBjgMB+AIB5AIBzgIBtgIBoAIBiAIB7gEB1gEBvgEBpAEBjAEBdgFkMlACNgEqAR4BEgEGAQUBEQEfASsBNwFDAU8BWwFnAXMBfwGLAQGXAQGjAQGvAQHbAQHvAQGDAgGXAgGrAgG/AgHTAgHnAgH7AgGPAwGjAwG3AwHLAwHfAwHzAwGHBAGbBAGvBAHDBAHXBAHrBAH/BAGTBQGnBQG7BQHPBQHjBQH3BQGLBgGfBgGzBgHHBgHbBgHvBgH0AwHgAwHMAwG2AwGgAwGIAwHwAgHYAgG+AgGkAgGKAgHwAQHWAQG8AQGgAQGIAQFwAWQwUAI2ASoBHgESAQYBBQERAR0BKQE1AUMBTwFbAWcBcwF/AYsBAZcBAaMBAa8BAdsBAe8BAYMCAZcCAasCAb8CAdMCAecCAfsCAY8DAaMDAbcDAcsDAd8DAfMDAYcEAZsEAa8EAcMEAdcEAesEAf8EAZMFAacFAbsFAc8FAeMFAfcFAYsGAZ8GAbMGAccGAdsGAe8GAbQEAaAEAYoEAfQDAd4DAcYDAawDAZIDAfgCAd4CAcICAaYCAYoCAewBAdABAbQBAZgBAX4BZgFkLlACNgEqAR4BEgEGAQUBEQEdASkBNQFBAU0BWQFlAXEBfQGLAQGXAQGjAQGvAQHbAQHvAQGDAgGXAgGrAgG/AgHTAgHnAgH7AgGPAwGjAwG3AwHLAwHfAwHzAwGHBAGbBAGvBAHDBAHXBAHrBAH/BAGTBQGnBQG7BQHPBQHjBQH3BQGLBgGfBgGzBgHHBgHbBgHvBgH2BAHiBAHMBAG0BAGcBAGEBAHqAwHOAwGyAwGWAwH6AgHcAgG+AgGgAgGCAgHkAQHGAQGoAQGMAQFyAWQtUAI2ASoBHgESAQYBBQERAR0BKQE1AUEBTQFZAWUBcQF9AYkBAZUBAaEBAa0BAdsBAe8BAYMCAZcCAasCAb8CAdMCAecCAfsCAY8DAaMDAbcDAcsDAd8DAfMDAYcEAZsEAa8EAcMEAdcEAesEAf8EAZMFAacFAbsFAc8FAeMFAfcFAYsGAZ8GAbMGAccGAdsGAe8GAboFAaQFAYwFAfQEAdwEAcIEAagEAYwEAe4DAdIDAbQDAZQDAfYCAdYCAbYCAZYCAfYBAdYBAbgBAZgBAXwBZCxQAjYBKgEeARIBBgEFAREBHQEpATUBQQFNAVkBZQFxAX0BiQEBlQEBoQEBrQEB2wEB7wEBgwIBlwIBqwIBvwIB0wIB5wIB+wIBjwMBowMBtwMBywMB3wMB8wMBhwQBmwQBrwQBwwQB1wQB6wQB/wQBkwUBpwUBuwUBzwUB4wUB9wUBiwYBnwYBswYBxwYB2wYB7wYB/gUB5gUB0AUBtgUBnAUBggUB5gQBygQBrAQBjgQB7gMBzgMBrgMBjgMB7AIBygIBqAIBiAIB5gEBxAEBpAEBhgEBagFkKlACNgEqAR4BEgEGAQUBEQEdASkBNQFBAU0BWQFlAXEBfQGJAQGVAQGhAQGtAQHbAQHvAQGDAgGXAgGrAgG/AgHTAgHnAgH7AgGPAwGjAwG3AwHLAwHfAwHzAwGHBAGbBAGvBAHDBAHXBAHrBAH/BAGTBQGnBQG7BQHPBQHjBQH3BQGLBgGfBgGzBgHHBgHbBgHvBgHCBgGqBgGSBgH4BQHeBQHCBQGmBQGIBQHqBAHKBAGqBAGIBAHoAwHGAwGiAwGAAwHcAgG6AgGWAgHyAQHQAQGuAQGOAQFwAWQpUAI2ASoBHgESAQYBBQERAR0BKQE1AUEBTQFZAWUBcQF9AYkBAZUBAaEBAa0BAdsBAe8BAYMCAZcCAasCAb8CAdMCAecCAfsCAY8DAaMDAbcDAcsDAd8DAfMDAYcEAZsEAa8EAcMEAdcEAesEAf8EAZMFAacFAbsFAc8FAeMFAfcFAYsGAZ8GAbMGAccGAdsGAe8GAYgHAfAGAdYGAbwGAaAGAYQGAeYFAcgFAagFAYgFAeYEAcQEAaIEAf4DAdoDAbYDAZIDAewCAcgCAaICAf4BAdoBAbYBAZQBAXYBZChQAjYBKgEeARIBBgEFAREBHQEpATUBQQFPAVsBZwFzAX8BiwEBlwEBowEBrwEB2wEB7wEBgwIBlwIBqwIBvwIB0wIB5wIB+wIBjwMBowMBtwMBywMB3wMB8wMBhwQBmwQBrwQBwwQB1wQB6wQB/wQBkwUBpwUBuwUBzwUB4wUB9wUBiwYBnwYBswYBxwYB2wYB7wYBzgcBtAcBmgcBgAcB5AYBxgYBqAYBiAYB5gUBxgUBogUBgAUB3AQBuAQBkgQB7AMBxgMBoAMB+gIB1AIBrgIBiAIB4gEBvgEBmgEBegFkJ1ACNgEqAR4BEgEGAQUBEwEfASsBNwFDAU8BWwFnAXMBfwGLAQGXAQGjAQGxAQHbAQHvAQGDAgGXAgGrAgG/AgHTAgHnAgH7AgGPAwGjAwG3AwHLAwHfAwHzAwGHBAGbBAGvBAHDBAHXBAHrBAH/BAGTBQGnBQG7BQHPBQHjBQH3BQGLBgGfBgGzBgHHBgHbBgHvBgGUCAH6BwHgBwHEBwGmBwGIBwHoBgHIBgGmBgGEBgHgBQG8BQGYBQHyBAHMBAGkBAH+AwHWAwGuAwGGAwHeAgG2AgGQAgHoAQHCAQGeAQF8AWQmUAI2ASoBHgESAQQBBwETAR8BKwE3AUMBTwFdAWkBdQGBAQGNAQGZAQGlAQGxAQHbAQHvAQGDAgGXAgGrAgG/AgHTAgHnAgH7AgGPAwGjAwG3AwHLAwHfAwHzAwGHBAGbBAGvBAHDBAHXBAHrBAH/BAGTBQGnBQG7BQHPBQHjBQH3BQGLBgGfBgGzBgHHBgHbBgHvBgHcCAHCCAGmCAGICAHqBwHMBwGqBwGKBwHmBgHCBgGeBgH4BQHSBQGsBQGEBQHcBAG0BAGMBAHiAwG4AwGQAwHmAgG+AgGUAgHsAQHGAQGgAQF8AWQlUAI2ASoBHgEQAQQBBwETAR8BKwE5AUUBUQFdAWkBdwGDAQGPAQGbAQGnAQHHAQHbAQHvAQGDAgGXAgGrAgG/AgHTAgHnAgH7AgGPAwGjAwG3AwHLAwHfAwHzAwGHBAGbBAGvBAHDBAHXBAHrBAH/BAGTBQGnBQG7BQHPBQHjBQH3BQGLBgGfBgGzBgHHBgHbBgHvBgGiCQGICQHsCAHOCAGuCAGOCAHsBwHKBwGmBwGCBwHcBgG2BgGOBgHmBQG+BQGWBQHsBAHCBAGWBAHsAwHCAwGWAwHsAgHCAgGYAgHuAQHGAQGgAQF8AWQkUAI2ASoBHAEQAQQBBwEVASEBLQE5AUcBUwFfAWsBdwGFAQGRAQGdAQGpAQHHAQHbAQHvAQGDAgGXAgGrAgG/AgHTAgHnAgH7AgGPAwGjAwG3AwHLAwHfAwHzAwGHBAGbBAGvBAHDBAHXBAHrBAH/BAGTBQGnBQG7BQHPBQHjBQH3BQGLBgGfBgGzBgHHBgHbBgHvBgHqCQHQCQGyCQGUCQH0CAHSCAGwCAGMCAHoBwHCBwGaBwH0BgHMBgGiBgH4BQHOBQGiBQH4BAHMBAGgBAH0AwHIAwGcAwHwAgHEAgGYAgHuAQHGAQGeAQF6AWQjUAI2ASoBHAEQAQQBCQEVASEBLwE7AUcBVQFhAW0BewGHAQGTAQGfAQGtAQHHAQHbAQHvAQGDAgGXAgGrAgG/AgHTAgHnAgH7AgGPAwGjAwG3AwHLAwHfAwHzAwGHBAGbBAGvBAHDBAHXBAHrBAH/BAGTBQGnBQG7BQHPBQHjBQH3BQGLBgGfBgGzBgHHBgHbBgHvBgG0CgGWCgH4CQHYCQG4CQGWCQHyCAHOCAGoCAGCCAHaBwGwBwGIBwHeBgGyBgGGBgHaBQGuBQGCBQHUBAGmBAH4AwHMAwGeAwHwAgHEAgGYAgHsAQHCAQGaAQF2AWQiUAI2ASgBHAEQAQIBCQEXASMBLwE9AUkBVwFjAW8BfQGJAQGXAQGjAQGvAQHHAQHbAQHvAQGDAgGXAgGrAgG/AgHTAgHnAgH7AgGPAwGjAwG3AwHLAwHfAwHzAwGHBAGbBAGvBAHDBAHXBAHrBAH/BAGTBQGnBQG7BQHPBQHjBQH3BQGLBgGfBgGzBgHHBgHbBgHvBgH8CgHeCgHACgGeCgH+CQHaCQG2CQGQCQHoCAHCCAGYCAHuBwHEBwGYBwHsBgHABgGSBgHkBQG2BQGIBQHaBAGqBAH8AwHMAwGeAwHwAgHCAgGUAgHoAQG+AQGUAQFwAWQhUAI2ASgBHAEOAQIBCwEXASUBMQE/AUsBWQFlAXMBfwGNAQGZAQGlAQGzAQHHAQHbAQHvAQGDAgGXAgGrAgG/AgHTAgHnAgH7AgGPAwGjAwG3AwHLAwHfAwHzAwGHBAGbBAGvBAHDBAHXBAHrBAH/BAGTBQGnBQG7BQHPBQHjBQH3BQGLBgGfBgGzBgHHBgHbBgHvBgHGCwGmCwGGCwHmCgHCCgGeCgH4CQHSCQGqCQGCCQHYCAGsCAGACAHUBwGmBwH4BgHKBgGcBgHsBQG8BQGMBQHcBAGsBAH8AwHMAwGcAwHsAgG+AgGQAgHiAQG2AQGOAQFqAWQgUAI2ASgBHAEOAQABCwEZASUBMwE/AU0BWwFnAXUBgQEBjwEBnQEBqQEBswEBxwEB2wEB7wEBgwIBlwIBqwIBvwIB0wIB5wIB+wIBjwMBowMBtwMBywMB3wMB8wMBhwQBmwQBrwQBwwQB1wQB6wQB/wQBkwUBpwUBuwUBzwUB4wUB9wUBiwYBnwYBswYBxwYB2wYB7wYBjgwB7gsBzgsBrAsBiAsB4goBvAoBlAoB6gkBwAkBlgkB6ggBvAgBkAgB4AcBsgcBggcB0gYBogYB8AUBvgUBjgUB3AQBqgQB+AMByAMBlgMB5gIBtgIBiAIB2gEBrgEBhgEBZCBQAjYBKAEaAQ4BAAENARkBJwE1AUEBTwFdAWkBdwGFAQGRAQGfAQGtAQGzAQHHAQHbAQHvAQGDAgGXAgGrAgG/AgHTAgHnAgH7AgGPAwGjAwG3AwHLAwHfAwHzAwGHBAGbBAGvBAHDBAHXBAHrBAH/BAGTBQGnBQG7BQHPBQHjBQH3BQGLBgGfBgGzBgHHBgHbBgHvBgHYDAG4DAGWDAHyCwHMCwGmCwH+CgHWCgGsCgGACgHUCQGoCQH6CAHKCAGaCAHqBwG6BwGIBwHWBgGkBgHyBQG+BQGMBQHaBAGmBAH0AwHCAwGQAwHeAgGuAgH+AQHQAQGkAQF8AWQfUAI2ASgBGgEMAQABDQEbASkBNwFDAVEBXwFtAXkBhwEBlQEBowEBrwEBswEBxwEB2wEB7wEBgwIBlwIBqwIBvwIB0wIB5wIB+wIBjwMBowMBtwMBywMB3wMB8wMBhwQBmwQBrwQBwwQB1wQB6wQB/wQBkwUBpwUBuwUBzwUB4wUB9wUBiwYBnwYBswYBxwYB2wYB7wYBog0BgA0B3AwBuAwBkgwB6gsBwgsBmAsB7AoBwAoBlAoB5AkBtgkBhgkB1AgBpAgB8AcBvgcBjAcB2AYBpAYB8AUBvAUBiAUB1AQBoAQB7AMBuAMBhgMB1AIBogIB8gEBxAEBmAEBcgFkHlACNgEoARoBDAEBAQ8BHQEpATcBRQFTAWEBbwF9AYkBAZcBAaUBAbMBAscBAdsBAe8BAYMCAZcCAasCAb8CAdMCAecCAfsCAY8DAaMDAbcDAcsDAd8DAfMDAYcEAZsEAa8EAcMEAdcEAesEAf8EAZMFAacFAbsFAc8FAeMFAfcFAYsGAZ8GAbMGAccGAdsGAe8GAeoNAcgNAaQNAf4MAdgMAbAMAYYMAdoLAa4LAYALAdIKAaIKAfIJAcAJAY4JAdwIAagIAfQHAcAHAYwHAdYGAaIGAewFAbYFAYIFAcwEAZYEAeIDAa4DAfoCAcgCAZYCAeYBAbgBAYwBAWYBZB1QAjYBKAEaAQwBAQEPAR0BKwE5AUcBVQFjAXEBfwGNAQGbAQGnAQGfAQGzAQHHAQHbAQHvAQGDAgGXAgGrAgG/AgHTAgHnAgH7AgGPAwGjAwG3AwHLAwHfAwHzAwGHBAGbBAGvBAHDBAHXBAHrBAH/BAGTBQGnBQG7BQHPBQHjBQH3BQGLBgGfBgGzBgHHBgHbBgHvBgG0DgGSDgHsDQHGDQGcDQH0DAHIDAGcDAHuCwHACwGQCwHeCgGsCgH6CQHICQGUCQHeCAGqCAH0BwG+BwGIBwHSBgGcBgHkBQGuBQH4BAHCBAGMBAHWAwGgAwHsAgG6AgGIAgHWAQGoAQF+AWQdUAI0ASYBGAEKAQMBEQEfAS0BOwFJAVcBZQFzAYEBAY8BAZ0BAasBAZ8BAbMBAccBAdsBAe8BAYMCAVYBYAFqAXABdgF4A3YBcAFqAWABVgGbBAGvBAHDBAHXBAHrBAH/BAGTBQGnBQG7BQHPBQHjBQH3BQGLBgGfBgGzBgHHBgHbBgHvBgH+DgHaDgG0DgGMDgHiDQG2DQGKDQHcDAGuDAH+CwHMCwGaCwHoCgG0CgGACgHKCQGUCQHeCAGoCAHwBwG6BwGCBwHKBgGSBgHaBQGiBQHsBAG0BAH+AwHGAwGSAwHcAgGoAgH2AQHGAQGYAQFwAWQcUAI0ASYBGAEKAQMBEQEfAS0BOwFJAVcBZQFzAYEBAZEBAZ8BAa0BAZ8BAbMBAccBAVIBYgFyAX4BiAEBkgEBmAEBngEBoAEBogEBoAEBngEBmAEBkgEBiAEBfgFyAWIBUgHXBAHrBAH/BAGTBQGnBQG7BQHPBQHjBQH3BQGLBgGfBgGzBgHHBgHbBgHvBgHIDwGiDwH6DgHSDgGmDgH6DQHMDQGeDQHuDAG8DAGKDAHWCwGiCwHuCgG4CgGCCgHKCQGUCQHcCAGkCAHqBwGyBwH4BgHABgGGBgHOBQGWBQHcBAGkBAHsAwG2AwGAAwHKAgGWAgHkAQG0AQGIAQFkHFACNAEmARgBCgEDAREBHwEtAT0BSwFZAWcBdQGDAQGRAQGfAQGtAQGfAQFSAWYBeAGIAQGYAQGkAQGwAQG6AQHCAQHGAQHKAQPGAQHCAQG6AQGwAQGkAQGYAQGIAQF4AWYBUgH/BAGTBQGnBQG7BQHPBQHjBQH3BQGLBgGfBgGzBgHHBgHbBgHvBgGSEAHqDwHCDwGYDwHsDgG+DgGODgHeDQGuDQH6DAHGDAGSDAHcCwGmCwHwCgG4CgGACgHICQGOCQHUCAGaCAHgBwGmBwHsBgGyBgH4BQG+BQGEBQHMBAGSBAHaAwGiAwHsAgG2AgGCAgHQAQGgAQF2AWQbUAI0ASYBGAEKAQMBEQEfAS8BPQFLAVkBZwF1AYUBAZMBAaEBAa8BAWABdgGKAQGcAQGuAQG+AQHMAQHYAQHiAQHqAQHwAQHyAQH0AQHyAQHwAQHqAQHiAQHYAQHMAQG+AQGuAQGcAQGKAQF2AWABkwUBpwUBuwUBzwUB4wUB9wUBiwYBnwYBswYBxwYB2wYB7wYB2hABshABiBAB3A8BsA8BgA8B0A4Bng4B7A0BuA0BhA0BzgwBlgwB3gsBpgsB7goBtAoB+gkBwAkBhgkByggBkAgB1AcBmAcB3gYBogYB5gUBrAUB8gQBuAQB/gMBxgMBjgMB1gIBoAIB7AEBvAEBjAEBZgFkGlACNAEmARgBCgEDAREBIQEvAT0BSwFZAWcBdwGFAQGTAQGhAQFoAYABAZgBAa4BAcIBAdQBAeQBAfIBAYACAYoCAZICAZgCAZwCA5gCAZICAYoCAYACAfIBAeQBAdQBAcIBAa4BAZgBAYABAWgBpwUBuwUBzwUB4wUB9wUBiwYBnwYBswYBxwYB2wYB7wYBpBEB+hABzhABohAB9A8Bwg8Bkg8B3g4Bqg4B9A0Bvg0BiA0B0AwBlgwB3AsBogsB6AoBrAoB8gkBtgkB+ggBvAgBgAgBxAcBiAcBzAYBjgYB0gUBmAUB3AQBogQB6AMBrgMB9gIBvgIBigIB1gEBpAEBeAFkGlACNAEmARgBCgEDAREBIQEvAT0BSwFZAWcBdwGFAQFSAW4BiAEBogEBugEB0AEB5gEB+AEBigIBmAIBpgIBsgIBugIBwAIBxAIBxgIBxAIBwAIBugIBsgIBpgIBmAIBigIB+AEB5gEB0AEBugEBogEBiAEBbgFSAc8FAeMFAfcFAYsGAZ8GAbMGAccGAdsGAe8GAewRAcIRAZQRAeYQAbYQAYQQAdIPAZ4PAegOAbIOAfoNAcANAYgNAc4MAZIMAdYLAZoLAd4KAaIKAeQJAagJAeoIAawIAe4HAbAHAfQGAbYGAfgFAbwFAYAFAcQEAYgEAc4DAZQDAdwCAaYCAfABAb4BAY4BAWYBZBlQAjQBJgEYAQoBAwERAR8BLwE9AUsBWQFnAXUBUgFwAYwBAagBAcIBAdwBAfIBAYgCAZwCAa4CAcACAc4CAdgCAeICAegCAe4CA+gCAeICAdgCAc4CAcACAa4CAZwCAYgCAfIBAdwBAcIBAagBAYwBAXABUgHjBQH3BQGLBgGfBgGzBgHHBgHbBgHvBgG0EgGIEgHaEQGqEQH4EAHGEAGSEAHcDwGkDwHsDgG0DgH6DQG+DQGEDQHGDAGKDAHMCwGQCwHSCgGUCgHUCQGWCQHYCAGYCAHaBwGaBwHcBgGeBgHgBQGiBQHmBAGqBAHuAwG0AwH6AgHCAgGKAgHWAQGkAQF4AWQZUAI0ASYBGAEKAQMBEQEfAS0BPQFLAVkBZwF1AW4BjAEBqgEBxgEB4gEB/AEBlAIBrAIBwAIB1AIB5AIB9AIBgAMBigMBkgMBlgMBmAMBlgMBkgMBigMBgAMB9AIB5AIB1AIBwAIBrAIBlAIB/AEB4gEBxgEBqgEBjAEBbgHjBQH3BQGLBgGfBgGzBgHHBgHbBgHvBgH8EgHOEgGgEgHuEQG6EQGGEQHQEAGYEAHgDwGmDwHsDgGyDgH0DQG4DQH6DAG8DAH+CwHACwGACwHACgGACgHACQGCCQHCCAGCCAHCBwGCBwHCBgGEBgHGBQGIBQHKBAGOBAHSAwGWAwHeAgGkAgHuAQG8AQGMAQFkGVACNAEmARgBCgEDAREBHwEtATsBSQFXAWcBaAGIAQGoAQHGAQHkAQGAAgGcAgG2AgHOAgHkAgH4AgGKAwGaAwGoAwGyAwG6AwG+AwHAAwG+AwG6AwGyAwGoAwGaAwGKAwH4AgHkAgHOAgG2AgGcAgGAAgHkAQHGAQGoAQGIAQFoAfcFAYsGAZ8GAbMGAccGAdsGAe8GAcQTAZQTAeQSAbASAfwRAcYRAY4RAdYQAZwQAeAPAaQPAegOAaoOAewNAa4NAe4MAa4MAe4LAa4LAewKAawKAeoJAaoJAegIAagIAegHAaYHAeYGAaYGAeYFAagFAeoEAawEAe4DAbIDAfgCAb4CAYgCAdIBAaABAXIBZBhQAjQBJgEYAQoBAwERAR8BLQE7AUkBVwFgAYABAaIBAcIBAeIBAYACAZ4CAboCAdQCAe4CAYYDAZwDAbADAcADAc4DAdoDAeIDAegDAeoDAegDAeIDAdoDAc4DAcADAbADAZwDAYYDAe4CAdQCAboCAZ4CAYACAeIBAcIBAaIBAYABAWABiwYBnwYBswYBxwYB2wYB7wYBihQB2hMBphMB8hIBvBIBhBIBzBEBkBEB1hABmBAB3A8Bng8B3g4Bng4B3g0Bng0B3AwBnAwB2gsBmAsB1goBlAoB0gkBkAkBzggBjAgBygcBigcByAYBiAYByAUBiAUBygQBjAQBzgMBkgMB2AIBoAIB6AEBtAEBhAEBZBhQAjQBJgEYAQoBAwERAR8BLQE7AUkBUgF2AZgBAboBAdwBAfwBAZwCAboCAdgCAfQCAY4DAagDAb4DAdQDAeYDAfYDAYIEAYoEAZAEAZIEAZAEAYoEAYIEAfYDAeYDAdQDAb4DAagDAY4DAfQCAdgCAboCAZwCAfwBAdwBAboBAZgBAXYBUgGfBgGzBgHHBgHbBgHvBgHQFAGeFAHqEwGyEwH8EgHCEgGGEgHMEQGOEQHQEAGSEAHSDwGSDwHQDgGODgHMDQGKDQHIDAGGDAHCCwH+CgG8CgH4CQG2CQHyCAGwCAHsBwGqBwHoBgGoBgHmBQGmBQHmBAGoBAHqAwGsAwHwAgG2AgH+AQHIAQGWAQFqAWQXUAI2ASgBGgEMAQEBDwEdASsBOQFHAWYBigEBrgEB0AEB8gEBlAIBtgIB1AIB9AIBkgMBrgMByAMB4AMB9gMBigQBnAQBqAQBsgQBuAQBugQBuAQBsgQBqAQBnAQBigQB9gMB4AMByAMBrgMBkgMB9AIB1AIBtgIBlAIB8gEB0AEBrgEBigEBZgGfBgGzBgHHBgHbBgHvBgGWFQHiFAGqFAHyEwG6EwH+EgHCEgGEEgHGEQGGEQHGEAGEEAHCDwGADwG+DgH6DQG2DQH0DAGwDAHqCwGmCwHiCgGeCgHaCQGWCQHSCAGOCAHMBwGIBwHGBgGEBgHCBQGCBQHCBAGEBAHGAwGIAwHOAgGUAgHcAQGoAQF6AWQXUAI2ASgBGgEMAQEBDwEdASsBOQFSAXgBnAEBwgEB5gEBiAIBrAIBzgIB7gIBjgMBrgMBzAMB6AMBggQBmgQBrgQBwgQB0AQB2gQB4gQB5AQB4gQB2gQB0AQBwgQBrgQBmgQBggQB6AMBzAMBrgMBjgMB7gIBzgIBrAIBiAIB5gEBwgEBnAEBeAFSAbMGAccGAdsGAe8GAdoVAaQVAewUAbIUAfYTAboTAfwSAbwSAfwRAboRAfgQAbYQAfQPAbAPAewOAaYOAeINAZwNAdgMAZIMAcwLAYgLAcIKAf4JAbgJAfQIAa4IAeoHAaYHAeQGAaAGAd4FAZwFAdwEAZwEAd4DAaADAeQCAagCAfABAboBAYoBAWQXUAI2ASgBGgEMAQEBDwEdASkBNwFiAYgBAa4BAdQBAfgBAZwCAcACAeQCAYYDAagDAcgDAegDAYYEAaIEAboEAdIEAeYEAfYEAYIFAYoFAYwFAYoFAYIFAfYEAeYEAdIEAboEAaIEAYYEAegDAcgDAagDAYYDAeQCAcACAZwCAfgBAdQBAa4BAYgBAWIBswYBxwYB2wYB7wYBnBYB5BUBqhUB7hQBshQB8hMBshMB8hIBsBIB7hEBqhEB5hABohAB3A8BmA8B0g4BjA4Bxg0B/gwBuAwB8gsBrAsB5goBngoB2AkBlAkBzggBiAgBxAcBgAcBvAYB+AUBtgUB9AQBtAQB9AMBtgMB+AIBvgIBhAIBzAEBmAEBbAFkFlACNgEoARoBDAEBAQ8BGwEpATcBcgGYAQG+AQHkAQGKAgGuAgHUAgH4AgGcAwG+AwHgAwGCBAGiBAHABAHaBAH0BAGKBQGcBQGqBQGyBQG2BQGyBQGqBQGcBQGKBQH0BAHaBAHABAGiBAGCBAHgAwG+AwGcAwH4AgHUAgGuAgGKAgHkAQG+AQGYAQFyAbMGAccGAdsGAe8GAd4WAaQWAegVAaoVAewUAaoUAeoTAaYTAeQSAaASAdoRAZQRAc4QAYgQAcIPAfoOAbQOAewNAaQNAdwMAZYMAc4LAYYLAcAKAfgJAbIJAewIAaYIAeAHAZoHAdYGAZIGAdAFAYwFAcwEAYoEAcwDAY4DAdACAZYCAd4BAagBAXgBZBZQAjYBKAEaAQwBAQENARsBKQFWAX4BpAEBzAEB8gEBmAIBwAIB5AIBigMBsAMB1AMB9gMBmgQBugQB2gQB+AQBlAUBrgUBwgUB0gUB3AUB3gUB3AUB0gUBwgUBrgUBlAUB+AQB2gQBugQBmgQB9gMB1AMBsAMBigMB5AIBwAIBmAIB8gEBzAEBpAEBfgFWAccGAdsGAe8GAZ4XAeIWAaQWAeQVAaQVAeIUAZ4UAdoTAZQTAc4SAYgSAcIRAfoQAbIQAeoPAaIPAdoOAZIOAcgNAYANAbgMAe4LAaYLAd4KAZYKAdAJAYgJAcIIAfoHAbQHAfAGAaoGAeYFAaQFAeIEAaAEAeADAaADAeQCAagCAe4BAbgBAYYBAWQWUAI2ASgBGgEMAQABDQEbASkBYAGIAQGwAQHYAQGAAgGmAgHOAgH0AgGaAwHAAwHmAwGKBAGuBAHSBAH0BAGUBQGyBQHOBQHmBQH4BQGEBgGIBgGEBgH4BQHmBQHOBQGyBQGUBQH0BAHSBAGuBAGKBAHmAwHAAwGaAwH0AgHOAgGmAgGAAgHYAQGwAQGIAQFgAccGAdsGAe8GAdwXAZ4XAd4WAZwWAdoVAZYVAdAUAYoUAcQTAfwSAbQSAewRAaQRAdoQAZIQAcgPAf4OAbQOAeoNAaINAdgMAY4MAcYLAfwKAbQKAeoJAaIJAdwIAZQIAc4HAYgHAcIGAf4FAboFAfYEAbQEAfQDAbQDAfYCAbgCAf4BAcYBAZIBAWYBZBVQAjYBKAEaAQwBAAENARsBKQFqAZIBAboBAeIBAYoCAbICAdgCAYADAagDAc4DAfYDAZwEAcIEAeYEAYoFAa4FAc4FAewFAYgGAZ4GAawGAbAGAawGAZ4GAYgGAewFAc4FAa4FAYoFAeYEAcIEAZwEAfYDAc4DAagDAYADAdgCAbICAYoCAeIBAboBAZIBAWoBxwYB2wYB7wYB"
+  },
+  "paint": {
+   "encoding": "rle-base64",
+   "type": "u8",
+   "length": 57600,
+   "data": "CQEBCAAQAQIJDwENCSEBFAkEAAgFCQgEBSEZGAUyCQIBCQANAQMJDwELCSIBFQkEAAgFCQgEBSEZGAUyCQoBBgAHAQMJEQEICSQBFAkFAAYJAQUKCAQFIRkYBTIJDAEEAAYBBAkEAAEJDQEECQ0AAgkYARQJBQAECQIFCwgEBSIZFwUyCQwBBQAEAQQJAwADCR0AAgkFAAEJBwUFCQcBEgABAQEJAwADCQQFDAgEBSIZFwUyCQwBBQACAQMAAQEBCQMABAkCAAMJFwADCQMAAwkFBQcJBwEQAAIBAgkCAAMJBAABBQwIBAUiGRcFMgkMAQkAAQECCQIABAkCAAQJFQAFCQEABAkEBQkJBwEPAAMBAgAFCQIAAwUMCAQFIhkXBTYJCAEIAAEBAgkCAAoJAwACCRAACwkCAAIFCgkJAQMJCAADAQIACgUNCAQFIhkXBTcJBwEHAAEBAgkCAAsJAQADCQcFBQkEABAFCgkTAAMJAgALBQ0IBAUiGRcFOAkGAQgJAwADCQgABQkDBQoJAgAECQgABAULCRIAAwkCAAIJCAAFBQoIBAUiGRcFOAkHAQYJAwADCQoAAwkBBQ0JAQAECQoAAwUDAAEFBwkSAAIJAgACCQoABAUKCAQFIhkXBTcJCAEECQQAAwkMAAIFAgACBQoABAkMAAIFAQADBQgJEAABCQMAAgkMAAMFCggEBSIZFwU3CQ8AAwkOAAUFCQkBAAMJDgAEBRYJBgACCQ4AAgUKCAQFIhkXBTcJDgAECQ4ABAUDAAQFAwAECQ4ABAUKAAEFDAkEAAMJDgACBQoIBAUiGRcFNgkOAAUJDgADBQIABwUBAAUJDgADBQkABAULCQQAAwkOAAIJAQUJCAQFIhkXBTUJDwAFCQ4AEgkOAAIJBAUFAAUFDAkCAAQJDgACCQEFCQgEBSIZFwU0CQ8AAwkBAAIJDgALBQEAAQkDAAIJDgACCQEAAwkDAAYFDQkBAAUJDgACCQEFCQgEBSIZFwUzCQIABgkMAAIJDgALBQEJAwADCQ4ABQkDAAcFDQkBAAUJDgACCQEFCQgEBSIZFwUyCQIABwkLAAMJDgALCQQAAwkOAAQJAwAHBQ4AAgkCAAIJDgACAQEFCQgEBSIZFwUyAAkJCgAECQ4ACgUBCQMABAkOAAQJAgAIBQ4JBAACCQ4AAQECBQkIBAUiGRcFMgAJCQoABQkMAAsJBAAFCQwABAEBAAkFDwkDAAQJDAADAQEFCQgEBSEZGAUyAAkJCgACCQIAAgkKAAsJBAACCQIAAwkKAAQBAQAKBQ8JAwAFCQoABAEBBQkIBAUhGRgFMgAJCQ0ABAkIAAsJCQAECQgABAEBAAoFEQkBAAIJAgAECQQAAgkBAAUBAQUJCAQFIRkYBTIACQkNABYJCQAQAQEACgUSCQUAEAEBBQkIBAUhGRgFMgAJCQoBAgADAQEJAQAQCQsAAgkDAAoBAQAKCQEFEwkEAA8BAgUJCAQFIRkYBTIACAkJAQQAAQEEAAQJAgAJCRAABAECAAQBAQALCQEFFAkCAA8BAwUJCAQFIRkYBTIABwkIAQoAAwkDAAgJEgADAQIABAEBAAsJAwUTCQEAEAEDBQkIBAUgGRkFMgkOAQsAAgkEAAYJEwACAQQAAgEDAAoJDQUJCQEABgkIAAIBAgABAQEFCQgEBSAZGQUyCQsAAwEMCQQAAgkaAQQAAQEDAAoJEAUHAAYJCgAEAQEFCQgEBSAZGQUyCQoABAEMCR8BCQAJAQIJEAUFAAMJAQACCQwAAwEBBQkIBAUgGRkFMgkJAAUBDQkeAQkABwEFCQ8FBQACCQIAAQkOAAIBAQUJCAQFHxkaBTIJCQAEAQ8JBwEGCRABCgADAQEAAQEJCQkAAQkDBQMJBAACCQ4AAgEBBQkIBAUfGRoFMgkKAAIBHQkQAQ0AAgEEAAIBBgkEAAMJBAABCQQAAwkOAAIBAQUJCAQFHxkaBTIJCQEgCRABDAADAQIABAEEAAEBAgkCAAQJAgADCQMABAkOAAIBAQUJCAQFHxkaBTUJBgEgCRABCwADAQIABAEDAAIBAwkBAAQJAgAECQMABAkOAAIBAQUJCAQFHxkaBTYJBQEfCREBCQALAQEABAEDAAoJAwAFCQ4AAgEBBQkIBAUeGRsFNgkFAR8JEgEHABABAwALCQEABAEBAAIJDgACAQEFCQgEBR4ZGwU2CQUBHgkVAQUABQkIAAMBAgADCQgABQECAAIJDgACCQEFCQgEBR4ZGwU2CQYBHAkIBQIJEAAFCQoABgkKAAMJAQECAAMJDAACCQIFCQgEBR4ZGwU2CQYBGwkHBQQJDwAFCQwABAkMAAIBAgAFCQoAAgkBAAEJAQUJCAQFHhkbBTYJBwEZCQcFBQkOAAUJDgADCQ0ABgEBAAIJCAACCQEAAgkBBQkIBAUeGRsFNgkKARYJBgUGCQ0AAwkBAAIJDgACCQMAAQkKAAQBAwALCQEAAwkBBQkIBAUeGRsFNgkMARMJBQUICREAAgkOAAIJAQADCQoAAwEDAAsJAQADCQIFCQgEBR4ZGwU2CQwBEgkFBQoJDwADCQ4ABQkLAAMBAQkCAAMJAgAECQMAAgkDBQkIBAUdGRwFNwkMARAJBQULAAIJDAAECQ4ABAkMAAIJAwACCQMABAkDAAIJBAUJCAQFHRkcBTcJDAEOCQYFCQAHCQoABAkOAAQJDAAFCQUAAgkEAAIJBQUJCAQFHRkcBToJCQENCQYFCQAIBQQJBQAFCQ4AAwkNAAUJBQABCQUAAQkGBQkIBAUdGRwFPAkHAQwJBQUKAAkFBAkFAAIJAgABCQ4AAgkOAAQJEwUJCAQFHRkcBTwJBwEKCQYFCwAKBQMJCAADCQwABAkBAAEJCgAECRMAAQUJCAQFHRkcBTwABAkDAQkJBgULAAsFAgkJAAQJCgAHCQkABAkTAAIFCQgEBR0ZHAU6AAYJAwEHCQYFDQALCQoABgkIAAgJCAAFCRIAAwUJCAQFHRkcBTkABwkEAQQJBwUOAAsJCgACCQIAHgkSAAQFCQgEBR0ZHAU5AAgJDAUQAAsJBwEECQMAHQkSAAUFCQgEBR0ZHAUyCQIFAwkBAAkJCwURAA4JAgEHCQEABAUCABEJAQAEBQMJCAABCQUAAQkBAAYFCQgEBR0ZHAUyCQYACQkGAAMJAQUTABABBgkBAAIJAgUBAAQFAQALBQMAAwUFCQYAAQkDAQEACgUJCAQFHRkcBTIJBgATBRgJAwAIAQYJBAUCAAIFAgAHBQIAAgUEAAIFBQkGAAIJAQECAAsFCQgEBR0ZHAUyCQcAEgUXCQQACAEGCQQFAQACBQMABAUKAAEFBwkEAAMJAQEBAA0FCQgEBR0ZHAUyCQkADwUXCQYABgEHCQQFDQABBQUAAgUGCQQAAwECAA4FCQgEBR0ZHAUyCQYBBgALBQIAAgUEAAIFDQkGAQEABQEHCQUFBgABBQQAAwUEAAIFBAACCQQABAEBAA8FCQgEBR0ZHAUyCQQBCAALBQEAAwUCAAQFBAABBQcJBgECAAQBCAkGBQQAAQUEAAMFAwAEBQIAAwkFAAMBAQACCQgABgUJCAQFHRkcBTIJAgEKAAoFAQADBQIABAUDAAMFBgkGAQ8JBwUCAAIFAwAEBQIABAUCAAQJBAACAQIAAgkKAAQJAQUJCAQFHRkcBTIJAQELAAkFAQADBQIACgUGCQYBEAkIAAIFAgARCQMAAwECAAIJDAADCQEFCQgEBR0ZHAUyAQwABwkBBQEAEAUFCQYBEQkHAAIJAgAXAQIAAgkOAAIJAQUJCAQFHRkcBTIBDQAFCQIABgkIAAIFAgADBQEJBQESCQYAAgkCAAMJCAAFCQMABAECAAMJDgACCQEFCQgEBR0ZHAUyAQ0AAwkDAAYJCgAFBQEJBQEUCQQAAQkDAAMJCgAECQQAAwECAAMJDgACCQEFCQgEBR0ZHAUyAQ8JAwADCQEAAgkMAAQJBQEWCQYAAwkMAAIJBgAHCQ4AAgkBBQkIBAUdGRwFMgEQCQIAAgkCAAEJDgACCQYBGQkDAAIJDgABCQEAAwkDAAYJDgACAQEFCQgEBR0ZHAUyARAJBQACCQ4AAgkBAAMJAQEcAAMJDgAFCQMABgkOAAIBAQUJCAQFHRkcBTIBEgkCAAMJDgAFCQEBHAAECQ4ABAkEAAMBAQACCQ4AAgEBBQkIBAUdGRwFMgETAAQJDgAECQEBHAAFCQ4AAwkFAAIBAgACCQ4AAQEBCQEFCQgEBR0ZHAUyARMABAkOAAQJAQEcAAUJDgADCQUAAgEBAAQJDAADCQEFCQgEBR0ZHAUyARIABQkOAAMJAQAEARgAAgECAAIJDgACCQIAAgkCAAgJCgAECQEFCQgEBR0ZHAUyARIAAgEBAAIJDgAIARsJAQACCQ4ABQkDAAUBAgACCQgABQkBBQkIBAUcGR0FMgEVAAIJDgAIARsAAwkOAAUJAwADAQMAEAkBBQkIBAUcGR0FMgEBAAUBDwADCQwACQEaAAUJDAAFCQMABAEDAAoBAQAECQIFCQgEBRwZHQUyAAcBDQAFCQoACgEHCQQBDgkBAAMJAQACCQoABQkDAAQBAwADAQIABQECAAMJAwUJCAQFHBkdBTIABwENAAMBAQACCQgACwEDCQkBDAkCAAEJAwADCQgABQkDAAQBBAABAQQAAwEDAAMJAwUKCAQFHBkdBTIABwkBAQsAAgEDABQJDQEKCQYAGAEJAAMBBAACCQMFCwgEBRwZHQUyAAcJAQEPABUJDQEJCQYABgkBABEBCgAB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CRYFBQkPAAIJAwAEBQIJHAEDCQIABwUJCAQFHxkaBTkJAwACCQEBDAkWBQcJDQAECQIABAUDAAIJHwAGBQoIBAUfGRoFOQkGAQsJFQUICQ0ACwUBAAQJHQABCQEABAUMCAQFIBkZBTkJBgEJCRUFCgkMABAFAQkWAAEJBAADCQEAAwUNCAQFIBkZBTgJBwEHCQkFBQkGBQwJDAAGCQgAAwUBCQEAAgkSAAIJAwAECQMAAgUMCAQFIBkZBTcJCAEECQoFGAkNAAUJCgAGCREAAgkDAAQJAgADBQ0IBAUgGRkFNgkUBRoJCAEDCQIABQkMAAQJEQACCQIACwUNCAQFIBkZBTUJFAUbCQYBBQkBAAUJDgADBQEJDwACCQIADAUCAAEFCggEBSAZGQUzCRQFEgACBQgJBgEGAAIJAgACCQ4AAgUDAAEFBgkGAAIJAgADCQgABQUKCAQFIBkZBTIJFAUSAAMFBwkFAQgJBAACCQ4AAgUBAAMFBgkFAAIJAgADCQoABAUKCAQFIBkZBTIAAwkDAQUJCAUDAAEFDQAGBQUJBQEJCQMAAwkOAAUFBwkIAAMJDAADBQoIBAUgGRkFMgADCQEBBwkHBQIAAgUEAAIFBwAHBQQJBQEKCQIABAkOAAQFCAkIAAIJDgABCQIFCQgEBSAZGQUyAAQBBwkGBQIAAwUDAAMFBgAIBQMJBQELCQIABAkOAAQFCAkHAAMJDgACCQEFCQgEBSAZGQUyAAQBBwkGBQEAAwUCAAQFAwACBQIACAUDCQQBDAkBAAUJDgADBQgJBwAECQ4AAgkBBQkIBAUgGRkFMgAEAQcJBgAKBQEABAUBAAkFAgkEAQ4AAgkCAAEJDgACBQkJBgAFCQ4AAgkBBQkIBAUgGRkFMgAEAQcJBQAPBQEAEAEOCQMAAwkMAAIFAwABBQUJBwAFCQ4AAgkBBQkIBAUgGRkFMgAFAQcJAwAFCQgAAwUBABIBDQkCAAQJCgAHBQUJBgADAQEAAgkOAAIJAQUJCAQFIBkZBTIACwEBCQIABQkKABUBDgAGCQgABwUFCQcBBAACCQ4AAgkBBQkIBAUgGRkFMgECAAoJAQAFCQwAFAEOAAIBAgARBQQJCAEDAAMJDgACCQEFCQgEBSAZGQUyAQMADgkOAAMFBQALARIAEQUDCQgBBAAECQwAAwkBBQkIBAUgGRkFMgEDAAsBAQACCQ4AAgUGAAoBEgAECQIACwUDCQgBBAAGCQoABQUJCAQFIBkZBTIBAwAKAQIAAgkOAAIFAQADBQEJAQAJARMAAgECCQEADAUCCQkBBAABAQMAAwkIAAYFCQgEBSAZGQUyAQMACgEBAAMJDgAFBQEJAwAHARgJAQALBQIJCgEIABEFCQgEBSAZGQUyAQMACgEBAAMJDgAFCQQABgEZAAsFAQkMAQcABAEBAA0FCQgEBSAZGQUyAQQADQkOAAQJBgEeCQIACAkPAQYAAgEDAA0FCQgEBSAZGQUyAQQADQkOAAMJBwEeCQIABwkQAQUAAQEEAA0JAQUJCAQFIBkZBTIJAgEEAAgBAQACCQ4AAgkHAR8JAgAGCREBBAABAQQADgkBBQkIBAUgGRkFMgkEAQkABQkMAAMJBwEfCQMAAwkTAQMAAQEDABAJAQUJCAQFIBkZBTIJBQEIAAYJCgADCQIAAgkPARMJGgEGAAQJCAAFCQEFCQgEBSAZGQUyCQUBCAAHCQgAAwkCAAIJEQERCRsBBgADCQoAAwkCBQkIBAUgGRkFMgkGAQcAEQkCAAIJEgEQCRwBBQADCQwAAgkCBQkIBAUgGRkFMwkFAQcAEAkCAAIBAQkTAQ4JHQEEAAMJDgACCQEFCQgEBSAZGQU0CQQBCAADAQEAAwECAAQBAwACAQMJEgEMCQsBBQkHAAEJBwEDAAQJDgACCQEFCQgEBSAZGQU0CQUBCgACAQMABAEDAAIBBAkTAQkJCwEHCQUAAgkEAAIJAgECAAUJDgACCQEFCQgEBSAZGQU1CQUBDgADAQQAAQEFCQgFAwkKAQQJDgEGCQUAAwkDAAMJAQEDAAUJDgACCQEFCQgEBSAZGQU1CQYBDQABAQsJBwUGCRoBBwkEAAMJAgAECQMAAwECAAIJDgACCQEFCQgEBSAZGQU1CQgBFwkGBQgJGAEHCQQACgkBAAQBAwACCQ4AAgkBBQkIBAUgGRkFNgkLARIJBgUJCRgBBQkFAA8BAwADCQ4AAgkBBQkIBAUgGRkFNgkNARAJBQULCRcBBAkFAAUJCAADAQIABAkOAAIJAQUJCAQFIBkZBTcJDQEOCQUFDQkWAQIJBgAFCQoACQkMAAMJAQUJCAQFIBkZBTsJCQEOCQUFFwkTAAUJDAAFCQIAAgkKAAQJAQUJCAQFIBkZBT4JBgENCQUFBwADBQ4JEgAFCQ4AAwkCAAQJCAAECQIFCQgEBSAZGQU/CQYBCwkGBQYABAUOCRIAAgkBAAIJDgACCQMAEAkCBQkIBAUgGRkFQAkFAQoJBgUGAAYFDQkRAAEJAgUBAAIJDgACBQEABAUCAAoJBAUJCAQFIBkZBUAJBQEJCQcFBQAIBQIAAwUHCRIFAgADCQ4ABQUEAAQJAQAEAQEJBAUJCAQFIBkZBUAJBQEICQcFBgAPBQQJEwUCAAMJDgAFBQMAAwkDAAMBAwkDBQkIBAUhGRgFQAkGAQUJCQUKAAwFAgkIAQIJCQUCAAQJDgAEBQQAAgkDAAMBBAkDBQkIBAUhGRgFPwkVBQsACwUBCQcBBAkIBQIABQkOAAMFBQkFAAEBBgkDBQkIBAUhGRgFPgAFCRIFCgALCQcBBQkJBQEABQkOAAIFBgkGAQYJAgABBQkIBAUhGRgFMgoEBQUACQkTBQgACgkGAQcJCQUCAAUJDAADBQUJBgEHCQEAAgUJCAQFIRkYBTIKBgUBAAsJFAUHAAoJBQEICQoABwkKAAMFAgACBQIJBQEHAAQFCQgEBSEZGAUyCgkACAkWBQYACQkFAQkJCgAICQgAAwUCAAIFAgkFAQcABQUJCAQFIRkYBTIKCwAGCRYFBgAHBQEJBQELCQgAEwUCAAIFAgkGAQUABwUJCAQFIRkYBTIKDgACCRcFBgAGCQYBDAkIABIFAgACBQMJBQEFAAgFCQgEBSEZGAUyChAJFwULCQYBDgkGAAcJAQADBQIABAUDAAIFAwkFAQUACQUJCAQFIRkYBTIKEgkVBQoJBgESCQMABgkBAAIFAwAEBQMAAgUDCQUBBQAKBQkIBAUhGRgFMgoUCRMFCQkGARYABQkDBQQAAwUEAAEFAwkGAQQACwUJCAQFIRkYBTIKFgkQBQkJBgEWAAQJBQUEAAEFCQkGAQUACgEBBQkIBAUhGRgFMgoXCQ8FCAkGARcAAwEBCQUFDQkGAQYACQECBQkIBAUhGRgFMgoZCQEBAgkKBQYJBwEcCQQFDQkGAQcACAEDBQkIBAUhGRgFMgobAQMJCAUFCQcBHQkEBQwJBgEIAAcBBAUJCAQFIRkYBTIKHAECCQkFAgkIAR4JBAUKCQcBCQAFAQYFCQgEBSAZGQUyCh4JEgEfCQQFCQkHAQkABQEHBQkIBAUgGRkFMgofCREBHgkGBQYJCAEIAAMBAwACAQYFCQgEBSAZGQUyCiAJDwEfCQYFBAkJAQgAAwEDAAMBBgUJCAQFIBkZBTIKIgkMASAJEQEJAAQBAQAFAQMAAQECBQkIBAUgGRkFMgojCQoBCAkEARQJEQEJAAoBAgADAQIFCQgEBSAZGQUyCiQJCQEFCQgBEgkRAQkAEAECBQkIBAUfGRoFMgolCQgBAgkMARAJEAEKAAUJCAADAQIJAQUJCAQFHxkaBTIKJwkUAQ8JEAEKAAUJCgACCQEAAQkBBQkIBAUfGRoFMgooCRMBDQkQAQsABQkMAAMJAQUJCAQFHxkaBTIKKQAHCQsBCwkRAQsABQkOAAIJAQUJCAQFHhkbBTIKKgAGCQsBCQkMAAQJAwELAAUJDgACBQoIBAUeGRsFMgorAAYJCgEHCQwABwkBAQsAAgECAAIJDgACBQoIBAUeGRsFMgosAAUJCgEFCQ0ACAkDAQMJAwEGAAMJDgACBQoIBAUeGRsFMhQCCisABAkKAQMJCQUECQEACQkLAQQAAwkOAAIFCggEBR0ZHAUyFAQKKgADCRQFBgAJCQwBAwAECQ4AAgUKCAQFHRkcBTIUBgopAAIJEgUHAAoJDAECAAUJDgACBQoIBAUdGRwFMhQICigJEgUHAAsJDAECAAMBAQABCQ4AAgUKCAQFHRkcBTIUCgonCRAFCAAKCQ0BBgACCQwAAwUKCAQFHBkdBTIUCwonCQIAAwkJBQkACQkOAQUABAkKAAMFCwgEBRwZHQUyFA0KJQAGCQgFCAAJBQEJDgEFAAUJCAAGBQkIBAUcGR0FMhQOCiUABQkIBQgABwUJCQgBBAADCQIADwUJCAQFHBkdBTIUEAokAAQJCAUZCQcBBgkCABAFCQgEBRsZHgUyFBEKJAADCQgFGQkIAQMJBAADCQIABAUCAAUFCQgEBRsZHgUyFBMKIwECCQoFFwkOAAMJAwADBQMJAQAEBQkIBAUbGR4FMhQUCiIBAgkOBRMJEwADCQQABQUJCAQFGxkeBTIUFQoiAQEJEAURCRMAAQkHAAQFCQgEBRsZGgcMBSoUFgoiCRAFEQkbAAQFCQgEBRsZFQcWBSUUFwoiAQEJDwUQCRsABAUJCAQFGxkSBxwFIhQZCiABCQkHBRAJHAADBQkIBAUbGRAHIAUgFBoKIAEKCQUFEAkVAQUJBQUJCAQFGxkOByQFHhQbCiABCQkFBQ8JEwEJCQQFCQgEBRoZDQcoBRwUHAofAQoJBAUPCREBDAkDBQkIBAUaGQsHLAUaFB0KHwEJCQUFDgkQAQ0JAwUJCAQFGhkKBy4FGRQdCh8BCQkFBQ0JEAEOCQMFCQgEBRoZCAcyBRcUHgofAQkJBQULCRABDwkDBQkIBAUbGQYHNAUWFB8KHwEICQYFCAkRARAJAwUJCAQFGxkFBzYFFRQgCh4BCAkeAREJAwUJCAQFGxkEBzgFFBQhCh4BBwkRAAQJCAESCQMFKBkDBzoFExQiCh0BCAkNAk4HPAUSFCIKHgEJCQsCTQc+BREUIwodAQ4JBAACAkwHQAUQFCQKHQEPCQEAAwJMB0AFEBQkCh0BDwAEAksHQgUPFCUKHQENAAUCSgdEBQ4UJgocAQwABgJKB0QFDhQmChwBCwAHAkoHRQUNFCcKHAEIAAkCSgdFBQ0UKAobAQgACQJKB0YFDBQoChwBBgAKAkoHRgUMFCkKGwEFAAoJAQJKB0cFCxQpChsBBAAKCQICSgdHBQsUKgobAQIACgkDAkoHSAUKFCoKGwECAAgJBQJKB0gFChQrChsACAkGAkoHSAUKFCsKGwAHCQcCSgdJBQkULAoaAAYJCAJKB0kFCRQsChoABQkJAkoHSQUJ"
+  },
+  "vegetation": {
+   "encoding": "rle-base64",
+   "type": "u8",
+   "length": 57600,
+   "data": "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"
+  }
+ }
+}
