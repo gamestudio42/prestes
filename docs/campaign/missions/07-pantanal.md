@@ -17,7 +17,7 @@ sourceRefs:
 
 ## Pitch
 
-February 1927. The column enters the Pantanal, exhausted and short of everything.
+January 1927. The column enters the Pantanal, exhausted and short of everything.
 The government is behind it, the water is ahead, and the border is the only
 objective left. The player screens the column through marsh, water and cattle
 trails, keeps the men together, and reaches the border. This is not a battle for
@@ -37,7 +37,7 @@ Shown in the campaign book. Keep it in step with the sections above.
 
 **Briefing:**
 
-The Pantanal, February 1927. The column is exhausted; the border is ahead.
+The Pantanal, January 1927. The column is exhausted; the border is ahead.
 Prestes tells the rearguard to keep the column together, bring the wounded and
 reach the border. There is no battle to win; the march is the objective.
 
@@ -56,7 +56,7 @@ reach the border. There is no battle to win; the march is the objective.
 
 **Briefing:**
 
-O Pantanal, fevereiro de 1927. A coluna está exausta; a fronteira está à
+O Pantanal, janeiro de 1927. A coluna está exausta; a fronteira está à
 frente. Prestes manda a retaguarda manter a coluna unida, levar os feridos e
 chegar à fronteira. Não há batalha a vencer; a marcha é o objetivo.
 
@@ -136,7 +136,7 @@ cover and no rest.
 
 ## Map and terrain
 
-- The Pantanal, February-March 1927. Marsh, water, islands, cattle trails, a river
+- The Pantanal, January-February 1927. Marsh, water, islands, cattle trails, a river
   and the border.
 - The government patrols the roads; the column moves through water and marsh. The
   heat, the fatigue and the supply are the main threats.
@@ -182,7 +182,7 @@ player sections, a scripted column and government patrols.
 
 ### Briefing
 
-The Pantanal, February 1927. The column is exhausted; the border is ahead. Prestes
+The Pantanal, January 1927. The column is exhausted; the border is ahead. Prestes
 tells the rearguard to keep the column together, bring the wounded and reach the
 border. There is no battle to win; the march is the objective.
 
@@ -216,7 +216,7 @@ behind them.
 
 | Key                          | EN (source)                                                                                                                                | PT-BR                                                                                                                                              |
 | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `campaign.pantanal.briefing` | The Pantanal, February 1927. The column is exhausted; the border is ahead. Keep the column together, bring the wounded, reach the border.  | O Pantanal, fevereiro de 1927. A coluna está exausta; a fronteira está à frente. Mantenham a coluna junta, tragam os feridos, cheguem à fronteira. |
+| `campaign.pantanal.briefing` | The Pantanal, January 1927. The column is exhausted; the border is ahead. Keep the column together, bring the wounded, reach the border.  | O Pantanal, janeiro de 1927. A coluna está exausta; a fronteira está à frente. Mantenham a coluna junta, tragam os feridos, cheguem à fronteira. |
 | `campaign.pantanal.opening`  | The column is entering the marsh. The water and the heat will slow it. Keep the rear closed.                                               | A coluna está entrando no pantanal. A água e o calor vão atrasá-la. Fechem a retaguarda.                                                           |
 | `campaign.pantanal.mid`      | The wounded and the animals are falling behind. Decide what we carry and what we leave.                                                    | Os feridos e os animais estão ficando para trás. Decidam o que levamos e o que deixamos.                                                           |
 | `campaign.pantanal.climax`   | The border is ahead. The last crossing. Get the column across.                                                                             | A fronteira está à frente. A última travessia. Levem a coluna para o outro lado.                                                                   |

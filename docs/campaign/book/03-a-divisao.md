@@ -14,90 +14,109 @@ sourceRefs:
 
 > **Label:** dramatized. The April 1925 combination in western Paraná, the First
 > Revolutionary Division and the Porto Mendes crossing are historical; the
-> prose, the crossing sequence and the dialogue are a dramatization. The junction
-> was at Benjamin Constant, not Foz do Iguaçu: Foz was Isidoro’s political
-> headquarters. **Tone reference:** Jorge Amado, _O Cavaleiro da Esperança_. No
-> text is reproduced; the prose is original.
+> prose, the crossing sequence and the dialogue are a dramatization. The
+> junction was at Benjamin Constant, not Foz do Iguaçu: Foz was Isidoro’s
+> political headquarters. **Tone reference:** Jorge Amado, _O Cavaleiro da
+> Esperança_. The prose is original; each page quotation is attributed with its
+> edition and page, shown under the page in the English and Portuguese text
+> below (complete-books-and-bibliography).
 
 ## English
 
 ### The Junction
 
-Western Paraná, April 1925. Two columns arrived from different defeats: the
-southern rebels who had broken the ring at Ramada, and the São Paulo remnants
-who had left the city and the Paraná front. They were not yet one army. They were
-two forces with two histories, two staffs and one government behind them.
-Prestes and Miguel Costa met at Benjamin Constant on 3 April; at Foz do Iguaçu
-they conferred with Isidoro, who kept the political headquarters.
+Western Paraná, April 1925. Catanduvas, the last stronghold of the São Paulo
+rebels, had surrendered before dawn on 30 March. Miguel Costa's brigade, the
+last of them still fighting, began to withdraw west the next day. Prestes's men,
+out of the forests of Santa Catarina, reached the same road at Benjamin
+Constant.
 
-Miguel Costa took formal command of the First Revolutionary Division. Prestes
-became chief of staff. The division had about fifteen hundred men, six hundred
-horses and mules, and three 75-mm guns. The numbers were not a victory; they
-were what remained. The junction was the moment the column stopped being a
-retreat and became a command.
+There, on 3 April, Prestes and Miguel Costa met. They agreed not to go down to
+Foz do Iguaçu to surrender or emigrate, but to combine and cross the Paraná into
+Mato Grosso, and they sent their men toward Porto Santa Helena before they had
+asked anyone (Macaulay, p. 86).
+
+_Plate: `foz-do-iguacu/group-photo` (see the compendium entry's caption and credit)._
+
+> The legendary Prestes Column appeared in the Alto Paraná. At the front marched the unmatched figure of the heroic Siqueira Campos…
+>
+> — Tabajara de Oliveira, memoir, on the arrival of the southern rebels
+>
+> `blanc-2024`, The Prestes Column (Duke, 2024), p. 47. Blanc's translation from the Portuguese.
+
+### Foz do Iguaçu
+
+Only then did they go to Foz do Iguaçu, where Isidoro kept his headquarters. On
+12 April the marshal told his officers that nothing more could be done in the
+field and that exile was the only choice. Most of the São Paulo commanders
+agreed. Prestes and Miguel Costa did not, and Isidoro let the revolution go on
+without him, returning to Argentina as its nominal chief (Blanc, p. 47).
+
+On 14 April 1925, at Porto Santa Helena, the First Revolutionary Division was
+formed: Miguel Costa in command, Prestes chief of staff, a São Paulo brigade of
+about seven hundred men and a Rio Grande brigade of about eight hundred.
 
 ### The Crossing
 
-The division crossed from Porto Mendes to Puerto Adela: the landing began on 27
-April and the crossing was completed on 29 April. The river was the gate. The
-horses, the guns and the wounded had to go first; the rearguard had to hold the
-bank until the last unit was across. The government was coming. The crossing was
-not a parade; it was a race between the division and the border.
+The division crossed from Porto Mendes to Puerto Adela, on the Paraguayan bank:
+the landing began on 27 April and the crossing was complete on 29 April.
+Macaulay counts no more than fifteen hundred men, six hundred horses and mules
+and three 75 mm guns (pp. 88–89). The guns would be abandoned and hidden in Mato
+Grosso.
 
 The two brigades crossed as one division. The Rio Grande men and the São Paulo
-men kept their own histories, but they shared the same command, the same river
-and the same march. The division was across. The cost would be counted later.
-
-### The Command
-
-Miguel Costa was the formal commander. Prestes was chief of staff and the
-division's most visible leader. The campaign must keep both facts: the column was
-not one man, and the command structure was part of the story. The division that
-crossed the Paraná was the column that would march north.
-
-The junction did not end the retreat. It gave the retreat a command. The march
-continued.
+men kept their own histories, but they shared a command, a river and a march.
+The column was not one man, and its command structure is part of the story:
+Miguel Costa signed the orders, and Prestes planned the march.
 
 ## Português (BR)
 
 ### A Junção
 
-Oeste do Paraná, abril de 1925. Duas colunas chegaram de derrotas diferentes: os
-rebeldes do sul que haviam rompido o cerco em Ramada, e os remanescentes
-paulistas que haviam deixado a cidade e a frente do Paraná. Ainda não eram um
-exército. Eram duas forças com duas histórias, dois estados-maiores e um governo
-atrás delas. Prestes e Miguel Costa se encontraram em Benjamin Constant em 3 de
-abril; em Foz do Iguaçu conferenciaram com Isidoro, que mantinha o quartel-general
-político.
+Oeste do Paraná, abril de 1925. Catanduvas, o último reduto dos rebeldes
+paulistas, rendera-se antes do amanhecer de 30 de março. A brigada de Miguel
+Costa, a última deles ainda em luta, começou a recuar para oeste no dia
+seguinte. Os homens de Prestes, saídos das matas de Santa Catarina, chegaram à
+mesma estrada em Benjamin Constant.
 
-Miguel Costa assumiu o comando formal da Primeira Divisão Revolucionária.
-Prestes tornou-se chefe do estado-maior. A divisão tinha cerca de mil e
-quinhentos homens, seiscentos cavalos e mulas, e três canhões de 75 mm. Os
-números não eram uma vitória; eram o que restava. A junção foi o momento em que a
-coluna deixou de ser uma retirada e passou a ser um comando.
+Ali, em 3 de abril, Prestes e Miguel Costa se encontraram. Combinaram não descer
+a Foz do Iguaçu para se render ou emigrar, mas juntar as forças e atravessar o
+Paraná rumo a Mato Grosso, e mandaram seus homens para Porto Santa Helena antes
+de consultar quem quer que fosse (Macaulay, p. 86).
+
+_Plate: `foz-do-iguacu/group-photo` (see the compendium entry's caption and credit)._
+
+> A lendária Coluna Prestes surgiu no Alto Paraná. À frente marchava a figura inigualável do heroico Siqueira Campos…
+>
+> — Tabajara de Oliveira, memórias, sobre a chegada dos rebeldes do sul
+>
+> `blanc-2024`, The Prestes Column (Duke, 2024), p. 47. Tradução nossa da versão inglesa de Blanc; o original em português não foi consultado.
+
+### Foz do Iguaçu
+
+Só então foram a Foz do Iguaçu, onde Isidoro tinha seu quartel-general. Em 12 de
+abril o marechal disse aos oficiais que nada mais se podia fazer no campo
+militar e que o exílio era a única saída. A maioria dos comandantes paulistas
+concordou. Prestes e Miguel Costa não, e Isidoro deixou a revolução continuar
+sem ele, voltando à Argentina como seu chefe nominal (Blanc, p. 47).
+
+Em 14 de abril de 1925, em Porto Santa Helena, formou-se a 1ª Divisão
+Revolucionária: Miguel Costa no comando, Prestes chefe do estado-maior, uma
+brigada paulista de cerca de setecentos homens e uma brigada rio-grandense de
+cerca de oitocentos.
 
 ### A Travessia
 
-A divisão cruzou de Porto Mendes para Puerto Adela: o desembarque começou em 27
-de abril e a travessia foi concluída em 29 de abril. O rio era o portão. Os
-cavalos, os canhões e os feridos tinham de passar primeiro; a retaguarda tinha de
-segurar a margem até a última unidade atravessar. O governo estava vindo. A
-travessia não era um desfile; era uma corrida entre a divisão e a fronteira.
+A divisão atravessou de Porto Mendes a Puerto Adela, na margem paraguaia: o
+desembarque começou em 27 de abril e a travessia terminou em 29 de abril.
+Macaulay conta no máximo mil e quinhentos homens, seiscentos cavalos e mulas e
+três canhões de 75 mm (pp. 88–89). Os canhões seriam abandonados e escondidos em
+Mato Grosso.
 
-As duas brigadas atravessaram como uma divisão. Os homens do Rio Grande e os
-paulistas mantiveram suas histórias, mas compartilhavam o mesmo comando, o mesmo
-rio e a mesma marcha. A divisão estava do outro lado. O custo seria contado
-depois.
-
-### O Comando
-
-Miguel Costa era o comandante formal. Prestes era chefe do estado-maior e o
-líder mais visível da divisão. A campanha precisa manter os dois fatos: a coluna
-não era um só homem, e a estrutura de comando fazia parte da história. A divisão
-que cruzou o Paraná era a coluna que marcharia para o norte.
-
-A junção não acabou com a retirada. Deu um comando à retirada. A marcha
-continuou.
+As duas brigadas atravessaram como uma só divisão. Os homens do Rio Grande e os
+de São Paulo guardaram suas histórias, mas dividiam um comando, um rio e uma
+marcha. A coluna não era um homem só, e sua estrutura de comando faz parte da
+história: Miguel Costa assinava as ordens, e Prestes planejava a marcha.
 
 ## Sources and labels
 

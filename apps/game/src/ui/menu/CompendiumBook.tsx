@@ -4,6 +4,7 @@ import {
   COMPENDIUM_SECTIONS,
   compendiumText,
   compendiumTitleKey,
+  sourceShort,
   translate,
   type CompendiumEntry,
   type CompendiumSection,
@@ -11,11 +12,22 @@ import {
   type MessageKey,
 } from '@prestes/content';
 import { DESK_ART, deskArtData, deskArtStyle } from './deskArt';
-import { BookEndOrnament, BookFrame, publicImage, useBookPosition } from './BookFrame';
+import {
+  BibliographyRowView,
+  BookEndOrnament,
+  BookFrame,
+  creditLine,
+  InlinePlate,
+  PlateImage,
+  QuoteFooter,
+  useBookPosition,
+} from './BookFrame';
 import {
   COMPENDIUM_ORDER,
   compendiumBook,
   folio,
+  sourceAnchor,
+  SOURCES_ANCHOR,
   type BookPage,
   type TextItem,
 } from './bookPages';
@@ -43,6 +55,8 @@ const ENTRY = new Map(COMPENDIUM.map((entry) => [entry.id, entry]));
 export function CompendiumBook({ locale, open, target }: CompendiumBookProps) {
   const t = (key: MessageKey, values?: Readonly<Record<string, string | number>>) =>
     translate(locale, key, values);
+  // Images whose file is absent (awaiting permission, D3a).
+  const [pending, setPending] = useState<ReadonlySet<string>>(() => new Set());
   const book = useMemo(() => compendiumBook(locale), [locale]);
   const { spread, turn, goTo, jump } = useBookPosition(
     book,
@@ -84,8 +98,9 @@ export function CompendiumBook({ locale, open, target }: CompendiumBookProps) {
   const ribbons = [
     { id: 'contents', label: t('book.contents'), mark: '≡' },
     ...COMPENDIUM_SECTIONS.map((id) => ({ id, label: sectionLabel(id), mark: sectionLabel(id)[0]! })),
+    { id: SOURCES_ANCHOR, label: t('book.sources'), mark: '§' },
   ];
-  const activeRibbon = current ? current.section : 'contents';
+  const activeRibbon = current ? current.section : anchor === SOURCES_ANCHOR ? SOURCES_ANCHOR : 'contents';
   const onRibbon = (id: string) => {
     const ribbon = book.ribbons.find((candidate) => candidate.id === id);
     if (ribbon) jump(ribbon.anchor);
@@ -128,14 +143,21 @@ export function CompendiumBook({ locale, open, target }: CompendiumBookProps) {
         );
       case 'quote':
         return (
-        <blockquote key={key} className="desk-quote" data-testid="book-quote">
-          <p className="desk-quote-text">{item.text}</p>
-          <footer className="desk-quote-attribution">
-            {item.attribution}
-            {item.translated && <span className="desk-quote-note">{t('book.quoteTranslated')}</span>}
-          </footer>
-        </blockquote>
-      );
+          <blockquote key={key} className="desk-quote" data-testid="book-quote">
+            <p className="desk-quote-text">{item.text}</p>
+            <QuoteFooter
+              attribution={item.attribution}
+              cite={item.cite}
+              note={item.note}
+              translated={item.translated}
+              translatedLabel={t('book.quoteTranslated')}
+            />
+          </blockquote>
+        );
+      case 'plate':
+        return <InlinePlate key={key} entryId={item.entryId} slot={item.slot} locale={locale} />;
+      case 'bib':
+        return <BibliographyRowView key={key} sourceKey={item.key} />;
       case 'list':
         return (
           <ul key={key} className="desk-text-list">
@@ -167,7 +189,20 @@ export function CompendiumBook({ locale, open, target }: CompendiumBookProps) {
         const entry = ENTRY.get(item.entryId)!;
         return (
           <p key={key} className="desk-sources" data-testid="book-sources">
-            {t('compendium.source')}: {entry.cite} · {entry.sourceRefs.join(', ')}
+            {t('compendium.source')}: {entry.cite} ·{' '}
+            {entry.sourceRefs.map((source, index) => (
+              <span key={source}>
+                {index > 0 && ', '}
+                <button
+                  type="button"
+                  className="desk-link"
+                  data-testid={`book-source-${source}`}
+                  onClick={() => jump(sourceAnchor(source))}
+                >
+                  {sourceShort(source)}
+                </button>
+              </span>
+            ))}
           </p>
         );
       }
@@ -203,6 +238,18 @@ export function CompendiumBook({ locale, open, target }: CompendiumBookProps) {
                     </button>
                   </li>
                 ))}
+                <li>
+                  <button
+                    type="button"
+                    className="desk-contents-row"
+                    data-testid="codex-sources"
+                    onClick={() => jump(SOURCES_ANCHOR)}
+                  >
+                    <span className="desk-contents-title">{t('book.sources')}</span>
+                    <span className="desk-index-dots" aria-hidden="true" />
+                    <span className="desk-contents-count">{firstPage(SOURCES_ANCHOR)}</span>
+                  </button>
+                </li>
               </ol>
             </div>
           );
@@ -237,12 +284,11 @@ export function CompendiumBook({ locale, open, target }: CompendiumBookProps) {
           <figure className="desk-plate" data-testid="book-plate">
             <p className="desk-contents-kicker">{sectionLabel(entry.section)}</p>
             {page.image ? (
-              <img
-                className="desk-plate-image"
-                src={publicImage(page.image.path)}
+              <PlateImage
+                path={page.image.path}
                 alt={caption?.caption ?? ''}
-                draggable={false}
-                data-testid="book-plate-image"
+                emblemClass={`desk-emblem desk-emblem-${entry.section}`}
+                onMissing={() => setPending((set) => new Set(set).add(page.image!.path))}
               />
             ) : (
               <div className={`desk-emblem desk-emblem-${entry.section}`} data-testid="book-emblem" />
@@ -252,7 +298,9 @@ export function CompendiumBook({ locale, open, target }: CompendiumBookProps) {
                 <>
                   <span>{caption?.caption}</span>
                   <span className="desk-plate-credit" data-testid="book-plate-credit">
-                    {caption?.credit} · {t('book.licence.public-domain')}
+                    {pending.has(page.image.path)
+                      ? t('book.imagePending')
+                      : creditLine(caption?.credit, page.image.path, t)}
                   </span>
                 </>
               ) : (

@@ -1,4 +1,5 @@
 import {
+  BIBLIOGRAPHY,
   CAMPAIGN_CHAPTERS,
   COMPENDIUM,
   COMPENDIUM_SECTIONS,
@@ -6,8 +7,11 @@ import {
   compendiumText,
   compendiumTitleKey,
   chapterText,
+  COMPENDIUM_TEXT,
+  CHAPTER_TEXT,
   translate,
   type CompendiumSection,
+  type SourceKey,
   type ImageRef,
   type Locale,
   type Quote,
@@ -29,7 +33,11 @@ export type TextItem =
   | { kind: 'entry-head'; entryId: string }
   | { kind: 'heading'; text: string }
   | { kind: 'para'; text: string; continues?: boolean }
-  | { kind: 'quote'; text: string; attribution: string; translated?: boolean }
+  | { kind: 'quote'; text: string; attribution: string; translated?: boolean; cite?: string; note?: string }
+  /** A plate inside a text page (complete-books-and-bibliography D4); never split. */
+  | { kind: 'plate'; entryId: string; slot: string }
+  /** A row of the bibliography (D5). */
+  | { kind: 'bib'; key: SourceKey }
   | { kind: 'list'; items: readonly string[] }
   | { kind: 'sources'; entryId: string }
   | { kind: 'related'; ids: readonly string[] };
@@ -68,6 +76,8 @@ const ITEM_COST = {
   'entry-head': 200,
   heading: 70,
   sources: 200,
+  // A plate takes about the room of ninety words of text (D4).
+  plate: 540,
 } as const;
 
 function cost(item: TextItem): number {
@@ -76,7 +86,14 @@ function cost(item: TextItem): number {
       return item.text.length;
     case 'quote':
       // Never split: the block moves whole to the next page (enrich-texts-from-sources D2).
-      return Math.ceil(item.text.length * QUOTE_WIDTH) + QUOTE_EXTRA;
+      return (
+        Math.ceil(item.text.length * QUOTE_WIDTH) +
+        QUOTE_EXTRA +
+        (item.cite ? Math.ceil(item.cite.length * 0.8) + 30 : 0) +
+        (item.note ? Math.ceil(item.note.length * 0.8) + 30 : 0)
+      );
+    case 'bib':
+      return BIBLIOGRAPHY[item.key].reference.length + BIBLIOGRAPHY[item.key].short.length + 40;
     case 'list':
       return item.items.reduce((sum, text) => sum + text.length + 40, 0);
     case 'related':
@@ -150,6 +167,12 @@ function build(pages: BookPage[], ribbons: Ribbon[]): Book {
   pages.forEach((page, index) => {
     const spread = Math.floor(index / 2);
     if (!(page.anchor in anchors)) anchors[page.anchor] = spread;
+    // A bibliography row can be opened by its source key (D5).
+    if (page.kind === 'text') {
+      for (const item of page.items) {
+        if (item.kind === 'bib' && !(sourceAnchor(item.key) in anchors)) anchors[sourceAnchor(item.key)] = spread;
+      }
+    }
   });
   return { pages, spreadCount: pages.length / 2, anchors, ribbons };
 }
@@ -183,10 +206,58 @@ const quoteItem = (quote: Quote): TextItem => ({
   kind: 'quote',
   text: quote.text,
   attribution: quote.attribution,
+  cite: quote.via ? `${quote.cite}, apud ${BIBLIOGRAPHY[quote.via.sourceKey as SourceKey]?.short ?? quote.via.sourceKey}, ${quote.via.cite}` : quote.cite,
   ...(quote.translated ? { translated: true } : {}),
+  ...(quote.note ? { note: quote.note } : {}),
 });
 
+/** The anchor of a bibliography row. */
+export const sourceAnchor = (key: string) => `source:${key}`;
+
+const TIERS = [0, 1, 2, 3, 4] as const;
+
+/**
+ * The sources the books cite: entries, chapters and quotations (and the works a
+ * quotation was read in). Only these are printed (D5).
+ */
+export function citedSources(): SourceKey[] {
+  const keys = new Set<string>();
+  for (const entry of COMPENDIUM) entry.sourceRefs.forEach((key) => keys.add(key));
+  for (const chapter of CAMPAIGN_CHAPTERS) chapter.sourceRefs.forEach((key) => keys.add(key));
+  const quotes = [
+    ...Object.values(COMPENDIUM_TEXT.en).flatMap((text) => text.note.map((section) => section.quote)),
+    ...Object.values(CHAPTER_TEXT.en).flatMap((text) => text.pages.map((page) => page.quote)),
+  ];
+  for (const quote of quotes) {
+    if (!quote) continue;
+    keys.add(quote.sourceKey);
+    if (quote.via) keys.add(quote.via.sourceKey);
+  }
+  return [...keys]
+    .filter((key): key is SourceKey => key in BIBLIOGRAPHY)
+    .sort((a, b) => BIBLIOGRAPHY[a].tier - BIBLIOGRAPHY[b].tier || BIBLIOGRAPHY[a].short.localeCompare(BIBLIOGRAPHY[b].short));
+}
+
+/** The bibliography's items: a title, a note, then the rows by tier. */
+export function bibliographyItems(locale: Locale): TextItem[] {
+  const cited = citedSources();
+  const items: TextItem[] = [
+    { kind: 'heading', text: translate(locale, 'book.bibliography.title') },
+    { kind: 'para', text: translate(locale, 'book.bibliography.intro') },
+  ];
+  for (const tier of TIERS) {
+    const rows = cited.filter((key) => BIBLIOGRAPHY[key].tier === tier);
+    if (rows.length === 0) continue;
+    items.push({ kind: 'heading', text: translate(locale, `book.bibliography.tier${tier}`) });
+    for (const key of rows) items.push({ kind: 'bib', key });
+  }
+  return items;
+}
+
 // --- Compendium ---------------------------------------------------------
+
+/** Anchor and ribbon of the bibliography. */
+export const SOURCES_ANCHOR = 'sources';
 
 export const COMPENDIUM_ORDER = COMPENDIUM_SECTIONS.flatMap((section) =>
   COMPENDIUM.filter((entry) => entry.section === section),
@@ -260,12 +331,16 @@ export function compendiumBook(locale: Locale): Book {
       pages.push(left, right);
     }
   }
+  // The "Sources" part closes the book (D5).
+  padToSpread(pages, pages[pages.length - 1]!.anchor);
+  for (const page of flow(bibliographyItems(locale))) pages.push({ kind: 'text', anchor: SOURCES_ANCHOR, items: page });
   const ribbons: Ribbon[] = [
     { id: 'contents', anchor: 'contents' },
     ...COMPENDIUM_SECTIONS.map((section: CompendiumSection) => ({
       id: section,
       anchor: COMPENDIUM_ORDER.find((entry) => entry.section === section)!.id,
     })),
+    { id: SOURCES_ANCHOR, anchor: SOURCES_ANCHOR },
   ];
   return build(pages, ribbons);
 }
@@ -284,6 +359,7 @@ export function campaignBook(locale: Locale): Book {
     const items: TextItem[] = (text?.pages ?? []).flatMap((page) => [
       { kind: 'heading' as const, text: page.heading },
       ...page.paragraphs.map((paragraph) => ({ kind: 'para' as const, text: paragraph })),
+      ...(page.image ? [{ kind: 'plate' as const, entryId: page.image.entryId, slot: page.image.slot }] : []),
       ...(page.quote ? [quoteItem(page.quote)] : []),
     ]);
     pages.push({ kind: 'chapter-plate', anchor: chapter.id, chapterId: chapter.id });

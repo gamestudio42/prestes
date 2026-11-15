@@ -4,12 +4,56 @@
  */
 import type { ContentLabel } from './figures';
 
+/**
+ * An image's licence (complete-books-and-bibliography D3, D3a). `permission-pending`
+ * images are used under a request to their holder: their files live in the
+ * gitignored `art-src/compendium-pending/`, are served by the dev server only,
+ * and never reach a commit or a public build.
+ */
+export type ImageLicence =
+  | 'public-domain'
+  | 'CC0-1.0'
+  | 'CC-BY-4.0'
+  | 'CC-BY-SA-3.0'
+  | 'CC-BY-SA-4.0'
+  | 'permission-pending'
+  | 'permission-granted';
+
+export const IMAGE_LICENCES: readonly ImageLicence[] = [
+  'public-domain',
+  'CC0-1.0',
+  'CC-BY-4.0',
+  'CC-BY-SA-3.0',
+  'CC-BY-SA-4.0',
+  'permission-pending',
+  'permission-granted',
+];
+
+/** Where the files of images awaiting permission live (gitignored). */
+export const PENDING_IMAGE_DIR = 'art-src/compendium-pending/';
+
 /** A compendium image, mirrored from the compendium rows of docs/assets.md. */
 export interface RegisteredImage {
   path: string;
-  licence: 'public-domain';
+  licence: ImageLicence;
   rights: string;
+  /** Rights holder asked for permission (pending or granted). */
+  holder?: string;
+  /** The request or grant file under docs/rights/. */
+  request?: string;
 }
+
+const A = 'apps/game/public/assets/compendium/';
+const P = PENDING_IMAGE_DIR;
+const PD = (path: string, rights: string): RegisteredImage => ({ path: `${A}${path}`, licence: 'public-domain', rights });
+const FREE = (path: string, licence: ImageLicence, rights: string): RegisteredImage => ({ path: `${A}${path}`, licence, rights });
+const PENDING = (path: string, holder: string, request: string): RegisteredImage => ({
+  path: `${P}${path}`,
+  licence: 'permission-pending',
+  rights: `permission requested from ${holder}`,
+  holder,
+  request: `docs/rights/permission-requests/${request}`,
+});
 
 export const COMPENDIUM_IMAGE_REGISTER: readonly RegisteredImage[] = [
   {
@@ -82,7 +126,81 @@ export const COMPENDIUM_IMAGE_REGISTER: readonly RegisteredImage[] = [
     licence: 'public-domain',
     rights: "project owner's determination, 2026-11-06",
   },
+  // complete-books-and-bibliography 4.1 (owner, 2026-11-15).
+  PD('rs-revolt-1924/hero-photo.png', 'Wikimedia Commons; AHMACPS, Santo Ângelo, 1924'),
+  PD('porto-mendes/hero-photo.png', 'Wikimedia Commons; Thomaz Luiz Reis, 1924–1925'),
+  PD('army-patriotico/hero-photo.png', 'Wikimedia Commons; Thomaz Luiz Reis, 1924–1925'),
+  PD('serra-nova-1926/hero-photo.png', 'Wikimedia Commons; O Malho, 25 Sep. 1926'),
+  PD('batalhoes-patrioticos-bahia/hero-photo.png', 'Wikimedia Commons; 24 Dec. 1926'),
+  PD('exile-1927/hero-photo.png', 'Wikimedia Commons; Careta, 19 Mar. 1927'),
+  PD('exile-1927/caricature.png', 'Wikimedia Commons; Careta, 3 Nov. 1928'),
+  PD('lourenco-moreira-lima/portrait.png', 'Wikimedia Commons; 1927, weak provenance'),
+  FREE('tenentismo/hero-photo.png', 'CC0-1.0', 'Wikimedia Commons, CC0'),
+  PD('vila-militar/map.png', 'Wikimedia Commons; 1922 map'),
+  PD('revolt-1922/press.png', 'Wikimedia Commons; Gazeta de Notícias, 6 July 1922'),
+  PD('army-legalista/hero-photo.png', 'Wikimedia Commons; O Malho, 1924'),
+  PD('sao-paulo-retaken-1924/hero-photo.png', 'Wikimedia Commons; Gustavo Prugner, 1924'),
+  PD('section-jaguncos/hero-photo.png', 'Wikimedia Commons; c. 1914'),
+  PD('la-gaiba/map.png', 'Wikimedia Commons; NASA, modern'),
+  FREE('map-serra-rio/verdinho-today.png', 'CC-BY-SA-3.0', 'Wikimedia Commons; Paulo Roberto'),
+  FREE('sao-luiz-1924/route-map.png', 'CC-BY-SA-4.0', 'Wikimedia Commons; User:Serraria'),
+  FREE('rs-revolt-1924/map.png', 'CC-BY-SA-4.0', 'Wikimedia Commons; User:Serraria'),
+  FREE('mauser-7mm/hero-photo.png', 'CC-BY-SA-3.0', 'Wikimedia Commons'),
+  PD('siqueira-campos/portrait-1922.png', "project owner's determination, 2026-11-06"),
+  PD('army-coluna/hero-photo.png', "project owner's determination, 2026-11-06"),
+  // Under a permission request (D3a); docs/rights/permission-requests/.
+  PENDING('la-gaiba-1927/monument.png', 'CPDOC/FGV', 'cpdoc-fgv.md'),
+  PENDING('la-gaiba-1927/workers.png', 'CPDOC/FGV', 'cpdoc-fgv.md'),
+  PENDING('exile-1927/interview.png', 'CPDOC/FGV', 'cpdoc-fgv.md'),
+  PENDING('pantanal/route-map-1977.png', 'Biblioteca do Exército', 'bibliex.md'),
+  PENDING('army-coluna/portinari.png', 'Projeto Portinari', 'projeto-portinari.md'),
+  PENDING('sao-luiz-1924/blanc-map.png', 'Duke University Press', 'duke-maps.md'),
+  PENDING('serra-nova/blanc-map.png', 'Duke University Press', 'duke-maps.md'),
+  PENDING('o-libertador-1924/front-page.png', 'Fundação Biblioteca Nacional', 'biblioteca-nacional.md'),
 ];
+
+/** Images of entries without doc meta, or added to it (complete-books-and-bibliography 4.1). */
+export const ENTRY_IMAGES: Readonly<Record<string, readonly ImageRef[]>> = {
+  'rs-revolt-1924': [
+    { slot: 'hero-photo', path: `${A}rs-revolt-1924/hero-photo.png` },
+    { slot: 'map', path: `${A}rs-revolt-1924/map.png` },
+  ],
+  'porto-mendes': [{ slot: 'hero-photo', path: `${A}porto-mendes/hero-photo.png` }],
+  'army-patriotico': [{ slot: 'hero-photo', path: `${A}army-patriotico/hero-photo.png` }],
+  'serra-nova-1926': [{ slot: 'hero-photo', path: `${A}serra-nova-1926/hero-photo.png` }],
+  'batalhoes-patrioticos-bahia': [{ slot: 'hero-photo', path: `${A}batalhoes-patrioticos-bahia/hero-photo.png` }],
+  'exile-1927': [
+    { slot: 'hero-photo', path: `${A}exile-1927/hero-photo.png` },
+    { slot: 'interview', path: `${P}exile-1927/interview.png` },
+    { slot: 'caricature', path: `${A}exile-1927/caricature.png` },
+  ],
+  'lourenco-moreira-lima': [{ slot: 'portrait', path: `${A}lourenco-moreira-lima/portrait.png` }],
+  tenentismo: [{ slot: 'hero-photo', path: `${A}tenentismo/hero-photo.png` }],
+  'vila-militar': [{ slot: 'map', path: `${A}vila-militar/map.png` }],
+  'revolt-1922': [{ slot: 'press', path: `${A}revolt-1922/press.png` }],
+  'army-legalista': [{ slot: 'hero-photo', path: `${A}army-legalista/hero-photo.png` }],
+  'sao-paulo-retaken-1924': [{ slot: 'hero-photo', path: `${A}sao-paulo-retaken-1924/hero-photo.png` }],
+  'section-jaguncos': [{ slot: 'hero-photo', path: `${A}section-jaguncos/hero-photo.png` }],
+  'la-gaiba': [{ slot: 'map', path: `${A}la-gaiba/map.png` }],
+  'map-serra-rio': [{ slot: 'verdinho-today', path: `${A}map-serra-rio/verdinho-today.png` }],
+  'sao-luiz-1924': [
+    { slot: 'route-map', path: `${A}sao-luiz-1924/route-map.png` },
+    { slot: 'blanc-map', path: `${P}sao-luiz-1924/blanc-map.png` },
+  ],
+  'mauser-7mm': [{ slot: 'hero-photo', path: `${A}mauser-7mm/hero-photo.png` }],
+  'siqueira-campos': [{ slot: 'portrait-1922', path: `${A}siqueira-campos/portrait-1922.png` }],
+  'army-coluna': [
+    { slot: 'hero-photo', path: `${A}army-coluna/hero-photo.png` },
+    { slot: 'portinari', path: `${P}army-coluna/portinari.png` },
+  ],
+  'la-gaiba-1927': [
+    { slot: 'monument', path: `${P}la-gaiba-1927/monument.png` },
+    { slot: 'workers', path: `${P}la-gaiba-1927/workers.png` },
+  ],
+  pantanal: [{ slot: 'route-map-1977', path: `${P}pantanal/route-map-1977.png` }],
+  'serra-nova': [{ slot: 'blanc-map', path: `${P}serra-nova/blanc-map.png` }],
+  'o-libertador-1924': [{ slot: 'front-page', path: `${P}o-libertador-1924/front-page.png` }],
+};
 
 export interface ImageRef {
   /** Slot name; the caption and credit are keyed by entry id and slot. */

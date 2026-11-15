@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
-import { translate, type Locale } from '@prestes/content';
+import { BIBLIOGRAPHY, COMPENDIUM, COMPENDIUM_IMAGE_REGISTER, compendiumText, PENDING_IMAGE_DIR, translate, type SourceKey, type ImageLicence, type Locale, type MessageKey } from '@prestes/content';
 import { folio, locate, resolve, type Book, type BookPosition } from './bookPages';
 
 /**
@@ -160,7 +160,121 @@ export function BookEndOrnament() {
   return <div className="desk-book-end" aria-hidden="true" />;
 }
 
-/** Public URL of an image registered by its repository path. */
+/**
+ * Public URL of an image registered by its repository path. An image under a
+ * permission request (complete-books-and-bibliography D3a) is asked for at the
+ * same place as the plates; only the dev server and the review build answer it.
+ */
 export function publicImage(path: string): string {
-  return `${import.meta.env.BASE_URL}${path.replace(/^apps\/game\/public\//, '')}`;
+  const served = path.startsWith(PENDING_IMAGE_DIR)
+    ? `assets/compendium/${path.slice(PENDING_IMAGE_DIR.length)}`
+    : path.replace(/^apps\/game\/public\//, '');
+  return `${import.meta.env.BASE_URL}${served}`;
+}
+
+const LICENCE = new Map(COMPENDIUM_IMAGE_REGISTER.map((image) => [image.path, image.licence]));
+
+/** The licence of a registered image (D3). */
+export function imageLicence(path: string): ImageLicence {
+  return LICENCE.get(path) ?? 'public-domain';
+}
+
+/** The credit line under a plate: the caption's credit and the licence. */
+export function creditLine(credit: string | undefined, path: string, t: (key: MessageKey) => string): string {
+  const licence = t(`book.licence.${imageLicence(path)}` as MessageKey);
+  return credit ? `${credit} · ${licence}` : licence;
+}
+
+/**
+ * A plate's picture. When the file is absent (an image awaiting permission in a
+ * public build) it falls back to the emblem and says so (D3a).
+ */
+export function PlateImage({
+  path,
+  alt,
+  emblemClass,
+  onMissing,
+}: {
+  path: string;
+  alt: string;
+  emblemClass: string;
+  onMissing?: () => void;
+}) {
+  const [missing, setMissing] = useState(false);
+  useEffect(() => setMissing(false), [path]);
+  if (missing) return <div className={emblemClass} data-testid="book-emblem" data-image-pending={path} />;
+  return (
+    <img
+      className="desk-plate-image"
+      src={publicImage(path)}
+      alt={alt}
+      draggable={false}
+      data-testid="book-plate-image"
+      onError={() => {
+        setMissing(true);
+        onMissing?.();
+      }}
+    />
+  );
+}
+
+const ENTRY_IMAGES = new Map(COMPENDIUM.map((entry) => [entry.id, entry.images ?? []]));
+
+/** A plate inside a text page (complete-books-and-bibliography D4). */
+export function InlinePlate({ entryId, slot, locale }: { entryId: string; slot: string; locale: Locale }) {
+  const t = (key: MessageKey) => translate(locale, key);
+  const [missing, setMissing] = useState(false);
+  const ref = ENTRY_IMAGES.get(entryId)?.find((image) => image.slot === slot);
+  const caption = compendiumText(entryId, locale)?.images?.[slot];
+  if (!ref) return null;
+  return (
+    <figure className="desk-plate desk-plate-inline" data-testid="book-inline-plate">
+      <PlateImage
+        path={ref.path}
+        alt={caption?.caption ?? ''}
+        emblemClass="desk-emblem desk-emblem-small"
+        onMissing={() => setMissing(true)}
+      />
+      <figcaption className="desk-plate-credit">
+        {caption?.caption} {missing ? t('book.imagePending') : creditLine(caption?.credit, ref.path, t)}
+      </figcaption>
+    </figure>
+  );
+}
+
+/** A bibliography row (D5). */
+export function BibliographyRowView({ sourceKey }: { sourceKey: SourceKey }) {
+  const row = BIBLIOGRAPHY[sourceKey];
+  return (
+    <p className="desk-bib" id={`source-${sourceKey}`} data-testid={`bib-${sourceKey}`}>
+      <span className="desk-bib-short">{row.short}.</span> {row.reference}
+    </p>
+  );
+}
+
+/** The cite and note under a quotation. */
+export function QuoteFooter({
+  attribution,
+  cite,
+  note,
+  translated,
+  translatedLabel,
+}: {
+  attribution: string;
+  cite?: string;
+  note?: string;
+  translated?: boolean;
+  translatedLabel: string;
+}) {
+  return (
+    <footer className="desk-quote-attribution">
+      {attribution}
+      {cite && <span className="desk-quote-cite" data-testid="book-quote-cite">{cite}</span>}
+      {note ? (
+        <span className="desk-quote-note">{note}</span>
+      ) : (
+        translated && <span className="desk-quote-note">{translatedLabel}</span>
+      )}
+    </footer>
+  );
 }

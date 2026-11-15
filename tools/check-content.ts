@@ -10,6 +10,7 @@ import {
   COMPENDIUM,
   COMPENDIUM_TEXT,
   COMPENDIUM_IMAGE_REGISTER,
+  PENDING_IMAGE_DIR,
   FIGURES,
   LOCALES,
   messages,
@@ -23,6 +24,8 @@ import {
   validateFigures,
   validateMissionCommander,
   validateNameRegister,
+  validateBibliography,
+  validateProvisionalText,
   validateQuotes,
   validateSourceRights,
   type MissionMetadata,
@@ -107,13 +110,48 @@ errors.push(...validateCompendium());
 errors.push(...validateCompendiumMedia());
 const assetsText = readFileSync(resolve(root, 'docs/assets.md'), 'utf8');
 for (const image of COMPENDIUM_IMAGE_REGISTER) {
-  if (!existsSync(resolve(root, image.path))) errors.push(`missing compendium image: ${image.path}`);
+  // complete-books-and-bibliography D3a: an image under a permission request lives
+  // in the gitignored pending folder (absent on a clean checkout) and must never be
+  // copied where a public build or a commit would carry it.
+  if (image.licence === 'permission-pending') {
+    if (!image.path.startsWith(PENDING_IMAGE_DIR)) errors.push(`pending image outside ${PENDING_IMAGE_DIR}: ${image.path}`);
+    if (!image.holder || !image.request) errors.push(`pending image without holder or request: ${image.path}`);
+    else if (!existsSync(resolve(root, image.request))) errors.push(`pending image request file missing: ${image.request}`);
+    const relative = image.path.slice(PENDING_IMAGE_DIR.length);
+    for (const leak of [`apps/game/public/assets/compendium/${relative}`, `apps/game/dist/assets/compendium/${relative}`]) {
+      if (existsSync(resolve(root, leak))) errors.push(`pending image copied into a public folder: ${leak}`);
+    }
+  } else if (!existsSync(resolve(root, image.path))) errors.push(`missing compendium image: ${image.path}`);
   if (!assetsText.includes(`\`${image.path}\``)) {
     errors.push(`compendium image not in docs/assets.md: ${image.path}`);
   }
 }
 errors.push(...validateChapters());
 errors.push(...validateQuotes(COMPENDIUM_TEXT, CHAPTER_TEXT, COMPENDIUM, CAMPAIGN_CHAPTERS));
+// complete-books-and-bibliography D7: no provisional text; D5: every cited source
+// has a bibliography row that matches its paragraph in SOURCES.md.
+errors.push(...validateProvisionalText());
+{
+  const cited = new Set<string>([
+    ...COMPENDIUM.flatMap((entry) => entry.sourceRefs),
+    ...CAMPAIGN_CHAPTERS.flatMap((chapter) => chapter.sourceRefs),
+  ]);
+  for (const locale of LOCALES) {
+    for (const text of Object.values(COMPENDIUM_TEXT[locale])) {
+      for (const section of text.note) {
+        if (section.quote) cited.add(section.quote.sourceKey);
+        if (section.quote?.via) cited.add(section.quote.via.sourceKey);
+      }
+    }
+    for (const text of Object.values(CHAPTER_TEXT[locale])) {
+      for (const page of text.pages) {
+        if (page.quote) cited.add(page.quote.sourceKey);
+        if (page.quote?.via) cited.add(page.quote.via.sourceKey);
+      }
+    }
+  }
+  errors.push(...validateBibliography(readFileSync(resolve(root, 'docs/history/SOURCES.md'), 'utf8'), cited));
+}
 
 // pre-battle-roster 1.1 and 1.3: every weapon is complete and named in every locale.
 errors.push(...validateWeapons());

@@ -8,6 +8,9 @@ import {
   locate,
   relatedEntries,
   resolve,
+  citedSources,
+  sourceAnchor,
+  SOURCES_ANCHOR,
   type TextItem,
 } from '../../apps/game/src/ui/menu/bookPages';
 
@@ -62,6 +65,7 @@ describe('book page model', () => {
         expect(book.pages.length % 2).toBe(0);
         expect(book.spreadCount).toBe(book.pages.length / 2);
         for (const [anchor, spread] of Object.entries(book.anchors)) {
+          if (anchor.startsWith('source:')) continue;
           expect(book.pages[spread * 2]!.anchor, anchor).toBe(anchor);
         }
       }
@@ -119,8 +123,51 @@ describe('book page model', () => {
       'weapons',
       'forces',
       'corrections',
+      SOURCES_ANCHOR,
     ]);
     expect(compendium.ribbons.find((ribbon) => ribbon.id === 'events')!.anchor).toBe('positivismo-militar');
     expect(campaignBook('en').ribbons).toHaveLength(CAMPAIGN_CHAPTERS.length + 1);
   });
+
+  // complete-books-and-bibliography D4, D5: plates inside the text and the bibliography.
+  it('moves a plate whole to the next page', () => {
+    const pages = flow(
+      [
+        { kind: 'para', text: 'x'.repeat(PAGE_CHARS - 200) + '.' },
+        { kind: 'plate', entryId: 'porto-mendes', slot: 'hero-photo' },
+      ],
+      PAGE_CHARS,
+    );
+    expect(pages).toHaveLength(2);
+    expect(pages[1]![0]).toEqual({ kind: 'plate', entryId: 'porto-mendes', slot: 'hero-photo' });
+  });
+
+  for (const locale of LOCALES) {
+    it(`closes the compendium with a bibliography of every cited source in ${locale}`, () => {
+      const book = compendiumBook(locale);
+      const rows = book.pages.flatMap((page) => (page.kind === 'text' ? page.items : [])).filter((item) => item.kind === 'bib');
+      expect(rows.map((row) => (row.kind === 'bib' ? row.key : ''))).toEqual(expect.arrayContaining(citedSources()));
+      for (const key of citedSources()) {
+        const spread = book.anchors[sourceAnchor(key)];
+        expect(spread, key).toBeDefined();
+        const held = [book.pages[spread! * 2]!, book.pages[spread! * 2 + 1]!].some(
+          (page) => page.kind === 'text' && page.items.some((item) => item.kind === 'bib' && item.key === key),
+        );
+        expect(held, key).toBe(true);
+      }
+      expect(book.pages.at(-1)!.anchor).toBe(SOURCES_ANCHOR);
+    });
+
+    it(`gives every chapter a quotation and its opening plate in ${locale}`, () => {
+      const book = campaignBook(locale);
+      for (const chapter of CAMPAIGN_CHAPTERS) {
+        const items = book.pages.filter((page) => page.anchor === chapter.id).flatMap((page) => (page.kind === 'text' ? page.items : []));
+        const quote = items.find((item) => item.kind === 'quote');
+        expect(quote, chapter.id).toBeDefined();
+        if (quote?.kind === 'quote') expect(quote.cite, chapter.id).toBeTruthy();
+      }
+      const plates = book.pages.flatMap((page) => (page.kind === 'text' ? page.items : [])).filter((item) => item.kind === 'plate');
+      expect(plates.length).toBeGreaterThanOrEqual(CAMPAIGN_CHAPTERS.length);
+    });
+  }
 });

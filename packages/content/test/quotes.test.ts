@@ -28,9 +28,9 @@ describe('validateQuotes', () => {
   });
 
   it('rejects a copyrighted source', () => {
-    const rosa = { ...manifesto, sourceKey: 'rosa-1956' };
-    const errors = run(rosa, { ...rosa, translated: true });
-    expect(errors.some((e) => e.includes('rosa-1956') && e.includes('copyrighted'))).toBe(true);
+    const helio = { ...manifesto, sourceKey: 'helio-1922' };
+    const errors = run(helio, { ...helio, translated: true });
+    expect(errors.some((e) => e.includes('helio-1922') && e.includes('copyrighted'))).toBe(true);
   });
 
   it('rejects an unknown source key', () => {

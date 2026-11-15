@@ -38,7 +38,7 @@ describe('campaign chapters', () => {
     for (const locale of ['en', 'pt-BR'] as const) {
       for (const chapter of CAMPAIGN_CHAPTERS) {
         const text = CHAPTER_TEXT[locale][chapter.id]!;
-        expect(text.pages.length, `${locale} ${chapter.id}`).toBe(chapter.id === 'serra-nova' ? 4 : 3);
+        expect(text.pages.length, `${locale} ${chapter.id}`).toBe(chapter.id === 'serra-nova' || chapter.id === 'la-gaiba' ? 4 : 3);
         for (const page of text.pages) {
           const words = page.paragraphs.join(' ').split(/\s+/).length;
           expect(words, `${locale} ${chapter.id} ${page.heading}`).toBeLessThanOrEqual(

@@ -2,11 +2,13 @@ import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { mapSavePlugin } from './vite-map-save';
+import { pendingImagesPlugin } from './vite-pending-images';
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   base: './',
   // add-map-editor: the dev server's "Save to project" endpoint.
-  plugins: [react(), mapSavePlugin()],
+  // complete-books-and-bibliography D3a: images under a permission request.
+  plugins: [react(), mapSavePlugin(), pendingImagesPlugin()],
   server: {
     host: '127.0.0.1',
   },
@@ -14,6 +16,8 @@ export default defineConfig({
     format: 'es',
   },
   build: {
+    // The review build for rights holders carries the pending images; never published.
+    ...(mode === 'review' ? { outDir: 'dist-review' } : {}),
     rollupOptions: {
       // add-map-editor: the map editor is its own page.
       input: {
@@ -33,4 +37,4 @@ export default defineConfig({
       },
     },
   },
-});
+}));

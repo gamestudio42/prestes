@@ -37,6 +37,9 @@ export const SOURCE_KEYS = [
   'rosa-1956',
   'historiafm-2024',
   'superoitocine-2012',
+  // complete-books-and-bibliography 2.1
+  'anita-1995',
+  'starling-1999',
 ] as const;
 
 export type SourceKey = (typeof SOURCE_KEYS)[number];
@@ -46,7 +49,11 @@ export function isSourceKey(value: string): value is SourceKey {
 }
 
 /** Whether a source's text may be quoted verbatim in the game (enrich-texts-from-sources, D1). */
-export type SourceRights = 'public-domain' | 'free-licence' | 'copyrighted' | 'unknown';
+/**
+ * `citation`: a protected work the owner accepted for brief, attributed quotation
+ * for criticism or study (Lei 9.610, art. 46, III; complete-books-and-bibliography D2).
+ */
+export type SourceRights = 'public-domain' | 'free-licence' | 'citation' | 'copyrighted' | 'unknown';
 
 /** How much of a source was read; `not-consulted` sources may not be cited (D3). */
 export type Consultation = 'full' | 'partial' | 'citation-only' | 'pending' | 'not-consulted';
@@ -59,16 +66,17 @@ export interface SourceRightsEntry {
 }
 
 const C = (consulted: Consultation): SourceRightsEntry => ({ rights: 'copyrighted', consulted });
+const Q = (consulted: Consultation): SourceRightsEntry => ({ rights: 'citation', consulted });
 
 /** Mirrored by the rights table in docs/history/SOURCES.md; the content check compares the two. */
 export const SOURCE_RIGHTS: Readonly<Record<SourceKey, SourceRightsEntry>> = {
-  'macaulay-1974': C('full'),
-  'blanc-2024': C('partial'),
-  'amado-1942': C('citation-only'),
+  'macaulay-1974': Q('full'),
+  'blanc-2024': { rights: 'free-licence', licence: 'CC BY-NC 4.0', consulted: 'partial' },
+  'amado-1942': Q('citation-only'),
   'lima-1931': { rights: 'public-domain', consulted: 'pending' },
-  'joao-alberto-1954': { rights: 'unknown', consulted: 'citation-only' },
+  'joao-alberto-1954': Q('citation-only'),
   'tavora-1928': C('citation-only'),
-  'anita-1991': C('citation-only'),
+  'anita-1991': Q('citation-only'),
   'helio-1922': C('citation-only'),
   'helio-1926': C('citation-only'),
   'meirelles-1995': C('citation-only'),
@@ -97,15 +105,22 @@ export const SOURCE_RIGHTS: Readonly<Record<SourceKey, SourceRightsEntry>> = {
   'manifesto-1925': { rights: 'free-licence', licence: 'GNU FDL', consulted: 'full' },
   'libertador-1924': C('citation-only'),
   'mozzer-2009': C('full'),
-  'rosa-1956': C('citation-only'),
+  'rosa-1956': Q('citation-only'),
   'historiafm-2024': C('full'),
   'superoitocine-2012': { rights: 'unknown', consulted: 'not-consulted' },
+  'anita-1995': Q('citation-only'),
+  'starling-1999': C('citation-only'),
 };
 
 /** True when the source's text may be quoted verbatim. */
 export function isQuotable(key: SourceKey): boolean {
   const { rights } = SOURCE_RIGHTS[key];
-  return rights === 'public-domain' || rights === 'free-licence';
+  return rights === 'public-domain' || rights === 'free-licence' || rights === 'citation';
+}
+
+/** True when the source may be quoted only briefly, with edition and page (D2). */
+export function isCitationOnly(key: SourceKey): boolean {
+  return SOURCE_RIGHTS[key].rights === 'citation';
 }
 
 /** One row of the rights table in docs/history/SOURCES.md. */

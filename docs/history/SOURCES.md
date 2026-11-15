@@ -26,7 +26,12 @@ Jacob Blanc, _The Prestes Column: An Interior History of Modern Brazil_
 Brazilian edition: _A Coluna Prestes: uma história do interior_ (São Paulo:
 UNESP, 2024), translated by Laiz Rubinger Chen Ferguson.
 
-Status: **local copy**. Authority: social and interior history, civilians,
+Status: **local copy**. Rights: CC BY-NC 4.0 (copyright page of the Duke
+open-access edition); its maps ("Courtesy of Gabe Moss") and CPDOC photographs
+are third-party material, asked for separately (`docs/rights/permission-requests/`).
+Period words that Blanc translates (letters, memoirs, newspapers) are quoted
+in his translation, credited, and marked as such in PT-BR until the Portuguese
+original is read. Authority: social and interior history, civilians,
 local politics, legitimacy, memory. Chapter 7 ("Constructing the Knight of
 Hope") and fig. 7.5 record the La Gaiba monument and its inscription, "Glory to
 the Bandeirantes of Freedom, 1924-1927".
@@ -85,7 +90,10 @@ Hope" myth. Not a factual authority. No verbatim reproduction.
   numbers, never as proof that Rosa drew on the column.
 - `rosa-1956` — João Guimarães Rosa, _Grande sertão: veredas_ (1956; Rio de
   Janeiro: Nova Fronteira, 36th ed., 1986). Status: citation-only, through
-  `mozzer-2009`. Fiction; cited only for what the novel says. Paraphrase only.
+  `mozzer-2009` (pp. 249–250) and `starling-1999` (p. 29), which quote the
+  p. 82 passage verbatim; they differ by one word ("todos animais" / "todos os
+  animais"). Fiction; cited only for what the novel says. Rights: citation —
+  at most two short quotations, with edition and page, apud Mozzer.
 - `historiafm-2024` — Icles Rodrigues (host) with Amilcar Guidolim Vitor,
   "Coluna Prestes: a maior marcha militar da história", _História FM_ ep. 190
   (Leitura ObrigaHistória, 15 Dec. 2024),
@@ -96,6 +104,13 @@ Hope" myth. Not a factual authority. No verbatim reproduction.
 
 - `anita-1991` — Anita Leocádia Prestes, _A Coluna Prestes_ (3rd ed.; São Paulo:
   Brasiliense, 1991). Status: citation-only.
+- `anita-1995` — Anita Leocádia Prestes, _Uma epopéia brasileira: a Coluna
+  Prestes_ (São Paulo: Moderna, 1995; Coleção Polêmica). Status: citation-only,
+  through `mozzer-2009` (p. 255, quoting p. 81).
+- `starling-1999` — Heloísa Maria Murgel Starling, _Lembranças do Brasil: teoria
+  política, história e ficção em Grande sertão: veredas_ (Rio de Janeiro:
+  Revan / UCAM / IUPERJ, 1999). Status: citation-only, through `mozzer-2009`
+  (p. 250, quoting p. 29).
 - `helio-1922` — Hélio Silva, _1922: sangue na areia de Copacabana_ (2nd ed.;
   Rio de Janeiro: Civilização Brasileira, 1971). Status: citation-only.
 - `helio-1926` — Hélio Silva, _1926: a grande marcha_ (2nd ed.; Rio de Janeiro:
@@ -186,19 +201,22 @@ Hope" myth. Not a factual authority. No verbatim reproduction.
 ## Rights and consultation register
 
 Machine-read by `pnpm check:content` and compared with `SOURCE_RIGHTS` in
-`packages/content/src/sources.ts`. Only `public-domain` and `free-licence`
-sources may be quoted verbatim in the game; a `not-consulted` source may not
-be cited.
+`packages/content/src/sources.ts`. `public-domain` and `free-licence` sources
+may be quoted verbatim in the game. A `citation` source is a protected work the
+owner accepted for brief quotation for criticism or study (Lei 9.610, art. 46,
+III; owner, 2026-11-15): at most 40 words, with edition and page, and at most
+two quotations per work. A `copyrighted` source is paraphrased. A
+`not-consulted` source may not be cited.
 
 | Key | Rights | Licence | Consulted |
 | --- | --- | --- | --- |
-| `macaulay-1974` | copyrighted | — | full |
-| `blanc-2024` | copyrighted | — | partial |
-| `amado-1942` | copyrighted | — | citation-only |
+| `macaulay-1974` | citation | — | full |
+| `blanc-2024` | free-licence | CC BY-NC 4.0 | partial |
+| `amado-1942` | citation | — | citation-only |
 | `lima-1931` | public-domain | — | pending |
-| `joao-alberto-1954` | unknown | — | citation-only |
+| `joao-alberto-1954` | citation | — | citation-only |
 | `tavora-1928` | copyrighted | — | citation-only |
-| `anita-1991` | copyrighted | — | citation-only |
+| `anita-1991` | citation | — | citation-only |
 | `helio-1922` | copyrighted | — | citation-only |
 | `helio-1926` | copyrighted | — | citation-only |
 | `meirelles-1995` | copyrighted | — | citation-only |
@@ -227,9 +245,11 @@ be cited.
 | `manifesto-1925` | free-licence | GNU FDL | full |
 | `libertador-1924` | copyrighted | — | citation-only |
 | `mozzer-2009` | copyrighted | — | full |
-| `rosa-1956` | copyrighted | — | citation-only |
+| `rosa-1956` | citation | — | citation-only |
 | `historiafm-2024` | copyrighted | — | full |
 | `superoitocine-2012` | unknown | — | not-consulted |
+| `anita-1995` | citation | — | citation-only |
+| `starling-1999` | copyrighted | — | citation-only |
 
 ## Rules
 

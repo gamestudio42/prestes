@@ -29,10 +29,14 @@ describe('enrich-texts-from-sources content', () => {
     }
   });
 
-  it('keeps the Grande sertão entry dramatized and unquoted', () => {
+  it('keeps the Grande sertão entry dramatized, quoting Rosa only briefly, with page and the edition it was read through', () => {
     expect(entry('coluna-no-grande-sertao')?.label).toBe('dramatized');
     for (const locale of ['en', 'pt-BR'] as const) {
-      expect(COMPENDIUM_TEXT[locale]['coluna-no-grande-sertao']!.note.every((section) => !section.quote)).toBe(true);
+      const quotes = COMPENDIUM_TEXT[locale]['coluna-no-grande-sertao']!.note.flatMap((section) => (section.quote ? [section.quote] : []));
+      const rosa = quotes.filter((quote) => quote.sourceKey === 'rosa-1956');
+      expect(rosa).toHaveLength(1);
+      expect(rosa[0]!.cite).toMatch(/p\. 82/);
+      expect(rosa[0]!.via?.sourceKey).toBe('mozzer-2009');
     }
   });
 
@@ -78,14 +82,17 @@ describe('enrich-texts-from-sources content', () => {
     }
   });
 
-  it("quotes Moreira Lima's farewell in chapter 8's Monument page", () => {
+  it("quotes Moreira Lima's farewell in chapter 8, and his speech at the monument", () => {
     const chapter = CAMPAIGN_CHAPTERS.find((candidate) => candidate.id === 'la-gaiba')!;
     expect(chapter.sourceRefs).toContain('lima-1931');
     expect(chapter.links).toContain('lourenco-moreira-lima');
     for (const locale of ['en', 'pt-BR'] as const) {
-      const page = CHAPTER_TEXT[locale]['la-gaiba']!.pages.find((candidate) => candidate.quote);
-      expect(page?.heading).toBe(locale === 'en' ? 'The Monument' : 'O Monumento');
-      expect(page?.quote?.sourceKey).toBe('lima-1931');
+      // The Monument page now quotes his speech as the Correio da Manhã printed it (Blanc);
+      // the farewell from Marchas e combates has its own page.
+      const monument = CHAPTER_TEXT[locale]['la-gaiba']!.pages.find((candidate) => candidate.heading === (locale === 'en' ? 'The Monument' : 'O Monumento'));
+      expect(monument?.quote?.sourceKey).toBe('blanc-2024');
+      const page = CHAPTER_TEXT[locale]['la-gaiba']!.pages.find((candidate) => candidate.quote?.sourceKey === 'lima-1931');
+      expect(page?.heading).toBe(locale === 'en' ? 'The Dead' : 'Os Mortos');
       expect(page?.quote?.cite).toMatch(/p\. 523/);
     }
   });

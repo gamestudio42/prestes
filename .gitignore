@@ -33,3 +33,7 @@ audio-src/
 art-src/**/*.blend1
 art-src/environment/smoke.*
 art-src/**/__pycache__/
+# Images under a permission request (complete-books-and-bibliography D3a); never committed.
+art-src/compendium-pending/
+# Review build for rights holders; never published.
+apps/game/dist-review/

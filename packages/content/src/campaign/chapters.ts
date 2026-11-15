@@ -63,6 +63,7 @@ export const CAMPAIGN_CHAPTERS: readonly CampaignChapter[] = [
     commanderId: 'luis-carlos-prestes',
     label: 'dramatized',
     sourceRefs: ['macaulay-1974', 'blanc-2024', 'castro-2016', 'vitor-2011', 'tavora-1928'],
+    image: { entryId: 'rs-revolt-1924', slot: 'hero-photo' },
     links: [
       'luis-carlos-prestes',
       'rs-revolt-1924',
@@ -81,7 +82,7 @@ export const CAMPAIGN_CHAPTERS: readonly CampaignChapter[] = [
     commanderId: 'miguel-costa',
     label: 'dramatized',
     sourceRefs: ['macaulay-1974', 'castro-2016', 'blanc-2024', 'tavora-1928'],
-    image: { entryId: 'foz-do-iguacu', slot: 'group-photo' },
+    image: { entryId: 'porto-mendes', slot: 'hero-photo' },
     links: ['miguel-costa', 'luis-carlos-prestes', 'foz-do-iguacu', 'porto-mendes', 'mauser-7mm'],
     playable: false,
   },
@@ -105,6 +106,7 @@ export const CAMPAIGN_CHAPTERS: readonly CampaignChapter[] = [
     commanderId: 'luis-carlos-prestes',
     label: 'dramatized',
     sourceRefs: ['macaulay-1974', 'blanc-2024', 'teles-2008'],
+    image: { entryId: 'map-serra-rio', slot: 'verdinho-today' },
     links: ['luis-carlos-prestes', 'map-serra-rio', 'mauser-7mm'],
     playable: false,
   },
@@ -116,6 +118,7 @@ export const CAMPAIGN_CHAPTERS: readonly CampaignChapter[] = [
     commanderId: 'luis-carlos-prestes',
     label: 'dramatized',
     sourceRefs: ['macaulay-1974', 'blanc-2024', 'anita-1991', 'nascimento-2026', 'almg-2026', 'manifesto-1925', 'mozzer-2009'],
+    image: { entryId: 'serra-nova-1926', slot: 'hero-photo' },
     links: [
       'luis-carlos-prestes',
       'porto-nacional',
@@ -146,6 +149,7 @@ export const CAMPAIGN_CHAPTERS: readonly CampaignChapter[] = [
     commanderId: 'luis-carlos-prestes',
     label: 'dramatized',
     sourceRefs: ['macaulay-1974', 'anita-1991', 'blanc-2024', 'lima-1931'],
+    image: { entryId: 'exile-1927', slot: 'hero-photo' },
     links: ['luis-carlos-prestes', 'la-gaiba', 'lourenco-moreira-lima'],
     playable: false,
   },
@@ -157,6 +161,8 @@ export interface ChapterPage {
   paragraphs: readonly string[];
   /** An attributed quotation shown after the paragraphs (enrich-texts-from-sources D2). */
   quote?: Quote;
+  /** A plate shown after the paragraphs (complete-books-and-bibliography D4). Same in every locale. */
+  image?: ChapterImage;
 }
 
 /** A chapter's long, localized text (design D12). */
@@ -175,6 +181,8 @@ export const CHAPTER_TEXT: Readonly<Record<Locale, Readonly<Record<string, Chapt
   en: CHAPTER_TEXT_EN,
   'pt-BR': CHAPTER_TEXT_PT_BR,
 };
+
+const LOCALES_OF_TEXT = Object.keys(CHAPTER_TEXT) as Locale[];
 
 /** Words a prose page may hold and still fit one book page at 1280 x 720. */
 export const CHAPTER_PAGE_WORD_BUDGET = 180;
@@ -218,6 +226,20 @@ export function validateChapters(
     for (const link of chapter.links) {
       if (!entries.has(link))
         errors.push(`chapter ${chapter.id} links to unknown compendium entry: ${link}`);
+    }
+    // complete-books-and-bibliography D4: page plates, the same in every locale.
+    const pageImages = (locale: Locale) =>
+      (CHAPTER_TEXT[locale][chapter.id]?.pages ?? []).map((page) => (page.image ? `${page.image.entryId}/${page.image.slot}` : ''));
+    const firstImages = pageImages(LOCALES_OF_TEXT[0]!).join('|');
+    for (const locale of LOCALES_OF_TEXT) {
+      if (pageImages(locale).join('|') !== firstImages) errors.push(`chapter ${chapter.id} page plates differ in ${locale}`);
+    }
+    for (const page of CHAPTER_TEXT[LOCALES_OF_TEXT[0]!][chapter.id]?.pages ?? []) {
+      if (!page.image) continue;
+      const entry = COMPENDIUM.find((candidate) => candidate.id === page.image!.entryId);
+      if (!entry?.images?.some((image) => image.slot === page.image!.slot)) {
+        errors.push(`chapter ${chapter.id} page uses unknown image: ${page.image.entryId}/${page.image.slot}`);
+      }
     }
     if (chapter.image) {
       const entry = COMPENDIUM.find((candidate) => candidate.id === chapter.image!.entryId);

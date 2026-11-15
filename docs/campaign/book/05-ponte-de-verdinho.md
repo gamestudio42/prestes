@@ -13,75 +13,105 @@ sourceRefs:
 
 > **Label:** dramatized. The Verdinho bridge outside Mineiros, Goiás, on 27-28
 > June 1925 is historical; the prose, the bridge and the pursuit are a
-> dramatization. **Tone reference:** Jorge Amado, _O Cavaleiro da Esperança_. No
-> text is reproduced; the prose is original.
+> dramatization. **Tone reference:** Jorge Amado, _O Cavaleiro da Esperança_.
+> The prose is original; each page quotation is attributed with its edition and
+> page, shown under the page in the English and Portuguese text below
+> (complete-books-and-bibliography).
 
 ## English
 
 ### The Bridge
 
-The Verdinho was a road bridge over a shallow river, and for a few hours it was
-the most important piece of ground in the column's march. The wagons were still
-crossing. The government was on the road behind them. Prestes told the rearguard
-to hold the bridge until the column was through, then burn it and leave by the
-ford.
+On 10 June 1925, at Camapuã, the two brigades became four detachments under
+Cordeiro de Farias, João Alberto, Siqueira Campos and Djalma Dutra. Behind them
+came something new: Major Bertoldo Klinger's Mineiro militiamen, in trucks.
 
-The bridge was not a position to keep. It was a position to give up at the right
-time. Hold too long and the rearguard would be trapped on the near bank; burn too
-early and the column would be cut.
+At four in the afternoon of 27 June, Klinger's touring car and five trucks came
+up the road to the Verdinho bridge outside Mineiros, Goiás. Prestes and his
+staff were there with the rearguard, Cordeiro's detachment. Klinger had not
+waited for the rest of his force; he attacked with what he had, fewer than a
+hundred men (Macaulay, p. 123).
 
 ### The Ford
 
-The river was shallow. The ford was the escape, but the bank was open and the
-government knew the bridge. The rearguard held the bridge while the wagons
-crossed, then set it alight and moved to the ford. The fire was the signal that
-the column was through and the bridge was no longer a way across.
+Prestes and Cordeiro saw how few they were, stopped the advance, pushed it back
+from the bridge and set the bridge on fire. It cost the rebels one dead and one
+wounded. In the night the rest of Klinger's trucks came up: a hundred and twenty
+riflemen and five machine-gun crews. Early on 28 June the rearguard waded the
+shallow river and withdrew east.
 
-The pursuers reached the burning bridge and began to cut a ford with the bridge's
-own timbers. The column had bought time, not safety. The rearguard waded the river
-under fire and kept moving north.
+Klinger did not stop. His men dug cuts into both banks and laid a ford with
+timbers from the burned bridge. By nightfall five trucks were across; by seven
+the next morning thirteen vehicles were in Mineiros (Macaulay, pp. 123–124).
 
-### The Pursuit
+> They seemed to be unfurled banners, swiftly conveying throughout those backlands the word of order, the presence of the law.
+>
+> — Major Bertoldo Klinger, on the dust of his trucks, 29 June 1925
+>
+> `macaulay-1974`, The Prestes Column (1974), p. 124. Macaulay's translation from the Portuguese.
 
-The bridge fell. The column was across. The pursuit was delayed, not stopped. The
-timbers that had held the bridge now helped the government across the river. The
-column counted the cost and continued.
+### The Cost
 
-Verdinho is a small action in a long march, and that is the point: the column
-survived by giving up ground at the right moment, not by holding it.
+At noon on 29 June, some seventy kilometres east, Klinger overtook the new
+rearguard, Djalma Dutra's detachment. At four in the afternoon the fighting was
+close and confused. Aldo Manenti, an eighteen-year-old lieutenant, an Italian
+from São Paulo, climbed onto the cab of Klinger's lead truck, perhaps taking it
+for a rebel vehicle, and was killed at the wheel. Four other rebels died inside
+the loyalist line (p. 124).
+
+That evening the column left the road for an ox-cart trail the trucks could not
+follow. The bridge had bought a night, not safety, and its own timbers had
+carried the pursuit across. Verdinho is a small action in a long march, and that
+is the point: the column survived by giving up ground at the right moment.
 
 ## Português (BR)
 
 ### A Ponte
 
-O Verdinho era uma ponte de estrada sobre um rio raso e, por algumas horas, foi o
-pedaço de chão mais importante da marcha da coluna. As carroças ainda
-atravessavam. O governo estava na estrada atrás delas. Prestes disse à retaguarda
-que segurasse a ponte até a coluna passar, depois a queimasse e saísse pelo vau.
+Em 10 de junho de 1925, em Camapuã, as duas brigadas viraram quatro
+destacamentos, sob Cordeiro de Farias, João Alberto, Siqueira Campos e Djalma
+Dutra. Atrás deles vinha uma coisa nova: os milicianos mineiros do major
+Bertoldo Klinger, de caminhão.
 
-A ponte não era uma posição para manter. Era uma posição para entregar no momento
-certo. Segurar demais prenderia a retaguarda na margem de cá; queimar cedo demais
-cortaria a coluna.
+Às quatro da tarde de 27 de junho, o carro de Klinger e cinco caminhões subiram
+a estrada até a ponte do Verdinho, perto de Mineiros, em Goiás. Prestes e seu
+estado-maior estavam ali com a retaguarda, o destacamento de Cordeiro. Klinger
+não esperou o resto da tropa; atacou com o que tinha, menos de cem homens
+(Macaulay, p. 123).
 
 ### O Vau
 
-O rio era raso. O vau era a saída, mas a margem era aberta e o governo conhecia a
-ponte. A retaguarda segurou a ponte enquanto as carroças atravessavam, depois
-ateou fogo e se deslocou para o vau. O fogo era o sinal de que a coluna tinha
-passado e a ponte já não era passagem.
+Prestes e Cordeiro viram que eram poucos, detiveram o avanço, empurraram-no para
+longe da ponte e puseram fogo nela. Custou aos rebeldes um morto e um ferido. À
+noite chegaram os outros caminhões de Klinger: cento e vinte fuzileiros e cinco
+guarnições de metralhadora. Cedo, em 28 de junho, a retaguarda atravessou o rio
+raso a vau e recuou para leste.
 
-Os perseguidores chegaram à ponte em chamas e começaram a abrir um vau com as
-próprias madeiras da ponte. A coluna tinha comprado tempo, não segurança. A
-retaguarda vadeou o rio sob fogo e seguiu para o norte.
+Klinger não parou. Seus homens cavaram rampas nas duas margens e fizeram um vau
+com as madeiras da ponte queimada. Ao anoitecer cinco caminhões tinham passado;
+às sete da manhã seguinte, treze veículos estavam em Mineiros (Macaulay, pp.
+123–124).
 
-### A Perseguição
+> Pareciam bandeiras desfraldadas, levando velozmente por aqueles sertões a palavra de ordem, a presença da lei.
+>
+> — Major Bertoldo Klinger, sobre a poeira de seus caminhões, 29 de junho de 1925
+>
+> `macaulay-1974`, The Prestes Column (1974), p. 124. Tradução nossa da versão inglesa de Macaulay; o original em português não foi consultado.
 
-A ponte caiu. A coluna estava do outro lado. A perseguição foi atrasada, não
-detida. As madeiras que sustentavam a ponte agora ajudavam o governo a atravessar
-o rio. A coluna contou o custo e continuou.
+### O Custo
 
-Verdinho é uma ação pequena numa marcha longa, e é isso que importa: a coluna
-sobreviveu cedendo terreno no momento certo, não segurando-o.
+Ao meio-dia de 29 de junho, uns setenta quilômetros a leste, Klinger alcançou a
+nova retaguarda, o destacamento de Djalma Dutra. Às quatro da tarde o combate
+era de perto e confuso. Aldo Manenti, tenente de dezoito anos, italiano de São
+Paulo, subiu na cabine do caminhão da frente de Klinger, talvez tomando-o por um
+veículo rebelde, e morreu ao volante. Outros quatro rebeldes morreram dentro da
+linha legalista (p. 124).
+
+Naquela tarde a coluna deixou a estrada por um caminho de carro de boi onde os
+caminhões não passavam. A ponte comprara uma noite, não a segurança, e suas
+próprias madeiras levaram a perseguição para o outro lado. Verdinho é uma ação
+pequena numa marcha longa, e é isso que importa: a coluna sobreviveu entregando
+o chão na hora certa.
 
 ## Sources and labels
 

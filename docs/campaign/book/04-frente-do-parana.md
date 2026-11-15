@@ -14,69 +14,99 @@ sourceRefs:
 > **Label:** dramatized. The July 1924 São Paulo revolt, the withdrawal to the
 > Paraná and the front are historical; the prose, the trench line and the
 > withdrawal are a dramatization. Isidoro commanded from Foz; Estilac Leal’s
-> brigade held Catanduvas, and the section in this chapter is fictional.
-> **Tone reference:** Jorge Amado, _O Cavaleiro da Esperança_. No text is
-> reproduced; the prose is original.
+> brigade held Catanduvas, and the section in this chapter is fictional. **Tone
+> reference:** Jorge Amado, _O Cavaleiro da Esperança_. The prose is original;
+> each page quotation is attributed with its edition and page, shown under the
+> page in the English and Portuguese text below
+> (complete-books-and-bibliography).
 
 ## English
 
-### The Front
+### Before the Division
 
-The city was lost. The São Paulo revolt had taken the streets in July 1924 and
-lost them by the end of the month. Isidoro Dias Lopes took the remnant toward the
-interior and the Paraná. The government followed with artillery.
+This chapter steps back. It covers July 1924 to March 1925, the months before
+the meeting of chapter 3, and the other half of the men who formed the division.
 
-The front was not a victory waiting to happen. It was a place to hold long enough
-to save the men who would become the column.
+The São Paulo revolt had held the city for three weeks. At ten on the night of
+27 July 1924 the first troop train left the Luz station; by dawn thirteen trains
+had carried away some three thousand men and fourteen field guns, while two guns
+left behind kept firing (Macaulay, pp. 16–17). The trains went west and then
+south, and the revolt dug in on the Paraná, between Guaíra, Foz do Iguaçu and
+Catanduvas.
 
 ### The Trenches
 
 The Paraná front was trenches in the forest and farmland, coffee rows and woods,
-a farmhouse and a road. Isidoro commanded from Foz; Estilac Leal’s brigade held
-Catanduvas. The government had the guns; the rebels had the ground and the habit
-of not being surrounded. The rearguard held the line while the wounded and the
-supplies moved back.
+a farmhouse and a road. Isidoro commanded from Foz; Estilac Leal's brigade held
+Catanduvas. At the end of February Isidoro wrote to Prestes that many of his
+soldiers, even some officers, were half-naked and barefoot, and that they must
+hold out at least another month (Blanc, p. 44). The government had the guns, and
+the Patriotic Battalions of volunteers dug in opposite.
 
-The line was traded for the road. The front fell, but the men got out.
+_Plate: `army-patriotico/hero-photo` (see the compendium entry's caption and credit)._
 
-### The Withdrawal
+> From this period forward, the rebels won very few battles.
+>
+> — Jacob Blanc, historian, on the Paraná front in early 1925
+>
+> `blanc-2024`, The Prestes Column (Duke, 2024), p. 42
 
-The São Paulo remnant withdrew toward the Paraná. In April 1925 it would meet the
-southern column in western Paraná and become part of the First Revolutionary
-Division. The front is therefore a beginning seen from the losing side: the men
-who leave it are the men who will march with the column.
+### The Fall
 
-The front was lost. The column was not yet born.
+On 26 March 1925 General Rondon began the attacks that encircled Catanduvas. By
+29 March the stronghold was cut off: four thousand government soldiers and 105
+mm howitzers against 407 rebels. Estilac Leal and two officers slipped through
+the lines that night; the rest surrendered before dawn on 30 March. The campaign
+cost the government 179 dead, 301 wounded and 60 missing, its heaviest losses of
+the revolution (Macaulay, p. 85).
+
+The front was lost. The men who left it with Miguel Costa would meet Prestes
+four days later and become the São Paulo Brigade of the column.
 
 ## Português (BR)
 
-### A Frente
+### Antes da Divisão
 
-A cidade estava perdida. A revolta paulista tomou as ruas em julho de 1924 e as
-perdeu no fim do mês. Isidoro Dias Lopes levou o remanescente para o interior e
-para o Paraná. O governo seguiu com a artilharia.
+Este capítulo volta no tempo. Cobre de julho de 1924 a março de 1925, os meses
+anteriores ao encontro do capítulo 3, e a outra metade dos homens que formaram a
+divisão.
 
-A frente não era uma vitória à espera de acontecer. Era um lugar para segurar
-tempo suficiente para salvar os homens que se tornariam a coluna.
+A revolta paulista ocupou a cidade por três semanas. Às dez da noite de 27 de
+julho de 1924 o primeiro trem de tropa deixou a estação da Luz; ao amanhecer,
+treze trens haviam levado uns três mil homens e catorze canhões de campanha,
+enquanto duas peças deixadas para trás continuavam atirando (Macaulay, pp.
+16–17). Os trens foram para oeste e depois para o sul, e a revolta se
+entrincheirou no Paraná, entre Guaíra, Foz do Iguaçu e Catanduvas.
 
 ### As Trincheiras
 
-A frente do Paraná eram trincheiras na mata e na lavoura, fileiras de café e
-bosques, uma casa e uma estrada. Isidoro comandava de Foz; a brigada de Estilac
-Leal segurava Catanduvas. O governo tinha os canhões; os rebeldes tinham o
-terreno e o hábito de não se deixar cercar. A retaguarda segurou a linha enquanto
-os feridos e os suprimentos recuavam.
+A frente do Paraná era feita de trincheiras na mata e na lavoura, fileiras de
+café e bosques, uma casa de fazenda e uma estrada. Isidoro comandava de Foz; a
+brigada de Estilac Leal segurava Catanduvas. No fim de fevereiro Isidoro
+escreveu a Prestes que muitos de seus soldados, e até alguns oficiais, estavam
+seminus e descalços, e que era preciso resistir pelo menos mais um mês (Blanc,
+p. 44). O governo tinha os canhões, e os batalhões patrióticos de voluntários se
+entrincheiravam do outro lado.
 
-A linha foi trocada pela estrada. A frente caiu, mas os homens saíram.
+_Plate: `army-patriotico/hero-photo` (see the compendium entry's caption and credit)._
 
-### A Retirada
+> Daquele momento em diante, os rebeldes venceram pouquíssimas batalhas.
+>
+> — Jacob Blanc, historiador, sobre a frente do Paraná no início de 1925
+>
+> `blanc-2024`, The Prestes Column (Duke, 2024), p. 42. Tradução nossa do inglês.
 
-O remanescente paulista recuou para o Paraná. Em abril de 1925, encontraria a
-coluna do sul no oeste do Paraná e faria parte da Primeira Divisão
-Revolucionária. A frente é, portanto, um começo visto do lado perdedor: os homens
-que saem dela são os homens que marcharão com a coluna.
+### A Queda
 
-A frente foi perdida. A coluna ainda não tinha nascido.
+Em 26 de março de 1925 o general Rondon começou os ataques que cercaram
+Catanduvas. Em 29 de março o reduto estava isolado: quatro mil soldados do
+governo e obuses de 105 mm contra 407 rebeldes. Estilac Leal e dois oficiais
+escaparam pelas linhas naquela noite; os demais se renderam antes do amanhecer
+de 30 de março. A campanha custou ao governo 179 mortos, 301 feridos e 60
+desaparecidos, suas maiores perdas na revolução (Macaulay, p. 85).
+
+A frente estava perdida. Os homens que saíram dela com Miguel Costa encontrariam
+Prestes quatro dias depois e virariam a Brigada São Paulo da coluna.
 
 ## Sources and labels
 

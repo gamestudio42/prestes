@@ -519,3 +519,41 @@ corrugated asbestos appears.
   with synthesis only as a fallback for wind and running water.
 - Maps run from 06:00 to 18:00 (`MAP_LIGHT_TIME`): the night layer waits
   for maps that can be set at night.
+
+## complete-books-and-bibliography (2026-11-15)
+
+- The owner approved the images and the quotations on 2026-11-15 ("insira
+  tudo … coloque as imagens, citações e deixe completo e pronto"). The
+  decisions are row by row in
+  `openspec/changes/complete-books-and-bibliography/approval-list.md`, section C.
+  Q2 (Rosa p. 95) was dropped: it would have been a third Rosa quotation, over
+  the cap of two per work. Three Blanc quotations were added during the rewrite
+  (Q15–Q17).
+- Both books are complete in EN and PT-BR. All eight chapters were rewritten
+  with dated facts, one or more attributed quotations (edition and page), and
+  page plates. Every compendium entry has a note: 42 new notes, drafted in
+  `docs/campaign/compendium/entries/`. The provisional text in `la-gaiba-1927`
+  and `sao-luiz-gonzaga` is gone, and the content check now fails on any
+  provisional phrase.
+- Factual fixes: the Pantanal is January 1927 (Blanc p. 127), not February.
+  The La Gaiba monument's 5 July 1927 date is backed by the Correio da Manhã
+  (Blanc p. 142). The April 1925 meeting was at Benjamin Constant, not Foz.
+  The Paraná crossing ran 27–29 April. Siqueira Campos entered Paraguay on
+  23 March 1927. Macaulay misprints 1926/1927 on pp. 233–234; the notes say so.
+- The compendium book ends with a "Sources" / "Fontes" part listing every cited
+  source, and every source line in both books opens its row.
+- Images: 21 free images were added (public domain, CC0, CC BY-SA 3.0/4.0),
+  for 35 in the public folder. Eight images await permission
+  (CPDOC/FGV, BIBLIEx, Projeto Portinari, Duke University Press, BN). They live
+  in the gitignored `art-src/compendium-pending/`, show only in the dev server
+  and in `pnpm --filter @prestes/game build:review` (`apps/game/dist-review/`,
+  the build to send with the requests), and fall back to the emblem with
+  "image awaiting permission" anywhere else. The owner sends the requests in
+  `docs/rights/permission-requests/`. Claude does not send them.
+- Mission cards: `docs/campaign/missions/card-review.md` lists the fixes for
+  the map cards. The Pantanal card says February; La Gaiba still hedges on
+  5 July. No map was edited.
+- Standing checks: the Portuguese originals of the period voices quoted
+  through Blanc and Macaulay. Until one is found, PT-BR carries our
+  translation, marked as such. Print editions of Rosa p. 82, Amado p. 131 and
+  Moreira Lima p. 523 are also unchecked.

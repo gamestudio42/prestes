@@ -1,7 +1,11 @@
 // Imported from docs/campaign/book and docs/campaign/missions; keep in step with the docs.
-// The prose is the project's own dramatization; no source text is reproduced, apart from
-// attributed quotations of free texts (enrich-texts-from-sources D2).
+// The prose is the project's own dramatization. Quotations are attributed, with edition
+// and page; protected works are quoted briefly under the right of quotation
+// (complete-books-and-bibliography D2). Facts carry their source in the docs.
 import type { ChapterText } from '../chapters';
+
+const BLANC_EN = "Blanc's translation from the Portuguese.";
+const MACAULAY_EN = "Macaulay's translation from the Portuguese.";
 
 export const CHAPTER_TEXT_EN: Readonly<Record<string, ChapterText>> = {
   'prologue-18-do-forte': {
@@ -12,25 +16,36 @@ export const CHAPTER_TEXT_EN: Readonly<Record<string, ChapterText>> = {
       {
         heading: 'The Absent One',
         paragraphs: [
-          "On the night of 4 July 1922, Luís Carlos Prestes tried to dress for the rising and collapsed. Typhoid kept him in his mother's house while the conspiracy moved without him. He was a young engineering officer, not yet the name the column would carry; he was not at the Forte de Copacabana, and he was not on the beach. The revolt that entered the legend as the 18 do Forte happened without the man who would become the column's most visible leader. The fever was an accident of history. The absence became part of the story. The prologue is Siqueira Campos's. The column will be Prestes's.",
+          "On the night of 4 July 1922, Luís Carlos Prestes tried to dress for the rising and collapsed. He had caught typhoid on 13 June, and it kept him in his mother's house while the conspiracy moved without him. He was a young engineering officer, second in command of the First Engineer Company at Deodoro, not yet the name the column would carry. He was not at the Forte de Copacabana, and he was not on the beach.",
+          'The plan had the cadets march from Realengo while Marshal Hermes da Fonseca took command at Vila Militar. The cadets marched and were fired on; the garrisons did not rise. By the morning of 6 July only the fort was left. The prologue is Siqueira Campos\'s. The column will be Prestes\'s.',
         ],
       },
       {
         heading: 'The Eighteen',
         paragraphs: [
-          'At the fort, the legend gives Siqueira Campos eighteen men and a decision. The record gives twenty-nine in the fort after the commander was taken prisoner, and twenty-eight marching out on the afternoon of 6 July. The rising had failed elsewhere; the government was closing in; surrender would end it without a story. In the legend he divides the men into four groups — five, five, four, four — and takes them out through the gate and onto the beach. The sea was on one side, the government on the other, and the sand offered nothing. They fought from the gate up the Avenida Atlântica, from the avenue works to the last stretch of sand before Rua Barroso, and the line grew shorter with every position. The four groups were not a victory waiting to happen. They were a delay, measured in minutes and in blood. The legend says the eighteen died there. The record says Siqueira Campos and two others survived, and seven rebels died. Both are part of the story.',
+          'The legend gives Siqueira Campos eighteen men and a decision. The record gives twenty-nine in the fort after its commander was taken prisoner, and twenty-eight marching out on the afternoon of 6 July. Four slipped away on the avenue. Sixteen met the government line: eleven held the sidewalk and four took cover in the pipes of the avenue works.',
+          'They fought from the gate up the Avenida Atlântica, past the fishermen\'s boats and the works, to the last stretch of sand before Rua Barroso, and the line grew shorter with every position. Seven rebels were killed or died of their wounds; the government counted thirty-five killed or wounded. Siqueira Campos, one other officer and one soldier survived (Macaulay, pp. 26–29). The legend says the eighteen died there. Both belong to the story.',
         ],
+        image: { entryId: 'revolt-1922', slot: 'press' },
       },
       {
         heading: 'The Record',
         paragraphs: [
-          'The beach did not end the rising; it gave the rising a myth. The 18 do Forte became a name for a generation that would try again in São Paulo, in Rio Grande do Sul and in the column. Siqueira Campos carried the beach with him. Prestes carried the fever, the maps and the name that the column would make. The column does not begin here. It begins in the south, years later, with the men who would march out of the encirclement and keep going. But the beach is where the legend learns to die, and where the campaign learns what a certain defeat costs.',
+          'The beach did not end the rising; it gave it a date and a myth. The 18 do Forte became a name for a generation that would try again in São Paulo on 5 July 1924, in Rio Grande do Sul that October, and in the column. Siqueira Campos carried the beach with him. Prestes carried the fever, the maps and the name the column would make.',
+          'The column does not begin here. It begins in the south, two years later, with men who would march out of an encirclement and keep going. But the beach is where the legend learned to die, and where the campaign learns what a certain defeat costs.',
         ],
+        quote: {
+          text: 'The abortive revolt etched July 5 as the origin date of tenentismo, setting into motion further events on the horizon.',
+          sourceKey: 'blanc-2024',
+          cite: 'The Prestes Column (Duke, 2024), p. 31',
+          attribution: 'Jacob Blanc, historian',
+          originalLocale: 'en',
+        },
       },
     ],
     briefing: {
       pitch:
-        'The fort at night. The rising has failed elsewhere; the government is closing in. Siqueira Campos tells the 18 that there will be no surrender: they will march out along the avenue and make the government pay for every metre. Prestes is absent with fever. There is no relief and no victory; the task is to make every metre of the avenue cost the government time and blood.',
+        'The fort, 6 July 1922. The rising has failed elsewhere; the government is closing in. Siqueira Campos tells the 18 that there will be no surrender: they will march out along the avenue and make the government pay for every metre. Prestes is absent with fever. There is no relief and no victory; the task is to make every metre of the avenue cost the government time and blood.',
       objectives: [
         "Leave the fort and reach the fishermen's boats.",
         'Hold the avenue works while the government commits section after section.',
@@ -40,31 +55,39 @@ export const CHAPTER_TEXT_EN: Readonly<Record<string, ChapterText>> = {
   },
   'anel-de-ferro': {
     title: 'The Iron Ring',
-    place: 'Santo Ângelo, São Borja, Uruguaiana; Ramada; the Uruguay River',
-    perspective:
-      'Luís Carlos Prestes, chief of staff of the southern rebels, inside the Iron Ring.',
+    place: 'Santo Ângelo, São Luiz Gonzaga, Ramada; the Uruguay River',
+    perspective: 'Luís Carlos Prestes, leading the southern rebels, inside the Iron Ring.',
     pages: [
       {
         heading: 'The Ring',
         paragraphs: [
-          'The government called it a ring. On the map it looked like one: columns coming from the south and the east, the river behind, the towns already taken. Prestes looked at the same map and saw a line. A ring is only a line until it closes.',
-          'The rising had taken Santo Ângelo, São Borja and Uruguaiana. It had not taken the roads. In December the government converged on São Luiz Gonzaga, certain that the rebels would wait to be surrounded. Prestes did not wait. The column would march north, at night, with the wagons, the horses and the wounded. The rearguard would hold Ramada long enough for the rest to get through.',
-          'It was not a victory. It was a decision to keep moving.',
+          'On 28 and 29 October 1924 the south rose. Prestes, a captain with the 1st Railway Battalion at Santo Ângelo, took his men out; São Borja and Uruguaiana rose with them. By November his battalion held São Luiz Gonzaga, and the rebels\' newspaper, O Libertador, was being printed there.',
+          'The government called what came next a ring. In December seven loyalist detachments converged on the town. Prestes left one detachment in contact to make the enemy believe the whole force was retreating, and gathered the rest at São Miguel das Missões. In the night the loyalists closed on an empty position while the rebels marched north-east toward the Ijuí (Blanc, p. 37). A ring is only a line until it closes.',
         ],
+        image: { entryId: 'sao-luiz-1924', slot: 'blanc-map' },
+        quote: {
+          text: '…one of the most brilliant operations of this campaign and it is even on par with any of the most celebrated acts of military genius carried out at any other time in history.',
+          sourceKey: 'blanc-2024',
+          cite: 'The Prestes Column (Duke, 2024), p. 37',
+          attribution: 'General João Francisco, letter to Prestes, December 1924',
+          originalLocale: 'en',
+          note: BLANC_EN,
+        },
       },
       {
         heading: 'Ramada',
         paragraphs: [
-          'Ramada was a place to make the government pay for every hour. The rearguard held the line while the wagons creaked north. The horses were the first cost. They drank, they stumbled, they slowed the column; the government had more of them. By the time the column reached the Uruguay, most of the horses were gone or had to be left behind.',
-          'The river was the gate. The ford was narrow, and the government knew it. The rearguard held the bank while the column crossed. The men counted what they could carry and what they had to abandon. The column crossed the Uruguay and continued on foot through Santa Catarina.',
+          'The praise was hyperbole, and Blanc notes that such praise helped make the legend. The march north was harder. On 3 January 1925, near Palmeiras, at the place local memory calls Ramada, the rearguard fought one of the bloodiest actions of the whole rebellion. Macaulay counts about forty rebels lost (p. 61); the monument there today stands for nearly a hundred loyalist dead (Blanc, p. 237).',
+          'The horses were the next cost. They had carried the column and pulled the wagons, and the government had more of them. Men deserted, too: of more than three thousand in November, a little over a thousand were left at the river (Blanc, p. 41).',
         ],
       },
       {
-        heading: 'The Column',
+        heading: 'The River',
         paragraphs: [
-          "The ring was behind them. The column was not. It had a name now, or the beginning of one: the column that would not be surrounded. In April it met the São Paulo rebels in western Paraná; Prestes and Miguel Costa met at Benjamin Constant on 3 April, and the First Revolutionary Division was formally organized at Porto Santa Helena on 14 April. Miguel Costa was the formal commander. Prestes was chief of staff and the column's most visible leader. The march had begun.",
-          'The column did not win at Ramada. It survived. In the history of the campaign, that is the difference that matters.',
+          'The column reached the Uruguay on 9 January. Almost two hundred men took a ferry into Argentina instead of crossing into Santa Catarina. The crossing began on 25 January with a boat that held three horses at a time, then a raft; the last men were across on 31 January (Blanc, p. 41). Prestes ordered the women to stay behind. His men ferried them across anyway.',
+          'Most of the horses were lost or left on the bank, and the column went on foot through the forests of Santa Catarina toward Paraná. It had not won anything. It had kept moving, and in the history of the campaign that is the difference that matters.',
         ],
+        image: { entryId: 'sao-luiz-1924', slot: 'route-map' },
       },
     ],
     briefing: {
@@ -80,29 +103,38 @@ export const CHAPTER_TEXT_EN: Readonly<Record<string, ChapterText>> = {
   },
   'a-divisao': {
     title: 'The Division',
-    place: 'Benjamin Constant, Porto Santa Helena, Porto Mendes to Puerto Adela',
+    place: 'Benjamin Constant, Foz do Iguaçu, Porto Santa Helena, Porto Mendes to Puerto Adela',
     perspective:
       'Miguel Costa, formal commander of the First Revolutionary Division, in western Paraná and at the Paraná crossing.',
     pages: [
       {
         heading: 'The Junction',
         paragraphs: [
-          'Western Paraná, April 1925. Two columns arrived from different defeats: the southern rebels who had broken the ring at Ramada, and the São Paulo remnants who had left the city and the Paraná front. They were not yet one army. They were two forces with two histories, two staffs and one government behind them. Prestes and Miguel Costa met at Benjamin Constant on 3 April; at Foz do Iguaçu they conferred with Isidoro, who kept the political headquarters.',
-          'Miguel Costa took formal command of the First Revolutionary Division. Prestes became chief of staff. The division had about fifteen hundred men, six hundred horses and mules, and three 75-mm guns. The numbers were not a victory; they were what remained. The junction was the moment the column stopped being a retreat and became a command.',
+          'Western Paraná, April 1925. Catanduvas, the last stronghold of the São Paulo rebels, had surrendered before dawn on 30 March. Miguel Costa\'s brigade, the last of them still fighting, began to withdraw west the next day. Prestes\'s men, out of the forests of Santa Catarina, reached the same road at Benjamin Constant.',
+          'There, on 3 April, Prestes and Miguel Costa met. They agreed not to go down to Foz do Iguaçu to surrender or emigrate, but to combine and cross the Paraná into Mato Grosso, and they sent their men toward Porto Santa Helena before they had asked anyone (Macaulay, p. 86).',
+        ],
+        image: { entryId: 'foz-do-iguacu', slot: 'group-photo' },
+        quote: {
+          text: 'The legendary Prestes Column appeared in the Alto Paraná. At the front marched the unmatched figure of the heroic Siqueira Campos…',
+          sourceKey: 'blanc-2024',
+          cite: 'The Prestes Column (Duke, 2024), p. 47',
+          attribution: 'Tabajara de Oliveira, memoir, on the arrival of the southern rebels',
+          originalLocale: 'en',
+          note: BLANC_EN,
+        },
+      },
+      {
+        heading: 'Foz do Iguaçu',
+        paragraphs: [
+          'Only then did they go to Foz do Iguaçu, where Isidoro kept his headquarters. On 12 April the marshal told his officers that nothing more could be done in the field and that exile was the only choice. Most of the São Paulo commanders agreed. Prestes and Miguel Costa did not, and Isidoro let the revolution go on without him, returning to Argentina as its nominal chief (Blanc, p. 47).',
+          'On 14 April 1925, at Porto Santa Helena, the First Revolutionary Division was formed: Miguel Costa in command, Prestes chief of staff, a São Paulo brigade of about seven hundred men and a Rio Grande brigade of about eight hundred.',
         ],
       },
       {
         heading: 'The Crossing',
         paragraphs: [
-          'The division crossed from Porto Mendes to Puerto Adela: the landing began on 27 April and the crossing was completed on 29 April. The river was the gate. The horses, the guns and the wounded had to go first; the rearguard had to hold the bank until the last unit was across. The government was coming. The crossing was not a parade; it was a race between the division and the border.',
-          'The two brigades crossed as one division. The Rio Grande men and the São Paulo men kept their own histories, but they shared the same command, the same river and the same march. The division was across. The cost would be counted later.',
-        ],
-      },
-      {
-        heading: 'The Command',
-        paragraphs: [
-          "Miguel Costa was the formal commander. Prestes was chief of staff and the division's most visible leader. The campaign must keep both facts: the column was not one man, and the command structure was part of the story. The division that crossed the Paraná was the column that would march north.",
-          'The junction did not end the retreat. It gave the retreat a command. The march continued.',
+          'The division crossed from Porto Mendes to Puerto Adela, on the Paraguayan bank: the landing began on 27 April and the crossing was complete on 29 April. Macaulay counts no more than fifteen hundred men, six hundred horses and mules and three 75 mm guns (pp. 88–89). The guns would be abandoned and hidden in Mato Grosso.',
+          'The two brigades crossed as one division. The Rio Grande men and the São Paulo men kept their own histories, but they shared a command, a river and a march. The column was not one man, and its command structure is part of the story: Miguel Costa signed the orders, and Prestes planned the march.',
         ],
       },
     ],
@@ -124,24 +156,31 @@ export const CHAPTER_TEXT_EN: Readonly<Record<string, ChapterText>> = {
       'Isidoro Dias Lopes at Foz do Iguaçu, directing the São Paulo front; in the field, a section under Estilac Leal at Catanduvas.',
     pages: [
       {
-        heading: 'The Front',
+        heading: 'Before the Division',
         paragraphs: [
-          'The city was lost. The São Paulo revolt had taken the streets in July 1924 and lost them by the end of the month. Isidoro Dias Lopes took the remnant toward the interior and the Paraná. The government followed with artillery.',
-          'The front was not a victory waiting to happen. It was a place to hold long enough to save the men who would become the column.',
+          'This chapter steps back. It covers July 1924 to March 1925, the months before the meeting of chapter 3, and the other half of the men who formed the division.',
+          'The São Paulo revolt had held the city for three weeks. At ten on the night of 27 July 1924 the first troop train left the Luz station; by dawn thirteen trains had carried away some three thousand men and fourteen field guns, while two guns left behind kept firing (Macaulay, pp. 16–17). The trains went west and then south, and the revolt dug in on the Paraná, between Guaíra, Foz do Iguaçu and Catanduvas.',
         ],
       },
       {
         heading: 'The Trenches',
         paragraphs: [
-          'The Paraná front was trenches in the forest and farmland, coffee rows and woods, a farmhouse and a road. Isidoro commanded from Foz; Estilac Leal’s brigade held Catanduvas. The government had the guns; the rebels had the ground and the habit of not being surrounded. The rearguard held the line while the wounded and the supplies moved back.',
-          'The line was traded for the road. The front fell, but the men got out.',
+          'The Paraná front was trenches in the forest and farmland, coffee rows and woods, a farmhouse and a road. Isidoro commanded from Foz; Estilac Leal\'s brigade held Catanduvas. At the end of February Isidoro wrote to Prestes that many of his soldiers, even some officers, were half-naked and barefoot, and that they must hold out at least another month (Blanc, p. 44). The government had the guns, and the Patriotic Battalions of volunteers dug in opposite.',
         ],
+        image: { entryId: 'army-patriotico', slot: 'hero-photo' },
+        quote: {
+          text: 'From this period forward, the rebels won very few battles.',
+          sourceKey: 'blanc-2024',
+          cite: 'The Prestes Column (Duke, 2024), p. 42',
+          attribution: 'Jacob Blanc, historian, on the Paraná front in early 1925',
+          originalLocale: 'en',
+        },
       },
       {
-        heading: 'The Withdrawal',
+        heading: 'The Fall',
         paragraphs: [
-          'The São Paulo remnant withdrew toward the Paraná. In April 1925 it would meet the southern column in western Paraná and become part of the First Revolutionary Division. The front is therefore a beginning seen from the losing side: the men who leave it are the men who will march with the column.',
-          'The front was lost. The column was not yet born.',
+          'On 26 March 1925 General Rondon began the attacks that encircled Catanduvas. By 29 March the stronghold was cut off: four thousand government soldiers and 105 mm howitzers against 407 rebels. Estilac Leal and two officers slipped through the lines that night; the rest surrendered before dawn on 30 March. The campaign cost the government 179 dead, 301 wounded and 60 missing, its heaviest losses of the revolution (Macaulay, p. 85).',
+          'The front was lost. The men who left it with Miguel Costa would meet Prestes four days later and become the São Paulo Brigade of the column.',
         ],
       },
     ],
@@ -159,28 +198,35 @@ export const CHAPTER_TEXT_EN: Readonly<Record<string, ChapterText>> = {
   'ponte-de-verdinho': {
     title: 'The Bridge',
     place: 'The Verdinho bridge, Mineiros, Goiás',
-    perspective:
-      'Luís Carlos Prestes, chief of staff, directing the rearguard at the Verdinho bridge.',
+    perspective: 'Luís Carlos Prestes, chief of staff, with the rearguard at the Verdinho bridge.',
     pages: [
       {
         heading: 'The Bridge',
         paragraphs: [
-          "The Verdinho was a road bridge over a shallow river, and for a few hours it was the most important piece of ground in the column's march. The wagons were still crossing. The government was on the road behind them. Prestes told the rearguard to hold the bridge until the column was through, then burn it and leave by the ford.",
-          'The bridge was not a position to keep. It was a position to give up at the right time. Hold too long and the rearguard would be trapped on the near bank; burn too early and the column would be cut.',
+          'On 10 June 1925, at Camapuã, the two brigades became four detachments under Cordeiro de Farias, João Alberto, Siqueira Campos and Djalma Dutra. Behind them came something new: Major Bertoldo Klinger\'s Mineiro militiamen, in trucks.',
+          'At four in the afternoon of 27 June, Klinger\'s touring car and five trucks came up the road to the Verdinho bridge outside Mineiros, Goiás. Prestes and his staff were there with the rearguard, Cordeiro\'s detachment. Klinger had not waited for the rest of his force; he attacked with what he had, fewer than a hundred men (Macaulay, p. 123).',
         ],
       },
       {
         heading: 'The Ford',
         paragraphs: [
-          'The river was shallow. The ford was the escape, but the bank was open and the government knew the bridge. The rearguard held the bridge while the wagons crossed, then set it alight and moved to the ford. The fire was the signal that the column was through and the bridge was no longer a way across.',
-          "The pursuers reached the burning bridge and began to cut a ford with the bridge's own timbers. The column had bought time, not safety. The rearguard waded the river under fire and kept moving north.",
+          'Prestes and Cordeiro saw how few they were, stopped the advance, pushed it back from the bridge and set the bridge on fire. It cost the rebels one dead and one wounded. In the night the rest of Klinger\'s trucks came up: a hundred and twenty riflemen and five machine-gun crews. Early on 28 June the rearguard waded the shallow river and withdrew east.',
+          'Klinger did not stop. His men dug cuts into both banks and laid a ford with timbers from the burned bridge. By nightfall five trucks were across; by seven the next morning thirteen vehicles were in Mineiros (Macaulay, pp. 123–124).',
         ],
+        quote: {
+          text: 'They seemed to be unfurled banners, swiftly conveying throughout those backlands the word of order, the presence of the law.',
+          sourceKey: 'macaulay-1974',
+          cite: 'The Prestes Column (1974), p. 124',
+          attribution: 'Major Bertoldo Klinger, on the dust of his trucks, 29 June 1925',
+          originalLocale: 'en',
+          note: MACAULAY_EN,
+        },
       },
       {
-        heading: 'The Pursuit',
+        heading: 'The Cost',
         paragraphs: [
-          'The bridge fell. The column was across. The pursuit was delayed, not stopped. The timbers that had held the bridge now helped the government across the river. The column counted the cost and continued.',
-          'Verdinho is a small action in a long march, and that is the point: the column survived by giving up ground at the right moment, not by holding it.',
+          'At noon on 29 June, some seventy kilometres east, Klinger overtook the new rearguard, Djalma Dutra\'s detachment. At four in the afternoon the fighting was close and confused. Aldo Manenti, an eighteen-year-old lieutenant, an Italian from São Paulo, climbed onto the cab of Klinger\'s lead truck, perhaps taking it for a rebel vehicle, and was killed at the wheel. Four other rebels died inside the loyalist line (p. 124).',
+          'That evening the column left the road for an ox-cart trail the trucks could not follow. The bridge had bought a night, not safety, and its own timbers had carried the pursuit across. Verdinho is a small action in a long march, and that is the point: the column survived by giving up ground at the right moment.',
         ],
       },
     ],
@@ -198,43 +244,52 @@ export const CHAPTER_TEXT_EN: Readonly<Record<string, ChapterText>> = {
   'serra-nova': {
     title: 'Serra Nova',
     place: 'Serra Nova and Taiobeiras, Minas Gerais',
-    perspective:
-      'Luís Carlos Prestes, chief of staff, screening the column through the Minas Gerais highlands.',
+    perspective: 'Luís Carlos Prestes, chief of staff, screening the column through the Minas Gerais highlands.',
     pages: [
       {
-        heading: "Porto Nacional",
+        heading: 'Porto Nacional',
         paragraphs: [
-          "October 1925. Six months after the Paraná and fifteen after São Paulo, the column reached Porto Nacional, on the Tocantins. The townspeople fled into the bush; the friars stayed. In the Dominican monastery the chiefs had time, for once, to put in writing what they were marching for. On 19 October Miguel Costa, Prestes and Juarez Távora signed a manifesto to the nation. It asked for liberty and the Constitution, and it did not yet speak of the land. Six months later the same men were in Minas, with the ring closing.",
+          'October 1925. Six months after the Paraná and fifteen after São Paulo, the column reached Porto Nacional, on the Tocantins, in what was then northern Goiás. The townspeople fled into the bush; the friars stayed. In the Dominican monastery the chiefs had time, for once, to put in writing what they were marching for. On 19 October Miguel Costa, Prestes and Juarez Távora signed a manifesto to the nation. It asked for liberty and the Constitution, and it did not yet speak of the land.',
         ],
         quote: {
-          text: "And the people may be sure that the revolutionary soldiers will not furl the flag of Liberty until this climate of despotism and intolerance changes, which in a delirium of oppression stifles the best hopes of the national conscience!",
-          sourceKey: "manifesto-1925",
-          cite: "Manifesto of Porto Nacional, 19 Oct. 1925 (Marxists Internet Archive)",
-          attribution: "Miguel Costa, Luís Carlos Prestes and Juarez Távora, Porto Nacional, 19 October 1925",
+          text: 'And the people may be sure that the revolutionary soldiers will not furl the flag of Liberty until this climate of despotism and intolerance changes, which in a delirium of oppression stifles the best hopes of the national conscience!',
+          sourceKey: 'manifesto-1925',
+          cite: 'Manifesto of Porto Nacional, 19 Oct. 1925 (Marxists Internet Archive)',
+          attribution: 'Miguel Costa, Luís Carlos Prestes and Juarez Távora, Porto Nacional, 19 October 1925',
           translated: true,
         },
       },
       {
         heading: 'The Rearguard',
         paragraphs: [
-          'April 1926. The column had come down from the Chapada Diamantina and into northern Minas Gerais. The men were tired in a way that sleep did not fix. The jagunços of Horácio de Matos and Abílio Wolney were on the rear, and the federal troops were trying to close the roads ahead.',
-          'On 22 April the rearguard was attacked at Serra Nova. The column did not stand and fight a pitched battle. It broke contact, turned, and made the pursuers look for it where it was not.',
+          'April 1926. The column had crossed the Northeast and come down from the Chapada Diamantina into northern Minas Gerais. The men were tired in a way that sleep did not fix. Behind them came the Patriotic Battalions of the sertão: bands of jagunços under their chiefs, paid, uniformed and armed by the government.',
+          'On 22 April, at Serra Nova, the jagunços of Horácio de Matos and Abílio Wolney fell on the rearguard (Macaulay, pp. 220–221). The column did not stand and fight a pitched battle. It broke contact, turned, and made the pursuers look for it where it was not.',
         ],
+        image: { entryId: 'batalhoes-patrioticos-bahia', slot: 'hero-photo' },
       },
       {
         heading: 'The Loop',
         paragraphs: [
-          'The escape was remembered as the “laço húngaro”: a series of circular movements that confused the pursuers and pulled the column out of the closing ring. The federal troops had ordered the civilians away from their homes; the column passed through a country emptied for the trap.',
-          'The column reached Taiobeiras on 26 April. It was still alive. That was the only fact that mattered.',
+          'The escape was remembered as the "laço húngaro": a series of circling marches that confused the pursuers and pulled the column out of the closing ring. Federal troops had ordered people out of their homes; the column passed through a country emptied for the trap, and reached Taiobeiras on 26 April.',
+          'Macaulay\'s map breaks the march at Serra Nova, a solid line behind and a dashed line ahead, but the break belongs to the map. What changed after Serra Nova was in the high command, where the talk turned to leaving Brazil.',
         ],
+        image: { entryId: 'serra-nova', slot: 'blanc-map' },
       },
       {
         heading: 'The Next March',
         paragraphs: [
-          'Serra Nova was not a victory. It was the moment the column chose to keep moving when the ring was almost closed. The decision to emigrate was already forming in the high command; the march north would become a march to the border.',
-          'The march was not a triumph. It was a decision repeated every day.',
-          "Thirty years later, Guimarães Rosa gave the march a line in a novel. His old jagunço remembers Prestes's soldiers passing through the Minas backlands, and a farmer, years on, splitting a tree and finding bullets in the wood. It is fiction, and it does not name this place. But the sertão kept the march the way the tree kept the lead.",
+          'Serra Nova was not a victory. It was the moment the column chose to keep moving when the ring was almost closed.',
+          'Thirty years later, Guimarães Rosa gave the march a line in a novel. His old jagunço remembers Prestes\'s soldiers passing through the Minas backlands. It is fiction, and it does not name this place. But the sertão kept the march the way the tree kept the lead.',
         ],
+        quote: {
+          text: "The rebels came through here afterwards, Prestes's soldiers, coming from Goiás; they claimed every saddle animal. […] Many years later a farmer goes to hew a tree trunk and finds bullets lodged in it.",
+          sourceKey: 'rosa-1956',
+          cite: 'Grande sertão: veredas, 36th ed. (Rio de Janeiro: Nova Fronteira, 1986), p. 82',
+          via: { sourceKey: 'mozzer-2009', cite: 'pp. 249–250' },
+          attribution: 'João Guimarães Rosa, Grande sertão: veredas (1956), Riobaldo speaking',
+          translated: true,
+          note: 'Our translation from the Portuguese.',
+        },
       },
     ],
     briefing: {
@@ -250,37 +305,50 @@ export const CHAPTER_TEXT_EN: Readonly<Record<string, ChapterText>> = {
   },
   pantanal: {
     title: 'The Pantanal',
-    place: 'The Pantanal; Bolivia and Paraguay',
+    place: 'The Pantanal of Mato Grosso; San Matías, Bolivia',
     perspective: 'Luís Carlos Prestes, chief of staff, leading the column through the Pantanal.',
     pages: [
       {
-        heading: 'The Marsh',
+        heading: 'The Road to the Border',
         paragraphs: [
-          'February 1927. The column entered the Pantanal. The water was everywhere; the ground was a suggestion. The men were exhausted, the animals were failing, and the border was the only objective left. There was no ground worth holding and no enemy worth a battle. The march itself was the enemy.',
+          'At the end of October 1926 the high command decided how the march would end. Djalma Dutra and Moreira Lima went south to find Isidoro. The column would wait on the Brazilian side until the end of January and, with no word from them, cross into Bolivia at the beginning of February (Macaulay, p. 232).',
+          'On 24 December, near Presidente Murtinho, about four hundred Mato Grosso militiamen, most of them green recruits, blocked the road. João Alberto and Ary Salgado Freire turned their flank and scattered them, at the cost of one man. It was the last loyalist force between the column and the border; the jagunços of Franklin de Albuquerque kept pressing on the rear (p. 233).',
         ],
       },
       {
-        heading: 'The Crossing',
+        heading: 'The Marsh',
         paragraphs: [
-          'The column moved through marsh, water and cattle trails. The wounded and the supply animals fell behind; the rearguard decided what to carry and what to leave. The government patrols were a threat, but the heat and the water were closer. The column kept moving because stopping was the end.',
+          'The column crossed the Paraguay near its headwaters and turned south. On 10 January 1927 it entered the Pantanal (Blanc, p. 127). First came dry forest, cut through by hand; then the floodplain. The men lost almost all their horses. They marched at times in water up to their chests, slept on anthills, the only dry ground, under clouds of mosquitoes, and ate hearts of palm when the cattle gave out (Macaulay, p. 234).',
         ],
+        quote: {
+          text: 'We no longer had a single dry piece of clothing. It was impossible! We dreamed of finding a bit of solid ground, where we could make a fire…',
+          sourceKey: 'blanc-2024',
+          cite: 'The Prestes Column (Duke, 2024), p. 127',
+          attribution: 'João Alberto Lins de Barros, memoir, on the Pantanal, January 1927',
+          originalLocale: 'en',
+          note: BLANC_EN,
+        },
       },
       {
         heading: 'The Border',
         paragraphs: [
-          'The main body reached the border and entered Bolivia; Siqueira’s group entered Paraguay. The march dissolved into exile. The men who had crossed the south, the Paraná and the interior were now exiles. The column was still together, but the march was over.',
+          'On 3 February 1927 the column crossed the unmarked frontier and camped north of San Matías. Ary Salgado Freire rode into the Bolivian town to arrange the surrender and found Moreira Lima there, back from Argentina. On 4 February 620 men handed over ninety Mausers, four machine guns, two automatic rifles and eight thousand cartridges (Macaulay, p. 234).',
+          'Siqueira Campos was not with them. He had lost touch with the column at the end of October, learned at a telegraph office in Goiás on 8 February that it was in Bolivia, and crossed into Paraguay with sixty-five men on 23 March. The march was over.',
         ],
+        quote: {
+          text: 'We were reduced to about six hundred bedraggled men, without shoes and half-naked. . . . The passage [in the Pantanal] was the most difficult of our whole campaign.',
+          sourceKey: 'blanc-2024',
+          cite: 'The Prestes Column (Duke, 2024), p. 127',
+          attribution: 'Italo Landucci, memoir (1947)',
+          originalLocale: 'en',
+          note: BLANC_EN,
+        },
       },
     ],
     briefing: {
       pitch:
-        'The Pantanal, February 1927. The column is exhausted; the border is ahead. Prestes tells the rearguard to keep the column together, bring the wounded and reach the border. There is no battle to win; the march is the objective.',
-      objectives: [
-        'Cross the marsh and the water.',
-        'Keep the column together.',
-        'Bring the wounded.',
-        'Reach the border.',
-      ],
+        'The Pantanal, January 1927. The column is exhausted; the border is ahead. Prestes tells the rearguard to keep the column together, bring the wounded and reach the border. There is no battle to win; the march is the objective.',
+      objectives: ['Cross the marsh and the water.', 'Keep the column together.', 'Bring the wounded.', 'Reach the border.'],
     },
   },
   'la-gaiba': {
@@ -291,37 +359,58 @@ export const CHAPTER_TEXT_EN: Readonly<Record<string, ChapterText>> = {
       {
         heading: 'The Exile',
         paragraphs: [
-          'La Gaiba, Bolivia, July 1927. The march was over. The column had crossed the Pantanal and entered exile; the men who had walked from the south were now scattered across a foreign border. There was no enemy left to fight and no ground left to hold. There was only the memory of the march.',
+          'After San Matías most of the officers went on to Argentina. Prestes stayed in Bolivia with a small group, Djalma Dutra and Moreira Lima among them. Ninety miles to the south, at La Gaiba, an English company, Bolivian Concessions Ltd., held rights to thirty million acres. Prestes, an engineer, negotiated a contract: for a small daily wage his men opened a road through the forest and built storehouses. The pay barely covered the medicine for malaria and dysentery, and Hermínia, the nurse who had marched since São Paulo, set up a hospital (Blanc, p. 132).',
         ],
+        image: { entryId: 'la-gaiba-1927', slot: 'workers' },
       },
       {
         heading: 'The Monument',
         paragraphs: [
-          'The exiles dedicated a monument. It was not a victory monument; it was a stone for the march, for the dead, for the towns and the rivers and the men who had not come. On the granite they cut: “Glory to the Bandeirantes of Freedom, 1924–1927.” The ceremony was small, and the words mattered because there was nothing else left to build.',
+          'On 5 July 1927, the fifth anniversary of Copacabana and the third of São Paulo, the exiles dedicated a monument to the column\'s dead. It was a block of granite, and on it they cut: "Glory to the Bandeirantes of Freedom, 1924–1927." Moreira Lima gave the speech; the Correio da Manhã printed it in Rio on 22 July (Blanc, p. 142).',
+        ],
+        image: { entryId: 'la-gaiba-1927', slot: 'monument' },
+        quote: {
+          text: 'Filled with emotion and pain, we inaugurate this mausoleum for the memory of the brave soldiers of the Prestes Column.',
+          sourceKey: 'blanc-2024',
+          cite: 'The Prestes Column (Duke, 2024), p. 142',
+          attribution: 'Lourenço Moreira Lima, La Gaiba, 5 July 1927 (Correio da Manhã, 22 July 1927, p. 5)',
+          originalLocale: 'en',
+          note: BLANC_EN,
+        },
+      },
+      {
+        heading: 'The Dead',
+        paragraphs: [
+          "Some of the column's dead lay at La Gaiba, men who had walked from the Missões to a foreign forest. Moreira Lima, the column's secretary, who had counted every league of the march, said farewell to them.",
         ],
         quote: {
-          text: "Soldiers of Liberty! Sleep in peace in the foreign land that took you in so nobly, for your names and your deeds will live for ever in the generous heart of Brazil.",
-          sourceKey: "lima-1931",
-          cite: "Marchas e combates, 3rd ed. (1979), p. 523, via Mozzer 2009, p. 257",
-          attribution: "Lourenço Moreira Lima, La Gaiba, Bolivia, 1927",
+          text: 'Soldiers of Liberty! Sleep in peace in the foreign land that took you in so nobly, for your names and your deeds will live for ever in the generous heart of Brazil.',
+          sourceKey: 'lima-1931',
+          cite: 'Marchas e combates, 3rd ed. (1979), p. 523, via Mozzer 2009, p. 257',
+          attribution: 'Lourenço Moreira Lima, La Gaiba, Bolivia, 1927',
           translated: true,
         },
       },
       {
         heading: 'The Memory',
         paragraphs: [
-          'The campaign ends here. The column is memory. The record must say what the march cost and what it was: a political march that survived the government and did not become a victory. The monument can hold only so much. The rest is the record.',
+          'The same day, in Brazil, the newspaper Vanguarda called Prestes the Knight of Hope, a name Isidoro had given him. The press that had called the rebels bandits now raised money for them. The collective "bandeirantes" were buried abroad; one man\'s legend rose at home, and with it the image of a savage interior waiting for a hero.',
+          'The campaign ends here. The record must say what the march cost and what it was: twenty-five thousand kilometres in twenty-five months, a political march that outlasted the government and did not become a victory.',
         ],
+        image: { entryId: 'exile-1927', slot: 'caricature' },
+        quote: {
+          text: 'In 1927 Brazil wanted heroes but not a revolution.',
+          sourceKey: 'macaulay-1974',
+          cite: 'The Prestes Column (1974), p. 234',
+          attribution: 'Neill Macaulay, historian',
+          originalLocale: 'en',
+        },
       },
     ],
     briefing: {
       pitch:
         'La Gaiba, July 1927. The march is over. The exiles are here to dedicate a monument. Prestes tells them what the column was and what it was not.',
-      objectives: [
-        'Reach La Gaiba.',
-        'Dedicate the monument.',
-        'Choose what the column leaves behind.',
-      ],
+      objectives: ['Reach La Gaiba.', 'Dedicate the monument.', 'Choose what the column leaves behind.'],
     },
   },
 };

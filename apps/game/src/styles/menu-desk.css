@@ -713,6 +713,44 @@
   margin-left: 4px;
 }
 
+/* complete-books-and-bibliography: the cite and the translation note under a quotation. */
+.desk-quote-cite,
+.desk-quote-attribution .desk-quote-note {
+  display: block;
+  margin-left: 0;
+  font-size: 12px;
+}
+
+/* A plate inside a chapter's text (D4): never split, about ninety words of room. */
+.desk-plate-inline {
+  margin: 6px auto 10px;
+  max-width: 78%;
+}
+
+.desk-plate-inline .desk-plate-image {
+  max-height: 200px;
+  object-fit: contain;
+}
+
+.desk-plate-inline .desk-plate-credit {
+  margin-top: 4px;
+  font-size: 12px;
+  text-align: center;
+}
+
+/* A bibliography row (D5): hanging indent, short form first. */
+.desk-bib {
+  margin: 0 0 6px;
+  padding-left: 16px;
+  text-indent: -16px;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.desk-bib-short {
+  font-weight: 700;
+}
+
 .desk-related {
   margin: 6px 0 0;
   color: var(--book-ink-soft);

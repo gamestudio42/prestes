@@ -27,12 +27,15 @@ describe('source resolution', () => {
     for (const key of SOURCE_KEYS) {
       const entry = SOURCE_RIGHTS[key];
       expect(entry, key).toBeDefined();
-      expect(['public-domain', 'free-licence', 'copyrighted', 'unknown'], key).toContain(entry.rights);
+      expect(['public-domain', 'free-licence', 'citation', 'copyrighted', 'unknown'], key).toContain(entry.rights);
       if (entry.rights === 'free-licence') expect(entry.licence, key).toBeTruthy();
     }
     expect(isQuotable('manifesto-1925')).toBe(true);
     expect(isQuotable('lima-1931')).toBe(true);
-    expect(isQuotable('rosa-1956')).toBe(false);
+    // complete-books-and-bibliography D2: Rosa is quotable only under the right of quotation.
+    expect(SOURCE_RIGHTS['rosa-1956'].rights).toBe('citation');
+    expect(isQuotable('rosa-1956')).toBe(true);
+    expect(isQuotable('helio-1922')).toBe(false);
     expect(SOURCE_RIGHTS['superoitocine-2012'].consulted).toBe('not-consulted');
   });
 

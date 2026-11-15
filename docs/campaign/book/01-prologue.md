@@ -14,83 +14,113 @@ sourceRefs:
 
 > **Label:** dramatized. The 1922 rising, the fort, the beach sortie and
 > Prestes's typhoid are historical; the prose, the four groups and the beach
-> sequence are a dramatization. The “18” is the legend: the fort held 29,
-> 28 marched out, and 16 reached the government line. **Tone reference:** Jorge
-> Amado, _O Cavaleiro da Esperança_. No text is reproduced; the prose is
-> original.
+> sequence are a dramatization. The “18” is the legend: the fort held 29, 28
+> marched out, and 16 reached the government line. **Tone reference:** Jorge
+> Amado, _O Cavaleiro da Esperança_. The prose is original; each page quotation
+> is attributed with its edition and page, shown under the page in the English
+> and Portuguese text below (complete-books-and-bibliography).
 
 ## English
 
 ### The Absent One
 
 On the night of 4 July 1922, Luís Carlos Prestes tried to dress for the rising
-and collapsed. Typhoid kept him in his mother's house while the conspiracy
-moved without him. He was a young engineering officer, not yet the name the
-column would carry; he was not at the Forte de Copacabana, and he was not on the
-beach. The revolt that entered the legend as the 18 do Forte happened without
-the man who would become the column's most visible leader. The fever was an
-accident of history. The absence became part of the story. The prologue is
+and collapsed. He had caught typhoid on 13 June, and it kept him in his mother's
+house while the conspiracy moved without him. He was a young engineering
+officer, second in command of the First Engineer Company at Deodoro, not yet the
+name the column would carry. He was not at the Forte de Copacabana, and he was
+not on the beach.
+
+The plan had the cadets march from Realengo while Marshal Hermes da Fonseca took
+command at Vila Militar. The cadets marched and were fired on; the garrisons did
+not rise. By the morning of 6 July only the fort was left. The prologue is
 Siqueira Campos's. The column will be Prestes's.
 
 ### The Eighteen
 
-At the fort, the legend gives Siqueira Campos eighteen men and a decision. The
-record gives twenty-nine in the fort after the commander was taken prisoner, and
-twenty-eight marching out on the afternoon of 6 July. The rising had failed
-elsewhere; the government was closing in; surrender would end it without a
-story. In the legend he divides the men into four groups — five, five, four,
-four — and takes them out through the gate and onto the beach. The sea was on
-one side, the government on the other, and the sand offered nothing. They fought from the gate up the Avenida Atlântica, from the avenue works to the last stretch of sand before Rua Barroso, and the line grew shorter with every position. The four groups were not a victory waiting
-to happen. They were a delay, measured in minutes and in blood. The legend says
-the eighteen died there. The record says Siqueira Campos and two others survived,
-and seven rebels died. Both are part of the story.
+The legend gives Siqueira Campos eighteen men and a decision. The record gives
+twenty-nine in the fort after its commander was taken prisoner, and twenty-eight
+marching out on the afternoon of 6 July. Four slipped away on the avenue.
+Sixteen met the government line: eleven held the sidewalk and four took cover in
+the pipes of the avenue works.
+
+They fought from the gate up the Avenida Atlântica, past the fishermen's boats
+and the works, to the last stretch of sand before Rua Barroso, and the line grew
+shorter with every position. Seven rebels were killed or died of their wounds;
+the government counted thirty-five killed or wounded. Siqueira Campos, one other
+officer and one soldier survived (Macaulay, pp. 26–29). The legend says the
+eighteen died there. Both belong to the story.
+
+_Plate: `revolt-1922/press` (see the compendium entry's caption and credit)._
 
 ### The Record
 
-The beach did not end the rising; it gave the rising a myth. The 18 do Forte
-became a name for a generation that would try again in São Paulo, in Rio Grande
-do Sul and in the column. Siqueira Campos carried the beach with him. Prestes
-carried the fever, the maps and the name that the column would make. The column
-does not begin here. It begins in the south, years later, with the men who would
-march out of the encirclement and keep going. But the beach is where the legend
-learns to die, and where the campaign learns what a certain defeat costs.
+The beach did not end the rising; it gave it a date and a myth. The 18 do Forte
+became a name for a generation that would try again in São Paulo on 5 July 1924,
+in Rio Grande do Sul that October, and in the column. Siqueira Campos carried
+the beach with him. Prestes carried the fever, the maps and the name the column
+would make.
+
+The column does not begin here. It begins in the south, two years later, with
+men who would march out of an encirclement and keep going. But the beach is
+where the legend learned to die, and where the campaign learns what a certain
+defeat costs.
+
+> The abortive revolt etched July 5 as the origin date of tenentismo, setting into motion further events on the horizon.
+>
+> — Jacob Blanc, historian
+>
+> `blanc-2024`, The Prestes Column (Duke, 2024), p. 31
 
 ## Português (BR)
 
 ### O Ausente
 
 Na noite de 4 de julho de 1922, Luís Carlos Prestes tentou se vestir para o
-levante e desabou. O tifo o manteve na casa da mãe enquanto a conspiração seguia
-sem ele. Era um jovem oficial engenheiro, ainda não o nome que a coluna
-carregaria; não estava no Forte de Copacabana, e não estava na praia. A revolta
-que entrou na lenda como os 18 do Forte aconteceu sem o homem que se tornaria o
-líder mais visível da coluna. A febre foi um acidente da história. A ausência
-virou parte da história. O prólogo é de Siqueira Campos. A coluna será de
-Prestes.
+levante e desabou. Tinha pegado tifo em 13 de junho, e a doença o prendeu na
+casa da mãe enquanto a conspiração seguia sem ele. Era um jovem oficial de
+engenharia, subcomandante da 1ª Companhia de Engenharia, em Deodoro, ainda não o
+nome que a coluna carregaria. Não estava no Forte de Copacabana, e não estava na
+praia.
+
+O plano era que os cadetes marchassem do Realengo enquanto o marechal Hermes da
+Fonseca assumia o comando na Vila Militar. Os cadetes marcharam e foram
+recebidos a tiros; os quartéis não se levantaram. Na manhã de 6 de julho só
+restava o forte. O prólogo é de Siqueira Campos. A coluna será de Prestes.
 
 ### Os Dezoito
 
-No forte, a lenda dá a Siqueira Campos dezoito homens e uma decisão. O registro
-dá vinte e nove no forte depois que o comandante foi preso, e vinte e oito
-saindo na tarde de 6 de julho. O levante fracassara em outros pontos; o governo
-fechava o cerco; a rendição acabaria com tudo sem deixar história. Na lenda, ele
-divide os homens em quatro grupos — cinco, cinco, quatro, quatro — e os leva pelo
-portão até a praia. O mar ficava de um lado, o governo do outro, e a areia não
-oferecia nada. Lutaram do portão pela Avenida Atlântica, das obras da avenida ao último trecho de areia diante da Rua Barroso, e a linha encurtava a cada posição. Os quatro grupos não eram uma vitória
-à espera de acontecer. Eram uma demora, medida em minutos e em sangue. A lenda
-diz que os dezoito morreram ali. O registro diz que Siqueira Campos e outros dois
-sobreviveram, e que sete rebeldes morreram. As duas coisas fazem parte da
-história.
+A lenda dá a Siqueira Campos dezoito homens e uma decisão. O registro dá vinte e
+nove no forte depois que o comandante foi preso, e vinte e oito saindo em marcha
+na tarde de 6 de julho. Quatro se afastaram na avenida. Dezesseis chegaram à
+linha do governo: onze seguraram a calçada e quatro se abrigaram nos canos das
+obras da avenida.
+
+Lutaram do portão pela Avenida Atlântica, passando pelos barcos dos pescadores e
+pelas obras, até o último trecho de areia antes da Rua Barroso, e a linha
+encurtava a cada posição. Sete rebeldes morreram em combate ou dos ferimentos; o
+governo contou trinta e cinco mortos ou feridos. Siqueira Campos, outro oficial
+e um soldado sobreviveram (Macaulay, pp. 26–29). A lenda diz que os dezoito
+morreram ali. As duas coisas pertencem à história.
+
+_Plate: `revolt-1922/press` (see the compendium entry's caption and credit)._
 
 ### O Registro
 
-A praia não acabou com o levante; deu ao levante um mito. Os 18 do Forte viraram
-o nome de uma geração que tentaria de novo em São Paulo, no Rio Grande do Sul e
-na coluna. Siqueira Campos levou a praia consigo. Prestes levou a febre, os
-mapas e o nome que a coluna faria. A coluna não começa aqui. Começa no sul, anos
-depois, com os homens que sairiam do cerco e seguiriam em frente. Mas é na praia
-que a lenda aprende a morrer, e é ali que a campanha aprende quanto custa uma
-derrota certa.
+A praia não encerrou o levante; deu-lhe uma data e um mito. Os 18 do Forte
+viraram o nome de uma geração que tentaria de novo em São Paulo em 5 de julho de
+1924, no Rio Grande do Sul em outubro, e na coluna. Siqueira Campos levou a
+praia consigo. Prestes levou a febre, os mapas e o nome que a coluna faria.
+
+A coluna não começa aqui. Começa no sul, dois anos depois, com homens que
+sairiam marchando de um cerco e continuariam andando. Mas a praia é onde a lenda
+aprendeu a morrer, e onde a campanha aprende quanto custa uma derrota certa.
+
+> A revolta fracassada gravou o 5 de julho como a data de origem do tenentismo, pondo em marcha os acontecimentos que viriam.
+>
+> — Jacob Blanc, historiador
+>
+> `blanc-2024`, The Prestes Column (Duke, 2024), p. 31. Tradução nossa do inglês.
 
 ## Sources and labels
 

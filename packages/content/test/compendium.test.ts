@@ -73,7 +73,8 @@ describe('compendium', () => {
     const paths = new Set(
       COMPENDIUM.flatMap((entry) => entry.images ?? []).map((image) => image.path),
     );
-    expect(paths.size).toBe(14);
+    // 35 free images in the public folder and 8 awaiting permission (D3a).
+    expect(paths.size).toBe(43);
   });
 
   it('fails on an unregistered image and on a note missing in one language', () => {

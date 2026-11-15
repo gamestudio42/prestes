@@ -16,90 +16,113 @@ sourceRefs:
 > **Label:** dramatized. The October 1924 rising, the convergence on São Luiz
 > Gonzaga, Ramada and the Uruguay crossing are historical; the prose, the
 > rearguard and the crossing sequence are a dramatization. **Tone reference:**
-> Jorge Amado, _O Cavaleiro da Esperança_. No text is reproduced; the prose is
-> original.
+> Jorge Amado, _O Cavaleiro da Esperança_. The prose is original; each page
+> quotation is attributed with its edition and page, shown under the page in the
+> English and Portuguese text below (complete-books-and-bibliography).
 
 ## English
 
 ### The Ring
 
-The government called it a ring. On the map it looked like one: columns coming
-from the south and the east, the river behind, the towns already taken. Prestes
-looked at the same map and saw a line. A ring is only a line until it closes.
+On 28 and 29 October 1924 the south rose. Prestes, a captain with the 1st
+Railway Battalion at Santo Ângelo, took his men out; São Borja and Uruguaiana
+rose with them. By November his battalion held São Luiz Gonzaga, and the rebels'
+newspaper, O Libertador, was being printed there.
 
-The rising had taken Santo Ângelo, São Borja and Uruguaiana. It had not taken
-the roads. In December the government converged on São Luiz Gonzaga, certain
-that the rebels would wait to be surrounded. Prestes did not wait. The column
-would march north, at night, with the wagons, the horses and the wounded. The
-rearguard would hold Ramada long enough for the rest to get through.
+The government called what came next a ring. In December seven loyalist
+detachments converged on the town. Prestes left one detachment in contact to
+make the enemy believe the whole force was retreating, and gathered the rest at
+São Miguel das Missões. In the night the loyalists closed on an empty position
+while the rebels marched north-east toward the Ijuí (Blanc, p. 37). A ring is
+only a line until it closes.
 
-It was not a victory. It was a decision to keep moving.
+_Plate: `sao-luiz-1924/blanc-map` (see the compendium entry's caption and credit)._
+
+> …one of the most brilliant operations of this campaign and it is even on par with any of the most celebrated acts of military genius carried out at any other time in history.
+>
+> — General João Francisco, letter to Prestes, December 1924
+>
+> `blanc-2024`, The Prestes Column (Duke, 2024), p. 37. Blanc's translation from the Portuguese.
 
 ### Ramada
 
-Ramada was a place to make the government pay for every hour. The rearguard
-held the line while the wagons creaked north. The horses were the first cost.
-They drank, they stumbled, they slowed the column; the government had more of
-them. By the time the column reached the Uruguay, most of the horses were gone
-or had to be left behind.
+The praise was hyperbole, and Blanc notes that such praise helped make the
+legend. The march north was harder. On 3 January 1925, near Palmeiras, at the
+place local memory calls Ramada, the rearguard fought one of the bloodiest
+actions of the whole rebellion. Macaulay counts about forty rebels lost (p. 61);
+the monument there today stands for nearly a hundred loyalist dead (Blanc, p.
+237).
 
-The river was the gate. The ford was narrow, and the government knew it. The
-rearguard held the bank while the column crossed. The men counted what they
-could carry and what they had to abandon. The column crossed the Uruguay and
-continued on foot through Santa Catarina.
+The horses were the next cost. They had carried the column and pulled the
+wagons, and the government had more of them. Men deserted, too: of more than
+three thousand in November, a little over a thousand were left at the river
+(Blanc, p. 41).
 
-### The Column
+### The River
 
-The ring was behind them. The column was not. It had a name now, or the
-beginning of one: the column that would not be surrounded. In April it met the
-São Paulo rebels in western Paraná; Prestes and Miguel Costa met at Benjamin
-Constant on 3 April, and the First Revolutionary Division was formally organized
-at Porto Santa Helena on 14 April. Miguel Costa was the formal commander. Prestes
-was chief of staff and the column's most visible leader. The march had begun.
+The column reached the Uruguay on 9 January. Almost two hundred men took a ferry
+into Argentina instead of crossing into Santa Catarina. The crossing began on 25
+January with a boat that held three horses at a time, then a raft; the last men
+were across on 31 January (Blanc, p. 41). Prestes ordered the women to stay
+behind. His men ferried them across anyway.
 
-The column did not win at Ramada. It survived. In the history of the campaign,
-that is the difference that matters.
+Most of the horses were lost or left on the bank, and the column went on foot
+through the forests of Santa Catarina toward Paraná. It had not won anything. It
+had kept moving, and in the history of the campaign that is the difference that
+matters.
+
+_Plate: `sao-luiz-1924/route-map` (see the compendium entry's caption and credit)._
 
 ## Português (BR)
 
 ### O Cerco
 
-O governo chamava aquilo de cerco. No mapa parecia um: colunas vindas do sul e
-do leste, o rio atrás, as cidades já tomadas. Prestes olhou o mesmo mapa e viu
-uma linha. Um cerco é só uma linha até se fechar.
+Em 28 e 29 de outubro de 1924 o sul se levantou. Prestes, capitão do 1º Batalhão
+Ferroviário em Santo Ângelo, saiu com seus homens; São Borja e Uruguaiana se
+levantaram junto. Em novembro seu batalhão ocupava São Luiz Gonzaga, e o jornal
+dos rebeldes, O Libertador, era impresso ali.
 
-O levante tinha tomado Santo Ângelo, São Borja e Uruguaiana. Não tinha tomado as
-estradas. Em dezembro, o governo convergiu sobre São Luiz Gonzaga, certo de que
-os rebeldes esperariam para serem cercados. Prestes não esperou. A coluna
-marcharia para o norte, à noite, com as carroças, os cavalos e os feridos. A
-retaguarda seguraria Ramada o tempo necessário para o resto passar.
+O governo chamou o que veio depois de anel. Em dezembro, sete destacamentos
+legalistas convergiram sobre a cidade. Prestes deixou um destacamento em
+contato, para o inimigo crer que toda a força recuava, e reuniu os demais em São
+Miguel das Missões. À noite os legalistas fecharam o cerco sobre uma posição
+vazia, enquanto os rebeldes marchavam para nordeste, rumo ao Ijuí (Blanc, p.
+37). Um cerco é só uma linha até se fechar.
 
-Não era uma vitória. Era a decisão de continuar andando.
+_Plate: `sao-luiz-1924/blanc-map` (see the compendium entry's caption and credit)._
+
+> …uma das operações mais brilhantes desta campanha, à altura de qualquer dos mais célebres atos de gênio militar já realizados em qualquer época da história.
+>
+> — General João Francisco, carta a Prestes, dezembro de 1924
+>
+> `blanc-2024`, The Prestes Column (Duke, 2024), p. 37. Tradução nossa da versão inglesa de Blanc; o original em português não foi consultado.
 
 ### Ramada
 
-Ramada era um lugar para fazer o governo pagar por cada hora. A retaguarda
-segurou a linha enquanto as carroças rangiam para o norte. Os cavalos foram o
-primeiro custo. Bebiam, tropeçavam, atrasavam a coluna; o governo tinha mais. Quando
-a coluna chegou ao Uruguai, a maior parte dos cavalos tinha se perdido ou
-precisou ser deixada para trás.
+O elogio era hipérbole, e Blanc nota que elogios assim ajudaram a fazer a lenda.
+A marcha para o norte foi mais dura. Em 3 de janeiro de 1925, perto de
+Palmeiras, no lugar que a memória local chama de Ramada, a retaguarda travou um
+dos combates mais sangrentos de toda a rebelião. Macaulay conta cerca de
+quarenta rebeldes perdidos (p. 61); o monumento que está lá hoje é dos quase cem
+mortos legalistas (Blanc, p. 237).
 
-O rio era o portão. O vau era estreito, e o governo sabia. A retaguarda segurou
-a margem enquanto a coluna atravessava. Os homens contaram o que podiam levar e o
-que tinham de abandonar. A coluna cruzou o Uruguai e seguiu a pé por Santa
-Catarina.
+Os cavalos foram o custo seguinte. Tinham carregado a coluna e puxado as
+carroças, e o governo tinha mais deles. Homens desertaram também: dos mais de
+três mil de novembro, restava pouco mais de mil na beira do rio (Blanc, p. 41).
 
-### A Coluna
+### O Rio
 
-O cerco ficou para trás. A coluna não. Ela já tinha um nome, ou o começo de um:
-a coluna que não se deixaria cercar. Em abril, encontrou os rebeldes paulistas no
-oeste do Paraná; Prestes e Miguel Costa se encontraram em Benjamin Constant em 3
-de abril, e a Primeira Divisão Revolucionária foi formalmente organizada em Porto
-Santa Helena em 14 de abril. Miguel Costa era o comandante formal. Prestes era
-chefe do estado-maior e o líder mais visível da coluna. A marcha tinha começado.
+A coluna chegou ao Uruguai em 9 de janeiro. Quase duzentos homens tomaram uma
+balsa para a Argentina em vez de atravessar para Santa Catarina. A travessia
+começou em 25 de janeiro com um barco que levava três cavalos por vez, depois
+uma jangada; os últimos passaram em 31 de janeiro (Blanc, p. 41). Prestes mandou
+que as mulheres ficassem. Seus homens as levaram para o outro lado assim mesmo.
 
-A coluna não venceu em Ramada. Sobreviveu. Na história da campanha, essa é a
-diferença que importa.
+A maioria dos cavalos se perdeu ou ficou na margem, e a coluna seguiu a pé pelas
+matas de Santa Catarina rumo ao Paraná. Não tinha vencido nada. Tinha continuado
+andando, e na história da campanha essa é a diferença que importa.
+
+_Plate: `sao-luiz-1924/route-map` (see the compendium entry's caption and credit)._
 
 ## Sources and labels
 

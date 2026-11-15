@@ -1,4 +1,4 @@
-import { useMemo, type ReactNode } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import {
   CAMPAIGN_CHAPTERS,
   COMPENDIUM,
@@ -6,14 +6,15 @@ import {
   chapterText,
   compendiumText,
   compendiumTitleKey,
+  sourceShort,
   translate,
   type CampaignChapter,
   type Locale,
   type MessageKey,
 } from '@prestes/content';
 import { DESK_ART, deskArtData, deskArtStyle } from './deskArt';
-import { BookEndOrnament, BookFrame, publicImage, useBookPosition } from './BookFrame';
-import { campaignBook, folio, type BookPage, type TextItem } from './bookPages';
+import { BookEndOrnament, BookFrame, creditLine, InlinePlate, PlateImage, QuoteFooter, useBookPosition } from './BookFrame';
+import { campaignBook, folio, sourceAnchor, type BookPage, type TextItem } from './bookPages';
 import { PixelPhoto } from '../PixelPhoto';
 import { authoredMapIndex } from '@prestes/shared';
 import coverImage from '../../assets/menu/coluna-prestes.webp';
@@ -43,6 +44,8 @@ export function CampaignBook({ locale, open, onStartSkirmish, onOpenEntry, onPla
   const missionMap = new Map(authoredMapIndex().filter((entry) => entry.use === 'campaign' && entry.mission).map((entry) => [entry.mission!, entry.id]));
   const t = (key: MessageKey, values?: Readonly<Record<string, string | number>>) =>
     translate(locale, key, values);
+  // Images whose file is absent (awaiting permission, D3a).
+  const [pending, setPending] = useState<ReadonlySet<string>>(() => new Set());
   const book = useMemo(() => campaignBook(locale), [locale]);
   const { spread, turn, goTo, jump } = useBookPosition(book);
 
@@ -102,12 +105,18 @@ export function CampaignBook({ locale, open, onStartSkirmish, onOpenEntry, onPla
       return (
         <blockquote key={key} className="desk-quote" data-testid="book-quote">
           <p className="desk-quote-text">{item.text}</p>
-          <footer className="desk-quote-attribution">
-            {item.attribution}
-            {item.translated && <span className="desk-quote-note">{t('book.quoteTranslated')}</span>}
-          </footer>
+          <QuoteFooter
+            attribution={item.attribution}
+            cite={item.cite}
+            note={item.note}
+            translated={item.translated}
+            translatedLabel={t('book.quoteTranslated')}
+          />
         </blockquote>
       );
+    }
+    if (item.kind === 'plate') {
+      return <InlinePlate key={key} entryId={item.entryId} slot={item.slot} locale={locale} />;
     }
     if (item.kind === 'para') {
       return (
@@ -192,15 +201,15 @@ export function CampaignBook({ locale, open, onStartSkirmish, onOpenEntry, onPla
             <h2 className="desk-chapter-title">{text?.title}</h2>
             {ref ? (
               <figure className="desk-plate desk-plate-small">
-                <img
-                  className="desk-plate-image"
-                  src={publicImage(ref.path)}
+                <PlateImage
+                  path={ref.path}
                   alt={caption?.caption ?? ''}
-                  draggable={false}
-                  data-testid="book-plate-image"
+                  emblemClass="desk-emblem desk-emblem-small"
+                  onMissing={() => setPending((set) => new Set(set).add(ref.path))}
                 />
                 <figcaption className="desk-plate-credit">
-                  {caption?.caption} {caption?.credit} · {t('book.licence.public-domain')}
+                  {caption?.caption}{' '}
+                  {pending.has(ref.path) ? t('book.imagePending') : creditLine(caption?.credit, ref.path, t)}
                 </figcaption>
               </figure>
             ) : (
@@ -276,7 +285,20 @@ export function CampaignBook({ locale, open, onStartSkirmish, onOpenEntry, onPla
             </div>
             <p className="desk-sources">
               <span className="desk-chip">{t(`book.label.${chapter.label}` as MessageKey)}</span>{' '}
-              {t('codex.sources')}: {chapter.sourceRefs.join(', ')}
+              {t('codex.sources')}:{' '}
+              {chapter.sourceRefs.map((key, index) => (
+                <span key={key}>
+                  {index > 0 && ', '}
+                  <button
+                    type="button"
+                    className="desk-link"
+                    data-testid={`chapter-source-${key}`}
+                    onClick={() => onOpenEntry(sourceAnchor(key))}
+                  >
+                    {sourceShort(key)}
+                  </button>
+                </span>
+              ))}
             </p>
           </div>
         );

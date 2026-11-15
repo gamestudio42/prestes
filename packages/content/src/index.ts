@@ -55,6 +55,9 @@ export {
   validateCompendiumMedia,
   type CompendiumEntry,
   type CompendiumText,
+  IMAGE_LICENCES,
+  PENDING_IMAGE_DIR,
+  type ImageLicence,
   type ImageRef,
   type NoteSection,
   type RegisteredImage,
@@ -74,4 +77,22 @@ export {
   type ChapterText,
 } from './campaign/chapters';
 
-export { QUOTE_WORD_LIMIT, quoteWords, validateQuotes, type Quote } from './quotes';
+export {
+  CITATION_PER_SOURCE,
+  CITATION_WORD_LIMIT,
+  QUOTE_WORD_LIMIT,
+  quoteWords,
+  validateQuotes,
+  type Quote,
+} from './quotes';
+
+export {
+  BIBLIOGRAPHY,
+  sourceShort,
+  validateBibliography,
+  type BibliographyRow,
+  type SourceTier,
+} from './bibliography';
+
+// complete-books-and-bibliography D7: no provisional text in the books.
+export { PROVISIONAL_PHRASES, provisionalPhrase, validateProvisionalText } from './provisional';

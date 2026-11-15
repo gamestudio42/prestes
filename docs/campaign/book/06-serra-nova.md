@@ -18,95 +18,133 @@ sourceRefs:
 > **Label:** dramatized. The rearguard attack at Serra Nova on 22 April 1926 and
 > the column’s escape from the encirclement are historical; the prose, the
 > section and the exact maneuvers are a dramatization. **Tone reference:** Jorge
-> Amado, _O Cavaleiro da Esperança_. The prose is original apart from one attributed
-> quotation of the Manifesto of Porto Nacional (GNU FDL). The bullets in the tree
-> paraphrase Guimarães Rosa through Mozzer 2009.
+> Amado, _O Cavaleiro da Esperança_. The prose is original; each page quotation
+> is attributed with its edition and page, shown under the page in the English
+> and Portuguese text below (complete-books-and-bibliography). Guimarães Rosa is
+> quoted once, briefly, under the right of quotation (Lei 9.610, art. 46, III),
+> through Mozzer 2009.
 
 ## English
 
 ### Porto Nacional
 
-October 1925. Six months after the Paraná and fifteen after São Paulo, the column reached Porto Nacional, on the Tocantins. The townspeople fled into the bush; the friars stayed. In the Dominican monastery the chiefs had time, for once, to put in writing what they were marching for. On 19 October Miguel Costa, Prestes and Juarez Távora signed a manifesto to the nation. It asked for liberty and the Constitution, and it did not yet speak of the land. Six months later the same men were in Minas, with the ring closing.
+October 1925. Six months after the Paraná and fifteen after São Paulo, the
+column reached Porto Nacional, on the Tocantins, in what was then northern
+Goiás. The townspeople fled into the bush; the friars stayed. In the Dominican
+monastery the chiefs had time, for once, to put in writing what they were
+marching for. On 19 October Miguel Costa, Prestes and Juarez Távora signed a
+manifesto to the nation. It asked for liberty and the Constitution, and it did
+not yet speak of the land.
 
 > And the people may be sure that the revolutionary soldiers will not furl the flag of Liberty until this climate of despotism and intolerance changes, which in a delirium of oppression stifles the best hopes of the national conscience!
 >
 > — Miguel Costa, Luís Carlos Prestes and Juarez Távora, Porto Nacional, 19 October 1925
-
-(Translated from the Portuguese. Cite: Manifesto of Porto Nacional, 19 Oct. 1925 (Marxists Internet Archive).)
+>
+> `manifesto-1925`, Manifesto of Porto Nacional, 19 Oct. 1925 (Marxists Internet Archive)
 
 ### The Rearguard
 
-April 1926. The column had come down from the Chapada Diamantina and into
-northern Minas Gerais. The men were tired in a way that sleep did not fix. The
-jagunços of Horácio de Matos and Abílio Wolney were on the rear, and the federal
-troops were trying to close the roads ahead.
+April 1926. The column had crossed the Northeast and come down from the Chapada
+Diamantina into northern Minas Gerais. The men were tired in a way that sleep
+did not fix. Behind them came the Patriotic Battalions of the sertão: bands of
+jagunços under their chiefs, paid, uniformed and armed by the government.
 
-On 22 April the rearguard was attacked at Serra Nova. The column did not stand
-and fight a pitched battle. It broke contact, turned, and made the pursuers look
-for it where it was not.
+On 22 April, at Serra Nova, the jagunços of Horácio de Matos and Abílio Wolney
+fell on the rearguard (Macaulay, pp. 220–221). The column did not stand and
+fight a pitched battle. It broke contact, turned, and made the pursuers look for
+it where it was not.
+
+_Plate: `batalhoes-patrioticos-bahia/hero-photo` (see the compendium entry's caption and credit)._
 
 ### The Loop
 
-The escape was remembered as the “laço húngaro”: a series of circular movements
-that confused the pursuers and pulled the column out of the closing ring. The
-federal troops had ordered the civilians away from their homes; the column passed
-through a country emptied for the trap.
+The escape was remembered as the "laço húngaro": a series of circling marches
+that confused the pursuers and pulled the column out of the closing ring.
+Federal troops had ordered people out of their homes; the column passed through
+a country emptied for the trap, and reached Taiobeiras on 26 April.
 
-The column reached Taiobeiras on 26 April. It was still alive. That was the only
-fact that mattered.
+Macaulay's map breaks the march at Serra Nova, a solid line behind and a dashed
+line ahead, but the break belongs to the map. What changed after Serra Nova was
+in the high command, where the talk turned to leaving Brazil.
+
+_Plate: `serra-nova/blanc-map` (see the compendium entry's caption and credit)._
 
 ### The Next March
 
 Serra Nova was not a victory. It was the moment the column chose to keep moving
-when the ring was almost closed. The decision to emigrate was already forming in
-the high command; the march north would become a march to the border.
+when the ring was almost closed.
 
-The march was not a triumph. It was a decision repeated every day.
+Thirty years later, Guimarães Rosa gave the march a line in a novel. His old
+jagunço remembers Prestes's soldiers passing through the Minas backlands. It is
+fiction, and it does not name this place. But the sertão kept the march the way
+the tree kept the lead.
 
-Thirty years later, Guimarães Rosa gave the march a line in a novel. His old jagunço remembers Prestes's soldiers passing through the Minas backlands, and a farmer, years on, splitting a tree and finding bullets in the wood. It is fiction, and it does not name this place. But the sertão kept the march the way the tree kept the lead.
+> The rebels came through here afterwards, Prestes's soldiers, coming from Goiás; they claimed every saddle animal. […] Many years later a farmer goes to hew a tree trunk and finds bullets lodged in it.
+>
+> — João Guimarães Rosa, Grande sertão: veredas (1956), Riobaldo speaking
+>
+> `rosa-1956`, Grande sertão: veredas, 36th ed. (Rio de Janeiro: Nova Fronteira, 1986), p. 82, apud mozzer-2009, pp. 249–250. Our translation from the Portuguese.
 
 ## Português (BR)
 
 ### Porto Nacional
 
-Outubro de 1925. Seis meses depois do Paraná e quinze depois de São Paulo, a coluna chegou a Porto Nacional, à beira do Tocantins. Os moradores fugiram para o mato; os frades ficaram. No convento dominicano, os chefes tiveram tempo, pela primeira vez, de pôr por escrito pelo que marchavam. Em 19 de outubro, Miguel Costa, Prestes e Juarez Távora assinaram um manifesto à nação. Pedia liberdade e Constituição, e ainda não falava da terra. Seis meses depois, os mesmos homens estavam em Minas, com o cerco se fechando.
+Outubro de 1925. Seis meses depois do Paraná e quinze depois de São Paulo, a
+coluna chegou a Porto Nacional, à beira do Tocantins, no que era então o norte
+de Goiás. Os moradores fugiram para o mato; os frades ficaram. No convento
+dominicano, os chefes tiveram tempo, pela primeira vez, de pôr por escrito pelo
+que marchavam. Em 19 de outubro, Miguel Costa, Prestes e Juarez Távora assinaram
+um manifesto à nação. Pedia liberdade e Constituição, e ainda não falava da
+terra.
 
 > E o povo pode ficar certo de que os soldados revolucionários não enrolarão a bandeira da Liberdade enquanto se não modificar esse ambiente de despotismo e intolerância que asfixia, num delírio de opressão, os melhores anseios da consciência nacional!
 >
 > — Miguel Costa, Luís Carlos Prestes e Juarez Távora, Porto Nacional, 19 de outubro de 1925
-
-(Cite: Manifesto of Porto Nacional, 19 Oct. 1925 (Marxists Internet Archive).)
+>
+> `manifesto-1925`, Manifesto of Porto Nacional, 19 Oct. 1925 (Marxists Internet Archive)
 
 ### A Retaguarda
 
-Abril de 1926. A coluna descera da Chapada Diamantina para o norte de Minas
-Gerais. Os homens estavam cansados de um jeito que o sono não curava. Os jagunços
-de Horácio de Matos e Abílio Wolney estavam na retaguarda, e as tropas federais
-tentavam fechar as estradas à frente.
+Abril de 1926. A coluna atravessara o Nordeste e descera da Chapada Diamantina
+para o norte de Minas Gerais. Os homens estavam cansados de um jeito que o sono
+não curava. Atrás deles vinham os batalhões patrióticos do sertão: bandos de
+jagunços sob seus chefes, pagos, fardados e armados pelo governo.
 
-Em 22 de abril, a retaguarda foi atacada em Serra Nova. A coluna não parou para
-uma batalha campal. Rompeu o contato, virou e fez os perseguidores procurarem por
-ela onde ela não estava.
+Em 22 de abril, em Serra Nova, os jagunços de Horácio de Matos e Abílio Wolney
+caíram sobre a retaguarda (Macaulay, pp. 220–221). A coluna não parou para
+travar uma batalha campal. Rompeu o contato, deu a volta e fez os perseguidores
+a procurarem onde ela não estava.
+
+_Plate: `batalhoes-patrioticos-bahia/hero-photo` (see the compendium entry's caption and credit)._
 
 ### O Laço
 
-A fuga ficou lembrada como o “laço húngaro”: uma série de movimentos circulares
-que confundiu os perseguidores e tirou a coluna do cerco que se fechava. As
-tropas federais tinham mandado os moradores deixarem suas casas; a coluna passou
-por um país esvaziado para a armadilha.
+A fuga ficou lembrada como o "laço húngaro": uma série de marchas em círculo que
+confundiu os perseguidores e tirou a coluna do cerco que se fechava. As tropas
+federais tinham mandado o povo sair de casa; a coluna passou por uma terra
+esvaziada para a armadilha e chegou a Taiobeiras em 26 de abril.
 
-A coluna chegou a Taiobeiras em 26 de abril. Ainda estava viva. Era o único fato
-que importava.
+O mapa de Macaulay quebra a marcha em Serra Nova, linha cheia atrás e tracejada
+à frente, mas a quebra é do mapa. O que mudou depois de Serra Nova foi no alto
+comando, onde a conversa passou a ser deixar o Brasil.
 
-### A Próxima Marcha
+_Plate: `serra-nova/blanc-map` (see the compendium entry's caption and credit)._
+
+### A Marcha Seguinte
 
 Serra Nova não foi uma vitória. Foi o momento em que a coluna escolheu continuar
-andando quando o cerco quase se fechou. A decisão de emigrar já se formava no
-alto comando; a marcha para o norte se tornaria uma marcha para a fronteira.
+andando quando o cerco estava quase fechado.
 
-A marcha não era um triunfo. Era uma decisão repetida todos os dias.
+Trinta anos depois, Guimarães Rosa deu à marcha uma linha num romance. Seu velho
+jagunço lembra os soldados de Prestes passando pelos sertões de Minas. É ficção,
+e não nomeia este lugar. Mas o sertão guardou a marcha como a árvore guardou o
+chumbo.
 
-Trinta anos depois, Guimarães Rosa deu à marcha uma linha num romance. Seu velho jagunço lembra os soldados de Prestes passando pelos gerais de Minas, e um roceiro que, anos depois, racha um tronco e encontra balas na madeira. É ficção, e não diz que foi aqui. Mas o sertão guardou a marcha como a árvore guardou o chumbo.
+> Os revoltosos depois passaram por aqui, soldados de Prestes, vinham de Goiás, reclamaram posse de todos animais de sela. […] Muitos anos adiante, um roceiro vai lavrar um pau, encontra balas cravadas.
+>
+> — João Guimarães Rosa, Grande sertão: veredas (1956), fala de Riobaldo
+>
+> `rosa-1956`, Grande sertão: veredas, 36th ed. (Rio de Janeiro: Nova Fronteira, 1986), p. 82, apud mozzer-2009, pp. 249–250
 
 ## Sources and labels
 
