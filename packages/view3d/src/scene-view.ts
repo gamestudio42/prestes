@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import {
+  GUNS,
   SANDBOX_TERRAIN,
   TRAINING_TERRAIN,
   setActiveTerrain,
@@ -21,7 +22,7 @@ import {
   type UnitSnapshot,
   type FogExtras,
   type MapLight } from '@prestes/shared';
-import { CameraRig, STRATEGIC_TILT, TACTICAL_SPAN, type CameraBand } from './camera-rig';
+import { CameraRig, STRATEGIC_TILT, TACTICAL_SPAN, shakeStrength, type CameraBand } from './camera-rig';
 import { CharacterLayer } from './character-layer';
 import { CoverLayer } from './cover-layer';
 import { CoverMapLayer } from './cover-map-layer';
@@ -97,6 +98,7 @@ export class SceneView {
   private readonly renderer: THREE.WebGLRenderer;
   private readonly scene: THREE.Scene;
   private readonly rig = new CameraRig(0, 4);
+  private lastShakeTick = -1;
   private terrainMesh: THREE.Object3D | null = null;
   private sun: THREE.DirectionalLight | null = null;
   /** add-map-editor: the painted ground of an authored map. */
@@ -603,6 +605,15 @@ export class SceneView {
       }
     }
     this.effects.onFrame(frame, (unitId) => this.characters.windowMuzzleHeight(unitId));
+    // add-artillery-bombardment 3.3: a burst near the view's focus shakes it.
+    if (frame.tick !== this.lastShakeTick) {
+      this.lastShakeTick = frame.tick;
+      for (const event of frame.events) {
+        if (event.type !== 'shell_impact') continue;
+        const distance = Math.hypot(event.x - this.rig.focusX, event.y - this.rig.focusY);
+        this.rig.kick(shakeStrength(distance, GUNS[event.gun].burstScale));
+      }
+    }
   }
 
   /** Nearest unit to a screen point (within 28 px) that `accept` allows. */

@@ -105,6 +105,21 @@ export class CameraRig {
     this.focusY += -dxMetres * s + dyMetres * c;
   }
 
+  private shakeAge = Number.POSITIVE_INFINITY;
+  private shakeStrength = 0;
+
+  /**
+   * add-artillery-bombardment 3.3: a burst shakes the view for a moment.
+   * `strength` 0 to 1; the shake moves the rendered camera only, never the
+   * focus, so panning and saved views are untouched.
+   */
+  kick(strength: number): void {
+    if (!(strength > 0)) return;
+    const left = shakeOffset(this.shakeAge, this.shakeStrength).amplitude;
+    this.shakeStrength = Math.min(1, Math.max(strength, left));
+    this.shakeAge = 0;
+  }
+
   update(dt: number): void {
     const k = 1 - Math.exp(-dt / 0.15);
     this.span += (this.targetSpan - this.span) * k;
@@ -145,9 +160,38 @@ export class CameraRig {
         .addScaledVector(this.up, Math.round(u / texel) * texel - u);
     }
 
+    if (this.shakeAge < SHAKE_SECONDS) {
+      this.shakeAge += dt;
+      const shake = shakeOffset(this.shakeAge, this.shakeStrength);
+      if (shake.amplitude > 0) {
+        cam.updateMatrixWorld();
+        const elements = cam.matrixWorld.elements;
+        this.right.set(elements[0] ?? 0, elements[1] ?? 0, elements[2] ?? 0);
+        this.up.set(elements[4] ?? 0, elements[5] ?? 0, elements[6] ?? 0);
+        const metres = (this.span / TACTICAL_SPAN) * SHAKE_METRES;
+        cam.position.addScaledVector(this.right, shake.x * metres).addScaledVector(this.up, shake.y * metres);
+      }
+    }
+
     cam.updateProjectionMatrix();
     cam.updateMatrixWorld();
   }
+}
+
+/** add-artillery-bombardment 3.3: how long a shake lasts (s), and how far it throws the view at full strength (m, at the tactical span). */
+export const SHAKE_SECONDS = 0.35;
+const SHAKE_METRES = 0.6;
+
+/** The shake's offset (in units of SHAKE_METRES) `age` seconds after a kick: a damped wobble, nothing once it is over. */
+export function shakeOffset(age: number, strength: number): { x: number; y: number; amplitude: number } {
+  if (!(age < SHAKE_SECONDS) || strength <= 0) return { x: 0, y: 0, amplitude: 0 };
+  const amplitude = strength * (1 - age / SHAKE_SECONDS) ** 2;
+  return { x: amplitude * Math.sin(age * 71), y: amplitude * 0.7 * Math.cos(age * 53), amplitude };
+}
+
+/** add-artillery-bombardment 3.3: a burst's shake by its distance from the view's focus: full within 20 m, none past 120 m. */
+export function shakeStrength(distance: number, burstScale: number): number {
+  return Math.max(0, Math.min(1, (1 - (distance - 20) / 100) * burstScale * 0.8));
 }
 
 

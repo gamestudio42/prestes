@@ -30,6 +30,18 @@ export class CoverLayer {
   private readonly color = new THREE.Color();
   /** The fortification models have loaded. */
   private modelled = false;
+  /** add-artillery-bombardment 3.2: shell holes, a dark disc and a rim of churned earth (no model needed). */
+  private readonly craters = new THREE.InstancedMesh(
+    new THREE.CircleGeometry(1, 10).rotateX(-Math.PI / 2),
+    new THREE.MeshLambertMaterial({ color: 0x3d2f22 }),
+    64,
+  );
+  private readonly rims = new THREE.InstancedMesh(
+    new THREE.RingGeometry(0.75, 1.15, 10).rotateX(-Math.PI / 2),
+    new THREE.MeshLambertMaterial({ color: 0x6b5238 }),
+    64,
+  );
+  private craterSignature = '';
 
   constructor() {
     for (const mesh of this.meshes()) {
@@ -38,6 +50,40 @@ export class CoverLayer {
       mesh.count = 0;
       this.group.add(mesh);
     }
+    for (const mesh of [this.craters, this.rims]) {
+      mesh.frustumCulled = false;
+      mesh.count = 0;
+      mesh.name = 'craters';
+      this.group.add(mesh);
+    }
+  }
+
+  /** The craters drawn now. */
+  get craterCount(): number {
+    return this.craters.count;
+  }
+
+  private drawCraters(covers: readonly CoverPoint[]): void {
+    const craters = covers.filter((cover) => cover.kind === 'crater').slice(0, 64);
+    const signature = craters.map((cover) => cover.id).join(',');
+    if (signature === this.craterSignature) return;
+    this.craterSignature = signature;
+    craters.forEach((cover, index) => {
+      const ground = terrainHeightAt(cover.x, cover.y);
+      this.quaternion.setFromAxisAngle(new THREE.Vector3(0, 1, 0), cover.id * 1.7);
+      this.position.set(cover.x, ground + 0.03, cover.y);
+      this.scale.set(cover.radius * 0.8, 1, cover.radius * 0.8);
+      this.matrix.compose(this.position, this.quaternion, this.scale);
+      this.craters.setMatrixAt(index, this.matrix);
+      this.position.set(cover.x, ground + 0.05, cover.y);
+      this.scale.set(cover.radius, 1, cover.radius);
+      this.matrix.compose(this.position, this.quaternion, this.scale);
+      this.rims.setMatrixAt(index, this.matrix);
+    });
+    this.craters.count = craters.length;
+    this.rims.count = craters.length;
+    this.craters.instanceMatrix.needsUpdate = true;
+    this.rims.instanceMatrix.needsUpdate = true;
   }
 
   private meshes(): THREE.InstancedMesh[] {
@@ -92,6 +138,7 @@ export class CoverLayer {
   }
 
   update(covers: readonly CoverPoint[]): void {
+    this.drawCraters(covers);
     if (!this.modelled) {
       return;
     }
