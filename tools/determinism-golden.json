@@ -4,11 +4,14 @@
   "hash": "0ae3084b",
   "battleMaps": {
     "campo-de-provas": "94b68f47",
+    "catanduvas": "9bb6a14b",
     "copacabana": "cd41d5bb",
-    "paiolzinho": "06d97225"
+    "paiolzinho": "06d97225",
+    "porto-mendes": "3033d41f",
+    "sao-luiz-ramada": "0bab46d2"
   },
   "mixedRosters": {
     "campo-de-provas": "60476373"
   },
-  "reason": "Copacabana gains the works' concrete pipes; logs, carts and boats now shelter a man every 1.5 m of a face"
+  "reason": "campaign maps 02-04 authored: sao-luiz-ramada, porto-mendes, catanduvas"
 }
