@@ -19,6 +19,7 @@ import {
   averageAim,
   averageFacing,
   nearestKnownEnemyAt,
+  waterAt,
   type CoverSlotView,
   type FireControl,
   type FogExtras,
@@ -32,6 +33,7 @@ import {
 } from '@prestes/shared';
 import { previewKey } from './previewKey';
 import { pickSuspectedContact } from './suspectedContact';
+import { quickAction, type QuickDecision, type QuickHit } from './quickAction';
 import { battleMap as mapById, deploymentSlotView, positionNear, positionsFor, type BattleMapId, type DeploymentSlotView, type PositionDef } from '@prestes/shared';
 import type { OrderCallout } from '@prestes/view3d';
 import type { GameClient } from '../client/GameClient';
@@ -810,6 +812,46 @@ export function useOrders({
     triggerOrderCallout('move', selectedIds);
   };
 
+  /** hud-icons-and-cursors: what a right-click does on this hit (the cursor shows the same). */
+  const quickActionFor = (hit: QuickHit): QuickDecision | null => {
+    if (selectedIds.length === 0) return null;
+    return quickAction(hit, {
+      side: ownSide(),
+      from: selectedUnits.length > 0
+        ? {
+            x: selectedUnits.reduce((sum, unit) => sum + unit.x, 0) / selectedUnits.length,
+            y: selectedUnits.reduce((sum, unit) => sum + unit.y, 0) / selectedUnits.length,
+          }
+        : undefined,
+      positions,
+      // Fog of war: an enemy garrison counts once the side knows of it.
+      garrisons: (frame?.garrisons ?? []).filter((garrison) => garrison.side === ownSide() || garrison.known !== undefined),
+      hurry,
+      waterAt,
+      coverAt: (point) => {
+        const cover = frame ? coverAtPoint(point, frame.covers) : null;
+        return cover !== null && cover.kind !== 'building';
+      },
+    });
+  };
+
+  /**
+   * hud-icons-and-cursors: a right-click on a building enters it, or assaults
+   * it when the enemy holds it. False when the building cannot be entered, so
+   * the click falls back to a move.
+   */
+  const handleQuickBuilding = (buildingId: number, point: Vec2, queue = false): boolean => {
+    const decision = quickActionFor({ kind: 'building', buildingId, point });
+    if (!decision || (decision.action !== 'enter' && decision.action !== 'assault')) return false;
+    const queueOrder = queue || queueNext;
+    setQueueNext(false);
+    setPendingOrder(null);
+    setAimPending(false);
+    setLineDrag(null);
+    setFacingDrag(null);
+    return sendPositionOrder(decision.action, decision.positionId, decision.action === 'enter' && queueOrder);
+  };
+
   const handleQuickUnit = (unitId: number, queue = false): void => {
     const queueOrder = queue || queueNext;
     setQueueNext(false);
@@ -822,6 +864,12 @@ export function useOrders({
     }
     unitId = target.id;
     const selectedFaction = selectedUnits[0]?.faction ?? 'column';
+    // An enemy at a window: the building he holds is assaulted.
+    const decision = quickActionFor({ kind: 'unit', faction: target.faction, incapacitated: target.incapacitated, garrison: target.garrison });
+    if (decision?.action === 'assault') {
+      sendPositionOrder('assault', decision.positionId);
+      return;
+    }
     // A wounded comrade: the casualty drill (rescue) starts from him.
     if (target.faction === selectedFaction && target.incapacitated && selectedIds.length > 0) {
       clientRef.current?.sendCommand({
@@ -1013,6 +1061,8 @@ export function useOrders({
     handlePrimaryLine,
     handleQuickLine,
     handleQuickUnit,
+    handleQuickBuilding,
+    quickActionFor,
     handleActivateOrder,
     handlePosture,
     handleFireControl,

@@ -17,7 +17,7 @@ import { loadPlaytest } from './editor/persistence';
 import type { CameraBand, SceneView } from '@prestes/view3d';
 import { DEFAULT_SPEED, GameClient } from './client/GameClient';
 import { FieldOverlays } from './ui/FieldOverlays';
-import { GameCanvas } from './ui/GameCanvas';
+import { GameCanvas, type CursorHint } from './ui/GameCanvas';
 import { Hud } from './ui/Hud';
 import type { MapLayers } from './ui/hud/TopBar';
 import { Compass } from './ui/hud/Compass';
@@ -80,7 +80,7 @@ export function App() {
   const [hudHidden, setHudHidden] = useState(false);
   const [cursor, setCursor] = useState<{ x: number; y: number } | null>(null);
   const [hoverHint, setHoverHint] = useState<{
-    kind: 'cover' | 'target' | 'rescue';
+    kind: CursorHint;
     x: number;
     y: number;
   } | null>(null);
@@ -179,6 +179,8 @@ export function App() {
     handlePrimaryLine,
     handleQuickLine,
     handleQuickUnit,
+    handleQuickBuilding,
+    quickActionFor,
     handleActivateOrder,
     handlePosture,
     handleFireControl,
@@ -454,6 +456,8 @@ export function App() {
         onPrimaryUnit={handleAttackUnit}
         onPrimaryGround={handlePrimaryGround}
         onQuickUnit={handleQuickUnit}
+        onQuickBuilding={handleQuickBuilding}
+        quickAction={quickActionFor}
         onQuickGround={handleQuickGround}
         onPrimaryLine={handlePrimaryLine}
         onQuickLine={handleQuickLine}

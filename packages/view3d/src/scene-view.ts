@@ -683,6 +683,48 @@ export class SceneView {
       : null;
   }
 
+  /**
+   * hud-icons-and-cursors: the building under a screen point, its walls or
+   * roof, nearest the camera; null over open ground. The ray is sampled up
+   * the building's height (the roof counted as a box), so a click on a roof
+   * means that building, not the ground behind it.
+   */
+  pickBuilding(
+    cssX: number,
+    cssY: number,
+    buildings: readonly { id: number; x: number; y: number; rotation: number; halfWidth: number; halfDepth: number; height: number }[],
+  ): { id: number; point: Vec2 } | null {
+    if (buildings.length === 0) return null;
+    const width = Math.max(1, this.container.clientWidth);
+    const height = Math.max(1, this.container.clientHeight);
+    this.raycaster.setFromCamera(new THREE.Vector2((cssX / width) * 2 - 1, -(cssY / height) * 2 + 1), this.rig.camera);
+    const { origin, direction } = this.raycaster.ray;
+    if (Math.abs(direction.y) < 1e-4) return null;
+    let best: { id: number; point: Vec2 } | null = null;
+    let bestT = Number.POSITIVE_INFINITY;
+    for (const building of buildings) {
+      const base = terrainHeightAt(building.x, building.y);
+      // Height is the eaves' or the ridge's by model; a box a little taller covers the roof.
+      const top = building.height * 1.15;
+      const cos = Math.cos(building.rotation);
+      const sin = Math.sin(building.rotation);
+      for (let rise = top; rise >= 0; rise -= 0.25) {
+        const t = (base + rise - origin.y) / direction.y;
+        if (t <= 0 || t >= bestT) continue;
+        const dx = origin.x + direction.x * t - building.x;
+        const dy = origin.z + direction.z * t - building.y;
+        const localX = dx * cos + dy * sin;
+        const localY = -dx * sin + dy * cos;
+        if (Math.abs(localX) <= building.halfWidth && Math.abs(localY) <= building.halfDepth) {
+          bestT = t;
+          best = { id: building.id, point: { x: building.x, y: building.y } };
+          break;
+        }
+      }
+    }
+    return best;
+  }
+
   setPostStrong(strong: boolean): void {
     this.post.setStrong(strong);
   }

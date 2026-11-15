@@ -1,6 +1,7 @@
 import { pixelIcon, type PixelIconComponent } from '../icons';
 import type { MessageKey, OrderActivation, OrderCategory } from '@prestes/content';
 import type { Posture, UnitOrder } from '@prestes/shared';
+import type { CursorHint } from '../../hooks/quickAction';
 
 export type Translate = (
   key: MessageKey,
@@ -97,6 +98,8 @@ export const ICONS = {
   'stance-crouched': pixelIcon('stance-crouched'),
   'stance-prone': pixelIcon('stance-prone'),
   'hold-fire': pixelIcon('hold-fire'),
+  // hud-icons-and-cursors: free fire has its own rifle and flash (it showed Attack's sight).
+  'fire-free': pixelIcon('fire-free'),
   'fire-contact': pixelIcon('fire-contact'),
   'formation-line': pixelIcon('formation-line'),
   'formation-column': pixelIcon('formation-column'),
@@ -113,6 +116,34 @@ export type IconId = keyof typeof ICONS;
 export function orderIcon(orderId: string): PixelIconComponent | undefined {
   return (ICONS as Record<string, PixelIconComponent>)[orderId];
 }
+
+/**
+ * hud-icons-and-cursors: the badge beside the pointer for what a right-click
+ * will do there. Orders show their board icon; moves have their own.
+ */
+export const CURSOR_ICONS: Record<CursorHint, PixelIconComponent> = {
+  move: pixelIcon('cursor-move'),
+  run: pixelIcon('cursor-run'),
+  cover: pixelIcon('cursor-cover'),
+  ford: pixelIcon('cursor-ford'),
+  attack: ICONS.attack,
+  rescue: ICONS.rescue,
+  enter: ICONS.enter,
+  assault: ICONS.assault,
+  'assault-far': ICONS.assault,
+};
+
+export const CURSOR_LABELS: Record<CursorHint, MessageKey> = {
+  move: 'hud.cursor.move',
+  run: 'hud.cursor.run',
+  cover: 'hud.cursor.cover',
+  ford: 'hud.cursor.ford',
+  attack: 'hud.cursor.attack',
+  rescue: 'hud.cursor.rescue',
+  enter: 'hud.cursor.enter',
+  assault: 'hud.cursor.assault',
+  'assault-far': 'hud.cursor.assaultFar',
+};
 
 export const ACTIVATION_LABEL: Record<OrderActivation, MessageKey> = {
   target: 'hud.activationTarget',
