@@ -32,4 +32,4 @@
 ## 5. Integration
 
 - [x] 5.1 Playwright e2e: in the editor on an unsaved copy of the test map, place an entry point, author "Reforço legalista" (time 0:30, two sections through the entry, go for the bridge, a card in both languages), playtest, see the card pause the battle and resume at the same speed, use "fire now" on a second event that brings a Column section and order that section from the troop panel; verify: `pnpm e2e` passes
-- [ ] 5.2 Docs: the event authoring steps in `docs/maps/GUIA_MAPAS_CAMPANHA.md` (PT-BR, for the owner), the mission files' "manual trigger before the full mission scripting lands" notes pointed at events, `docs/status.md` updated; verify: `pnpm verify` passes and `openspec validate add-battle-events --type change --strict` passes
+- [x] 5.2 Docs: the event authoring steps in `docs/maps/GUIA_MAPAS_CAMPANHA.md` (PT-BR, for the owner), the mission files' "manual trigger before the full mission scripting lands" notes pointed at events, `docs/status.md` updated; verify: `pnpm verify` passes and `openspec validate add-battle-events --type change --strict` passes

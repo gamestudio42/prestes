@@ -188,7 +188,7 @@ ford and the riverbank.
 
 First playable slice: a battle-lab map with a bridge, a ford, two player
 sections, a scripted wagon convoy and government sections; the burning is a
-manual trigger before the full mission scripting lands.
+manual trigger before the full mission scripting lands (add-battle-events, 2026-11-14: author it as a battle event in the map editor; see `docs/maps/EVENTOS_DE_BATALHA.md`).
 
 ## Beats
 

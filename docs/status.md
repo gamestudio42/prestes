@@ -21,6 +21,7 @@ are written in the campaign book, none playable; there is no save/load.
 | --- | --- | --- |
 | `polish-menu-desk` | 31/35 | the owner's Aseprite redraws: both closed books, the reference pile, the gramophone |
 | `add-field-manual` | proposed 2026-11-11, 0/11, on hold (the owner: not yet) | a Manual part in the book "A Coluna Prestes", twelve text pages; replaces the dropped `video-tutorial-manual` |
+| `add-battle-events` | 18/18 on branch `add-battle-events` (worktree), not merged | scripted battle events authored in the editor: triggers (time, objective taken/lost, area entered, losses %, after another event, plus delay), actions (troops enter for either side at an edge entry point, enemy posture offensive/fall back/hold, a narrative card that pauses the battle), map document v9, map check, Events panel, playtest list with "fire now"; guide in `docs/maps/EVENTOS_DE_BATALHA.md`; `pnpm verify` 2026-11-14: check, build, determinism, tick budget and spec validation pass; bundle budget fails on index JS 716,078 B of 680,000 B (this branch predates the 760,000 B budget in the main checkout); events and editor e2e 33/33, the full e2e not run; waits for the owner to merge |
 | campaign maps | the owner's hand work | each campaign map is drawn by the owner in the editor, as the skirmish maps are; missions follow the maps |
 
 Planned on 2026-11-11 at the owner's request, in the order they should

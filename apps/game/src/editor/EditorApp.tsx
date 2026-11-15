@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useMemo, useRef, useState, useSyncExternalStore, type CSSProperties, type ReactNode } from 'react';
+import { Fragment, lazy, Suspense, useEffect, useMemo, useRef, useState, useSyncExternalStore, type CSSProperties, type ReactNode } from 'react';
 import {
   BIOME_MIX,
   CATALOG_OBJECTS,
@@ -76,7 +76,8 @@ import { editorBridge, type EditorBridge } from './test-bridge';
 import { EditorViewport, PROTECTION_COLORS, type CursorInfo } from './viewport';
 import { useThumbnails } from './thumbnails';
 import { EnemyForces } from './EnemyForces';
-import { EventsPanel } from './EventsPanel';
+// add-battle-events 4.3: the Events panel loads when first opened (the editor chunk stays in its budget).
+const EventsPanel = lazy(() => import('./EventsPanel').then((module) => ({ default: module.EventsPanel })));
 import { Compass } from '../ui/hud/Compass';
 
 /**
@@ -537,7 +538,11 @@ export function EditorApp(): ReactNode {
         <p className="editor-hint">{t(hintKey(tool))}</p>
         <ToolProperties store={store} t={t} />
         {view.cover ? <CoverPanel store={store} t={t} /> : null}
-        {view.events || tool === 'entry-point' || tool === 'event-area' ? <EventsPanel store={store} t={t} /> : null}
+        {view.events || tool === 'entry-point' || tool === 'event-area' ? (
+          <Suspense fallback={null}>
+            <EventsPanel store={store} t={t} />
+          </Suspense>
+        ) : null}
         {tool === 'select' || tool === 'objective' ? <SelectionPanel store={store} viewport={viewport.current} t={t} /> : null}
         {settings.snap !== undefined && ['road', 'river', 'pond', 'line', 'bridge', 'ferry', 'place', 'select', 'deployment'].includes(tool) ? (
           <label>
