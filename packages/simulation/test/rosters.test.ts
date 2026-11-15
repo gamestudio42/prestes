@@ -79,6 +79,16 @@ describe('rostered 3v3 (pre-battle-roster 3.1-3.4)', () => {
     }
   });
 
+  it('a scene without an enemy fields no legalist, whatever roster comes, and is not won by an empty field', () => {
+    const map = { ...battleMap(TEST_MAP), noEnemy: true };
+    for (const rosters of [undefined, { column: { sections: six } }, { column: { sections: six }, legalist: { sections: six } }]) {
+      const engine = new SimulationEngine({ seed: 1927, scenario: 'battle3v3', battleMap: map, rosters });
+      expect(engine.units.some((unit) => unit.faction === 'legalist')).toBe(false);
+      expect(engine.units.some((unit) => unit.faction === 'column')).toBe(true);
+      expect(engine.runTicks(20).outcome).toBe('playing');
+    }
+  });
+
   it('a battle without rosters draws nothing', () => {
     const engine = battle(TEST_MAP);
     expect(engine.rosters).toBeUndefined();

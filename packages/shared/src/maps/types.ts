@@ -249,6 +249,11 @@ export interface BattleMap {
    * campaign mission's fixed force: the 18 of Copacabana). Absent: the player's.
    */
   columnForce?: Roster;
+  /**
+   * A scene without an enemy (La Gaiba): no legalist is fielded, whatever roster
+   * the player or the playtest brings, and an empty enemy side is not a victory.
+   */
+  noEnemy?: boolean;
   /** add-map-objectives: the map's objectives (absent or empty: none). */
   objectives?: readonly Objective[];
   /** add-battle-events: the events the battle runs, in id order (absent: none). */

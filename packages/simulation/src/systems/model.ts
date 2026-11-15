@@ -413,6 +413,7 @@ export type BattleUnitSeed = (typeof DEFAULT_UNITS)[number] & {
 export function battleUnits(map: BattleMap, rosters?: BattleRosters): BattleUnitSeed[] {
   const units: BattleUnitSeed[] = [];
   for (const faction of ['column', 'legalist'] as const) {
+    if (faction === 'legalist' && map.noEnemy) continue;
     const roster = rosters ? (faction === 'column' ? rosters.column : (rosters.legalist ?? DEFAULT_ROSTER)) : DEFAULT_ROSTER;
     for (const section of deployRoster(map, faction, roster).sections) {
       const type = SECTION_TYPES[section.type];

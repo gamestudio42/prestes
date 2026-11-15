@@ -927,7 +927,7 @@ export function updateOutcome(ctx: SimContext, tick: number, events: SimEvent[])
     decidedBy = 'broken';
   } else if (!ctx.opposition) {
     next = 'playing';
-  } else if (!legalistAlive) {
+  } else if (!legalistAlive && !ctx.battleMap?.noEnemy) {
     next = 'victory';
     decidedBy = 'annihilation';
   } else if (

@@ -171,6 +171,8 @@ interface MapDocumentBody {
   enemyForces?: Roster[];
   /** The column's fixed force on this map (a campaign mission's); absent = the player's roster. */
   columnForce?: Roster;
+  /** A scene without an enemy (La Gaiba); absent = the enemy is fielded as usual. */
+  noEnemy?: boolean;
   /** Shown on the battle's end panel: a mission's epilogue (the legend and the record); absent = none. */
   epilogue?: LocalizedText;
   /** add-map-objectives 1.3: regions to take and hold; absent = none. */
@@ -477,6 +479,7 @@ export function parseMapDocument(value: unknown): ParseResult {
   if (doc.north !== undefined && !isNumber(doc.north)) return fail('north');
   if (doc.enemyForces !== undefined && !(Array.isArray(doc.enemyForces) && doc.enemyForces.every((roster) => isObject(roster) && Array.isArray(roster.sections) && roster.sections.every(isString)))) return fail('enemyForces');
   if (doc.columnForce !== undefined && !(isObject(doc.columnForce) && Array.isArray(doc.columnForce.sections) && doc.columnForce.sections.every(isString))) return fail('columnForce');
+  if (doc.noEnemy !== undefined && typeof doc.noEnemy !== 'boolean') return fail('noEnemy');
   if (doc.epilogue !== undefined && !(isObject(doc.epilogue) && isString(doc.epilogue.en) && isString(doc.epilogue['pt-BR']))) return fail('epilogue');
   if (doc.objectives !== undefined && !(Array.isArray(doc.objectives) && doc.objectives.every(isObjective))) return fail('objectives');
   if (doc.events !== undefined && !(Array.isArray(doc.events) && doc.events.every(isBattleEvent))) return fail('events');
@@ -1164,6 +1167,7 @@ export function compileMapDocument(source: EditableMap | MapDocument): BattleMap
     north: mapNorth(map.north),
     ...(map.enemyForces && map.enemyForces.length > 0 ? { enemyForces: map.enemyForces.map((roster) => ({ sections: [...roster.sections] })) } : {}),
     ...(map.columnForce && map.columnForce.sections.length > 0 ? { columnForce: { sections: [...map.columnForce.sections] } } : {}),
+    ...(map.noEnemy ? { noEnemy: true } : {}),
     ...(map.objectives && map.objectives.length > 0
       ? {
           objectives: map.objectives.map((objective) => ({

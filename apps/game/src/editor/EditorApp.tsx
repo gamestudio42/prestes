@@ -1499,6 +1499,7 @@ function MapDialog(props: {
   };
   const [enemyForces, setEnemyForces] = useState<Roster[]>(mode === 'new' ? [] : (map.enemyForces ?? []).map((roster) => ({ sections: [...roster.sections] })));
   const [columnForce, setColumnForce] = useState<Roster | undefined>(mode === 'new' || !map.columnForce ? undefined : { sections: [...map.columnForce.sections] });
+  const [noEnemy, setNoEnemy] = useState(mode === 'new' ? false : map.noEnemy === true);
   const [epiloguePt, setEpiloguePt] = useState(mode === 'new' ? '' : (map.epilogue?.['pt-BR'] ?? ''));
   const [epilogueEn, setEpilogueEn] = useState(mode === 'new' ? '' : (map.epilogue?.en ?? ''));
   const valid = isValidMapId(id);
@@ -1522,6 +1523,8 @@ function MapDialog(props: {
       // An empty preset is dropped; none at all leaves the field out (the default roster).
       enemyForces: enemyForces.some((roster) => roster.sections.length > 0) ? enemyForces.filter((roster) => roster.sections.length > 0) : undefined,
       columnForce,
+      // Saved only when set: a scene without an enemy (La Gaiba).
+      noEnemy: noEnemy ? true : undefined,
       // Both texts empty: the field is left out.
       epilogue: epiloguePt.trim() || epilogueEn.trim() ? { 'pt-BR': epiloguePt.trim(), en: epilogueEn.trim() } : undefined,
     };
@@ -1650,7 +1653,15 @@ function MapDialog(props: {
           <p className="editor-hint">{t('editor.north.hint')}</p>
         </fieldset>
         <ColumnForce force={columnForce} onChange={setColumnForce} t={t} />
-        <EnemyForces presets={enemyForces} onChange={setEnemyForces} t={t} />
+        <fieldset className="editor-enemy" data-testid="map-no-enemy">
+          <legend>{t('editor.noEnemy.title')}</legend>
+          <label className="editor-row">
+            <input type="checkbox" data-testid="map-no-enemy-on" checked={noEnemy} onChange={(event) => setNoEnemy(event.target.checked)} />
+            {t('editor.noEnemy.label')}
+          </label>
+          <p className="editor-hint">{t('editor.noEnemy.hint')}</p>
+        </fieldset>
+        {noEnemy ? null : <EnemyForces presets={enemyForces} onChange={setEnemyForces} t={t} />}
         <fieldset className="editor-enemy" data-testid="map-epilogue">
           <legend>{t('editor.epilogue.title')}</legend>
           <p className="editor-hint">{t('editor.epilogue.hint')}</p>

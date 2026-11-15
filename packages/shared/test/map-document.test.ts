@@ -185,6 +185,10 @@ describe('map document', () => {
     map.columnForce = { sections: ['infantaria-exercito'] };
     expect(invalid(validateEditableMap(map))).toBe(true);
     expect(parseMapDocument({ ...toMapDocument(map), columnForce: 'eighteen' })).toMatchObject({ ok: false, detail: 'columnForce' });
+    map.noEnemy = true;
+    const scene = parseMapDocument(JSON.parse(JSON.stringify(toMapDocument(map))));
+    expect(scene.ok && compileMapDocument(scene.document).noEnemy).toBe(true);
+    expect(parseMapDocument({ ...toMapDocument(map), noEnemy: 'yes' })).toMatchObject({ ok: false, detail: 'noEnemy' });
   });
 
   it('shrinking lists the objects that fall outside', () => {

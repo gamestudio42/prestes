@@ -166,6 +166,8 @@ export function resolveRosters(map: BattleMap, rosters: BattleRosters | undefine
   // The map's fixed column force wins over the player's (a campaign mission).
   if (map.columnForce && map.columnForce.sections.length > 0) rosters = { ...rosters, column: { sections: [...map.columnForce.sections] } };
   if (!rosters) return undefined;
+  // A scene without an enemy fields no legalist, whatever the roster brought.
+  if (map.noEnemy) return { column: rosters.column };
   if (rosters.legalist) return { column: rosters.column, legalist: rosters.legalist };
   const presets = map.enemyForces ?? [];
   if (presets.length === 0) return { column: rosters.column };

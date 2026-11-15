@@ -6,7 +6,7 @@
     "campo-de-provas": "94b68f47",
     "catanduvas": "9bb6a14b",
     "copacabana": "cd41d5bb",
-    "la-gaiba": "be55284f",
+    "la-gaiba": "254c06ac",
     "paiolzinho": "06d97225",
     "pantanal": "5671b40b",
     "ponte-de-verdinho": "cff703bf",
@@ -17,5 +17,5 @@
   "mixedRosters": {
     "campo-de-provas": "60476373"
   },
-  "reason": "campaign maps 05-08 authored: ponte-de-verdinho, serra-nova, pantanal, la-gaiba"
+  "reason": "La Gaiba fields no enemy (noEnemy)"
 }
