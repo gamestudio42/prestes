@@ -458,6 +458,11 @@ def environment_atlas() -> Atlas:
         r = rng.random()
         return (92, 92, 90) if r < 0.18 else (176, 160, 150) if r < 0.3 else (140, 138, 132)
 
+    def concrete(i, j, rng):
+        # Cast concrete of a 1920s street works: a smooth pale grey, speckled.
+        r = rng.random()
+        return (138, 136, 130) if r < 0.1 else (184, 182, 174) if r < 0.2 else (164, 162, 155)
+
     def basalt(i, j, rng):
         if j % 5 == 4 and rng.random() < 0.7:
             return (40, 42, 44)
@@ -530,6 +535,8 @@ def environment_atlas() -> Atlas:
         ("canvas.worn", canvas_worn),
         ("canvas.army", canvas_army),
         ("crate.army", crate_army),
+        # The concrete pipes of the Avenida Atlantica works (Copacabana, 1922).
+        ("concrete", concrete),
     ]
     for index, (name, paint) in enumerate(swatches):
         x, y = cell(index)

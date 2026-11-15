@@ -456,9 +456,9 @@ def construction_pipes():
     four of the 18 sheltered in them, Macaulay ch. I)."""
     b = MeshBuilder("environment")
     for y, z in ((-0.52, 0.5), (0.52, 0.5), (0.0, 1.38)):
-        b.cylinder((0, 0, 0), 0.5, 2.0, "stone", sides=10, top="ink", matrix=placed(0, y, z, rx=math.pi / 2, rz=ALONG_X))
+        b.cylinder((0, 0, 0), 0.5, 2.0, "concrete", sides=12, top="ink", matrix=placed(0, y, z, rx=math.pi / 2, rz=ALONG_X))
         for x in (-0.88, 0.88):
-            b.cylinder((0, 0, 0), 0.52, 0.12, "granite", sides=10, top="ink", matrix=placed(x, y, z, rx=math.pi / 2, rz=ALONG_X))
+            b.cylinder((0, 0, 0), 0.54, 0.14, "granite", sides=12, top="ink", matrix=placed(x, y, z, rx=math.pi / 2, rz=ALONG_X))
     for x in (-0.6, 0.6):
         for y in (-1.02, 1.02):
             b.box((x, y, 0.12), (0.14, 0.12, 0.24), "timber")
