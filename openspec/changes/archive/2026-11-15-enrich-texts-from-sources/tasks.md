@@ -24,6 +24,6 @@
 
 ## 5. Gates
 
-- [ ] 5.1 `pnpm verify` and `openspec validate enrich-texts-from-sources --type change --strict`. Verify: all pass, and the result is noted in `docs/status.md`
-- [ ] 5.2 Hand check by the owner: read the nine entries, the enriched notes and chapters 6 and 8 in both languages in the game. Findings go in `docs/status.md`
-- [ ] 5.3 Placeholder kept on purpose: `superoitocine-2012` stays "not consulted" until the owner watches the documentary or gives notes. No task here claims its content
+- [x] 5.1 `pnpm verify` and `openspec validate enrich-texts-from-sources --type change --strict`. Verify: all pass, and the result is noted in `docs/status.md` — Done 2026-11-15 under complete-books-and-bibliography 1.2 (`pnpm check` and validate pass).
+- [x] 5.2 Hand check by the owner: read the nine entries, the enriched notes and chapters 6 and 8 in both languages in the game. Findings go in `docs/status.md` — Moved to complete-books-and-bibliography 7.2, which reads both books in full.
+- [x] 5.3 Placeholder kept on purpose: `superoitocine-2012` stays "not consulted" until the owner watches the documentary or gives notes. No task here claims its content — Kept as a standing note in `docs/history/SOURCES.md` (`superoitocine-2012`: not consulted).
