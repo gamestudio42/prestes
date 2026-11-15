@@ -565,7 +565,7 @@ corrugated asbestos appears.
   The book failures were fixed: the pt-BR overflow in `la-gaiba-1927`, the
   emblem test (Vila Militar now has a map, so the test uses Porto Nacional),
   the chapter 8 farewell (now on its own page), and the two desk baselines,
-  regenerated and checked by eye. Still failing, outside the books: "a chapter
-  without a map has no play action", because every chapter has a map now;
+  regenerated and checked by eye. The "chapter without a map" test now strips
+  a map in a fixture, since every chapter has one. Still failing, outside the books:
   area-fire, cover-slots, tactical, the three performance budgets and the HUD
   baseline.
