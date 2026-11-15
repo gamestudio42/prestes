@@ -1,9 +1,9 @@
 ## 1. Data and checks (shared)
 
-- [ ] 1.1 Add `GunId`, `BombardmentTarget`, the `bombardment` action and the `BOMBARD_*` ranges to `packages/shared/src/maps/events.ts`, with its shape check and `compileAction` clamping (D1); verify with unit tests that out-of-range rate, spread and seconds are clamped and a malformed action fails `isBattleEvent`
-- [ ] 1.2 Add the gun table (lethal, wounding, suppression radii) in shared, so the simulation, the editor ring and the view read one source; verify a unit test pins the table values from the artillery spec
-- [ ] 1.3 Add the bombardment checks to `validate-events.ts` (missing or non-area target, missing or self "until" event, out of range, warning for an aim point in the firing side's own deployment area) and add bombardments to the "used by" lookups for areas and events; verify with unit tests for each problem
-- [ ] 1.4 Add `shell_incoming` and `shell_impact` to `SimEvent` and `'crater'` to `CoverKind` in `protocol.ts`, and crater rim slots in `cover-slots.ts` (D5, D6); verify `pnpm typecheck` passes and a unit test gives a crater two slots
+- [x] 1.1 Add `GunId`, `BombardmentTarget`, the `bombardment` action and the `BOMBARD_*` ranges to `packages/shared/src/maps/events.ts`, with its shape check and `compileAction` clamping (D1); verify with unit tests that out-of-range rate, spread and seconds are clamped and a malformed action fails `isBattleEvent`
+- [x] 1.2 Add the gun table (lethal, wounding, suppression radii) in shared, so the simulation, the editor ring and the view read one source; verify a unit test pins the table values from the artillery spec
+- [x] 1.3 Add the bombardment checks to `validate-events.ts` (missing or non-area target, missing or self "until" event, out of range, warning for an aim point in the firing side's own deployment area) and add bombardments to the "used by" lookups for areas and events; verify with unit tests for each problem
+- [x] 1.4 Add `shell_incoming` and `shell_impact` to `SimEvent` and `'crater'` to `CoverKind` in `protocol.ts`, and crater rim slots in `cover-slots.ts` (D5, D6); verify `pnpm typecheck` passes and a unit test gives a crater two slots
 
 ## 2. Simulation
 

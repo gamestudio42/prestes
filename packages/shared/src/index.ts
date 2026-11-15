@@ -223,3 +223,4 @@ export * from './sections';
 export * from './bands';
 export * from './armies';
 export * from './deploy-roster';
+export * from './artillery';

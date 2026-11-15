@@ -94,22 +94,27 @@ export function duplicateEvent(draft: EditableMap, id: number, label: (source: s
   return copy.id;
 }
 
-/** The events whose trigger or posture names an event. */
+/** The events whose trigger, posture or bombardment names an event. */
 export function eventDependents(events: readonly BattleEvent[], id: number): BattleEvent[] {
   return events.filter(
     (event) =>
       event.id !== id &&
       ((event.trigger?.kind === 'after' && event.trigger.event === id) ||
-        event.actions.some((action) => action.kind === 'posture' && 'event' in action.until && action.until.event === id)),
+        event.actions.some((action) => (action.kind === 'posture' || action.kind === 'bombardment') && 'event' in action.until && action.until.event === id)),
   );
 }
 
-/** The events that use a place (trigger area, entry, fall-back area). */
+/** The events that use a place (trigger area, entry, fall-back area, bombardment target). */
 export function placeUsers(events: readonly BattleEvent[], placeId: number): BattleEvent[] {
   return events.filter(
     (event) =>
       (event.trigger?.kind === 'area' && event.trigger.area === placeId) ||
-      event.actions.some((action) => (action.kind === 'troops' && action.entry === placeId) || (action.kind === 'posture' && action.area === placeId)),
+      event.actions.some(
+        (action) =>
+          (action.kind === 'troops' && action.entry === placeId) ||
+          (action.kind === 'posture' && action.area === placeId) ||
+          (action.kind === 'bombardment' && action.target.kind === 'area' && action.target.area === placeId),
+      ),
   );
 }
 
@@ -143,7 +148,9 @@ export function renumberEvents(events: readonly BattleEvent[]): BattleEvent[] {
     ...event,
     id: index + 1,
     trigger: event.trigger?.kind === 'after' ? { kind: 'after', event: map(event.trigger.event) } : event.trigger,
-    actions: event.actions.map((action) => (action.kind === 'posture' && 'event' in action.until ? { ...action, until: { event: map(action.until.event) } } : action)),
+    actions: event.actions.map((action) =>
+      (action.kind === 'posture' || action.kind === 'bombardment') && 'event' in action.until ? { ...action, until: { event: map(action.until.event) } } : action,
+    ),
   }));
 }
 

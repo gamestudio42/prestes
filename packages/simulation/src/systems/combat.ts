@@ -503,8 +503,16 @@ function applyHit(
     : weapon.damageMin;
   const extra = reduced ? Math.round(spread * 0.5) : spread;
   const damage = base + Math.floor(ctx.rng.nextFloat() * (extra + 1));
-  // Two or three hits put a man down: whether he falls wounded or dead is
-  // drawn when he goes down (a man already severely wounded dies).
+  applyDamage(ctx, target, damage, moraleDamage, tick, events);
+}
+
+/**
+ * Damage and morale on a man, and his going down (add-artillery-bombardment
+ * 2.1: shared by rifle hits and shell bursts). Two or three rifle hits put a
+ * man down: whether he falls wounded or dead is drawn when he goes down (a
+ * man already severely wounded dies).
+ */
+export function applyDamage(ctx: SimContext, target: MutableUnit, damage: number, moraleDamage: number, tick: number, events: SimEvent[]): void {
   const severe = target.wound === 'severe';
   target.hp = Math.max(0, target.hp - damage);
   target.morale = Math.max(0, target.morale - moraleDamage);

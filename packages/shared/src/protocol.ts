@@ -4,6 +4,7 @@ import type { Gait } from './gait';
 import type { WeaponId } from './weapons';
 import type { ArmyId } from './armies';
 import type { Roster, SectionTypeId } from './sections';
+import type { GunId } from './artillery';
 
 export interface Vec2 {
   x: number;
@@ -18,7 +19,7 @@ export type Faction = 'column' | 'legalist' | 'cangaceiro' | 'civilian' | 'targe
  * `fence` (add-battle-maps): a wire or rail fence, a hedge or a row of coffee
  * bushes. It stops movement and gives no cover.
  */
-export type CoverKind = 'sandbag' | 'stone' | 'trench' | 'barrel' | 'low-wall' | 'building' | 'fence';
+export type CoverKind = 'sandbag' | 'stone' | 'trench' | 'barrel' | 'low-wall' | 'building' | 'fence' | 'crater';
 
 export interface CoverPoint {
   id: number;
@@ -433,7 +434,11 @@ export type SimEvent =
   | { type: 'assault_started'; tick: number; positionId: number }
   | { type: 'assault_ended'; tick: number; positionId: number; winner: 'column' | 'legalist' }
   /** add-battle-events: a map event fired; `cards` are its narrative cards, in order. */
-  | { type: 'battle_event_fired'; tick: number; eventId: number; cards?: Array<{ title: LocalizedText; text: LocalizedText }> };
+  | { type: 'battle_event_fired'; tick: number; eventId: number; cards?: Array<{ title: LocalizedText; text: LocalizedText }> }
+  /** add-artillery-bombardment D6: a shell on its way; it lands at (x, y) on `landsAt`. */
+  | { type: 'shell_incoming'; tick: number; gun: GunId; x: number; y: number; landsAt: number }
+  /** add-artillery-bombardment D6: a shell burst at (x, y); `crater` is the cover id of the crater it left. */
+  | { type: 'shell_impact'; tick: number; gun: GunId; x: number; y: number; crater?: number };
 
 /** add-battle-events 2.5: a map event's state, for the editor's playtest panel. */
 export interface BattleEventState {

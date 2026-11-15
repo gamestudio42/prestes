@@ -67,7 +67,7 @@ export function coverSlots(cover: CoverPoint): CoverSlot[] {
   // A fence stops a man but shelters no one: it has no slots.
   if (cover.kind === 'fence' || cover.noSlots) return [];
   const low = cover.height < LOW_COVER_HEIGHT;
-  const slotStance: Stance = cover.kind === 'trench' || low ? 'crouched' : 'standing';
+  const slotStance: Stance = cover.kind === 'trench' || cover.kind === 'crater' || low ? 'crouched' : 'standing';
   const local: Array<{ x: number; y: number; guard: Vec2 | null }> = [];
 
   if (cover.kind === 'trench' && cover.facing) {
@@ -93,6 +93,9 @@ export function coverSlots(cover: CoverPoint): CoverSlot[] {
     for (const x of spread(cover.halfWidth * 2, LINEAR_SPACING)) {
       local.push({ x, y: 0, guard: null });
     }
+  } else if (cover.kind === 'crater') {
+    // add-artillery-bombardment D5: a shell hole holds two men, covered on every side.
+    local.push({ x: -0.6, y: 0, guard: null }, { x: 0.6, y: 0, guard: null });
   } else if (cover.kind === 'barrel') {
     // A man every 1.5 m along each face (the owner, 2026-11-15: a 6 m log
     // shelters four on one side, not one); a barrel or a crate keeps one a face.
