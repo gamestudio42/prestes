@@ -1,0 +1,6447 @@
+{
+ "format": "prestes-map",
+ "version": 9,
+ "id": "ponte-de-verdinho",
+ "size": "small",
+ "name": {
+  "pt-BR": "A Ponte de Verdinho",
+  "en": "The Verdinho Bridge"
+ },
+ "description": {
+  "pt-BR": "27 e 28 de junho de 1925, perto de Mineiros, Goiás: a retaguarda de Cordeiro segura a ponte do Verdinho até as carroças passarem e sai pelo vau.",
+  "en": "27-28 June 1925, outside Mineiros, Goiás: Cordeiro's rearguard holds the Verdinho bridge until the wagons are through and leaves by the ford."
+ },
+ "use": "campaign",
+ "mission": "ponte-de-verdinho",
+ "light": {
+  "time": 6.5,
+  "bearing": 90
+ },
+ "setting": {
+  "label": "historical-setting-fictional-place",
+  "sourceNote": "Cenário histórico, lugar fictício. A ponte do Verdinho, fora de Mineiros (GO), 27-28 jun. 1925: a retaguarda de Prestes e Cordeiro deteve Klinger, queimou a ponte e atravessou o rio raso a vau na manhã seguinte; Klinger abriu um vau com as madeiras da ponte. macaulay-1974, cap. V, pp. 122-124. O incêndio da ponte não existe no jogo: a ponte fica de pé; o traçado é uma abstração de jogo."
+ },
+ "palette": "cerrado",
+ "waterLevel": -1.2,
+ "baseMaterial": "cerrado-grass",
+ "roads": [
+  {
+   "id": 3,
+   "type": "dirt-road",
+   "width": 6,
+   "ditches": {
+    "left": true,
+    "right": true
+   },
+   "points": [
+    {
+     "x": -121.60000000000001,
+     "y": -145.92000000000002
+    },
+    {
+     "x": -25.6,
+     "y": -30.72
+    },
+    {
+     "x": 0,
+     "y": 0
+    },
+    {
+     "x": 25.6,
+     "y": 30.72
+    },
+    {
+     "x": 90.4,
+     "y": 78.48
+    },
+    {
+     "x": 150,
+     "y": 96
+    }
+   ]
+  },
+  {
+   "id": 4,
+   "type": "trail",
+   "width": 3,
+   "ditches": {
+    "left": false,
+    "right": false
+   },
+   "points": [
+    {
+     "x": 25.6,
+     "y": 30.72
+    },
+    {
+     "x": 65.28,
+     "y": -30.976000000000006
+    },
+    {
+     "x": 53.76,
+     "y": -44.800000000000004
+    },
+    {
+     "x": 39.68,
+     "y": -61.696000000000005
+    },
+    {
+     "x": -40,
+     "y": -60
+    }
+   ]
+  }
+ ],
+ "rivers": [
+  {
+   "id": 1,
+   "width": 16,
+   "points": [
+    {
+     "x": -143.53900133447354,
+     "y": 124.45719839863179
+    },
+    {
+     "x": -130.5537088823693,
+     "y": 115.05394934115682
+    },
+    {
+     "x": -116.52499186640026,
+     "y": 106.90280976031971
+    },
+    {
+     "x": -104.26783434941566,
+     "y": 96.6257987807012
+    },
+    {
+     "x": -95.0922287911185,
+     "y": 82.6509254506578
+    },
+    {
+     "x": -86.80824826783756,
+     "y": 67.60610207859494
+    },
+    {
+     "x": -76.28454193495543,
+     "y": 55.24894967805349
+    },
+    {
+     "x": -63.21623509715351,
+     "y": 45.9453178834158
+    },
+    {
+     "x": -50.154484213091294,
+     "y": 36.63381894429045
+    },
+    {
+     "x": -38.82766684620839,
+     "y": 25.24039978454994
+    },
+    {
+     "x": -27.709181391515735,
+     "y": 13.596982330181117
+    },
+    {
+     "x": -10.752,
+     "y": 8.96
+    },
+    {
+     "x": 1.536,
+     "y": -1.28
+    },
+    {
+     "x": 13.824,
+     "y": -11.52
+    },
+    {
+     "x": 30.637694368601093,
+     "y": -16.329166757678692
+    },
+    {
+     "x": 41.52897936233025,
+     "y": -28.245224765203705
+    },
+    {
+     "x": 53.27293223214436,
+     "y": -39.13808132142677
+    },
+    {
+     "x": 66.60188445432883,
+     "y": -48.12893865480541
+    },
+    {
+     "x": 79.2092514617904,
+     "y": -57.98569824585151
+    },
+    {
+     "x": 88.99334518888737,
+     "y": -71.23038577333517
+    },
+    {
+     "x": 97.16742222690193,
+     "y": -86.40709332771769
+    },
+    {
+     "x": 107.03354716236373,
+     "y": -99.55334340516353
+    },
+    {
+     "x": 119.98267734401082,
+     "y": -108.99998718718702
+    },
+    {
+     "x": 133.97880983705505,
+     "y": -117.19022819553396
+    }
+   ],
+   "kinds": [
+    "deep",
+    "deep",
+    "deep",
+    "deep",
+    "deep",
+    "deep",
+    "deep",
+    "deep",
+    "deep",
+    "deep",
+    "deep",
+    "deep",
+    "deep",
+    "deep",
+    "deep",
+    "ford",
+    "ford",
+    "deep",
+    "deep",
+    "deep",
+    "deep",
+    "deep",
+    "deep"
+   ]
+  }
+ ],
+ "ponds": [],
+ "bridges": [
+  {
+   "id": 2,
+   "x": 0,
+   "y": 0,
+   "rotation": -0.6947382761967033,
+   "halfWidth": 3,
+   "halfDepth": 15,
+   "deckHeight": 1.8
+  }
+ ],
+ "ferries": [],
+ "lines": [
+  {
+   "id": 19,
+   "kind": "rail-fence",
+   "height": 1.2,
+   "points": [
+    {
+     "x": -59.6,
+     "y": -34.72
+    },
+    {
+     "x": -55.6,
+     "y": -0.7199999999999989
+    },
+    {
+     "x": -29.6,
+     "y": 3.280000000000001
+    }
+   ]
+  }
+ ],
+ "trenches": [
+  {
+   "id": 22,
+   "kind": "fire",
+   "depth": 1.2,
+   "facing": "left",
+   "bays": true,
+   "parapet": "earth",
+   "points": [
+    {
+     "x": -40.32,
+     "y": -1.5360000000000014
+    },
+    {
+     "x": -25.216,
+     "y": -11.52
+    }
+   ]
+  },
+  {
+   "id": 23,
+   "kind": "fire",
+   "depth": 1.2,
+   "facing": "left",
+   "bays": true,
+   "parapet": "earth",
+   "points": [
+    {
+     "x": -4.607999999999999,
+     "y": -27.392000000000003
+    },
+    {
+     "x": 14.079999999999998,
+     "y": -45.568
+    }
+   ]
+  }
+ ],
+ "objects": [
+  {
+   "id": 5,
+   "type": "rancho",
+   "x": -43.6,
+   "y": -20.7,
+   "rotation": 0.9
+  },
+  {
+   "id": 6,
+   "type": "venda",
+   "x": -9.6,
+   "y": -44.7,
+   "rotation": 2.4,
+   "variant": "ochre"
+  },
+  {
+   "id": 7,
+   "type": "wattle-house",
+   "x": -84,
+   "y": -40,
+   "rotation": 0.6
+  },
+  {
+   "id": 8,
+   "type": "ox-cart",
+   "x": -60,
+   "y": -78,
+   "rotation": 0.7
+  },
+  {
+   "id": 9,
+   "type": "ox-cart",
+   "x": -74,
+   "y": -92,
+   "rotation": 0.6
+  },
+  {
+   "id": 10,
+   "type": "supply-cart",
+   "x": -44,
+   "y": -60,
+   "rotation": 0.7
+  },
+  {
+   "id": 11,
+   "type": "fallen-log",
+   "x": -14,
+   "y": -30,
+   "rotation": 2.2
+  },
+  {
+   "id": 12,
+   "type": "fallen-log",
+   "x": 18,
+   "y": -40,
+   "rotation": 0.4
+  },
+  {
+   "id": 13,
+   "type": "stone-pile",
+   "x": -6,
+   "y": -16,
+   "rotation": 0
+  },
+  {
+   "id": 14,
+   "type": "woodpile",
+   "x": -21.6,
+   "y": -22.7,
+   "rotation": 0.3
+  },
+  {
+   "id": 15,
+   "type": "barrel",
+   "x": -3.6,
+   "y": -36.7,
+   "rotation": 0
+  },
+  {
+   "id": 16,
+   "type": "crate",
+   "x": -1.6,
+   "y": -32.7,
+   "rotation": 0.3
+  },
+  {
+   "id": 17,
+   "type": "water-trough",
+   "x": -33.6,
+   "y": -8.7,
+   "rotation": 0.9
+  },
+  {
+   "id": 18,
+   "type": "hitching-post",
+   "x": -15.6,
+   "y": -36.7,
+   "rotation": 0.9
+  },
+  {
+   "id": 20,
+   "type": "barricade",
+   "x": -12.8,
+   "y": -15.4,
+   "rotation": -0.6947
+  },
+  {
+   "id": 21,
+   "type": "sandbags",
+   "x": -7.9,
+   "y": -22,
+   "rotation": -0.6947
+  },
+  {
+   "id": 24,
+   "type": "lorry",
+   "x": 80.4,
+   "y": 80.5,
+   "rotation": 2.4
+  },
+  {
+   "id": 25,
+   "type": "lorry",
+   "x": 94.4,
+   "y": 90.5,
+   "rotation": 2.3
+  },
+  {
+   "id": 26,
+   "type": "motor-car",
+   "x": 66.4,
+   "y": 96.5,
+   "rotation": 2.5
+  },
+  {
+   "id": 27,
+   "type": "fuel-tins",
+   "x": 88.4,
+   "y": 74.5,
+   "rotation": 0
+  },
+  {
+   "id": 28,
+   "type": "fallen-log",
+   "x": 40,
+   "y": 30,
+   "rotation": 0.9
+  },
+  {
+   "id": 29,
+   "type": "matacao",
+   "x": 70,
+   "y": 10,
+   "rotation": 0.2
+  },
+  {
+   "id": 30,
+   "type": "boulder",
+   "x": 20,
+   "y": 60,
+   "rotation": 0
+  },
+  {
+   "id": 31,
+   "type": "outcrop",
+   "x": -50,
+   "y": 70,
+   "rotation": 1.1
+  },
+  {
+   "id": 32,
+   "type": "matacao",
+   "x": 90,
+   "y": -60,
+   "rotation": 0.6
+  },
+  {
+   "id": 33,
+   "type": "boulder",
+   "x": -30,
+   "y": 94,
+   "rotation": 0.3
+  },
+  {
+   "id": 34,
+   "type": "buriti",
+   "x": 25.6,
+   "y": -50.8,
+   "rotation": 2.4137,
+   "scale": 1.1
+  },
+  {
+   "id": 35,
+   "type": "aroeira",
+   "x": 94.4,
+   "y": -105.8,
+   "rotation": 3.1535,
+   "scale": 1.1
+  },
+  {
+   "id": 36,
+   "type": "aroeira",
+   "x": -102.4,
+   "y": 113.7,
+   "rotation": 4.4906,
+   "scale": 0.9
+  },
+  {
+   "id": 37,
+   "type": "bush-cerrado-head-b",
+   "x": 93.5,
+   "y": -60.4,
+   "rotation": 5.3828,
+   "scale": 1.1
+  },
+  {
+   "id": 38,
+   "type": "bush-cerrado-head-b",
+   "x": 100.4,
+   "y": -110.1,
+   "rotation": 4.1541,
+   "scale": 1
+  },
+  {
+   "id": 39,
+   "type": "tree-broad",
+   "x": 74.8,
+   "y": -28.2,
+   "rotation": 4.5511,
+   "scale": 0.9
+  },
+  {
+   "id": 40,
+   "type": "aroeira",
+   "x": 84.3,
+   "y": -106.3,
+   "rotation": 2.6485,
+   "scale": 0.9
+  },
+  {
+   "id": 41,
+   "type": "tree-broad",
+   "x": 69.9,
+   "y": -36.2,
+   "rotation": 0.466,
+   "scale": 0.9
+  },
+  {
+   "id": 42,
+   "type": "buriti",
+   "x": 90.4,
+   "y": -44.2,
+   "rotation": 4.0493,
+   "scale": 0.9
+  },
+  {
+   "id": 43,
+   "type": "bush-cerrado-head-a",
+   "x": -43,
+   "y": 10.6,
+   "rotation": 1.0083,
+   "scale": 1
+  },
+  {
+   "id": 44,
+   "type": "manaca",
+   "x": 91,
+   "y": -47.4,
+   "rotation": 4.863,
+   "scale": 1.1
+  },
+  {
+   "id": 45,
+   "type": "ipe",
+   "x": -4.3,
+   "y": 28.4,
+   "rotation": 4.2069,
+   "scale": 1.2
+  },
+  {
+   "id": 46,
+   "type": "manaca",
+   "x": 65.4,
+   "y": -77.3,
+   "rotation": 1.1984,
+   "scale": 0.9
+  },
+  {
+   "id": 47,
+   "type": "aroeira",
+   "x": 71.6,
+   "y": -94.1,
+   "rotation": 5.878,
+   "scale": 0.9
+  },
+  {
+   "id": 48,
+   "type": "buriti",
+   "x": 86.6,
+   "y": -100.6,
+   "rotation": 2.321,
+   "scale": 1.1
+  },
+  {
+   "id": 49,
+   "type": "ipe",
+   "x": -50.9,
+   "y": -2,
+   "rotation": 4.5708,
+   "scale": 1.1
+  },
+  {
+   "id": 50,
+   "type": "bush-cerrado-head-b",
+   "x": 60.4,
+   "y": -73.5,
+   "rotation": 5.9682,
+   "scale": 1
+  },
+  {
+   "id": 51,
+   "type": "aroeira",
+   "x": -79.7,
+   "y": 88.7,
+   "rotation": 0.7632,
+   "scale": 1.1
+  },
+  {
+   "id": 52,
+   "type": "buriti",
+   "x": -83.2,
+   "y": 27.2,
+   "rotation": 5.6749,
+   "scale": 1
+  },
+  {
+   "id": 53,
+   "type": "aroeira",
+   "x": -98.8,
+   "y": 67,
+   "rotation": 4.0096,
+   "scale": 1.1
+  },
+  {
+   "id": 54,
+   "type": "tree-broad",
+   "x": 79.5,
+   "y": -83.8,
+   "rotation": 4.9641,
+   "scale": 0.9
+  },
+  {
+   "id": 55,
+   "type": "buriti",
+   "x": -114.1,
+   "y": 85.6,
+   "rotation": 0.8736,
+   "scale": 0.9
+  },
+  {
+   "id": 56,
+   "type": "buriti",
+   "x": 71.9,
+   "y": -88.7,
+   "rotation": 5.6953,
+   "scale": 0.9
+  },
+  {
+   "id": 57,
+   "type": "aroeira",
+   "x": -63.5,
+   "y": 73,
+   "rotation": 2.3585,
+   "scale": 1.2
+  },
+  {
+   "id": 58,
+   "type": "bush-cerrado-head-a",
+   "x": -57.6,
+   "y": 10.1,
+   "rotation": 4.2197,
+   "scale": 1.2
+  },
+  {
+   "id": 59,
+   "type": "bush-cerrado-head-b",
+   "x": -95.7,
+   "y": 102.5,
+   "rotation": 1.8546,
+   "scale": 1
+  },
+  {
+   "id": 60,
+   "type": "manaca",
+   "x": -65.6,
+   "y": 82.9,
+   "rotation": 1.3186,
+   "scale": 0.9
+  },
+  {
+   "id": 61,
+   "type": "buriti",
+   "x": -84.2,
+   "y": 31.2,
+   "rotation": 1.5992,
+   "scale": 1.1
+  },
+  {
+   "id": 62,
+   "type": "bush-cerrado-head-a",
+   "x": 34,
+   "y": -0.1,
+   "rotation": 4.0592,
+   "scale": 1
+  },
+  {
+   "id": 63,
+   "type": "tree-broad",
+   "x": -34.4,
+   "y": 43.2,
+   "rotation": 1.2075,
+   "scale": 1.1
+  },
+  {
+   "id": 64,
+   "type": "bush-cerrado-head-b",
+   "x": -0.1,
+   "y": 33.9,
+   "rotation": 3.011,
+   "scale": 1
+  },
+  {
+   "id": 65,
+   "type": "bush-cerrado-head-a",
+   "x": -42.9,
+   "y": 50.2,
+   "rotation": 3.2747,
+   "scale": 0.9
+  },
+  {
+   "id": 66,
+   "type": "buriti",
+   "x": -112.2,
+   "y": 61.8,
+   "rotation": 2.4416,
+   "scale": 0.9
+  },
+  {
+   "id": 67,
+   "type": "bush-cerrado-head-a",
+   "x": -11.9,
+   "y": 37,
+   "rotation": 4.3289,
+   "scale": 1
+  },
+  {
+   "id": 68,
+   "type": "aroeira",
+   "x": -79.5,
+   "y": 44.9,
+   "rotation": 2.1215,
+   "scale": 1.1
+  },
+  {
+   "id": 69,
+   "type": "bush-cerrado-head-b",
+   "x": 84.1,
+   "y": -35.6,
+   "rotation": 1.1162,
+   "scale": 0.9
+  },
+  {
+   "id": 70,
+   "type": "buriti",
+   "x": 6,
+   "y": 27.7,
+   "rotation": 1.5512,
+   "scale": 1
+  },
+  {
+   "id": 71,
+   "type": "tree-broad",
+   "x": -24.1,
+   "y": 35.6,
+   "rotation": 0.8288,
+   "scale": 0.9
+  },
+  {
+   "id": 72,
+   "type": "bush-cerrado-head-a",
+   "x": -75,
+   "y": 87.1,
+   "rotation": 5.91,
+   "scale": 1.1
+  },
+  {
+   "id": 73,
+   "type": "bush-cerrado-head-b",
+   "x": -109.2,
+   "y": 59.5,
+   "rotation": 5.0862,
+   "scale": 0.9
+  },
+  {
+   "id": 74,
+   "type": "manaca",
+   "x": -45.9,
+   "y": -2.5,
+   "rotation": 2.402,
+   "scale": 1
+  },
+  {
+   "id": 75,
+   "type": "buriti",
+   "x": -97.4,
+   "y": 58.1,
+   "rotation": 5.0157,
+   "scale": 1
+  },
+  {
+   "id": 76,
+   "type": "tree-broad",
+   "x": -51.4,
+   "y": 18,
+   "rotation": 1.0453,
+   "scale": 1.1
+  },
+  {
+   "id": 77,
+   "type": "manaca",
+   "x": -46.2,
+   "y": 46.7,
+   "rotation": 2.8257,
+   "scale": 1
+  },
+  {
+   "id": 78,
+   "type": "buriti",
+   "x": -70.2,
+   "y": 25.3,
+   "rotation": 0.6925,
+   "scale": 1
+  },
+  {
+   "id": 79,
+   "type": "aroeira",
+   "x": 102.4,
+   "y": -56.2,
+   "rotation": 3.7284,
+   "scale": 0.9
+  },
+  {
+   "id": 80,
+   "type": "bush-cerrado-head-a",
+   "x": -51.7,
+   "y": 7.8,
+   "rotation": 0.7932,
+   "scale": 1.2
+  },
+  {
+   "id": 81,
+   "type": "tree-broad",
+   "x": -1.7,
+   "y": 21.5,
+   "rotation": 1.0427,
+   "scale": 1
+  },
+  {
+   "id": 82,
+   "type": "bush-cerrado-head-a",
+   "x": -55.5,
+   "y": 74.6,
+   "rotation": 5.851,
+   "scale": 1.1
+  },
+  {
+   "id": 83,
+   "type": "tree-broad",
+   "x": -111.5,
+   "y": 65.1,
+   "rotation": 0.6037,
+   "scale": 1
+  },
+  {
+   "id": 84,
+   "type": "bush-cerrado-head-a",
+   "x": -59.1,
+   "y": 19.4,
+   "rotation": 2.149,
+   "scale": 1
+  },
+  {
+   "id": 85,
+   "type": "bush-cerrado-head-b",
+   "x": 113.1,
+   "y": -116.9,
+   "rotation": 6.1119,
+   "scale": 0.9
+  },
+  {
+   "id": 86,
+   "type": "tree-broad",
+   "x": -57.1,
+   "y": 4.6,
+   "rotation": 3.8687,
+   "scale": 1.1
+  },
+  {
+   "id": 87,
+   "type": "buriti",
+   "x": -28,
+   "y": 29.2,
+   "rotation": 0.4354,
+   "scale": 1
+  },
+  {
+   "id": 88,
+   "type": "tree-broad",
+   "x": -26.3,
+   "y": 49,
+   "rotation": 0.8136,
+   "scale": 1
+  },
+  {
+   "id": 89,
+   "type": "buriti",
+   "x": 85.6,
+   "y": -92.4,
+   "rotation": 0.3513,
+   "scale": 1
+  },
+  {
+   "id": 90,
+   "type": "aroeira",
+   "x": 74,
+   "y": -21.6,
+   "rotation": 2.5892,
+   "scale": 1
+  },
+  {
+   "id": 91,
+   "type": "buriti",
+   "x": -107.1,
+   "y": 74.5,
+   "rotation": 5.2038,
+   "scale": 1.2
+  },
+  {
+   "id": 92,
+   "type": "buriti",
+   "x": -71.3,
+   "y": 37,
+   "rotation": 0.8322,
+   "scale": 0.9
+  },
+  {
+   "id": 93,
+   "type": "buriti",
+   "x": 107.7,
+   "y": -114.1,
+   "rotation": 3.5541,
+   "scale": 1.1
+  },
+  {
+   "id": 94,
+   "type": "aroeira",
+   "x": -46.4,
+   "y": 8.2,
+   "rotation": 3.9862,
+   "scale": 0.9
+  },
+  {
+   "id": 95,
+   "type": "bush-cerrado-head-a",
+   "x": 94.9,
+   "y": -38.6,
+   "rotation": 3.7277,
+   "scale": 0.9
+  },
+  {
+   "id": 96,
+   "type": "buriti",
+   "x": -106.3,
+   "y": 61.8,
+   "rotation": 1.9587,
+   "scale": 0.9
+  },
+  {
+   "id": 97,
+   "type": "buriti",
+   "x": 33,
+   "y": -4.3,
+   "rotation": 5.3067,
+   "scale": 0.9
+  },
+  {
+   "id": 98,
+   "type": "ipe",
+   "x": -37.9,
+   "y": 57.6,
+   "rotation": 4.35,
+   "scale": 1.1
+  },
+  {
+   "id": 99,
+   "type": "tree-broad",
+   "x": -70.8,
+   "y": 69.2,
+   "rotation": 0.1291,
+   "scale": 1
+  },
+  {
+   "id": 100,
+   "type": "aroeira",
+   "x": -111.7,
+   "y": 55.4,
+   "rotation": 4.0142,
+   "scale": 0.9
+  },
+  {
+   "id": 101,
+   "type": "bush-cerrado-head-b",
+   "x": 28.4,
+   "y": 2.7,
+   "rotation": 4.0677,
+   "scale": 0.9
+  },
+  {
+   "id": 102,
+   "type": "aroeira",
+   "x": 108.4,
+   "y": -55.9,
+   "rotation": 1.1463,
+   "scale": 1.1
+  },
+  {
+   "id": 103,
+   "type": "bush-cerrado-head-b",
+   "x": 24,
+   "y": -34.8,
+   "rotation": 2.372,
+   "scale": 0.9
+  },
+  {
+   "id": 104,
+   "type": "tree-broad",
+   "x": -63.1,
+   "y": 10.4,
+   "rotation": 5.7321,
+   "scale": 1.1
+  },
+  {
+   "id": 105,
+   "type": "bush-cerrado-head-b",
+   "x": 48.2,
+   "y": -18.8,
+   "rotation": 5.5466,
+   "scale": 1
+  },
+  {
+   "id": 106,
+   "type": "bush-cerrado-head-a",
+   "x": 24.8,
+   "y": 13.8,
+   "rotation": 1.264,
+   "scale": 1.2
+  },
+  {
+   "id": 107,
+   "type": "tree-broad",
+   "x": -23.7,
+   "y": -8.9,
+   "rotation": 5.2133,
+   "scale": 0.9
+  },
+  {
+   "id": 108,
+   "type": "aroeira",
+   "x": -114.4,
+   "y": 81.4,
+   "rotation": 4.6093,
+   "scale": 1.1
+  },
+  {
+   "id": 109,
+   "type": "buriti",
+   "x": 76.3,
+   "y": -71.9,
+   "rotation": 3.5134,
+   "scale": 1.2
+  },
+  {
+   "id": 110,
+   "type": "aroeira",
+   "x": -36.1,
+   "y": 39.4,
+   "rotation": 2.1871,
+   "scale": 1
+  },
+  {
+   "id": 111,
+   "type": "buriti",
+   "x": -106,
+   "y": 70.8,
+   "rotation": 2.8696,
+   "scale": 1.2
+  },
+  {
+   "id": 112,
+   "type": "manaca",
+   "x": 74,
+   "y": -74.7,
+   "rotation": 2.6833,
+   "scale": 0.9
+  },
+  {
+   "id": 113,
+   "type": "manaca",
+   "x": 30.5,
+   "y": -40.9,
+   "rotation": 3.9577,
+   "scale": 1.1
+  },
+  {
+   "id": 114,
+   "type": "ipe",
+   "x": 70.3,
+   "y": -73.6,
+   "rotation": 0.8027,
+   "scale": 0.9
+  },
+  {
+   "id": 115,
+   "type": "buriti",
+   "x": 68.7,
+   "y": -70.8,
+   "rotation": 3.9712,
+   "scale": 1.2
+  },
+  {
+   "id": 116,
+   "type": "tree-broad",
+   "x": 35.7,
+   "y": -51.6,
+   "rotation": 4.4109,
+   "scale": 1.1
+  },
+  {
+   "id": 117,
+   "type": "manaca",
+   "x": -104.4,
+   "y": 46.1,
+   "rotation": 6.1835,
+   "scale": 1.1
+  },
+  {
+   "id": 118,
+   "type": "ipe",
+   "x": 35.6,
+   "y": -43.9,
+   "rotation": 0.4925,
+   "scale": 0.9
+  },
+  {
+   "id": 119,
+   "type": "tree-broad",
+   "x": -59.6,
+   "y": 74.2,
+   "rotation": 1.2029,
+   "scale": 1
+  },
+  {
+   "id": 120,
+   "type": "bush-cerrado-head-b",
+   "x": -93.5,
+   "y": 100.2,
+   "rotation": 0.6584,
+   "scale": 0.9
+  },
+  {
+   "id": 121,
+   "type": "buriti",
+   "x": 76.1,
+   "y": -33.8,
+   "rotation": 0.9121,
+   "scale": 1.2
+  },
+  {
+   "id": 122,
+   "type": "bush-cerrado-head-a",
+   "x": -56.8,
+   "y": 56.5,
+   "rotation": 5.7298,
+   "scale": 1
+  },
+  {
+   "id": 123,
+   "type": "buriti",
+   "x": 84.2,
+   "y": -31.8,
+   "rotation": 4.5564,
+   "scale": 1
+  },
+  {
+   "id": 124,
+   "type": "aroeira",
+   "x": -87.3,
+   "y": 112.5,
+   "rotation": 3.2498,
+   "scale": 1
+  },
+  {
+   "id": 125,
+   "type": "ipe",
+   "x": 97.2,
+   "y": -46.7,
+   "rotation": 4.8876,
+   "scale": 1
+  },
+  {
+   "id": 126,
+   "type": "buriti",
+   "x": -99,
+   "y": 64.2,
+   "rotation": 4.6099,
+   "scale": 1
+  },
+  {
+   "id": 127,
+   "type": "bush-cerrado-head-a",
+   "x": -29.7,
+   "y": -0.2,
+   "rotation": 5.6621,
+   "scale": 0.9
+  },
+  {
+   "id": 128,
+   "type": "aroeira",
+   "x": 27.2,
+   "y": -46.3,
+   "rotation": 6.094,
+   "scale": 1
+  },
+  {
+   "id": 129,
+   "type": "manaca",
+   "x": -102.1,
+   "y": 68.8,
+   "rotation": 1.9347,
+   "scale": 1.1
+  },
+  {
+   "id": 130,
+   "type": "bush-cerrado-head-a",
+   "x": 23.8,
+   "y": 8.9,
+   "rotation": 5.5586,
+   "scale": 0.9
+  },
+  {
+   "id": 131,
+   "type": "ipe",
+   "x": -9,
+   "y": 30.8,
+   "rotation": 5.9408,
+   "scale": 0.9
+  },
+  {
+   "id": 132,
+   "type": "bush-cerrado-head-a",
+   "x": 34.8,
+   "y": -57.4,
+   "rotation": 2.6385,
+   "scale": 1
+  },
+  {
+   "id": 133,
+   "type": "buriti",
+   "x": 96.9,
+   "y": -116,
+   "rotation": 0.8373,
+   "scale": 1.2
+  },
+  {
+   "id": 134,
+   "type": "aroeira",
+   "x": 90.3,
+   "y": -101.1,
+   "rotation": 4.4111,
+   "scale": 1
+  },
+  {
+   "id": 135,
+   "type": "tree-broad",
+   "x": -27.3,
+   "y": -1.6,
+   "rotation": 5.0671,
+   "scale": 1.2
+  },
+  {
+   "id": 136,
+   "type": "bush-cerrado-head-b",
+   "x": -72.8,
+   "y": 76.8,
+   "rotation": 2.8582,
+   "scale": 1
+  },
+  {
+   "id": 137,
+   "type": "bush-cerrado-head-a",
+   "x": 55.7,
+   "y": -24.3,
+   "rotation": 4.5075,
+   "scale": 1
+  },
+  {
+   "id": 138,
+   "type": "bush-cerrado-head-a",
+   "x": -41.3,
+   "y": 60,
+   "rotation": 4.6822,
+   "scale": 1.2
+  },
+  {
+   "id": 139,
+   "type": "bush-cerrado-head-a",
+   "x": -49.6,
+   "y": 2.5,
+   "rotation": 4.0497,
+   "scale": 0.9
+  },
+  {
+   "id": 140,
+   "type": "buriti",
+   "x": 94,
+   "y": -108.8,
+   "rotation": 6.0722,
+   "scale": 1.1
+  },
+  {
+   "id": 141,
+   "type": "ipe",
+   "x": 83.1,
+   "y": -112.4,
+   "rotation": 0.8974,
+   "scale": 1.1
+  },
+  {
+   "id": 142,
+   "type": "bush-cerrado-head-b",
+   "x": 21.8,
+   "y": -1.2,
+   "rotation": 4.4701,
+   "scale": 1
+  },
+  {
+   "id": 143,
+   "type": "ipe",
+   "x": -63,
+   "y": 64.3,
+   "rotation": 6.2427,
+   "scale": 0.9
+  },
+  {
+   "id": 144,
+   "type": "aroeira",
+   "x": -56.2,
+   "y": 63.5,
+   "rotation": 5.6285,
+   "scale": 1
+  },
+  {
+   "id": 145,
+   "type": "bush-cerrado-head-a",
+   "x": -95.3,
+   "y": 40.1,
+   "rotation": 2.5372,
+   "scale": 0.9
+  },
+  {
+   "id": 146,
+   "type": "bush-cerrado-head-b",
+   "x": -19.1,
+   "y": 24.9,
+   "rotation": 6.1667,
+   "scale": 1.1
+  },
+  {
+   "id": 147,
+   "type": "bush-cerrado-head-a",
+   "x": 7.2,
+   "y": -30.9,
+   "rotation": 0.0688,
+   "scale": 0.9
+  },
+  {
+   "id": 148,
+   "type": "buriti",
+   "x": -109.8,
+   "y": 68,
+   "rotation": 2.4092,
+   "scale": 1.1
+  },
+  {
+   "id": 149,
+   "type": "tree-broad",
+   "x": 81.7,
+   "y": -101.6,
+   "rotation": 5.3303,
+   "scale": 0.9
+  },
+  {
+   "id": 150,
+   "type": "ipe",
+   "x": -61.6,
+   "y": 31.2,
+   "rotation": 5.4042,
+   "scale": 0.9
+  },
+  {
+   "id": 151,
+   "type": "ipe",
+   "x": 65.2,
+   "y": -66.3,
+   "rotation": 1.9246,
+   "scale": 1.1
+  },
+  {
+   "id": 152,
+   "type": "tree-broad",
+   "x": 70.2,
+   "y": -85.7,
+   "rotation": 4.9017,
+   "scale": 0.9
+  },
+  {
+   "id": 153,
+   "type": "tree-broad",
+   "x": -110,
+   "y": 77.2,
+   "rotation": 5.607,
+   "scale": 1.1
+  },
+  {
+   "id": 154,
+   "type": "buriti",
+   "x": -73.2,
+   "y": 72,
+   "rotation": 2.9824,
+   "scale": 1.1
+  },
+  {
+   "id": 155,
+   "type": "ipe",
+   "x": -82.9,
+   "y": 111.9,
+   "rotation": 4.1557,
+   "scale": 1.1
+  },
+  {
+   "id": 156,
+   "type": "ipe",
+   "x": 67.8,
+   "y": -27.7,
+   "rotation": 5.194,
+   "scale": 1
+  },
+  {
+   "id": 157,
+   "type": "tree-broad",
+   "x": 20.1,
+   "y": 8.8,
+   "rotation": 4.5616,
+   "scale": 0.9
+  },
+  {
+   "id": 158,
+   "type": "buriti",
+   "x": -51.9,
+   "y": 54.7,
+   "rotation": 2.4386,
+   "scale": 0.9
+  },
+  {
+   "id": 159,
+   "type": "buriti",
+   "x": -67.6,
+   "y": 32.7,
+   "rotation": 4.9401,
+   "scale": 0.9
+  },
+  {
+   "id": 160,
+   "type": "bush-cerrado-head-a",
+   "x": 10.6,
+   "y": -35.3,
+   "rotation": 2.6997,
+   "scale": 0.9
+  },
+  {
+   "id": 161,
+   "type": "bush-cerrado-head-a",
+   "x": -46.9,
+   "y": 51.5,
+   "rotation": 2.5151,
+   "scale": 0.9
+  },
+  {
+   "id": 162,
+   "type": "bush-cerrado-head-a",
+   "x": 18.5,
+   "y": -32.9,
+   "rotation": 0.1832,
+   "scale": 1
+  },
+  {
+   "id": 163,
+   "type": "ipe",
+   "x": 22.8,
+   "y": -44.8,
+   "rotation": 6.0459,
+   "scale": 1
+  },
+  {
+   "id": 164,
+   "type": "bush-cerrado-head-b",
+   "x": 48.2,
+   "y": -68.9,
+   "rotation": 3.9069,
+   "scale": 1.1
+  },
+  {
+   "id": 165,
+   "type": "manaca",
+   "x": 62,
+   "y": -64.3,
+   "rotation": 2.1377,
+   "scale": 0.9
+  },
+  {
+   "id": 166,
+   "type": "aroeira",
+   "x": 1,
+   "y": 31,
+   "rotation": 4.8882,
+   "scale": 0.9
+  },
+  {
+   "id": 167,
+   "type": "bush-cerrado-head-a",
+   "x": -68.2,
+   "y": 84.3,
+   "rotation": 0.834,
+   "scale": 0.9
+  },
+  {
+   "id": 168,
+   "type": "buriti",
+   "x": -48.9,
+   "y": 49.3,
+   "rotation": 5.0359,
+   "scale": 1
+  },
+  {
+   "id": 169,
+   "type": "ipe",
+   "x": -101.7,
+   "y": 54.8,
+   "rotation": 4.6478,
+   "scale": 1.1
+  },
+  {
+   "id": 170,
+   "type": "buriti",
+   "x": -16.5,
+   "y": 20.9,
+   "rotation": 6.1365,
+   "scale": 1.2
+  },
+  {
+   "id": 171,
+   "type": "bush-cerrado-head-b",
+   "x": -1.9,
+   "y": -20.3,
+   "rotation": 1.396,
+   "scale": 0.9
+  },
+  {
+   "id": 172,
+   "type": "buriti",
+   "x": -54.2,
+   "y": 25.6,
+   "rotation": 0.9936,
+   "scale": 0.9
+  },
+  {
+   "id": 173,
+   "type": "manaca",
+   "x": 115.6,
+   "y": -83.5,
+   "rotation": 2.3248,
+   "scale": 1.1
+  },
+  {
+   "id": 174,
+   "type": "ipe",
+   "x": -30.5,
+   "y": -14.4,
+   "rotation": 1.8154,
+   "scale": 1.1
+  },
+  {
+   "id": 175,
+   "type": "tree-broad",
+   "x": 35.4,
+   "y": 6,
+   "rotation": 3.1054,
+   "scale": 1.2
+  },
+  {
+   "id": 176,
+   "type": "bush-cerrado-head-b",
+   "x": -46.3,
+   "y": 5,
+   "rotation": 4.097,
+   "scale": 1.1
+  },
+  {
+   "id": 177,
+   "type": "bush-cerrado-head-b",
+   "x": -30.3,
+   "y": 47,
+   "rotation": 3.3447,
+   "scale": 0.9
+  },
+  {
+   "id": 178,
+   "type": "tree-broad",
+   "x": -58.9,
+   "y": 22.6,
+   "rotation": 4.4228,
+   "scale": 1
+  },
+  {
+   "id": 179,
+   "type": "ipe",
+   "x": 101.2,
+   "y": -49.9,
+   "rotation": 0.0403,
+   "scale": 1.1
+  },
+  {
+   "id": 180,
+   "type": "bush-cerrado-head-b",
+   "x": 82.7,
+   "y": -40.9,
+   "rotation": 1.3961,
+   "scale": 0.9
+  },
+  {
+   "id": 181,
+   "type": "ipe",
+   "x": -89.7,
+   "y": 53.3,
+   "rotation": 2.9754,
+   "scale": 0.9
+  },
+  {
+   "id": 182,
+   "type": "aroeira",
+   "x": -62.8,
+   "y": 70.2,
+   "rotation": 4.3001,
+   "scale": 0.9
+  },
+  {
+   "id": 183,
+   "type": "bush-cerrado-head-a",
+   "x": -111.9,
+   "y": 116.1,
+   "rotation": 0.911,
+   "scale": 0.9
+  },
+  {
+   "id": 184,
+   "type": "bush-cerrado-head-a",
+   "x": -49.9,
+   "y": 64.5,
+   "rotation": 1.2234,
+   "scale": 0.9
+  },
+  {
+   "id": 185,
+   "type": "buriti",
+   "x": -86.8,
+   "y": 105.3,
+   "rotation": 0.1026,
+   "scale": 1.1
+  },
+  {
+   "id": 186,
+   "type": "tree-broad",
+   "x": 28.4,
+   "y": 10.3,
+   "rotation": 4.7246,
+   "scale": 0.9
+  },
+  {
+   "id": 187,
+   "type": "tree-broad",
+   "x": -75.9,
+   "y": 39.3,
+   "rotation": 2.7121,
+   "scale": 1
+  },
+  {
+   "id": 188,
+   "type": "ipe",
+   "x": 45.5,
+   "y": -8.9,
+   "rotation": 3.556,
+   "scale": 1.2
+  },
+  {
+   "id": 189,
+   "type": "manaca",
+   "x": 103.3,
+   "y": -111.7,
+   "rotation": 3.4947,
+   "scale": 1.1
+  },
+  {
+   "id": 190,
+   "type": "buriti",
+   "x": 76.2,
+   "y": -90.4,
+   "rotation": 5.5064,
+   "scale": 1.1
+  },
+  {
+   "id": 191,
+   "type": "bush-cerrado-head-b",
+   "x": 72.2,
+   "y": -31.3,
+   "rotation": 5.3342,
+   "scale": 1.1
+  },
+  {
+   "id": 192,
+   "type": "tree-broad",
+   "x": 66.9,
+   "y": -80.9,
+   "rotation": 1.1407,
+   "scale": 1.1
+  },
+  {
+   "id": 193,
+   "type": "ipe",
+   "x": 80.4,
+   "y": -29.3,
+   "rotation": 1.8336,
+   "scale": 0.9
+  },
+  {
+   "id": 194,
+   "type": "tree-broad",
+   "x": -60,
+   "y": 69.4,
+   "rotation": 0.2993,
+   "scale": 0.9
+  },
+  {
+   "id": 195,
+   "type": "manaca",
+   "x": -65.6,
+   "y": 66.6,
+   "rotation": 4.6678,
+   "scale": 0.9
+  },
+  {
+   "id": 196,
+   "type": "manaca",
+   "x": 108.8,
+   "y": -52.1,
+   "rotation": 2.5931,
+   "scale": 1.2
+  },
+  {
+   "id": 197,
+   "type": "tree-broad",
+   "x": -66.1,
+   "y": 69.5,
+   "rotation": 1.5454,
+   "scale": 1.2
+  },
+  {
+   "id": 198,
+   "type": "ipe",
+   "x": -37.8,
+   "y": -9.5,
+   "rotation": 4.4091,
+   "scale": 1.1
+  },
+  {
+   "id": 199,
+   "type": "buriti",
+   "x": -13.4,
+   "y": 31.4,
+   "rotation": 5.3754,
+   "scale": 1.2
+  },
+  {
+   "id": 200,
+   "type": "tree-broad",
+   "x": -49,
+   "y": 61.7,
+   "rotation": 1.3488,
+   "scale": 1.1
+  },
+  {
+   "id": 201,
+   "type": "buriti",
+   "x": 11.7,
+   "y": -31.2,
+   "rotation": 5.8008,
+   "scale": 1
+  },
+  {
+   "id": 202,
+   "type": "aroeira",
+   "x": -97.1,
+   "y": 105.2,
+   "rotation": 3.6588,
+   "scale": 0.9
+  },
+  {
+   "id": 203,
+   "type": "manaca",
+   "x": 29.8,
+   "y": -30.4,
+   "rotation": 5.7196,
+   "scale": 0.9
+  },
+  {
+   "id": 204,
+   "type": "tree-broad",
+   "x": -40.8,
+   "y": -6.9,
+   "rotation": 2.251,
+   "scale": 1
+  },
+  {
+   "id": 205,
+   "type": "aroeira",
+   "x": -30.8,
+   "y": 54.3,
+   "rotation": 0.1302,
+   "scale": 1
+  },
+  {
+   "id": 206,
+   "type": "tree-broad",
+   "x": -49.1,
+   "y": 19.9,
+   "rotation": 0.1406,
+   "scale": 1
+  },
+  {
+   "id": 207,
+   "type": "manaca",
+   "x": -30.9,
+   "y": 43.9,
+   "rotation": 2.7503,
+   "scale": 1.1
+  },
+  {
+   "id": 208,
+   "type": "bush-cerrado-head-b",
+   "x": 81.3,
+   "y": -91,
+   "rotation": 5.7044,
+   "scale": 1
+  },
+  {
+   "id": 209,
+   "type": "buriti",
+   "x": -45.6,
+   "y": 17.1,
+   "rotation": 5.2422,
+   "scale": 1.1
+  },
+  {
+   "id": 210,
+   "type": "buriti",
+   "x": -18.6,
+   "y": -5.4,
+   "rotation": 2.1575,
+   "scale": 0.9
+  },
+  {
+   "id": 211,
+   "type": "bush-cerrado-head-b",
+   "x": 5.5,
+   "y": 24.4,
+   "rotation": 3.3593,
+   "scale": 0.9
+  },
+  {
+   "id": 212,
+   "type": "aroeira",
+   "x": 84.6,
+   "y": -47.7,
+   "rotation": 2.7967,
+   "scale": 1.1
+  },
+  {
+   "id": 213,
+   "type": "aroeira",
+   "x": 105.7,
+   "y": -77.6,
+   "rotation": 3.2333,
+   "scale": 0.9
+  },
+  {
+   "id": 214,
+   "type": "bush-cerrado-head-a",
+   "x": -63.7,
+   "y": 15.9,
+   "rotation": 6.0388,
+   "scale": 1
+  },
+  {
+   "id": 215,
+   "type": "tree-broad",
+   "x": -39.5,
+   "y": 47.2,
+   "rotation": 5.4965,
+   "scale": 0.9
+  },
+  {
+   "id": 216,
+   "type": "tree-broad",
+   "x": -93.5,
+   "y": 59.4,
+   "rotation": 5.868,
+   "scale": 1
+  },
+  {
+   "id": 217,
+   "type": "bush-cerrado-head-b",
+   "x": -27.2,
+   "y": 44.1,
+   "rotation": 3.3464,
+   "scale": 1.2
+  },
+  {
+   "id": 218,
+   "type": "buriti",
+   "x": 72.6,
+   "y": -79.5,
+   "rotation": 5.3318,
+   "scale": 0.9
+  },
+  {
+   "id": 219,
+   "type": "buriti",
+   "x": 92.5,
+   "y": -54.4,
+   "rotation": 2.2307,
+   "scale": 1.2
+  },
+  {
+   "id": 220,
+   "type": "bush-cerrado-head-a",
+   "x": -39.1,
+   "y": 42,
+   "rotation": 2.2129,
+   "scale": 1
+  },
+  {
+   "id": 221,
+   "type": "aroeira",
+   "x": -66.6,
+   "y": 79.2,
+   "rotation": 3.8696,
+   "scale": 0.9
+  },
+  {
+   "id": 222,
+   "type": "manaca",
+   "x": -2.9,
+   "y": 30.9,
+   "rotation": 0.2362,
+   "scale": 0.9
+  },
+  {
+   "id": 223,
+   "type": "buriti",
+   "x": 101.9,
+   "y": -46.8,
+   "rotation": 6.1916,
+   "scale": 1
+  },
+  {
+   "id": 224,
+   "type": "buriti",
+   "x": -95.8,
+   "y": 109.5,
+   "rotation": 0.1941,
+   "scale": 1
+  },
+  {
+   "id": 225,
+   "type": "tree-broad",
+   "x": -4.8,
+   "y": 18.6,
+   "rotation": 0.3799,
+   "scale": 1.1
+  },
+  {
+   "id": 226,
+   "type": "buriti",
+   "x": 78.3,
+   "y": -97,
+   "rotation": 1.6992,
+   "scale": 1
+  },
+  {
+   "id": 227,
+   "type": "manaca",
+   "x": 33.5,
+   "y": -35.6,
+   "rotation": 1.7483,
+   "scale": 1.1
+  },
+  {
+   "id": 228,
+   "type": "tree-broad",
+   "x": -75.2,
+   "y": 35.8,
+   "rotation": 0.5361,
+   "scale": 1.1
+  },
+  {
+   "id": 229,
+   "type": "bush-cerrado-head-b",
+   "x": -20,
+   "y": 40.2,
+   "rotation": 4.1568,
+   "scale": 1.1
+  },
+  {
+   "id": 230,
+   "type": "aroeira",
+   "x": 94.1,
+   "y": -113.2,
+   "rotation": 1.7564,
+   "scale": 1
+  },
+  {
+   "id": 231,
+   "type": "buriti",
+   "x": 20.2,
+   "y": -27.1,
+   "rotation": 4.442,
+   "scale": 1.2
+  },
+  {
+   "id": 232,
+   "type": "buriti",
+   "x": 64.4,
+   "y": -72.1,
+   "rotation": 5.9169,
+   "scale": 1
+  },
+  {
+   "id": 233,
+   "type": "buriti",
+   "x": 98.9,
+   "y": -41,
+   "rotation": 0.7555,
+   "scale": 1.2
+  },
+  {
+   "id": 234,
+   "type": "buriti",
+   "x": -18.6,
+   "y": -0.8,
+   "rotation": 0.1468,
+   "scale": 1.1
+  },
+  {
+   "id": 235,
+   "type": "aroeira",
+   "x": -109,
+   "y": 71.8,
+   "rotation": 3.0998,
+   "scale": 1.2
+  },
+  {
+   "id": 236,
+   "type": "tree-broad",
+   "x": -5.3,
+   "y": 32.7,
+   "rotation": 6.1232,
+   "scale": 0.9
+  },
+  {
+   "id": 237,
+   "type": "manaca",
+   "x": 94.8,
+   "y": -56.1,
+   "rotation": 0.7499,
+   "scale": 0.9
+  },
+  {
+   "id": 238,
+   "type": "buriti",
+   "x": -79.6,
+   "y": 81.3,
+   "rotation": 3.8264,
+   "scale": 1
+  },
+  {
+   "id": 239,
+   "type": "ipe",
+   "x": 90.7,
+   "y": -33.3,
+   "rotation": 3.7184,
+   "scale": 1
+  },
+  {
+   "id": 240,
+   "type": "aroeira",
+   "x": 97.6,
+   "y": -112.8,
+   "rotation": 0.3079,
+   "scale": 1.2
+  },
+  {
+   "id": 241,
+   "type": "buriti",
+   "x": -62.3,
+   "y": 26.1,
+   "rotation": 1.2481,
+   "scale": 0.9
+  },
+  {
+   "id": 242,
+   "type": "bush-cerrado-head-b",
+   "x": 6,
+   "y": -24.1,
+   "rotation": 2.4555,
+   "scale": 1
+  },
+  {
+   "id": 243,
+   "type": "buriti",
+   "x": 42.8,
+   "y": -12.6,
+   "rotation": 0.5718,
+   "scale": 0.9
+  },
+  {
+   "id": 244,
+   "type": "manaca",
+   "x": -79.5,
+   "y": 31.9,
+   "rotation": 4.9308,
+   "scale": 0.9
+  },
+  {
+   "id": 245,
+   "type": "tree-broad",
+   "x": -100.6,
+   "y": 41.4,
+   "rotation": 4.56,
+   "scale": 1.1
+  },
+  {
+   "id": 246,
+   "type": "buriti",
+   "x": -60.4,
+   "y": 11.8,
+   "rotation": 0.4637,
+   "scale": 1.2
+  },
+  {
+   "id": 247,
+   "type": "aroeira",
+   "x": 8.7,
+   "y": -20.8,
+   "rotation": 0.4883,
+   "scale": 1.1
+  },
+  {
+   "id": 248,
+   "type": "buriti",
+   "x": 77.7,
+   "y": -38,
+   "rotation": 1.1872,
+   "scale": 0.9
+  },
+  {
+   "id": 249,
+   "type": "bush-cerrado-head-b",
+   "x": -68.7,
+   "y": 74,
+   "rotation": 4.5556,
+   "scale": 1.2
+  },
+  {
+   "id": 250,
+   "type": "tree-broad",
+   "x": -14.7,
+   "y": 36.1,
+   "rotation": 0.6114,
+   "scale": 0.9
+  },
+  {
+   "id": 251,
+   "type": "buriti",
+   "x": 74.1,
+   "y": -40.2,
+   "rotation": 3.7125,
+   "scale": 1.1
+  },
+  {
+   "id": 252,
+   "type": "tree-broad",
+   "x": 98.6,
+   "y": -106.9,
+   "rotation": 0.001,
+   "scale": 1.1
+  },
+  {
+   "id": 253,
+   "type": "aroeira",
+   "x": -111.2,
+   "y": 86.2,
+   "rotation": 0.9481,
+   "scale": 1
+  },
+  {
+   "id": 254,
+   "type": "bush-cerrado-head-a",
+   "x": 107.7,
+   "y": -61.5,
+   "rotation": 2.9083,
+   "scale": 1
+  },
+  {
+   "id": 255,
+   "type": "tree-broad",
+   "x": 88.1,
+   "y": -103.8,
+   "rotation": 6.1157,
+   "scale": 0.9
+  },
+  {
+   "id": 256,
+   "type": "tree-broad",
+   "x": 22.4,
+   "y": -40.7,
+   "rotation": 5.849,
+   "scale": 1
+  },
+  {
+   "id": 257,
+   "type": "tree-broad",
+   "x": -88.9,
+   "y": 96.6,
+   "rotation": 3.0095,
+   "scale": 0.9
+  },
+  {
+   "id": 258,
+   "type": "manaca",
+   "x": -54.3,
+   "y": 22.2,
+   "rotation": 3.884,
+   "scale": 1
+  },
+  {
+   "id": 259,
+   "type": "ipe",
+   "x": 24.8,
+   "y": -38.2,
+   "rotation": 2.1849,
+   "scale": 1
+  },
+  {
+   "id": 260,
+   "type": "ipe",
+   "x": -114,
+   "y": 75.6,
+   "rotation": 2.2614,
+   "scale": 1.2
+  },
+  {
+   "id": 261,
+   "type": "manaca",
+   "x": -78.2,
+   "y": 91.5,
+   "rotation": 5.1724,
+   "scale": 1.2
+  },
+  {
+   "id": 262,
+   "type": "manaca",
+   "x": -67.3,
+   "y": 21.5,
+   "rotation": 0.8309,
+   "scale": 1.1
+  },
+  {
+   "id": 263,
+   "type": "tree-broad",
+   "x": 108.3,
+   "y": -79.9,
+   "rotation": 2.2701,
+   "scale": 1
+  },
+  {
+   "id": 264,
+   "type": "bush-cerrado-head-a",
+   "x": 20.2,
+   "y": 5.3,
+   "rotation": 4.6005,
+   "scale": 0.9
+  },
+  {
+   "id": 265,
+   "type": "buriti",
+   "x": -80.9,
+   "y": 24.6,
+   "rotation": 1.7875,
+   "scale": 1.2
+  },
+  {
+   "id": 266,
+   "type": "bush-cerrado-head-a",
+   "x": -53.7,
+   "y": 68.1,
+   "rotation": 3.6259,
+   "scale": 1.2
+  },
+  {
+   "id": 267,
+   "type": "tree-broad",
+   "x": 29.9,
+   "y": -3.2,
+   "rotation": 5.1533,
+   "scale": 1.1
+  },
+  {
+   "id": 268,
+   "type": "manaca",
+   "x": 106.6,
+   "y": -66.3,
+   "rotation": 4.6837,
+   "scale": 1.1
+  },
+  {
+   "id": 269,
+   "type": "buriti",
+   "x": 76.4,
+   "y": -78.2,
+   "rotation": 1.4747,
+   "scale": 1.1
+  },
+  {
+   "id": 270,
+   "type": "bush-cerrado-head-a",
+   "x": 81.6,
+   "y": -78.7,
+   "rotation": 4.7762,
+   "scale": 1
+  },
+  {
+   "id": 271,
+   "type": "manaca",
+   "x": 110.3,
+   "y": -72.4,
+   "rotation": 2.5371,
+   "scale": 0.9
+  },
+  {
+   "id": 272,
+   "type": "bush-cerrado-head-b",
+   "x": -48.1,
+   "y": 55.5,
+   "rotation": 1.2697,
+   "scale": 1.2
+  },
+  {
+   "id": 273,
+   "type": "buriti",
+   "x": 81.7,
+   "y": -109.8,
+   "rotation": 3.3331,
+   "scale": 1
+  },
+  {
+   "id": 274,
+   "type": "bush-cerrado-head-b",
+   "x": -115.7,
+   "y": 64.1,
+   "rotation": 1.1928,
+   "scale": 0.9
+  },
+  {
+   "id": 275,
+   "type": "ipe",
+   "x": -20.6,
+   "y": -7.9,
+   "rotation": 4.6167,
+   "scale": 1.1
+  },
+  {
+   "id": 276,
+   "type": "tree-broad",
+   "x": 51.7,
+   "y": -20.8,
+   "rotation": 1.2115,
+   "scale": 0.9
+  },
+  {
+   "id": 277,
+   "type": "buriti",
+   "x": 29.9,
+   "y": -46.9,
+   "rotation": 0.3874,
+   "scale": 1.2
+  },
+  {
+   "id": 278,
+   "type": "buriti",
+   "x": 37.9,
+   "y": 1.7,
+   "rotation": 1.7305,
+   "scale": 0.9
+  },
+  {
+   "id": 279,
+   "type": "buriti",
+   "x": 47.8,
+   "y": -62.5,
+   "rotation": 5.869,
+   "scale": 0.9
+  },
+  {
+   "id": 280,
+   "type": "buriti",
+   "x": 14.8,
+   "y": -28.4,
+   "rotation": 3.229,
+   "scale": 1.1
+  },
+  {
+   "id": 281,
+   "type": "tree-broad",
+   "x": -23.7,
+   "y": 31.1,
+   "rotation": 5.9914,
+   "scale": 1.1
+  },
+  {
+   "id": 282,
+   "type": "buriti",
+   "x": 21.2,
+   "y": 12.2,
+   "rotation": 5.5196,
+   "scale": 1.1
+  },
+  {
+   "id": 283,
+   "type": "manaca",
+   "x": -75.6,
+   "y": 25.5,
+   "rotation": 3.6377,
+   "scale": 1
+  },
+  {
+   "id": 284,
+   "type": "ipe",
+   "x": -42.1,
+   "y": 56,
+   "rotation": 5.6992,
+   "scale": 1.1
+  },
+  {
+   "id": 285,
+   "type": "bush-cerrado-head-b",
+   "x": -68.6,
+   "y": 66.5,
+   "rotation": 0.5542,
+   "scale": 0.9
+  },
+  {
+   "id": 286,
+   "type": "aroeira",
+   "x": -84.1,
+   "y": 114.4,
+   "rotation": 4.782,
+   "scale": 0.9
+  },
+  {
+   "id": 287,
+   "type": "buriti",
+   "x": 27,
+   "y": -31.5,
+   "rotation": 5.3079,
+   "scale": 1
+  },
+  {
+   "id": 288,
+   "type": "bush-cerrado-head-a",
+   "x": -34.4,
+   "y": 49.7,
+   "rotation": 0.0093,
+   "scale": 1.2
+  },
+  {
+   "id": 289,
+   "type": "ipe",
+   "x": 9.7,
+   "y": -29,
+   "rotation": 4.1718,
+   "scale": 0.9
+  },
+  {
+   "id": 290,
+   "type": "tree-broad",
+   "x": -106.4,
+   "y": 113.8,
+   "rotation": 2.5976,
+   "scale": 1.2
+  },
+  {
+   "id": 291,
+   "type": "buriti",
+   "x": -59.4,
+   "y": 7.1,
+   "rotation": 2.2726,
+   "scale": 1.2
+  },
+  {
+   "id": 292,
+   "type": "tree-broad",
+   "x": -108.4,
+   "y": 51.5,
+   "rotation": 4.0577,
+   "scale": 1
+  },
+  {
+   "id": 293,
+   "type": "buriti",
+   "x": 1.6,
+   "y": 27,
+   "rotation": 1.1592,
+   "scale": 1
+  },
+  {
+   "id": 294,
+   "type": "buriti",
+   "x": -20.6,
+   "y": -3.3,
+   "rotation": 3.9852,
+   "scale": 1
+  },
+  {
+   "id": 295,
+   "type": "manaca",
+   "x": -25.3,
+   "y": 26.8,
+   "rotation": 2.314,
+   "scale": 1.1
+  },
+  {
+   "id": 296,
+   "type": "bush-cerrado-head-b",
+   "x": -98.4,
+   "y": 47.2,
+   "rotation": 0.4124,
+   "scale": 1.1
+  },
+  {
+   "id": 297,
+   "type": "tree-broad",
+   "x": -97.7,
+   "y": 113,
+   "rotation": 2.8377,
+   "scale": 1
+  },
+  {
+   "id": 298,
+   "type": "tree-broad",
+   "x": 98.4,
+   "y": -49.3,
+   "rotation": 5.6687,
+   "scale": 1.2
+  },
+  {
+   "id": 299,
+   "type": "bush-cerrado-head-b",
+   "x": 72.1,
+   "y": -26.9,
+   "rotation": 2.8754,
+   "scale": 0.9
+  },
+  {
+   "id": 300,
+   "type": "aroeira",
+   "x": 93,
+   "y": -116,
+   "rotation": 3.8831,
+   "scale": 1
+  },
+  {
+   "id": 301,
+   "type": "ipe",
+   "x": -74.6,
+   "y": 31.7,
+   "rotation": 1.9299,
+   "scale": 1.1
+  },
+  {
+   "id": 302,
+   "type": "ipe",
+   "x": 70.3,
+   "y": -82.7,
+   "rotation": 5.8428,
+   "scale": 1.1
+  },
+  {
+   "id": 303,
+   "type": "tree-broad",
+   "x": 47,
+   "y": -16.2,
+   "rotation": 1.8605,
+   "scale": 1
+  },
+  {
+   "id": 304,
+   "type": "bush-cerrado-head-a",
+   "x": -77.3,
+   "y": 22.9,
+   "rotation": 0.901,
+   "scale": 0.9
+  },
+  {
+   "id": 305,
+   "type": "tree-broad",
+   "x": 64.5,
+   "y": -19.4,
+   "rotation": 5.7566,
+   "scale": 0.9
+  },
+  {
+   "id": 306,
+   "type": "manaca",
+   "x": 89.3,
+   "y": -114.9,
+   "rotation": 3.3495,
+   "scale": 0.9
+  },
+  {
+   "id": 307,
+   "type": "manaca",
+   "x": -32.8,
+   "y": 39.1,
+   "rotation": 3.7372,
+   "scale": 1.1
+  },
+  {
+   "id": 308,
+   "type": "tree-broad",
+   "x": 15.4,
+   "y": -41.1,
+   "rotation": 0.345,
+   "scale": 1
+  },
+  {
+   "id": 309,
+   "type": "bush-cerrado-head-b",
+   "x": -1,
+   "y": 28.5,
+   "rotation": 2.8118,
+   "scale": 0.9
+  },
+  {
+   "id": 310,
+   "type": "ipe",
+   "x": -55.3,
+   "y": 16.3,
+   "rotation": 3.7778,
+   "scale": 1
+  },
+  {
+   "id": 311,
+   "type": "ipe",
+   "x": -34,
+   "y": 59.3,
+   "rotation": 5.6924,
+   "scale": 1
+  },
+  {
+   "id": 312,
+   "type": "bush-cerrado-head-b",
+   "x": -35.6,
+   "y": 4.1,
+   "rotation": 5.8986,
+   "scale": 1
+  },
+  {
+   "id": 313,
+   "type": "manaca",
+   "x": -106.4,
+   "y": 57.1,
+   "rotation": 1.743,
+   "scale": 1.2
+  },
+  {
+   "id": 314,
+   "type": "buriti",
+   "x": 26,
+   "y": -1.6,
+   "rotation": 4.5721,
+   "scale": 0.9
+  },
+  {
+   "id": 315,
+   "type": "manaca",
+   "x": -12.3,
+   "y": 26.2,
+   "rotation": 4.7018,
+   "scale": 1
+  },
+  {
+   "id": 316,
+   "type": "bush-cerrado-head-b",
+   "x": 52.6,
+   "y": -18,
+   "rotation": 1.1317,
+   "scale": 1.1
+  },
+  {
+   "id": 317,
+   "type": "manaca",
+   "x": -62.5,
+   "y": 78.1,
+   "rotation": 0.7453,
+   "scale": 1.1
+  },
+  {
+   "id": 318,
+   "type": "bush-cerrado-head-a",
+   "x": -85.3,
+   "y": 109.2,
+   "rotation": 4.0733,
+   "scale": 0.9
+  },
+  {
+   "id": 319,
+   "type": "buriti",
+   "x": 39.9,
+   "y": -3.2,
+   "rotation": 3.6337,
+   "scale": 1.1
+  },
+  {
+   "id": 320,
+   "type": "buriti",
+   "x": -58.4,
+   "y": 14.6,
+   "rotation": 2.4596,
+   "scale": 1.1
+  },
+  {
+   "id": 321,
+   "type": "ipe",
+   "x": -7,
+   "y": 21.9,
+   "rotation": 3.1476,
+   "scale": 1.1
+  },
+  {
+   "id": 322,
+   "type": "bush-cerrado-head-a",
+   "x": -58.3,
+   "y": 25.7,
+   "rotation": 4.1078,
+   "scale": 1.1
+  },
+  {
+   "id": 323,
+   "type": "tree-broad",
+   "x": -102.2,
+   "y": 62.3,
+   "rotation": 2.4272,
+   "scale": 1.1
+  },
+  {
+   "id": 324,
+   "type": "bush-cerrado-head-b",
+   "x": 43.1,
+   "y": -62.7,
+   "rotation": 5.3759,
+   "scale": 1
+  },
+  {
+   "id": 325,
+   "type": "bush-cerrado-head-a",
+   "x": -53,
+   "y": 64.6,
+   "rotation": 6.2271,
+   "scale": 1
+  },
+  {
+   "id": 326,
+   "type": "bush-cerrado-head-b",
+   "x": 102.4,
+   "y": -61.4,
+   "rotation": 1.4581,
+   "scale": 1
+  },
+  {
+   "id": 327,
+   "type": "buriti",
+   "x": -104.1,
+   "y": 51.9,
+   "rotation": 4.2236,
+   "scale": 1
+  },
+  {
+   "id": 328,
+   "type": "tree-broad",
+   "x": -108.7,
+   "y": 80.3,
+   "rotation": 5.3254,
+   "scale": 0.9
+  },
+  {
+   "id": 329,
+   "type": "manaca",
+   "x": 76.3,
+   "y": -103.2,
+   "rotation": 4.2898,
+   "scale": 1.1
+  },
+  {
+   "id": 330,
+   "type": "aroeira",
+   "x": -67.9,
+   "y": 62.6,
+   "rotation": 3.7091,
+   "scale": 1
+  },
+  {
+   "id": 331,
+   "type": "buriti",
+   "x": 22.6,
+   "y": 17.5,
+   "rotation": 4.144,
+   "scale": 1
+  },
+  {
+   "id": 332,
+   "type": "tree-broad",
+   "x": 12.7,
+   "y": 25.4,
+   "rotation": 4.6522,
+   "scale": 1
+  },
+  {
+   "id": 333,
+   "type": "tree-broad",
+   "x": 66.8,
+   "y": -85.1,
+   "rotation": 5.6511,
+   "scale": 1.1
+  },
+  {
+   "id": 334,
+   "type": "tree-broad",
+   "x": 80.3,
+   "y": -34.6,
+   "rotation": 5.8594,
+   "scale": 1
+  },
+  {
+   "id": 335,
+   "type": "tree-broad",
+   "x": 109.7,
+   "y": -64.2,
+   "rotation": 4.2956,
+   "scale": 0.9
+  },
+  {
+   "id": 336,
+   "type": "aroeira",
+   "x": 76,
+   "y": -87.4,
+   "rotation": 3.2244,
+   "scale": 1
+  },
+  {
+   "id": 337,
+   "type": "aroeira",
+   "x": 33.3,
+   "y": -48.5,
+   "rotation": 2.2386,
+   "scale": 0.9
+  },
+  {
+   "id": 338,
+   "type": "tree-broad",
+   "x": -73.1,
+   "y": 28.5,
+   "rotation": 5.2546,
+   "scale": 1.1
+  },
+  {
+   "id": 339,
+   "type": "ipe",
+   "x": 47.2,
+   "y": 3.4,
+   "rotation": 2.6745,
+   "scale": 1.1
+  },
+  {
+   "id": 340,
+   "type": "manaca",
+   "x": 89.4,
+   "y": -36.9,
+   "rotation": 3.8475,
+   "scale": 1.1
+  },
+  {
+   "id": 341,
+   "type": "bush-cerrado-head-b",
+   "x": 99.2,
+   "y": -55.3,
+   "rotation": 2.2762,
+   "scale": 1.1
+  },
+  {
+   "id": 342,
+   "type": "manaca",
+   "x": 58,
+   "y": -75.1,
+   "rotation": 5.3442,
+   "scale": 1.1
+  },
+  {
+   "id": 343,
+   "type": "bush-cerrado-head-a",
+   "x": 82.7,
+   "y": -98.7,
+   "rotation": 3.8448,
+   "scale": 1.1
+  },
+  {
+   "id": 344,
+   "type": "tree-broad",
+   "x": -76.6,
+   "y": 78.2,
+   "rotation": 0.3151,
+   "scale": 1
+  },
+  {
+   "id": 345,
+   "type": "tree-broad",
+   "x": 26.8,
+   "y": 7.8,
+   "rotation": 0.8054,
+   "scale": 1
+  },
+  {
+   "id": 346,
+   "type": "buriti",
+   "x": -114,
+   "y": 70.6,
+   "rotation": 2.7237,
+   "scale": 1
+  },
+  {
+   "id": 347,
+   "type": "bush-cerrado-head-b",
+   "x": -81.1,
+   "y": 78.9,
+   "rotation": 6.2333,
+   "scale": 1.2
+  },
+  {
+   "id": 348,
+   "type": "tree-broad",
+   "x": 32.8,
+   "y": 10.5,
+   "rotation": 3.8098,
+   "scale": 1.2
+  },
+  {
+   "id": 349,
+   "type": "bush-cerrado-head-a",
+   "x": -64.3,
+   "y": 28.1,
+   "rotation": 4.0546,
+   "scale": 0.9
+  },
+  {
+   "id": 350,
+   "type": "buriti",
+   "x": -32.6,
+   "y": 33.9,
+   "rotation": 2.2987,
+   "scale": 1.1
+  },
+  {
+   "id": 351,
+   "type": "manaca",
+   "x": 116.2,
+   "y": -63.7,
+   "rotation": 3.2578,
+   "scale": 1.1
+  },
+  {
+   "id": 352,
+   "type": "bush-cerrado-head-b",
+   "x": -64.9,
+   "y": 24.9,
+   "rotation": 5.2898,
+   "scale": 1.2
+  },
+  {
+   "id": 353,
+   "type": "buriti",
+   "x": 90.9,
+   "y": -112.5,
+   "rotation": 5.3545,
+   "scale": 0.9
+  },
+  {
+   "id": 354,
+   "type": "aroeira",
+   "x": -51.3,
+   "y": 11.5,
+   "rotation": 4.934,
+   "scale": 1.2
+  },
+  {
+   "id": 355,
+   "type": "buriti",
+   "x": -73.5,
+   "y": 79.9,
+   "rotation": 1.4809,
+   "scale": 0.9
+  },
+  {
+   "id": 356,
+   "type": "buriti",
+   "x": -45.6,
+   "y": 66.9,
+   "rotation": 2.9939,
+   "scale": 1.1
+  },
+  {
+   "id": 357,
+   "type": "buriti",
+   "x": -19.9,
+   "y": 45.5,
+   "rotation": 2.868,
+   "scale": 1
+  },
+  {
+   "id": 358,
+   "type": "buriti",
+   "x": -39.5,
+   "y": 11.2,
+   "rotation": 6.0077,
+   "scale": 1
+  },
+  {
+   "id": 359,
+   "type": "buriti",
+   "x": -42.6,
+   "y": 44.6,
+   "rotation": 0.7082,
+   "scale": 1
+  },
+  {
+   "id": 360,
+   "type": "tree-broad",
+   "x": -89.9,
+   "y": 109.9,
+   "rotation": 5.1344,
+   "scale": 0.9
+  },
+  {
+   "id": 361,
+   "type": "bush-cerrado-head-a",
+   "x": -12.3,
+   "y": -26,
+   "rotation": 0.9473,
+   "scale": 1
+  },
+  {
+   "id": 362,
+   "type": "manaca",
+   "x": -62.5,
+   "y": 19.8,
+   "rotation": 4.4766,
+   "scale": 1
+  },
+  {
+   "id": 363,
+   "type": "buriti",
+   "x": 15.1,
+   "y": -23.6,
+   "rotation": 1.3282,
+   "scale": 1
+  },
+  {
+   "id": 364,
+   "type": "tree-broad",
+   "x": 102,
+   "y": -114.6,
+   "rotation": 0.4704,
+   "scale": 1.2
+  },
+  {
+   "id": 365,
+   "type": "buriti",
+   "x": 85.7,
+   "y": -87,
+   "rotation": 4.8371,
+   "scale": 0.9
+  },
+  {
+   "id": 366,
+   "type": "buriti",
+   "x": 82.7,
+   "y": -86.5,
+   "rotation": 4.175,
+   "scale": 1
+  },
+  {
+   "id": 367,
+   "type": "tree-broad",
+   "x": -33.3,
+   "y": -1.2,
+   "rotation": 6.231,
+   "scale": 1.2
+  },
+  {
+   "id": 368,
+   "type": "tree-broad",
+   "x": -14.9,
+   "y": 23.8,
+   "rotation": 1.2204,
+   "scale": 0.9
+  },
+  {
+   "id": 369,
+   "type": "buriti",
+   "x": -82.5,
+   "y": 82.1,
+   "rotation": 4.9008,
+   "scale": 1.2
+  },
+  {
+   "id": 370,
+   "type": "buriti",
+   "x": -45.2,
+   "y": 63.7,
+   "rotation": 4.8687,
+   "scale": 0.9
+  },
+  {
+   "id": 371,
+   "type": "ipe",
+   "x": 68.8,
+   "y": -31.2,
+   "rotation": 3.5132,
+   "scale": 0.9
+  },
+  {
+   "id": 372,
+   "type": "bush-cerrado-head-a",
+   "x": 85.8,
+   "y": -111.4,
+   "rotation": 5.6323,
+   "scale": 1.1
+  },
+  {
+   "id": 373,
+   "type": "bush-cerrado-head-a",
+   "x": 78.7,
+   "y": -24.6,
+   "rotation": 3.9765,
+   "scale": 0.9
+  },
+  {
+   "id": 374,
+   "type": "ipe",
+   "x": 102.7,
+   "y": -67.9,
+   "rotation": 5.4343,
+   "scale": 1.1
+  },
+  {
+   "id": 375,
+   "type": "aroeira",
+   "x": 31.6,
+   "y": -50.8,
+   "rotation": 0.038,
+   "scale": 1.1
+  },
+  {
+   "id": 376,
+   "type": "buriti",
+   "x": -26.2,
+   "y": -5.5,
+   "rotation": 2.9319,
+   "scale": 1
+  },
+  {
+   "id": 377,
+   "type": "bush-cerrado-waist-a",
+   "x": -102.9,
+   "y": 18.3,
+   "rotation": 5.6759,
+   "scale": 0.9
+  },
+  {
+   "id": 378,
+   "type": "bush-cerrado-head-a",
+   "x": 20.2,
+   "y": 80.7,
+   "rotation": 2.5591,
+   "scale": 1.2
+  },
+  {
+   "id": 379,
+   "type": "bush-cerrado-waist-b",
+   "x": -44.3,
+   "y": -111,
+   "rotation": 3.9649,
+   "scale": 0.9
+  },
+  {
+   "id": 380,
+   "type": "cerrado-tree",
+   "x": -109.4,
+   "y": -112.9,
+   "rotation": 4.283,
+   "scale": 1
+  },
+  {
+   "id": 381,
+   "type": "ipe",
+   "x": 50.6,
+   "y": -115,
+   "rotation": 2.2917,
+   "scale": 0.9
+  },
+  {
+   "id": 382,
+   "type": "bush-cerrado-knee-b",
+   "x": -38.8,
+   "y": 68.3,
+   "rotation": 3.9626,
+   "scale": 1.2
+  },
+  {
+   "id": 383,
+   "type": "bush-cerrado-head-b",
+   "x": 60.8,
+   "y": 2.1,
+   "rotation": 4.4572,
+   "scale": 1.1
+  },
+  {
+   "id": 384,
+   "type": "pequi-dead",
+   "x": 11.6,
+   "y": -48.5,
+   "rotation": 5.8391,
+   "scale": 0.9
+  },
+  {
+   "id": 385,
+   "type": "bush-cerrado-head-a",
+   "x": 4.7,
+   "y": -44.1,
+   "rotation": 2.2027,
+   "scale": 1.2
+  },
+  {
+   "id": 386,
+   "type": "cerrado-tree",
+   "x": 91.8,
+   "y": -4.5,
+   "rotation": 0.4189,
+   "scale": 0.9
+  },
+  {
+   "id": 387,
+   "type": "pequi-dead",
+   "x": 4.3,
+   "y": 79,
+   "rotation": 2.719,
+   "scale": 1.2
+  },
+  {
+   "id": 388,
+   "type": "pequi-dead",
+   "x": -5.9,
+   "y": 72.3,
+   "rotation": 5.4529,
+   "scale": 1
+  },
+  {
+   "id": 389,
+   "type": "bush-cerrado-knee-a",
+   "x": -105.6,
+   "y": 30.8,
+   "rotation": 3.6238,
+   "scale": 0.9
+  },
+  {
+   "id": 390,
+   "type": "bush-cerrado-head-b",
+   "x": 104.2,
+   "y": 49.2,
+   "rotation": 2.0371,
+   "scale": 1.2
+  },
+  {
+   "id": 391,
+   "type": "aroeira",
+   "x": -93.8,
+   "y": -71.9,
+   "rotation": 4.7112,
+   "scale": 1
+  },
+  {
+   "id": 392,
+   "type": "pequi-dead",
+   "x": -114.5,
+   "y": 27.2,
+   "rotation": 4.6491,
+   "scale": 0.9
+  },
+  {
+   "id": 393,
+   "type": "pequi-dead",
+   "x": -19.3,
+   "y": -89.4,
+   "rotation": 2.4673,
+   "scale": 0.9
+  },
+  {
+   "id": 394,
+   "type": "bush-cerrado-waist-a",
+   "x": 1.2,
+   "y": 100.6,
+   "rotation": 0.5748,
+   "scale": 1
+  },
+  {
+   "id": 395,
+   "type": "cagaita",
+   "x": 65.3,
+   "y": 112.5,
+   "rotation": 2.2158,
+   "scale": 1.2
+  },
+  {
+   "id": 396,
+   "type": "bush-cerrado-knee-a",
+   "x": -104.9,
+   "y": -70.2,
+   "rotation": 2.8873,
+   "scale": 0.9
+  },
+  {
+   "id": 397,
+   "type": "cagaita",
+   "x": -17.2,
+   "y": 86.8,
+   "rotation": 4.7393,
+   "scale": 1.1
+  },
+  {
+   "id": 398,
+   "type": "bush-cerrado-knee-a",
+   "x": -22.6,
+   "y": 84.4,
+   "rotation": 1.93,
+   "scale": 1
+  },
+  {
+   "id": 399,
+   "type": "bush-cerrado-waist-a",
+   "x": 31.3,
+   "y": 90.8,
+   "rotation": 0.4956,
+   "scale": 1
+  },
+  {
+   "id": 400,
+   "type": "bush-cerrado-waist-b",
+   "x": 53.5,
+   "y": -94.3,
+   "rotation": 3.8768,
+   "scale": 1
+  },
+  {
+   "id": 401,
+   "type": "bush-cerrado-waist-a",
+   "x": -17.5,
+   "y": 63.6,
+   "rotation": 5.341,
+   "scale": 0.9
+  },
+  {
+   "id": 402,
+   "type": "bush-cerrado-knee-b",
+   "x": 24.4,
+   "y": -115.2,
+   "rotation": 2.6643,
+   "scale": 1
+  },
+  {
+   "id": 403,
+   "type": "bush-cerrado-waist-b",
+   "x": 13.8,
+   "y": -106.6,
+   "rotation": 1.8935,
+   "scale": 1
+  },
+  {
+   "id": 404,
+   "type": "bush-cerrado-waist-a",
+   "x": 77.7,
+   "y": -8.2,
+   "rotation": 1.3825,
+   "scale": 1.1
+  },
+  {
+   "id": 405,
+   "type": "bush-cerrado-head-b",
+   "x": -3,
+   "y": -112.2,
+   "rotation": 2.8801,
+   "scale": 1.1
+  },
+  {
+   "id": 406,
+   "type": "bush-cerrado-head-b",
+   "x": 75.9,
+   "y": 9.7,
+   "rotation": 5.4904,
+   "scale": 1.1
+  },
+  {
+   "id": 407,
+   "type": "bush-cerrado-knee-b",
+   "x": 75.9,
+   "y": -109,
+   "rotation": 6.2795,
+   "scale": 1.1
+  },
+  {
+   "id": 408,
+   "type": "bush-cerrado-head-b",
+   "x": 51.5,
+   "y": -90.7,
+   "rotation": 4.8714,
+   "scale": 0.9
+  },
+  {
+   "id": 409,
+   "type": "bush-cerrado-waist-a",
+   "x": -66.5,
+   "y": -30,
+   "rotation": 1.4736,
+   "scale": 1.1
+  },
+  {
+   "id": 410,
+   "type": "cerrado-tree",
+   "x": 20.9,
+   "y": 107.4,
+   "rotation": 4.6896,
+   "scale": 1.1
+  },
+  {
+   "id": 411,
+   "type": "bush-cerrado-knee-b",
+   "x": -10.2,
+   "y": 87.6,
+   "rotation": 5.74,
+   "scale": 1.1
+  },
+  {
+   "id": 412,
+   "type": "bush-cerrado-waist-a",
+   "x": 68.5,
+   "y": 38.3,
+   "rotation": 2.5563,
+   "scale": 0.9
+  },
+  {
+   "id": 413,
+   "type": "barbatimao",
+   "x": 16.8,
+   "y": 48.7,
+   "rotation": 1.3055,
+   "scale": 1.1
+  },
+  {
+   "id": 414,
+   "type": "barbatimao",
+   "x": 7,
+   "y": 59,
+   "rotation": 0.6346,
+   "scale": 1
+  },
+  {
+   "id": 415,
+   "type": "aroeira",
+   "x": -97.9,
+   "y": 33.5,
+   "rotation": 3.2331,
+   "scale": 1.1
+  },
+  {
+   "id": 416,
+   "type": "pequi-dead",
+   "x": -43.5,
+   "y": 110.6,
+   "rotation": 0.6431,
+   "scale": 0.9
+  },
+  {
+   "id": 417,
+   "type": "cerrado-tree",
+   "x": 53.6,
+   "y": 7.4,
+   "rotation": 5.9547,
+   "scale": 1
+  },
+  {
+   "id": 418,
+   "type": "barbatimao",
+   "x": 32.6,
+   "y": -115.5,
+   "rotation": 4.4729,
+   "scale": 1.1
+  },
+  {
+   "id": 419,
+   "type": "bush-cerrado-knee-a",
+   "x": -9.7,
+   "y": 48.6,
+   "rotation": 0.981,
+   "scale": 1
+  },
+  {
+   "id": 420,
+   "type": "tree-broad",
+   "x": -105.4,
+   "y": -98.3,
+   "rotation": 0.6737,
+   "scale": 1.2
+  },
+  {
+   "id": 421,
+   "type": "bush-cerrado-waist-b",
+   "x": 102.9,
+   "y": 13.9,
+   "rotation": 3.1403,
+   "scale": 0.9
+  },
+  {
+   "id": 422,
+   "type": "bush-cerrado-waist-b",
+   "x": 16.5,
+   "y": 63.6,
+   "rotation": 0.6891,
+   "scale": 0.9
+  },
+  {
+   "id": 423,
+   "type": "ipe",
+   "x": 55.7,
+   "y": 115.8,
+   "rotation": 4.5259,
+   "scale": 1
+  },
+  {
+   "id": 424,
+   "type": "pequi-dead",
+   "x": -0.1,
+   "y": 58.1,
+   "rotation": 5.6907,
+   "scale": 1.2
+  },
+  {
+   "id": 425,
+   "type": "bush-cerrado-knee-b",
+   "x": 65,
+   "y": 33.8,
+   "rotation": 1.9977,
+   "scale": 1
+  },
+  {
+   "id": 426,
+   "type": "cagaita",
+   "x": 106.6,
+   "y": 69.9,
+   "rotation": 5.6812,
+   "scale": 1
+  },
+  {
+   "id": 427,
+   "type": "bush-cerrado-knee-b",
+   "x": -108.8,
+   "y": -45.7,
+   "rotation": 4.2636,
+   "scale": 1.1
+  },
+  {
+   "id": 428,
+   "type": "bush-cerrado-knee-a",
+   "x": 98.4,
+   "y": -14.2,
+   "rotation": 2.1251,
+   "scale": 0.9
+  },
+  {
+   "id": 429,
+   "type": "bush-cerrado-knee-b",
+   "x": -20.6,
+   "y": 56.4,
+   "rotation": 2.3507,
+   "scale": 0.9
+  },
+  {
+   "id": 430,
+   "type": "barbatimao",
+   "x": -89.2,
+   "y": -90.4,
+   "rotation": 6.2742,
+   "scale": 1
+  },
+  {
+   "id": 431,
+   "type": "ipe",
+   "x": 21.3,
+   "y": 55,
+   "rotation": 4.1674,
+   "scale": 0.9
+  },
+  {
+   "id": 432,
+   "type": "cerrado-tree",
+   "x": 8.9,
+   "y": 75.7,
+   "rotation": 4.6262,
+   "scale": 1.2
+  },
+  {
+   "id": 433,
+   "type": "bush-cerrado-waist-a",
+   "x": 74.8,
+   "y": 60,
+   "rotation": 3.4021,
+   "scale": 1.2
+  },
+  {
+   "id": 434,
+   "type": "bush-cerrado-knee-b",
+   "x": 40.7,
+   "y": 51.9,
+   "rotation": 5.6365,
+   "scale": 1.1
+  },
+  {
+   "id": 435,
+   "type": "cerrado-tree",
+   "x": 46.5,
+   "y": 40.1,
+   "rotation": 1.7614,
+   "scale": 0.9
+  },
+  {
+   "id": 436,
+   "type": "bush-cerrado-head-a",
+   "x": 30.5,
+   "y": -103.7,
+   "rotation": 0.9753,
+   "scale": 0.9
+  },
+  {
+   "id": 437,
+   "type": "cerrado-tree",
+   "x": 28,
+   "y": -112.5,
+   "rotation": 0.8276,
+   "scale": 1.1
+  },
+  {
+   "id": 438,
+   "type": "pequi-dead",
+   "x": 27.7,
+   "y": 21.3,
+   "rotation": 3.2962,
+   "scale": 1.1
+  },
+  {
+   "id": 439,
+   "type": "bush-cerrado-waist-b",
+   "x": -28.6,
+   "y": -43,
+   "rotation": 0.3656,
+   "scale": 1
+  },
+  {
+   "id": 440,
+   "type": "aroeira",
+   "x": 36.7,
+   "y": -106.6,
+   "rotation": 2.4444,
+   "scale": 1.2
+  },
+  {
+   "id": 441,
+   "type": "cerrado-tree",
+   "x": 34.9,
+   "y": -82.5,
+   "rotation": 4.0416,
+   "scale": 1
+  },
+  {
+   "id": 442,
+   "type": "cerrado-tree",
+   "x": 57.3,
+   "y": -86.8,
+   "rotation": 1.1814,
+   "scale": 1.1
+  },
+  {
+   "id": 443,
+   "type": "pequi-dead",
+   "x": 68.3,
+   "y": 69.2,
+   "rotation": 2.126,
+   "scale": 1.2
+  },
+  {
+   "id": 444,
+   "type": "tree-broad",
+   "x": 28.4,
+   "y": 83.1,
+   "rotation": 3.409,
+   "scale": 1
+  },
+  {
+   "id": 445,
+   "type": "cerrado-tree",
+   "x": 40.2,
+   "y": -116.7,
+   "rotation": 4.6995,
+   "scale": 0.9
+  },
+  {
+   "id": 446,
+   "type": "bush-cerrado-waist-a",
+   "x": 28.7,
+   "y": 66.5,
+   "rotation": 5.586,
+   "scale": 1
+  },
+  {
+   "id": 447,
+   "type": "pequi-dead",
+   "x": 99.3,
+   "y": -26.9,
+   "rotation": 5.4987,
+   "scale": 0.9
+  },
+  {
+   "id": 448,
+   "type": "cerrado-tree",
+   "x": 83.4,
+   "y": 41.4,
+   "rotation": 3.0011,
+   "scale": 1.1
+  },
+  {
+   "id": 449,
+   "type": "bush-cerrado-waist-a",
+   "x": 102.6,
+   "y": -35.9,
+   "rotation": 4.4556,
+   "scale": 1
+  },
+  {
+   "id": 450,
+   "type": "barbatimao",
+   "x": -48.3,
+   "y": -104.5,
+   "rotation": 0.4361,
+   "scale": 0.9
+  },
+  {
+   "id": 451,
+   "type": "cerrado-tree",
+   "x": -60.8,
+   "y": -113.5,
+   "rotation": 0.6197,
+   "scale": 1
+  },
+  {
+   "id": 452,
+   "type": "bush-cerrado-waist-a",
+   "x": -26.3,
+   "y": 54.7,
+   "rotation": 2.0015,
+   "scale": 1
+  },
+  {
+   "id": 453,
+   "type": "bush-cerrado-head-b",
+   "x": 83.3,
+   "y": 10,
+   "rotation": 0.6987,
+   "scale": 1.2
+  },
+  {
+   "id": 454,
+   "type": "bush-cerrado-waist-b",
+   "x": 25.8,
+   "y": 72.3,
+   "rotation": 2.0466,
+   "scale": 1
+  },
+  {
+   "id": 455,
+   "type": "cerrado-tree",
+   "x": -112.8,
+   "y": -96.8,
+   "rotation": 4.3638,
+   "scale": 1.1
+  },
+  {
+   "id": 456,
+   "type": "cagaita",
+   "x": -0.6,
+   "y": 63.2,
+   "rotation": 5.3779,
+   "scale": 1.1
+  },
+  {
+   "id": 457,
+   "type": "pequi-dead",
+   "x": -60.9,
+   "y": 88.5,
+   "rotation": 1.6515,
+   "scale": 1.1
+  },
+  {
+   "id": 458,
+   "type": "tree-broad",
+   "x": -64.3,
+   "y": -8.9,
+   "rotation": 0.1974,
+   "scale": 0.9
+  },
+  {
+   "id": 459,
+   "type": "bush-cerrado-waist-a",
+   "x": -47.1,
+   "y": 94.2,
+   "rotation": 2.2936,
+   "scale": 1
+  },
+  {
+   "id": 460,
+   "type": "cerrado-tree",
+   "x": 1.6,
+   "y": 40.7,
+   "rotation": 5.8902,
+   "scale": 1.1
+  },
+  {
+   "id": 461,
+   "type": "bush-cerrado-head-b",
+   "x": -106.9,
+   "y": -62.5,
+   "rotation": 4.0474,
+   "scale": 0.9
+  },
+  {
+   "id": 462,
+   "type": "tree-broad",
+   "x": 30.1,
+   "y": 62.6,
+   "rotation": 4.8552,
+   "scale": 1.2
+  },
+  {
+   "id": 463,
+   "type": "pequi-dead",
+   "x": -13.4,
+   "y": 68.3,
+   "rotation": 5.6805,
+   "scale": 1.1
+  },
+  {
+   "id": 464,
+   "type": "bush-cerrado-head-b",
+   "x": 69.6,
+   "y": -99.5,
+   "rotation": 1.0293,
+   "scale": 1.1
+  },
+  {
+   "id": 465,
+   "type": "bush-cerrado-knee-a",
+   "x": 91.1,
+   "y": 10.7,
+   "rotation": 0.7757,
+   "scale": 0.9
+  },
+  {
+   "id": 466,
+   "type": "pequi-dead",
+   "x": -11.1,
+   "y": -114.8,
+   "rotation": 1.9652,
+   "scale": 1
+  },
+  {
+   "id": 467,
+   "type": "bush-cerrado-knee-a",
+   "x": 111.9,
+   "y": 3.6,
+   "rotation": 3.4959,
+   "scale": 0.9
+  },
+  {
+   "id": 468,
+   "type": "bush-cerrado-waist-b",
+   "x": 64.1,
+   "y": 48.1,
+   "rotation": 3.9997,
+   "scale": 1
+  },
+  {
+   "id": 469,
+   "type": "aroeira",
+   "x": 54.8,
+   "y": 45.2,
+   "rotation": 3.5603,
+   "scale": 1
+  },
+  {
+   "id": 470,
+   "type": "cagaita",
+   "x": -95.9,
+   "y": 17.9,
+   "rotation": 1.0818,
+   "scale": 0.9
+  },
+  {
+   "id": 471,
+   "type": "cerrado-tree",
+   "x": 42.6,
+   "y": -70.1,
+   "rotation": 5.6392,
+   "scale": 0.9
+  },
+  {
+   "id": 472,
+   "type": "cerrado-tree",
+   "x": 7.7,
+   "y": -50.3,
+   "rotation": 1.5226,
+   "scale": 0.9
+  },
+  {
+   "id": 473,
+   "type": "aroeira",
+   "x": 50.6,
+   "y": 14.8,
+   "rotation": 4.3701,
+   "scale": 1
+  },
+  {
+   "id": 474,
+   "type": "tree-broad",
+   "x": -23.6,
+   "y": 63.9,
+   "rotation": 3.9547,
+   "scale": 1.2
+  },
+  {
+   "id": 475,
+   "type": "cerrado-tree",
+   "x": 4,
+   "y": 109.6,
+   "rotation": 2.1087,
+   "scale": 1
+  },
+  {
+   "id": 476,
+   "type": "cerrado-tree",
+   "x": -65.8,
+   "y": -18.5,
+   "rotation": 0.05,
+   "scale": 1.2
+  },
+  {
+   "id": 477,
+   "type": "bush-cerrado-knee-a",
+   "x": 17.1,
+   "y": -51.3,
+   "rotation": 1.3584,
+   "scale": 1
+  },
+  {
+   "id": 478,
+   "type": "aroeira",
+   "x": -20.8,
+   "y": -94.3,
+   "rotation": 3.2885,
+   "scale": 1.2
+  },
+  {
+   "id": 479,
+   "type": "cerrado-tree",
+   "x": -105.6,
+   "y": 26.1,
+   "rotation": 1.6942,
+   "scale": 0.9
+  },
+  {
+   "id": 480,
+   "type": "bush-cerrado-head-b",
+   "x": 108.1,
+   "y": 62.1,
+   "rotation": 1.5142,
+   "scale": 1
+  },
+  {
+   "id": 481,
+   "type": "bush-cerrado-knee-b",
+   "x": 20.1,
+   "y": -95.8,
+   "rotation": 1.5853,
+   "scale": 1.1
+  },
+  {
+   "id": 482,
+   "type": "ipe",
+   "x": -35.7,
+   "y": -63.7,
+   "rotation": 2.26,
+   "scale": 0.9
+  },
+  {
+   "id": 483,
+   "type": "bush-cerrado-waist-a",
+   "x": 81.9,
+   "y": 51.3,
+   "rotation": 5.5657,
+   "scale": 1
+  },
+  {
+   "id": 484,
+   "type": "aroeira",
+   "x": 37.1,
+   "y": 86.1,
+   "rotation": 3.7178,
+   "scale": 1.2
+  },
+  {
+   "id": 485,
+   "type": "pequi-dead",
+   "x": -9.2,
+   "y": 80.9,
+   "rotation": 1.6635,
+   "scale": 1.2
+  },
+  {
+   "id": 486,
+   "type": "cagaita",
+   "x": 61.8,
+   "y": 7,
+   "rotation": 0.7033,
+   "scale": 0.9
+  },
+  {
+   "id": 487,
+   "type": "bush-cerrado-waist-a",
+   "x": 10.3,
+   "y": 99.9,
+   "rotation": 2.3873,
+   "scale": 0.9
+  },
+  {
+   "id": 488,
+   "type": "bush-cerrado-waist-b",
+   "x": 11.3,
+   "y": 40.4,
+   "rotation": 2.0555,
+   "scale": 0.9
+  },
+  {
+   "id": 489,
+   "type": "bush-cerrado-waist-b",
+   "x": 81.6,
+   "y": 36.2,
+   "rotation": 0.4248,
+   "scale": 0.9
+  },
+  {
+   "id": 490,
+   "type": "barbatimao",
+   "x": -115.6,
+   "y": -60.7,
+   "rotation": 3.4539,
+   "scale": 1.1
+  },
+  {
+   "id": 491,
+   "type": "aroeira",
+   "x": 29.3,
+   "y": 101.8,
+   "rotation": 4.932,
+   "scale": 0.9
+  },
+  {
+   "id": 492,
+   "type": "bush-cerrado-waist-a",
+   "x": 15.7,
+   "y": 41.3,
+   "rotation": 3.6755,
+   "scale": 1.1
+  },
+  {
+   "id": 493,
+   "type": "bush-cerrado-head-b",
+   "x": -34.9,
+   "y": -114.3,
+   "rotation": 4.898,
+   "scale": 1
+  },
+  {
+   "id": 494,
+   "type": "pequi-dead",
+   "x": 61.3,
+   "y": 115.3,
+   "rotation": 4.5669,
+   "scale": 0.9
+  },
+  {
+   "id": 495,
+   "type": "aroeira",
+   "x": -102.6,
+   "y": -93.3,
+   "rotation": 5.0035,
+   "scale": 1.2
+  },
+  {
+   "id": 496,
+   "type": "tree-broad",
+   "x": 8.7,
+   "y": 52,
+   "rotation": 4.9937,
+   "scale": 1
+  },
+  {
+   "id": 497,
+   "type": "cerrado-tree",
+   "x": 13.3,
+   "y": 54.7,
+   "rotation": 2.602,
+   "scale": 1.1
+  },
+  {
+   "id": 498,
+   "type": "bush-cerrado-knee-b",
+   "x": 37.2,
+   "y": 72.2,
+   "rotation": 1.4956,
+   "scale": 1
+  },
+  {
+   "id": 499,
+   "type": "bush-cerrado-knee-a",
+   "x": -52.5,
+   "y": -9.3,
+   "rotation": 4.1623,
+   "scale": 1
+  },
+  {
+   "id": 500,
+   "type": "aroeira",
+   "x": 92.6,
+   "y": 37.2,
+   "rotation": 0.6217,
+   "scale": 1.2
+  },
+  {
+   "id": 501,
+   "type": "bush-cerrado-head-a",
+   "x": 65.6,
+   "y": -8.6,
+   "rotation": 3.9792,
+   "scale": 1
+  },
+  {
+   "id": 502,
+   "type": "ipe",
+   "x": -62.7,
+   "y": -41.2,
+   "rotation": 0.7556,
+   "scale": 0.9
+  },
+  {
+   "id": 503,
+   "type": "bush-cerrado-knee-a",
+   "x": -5.5,
+   "y": -64,
+   "rotation": 3.6128,
+   "scale": 1.2
+  },
+  {
+   "id": 504,
+   "type": "pequi-dead",
+   "x": 101.1,
+   "y": 61.3,
+   "rotation": 4.7408,
+   "scale": 1.1
+  },
+  {
+   "id": 505,
+   "type": "bush-cerrado-knee-b",
+   "x": 65.9,
+   "y": 116.6,
+   "rotation": 5.7039,
+   "scale": 0.9
+  },
+  {
+   "id": 506,
+   "type": "barbatimao",
+   "x": -111.8,
+   "y": -55.2,
+   "rotation": 0.758,
+   "scale": 1.1
+  },
+  {
+   "id": 507,
+   "type": "ipe",
+   "x": -8.4,
+   "y": 114.5,
+   "rotation": 0.4593,
+   "scale": 0.9
+  },
+  {
+   "id": 508,
+   "type": "bush-cerrado-knee-a",
+   "x": 73.4,
+   "y": 45.7,
+   "rotation": 1.3804,
+   "scale": 0.9
+  },
+  {
+   "id": 509,
+   "type": "bush-cerrado-waist-a",
+   "x": 73.3,
+   "y": 54.5,
+   "rotation": 1.8886,
+   "scale": 1
+  },
+  {
+   "id": 510,
+   "type": "tree-broad",
+   "x": 98.1,
+   "y": 115.9,
+   "rotation": 2.7806,
+   "scale": 1
+  },
+  {
+   "id": 511,
+   "type": "bush-cerrado-head-b",
+   "x": 25.2,
+   "y": 102.2,
+   "rotation": 1.6875,
+   "scale": 0.9
+  },
+  {
+   "id": 512,
+   "type": "bush-cerrado-head-b",
+   "x": 94.1,
+   "y": -30.3,
+   "rotation": 4.9363,
+   "scale": 1.2
+  },
+  {
+   "id": 513,
+   "type": "bush-cerrado-knee-b",
+   "x": 59.2,
+   "y": -95.3,
+   "rotation": 2.0099,
+   "scale": 0.9
+  },
+  {
+   "id": 514,
+   "type": "cagaita",
+   "x": 61.8,
+   "y": -4.8,
+   "rotation": 5.9717,
+   "scale": 1.1
+  },
+  {
+   "id": 515,
+   "type": "cerrado-tree",
+   "x": -38.4,
+   "y": 97.6,
+   "rotation": 5.6289,
+   "scale": 1.1
+  },
+  {
+   "id": 516,
+   "type": "bush-cerrado-head-a",
+   "x": 87.4,
+   "y": -2.2,
+   "rotation": 6.1771,
+   "scale": 1
+  },
+  {
+   "id": 517,
+   "type": "aroeira",
+   "x": -101.1,
+   "y": -3.3,
+   "rotation": 5.9514,
+   "scale": 1
+  },
+  {
+   "id": 518,
+   "type": "cerrado-tree",
+   "x": 48,
+   "y": 60.6,
+   "rotation": 5.812,
+   "scale": 1
+  },
+  {
+   "id": 519,
+   "type": "cerrado-tree",
+   "x": -23.3,
+   "y": 95.1,
+   "rotation": 0.2739,
+   "scale": 1.2
+  },
+  {
+   "id": 520,
+   "type": "cagaita",
+   "x": 40.8,
+   "y": -108.2,
+   "rotation": 2.7461,
+   "scale": 1
+  },
+  {
+   "id": 521,
+   "type": "bush-cerrado-waist-a",
+   "x": -29.4,
+   "y": -114.2,
+   "rotation": 1.479,
+   "scale": 1
+  },
+  {
+   "id": 522,
+   "type": "bush-cerrado-head-a",
+   "x": 20.6,
+   "y": -111.7,
+   "rotation": 3.2097,
+   "scale": 1.2
+  },
+  {
+   "id": 523,
+   "type": "cerrado-tree",
+   "x": -100,
+   "y": 11.9,
+   "rotation": 3.6154,
+   "scale": 1.1
+  },
+  {
+   "id": 524,
+   "type": "cagaita",
+   "x": 107.4,
+   "y": 17.4,
+   "rotation": 1.5315,
+   "scale": 1.1
+  },
+  {
+   "id": 525,
+   "type": "tree-broad",
+   "x": -69.6,
+   "y": -99.1,
+   "rotation": 2.5742,
+   "scale": 1
+  },
+  {
+   "id": 526,
+   "type": "bush-cerrado-waist-a",
+   "x": 116.4,
+   "y": 4.7,
+   "rotation": 5.3886,
+   "scale": 1
+  },
+  {
+   "id": 527,
+   "type": "bush-cerrado-head-a",
+   "x": -90.8,
+   "y": 22.5,
+   "rotation": 0.0548,
+   "scale": 1.1
+  },
+  {
+   "id": 528,
+   "type": "barbatimao",
+   "x": -38,
+   "y": 108.1,
+   "rotation": 0.0135,
+   "scale": 0.9
+  },
+  {
+   "id": 529,
+   "type": "aroeira",
+   "x": 60.3,
+   "y": 11.9,
+   "rotation": 3.5853,
+   "scale": 0.9
+  },
+  {
+   "id": 530,
+   "type": "cagaita",
+   "x": -111.5,
+   "y": -21.2,
+   "rotation": 1.4167,
+   "scale": 1
+  },
+  {
+   "id": 531,
+   "type": "cerrado-tree",
+   "x": -115.2,
+   "y": 35.8,
+   "rotation": 0.0661,
+   "scale": 1.2
+  },
+  {
+   "id": 532,
+   "type": "ipe",
+   "x": -14.6,
+   "y": 45.1,
+   "rotation": 3.4324,
+   "scale": 1.2
+  },
+  {
+   "id": 533,
+   "type": "bush-cerrado-head-a",
+   "x": -114.3,
+   "y": 20,
+   "rotation": 1.3932,
+   "scale": 1.1
+  },
+  {
+   "id": 534,
+   "type": "bush-cerrado-knee-b",
+   "x": 35,
+   "y": 46.7,
+   "rotation": 3.431,
+   "scale": 0.9
+  },
+  {
+   "id": 535,
+   "type": "pequi-dead",
+   "x": -31.8,
+   "y": 70.8,
+   "rotation": 3.4614,
+   "scale": 1.1
+  },
+  {
+   "id": 536,
+   "type": "pequi-dead",
+   "x": 99.8,
+   "y": 73,
+   "rotation": 0.7877,
+   "scale": 0.9
+  },
+  {
+   "id": 537,
+   "type": "bush-cerrado-knee-a",
+   "x": 56.2,
+   "y": 30.1,
+   "rotation": 0.019,
+   "scale": 1.2
+  },
+  {
+   "id": 538,
+   "type": "ipe",
+   "x": 115,
+   "y": -40.4,
+   "rotation": 1.3166,
+   "scale": 1
+  },
+  {
+   "id": 539,
+   "type": "bush-cerrado-waist-b",
+   "x": 100.5,
+   "y": -7,
+   "rotation": 0.7109,
+   "scale": 1
+  },
+  {
+   "id": 540,
+   "type": "cerrado-tree",
+   "x": 40.3,
+   "y": -99.5,
+   "rotation": 3.137,
+   "scale": 1
+  },
+  {
+   "id": 541,
+   "type": "bush-cerrado-head-a",
+   "x": 59.1,
+   "y": -100,
+   "rotation": 0.2931,
+   "scale": 1
+  },
+  {
+   "id": 542,
+   "type": "bush-cerrado-head-a",
+   "x": -3.6,
+   "y": 44.7,
+   "rotation": 4.3311,
+   "scale": 1
+  },
+  {
+   "id": 543,
+   "type": "bush-cerrado-head-b",
+   "x": 77.3,
+   "y": 23.7,
+   "rotation": 1.0859,
+   "scale": 0.9
+  },
+  {
+   "id": 544,
+   "type": "bush-cerrado-head-a",
+   "x": -0.9,
+   "y": 112.6,
+   "rotation": 1.813,
+   "scale": 0.9
+  },
+  {
+   "id": 545,
+   "type": "tree-broad",
+   "x": -11.6,
+   "y": 93.9,
+   "rotation": 4.9069,
+   "scale": 0.9
+  },
+  {
+   "id": 546,
+   "type": "cerrado-tree",
+   "x": 25.2,
+   "y": 50.8,
+   "rotation": 1.3305,
+   "scale": 1.2
+  },
+  {
+   "id": 547,
+   "type": "cerrado-tree",
+   "x": 49.9,
+   "y": 87.9,
+   "rotation": 5.8106,
+   "scale": 1.2
+  },
+  {
+   "id": 548,
+   "type": "aroeira",
+   "x": 102.8,
+   "y": -23.7,
+   "rotation": 0.4487,
+   "scale": 1.2
+  },
+  {
+   "id": 549,
+   "type": "cerrado-tree",
+   "x": 9.2,
+   "y": 91.2,
+   "rotation": 5.2713,
+   "scale": 1
+  },
+  {
+   "id": 550,
+   "type": "cagaita",
+   "x": 16.8,
+   "y": 76.7,
+   "rotation": 4.7257,
+   "scale": 1
+  },
+  {
+   "id": 551,
+   "type": "cagaita",
+   "x": 100.2,
+   "y": 34.7,
+   "rotation": 0.2913,
+   "scale": 1.1
+  },
+  {
+   "id": 552,
+   "type": "bush-cerrado-head-a",
+   "x": 74.3,
+   "y": 28.7,
+   "rotation": 2.1073,
+   "scale": 1.1
+  },
+  {
+   "id": 553,
+   "type": "bush-cerrado-waist-b",
+   "x": -109.5,
+   "y": -37.2,
+   "rotation": 4.1621,
+   "scale": 1.2
+  },
+  {
+   "id": 554,
+   "type": "bush-cerrado-head-b",
+   "x": 15.6,
+   "y": 90.5,
+   "rotation": 6.0496,
+   "scale": 0.9
+  },
+  {
+   "id": 555,
+   "type": "bush-cerrado-knee-b",
+   "x": 92.2,
+   "y": -23.7,
+   "rotation": 1.4323,
+   "scale": 0.9
+  },
+  {
+   "id": 556,
+   "type": "tree-broad",
+   "x": -75.5,
+   "y": -98.7,
+   "rotation": 6.236,
+   "scale": 0.9
+  },
+  {
+   "id": 557,
+   "type": "cerrado-tree",
+   "x": 112.7,
+   "y": 34.7,
+   "rotation": 2.3227,
+   "scale": 0.9
+  },
+  {
+   "id": 558,
+   "type": "ipe",
+   "x": 20.9,
+   "y": 112.2,
+   "rotation": 2.7388,
+   "scale": 1.1
+  },
+  {
+   "id": 559,
+   "type": "bush-cerrado-knee-a",
+   "x": -31.5,
+   "y": -85.5,
+   "rotation": 4.0004,
+   "scale": 0.9
+  },
+  {
+   "id": 560,
+   "type": "cerrado-tree",
+   "x": 56.2,
+   "y": 62.4,
+   "rotation": 5.9934,
+   "scale": 0.9
+  },
+  {
+   "id": 561,
+   "type": "pequi-dead",
+   "x": 94.3,
+   "y": 24.6,
+   "rotation": 0.5825,
+   "scale": 1.2
+  },
+  {
+   "id": 562,
+   "type": "pequi-dead",
+   "x": -31.4,
+   "y": -94.9,
+   "rotation": 3.4138,
+   "scale": 1
+  },
+  {
+   "id": 563,
+   "type": "pequi-dead",
+   "x": -33.1,
+   "y": 91.3,
+   "rotation": 0.2046,
+   "scale": 1.1
+  },
+  {
+   "id": 564,
+   "type": "cerrado-tree",
+   "x": -29.6,
+   "y": 63.1,
+   "rotation": 4.714,
+   "scale": 1.2
+  },
+  {
+   "id": 565,
+   "type": "bush-cerrado-waist-a",
+   "x": -94.3,
+   "y": -77.4,
+   "rotation": 5.5743,
+   "scale": 1
+  },
+  {
+   "id": 566,
+   "type": "cagaita",
+   "x": 25,
+   "y": 85.5,
+   "rotation": 4.0818,
+   "scale": 1.2
+  },
+  {
+   "id": 567,
+   "type": "bush-cerrado-waist-a",
+   "x": 49.1,
+   "y": 65.9,
+   "rotation": 0.0297,
+   "scale": 1
+  },
+  {
+   "id": 568,
+   "type": "barbatimao",
+   "x": 54.4,
+   "y": 79.5,
+   "rotation": 0.0925,
+   "scale": 1
+  },
+  {
+   "id": 569,
+   "type": "aroeira",
+   "x": 50.6,
+   "y": 25.9,
+   "rotation": 4.4067,
+   "scale": 1
+  },
+  {
+   "id": 570,
+   "type": "bush-cerrado-knee-a",
+   "x": 38.7,
+   "y": 97.3,
+   "rotation": 0.1127,
+   "scale": 1.1
+  },
+  {
+   "id": 571,
+   "type": "ipe",
+   "x": -102.2,
+   "y": -35.8,
+   "rotation": 4.2491,
+   "scale": 1.1
+  },
+  {
+   "id": 572,
+   "type": "bush-cerrado-waist-a",
+   "x": 86.8,
+   "y": 30.2,
+   "rotation": 4.0534,
+   "scale": 1.2
+  },
+  {
+   "id": 573,
+   "type": "cagaita",
+   "x": -10.1,
+   "y": -76.5,
+   "rotation": 3.6798,
+   "scale": 0.9
+  },
+  {
+   "id": 574,
+   "type": "bush-cerrado-waist-b",
+   "x": 51.9,
+   "y": 69.4,
+   "rotation": 1.7808,
+   "scale": 1.2
+  },
+  {
+   "id": 575,
+   "type": "aroeira",
+   "x": -116.1,
+   "y": -49.2,
+   "rotation": 1.2309,
+   "scale": 0.9
+  },
+  {
+   "id": 576,
+   "type": "cagaita",
+   "x": 28.6,
+   "y": 15.7,
+   "rotation": 0.9788,
+   "scale": 1.1
+  },
+  {
+   "id": 577,
+   "type": "bush-cerrado-waist-a",
+   "x": -12.1,
+   "y": -93.3,
+   "rotation": 0.5854,
+   "scale": 1.1
+  },
+  {
+   "id": 578,
+   "type": "pequi-dead",
+   "x": 101,
+   "y": 51.9,
+   "rotation": 2.5443,
+   "scale": 1
+  },
+  {
+   "id": 579,
+   "type": "bush-cerrado-knee-b",
+   "x": -73.2,
+   "y": -106.8,
+   "rotation": 1.0325,
+   "scale": 1
+  },
+  {
+   "id": 580,
+   "type": "cerrado-tree",
+   "x": -103.3,
+   "y": -83.2,
+   "rotation": 0.862,
+   "scale": 0.9
+  },
+  {
+   "id": 581,
+   "type": "pequi-dead",
+   "x": 95.9,
+   "y": 63.6,
+   "rotation": 0.0543,
+   "scale": 0.9
+  },
+  {
+   "id": 582,
+   "type": "bush-cerrado-head-b",
+   "x": 36,
+   "y": 108.1,
+   "rotation": 4.0826,
+   "scale": 0.9
+  },
+  {
+   "id": 583,
+   "type": "tree-broad",
+   "x": -89.2,
+   "y": 29.8,
+   "rotation": 1.6918,
+   "scale": 1.1
+  },
+  {
+   "id": 584,
+   "type": "bush-cerrado-knee-b",
+   "x": -30.8,
+   "y": -109.8,
+   "rotation": 2.1184,
+   "scale": 1
+  },
+  {
+   "id": 585,
+   "type": "bush-cerrado-waist-b",
+   "x": 32.4,
+   "y": 81,
+   "rotation": 1.785,
+   "scale": 0.9
+  },
+  {
+   "id": 586,
+   "type": "barbatimao",
+   "x": 73.8,
+   "y": 3.5,
+   "rotation": 6.0196,
+   "scale": 0.9
+  },
+  {
+   "id": 587,
+   "type": "bush-cerrado-waist-b",
+   "x": -1.4,
+   "y": 76.8,
+   "rotation": 3.3475,
+   "scale": 1.1
+  },
+  {
+   "id": 588,
+   "type": "cerrado-tree",
+   "x": -39.8,
+   "y": -68.8,
+   "rotation": 0.2254,
+   "scale": 0.9
+  },
+  {
+   "id": 589,
+   "type": "bush-cerrado-knee-b",
+   "x": -7,
+   "y": 40.3,
+   "rotation": 2.5976,
+   "scale": 1.1
+  },
+  {
+   "id": 590,
+   "type": "cagaita",
+   "x": 94.8,
+   "y": 54.9,
+   "rotation": 1.9719,
+   "scale": 1
+  },
+  {
+   "id": 591,
+   "type": "bush-cerrado-waist-a",
+   "x": 4.8,
+   "y": 66.9,
+   "rotation": 6.1135,
+   "scale": 1
+  },
+  {
+   "id": 592,
+   "type": "barbatimao",
+   "x": 31.9,
+   "y": -91,
+   "rotation": 6.1312,
+   "scale": 1.1
+  },
+  {
+   "id": 593,
+   "type": "bush-cerrado-head-a",
+   "x": -65,
+   "y": -13.1,
+   "rotation": 4.09,
+   "scale": 0.9
+  },
+  {
+   "id": 594,
+   "type": "bush-cerrado-head-b",
+   "x": 8.2,
+   "y": 62.9,
+   "rotation": 3.6494,
+   "scale": 1.1
+  },
+  {
+   "id": 595,
+   "type": "pequi-dead",
+   "x": -84.9,
+   "y": -86.3,
+   "rotation": 0.8777,
+   "scale": 1.1
+  },
+  {
+   "id": 596,
+   "type": "pequi-dead",
+   "x": 9.9,
+   "y": 46.7,
+   "rotation": 2.9312,
+   "scale": 1.1
+  },
+  {
+   "id": 597,
+   "type": "tree-broad",
+   "x": 106.8,
+   "y": 54.1,
+   "rotation": 4.4863,
+   "scale": 1
+  },
+  {
+   "id": 598,
+   "type": "ipe",
+   "x": -108.1,
+   "y": 19.5,
+   "rotation": 0.024,
+   "scale": 0.9
+  },
+  {
+   "id": 599,
+   "type": "barbatimao",
+   "x": 30.4,
+   "y": 115.3,
+   "rotation": 5.5265,
+   "scale": 1
+  },
+  {
+   "id": 600,
+   "type": "bush-cerrado-head-b",
+   "x": -81.4,
+   "y": -89,
+   "rotation": 2.6273,
+   "scale": 1
+  },
+  {
+   "id": 601,
+   "type": "pequi-dead",
+   "x": -75.3,
+   "y": 112,
+   "rotation": 5.7654,
+   "scale": 1.1
+  },
+  {
+   "id": 602,
+   "type": "bush-cerrado-knee-b",
+   "x": -92.1,
+   "y": -28.7,
+   "rotation": 1.3738,
+   "scale": 1.1
+  },
+  {
+   "id": 603,
+   "type": "barbatimao",
+   "x": -20.6,
+   "y": 101.9,
+   "rotation": 1.951,
+   "scale": 1
+  },
+  {
+   "id": 604,
+   "type": "bush-cerrado-knee-a",
+   "x": 116.2,
+   "y": 108.8,
+   "rotation": 1.4833,
+   "scale": 1.1
+  },
+  {
+   "id": 605,
+   "type": "aroeira",
+   "x": -95.2,
+   "y": -92.8,
+   "rotation": 5.8834,
+   "scale": 1
+  },
+  {
+   "id": 606,
+   "type": "bush-cerrado-knee-a",
+   "x": 17.9,
+   "y": -105.9,
+   "rotation": 2.496,
+   "scale": 0.9
+  },
+  {
+   "id": 607,
+   "type": "bush-cerrado-waist-b",
+   "x": 24.7,
+   "y": -89,
+   "rotation": 2.7713,
+   "scale": 1.1
+  },
+  {
+   "id": 608,
+   "type": "bush-cerrado-waist-b",
+   "x": 7.3,
+   "y": 36.5,
+   "rotation": 3.6429,
+   "scale": 1
+  },
+  {
+   "id": 609,
+   "type": "bush-cerrado-knee-b",
+   "x": -54.7,
+   "y": -43.2,
+   "rotation": 0.354,
+   "scale": 1
+  },
+  {
+   "id": 610,
+   "type": "cerrado-tree",
+   "x": 43.9,
+   "y": 64.1,
+   "rotation": 5.6246,
+   "scale": 1.2
+  },
+  {
+   "id": 611,
+   "type": "cerrado-tree",
+   "x": 29.2,
+   "y": -83.7,
+   "rotation": 5.6693,
+   "scale": 1
+  },
+  {
+   "id": 612,
+   "type": "bush-cerrado-head-a",
+   "x": 83.4,
+   "y": 27.3,
+   "rotation": 1.3712,
+   "scale": 1.1
+  },
+  {
+   "id": 613,
+   "type": "cerrado-tree",
+   "x": 97.7,
+   "y": 48.4,
+   "rotation": 1.7853,
+   "scale": 1.2
+  },
+  {
+   "id": 614,
+   "type": "cerrado-tree",
+   "x": -79.7,
+   "y": 13.6,
+   "rotation": 3.2113,
+   "scale": 0.9
+  },
+  {
+   "id": 615,
+   "type": "bush-cerrado-head-a",
+   "x": 64.6,
+   "y": -112.7,
+   "rotation": 4.2081,
+   "scale": 0.9
+  },
+  {
+   "id": 616,
+   "type": "bush-cerrado-head-a",
+   "x": -35.7,
+   "y": 88.2,
+   "rotation": 0.1756,
+   "scale": 1.2
+  },
+  {
+   "id": 617,
+   "type": "bush-cerrado-waist-a",
+   "x": -76.7,
+   "y": 2.5,
+   "rotation": 2.8268,
+   "scale": 1
+  },
+  {
+   "id": 618,
+   "type": "bush-cerrado-head-a",
+   "x": 11.1,
+   "y": -112.4,
+   "rotation": 5.0794,
+   "scale": 1.2
+  },
+  {
+   "id": 619,
+   "type": "cerrado-tree",
+   "x": -104.9,
+   "y": -109.8,
+   "rotation": 1.1103,
+   "scale": 1
+  },
+  {
+   "id": 620,
+   "type": "barbatimao",
+   "x": -19.7,
+   "y": -40.4,
+   "rotation": 2.8346,
+   "scale": 0.9
+  },
+  {
+   "id": 621,
+   "type": "aroeira",
+   "x": -27.5,
+   "y": 111.2,
+   "rotation": 1.4681,
+   "scale": 0.9
+  },
+  {
+   "id": 622,
+   "type": "cagaita",
+   "x": 11.2,
+   "y": 35.2,
+   "rotation": 3.9097,
+   "scale": 1
+  },
+  {
+   "id": 623,
+   "type": "cerrado-tree",
+   "x": -17.9,
+   "y": -74.1,
+   "rotation": 5.5751,
+   "scale": 1
+  },
+  {
+   "id": 624,
+   "type": "bush-cerrado-head-b",
+   "x": -29.6,
+   "y": 98.8,
+   "rotation": 5.9368,
+   "scale": 1
+  },
+  {
+   "id": 625,
+   "type": "cagaita",
+   "x": -65.5,
+   "y": 106.7,
+   "rotation": 4.2864,
+   "scale": 1.1
+  },
+  {
+   "id": 626,
+   "type": "ipe",
+   "x": 38.4,
+   "y": 103,
+   "rotation": 5.3468,
+   "scale": 1
+  },
+  {
+   "id": 627,
+   "type": "barbatimao",
+   "x": -85.3,
+   "y": 16.8,
+   "rotation": 3.6017,
+   "scale": 0.9
+  },
+  {
+   "id": 628,
+   "type": "bush-cerrado-waist-a",
+   "x": -101.5,
+   "y": -64,
+   "rotation": 2.254,
+   "scale": 1
+  },
+  {
+   "id": 629,
+   "type": "barbatimao",
+   "x": 52.3,
+   "y": -81.3,
+   "rotation": 5.6973,
+   "scale": 1.1
+  },
+  {
+   "id": 630,
+   "type": "pequi-dead",
+   "x": 47.1,
+   "y": -97.4,
+   "rotation": 5.2952,
+   "scale": 1
+  },
+  {
+   "id": 631,
+   "type": "barbatimao",
+   "x": 44.8,
+   "y": -86.8,
+   "rotation": 1.6478,
+   "scale": 1.2
+  },
+  {
+   "id": 632,
+   "type": "cerrado-tree",
+   "x": 14,
+   "y": -102,
+   "rotation": 4.8198,
+   "scale": 0.9
+  },
+  {
+   "id": 633,
+   "type": "bush-cerrado-waist-b",
+   "x": 84.6,
+   "y": 113.9,
+   "rotation": 3.2465,
+   "scale": 1
+  },
+  {
+   "id": 634,
+   "type": "bush-cerrado-knee-b",
+   "x": -65.6,
+   "y": 94.8,
+   "rotation": 4.3278,
+   "scale": 1
+  },
+  {
+   "id": 635,
+   "type": "ipe",
+   "x": -107.1,
+   "y": 36.5,
+   "rotation": 2.0883,
+   "scale": 1.1
+  },
+  {
+   "id": 636,
+   "type": "bush-cerrado-head-b",
+   "x": 43.9,
+   "y": 24.6,
+   "rotation": 3.4255,
+   "scale": 1
+  },
+  {
+   "id": 637,
+   "type": "bush-cerrado-knee-b",
+   "x": 92.1,
+   "y": 4.7,
+   "rotation": 1.721,
+   "scale": 1.1
+  },
+  {
+   "id": 638,
+   "type": "cagaita",
+   "x": 45.6,
+   "y": 16.7,
+   "rotation": 3.3235,
+   "scale": 1.1
+  },
+  {
+   "id": 639,
+   "type": "barbatimao",
+   "x": -44.5,
+   "y": -102.1,
+   "rotation": 0.4742,
+   "scale": 0.9
+  },
+  {
+   "id": 640,
+   "type": "bush-cerrado-head-a",
+   "x": 78.4,
+   "y": 114,
+   "rotation": 0.3395,
+   "scale": 1
+  },
+  {
+   "id": 641,
+   "type": "ipe",
+   "x": -75.1,
+   "y": 14.3,
+   "rotation": 3.8909,
+   "scale": 0.9
+  },
+  {
+   "id": 642,
+   "type": "ipe",
+   "x": -52.5,
+   "y": -29.1,
+   "rotation": 3.1257,
+   "scale": 0.9
+  },
+  {
+   "id": 643,
+   "type": "ipe",
+   "x": -92.6,
+   "y": -100,
+   "rotation": 1.9455,
+   "scale": 1.1
+  },
+  {
+   "id": 644,
+   "type": "bush-cerrado-head-a",
+   "x": 89.5,
+   "y": 24.6,
+   "rotation": 0.9326,
+   "scale": 1.1
+  },
+  {
+   "id": 645,
+   "type": "bush-cerrado-head-b",
+   "x": 15.3,
+   "y": 28.7,
+   "rotation": 2.8903,
+   "scale": 0.9
+  },
+  {
+   "id": 646,
+   "type": "bush-cerrado-head-b",
+   "x": -108.6,
+   "y": -91,
+   "rotation": 2.5203,
+   "scale": 0.9
+  },
+  {
+   "id": 647,
+   "type": "barbatimao",
+   "x": 111.6,
+   "y": -2.8,
+   "rotation": 1.8023,
+   "scale": 1
+  },
+  {
+   "id": 648,
+   "type": "pequi-dead",
+   "x": 10.2,
+   "y": 112.4,
+   "rotation": 0.742,
+   "scale": 1.1
+  },
+  {
+   "id": 649,
+   "type": "tree-broad",
+   "x": 87.9,
+   "y": 39,
+   "rotation": 3.2112,
+   "scale": 0.9
+  },
+  {
+   "id": 650,
+   "type": "bush-cerrado-head-b",
+   "x": 43.7,
+   "y": 79.2,
+   "rotation": 0.8143,
+   "scale": 0.9
+  },
+  {
+   "id": 651,
+   "type": "cerrado-tree",
+   "x": 73.8,
+   "y": 79.3,
+   "rotation": 3.1335,
+   "scale": 0.9
+  },
+  {
+   "id": 652,
+   "type": "tree-broad",
+   "x": 62.5,
+   "y": 77.8,
+   "rotation": 4.3341,
+   "scale": 0.9
+  },
+  {
+   "id": 653,
+   "type": "bush-cerrado-waist-b",
+   "x": -0.7,
+   "y": 67.2,
+   "rotation": 5.655,
+   "scale": 0.9
+  },
+  {
+   "id": 654,
+   "type": "cerrado-tree",
+   "x": -108.7,
+   "y": -77.8,
+   "rotation": 6.2424,
+   "scale": 1
+  },
+  {
+   "id": 655,
+   "type": "bush-cerrado-head-a",
+   "x": -49.4,
+   "y": -31.6,
+   "rotation": 3.2983,
+   "scale": 0.9
+  },
+  {
+   "id": 656,
+   "type": "tree-broad",
+   "x": -8,
+   "y": 55.4,
+   "rotation": 0.2954,
+   "scale": 1.1
+  },
+  {
+   "id": 657,
+   "type": "pequi-dead",
+   "x": 43.9,
+   "y": 89.4,
+   "rotation": 0.4458,
+   "scale": 0.9
+  },
+  {
+   "id": 658,
+   "type": "tree-broad",
+   "x": 10.8,
+   "y": 85.3,
+   "rotation": 3.1079,
+   "scale": 1.1
+  },
+  {
+   "id": 659,
+   "type": "bush-cerrado-head-a",
+   "x": 44,
+   "y": 75,
+   "rotation": 3.9444,
+   "scale": 0.9
+  },
+  {
+   "id": 660,
+   "type": "cerrado-tree",
+   "x": 28.3,
+   "y": 54.1,
+   "rotation": 0.0357,
+   "scale": 1
+  },
+  {
+   "id": 661,
+   "type": "bush-cerrado-head-b",
+   "x": -95,
+   "y": -104.1,
+   "rotation": 0.6681,
+   "scale": 0.9
+  },
+  {
+   "id": 662,
+   "type": "bush-cerrado-waist-b",
+   "x": 33.3,
+   "y": -100.5,
+   "rotation": 3.7639,
+   "scale": 1
+  },
+  {
+   "id": 663,
+   "type": "bush-cerrado-waist-a",
+   "x": -111.3,
+   "y": 47,
+   "rotation": 1.3148,
+   "scale": 1.1
+  },
+  {
+   "id": 664,
+   "type": "cerrado-tree",
+   "x": 25.4,
+   "y": 110.5,
+   "rotation": 3.6421,
+   "scale": 1
+  },
+  {
+   "id": 665,
+   "type": "bush-cerrado-head-b",
+   "x": -26.7,
+   "y": 79.2,
+   "rotation": 0.0835,
+   "scale": 1
+  },
+  {
+   "id": 666,
+   "type": "bush-cerrado-knee-a",
+   "x": -97.9,
+   "y": -28.7,
+   "rotation": 2.5497,
+   "scale": 1.1
+  },
+  {
+   "id": 667,
+   "type": "bush-cerrado-waist-b",
+   "x": 92.3,
+   "y": 51.1,
+   "rotation": 4.8449,
+   "scale": 0.9
+  },
+  {
+   "id": 668,
+   "type": "tree-broad",
+   "x": -100.4,
+   "y": -89.8,
+   "rotation": 3.5419,
+   "scale": 0.9
+  },
+  {
+   "id": 669,
+   "type": "cerrado-tree",
+   "x": 37.4,
+   "y": 80.6,
+   "rotation": 3.0051,
+   "scale": 1
+  },
+  {
+   "id": 670,
+   "type": "barbatimao",
+   "x": 5.9,
+   "y": -115.1,
+   "rotation": 2.1419,
+   "scale": 0.9
+  },
+  {
+   "id": 671,
+   "type": "bush-cerrado-head-a",
+   "x": 83.8,
+   "y": 64,
+   "rotation": 5.8731,
+   "scale": 0.9
+  },
+  {
+   "id": 672,
+   "type": "aroeira",
+   "x": -112.7,
+   "y": -82.2,
+   "rotation": 3.4811,
+   "scale": 0.9
+  },
+  {
+   "id": 673,
+   "type": "ipe",
+   "x": -32.1,
+   "y": -22.5,
+   "rotation": 4.2998,
+   "scale": 1
+  },
+  {
+   "id": 674,
+   "type": "bush-cerrado-waist-a",
+   "x": -60.6,
+   "y": 98.8,
+   "rotation": 0.7815,
+   "scale": 1
+  },
+  {
+   "id": 675,
+   "type": "bush-cerrado-waist-a",
+   "x": -48.6,
+   "y": -25.3,
+   "rotation": 2.6143,
+   "scale": 1.1
+  },
+  {
+   "id": 676,
+   "type": "cerrado-tree",
+   "x": 65,
+   "y": 13.4,
+   "rotation": 2.6306,
+   "scale": 0.9
+  },
+  {
+   "id": 677,
+   "type": "cerrado-tree",
+   "x": 59.2,
+   "y": 44.1,
+   "rotation": 2.8437,
+   "scale": 1
+  },
+  {
+   "id": 678,
+   "type": "barbatimao",
+   "x": -114.9,
+   "y": 31.7,
+   "rotation": 2.2357,
+   "scale": 1
+  },
+  {
+   "id": 679,
+   "type": "aroeira",
+   "x": 72.7,
+   "y": -116.7,
+   "rotation": 2.5868,
+   "scale": 1.2
+  },
+  {
+   "id": 680,
+   "type": "bush-cerrado-waist-b",
+   "x": 105.1,
+   "y": -10.2,
+   "rotation": 5.0141,
+   "scale": 0.9
+  },
+  {
+   "id": 681,
+   "type": "barbatimao",
+   "x": 24,
+   "y": 45.2,
+   "rotation": 2.1648,
+   "scale": 1.1
+  },
+  {
+   "id": 682,
+   "type": "barbatimao",
+   "x": 52.3,
+   "y": 36.1,
+   "rotation": 0.4816,
+   "scale": 1.2
+  },
+  {
+   "id": 683,
+   "type": "bush-cerrado-knee-b",
+   "x": -114,
+   "y": -26.2,
+   "rotation": 2.3747,
+   "scale": 1
+  },
+  {
+   "id": 684,
+   "type": "ipe",
+   "x": -51.9,
+   "y": -36,
+   "rotation": 2.9078,
+   "scale": 0.9
+  },
+  {
+   "id": 685,
+   "type": "bush-cerrado-waist-a",
+   "x": -99.7,
+   "y": -106.7,
+   "rotation": 6.2128,
+   "scale": 0.9
+  },
+  {
+   "id": 686,
+   "type": "bush-cerrado-waist-b",
+   "x": 65.7,
+   "y": 24.3,
+   "rotation": 5.0247,
+   "scale": 1
+  },
+  {
+   "id": 687,
+   "type": "pequi-dead",
+   "x": 59.6,
+   "y": 19.6,
+   "rotation": 4.1945,
+   "scale": 1.1
+  },
+  {
+   "id": 688,
+   "type": "bush-cerrado-waist-a",
+   "x": 12.2,
+   "y": 105.8,
+   "rotation": 5.0581,
+   "scale": 1.2
+  },
+  {
+   "id": 689,
+   "type": "pequi-dead",
+   "x": 82.6,
+   "y": 60,
+   "rotation": 5.9377,
+   "scale": 1.1
+  },
+  {
+   "id": 690,
+   "type": "bush-cerrado-head-b",
+   "x": 75.4,
+   "y": 39.1,
+   "rotation": 5.379,
+   "scale": 1.1
+  },
+  {
+   "id": 691,
+   "type": "bush-cerrado-knee-b",
+   "x": -16.3,
+   "y": 91.8,
+   "rotation": 4.7676,
+   "scale": 1
+  },
+  {
+   "id": 692,
+   "type": "bush-cerrado-knee-b",
+   "x": -106.7,
+   "y": 13.7,
+   "rotation": 0.3453,
+   "scale": 0.9
+  },
+  {
+   "id": 693,
+   "type": "bush-cerrado-head-a",
+   "x": 62.2,
+   "y": -87.6,
+   "rotation": 4.726,
+   "scale": 0.9
+  },
+  {
+   "id": 694,
+   "type": "bush-cerrado-waist-b",
+   "x": -110.1,
+   "y": -27.9,
+   "rotation": 6.083,
+   "scale": 1.2
+  },
+  {
+   "id": 695,
+   "type": "cagaita",
+   "x": 44.7,
+   "y": 30.1,
+   "rotation": 4.266,
+   "scale": 1.2
+  },
+  {
+   "id": 696,
+   "type": "tree-broad",
+   "x": 17.3,
+   "y": -47.1,
+   "rotation": 6.2406,
+   "scale": 1.1
+  },
+  {
+   "id": 697,
+   "type": "ipe",
+   "x": -12.7,
+   "y": 59.7,
+   "rotation": 3.6217,
+   "scale": 1.1
+  },
+  {
+   "id": 698,
+   "type": "bush-cerrado-head-a",
+   "x": -5.1,
+   "y": 50.3,
+   "rotation": 4.3968,
+   "scale": 0.9
+  },
+  {
+   "id": 699,
+   "type": "cagaita",
+   "x": 53.8,
+   "y": 84.6,
+   "rotation": 3.0177,
+   "scale": 0.9
+  },
+  {
+   "id": 700,
+   "type": "pequi-dead",
+   "x": 89.5,
+   "y": 34.1,
+   "rotation": 1.3771,
+   "scale": 1.1
+  },
+  {
+   "id": 701,
+   "type": "cagaita",
+   "x": 21.3,
+   "y": 94,
+   "rotation": 1.8268,
+   "scale": 1.2
+  },
+  {
+   "id": 702,
+   "type": "pequi-dead",
+   "x": 113.4,
+   "y": 70.6,
+   "rotation": 1.8374,
+   "scale": 1
+  },
+  {
+   "id": 703,
+   "type": "cagaita",
+   "x": 73.1,
+   "y": 21.4,
+   "rotation": 1.1766,
+   "scale": 1.2
+  },
+  {
+   "id": 704,
+   "type": "aroeira",
+   "x": -2.8,
+   "y": 54.9,
+   "rotation": 5.8037,
+   "scale": 1
+  },
+  {
+   "id": 705,
+   "type": "pequi-dead",
+   "x": 33,
+   "y": 95.6,
+   "rotation": 0.5095,
+   "scale": 1
+  },
+  {
+   "id": 706,
+   "type": "aroeira",
+   "x": -65.1,
+   "y": 89.9,
+   "rotation": 1.4549,
+   "scale": 1.1
+  },
+  {
+   "id": 707,
+   "type": "bush-cerrado-waist-a",
+   "x": 34.7,
+   "y": 54.7,
+   "rotation": 3.6043,
+   "scale": 0.9
+  },
+  {
+   "id": 708,
+   "type": "ipe",
+   "x": -40.2,
+   "y": 86.2,
+   "rotation": 0.9157,
+   "scale": 1.1
+  },
+  {
+   "id": 709,
+   "type": "cerrado-tree",
+   "x": -93.9,
+   "y": 26.1,
+   "rotation": 3.9314,
+   "scale": 1.1
+  },
+  {
+   "id": 710,
+   "type": "bush-cerrado-knee-a",
+   "x": -111,
+   "y": -50.7,
+   "rotation": 0.215,
+   "scale": 1
+  },
+  {
+   "id": 711,
+   "type": "barbatimao",
+   "x": -1.9,
+   "y": 104.7,
+   "rotation": 0.5739,
+   "scale": 1.2
+  }
+ ],
+ "deployment": {
+  "column": {
+   "sections": [
+    {
+     "x": -70,
+     "y": -60
+    },
+    {
+     "x": -46,
+     "y": -84
+    },
+    {
+     "x": -90,
+     "y": -34
+    }
+   ],
+   "facing": {
+    "x": 0.64,
+    "y": 0.77
+   },
+   "area": [
+    {
+     "x": -110,
+     "y": -50
+    },
+    {
+     "x": -60,
+     "y": -110
+    },
+    {
+     "x": -30,
+     "y": -90
+    },
+    {
+     "x": -80,
+     "y": -24
+    }
+   ]
+  },
+  "legalist": {
+   "sections": [
+    {
+     "x": 90,
+     "y": 100
+    },
+    {
+     "x": 70,
+     "y": 106
+    },
+    {
+     "x": 108,
+     "y": 84
+    }
+   ],
+   "facing": {
+    "x": -0.64,
+    "y": -0.77
+   },
+   "area": [
+    {
+     "x": 50,
+     "y": 112
+    },
+    {
+     "x": 116,
+     "y": 112
+    },
+    {
+     "x": 116,
+     "y": 70
+    },
+    {
+     "x": 80,
+     "y": 80
+    }
+   ]
+  }
+ },
+ "north": 0,
+ "objectives": [
+  {
+   "id": 1,
+   "name": {
+    "pt-BR": "Ponte",
+    "en": "Bridge"
+   },
+   "area": [
+    {
+     "x": -0.6,
+     "y": -20
+    },
+    {
+     "x": -5.3,
+     "y": -8.7
+    },
+    {
+     "x": -16.6,
+     "y": -4
+    },
+    {
+     "x": -28,
+     "y": -8.7
+    },
+    {
+     "x": -32.6,
+     "y": -20
+    },
+    {
+     "x": -28,
+     "y": -31.3
+    },
+    {
+     "x": -16.6,
+     "y": -36
+    },
+    {
+     "x": -5.3,
+     "y": -31.3
+    }
+   ],
+   "flag": {
+    "x": -16.64,
+    "y": -19.968
+   },
+   "value": 3,
+   "owner": "neutral"
+  },
+  {
+   "id": 2,
+   "name": {
+    "pt-BR": "Vau",
+    "en": "Ford"
+   },
+   "area": [
+    {
+     "x": 62.1,
+     "y": -54
+    },
+    {
+     "x": 57.4,
+     "y": -42.7
+    },
+    {
+     "x": 46.1,
+     "y": -38
+    },
+    {
+     "x": 34.8,
+     "y": -42.7
+    },
+    {
+     "x": 30.1,
+     "y": -54
+    },
+    {
+     "x": 34.8,
+     "y": -65.3
+    },
+    {
+     "x": 46.1,
+     "y": -70
+    },
+    {
+     "x": 57.4,
+     "y": -65.3
+    }
+   ],
+   "flag": {
+    "x": 46.08,
+    "y": -54.016000000000005
+   },
+   "value": 2,
+   "owner": "neutral"
+  },
+  {
+   "id": 3,
+   "name": {
+    "pt-BR": "Margem Oeste",
+    "en": "West Bank"
+   },
+   "area": [
+    {
+     "x": -36.7,
+     "y": -9
+    },
+    {
+     "x": -41.1,
+     "y": 1.6
+    },
+    {
+     "x": -51.7,
+     "y": 6
+    },
+    {
+     "x": -62.3,
+     "y": 1.6
+    },
+    {
+     "x": -66.7,
+     "y": -9
+    },
+    {
+     "x": -62.3,
+     "y": -19.6
+    },
+    {
+     "x": -51.7,
+     "y": -24
+    },
+    {
+     "x": -41.1,
+     "y": -19.6
+    }
+   ],
+   "flag": {
+    "x": -51.712,
+    "y": -8.959999999999997
+   },
+   "value": 1,
+   "owner": "column"
+  },
+  {
+   "id": 4,
+   "name": {
+    "pt-BR": "Estrada de Mineiros",
+    "en": "Mineiros Road"
+   },
+   "area": [
+    {
+     "x": -48,
+     "y": -66.8
+    },
+    {
+     "x": -52.7,
+     "y": -55.5
+    },
+    {
+     "x": -64,
+     "y": -50.8
+    },
+    {
+     "x": -75.3,
+     "y": -55.5
+    },
+    {
+     "x": -80,
+     "y": -66.8
+    },
+    {
+     "x": -75.3,
+     "y": -78.1
+    },
+    {
+     "x": -64,
+     "y": -82.8
+    },
+    {
+     "x": -52.7,
+     "y": -78.1
+    }
+   ],
+   "flag": {
+    "x": -64,
+    "y": -66.8
+   },
+   "value": 1,
+   "owner": "column"
+  },
+  {
+   "id": 5,
+   "name": {
+    "pt-BR": "Aproximação Leste",
+    "en": "East Approach"
+   },
+   "area": [
+    {
+     "x": 54.4,
+     "y": 46.1
+    },
+    {
+     "x": 49.7,
+     "y": 57.4
+    },
+    {
+     "x": 38.4,
+     "y": 62.1
+    },
+    {
+     "x": 27.1,
+     "y": 57.4
+    },
+    {
+     "x": 22.4,
+     "y": 46.1
+    },
+    {
+     "x": 27.1,
+     "y": 34.8
+    },
+    {
+     "x": 38.4,
+     "y": 30.1
+    },
+    {
+     "x": 49.7,
+     "y": 34.8
+    }
+   ],
+   "flag": {
+    "x": 38.4,
+    "y": 46.08
+   },
+   "value": 1,
+   "owner": "legalist"
+  }
+ ],
+ "columnForce": {
+  "sections": [
+   "comando",
+   "fuzileiros",
+   "esquadra-5"
+  ]
+ },
+ "enemyForces": [
+  {
+   "sections": [
+    "comando-companhia",
+    "brigada-militar",
+    "provisorios"
+   ]
+  },
+  {
+   "sections": [
+    "comando-companhia",
+    "infantaria-exercito",
+    "metralhadora-legalista"
+   ]
+  }
+ ],
+ "eventPlaces": [
+  {
+   "id": 1,
+   "name": "Estrada de Mineiros (sudeste)",
+   "kind": "entry",
+   "point": {
+    "x": 116,
+    "y": 96
+   },
+   "facing": {
+    "x": -0.64,
+    "y": -0.77
+   }
+  },
+  {
+   "id": 2,
+   "name": "Campo do sul",
+   "kind": "entry",
+   "point": {
+    "x": 20,
+    "y": 116
+   },
+   "facing": {
+    "x": 0,
+    "y": -1
+   }
+  },
+  {
+   "id": 3,
+   "name": "Campo do leste",
+   "kind": "entry",
+   "point": {
+    "x": 116,
+    "y": -20
+   },
+   "facing": {
+    "x": -1,
+    "y": 0
+   }
+  }
+ ],
+ "events": [
+  {
+   "id": 1,
+   "label": "A ponte é um relógio",
+   "trigger": {
+    "kind": "time",
+    "seconds": 1
+   },
+   "delay": 0,
+   "actions": [
+    {
+     "kind": "card",
+     "title": {
+      "pt-BR": "A ponte é um relógio",
+      "en": "The bridge is a clock"
+     },
+     "text": {
+      "pt-BR": "Rio Verdinho, fora de Mineiros, Goiás, 27 de junho de 1925. O grosso da coluna atravessou de manhã. Atrás vem Klinger, de caminhão pela estrada. Prestes fica com o destacamento de Cordeiro na cabeceira:\n\n— A ponte não é uma posição para guardar. É uma posição para entregar na hora certa. Segurem até as carroças passarem; depois, fogo na ponte e saída pelo vau.\n\n(Fala dramatizada. A ação na ponte é histórica: macaulay-1974, cap. V, pp. 122-124.)",
+      "en": "The Verdinho River, outside Mineiros, Goiás, 27 June 1925. The column's main body crossed in the morning. Behind it comes Klinger, by lorry along the road. Prestes stays with Cordeiro's detachment at the bridgehead:\n\n\"The bridge is not a position to keep. It is a position to give up at the right time. Hold until the wagons are through; then fire the bridge and leave by the ford.\"\n\n(Dramatized line. The action at the bridge is historical: macaulay-1974, ch. V, pp. 122-124.)"
+     }
+    }
+   ]
+  },
+  {
+   "id": 2,
+   "label": "Os caminhões de Klinger",
+   "trigger": {
+    "kind": "time",
+    "seconds": 120
+   },
+   "delay": 0,
+   "actions": [
+    {
+     "kind": "troops",
+     "side": "legalist",
+     "entry": 1,
+     "sections": [
+      "brigada-militar",
+      "provisorios"
+     ],
+     "order": {
+      "kind": "objective",
+      "objective": 1
+     }
+    }
+   ]
+  },
+  {
+   "id": 3,
+   "label": "A ponte queima",
+   "trigger": {
+    "kind": "time",
+    "seconds": 420
+   },
+   "delay": 0,
+   "actions": [
+    {
+     "kind": "card",
+     "title": {
+      "pt-BR": "A ponte queima",
+      "en": "The bridge burns"
+     },
+     "text": {
+      "pt-BR": "As últimas carroças passaram. Na cabeceira, os homens jogam querosene nas tábuas e no madeirame. A fumaça sobe preta sobre o rio.\n\n— Agora é o vau. Um por um, com a água na cintura, e quem chegar do outro lado cobre quem vem atrás.\n\n(No registro, a retaguarda queimou a ponte na tarde do dia 27, segurou a margem durante a noite e atravessou o rio raso a vau na manhã do dia 28. No jogo, a ponte fica de pé. Fala dramatizada.)",
+      "en": "The last wagons are across. At the bridgehead the men throw kerosene on the planks and the timbers. Black smoke rises over the river.\n\n\"Now the ford. One by one, water to the waist, and whoever reaches the other side covers the ones behind.\"\n\n(In the record, the rearguard burned the bridge on the afternoon of the 27th, held the bank overnight and waded the shallow river on the morning of the 28th. In the game the bridge stays standing. Dramatized line.)"
+     }
+    },
+    {
+     "kind": "troops",
+     "side": "legalist",
+     "entry": 2,
+     "sections": [
+      "infantaria-exercito",
+      "metralhadora-legalista"
+     ],
+     "order": {
+      "kind": "objective",
+      "objective": 2
+     }
+    }
+   ]
+  },
+  {
+   "id": 4,
+   "label": "Cento e vinte fuzileiros",
+   "trigger": {
+    "kind": "objective",
+    "objective": 1,
+    "side": "column",
+    "change": "lost"
+   },
+   "delay": 0,
+   "actions": [
+    {
+     "kind": "card",
+     "title": {
+      "pt-BR": "Cento e vinte fuzileiros",
+      "en": "A hundred and twenty riflemen"
+     },
+     "text": {
+      "pt-BR": "O governo tomou a cabeceira. Klinger trouxe mais gente: cento e vinte fuzileiros e cinco metralhadoras, contam os batedores.\n\n— Para o vau. A ponte já cumpriu o que tinha de cumprir.\n\n(O registro: menos de cem homens de Klinger chegaram à ponte; depois vieram cento e vinte fuzileiros e cinco guarnições de metralhadora. Fala dramatizada.)",
+      "en": "The government has taken the bridgehead. Klinger has brought more men: a hundred and twenty riflemen and five machine guns, the scouts count.\n\n\"To the ford. The bridge has done what it had to do.\"\n\n(The record: fewer than a hundred of Klinger's men reached the bridge; later came a hundred and twenty riflemen and five machine-gun crews. Dramatized line.)"
+     }
+    }
+   ]
+  },
+  {
+   "id": 5,
+   "label": "Pelo campo do leste",
+   "trigger": {
+    "kind": "time",
+    "seconds": 600
+   },
+   "delay": 0,
+   "actions": [
+    {
+     "kind": "troops",
+     "side": "legalist",
+     "entry": 3,
+     "sections": [
+      "infantaria-exercito",
+      "metralhadora-legalista"
+     ],
+     "order": {
+      "kind": "objective",
+      "objective": 2
+     }
+    },
+    {
+     "kind": "posture",
+     "posture": "offensive",
+     "until": {
+      "seconds": 300
+     }
+    }
+   ]
+  }
+ ],
+ "epilogue": {
+  "pt-BR": "A ponte caiu e a coluna seguiu para o norte. A perseguição foi atrasada, não detida.\nO registro: em 27 de junho de 1925, a retaguarda de Prestes e Cordeiro segurou a ponte do Verdinho, deteve o avanço de Klinger e queimou a ponte. Segurou a margem oeste durante a noite e atravessou o rio raso a vau na manhã do dia 28.\nKlinger abriu um vau nas barrancas com as madeiras da própria ponte. A coluna ganhou um dia de marcha.",
+  "en": "The bridge was down and the column went on north. The pursuit was delayed, not stopped.\nThe record: on 27 June 1925, Prestes and Cordeiro's rearguard held the Verdinho bridge, stopped Klinger's advance and burned the bridge. It held the west bank overnight and waded the shallow river on the morning of the 28th.\nKlinger cut a ford into the banks with the bridge's own timbers. The column gained a day's march."
+ },
+ "layers": {
+  "height": {
+   "encoding": "rle-base64",
+   "type": "i16",
+   "length": 14641,
+   "data": "mAUBngUBnAUBlAUBhAUB6gQBzAQBqAQBhAQB4gMBxAMBrAMBmAMBjAMBhAMB/AIB8gIB5gIB1AIBvgIBogIBhAIB5gEBzgEBugEBsgEBtgEBxgEB4AEBggIBqgIB1AIB+gIBnAMBtAMBxAMBzAMCyAMBwAMBuAMBrgMBpgMBnAMBjgMB/gIB5gIByAIBoAIB8gEBvgEBiAEBVAEmAQABFwEjAR8BDQEOATIBXAGIAQGyAQHcAQGCAgGoAgHOAgH0AgGgAwHQAwGEBAG+BAH6BAG2BQHuBQGgBgHIBgHmBgH2BgH8BgH4BgHsBgHaBgHIBgG4BgGsBgGkBgGgBgKiBgGkBgGiBgGaBgGKBgH0BQHWBQGwBQGIBQHeBAG0BAGOBAHsAwHMAwGwAwGYAwH+AgHkAgG2AgGiAgGEAgHgAQG8AQGcAQGCAQFwAWgBbAFoAVQBQgGWBQKOBQH+BAHoBAHMBAGsBAGMBAHuAwHWAwHCAwG2AwGuAwGqAwGoAwGkAwGcAwGOAwH4AgHeAgHAAgGgAgGEAgHsAQHcAQHYAQHeAQHuAQGGAgGkAgHEAgHkAgGAAwGUAwGiAwGqAwGsAwGoAwGkAwGeAwGYAwGSAwGMAwGCAwH0AgHgAgHCAgGcAgHsAQG4AQGAAQFIARYBEwExAUEBQwE3ASEBAQEiAUoBcAGWAQG6AQHcAQH+AQGkAgHMAgH8AgG0AwHwAwGwBAHyBAGwBQHoBQGYBgG8BgHSBgHeBgHcBgHUBgHGBgG2BgGoBgGcBgGUBgGSBgKWBgGYBgKSBgGGBgH0BQHcBQG8BQGcBQH4BAHWBAG2BAGaBAGABAHoAwHSAwG6AwHEAgGuAgGaAgGEAgHuAQHaAQHEAQGoAQGUAQGEAQFwAVoBSAE2AbcDAY4FAYYFAfgEAeIEAcgEAawEAY4EAfYDAeADAdIDAcwDAcoDAcwDAdADAswDAcIDAbIDAZoDAf4CAd4CAcACAaYCAZICAYgCAYYCAY4CAZwCAbACAcgCAdwCAfACAf4CAYgDAYoDAogDAYQDAYADAfwCAfoCAfYCAfICAeYCAdQCAboCAZQCAeYBAbIBAXgBPgEKASMBRQFZAV8BWQFHASsBCwEYAToBXAF6AZoBAbgBAdoBAYICAbACAeYCAaIDAeQDAagEAeoEAagFAd4FAYYGAaQGAbQGAbgGAbQGAaoGAZwGAZAGAYYGAYAGAoIGAYYGAYoGAogGAYAGAfAFAdwFAcQFAagFAYwFAfIEAdgEAcQEAbAEAZ4EAYwEAfgDAcICAaoCAZICAfwBAeYBAdIBAbwBAagBAZIBAXwBaAFSAT4BKAG3AwL+BAHwBAHcBAHCBAGoBAGOBAH4AwHoAwHgAwHcAwHgAwHoAwHwAwH2AwH4AwH0AwHoAwHUAwG6AwGeAwGAAwHmAgHQAgHCAgG8AgG+AgHEAgHQAgHcAgHoAgHwAgH2AgH4AgH2AgHwAgHsAgHmAgHiAgHgAgPeAgHWAgHGAgGuAgGMAgHgAQGsAQFyATgBAAEtAVMBawF1AXEBYwFNATEBEQEOASoBSAFiAX4BngEBwgEB7AEBoAIB2gIBmgMB3gMBogQB5AQBnAUBygUB7AUBggYBjAYChgYB/AUB9AUB7AUB6AUB6gUB7gUB8gUB+AUB+gUC9AUB6AUB2AUBxAUBrgUBmgUBhgUB9AQB5gQB3AQB0AQBxAQBtAQBxgIBqgIBkAIB9gEB4AEBygEBtAEBoAEBigEBdgFgAUoBNgG3AwToBAHUBAG8BAGkBAGOBAH6AwHuAwHoAwHqAwHyAwH+AwGMBAGYBAGgBAKYBAGKBAH0AwHaAwHAAwGoAwGSAwGCAwH6AgH4AgL8AgGCAwGEAwKAAwH4AgHuAgHiAgHYAgHQAgHKAgHIAgLKAgHIAgHEAgG4AgGiAgGCAgHYAQGmAQFuATIBBQE1AV0BdwGFAQJ7AWcBTwEzARcBAgEcATQBTgFqAYwBAbQBAeQBAZwCAdoCAZwDAeADAaAEAdoEAYoFAbAFAcgFAdYFAdwFAdoFAdYFAdAFAcwFAs4FAdQFAdwFAeIFAegFAuQFAdwFAdAFAcAFAbAFAaAFAZQFAYoFAYQFAYAFAfwEAfYEAe4EAdwEAbACAZQCAfgBAdwBAcQBAawBAZgBAYIBAW4BWAFCAS4BtwMFzgQBtgQBoAQBigQB+gMB8AMB7gMB9AMBgAQBkgQBpAQBtAQBwAQBxgQBxAQBugQBqgQBlAQB/gMB5gMB1AMBxAMBvAMBtgMDtAMBsAMBqAMBmgMBigMB9gIB5AIB0gIBxAIBugIBtgIBtAIBtgICsgIBqAIBlgIB+AEB0AEBoAEBaAEuAQkBOwFjAYEBAZEBAZUBAY0BAX0BZwFPATcBHwEHAQ4BJAFAAV4BhgEBtAEB6AEBpAIB5AIBpgMB5AMBnAQBzgQB9AQBjgUBoAUBqAUBqgUBqAUBpgUCqAUBrgUBuAUBwgUBygUB0AUB1AUB0gUBzAUBwgUBtgUBqgUBoAUBmgUBlgUBmAUBnAUBoAUBogUBoAUBlgUBuAIBmgIB/gEB4gEBxAEBqgEBkAEBegFmAVABOgG3AweyBAGcBAGIBAH4AwHyAwL8AwGMBAGgBAG4BAHMBAHeBAHoBAHsBAHmBAHaBAHIBAG2BAGiBAGSBAGEBAH8AwH4AwH2AwH0AwHuAwHmAwHYAwHEAwGsAwGQAwH0AgHcAgHGAgG2AgGsAgGoAgOmAgGcAgGMAgHwAQHKAQGcAQFmASwBCwE9AWcBhwEBmQEBnwEBmwEBjQEBewFnAVEBOwEnARMBAAEaATgBXgGKAQG+AQH4AQG2AgH2AgGyAwHoAwGYBAG8BAHYBAHoBAHyBAH2BAH4BAH6BAH8BAGCBQGKBQGWBQGiBQGuBQG2BQG6BQK2BQGwBQGoBQGgBQGaBQGYBQGcBQGkBQGuBQG6BQHEBQHKBQHIBQG+AgGiAgGGAgHoAQHMAQGuAQGSAQF2AV4BSAE0AbcDCJoEAYYEAfgDAfQDAfYDAYIEAZYEAa4EAcgEAeIEAfYEAYYFAY4FAYwFAYQFAfgEAegEAdgEAcoEAcAEAboEAbYEAbQEAbIEAawEAaIEAZAEAfgDAdoDAbgDAZYDAfQCAdgCAcICAbICAaoCAaQCAaICAZ4CAZYCAYYCAeoBAcYBAZgBAWQBLAELAT8BaQGLAQGfAQGnAQGlAQGbAQGNAQF7AWcBVQFFATMBHwEHARQBOgFmAZoBAdQBAZACAc4CAYgDAb4DAeoDAY4EAaYEAbgEAcAEAcYEAcgEAcwEAdAEAdgEAeQEAfIEAYAFAYwFAZgFAZ4FAaAFAZ4FAZoFAZQFAZAFAY4FAZAFAZoFAaYFAbgFAcwFAdwFAeoFAfAFAcYCAaoCAYwCAfABAdIBAbYBAZoBAXwBYAFEASwBtwMJhgQB+gMB9gMB+gMBiAQBngQBugQB2AQB9AQBjAUBoAUBqgUBrgUBqgUBogUBlgUBiAUB/gQB9gQB8gQB8AQB7gQC6AQB3AQBygQBsAQBkAQB6gMBwgMBnAMB+AIB3AIBxgIBtgIBrgIBqAIBoAIBlgIBhAIB6gEBxgEBmgEBZgEuAQkBPQFpAYsBAaEBAa0BAqcBAZkBAYsBAXsBbQFfAU8BPwEpAQ0BFgFEAXgBsgEB8AEBrgIB6AIBnAMBxgMB6AMB/gMBjgQBlgQBmgQBnAQBngQBpAQBrgQBugQBygQB2gQB6gQB9gQB/gQBggUC/gQB/AQB+gQB/AQBggUBkAUBogUBugUB0gUB6gUBgAYBjAYBkAYBsAIBlAIB9gEB2gEBvgEBoAEBhAEBZgFKAS4BtwMK/gMB+gMBgAQBjgQBpgQBxAQB5AQBhAUBoAUBtgUBxAUBygUCxgUBvAUBtAUBqgUBpgUBogUEngUBlAUBggUB6AQBxgQBoAQB9gMBygMBpAMBggMB5gIB0gIBwgIBuAIBrgIBoAIBjAIB8AEBzAEBngEBagEyAQUBOQFlAYkBAaEBAa8BAbMBAa8BAaUBAZkBAY0BAYEBAXcBawFdAUkBLwELASABVAGQAQHOAQGOAgHKAgH+AgGoAwHKAwHgAwHsAwHyAwH0AwL2AwH8AwGGBAGSBAGiBAG0BAHEBAHSBAHaBAHgBAHiBAHgBAHeBALkBAHuBAH+BAGWBQGyBQHQBQHuBQGKBgGcBgGmBgG4AgGaAgH+AQHiAQHEAQGoAQGKAQFuAVIBNAG3AwuABAGGBAGWBAGwBAHOBAHwBAGSBQGwBQHIBQHaBQHkBQHmBQHkBQHeBQHYBQHSBQHOBQPQBQLMBQHEBQGyBQGaBQH4BAHSBAGoBAH8AwHUAwGuAwGQAwH4AgHkAgHUAgHGAgG0AgGeAgGAAgHYAQGqAQF0ATwBBAExAV8BhQEBnwEBrwEBtQEBswEBrQEBpQEBnQEBlQEBjQEBhQEBewFpAVEBMQEFAS4BagGsAQHsAQGqAgHiAgGOAwGwAwHGAwHSAwHWAwLUAwLYAwHgAwHsAwH8AwGOBAGeBAGsBAG2BAG8BAG+BAPABAHGBAHUBAHoBAGCBQGiBQHGBQHoBQGIBgGiBgGyBgG+AgGiAgGGAgHoAQHMAQGuAQGSAQF2AVgBPAG3AwyOBAGgBAG4BAHYBAH8BAGeBQG+BQHaBQHsBQH6BQH+BQL8BQH4BQH0BQHyBQL0BQH2BQH4BQH0BQHqBQHaBQHCBQGkBQH+BAHWBAGsBAGCBAHeAwG+AwGiAwGMAwH6AgHmAgHSAgG4AgGWAgHsAQG8AQGGAQFMARIBJQFVAXsBmQEBqwEBswEBtQEBswEBrwEBqQEBpQEBowEBnQEBlwEBiQEBdQFXAS0BBgFCAYQBAcYBAYYCAcACAfACAZQDAawDAboDAb4DAroDAbgDAboDAcADAcoDAdoDAeoDAfoDAYYEAZAEAZYEAZoEA5wEAaQEAbQEAcoEAegEAYwFAbIFAdoFAf4FAZwGAbIGAbwGAawCAYwCAfABAdIBAbYBAZoBAXwBYAFCAbcDDDgBqgQBwgQB4gQBhgUBqgUBzAUB6AUB/gUBjAYBkgYBlAYCkgYBkAYCkgYBlAYBlgYBmAYBlAYBigYB+gUB4gUBxAUBoAUB+gQB0gQBqgQBiAQB6AMBzgMBuAMBpAMBjgMB9gIB2gIBtgIBigIB1gEBnAEBYAEkARMBRQFvAY8BAaMBAbEBAbUBAbcBAbUBBbEBAakBAZcBAX0BVQElARYBWAGcAQHeAQGaAgHMAgH0AgGQAwGgAwGmAwKkAwGiAwKmAwGuAwG6AwHIAwHYAwHkAwHsAwHyAwT2AwH+AwGOBAGmBAHGBAHuBAGYBQHCBQHqBQGMBgGmBgG2BgG6AgGaAgH6AQHcAQG+AQGgAQGEAQFmAUoBLgG3AwoqAUABVgHOBAHuBAGSBQG2BQHYBQH0BQGKBgGaBgGkBgGoBgWqBgGuBgGwBgGyBgGuBgGkBgGSBgH6BQHcBQG4BQGSBQHsBAHIBAGoBAGMBAH2AwHgAwHOAwG4AwGgAwGAAwHaAgGsAgH2AQG6AQF6ATwBAAEzAV8BgQEBmQEBqQEBsQEBtwEBuQEBvQEBwQEBxQEByQECxQEBuQEBoQEBfwFRARkBJgFqAawBAeoBAaACAcwCAewCAYADAYoDAY4DAYwDAooDAY4DAZYDAaADAawDAbgDAcIDAcoDAcwDA8oDAc4DAdYDAeYDAYAEAaIEAcoEAfYEAaQFAc4FAfQFAZIGAaQGAcgCAagCAYgCAegBAcoBAaoBAYwBAW4BUgE0AbcDCjIBSAFeAXIB+AQBnAUBwAUB4gUBgAYBlgYBpgYBsAYBtgYBuAYCugYBvAYBwAYBxAYBxgYCwgYBtgYBpAYBjAYB7AUByAUBogUB/gQB3AQBvgQBpAQBkAQBgAQB8AMB3gMBxgMBqAMBgAMB0gIBmgIB3AEBmgEBWAEcARsBSwFvAYsBAZ8BAasBAbMBAbsBAcEBAckBAdMBAdsBAeEBAtkBAcUBAacBAX0BRwELATYBeAG2AQHuAQGcAgG+AgHWAgHmAgHuAgHwAgHyAgH0AgH4AgH+AgGIAwGSAwGcAwGkAwGoAwGqAwGoAwGkAwGiAwGkAwGsAwG8AwHUAwH2AwGgBAHOBAH+BAGsBQHUBQH0BQGKBgGYBgG2AgGYAgH4AQHYAQG4AQGYAQF4AVoBPAG3AwoyAU4BZAF6AZABAaQFAcgFAeoFAYgGAZ4GAbAGAboGAcAGAcQGAcYGAcgGAcwGAdAGAdQGAdgGAtIGAcYGAbIGAZgGAfYFAdIFAaoFAYYFAeQEAcgEAbAEAaAEAZIEAYYEAfgDAeQDAcoDAaQDAfYCAb4CAf4BAbwBAXgBOAEBATMBWwF5AZEBAaEBAa0BAbkBAcMBAc8BAd0BAekBAfMBAfkBAfUBAecBAc0BAakBAXcBPQEAAUABfAG0AQHiAQGIAgGkAgG4AgHEAgHMAgHQAgHWAgHcAgHmAgHuAgH4AgGAAwGGAwGKAwGIAwGEAwH+AgH6AgH4AgH+AgGOAwGmAwHIAwHyAwGiBAHUBAGCBQGuBQHQBQHoBQH4BQHGAgGmAgGGAgHmAQHGAQGoAQGIAQFoAUgBKAG3AwkqAUYBZAGAAQGYAQGsAQHOBQHwBQGMBgGkBgG2BgHABgHIBgHMBgHQBgHUBgHYBgHeBgHiBgHmBgHkBgHeBgHQBgG8BgGgBgH8BQHWBQGsBQGGBQHkBAHIBAGyBAGiBAGYBAGQBAGGBAH4AwHgAwHAAwGUAwHeAgGgAgHeAQGaAQFYARwBFwFDAWUBfwGTAQGlAQGzAQHDAQHTAQHlAQH1AQGFAgGPAgKHAgHxAQHRAQGlAQFvATUBBgFCAXgBpgEBzAEB6gEB/gEBkAIBnAIBpgIBsAIBugIBxgIB0gIB3AIB5gIB6gIC6AIB4AIB2AIB0gIBzgIB0gIB3gIB9gIBlgMBwAMB8AMBpAQB1AQBgAUBpAUBwAUB0gUB2gUBtAIBlAIB9gEB1gEBtgEBlgEBdgFWATYBtwMKQAFcAXoBlgEBsgEBygEB8AUBjgYBpgYBuAYBxAYBzAYB0AYB1gYB2gYB4AYB5gYB7AYB8AYB7gYB6AYB2gYBxAYBpAYBgAYB1gUBrAUBggUB3gQBwAQBqgQBnAQBlAQBjgQBiAQB/AMB6gMBzgMBqAMB9gIBugIB+gEBuAEBdgE4AQIBKQFPAW0BhQEBmQEBqwEBvwEB0wEB6QEB/wEBkwIBoQIBpwIBowIBkwIB9wEBzwEBnwEBZwEvAQgBOgFmAYwBAagBAcABAdIBAeIBAfABAYACAY4CAZ4CAa4CAbwCAcYCAcwCAsYCAb4CAbICAagCAaICAaQCAa4CAcQCAeQCAYwDAbwDAe4DAaAEAc4EAfQEAZIFAaYFAbAFAcQCAaQCAYQCAeQBAcQBAaQBAYQBAWYBRgG3Awo4AVYBcgGOAQGsAQHIAQHmAQGIBgGiBgG0BgHCBgHKBgHQBgHWBgHcBgHkBgHsBgHyBgH2BgLwBgHgBgHIBgGoBgGCBgHWBQGoBQH8BAHWBAG2BAGeBAGOBAGGBAGABAH8AwH0AwHmAwHQAwGuAwGCAwHMAgGOAgHOAQGOAQFSARwBEQE3AVcBcwGLAQGhAQG5AQHRAQHtAQGFAgGdAgGxAgG7AgKxAgGZAgH1AQHJAQGXAQFjAS8BAAEqAUwBaAF+AZABAaIBAbIBAcYBAdgBAe4BAYICAZICAaACAagCAqICAZgCAYwCAYACAfgBAfYBAf4BAZACAa4CAdQCAYQDAbYDAegDAZgEAb4EAd4EAfQEAYAFAYgFAbICAZICAfIBAdIBAbQBAZQBAXQBVAE0AbcDCTIBTgFqAYgBAaQBAcIBAd4BAfoBAZYGAaoGAbgGAcQGAcwGAdIGAdoGAeIGAewGAfQGAfoGAfwGAfQGAeYGAcwGAawGAYIGAdYFAaYFAfgEAc4EAaoEAZAEAf4DAfQDAe4DAegDAeIDAdgDAcQDAaYDAf4CAc4CAZgCAdwBAaABAWYBMgEEASMBQwFhAXsBlQEBsQEBzQEB6wEBiwIBpQIBvQIBywIB0QIBywIBtwIBmQIB8QEBwwEBkwEBYwE3AREBDgEoAT4BTgFgAXABhAEBnAEBsgEBygEB4AEB8AEB/AEB/gEB+gEB8AEB5AEB1gEBygEBxgEBygEB2gEB9gEBnAIByAIB+gIBrgMB3AMBhgQBpgQBvAQBzAQB1gQBvAIBngIBggIB4gEBwgEBogEBggEBYgFEAbcDCSoBRgFkAYABAZ4BAboBAdYBAfQBAZACAZgGAaoGAbYGAcAGAcgGAdIGAd4GAeoGAfQGAfwGAf4GAfgGAegGAdAGAa4GAYQGAdQFAaQFAfIEAcYEAaAEAYQEAe4DAeADAdgDAdIDAcoDAcADAa4DAZQDAfACAcQCAZICAdwBAaYBAXIBQAEUAREBMwFPAW0BiQEBpwEBxwEB6QEBiwIBqwIBxwIB2wIB4wIB4QIB0wIBuQIBlQIB6wEBvwEBkwEBaQFFASkBEQEAARABHgEwAUQBWgF0AY4BAaYBAboBAcgBAc4BAcwBAcQBAbYBAagBAZoBAZQBAZYBAaQBAbwBAeABAYwCAbwCAe4CAZ4DAcgDAeoDAYIEAZQEAaAEAcICAaYCAYgCAewBAc4BAbABAZIBAXIBUgEyAbcDCToBWgF6AZYBAbIBAdABAewBAYoCAaYCAZAGAaAGAawGAbgGAcYGAdIGAeIGAe4GAfgGAfwGAfgGAeoGAdIGAbAGAYYGAdYFAaIFAfAEAcIEAZoEAfgDAeADAdADAcQDAbwDAbIDAaYDAZIDAfgCAdgCAbACAYICAdIBAaABAXABRAEcAQUBJQFDAV8BfQGdAQHBAQHlAQGLAgGvAgHNAgHlAgHzAgH1AgHrAgHVAgG1AgGPAgHlAQG9AQGXAQF1AVsBRQE1AScBGwENAQQBGgE0AU4BaAF+AY4BAZYBAZgBAZABAYQBAXYBaAFgAmwBggEBpAEBzAEB/AEBrgIB3AIBhgMBqgMBxAMB2AMB5gMB8AMBrgIBkAIB9AEB1gEBugEBnAEBgAEBYAFAAbcDCSwBTAFsAYwBAawBAcgBAeYBAYICAZ4CAbwCAYAGAZAGAaAGAbAGAcIGAdQGAeQGAfIGAfgGAfYGAeoGAdQGAbIGAYgGAdYFAaIFAe4EAb4EAZQEAfIDAdgDAcQDAbQDAagDAZwDAYwDAfgCAdwCAboCAZQCAegBAbwBAZABAWQBPgEcAQMBHwE5AVUBcwGVAQG5AQHhAQGJAgGxAgHTAgHtAgH/AgGFAwH/AgHtAgHRAgGvAgGJAgHjAQG/AQGfAQGHAQFzAWUBWQFNAUEBMQEdAQcBEgEqAUABUgFcAV4BWAFMAT4BMgEoAjIBRgFkAYwBAboBAeoBAZgCAcQCAegCAYQDAZoDAaoDAbYDAbQCAZgCAfoBAd4BAcIBAaQBAYgBAWoBTgEwAbcDCT4BXgF8AZwBAbwBAdwBAfoBAZgCAbQCAYoFAeoFAYAGAZQGAaoGAcAGAdQGAeYGAfAGAfIGAegGAdQGAbQGAYoGAdgFAaQFAfAEAb4EAZIEAe4DAdIDAbwDAaoDAZoDAYoDAfgCAeACAcICAZ4CAfYBAcwBAaABAXYBUAEuARABCQEhATcBUQFtAY0BAbMBAdsBAYcCAa8CAdUCAfMCAYkDAZEDAY8DAYEDAekCAcsCAacCAYUCAeMBAcUBAa0BAZsBAY0BAYMBAXkBbQFfAU0BOQEhAQsBCAEYASABIgEcARIBBAEHAREBEwELAQgBJAFKAXYBpAEB0gEB/gEBogIBwAIB2AIB6gIB+gIBugIBoAIBggIB5gEByAEBrAEBjgEBcgFUATgBtwMJLgFOAW4BjgEBrgEBzgEB7AEBjAIBrAIB/gQB0gQB1AUB7gUBigYBpAYBvgYB1AYB5AYB6gYB5AYB0gYBtAYBjAYB3AUBqAUB8gQBwAQBlAQB7gMB0AMBuAMBpAMBkgMBgAMB6gIBzgIBrgIBiAIB3gEBsAEBhAEBXAE2ARgBAQEXASkBPQFRAWsBiQEBrwEB1wEBgwIBrQIB1QIB9wIBjwMBmwMBnQMBkwMB/QIB4wIBwwIBowIBgwIB5wEB0QEBvwEBsQEBpQEBmwEBjwEBgwEBcQFfAUsBNwEnARkBEwIbAScBNQFDAUsBTwFJATcBHQEGATABXgGMAQG2AQHaAQH6AQGUAgGoAgG8AgG0AgGeAgGIAgHuAQHQAQG0AQGWAQF6AVwBQAG3AwpAAWABgAEBngEBvgEB3gEB/gEBngIBvgIBwAQBlgQBvgUB4AUBgAYBoAYBvAYB0AYB3AYCzgYBtAYBjgYB4AUBrAUB+AQBxgQBmAQB8gMB0gMBuAMBpAMBkAMB/AIB5AIBxgIBogIB+AEBygEBmgEBbAFCAR4BAAEXASkBOQFHAVkBbQGJAQGrAQHTAQH/AQGrAgHTAgH3AgGRAwGhAwGlAwGfAwGPAwH3AgHZAgG7AgGfAgGFAgHvAQHdAQHPAQHDAQG5AQGrAQGdAQGNAQF7AWcBVwFJAT8BPQFBAUsBWQFrAXsBhQEBiwEBhQEBdwFdATsBEwEYAUQBbgGSAQGyAQHOAQHkAQH6AQGSAgGYAgGCAgHqAQHUAQG6AQGeAQGAAQFkAUYBKgG3AwkyAVABcAGQAQGwAQHQAQHwAQGQAgGuAgGkBAH+AwHWAwGsBQHUBQH6BQGcBgG4BgHKBgHOBgHGBgGwBgGOBgHkBQGyBQH+BAHMBAGgBAH4AwHYAwG+AwGoAwGSAwH8AgHiAgHCAgGcAgHwAQG+AQGMAQFcAS4BCAEVAS0BPQFLAVUBYwF1AY0BAa0BAdEBAfsBAacCAdECAfUCAZEDAaMDAasDAacDAZkDAYUDAe0CAdECAbcCAZ8CAYsCAfkBAesBAd0BAdEBAcMBAbMBAaEBAY0BAXkBaQFdAVcCYQFvAYMBAZcBAasBAbkBAcEBAb8BAbMBAZsBAX0BVwEtAQMBJgFKAWoBhgEBoAEBuAEB0gEB8AEB+gEB5AEBzgEBuAEBogEBiAEBbAFOATIBtwMKQgFiAYIBAaIBAcIBAeABAYACAaACAcACAdwDAboDAZgDAZ4FAcwFAfQFAZgGAbAGAbwGAboGAaoGAY4GAeYFAbgFAYYFAdYEAaoEAYIEAeIDAcgDAbADAZoDAYIDAeYCAcYCAZ4CAe4BAbwBAYYBAVQBJAEFASUBPwFPAVsBZQFvAX8BkwEBrwEB0QEB+QEBowIBywIB7wIBjQMBoQMBqwMBqQMBnwMBjwMB+QIB4QIBywIBtQIBoQIBkQIBgwIB9QEB5wEB1wEBwwEBrwEBmQEBgwEBcQFlAWEBYwFvAYMBAZsBAbUBAc8BAeMBAe8BAfEBAecBAdUBAbkBAZUBAW8BRwEfAQQBIgFAAVoBdAGQAQGyAQHYAQHeAQHIAQGyAQGcAQGGAQFwAVYBOgG3Awo2AVQBdAGSAQGyAQHSAQHyAQGSAgGyAgGyAwGWAwH6AgHgAgGUBQHEBQHwBQGQBgGkBgGqBgGgBgGIBgHmBQG8BQGOBQHgBAG2BAGQBAHwAwHUAwG8AwGmAwGOAwHwAgHOAgGkAgH0AQHAAQGIAQFSASABCQEtAUcBWwFnAXEBewGHAQGZAQGxAQHRAQH1AQGdAgHFAgHpAgGFAwGbAwGlAwGnAwGfAwGRAwGBAwHtAgHZAgHFAgG1AgGnAgGZAgGLAgH7AQHpAQHTAQG7AQGhAQGJAQF1AWUBXwFjAXEBhwEBowEBwwEB4QEB+wEBjQIBlQIBkwIBgwIB7QEBzQEBqQEBhQEBYQE/ASEBBQEUATABTgFyAZwBAc4BAcIBAawBAZYBAYABAWoBVAE+AbcDCi4BSgFoAYYBAaQBAcQBAeQBAYICAaICAcICAegCAdICAb4CAa4CAY4FAcAFAegFAYQGAZIGAZAGAYAGAeQFAcAFAZYFAewEAcQEAaAEAYAEAeYDAc4DAbYDAZwDAf4CAdoCAbACAf4BAcgBAZABAVgBJgEHAS0BSQFdAW0BdwGBAQGNAQGdAQGzAQHRAQHzAQGXAgG7AgHdAgH7AgGPAwGbAwGdAwGZAwGPAwH/AgHvAgHfAgHRAgHDAgG3AgGrAgGdAgGNAgH5AQHhAQHHAQGpAQGNAQF1AWEBWQJnAX0BmwEBvwEB4wEBgwIBmwIBqQIBrQIBpQIBkwIB+QEB2wEBuwEBmwEBewFhAUcBLQERAQ4BMgFgAZQBAbwBAaYBAZABAXoBZAFOATgBtwMLRAFgAX4BmgEBuAEB1gEB9AEBlAIBtAIBuAIBpgIBlgIBigIBgAIBiAUBuAUB3AUB8gUB+AUB8AUB3AUBvgUBnAUB9gQB0gQBsAQBkgQB+gMB4gMBygMBsAMBkgMB7AIBwAIBjAIB1gEBnAEBZAEuAQABJQFDAVkBaQF1AYEBAY0BAZ0BAbMBAc0BAe0BAY8CAbECAdECAesCAf8CAYsDAY8DAYsDAYMDAfcCAesCAd8CAdUCAcsCAcMCAbkCAa0CAZ8CAYkCAfEBAdMBAbMBAZMBAXUBXQFPAU0BVQFrAYkBAa0BAdMBAfcBAZUCAasCAbUCAbMCAakCAZUCAf0BAeMBAckBAa8BAZcBAX8BaQFPAS8BCwEkAVoBmAEBoAEBigEBdAFeAUgBMAG3Aws8AVgBdgGSAQGwAQHMAQHqAQGGAgGgAgGIAgH2AQHqAQHiAQHeAQHaAQGEBQGuBQHMBQHaBQHcBQHOBQG6BQGcBQH+BAHeBAHABAGmBAGQBAH6AwHiAwHIAwGoAwGCAwHUAgGeAgHmAQGqAQFyATwBDAEZATkBTwFhAW0BeQGHAQGXAQGtAQHHAQHlAQGFAgGlAgHBAgHZAgHrAgH1AgH5AgH3AgHvAgHnAgHdAgHVAgHPAgHLAgHHAgHBAgG5AgGrAgGZAgH/AQHhAQG/AQGbAQF5AV0BSQFBAUUBVQFvAZEBAbcBAd0BAf8BAZkCAakCAa8CAasCAZ8CAY8CAfsBAecBAdMBAcEBAa8BAZsBAYUBAWcBQwEVASIBYgGWAQGCAQFuAVYBQAEqAbcDCzQBUgFuAYoBAagBAcQBAeIBAf4BAfgBAd4BAcoBAbwBAbgBAbYBAbgBAvwEAaAFAbYFAb4FAboFAawFAZgFAYAFAeYEAc4EAboEAaYEAZIEAfwDAeIDAcIDAZoDAewCAbYCAfoBAb4BAYIBAUoBGgENASsBQwFTAWEBbQF7AYsBAaEBAbsBAdcBAfcBAZMCAa8CAcUCAdUCAd0CAd8CAdsCAdUCAc8CAccCAcMCAcECBL0CAbMCAaMCAYsCAe0BAcsBAaUBAYEBAWEBSQE7ATkBQwFZAXUBlwEBuwEB3QEB9wEBiwIBlwIBmQIBlQIBiwIB/wEB8wEB5wEB2wEBzwEBwQEBrwEBlQEBdQFJARMBLAF0AXgBZAFQAToBtwMMLAFKAWYBhAEBoAEBvgEB2gEB+AEB3gEBvgEBpAEBlgEBjgECkgEBlgEBmAEB7gQBigUBmgUBngUBmAUBjAUB/AQB6gQB2AQByAQBugQBqgQBmAQBgAQB4AMBuAMBiAMB0AIBkgIB1AEBlAEBXAEqAQABHwE1AUUBUwFfAWsBfQGRAQGrAQHHAQHlAQGBAgGZAgGtAgG5AgHBAgK7AgG1AgGvAgGpAgGnAgGpAgGtAgGxAgG3AgKzAgGnAgGTAgH3AQHVAQGxAQGLAQFrAU8BPQE1ATkBRwFdAXkBmQEBtQEBzwEB4wEB7wEB9wEC9QEB7wEB6wEB5QEB4QEB3QEB1QEByQEBtwEBmwEBcwE/AQEBRAFuAVoBRgEyAXcCtwMLQgFeAXwBmAEBtgEB0gEB8AEB1AEBrAEBjAEBdgFsAWoBbgF0AXgC3gQB8gQB/AQC+AQB8AQB5gQB3AQB0gQBygQBvgQBsAQBnAQB/gMB2AMBqAMB7gIBrgIB7AEBrAEBcAE6ARABEQEpATkBRQFRAV0BbQGBAQGZAQGzAQHRAQHrAQGDAgGTAgGdAgGhAgGfAgGZAgGPAgGJAgGDAgKHAgGPAgGXAgGhAgGnAgGpAgGhAgGTAgH7AQHdAQG7AQGXAQF1AVkBRQE5AkEBUQFlAXsBkwEBpwEBtwEBwQEByQEBywEBzQECzwEB0QEB1QEB1wEC0wEBxwEBsQEBjwEBYQEnARoBZAFQATwBKAF3A7cDCjoBWAF0AZIBAa4BAcwBAegBAdoBAaoBAYIBAWYBVgFOAVABVAFYAVwBWAHIBAHWBAHcBAHeBAHcBAHYBAHWBAHUBAHSBAHOBAHEBAG0BAGcBAH2AwHIAwGOAwHOAgGKAgHGAQGGAQFOASABAwEdAS8BOwFFAU8BXQFxAYcBAaEBAbsBAdUBAesBAfkBAYECAv0BAfMBAekBAd8BAdkBAt0BAecBAfUBAYMCAY0CAZUCAZMCAYsCAfkBAd8BAcEBAaEBAYEBAWUBUQFFAUEBQwFNAVsBawF5AYUBAY8BAZUBAZcBAZkBAp0BAaMBAakBAbMBAb0BAccBAckBAcUBAbcBAZsBAXMBQQEDAUIBRgEyAXcGtwMHKAE+AVQBbgGKAQGmAQHEAQHgAQHsAQG2AQGIAQFkAUwBPgE6Aj4DNgGuBAG4BAG+BAHABAHEBAHIBAHMBAHSBAHUBAHSBAHIBAGyBAGSBAHmAwGuAwHuAgGqAgHkAQGiAQFmATQBDAEPASMBMQE9AUcBUwFlAXkBkQEBqQEBwQEB0wEB3wEB5QEB4wEB2wEBzwEBwQEBtQEBrQEBqwEBrwEBuwEByQEB2wEB6wEB9QEB+wEB9wEB6wEB2QEBvwEBpQEBiQEBcQFfAVMBTwFRAVcBXwFnAW8BcwJxAWsBZwFlAmsBdQGDAQGTAQGhAQGtAQGvAQGpAQGVAQF1AUkBEwEqAT4BKgF3B7cDBi4BRAFaAXABiAEBoAEBvAEB2AEB9gEBzAEBmAEBcAFQATwBMAEsASoBKAEkAR4BFgGUBAGcBAGiBAGoBAGyBAG+BAHIBAHSBAHWBAHSBAHEBAGoBAGABAHMAwGOAwHKAgGEAgG+AQGAAQFKASABAQEZASkBNwFBAU8BXQFxAYUBAZsBAa8BAb8BAckBAc0BAccBAb0BAa0BAZsBAY0BAYEBAX0BfwGLAQGZAQGtAQG/AQHPAQHZAQHbAQHVAQHHAQG1AQGhAQGLAQF5AWsBYwFhAWMBZwFtAXMCbwFnAVsBTQFBATcBMQEzATsBSwFdAW8BfwGJAQJ9AWUBQQETASIBNAF3CbcDBTQBSgFgAXgBjgEBpAEBugEB1AEB7gEB5gEBsAEBhAEBYAFGATQBKAEgARoBEgEKAQEBCwH6AwGCBAGKBAGYBAGmBAG2BAHGBAHQBAHSBAHKBAG0BAGSBAHiAwGoAwHmAgGiAgHcAQGcAQFkATQBEAELASEBMQE/AU0BXQFvAYEBAZUBAaUBAbMBAbkBArEBAaMBAY8BAXsBZwFZAVECWwFpAXsBjwEBoQEBrwEBtQECrQEBoQEBkwEBgwEBdwFxAW0BbwF1AX0BgwEBhwEBgwEBewFrAVcBQQEpARcBCQEDAQUBEQEhATMBRQFTAVkBVQFFASkBAQEsATIBdwq3AwQ6AVABaAF+AZQBAaoBAcABAdYBAe4BAf4BAcoBAZ4BAXgBWgFEATIBJAEWAQoBAwERAR8BKwHkAwHsAwH6AwGKBAGeBAGwBAHABAHIBAHGBAG4BAGcBAHyAwG8AwH+AgG8AgH4AQG4AQF+AUwBJAECARUBKQE7AU0BXwFxAYMBAZUBAaUBAa0BAbEBAa0BAaEBAY8BAXcBXwFJATcBKwEpAS0BOwFLAV8BcQGBAQGJAQGNAQGLAQGDAQF7AXMBbwFtAXEBewGFAQGRAQGbAQGfAQGdAQGRAQF/AWUBRQElAQkBDgEeASQBIgEWAQYBCQEXAR8CFQEAAR4BRgEwAXcLtwMCKgFAAVgBbgGEAQGaAQGwAQHGAQHcAQHyAQGIAgHeAQG0AQGOAQFwAVgBQgEuARwBCgEJARsBLQE7AUUB0AMB3AMB7gMBggQBlgQBqgQBtgQBuAQBsAQBmgQB9gMBxgMBjAMBzgIBjgIB0AEBlgEBZAE4ARQBBwEhATcBTQFhAXcBiwEBnQEBqwEBsQECqQEBmwEBgwEBaQFNATEBGwENAQUBBwERAR8BMQFDAVEBXQFhAWMBXwFdAVsCYQFtAX0BjwEBoQEBrwEBuQECrwEBmwEBfQFZATMBDQEUAS4BPgFEAUIBOgEuASQBHAIkATQBTgFGAS4Bdwy3AwE0AUgBXgF0AYoBAaABAbYBAcwBAeIBAfgBAY4CAeoBAcIBAaABAYQBAWwBVgFAASoBEgEFAR8BNQFJAVUBWQHCAwHSAwHkAwH6AwGOBAGcBAGkBAGeBAGOBAHwAwHGAwGSAwHYAgGcAgHiAQGqAQF4AUwBKAEIARUBLwFJAWMBewGTAQGnAQG1AQG9AQG7AQGxAQGdAQGDAQFjAUMBJQEJAQgBFAEWARABBAEJARkBJwExATcBOQM7AUEBTQFfAXcBjwEBqQEBvwEBzQEB0wEBywEBuQEBnQEBeQFNASMBBgEoAUQBVgFeAlwBVgFUAVYBXgFuAVwBRAEsAXcMKgE+AVIBZgF6AZABAaYBAbwBAdIBAegBAf4BAZICAeoBAcYBAaoBAZABAXoBZgFQAToBIAECARkBNQFNAV8BZwFlAbgDAcoDAdwDAfADAYAEAYgEAYYEAfoDAeADAbwDAY4DAdoCAaQCAewBAbgBAYoBAV4BOgEYAQUBIwFDAWEBfwGbAQGzAQHDAQHNAQHLAQG/AQGrAQGNAQFpAUUBIQEDARQBJAEqASgBIgEWAQoBAQEJAQ0BDwERARMBFwEhATMBSQFnAYcBAakBAcUBAdsBAeUBAtcBAb0BAZsBAW8BQQEVARQBNgFSAWQBcAF4AXwBggEBigEBkAEBdAFaAUIBKgG3AwJ3CjIBRgFcAXABhAEBmAEBrAEBwgEB2AEB7gEBhAIC4AEBwAEBqAEBkgEBggEBcAFcAUYBLAEOAREBMQFPAWUBcQFzAWkBsAMBwgMB1AMB4gMB6gMC4AMBygMBqgMBgAMB0gIBoAIB7gEBwAEBlAEBbAFIASgBCAEXATkBWwF9AZ8BAbsBAdEBAd0BAd8BAdMBAb8BAZ8BAXkBUQEpAQUBFgEqATQBOAE0ASwBJAEcARYBFAMSAQwBAAETAS8BUQF3AZ8BAcMBAd8BAfEBAfcBAe8BAdsBAbsBAZMBAWUBNwELARwBPgFYAW4BgAEBjgEBngEBrAEBkgEBeAFcAUIBtwMFdwcoATwBUAFkAXgBjgEBogEBtgEBygEB3gEB9AEBjAIB7gEBzAEBsgEBnAEBjAEBfgFwAWABTAE0ARYBCQErAUsBZQF3AX0BdwFnAagDAbgDAcQDAcwDAcoDAcADAa4DAZADAewCAcICAZYCAegBAb4BAZgBAXQBVAE0ARYBCQEtAVEBdwGdAQG/AQHZAQHrAQHxAQHpAQHVAQG3AQGRAQFnATsBFQEMASQBNAE6ATwBOAE0ATABLgEwATIBNAIuASIBDAERATcBYQGNAQG3AQHbAQHzAQH/AQLvAQHVAQGxAQGHAQFbAS8BBQEeAUABXAF2AY4BAagBAa4BAZQBAXoBXgFEASoBtwMHdwQwAUYBWgFuAYIBAZYBAaoBAcABAdQBAegBAfwBAfYBAdQBAbYBAZwBAYoBAXwBcAFmAVoBSgE0ARgBBwEpAUkBZQF7AYUBAYMBAXUBXwGeAwGoAwGsAwKiAwGOAwHyAgHSAgGsAgGEAgHcAQG2AQGUAQF2AVgBPAEgAQIBHwFFAW0BlQEBuwEB2wEB8wEB/QEB+wEB7QEB0QEBrQEBgQEBVwEtAQkBEgEmATIBOAE6Az4BQgFIAUwBTgFKAUABKgEMARsBRwF3AacBAc8BAe0BAf8BAYUCAfsBAecBAccBAaMBAXkBUQEpAQMBHgE+AV4BfgGgAQGwAQGWAQF8AWIBRgEsAbcDCzIBSgFiAXgBjAEBoAEBtAEByAEB3AEB8AEB/AEB2AEBuAEBnAEBhgEBdgFoAWABWAFOAUABLAEUAQkBKwFLAWcBfQGLAQGNAQGDAQFxAVUBjAMBkAMBjAMBgAMB7gIB1AIBtAIBkAIB7AEByAEBqAEBigEBcAFYAUIBKAEMARMBNwFhAYsBAbMBAdcBAfMBAYMCAYcCAf0BAecBAccBAZ8BAXUBSwElAQcBEAEgASoBMgE2AToBQgFKAVQBXAFiAlgBRgEoAQABLQFfAZEBAb0BAeEBAfcBAYMCAf8BAe8BAdUBAbUBAZEBAWsBRwEjAQEBHgFAAWQBjAEBlgEBjAEBfgFkAUgBLgG3Aws0AUwBZAF+AZYBAaoBAb4BAdIBAeYBAfoBAeABAcABAaABAYYBAXABYAFWAU4BRgE+ATABHgEIARMBMwFRAW8BhQEBkwEBlwEBjwEBfwFpAU0B8gIB7gIB4gIBzgIBtAIBlAIB9AEB0gEBsgEBlgEBfAFoAVQBQAEsARQBCQErAVEBewGlAQHLAQHrAQH/AQGJAgGFAgH3AQHbAQG5AQGTAQFrAUcBJwENAQYBFAEeASgBMAE8AUoBWAFkAW4BcgFsAVwBQAEaARMBRQF5AacBAc8BAekBAfkBAu8BAdkBAb0BAZ8BAX0BWwE7AR0BAgEiAUgBcgF+AXQBagFgAUwBMAG3Aws2AU4BZgGAAQGYAQGwAQHIAQHcAQHwAQHuAQHMAQGqAQGMAQFyAV4BUAFGAT4BOAEuASIBEAEHASMBQQFfAXkBjwEBnQEBowEBnQEBjwEBewFjAUkB0AIBwgIBrgIBlAIB9AEB1AEBtgEBmAEBgAEBagFaAUwBPAEsARgBAAEfAUMBawGTAQG7AQHbAQH1AQGBAgGFAgH7AQHnAQHLAQGpAQGHAQFnAUkBLwEbAQsBAgEQAR4BLgFAAVIBZAFyAXgCagFSAS4BAgEvAWEBkQEBuQEB1wEB6QEB7QEB5wEB1QEBvQEBoQEBhQEBZwFLAS8BEwEKAS4BWAFmAVwBUgFIAT4BMgG3Aws4AVABaAGCAQGaAQGyAQHKAQHkAQH6AQHiAQG+AQGcAQF+AWYBUgFGATwBNgEuASQBFgEEARMBLwFPAW0BiQEBnwEBrQEBsQEBrQEBoQEBjwEBdwFhAU0BogIBjgIB9AEB1gEBtgEBmAEBfgFoAVgBSgFAATYBKgEaAQYBFQE1AVsBgQEBpwEBxwEB4QEB8QEB9wEB8wEB5QEB0QEBtwEBmwEBfwFnAVEBPQEtAR0BDQECARYBLgFEAVoBbgF6AXwBdAFgAT4BFgEZAUsBewGjAQHDAQHXAQHdAQHZAQHLAQG3AQGdAQGDAQFpAVEBNwEfAQMBHgFGAUwBQgE4AS4BtwMNOgFSAWoBhAEBnAEBtAEBzAEB5AEB/gEB3gEBuAEBlgEBeAFgAU4BQgE6ATQBLAEkARQBAAEZATkBWQF7AZcBAa8BAb0BAcMBAb8BAbMBAaEBAY0BAXcBZQFXAe4BAdQBAbYBAZgBAXwBZAFQAUIBOgEyAS4BJgEcAQoBCwEnAUkBbQGPAQGvAQHJAQHbAQHjAQHhAQHZAQHJAQG3AQGjAQGPAQF7AWsBWwFNAT8BLwEbAQUBFAEwAUoBYgF0AXoBdgFmAUoBJAEHATcBZQGNAQGtAQHBAQHJAQHHAQG7AQGpAQGTAQF7AWMBSwE3AR8BBQEYATwBNAEqAbcDDzgBUgFsAYQBAZ4BAbYBAc4BAeYBAYACAeABAboBAZYBAXgBYAFQAUYBPgE6ATQBKgEcAQYBFQE3AVsBfwGhAQG7AQHNAQHTAQHRAQHHAQG3AQGjAQGPAQF9AW8BaQG2AQGYAQF6AWABSgE4AS4BKAEkAiABGgEOAQMBGwE5AVkBeQGVAQGtAQG9AQHHAQLBAQG3AQGpAQGbAQGPAQGDAQF5AXEBZwFdAU8BOwEjAQcBGAE2AVIBZgF0AmgBUAEuAQQBJwFTAXkBmQEBrQEBtQEBswEBqQEBlwEBgwEBawFVAUEBLQEXAQABHAE0AbcDETYBUAFqAYQBAaABAbgBAdABAegBAYICAewBAcQBAZ4BAYABAWgBWAFQAUoBSAFEATwBLAEWAQcBKwFTAXsBnwEBvwEB0wEB3wEB4QEB2QEByQEBtwEBpQEBlQEBiQEBgwECfAFeAUQBMAEiARoBFgEYARoCGAEQAQIBEQEpAUUBYQF7AY8BAZ8BAaUBAacBAaMBAZsBAZEBAYcBAYEBAX0BewF5AXcBcQFnAVcBPwEjAQMBHgE+AVYBaAFsAWYBUgE0AQ4BGQFDAWcBhQEBlwEBoQEBnwEBlQEBgwEBbwFZAUUBLwEdAQcBDgEqATABtwMRMgFOAWgBggEBngEBuAEB0gEB6gEBhAIB/AEB1AEBrgEBjgEBeAFoAWABXgFcAVoBVAFGATIBFAERATsBZwGRAQG1AQHPAQHhAQHnAQHjAQHXAQHJAQG3AQGpAQGfAQGZAQKfAQFEASwBGAEMAQYCCgEQARYCEgEIAQcBGwEzAUsBYQFzAX0BgwECfwF3AW8BaQFnAm0BcQF3AnMBaQFVATsBGwEIASgBRAFYAWIBYAFQATYBFgEPATUBVwFzAYUBAYsBAYkBAX8BbwFbAUUBMQEbAQkBCgEiATwBLAG3AxEwAUwBZgGAAQGaAQG2AQHQAQHqAQGGAgGUAgHqAQHCAQGkAQGMAQF+AXYEcgFoAVQBNgESARkBRwF1AZ0BAb0BAdUBAeEBAeMBAd0BAdMBAcUBAbkBAbEBAa0BAa8BAbUBAb0BARYBBAEFAQkBBwEAAQgBEAEWAhABAgENASEBNQFHAVUBXQFhAV8BVwFPAUkBQwJJAVEBXQFnAW8BcwFtAV8BSQErAQkBFgE0AUoBVgFYAUwBOAEaAQcBKQFJAWEBcQF5AXUBawFbAUUBMQEbAQcBDAEgATgBPgG3AxIuAUgBZAF+AZgBAbQBAc4BAegBAYICAZ4CAYQCAdwBAb4BAaYBAZgBAZIBApYBAZgBAZYBAY4BAXwBYAE8ARIBHQFLAXcBnQEBuQEBywEB1QEC0QEByQEBwQEBvQEBuwEBvwEBxQEBzQEB1wEBCwEVARcBEwEJAQIBDgEWARoBFgEOAQABDwEfAS8BOQE/AjkBMQEnAR8BGwIhAS0BOwFLAVkBYQFjAVsBSwExARMBCgEoAUABTgFQAUgBNgEcAQEBHwE9AVMBYQFlAWEBVwFFATEBGwEHAQ4BIgE2AU4BOgG3AxIuAUYBYgF8AZYBAbABAcwBAeYBAYACAZwCAaICAfwBAdwBAcQBAbYBAbIBAbQBAbgBAbwBAb4BAbgBAagBAZABAW4BRAEWARkBRwFvAY8BAacBAbcBAb0BAb8BAr0BAb8BAcEBAccBAdEBAdsBAeMBAekBAR8BIQEbAQ8BAAEOARgBHgIaAQ4BAgELARcBHQEhAR0BFwELAQEBCAEOAggBAwEVAScBNwFFAUsBSQE9ASsBEQEKASQBOgFIAUwBRgE2ASABBAEXATEBRQFRAVMBTwFDATEBHQEHAQ4BIgE2AUwCNAG3AxEuAToBSgFgAXoBlAEBrgEBygEB5AEB/gEBmAIBtAIBngIB/gEB5gEB2AEB1AEB2AEB3gEB5AEB6AEB5AEB1gEBwAEBoAEBegFMAR4BDQE3AVkBdQGJAQGXAQGfAQGlAQGrAQGzAQG7AQHHAQHTAQHfAQHpAQHvAQHxAQEjAR0BDwEAARABHgEmASgBJgEeARQBCgEAAQMCAAEKARYBJAEuATYCMAEmARQBAgEPAR8BKQErASUBFQEBARQBLAE+AUoBTgFIAToBJAEMAQ0BJQE3AUEBQwE9ATEBHwEJAQoBIAE2AUoBXgFIATABtwMOKgE0AT4BSAFSAVwBagF8AZIBAawBAcYBAeIBAfwBAZYCAbICAcICAaICAYoCAf4BAfoBAf4BAYYCAY4CAZICAZACAYYCAfIBAdQBAbABAYYBAVgBLgEEAR0BOQFRAWMBcQF9AYkBAZcBAacBAbcBAckBAdkBAecBAe8BAfEBAe0BARkBCwEEARYBJgEwATYBNAEwASgBHgEYARYBGAEeASoBOAFGAVIBWgFcAVgBTAE8ASoBGAEIAQEBBQEBAQgBGAEsAT4BTgFWAVgBUAFCAS4BFgEBARcBJwExAisBHQELAQgBHgEyAUgBXAFaAUIBLAG3AwwuATgBQgFMAVYBYAFqAXQBfgGKAQGaAQGuAQHGAQHgAQH6AQGUAgGuAgHoAgHIAgGyAgGmAgGiAgGmAgGuAgG4AgG+AgK2AgGkAgGIAgHkAQG8AQGSAQFqAUIBIgEEAREBJQE3AUcBWQFtAYMBAZsBAbMBAccBAdkBAeUBAekBAecBAd0BAQEBEAEiATIBPgFEAUYBQgE8ATQBMAI0ATwBSAFYAWgBdAF8AX4BegFwAWIBUAE+ATABJgEiASYBLgE8AUwBXAFmAWwBagFiAVIBPAEkAQwBBwEXAR8CFwELAQYBGgEwAUQBWAFsAVQBPgG3Aw00AUwBXAFmAXABegGCAQGMAQGWAQGgAQGsAQG6AQHMAQHiAQH4AQGSAgGsAgHIAgHwAgHaAgHOAgHKAgHQAgHYAgHkAgHqAgHsAgHkAgHUAgG6AgGYAgHyAQHKAQGiAQF+AV4BRAEuARwBCgEJAR8BNwFTAW8BjQEBqQEBwQEB0QEB2QEC0QEBwQEBIgE0AUQBUAFYAVoBWAFSAUwBSAFKAU4BWAFmAXYBhgEBlAEBnAEBngEBmgEBkAEBgAEBcAFeAVIBSAFGAUwBVgFiAXIBgAEBiAEBjAEBiAEBfAFoAVIBOAEgAQwBAwELAgMBCAEaAS4BQgFWAWABVgFMAToBtwMNOgFQAWgBfgGIAQGSAQGcAQGmAQGwAQG6AQHEAQHOAQHaAQHqAQH+AQGUAgGsAgHGAgGaAwGEAwH2AgH0AgH6AgGEAwGOAwGWAwGYAwGSAwGEAwHqAgHKAgGmAgH+AQHaAQG2AQGYAQGAAQFsAVoBSgE4ASIBBgEXATkBXQF9AZsBAa8BAb0BAcEBAbsBAa8BAZ0BAUwBWgFmAW4BcAFuAWoBZgFkAmoBdgGEAQGUAQGkAQGyAQG6AQK2AQGqAQGaAQGIAQF4AWwBZAJsAXgBhgEBmAEBpgEBrgEBsAEBqgEBnAEBiAEBbgFSAToBJAEUAQwCEgEeAS4BQgFUAVABRgE8ATQBKgG3Aw0+AVQBbAGEAQGaAQGqAQG0AQG+AQHIAQHSAQHcAQHmAQHwAQH8AQGKAgGcAgGwAgHGAgHEAwGuAwGgAwGeAwGiAwGsAwG4AwHCAwHEAwHAAwGyAwGaAwH6AgHWAgGwAgGMAgHqAQHOAQG4AQGmAQGWAQGIAQF2AWIBRgEmAQIBIwFJAWkBhQEBlwEBnQECkwEBhQEBdQF4AYIBAYoBAYwBAYoBAYYBAYIBAX4BgAEBhgEBkgEBogEBsgEBwgEBzgEB1gECzgEBwgEBsAEBngEBjAEBgAEBeAF6AYIBAZABAaQBAbYBAcgBAdIBAdYBAdABAcABAaoBAZABAXQBWAFAATABJgEkASoBNgFEAUoBQAE2AS4BtwMPLAFCAVoBcAGIAQGeAQG2AQHMAQHWAQHgAQHqAQH0AQH+AQGIAgGSAgGeAgGqAgG8AgGQBAHuAwHWAwHKAwHGAwHMAwHWAwHiAwHsAwHwAwHsAwHeAwHGAwGoAwGEAwHgAgG6AgGaAgH+AQHoAQHYAQHKAQG+AQGwAQGcAQGEAQFkAUABGgENATEBUQFnAXMBdQFxAWUBVwFLAaQBAaoBAqgBAaQBAZ4BAZwBAZ4BAaQB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oAMBjAMB/AIB8gIB8AIB+AIBigMBogMBwAMB4AMB/AMBkgQBoAQBpgQBogQBlgQBhAQB8gMB4gMB1gMB0AMB0gMB2gMB6AMB+AMBiAQBlgQBogQBqAQBrAQBrgQBsAQBtAQBvAQBygQB3AQB8gQBigUBogUBtAUBwAUBxAUBugUBpAUBggUB2AQBpgQB7gMBtgMBggMB0AIBogIB+gEB1gEBtgEBlgEBeAFaATwBHgEGAQsBFQETAQUBGAGgBAKmBAGqBAGuBAGqBAGiBAGsAgGOAgHwAQHUAQG4AQGeAQGCAQFmAUwBMAG3Aww4AU4BYgF2AYwBAaABAbYBAcoBAeABAfQBAYoCAZ4CAbICAcgCAZADAZgDAaIDAa4DAbwDAcgDAc4DAsgDAbgDAaIDAYgDAe4CAdgCAcgCAcACAcQCAdICAeoCAYgDAagDAcoDAeYDAfwDAYoEAY4EAYwEAYQEAfoDAfADAegDAeYDAeoDAfIDAYAEAY4EAZwEAagEAa4EAbIEAbAEAawEAaoEAagEAawEAbQEAcQEAdgEAfAEAYYFAZwFAaoFAa4FAaoFAZgFAfwEAdgEAawEAfwDAcwDAZwDAfICAcwCAaoCAYwCAfABAdIBAbQBAZIBAXABTgEuARQBAgEFAQIBGAE+AbYEBLIEAagEAboCAZoCAfoBAdwBAb4BAaIBAYYBAWoBUAE0AbcDCywBQAFWAWoBgAEBlAEBqAEBvgEB0gEB6AEB/AEBkgIBpgIBvAIBhgMBjAMBlgMBogMBsAMBvgMBygMB0AMBzgMBwgMBsAMBlgMB9gIB1gIBugIBogIBlAIBkgIBnAIBsAIBygIB7AIBjgMBrgMByAMB3AMB6gMB8AMB8gMC8AMC9AMB/AMBiAQBlgQBpgQBsgQBvAQBwAQCugQBsgQBqgQBogQBoAQBpAQBsAQBwAQB1AQB6gQB/gQBjAUBkgUBkAUBggUB6AQByAQBogQB+AMBzgMBpgMBggMB5AIByAIBsgIBmgIBggIB5gEByAEBpAEBgAEBXAE6ASIBFAIiAUABbAHOBAHIBAHEBAG6BAGuBAHIAgGoAgGIAgHqAQHKAQGqAQGMAQFuAVQBOAG3Aws0AUoBXgFyAYgBAZwBAbIBAcYBAdwBAfABAYQCAZoCAa4CAcQCAfwCAYQDAY4DAZwDAawDAbwDAcgDAc4DAcoDAb4DAaoDAYwDAegCAcQCAaACAYQCAfABAeYBAeoBAfgBAY4CAawCAcwCAewCAYoDAaIDAbYDAcQDAc4DAdgDAeADAeoDAfYDAYQEAZYEAagEAboEAcgEAdIEAdQEAdAEAcgEAbwEAa4EAaIEAZoEAp4EAaoEAbwEAc4EAeAEAewEAfIEAfAEAeIEAcwEAa4EAYoEAeQDAcADAZ4DAYADAegCAdQCAcICAbICAaACAYwCAfABAdABAawBAYYBAWQBRgEyASoBMgFKAW4BngEB3gQB1AQByAQBtgQBoAQBtgIBlgIB+AEB2AEBuAEBmAEBegFaATwBtwMLLgE8AVQBdAGQAQGkAQG6AQHOAQHkAQH4AQGOAgGiAgG4AgHkAgHsAgH0AgGCAwGSAwGkAwG0AwHCAwHIAwHGAwG4AwGiAwGCAwHcAgGyAgGMAgHoAQHOAQHAAQG8AQHEAQHWAQHuAQGKAgGoAgHGAgHgAgH2AgGKAwGaAwGsAwG+AwHQAwHmAwH+AwGYBAGwBAHIBAHYBAHkBAHmBAHiBAHYBAHIBAG2BAGmBAGYBAGSBAKaBAGmBAG0BAHCBAHMBAHQBAHMBAG+BAGoBAGMBAHqAwHIAwGmAwGIAwHuAgHcAgHOAgHCAgG4AgGuAgGeAgGIAgHuAQHOAQGqAQGGAQFoAVABRgFIAVgBdgGgAQHSAQHoBAHWBAHABAGmBAHEAgGkAgGGAgHmAQHGAQGmAQGIAQFoAUgBKAG3AwocASQBOAFYAXwBpgEBwgEB2AEB7AEBgAIBlgIBqgIBwAIBzgIB1gIB4AIB8AIBggMBlAMBpgMBtAMBvAMCrgMBmAMB+AIB0AIBpAIB+AEB0gEBsgEBngEBlAEBlgEBogEBtAEBzAEB5gEBgAIBmAIBsAIBxgIB2gIB8gIBigMBpgMBxgMB6AMBigQBrAQByAQB4AQB7gQB9AQB8AQB5AQB1AQBwAQBqgQBmgQBjgQBigQBjAQBlAQBngQBqAQBrgQBsAQBqAQBmgQBggQB5gMBxAMBpAMBhAMB6AIB0gIBxAIBugIBtAIBrgIBqAIBngIBkAIB+gEB3gEBwAEBoAEBggEBagFcAmYBgAEBpAEB0AEBggIB6AQBzAQBrgQBjAQBtAIBlAIB9AEB1AEBtgEBlgEBdgFWATYBtwMKCgEOARwBOAFaAYABAaYB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0gIBxgIBtAIBmgIB+gEB0gEBpgEBegFQASwBEAEAAQMBAAEMARoBKgE4AT4BPAEyASIBDAELASEBMwE9AT8BOQEpARUBAgEcATYBTAFeAXABfgGMAQGeAQG0AQHOAQHWAQHKAQGyAQGUAQF2AVgBOgG3AwoPAQ0CEQEbASsBPwFXAW0BfwGNAQGPAQGLAQF7AWUBSQEtARUBAQEGAgUBGQEzAVEBbQGJAQGfAQGvAQG5AQG/AQK9AQG7AQG3AQGzAQGtAQGlAQGbAQGJAQFvAU0BIwEQAUgBggEBvAEB8AEBnAIBwAIB2AIB5AIB6gIB5gIB4AIB2AIB0gIBzAIByAIBxAIBwgIBvAIBsAIBoAIBhgIB5gEBvgEBkgEBZgE8ARgBAQETARcBEwEFAQoBHAEqATQBNgEuASABDAEJAR0BLwE7AUEBPQEzASUBEwEAARQBJAE0AUABTAFaAWwBgAEBmgEBugEBxAEBrgEBlgEBgAEBYgFEAbcDCgEBAgIBAQsBGwExAUsBZQF7AY0BAZcBAo8BAX8BaQFTAT8BLwEpASsBNQFHAV8BewGVAQGvAQHBAQHPAQHXAQHbAQHZAQHXAQHTAQHNAQHJAQHDAQG5AQGtAQGZAQF/AVsBLQEIAUIBfgG6AQHwAQGeAgHCAgHYAgHkAgHmAgHiAgHYAgHMAgHCAgG8AgG2AgGyAgGuAgGoAgGeAgGOAgH0AQHUAQGuAQGCAQFWASwBCAERASMBJwEjARUBAwEQASABLAEwASwBIAEQAQMBFwEnATMBOQIzAScBGwEPAQEBCAEQARgBIgEsAToBTgFoAYgBAaoBApIBAXwBZAFMATABtwMJDgEUAhABBgEJASEBOwFXAW8BgwEBkQEBlwEBkwEBiQEBewFrAV0BUwFPAVMBXwFzAYkBAaMBAb0BAdMBAeMBAe8BAfUBAvMBAe8BAekBAeUBAd8BAdcBAc0BAb8BAasBAY0BAWcBNwEAATwBfAG6AQH0AQGkAgHKAgHiAgHwAgLqAgHeAgHQAgHCAgG2AgGuAgGoAgGkAgGcAgGSAgGAAgHoAQHIAQGgAQF2AUoBIAEDAR8BLwEzAS8BIQENAQYBGAEmASwBKgEiARQBAgENAR0BJwErAicBIQEXAREBCwEHAQUBAwEAAQYBEAEiAToBWAF6AaABAY4BAXYBYAFIATIBtwMK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"
+  },
+  "paint": {
+   "encoding": "rle-base64",
+   "type": "u8",
+   "length": 57600,
+   "data": "DhcNGwwIDVAOGAwQDh8NFAoHBAQOGA0bDAYNUg4XDAwOJA0SCgYEBg4ZDXIOGAwHDikNDwoHBAcOHA0XDhANSA5JDQ0KBwQIDiANCQ4bDUcOSg0KCgcECg5FDUcOSg0ICgcECw5FDUcOSw0GCgYEDQ5FDUcOTg0BCgcEDg5FDUcOTgoHBA8ORQ1IDkwKBgQRDkUNSA5LCgYEEg5EDUkOSgoGBBMORA1JDkkKBQQVDkQNSg5HCgYEFQ5DDUsORwoFBBYOQw1MDkUKBQQXDkMNTA5ECgUEGA5CDU0OQwoFBBkOQg1ODkIKBQQZDkENUA5ACgUEGg5BDVAOPwoFBBsOQA1SDj0KBQQcDkANUw48CgUEHA4/DVUOOgoFBB0OHQwDDh4NVw44CgUEHg4bDAYOHQ1ZDjYKBAQeCgEOGQwJDhsNXA4zCgUEHAoDDhcMCw4bDV4OMAoFBBwKBA4WDAwOGg1jDiwKBAQcCgUOFAwODhoNZw4nCgUEGwoGDhMMDw4ZDW0OIgoEBBsKBg4TDBAOGA1yDh0KBQQaCgUOFAwQDhkNdQ4aCgQEGwoFDhMMEQ4YDXgOFwoFBBoKBQ4TDBIOFw17DhUKBAQaCgUOEwwTDhcNJgwBDVUOEwoFBBkKBQwBDhIMEw4XDSQMBQ1VDhIKBAQaCgUMAQ4RDBQOFg0kDAcNVQ4QCgUEGQoFDAIOEAwUDhcNIgwJDVYODgoFBBkKBQwDDhAMFA4WDSIMCg1XDg0KBAQZCgUMBA4PDBQOFg0iDAsNVw4MCgUEGQoFDAQODgwUDhYNIgwMDTcMBg0aDgwKBAQZCgUMBQ4ODBMOFw0hDAwNNgwIDRsOCgoFBBkKBAwGDg0MEw4XDSEMDQ00DAsNGg4JCgUEGQoFDAYODAwTDhcNIQwODTMMDA0aDggKBQQaCgQMBw4MDBIOFw0hDBANMQwNDRsOBwoFBBkKBQwHDgwMEA4ZDSAMEQ0wDA4NGw4GCgUEGgoEDAgOCwwPDhoNIAwTDS8MDg0bDgUKBQQaCgUMCA4LDA0OGw0hDBcNKgwPDRsOBQoFBBoKBAwJDgsMCw4cDSEMGw0nDA8NGw4ECgUEGgoFDAwOAQ0BDgcMBg4fDSIMHA0mDA8NDQwIDQYOAwoFBBsKBAwPDisNIwwcDScMDg0IDA4NBg4BCgUEGwoFDggMBw4rDSQMGw0nDA4NBAwSDQYKBgQaCgUOCgwGDioNLwwRDSkMCg0DDAoFBwwEDQUKBgQbCgQOCwwGDikNMgwODTYMBwUPDQMKBwQbCgUOCg0BDAYOKA0zDA4NNgwFBRQKBgQcCgQOCg0CDAYOJw01DAwNNwwDBRcKAwQdCgUOCQ0DDAYOJg02DAwNNwwCBRoEHQoFDgkNBAwGDiUNNwwLDTgFHQQbCgUOCA0GDAYOJA04DAoNOAUeBBsKBQ4HDQcMBg4jDToMCA04BR0EHAoFDgcNCAwGDiINOwwHDTkFGwQdCgUOBg0KDAYOIQ09DAUNOQUbBB4KBA4GDQwMBQ4gDXsFGxIDBBsKBQ4EDQ4MBQ4fDXwFGhIFBBkKBQ4DDREMBA4eDXwFGxIFBBgKBQ4CDRYMAQ4dDX0FGxIGBBcKBQ0ZDhwNfQUbEggEFQoFDRoOGw1+BQkSBgULEgkEFAoFDRsOGg1/BQUNARIIBQsSCwQSCgUNHA4ZDYUBEgkFCRINBBEKBg0cDhcNhwESCQUIEg4EEAoGDR0OFg2IARIIBQcSEQQOCgYNHg4VDYkBEgcFBxISBAwKBw0fDhQNigESBwUFEhQECwoHDSAOEg2LAQoBEgYFBRIVBAoKBg0iDhENiwEKAhIGBQQSFgQJCgYNIw4QDYsBCgMSBQUEEhcEBwoHDSQODg2MAQoEEgUFAxIXBQMEBAoGDSYODQ2MAQoFEgQFAhIYBQQEAwoGDScOCw2NAQoFBAISAwUBEhcFBwoHDSgOCg2NAQoFBAMSAgUBEhcFCAoGDSkOCA1pDAMNIgoFBAUSFwUKCgQNKw4HDWgMBg0gCgUEBhIWBQsKAw0sDgUNaAwIDR8KBQQIEhMFDgoBDS0OAw0iDAYNQQwKDR0KBQQKEhEFDg1SDAkNPwwLDRwKBQQLEg8FEA1RDAoNPgwMDRsKBgQNEgwFEA1RDAsNPQwNDRoKBgQPEgoFEA1RDAwNPAwODRkKBgQSEgcFEA1RDA4NOwwODRgKBgQVEgQFEQ1QDA8NOgwPDRUKCAQZBRENUAwQDTkMEA0RCgsEGQUQDVIMEA04DBENDgoNBBkFEA1SDBENOAwRDQoKDwQaBQ8NVAwRDTcMEg0ICg0EHQUODVUMEg02DBQNBQwBCgsEIAULDVgMEg02DBkKCAQoCgUNWgwTDTQMGAoHBCkKBg0SDAYNQwwZDS0MGAoGBCoKBg0QDAkNIwwFDRsMHQ0pDBcKBgQqCgYOAg0NDAsNIgwGDRwMHg0mDBcKBgQrCgUOAw0LDAwNIgwHDSgMEg0lDA8NBQwDCgYEKwoFDgQNCQwODSEMCA0pDBINJAwMDQgMAQoHBCsKBQ4FDQcMDw0hDAkNKgwRDSMMCw0KCgYELAoFDgYNBgwPDSIMCQ0qDBENIwwIDQwKBgQsCgUOBw0EDBENIgwJDSoMEA0kDAYNDQoGBCwKBQ4IDQMMEQ0jDAkNKgwQDSUMAQ0QCgYELAoFDgkNAgwRDSQMCQ0qDBANNAoHBCwKBg4JDBINJgwIDSoMDw00CgYELQoGDgkMEg0pDAYNKgwODTQKBgQtCgYOCQwSDVoMDQ00CgYELQoGDgkMEg1cDAoNNQoGBC0KBg4JDBINXQwJDTQKBwQtCgYOCQwSDWAMBA02CgYELAoIDgkMEg2aAQoGBCkKCw4JDBINlwEKCQQnCgwOCwwRDZQBCgwEJAoODgwMEQ2SAQoOBCIKDg4PDBANjwEKDwQkCgwOEgwPDY4BCg0EJwoJDhYMDg2NAQoMBCgKCA4YDA4NjQEKCQQrCgYOGwwNDY0BCgcELQoGDhwMDA2NAQoGBC4KBg4dDAoOAQ2NAQoGBC4KBg4eDAkOAg2MAQoGBC0KBw4fDAgOAw2LAQoGBC0KBg4hDAYOBg2JAQoGBC0KBg4jDAMOCA2IAQoGBC0KBg4vDYgBCgUELQoGDjENhgEKBQQsCgcOMg2FAQoFBCwKBg41DYMBCgUELAoGDjcNgQEKBQQsCgYOOQ1/CgUELAoGDjsNfQoFBCsKBw4+DXoKBQQrCgYOQQ14CgUEKwoGDkQNSgwCDSkKBQQpCggOSA1EDAYNJwoFBCcKCg5LDUEMBw0mCgUEJAoMDk8NPgwIDSUKBQQhCg8OUg06DAoNJAoFBB8KDw5XDTcMCw0jCgUEHwoMDlwNFQwGDRoMDA0iCgUEHwoKDmANEgwJDRkMDA0gCgYEHwoHDmUNEAwKDRgMDQ0fCgYEHwoGDmgNDQwNDRYMDg0dCgcEHwoGDmoNCwwODRUMEA0bCgcEHwoGDmsNCwwODRUMEA0aCgYEIAoGDm0NCQwPDQoOCgwSDRcKBwQgCgYObg0IDBANCg4KDB0NCwoHBCAKBg5vDQgMEA0KDgkMIA0HCgcEIQoGDgsMBQ5gDQcMEQ0KDgkMIQ0FCgcEIQoGDgkMCQ5fDQcMEQ0KDgkMIQ0ECgYEIgoGDgcMDQ5eDQcMEQ0KDgoMIQ0BCgcEIgoGDgYMDw5eDQgMEQ0JDhINBAwVCgcEIgoGDgYMEA5eDQgMEw0HDhINBAwTCgcEJAoFDgUMEQ5fDQsMFw4SDQUMEQoHBCQKBQ4FDBIOXw0WDAwOEg0FDBAKBgQlCgUNAQ4EDBMOOgwIDh0NFgwMDhINBQwOCgcEJQoFDQIOAwwTDjgMDA4cDRcMCw4SDQUMDQoHBCUKBQ0DDgMMEw42DA8OGg0YDAsOEg0GDAoKBwQmCgUNBA4CDBMONQwRDhoNGAwLDhINBgwJCgcEJgoFDQUOAgwSDjUMEg4aDRgMCw4RDQcMCAoGBCYKBg0FDgIMEw40DBMOGQ0ZDAsOEQ0IDAYKBgQmCgYNBw4BDBIONAwUDhkNGQwLDhENCAwGCgUEJgoGDQgOAQwRDjQMFQ4YDRoMCw4QDQsMAwoFBCUKBw0JDBEONQwVDhgNGgwLDhANDQoFBCUKBw0KDBEONAwWDhcNHAwKDhANDAoFBCQKBw0MDA8OEw0SDhEMFQ4YDRwMCg4PDQwKBQQkCgcNDQwODg4NGg4PDBUOFw0dDAoODw0LCgYEIwoGDQ8MDQ4KDSEODQwUDhcNHwwJDg4NDAoFBCIKBw0RDAoOBA0qDgwMFA4XDSAMCA4ODQsKBQQiCgcNEgwIDTAODAwTDhcNIgwHDg0NCwoFBCEKBw0XDAENNQ4MDBEOFw0mDAQODQ0KCgUEIQoHDU8OCwwQDhcNKw4MDQoKBQQhCgYNUQ4MDAwOGQ0sDgwNCQoFBCAKBw1SDg4MBg4cDS0OCw0KCgUEHwoHDVQOLg0uDgsNCQoFBB4KBw1WDi0NLw4KDQkKBQQeCgcNVw4sDTAOCg0JCgQEHQoHDVoOKQ0yDgkNCQoFBBwKBw1bDigNMw4JDQkKBAQcCgcNXA4mDTUOCA0JCgUEGwoGDV4OJQ02DgcNCgoEBBwKBQ1fDiMNOA4HDQkKBQQbCgUNYQ4hDTkOBg0KCgQEGwoFDWIOHw07DgUNCgoFBBoKBQ1jDh0NPQ4FDQkKBQQaCgUNZA4bDT8OBA0KCgQEGgoGDWQOGQ1BDgMNCgoFBBkKBg1mDhYNQw4DDQoKBAQaCgUNZw4UDUUOAg0KCgUEGQoFDWkOEA1IDgENCwoEBBkKBQ1qDg0NVgoFBBkKBA1sDgkNWAoFBBkKBQ3NAQoEBBoKBA3NAQoFBBkKBQ3MAQoFBBoKBA3NAQoFBBkKBQ3MAQoFBBoKBA3MAQoFBBoKBQ3MAQoFBBkKBQ3MAQoFBBoKBA1PDAgNdQoFBBoKBQ1MDAwNcwoGBBoKBA1KDBANcQoGBBoKBQ1IDBINcAoGBBsKBA0FDAcNPAwTDT8MBA0sCgYEGwoFDQEMDQ05DBMNPQwHDSwKBQQbCgUMEA02DBUNOwwJDSwKBAQcCgQMEg00DBUNOwwKDSwKAgQdCgUMEg0zDBUNOgwLDS0KAQQdCgUNAQwSDTIMFg05DAwNLQQeCgQNAQwTDTIMFQ04DA0NLgQdCgUNAQwTDTEMFA05DA0NLwQcCgUNAgwTDTAMFA04DA8NLwQcCgQNAwwSDTAMFA04DA8NMAQbCgUNAwwSDTAMEw03DBANMQQaCgUNBAwRDTAMEg04DBANMQwBBBoKBA0FDBANMAwSDTcMEQ0wDAMEGQoFDQUMDw0xDBANOAwSDTAMAwQYCgUNBgwODTEMEA03DBMNMAwEBBcKBg0GDAwNMwwPDTcMEw0xDAQEFgoGDQcMCg00DA4NNwwUDTIMBAQVCgYNCQwHDTYMDQ03DBQNMgwFBBQKBg1GDAwNOAwUDTMMBQQTCgYNRwwLDTgMFA00DAUEEQoHDUgMCg04DBQNNQwFBBAKBw1IDAkNOQwUDTYMBQQPCgYNSgwIDToMEw03DAUEDgoGDUsMBg07DBMNOAwFBA0KBg1MDAUNPAwSDTkMBQQMCgYNTQwDDT0MEg06DAUECgoHDY4BDBENPAwEBAkKBg2QAQwQDT4MAwQHCgcNkQEMDw1CBAUKCA2SAQwODUMEBAoIDZMBDA0NRA=="
+  },
+  "vegetation": {
+   "encoding": "rle-base64",
+   "type": "u8",
+   "length": 57600,
+   "data": "FAYAIxQKAEIUSgAxFAgAGhQSAEEUSwAwFAsAEBQaACQTAQAcFEsALxQSAAoUGQAhEwYAGhRMAC4UEwAKFBgAHxMIABoUTQAeJAIADRQTAAsUFwAeEwkAGhRPABskCAAIFBQACxQVAB0TCwAbFFAAFyQJAAkUFQAKFBUAHBMMABsUUwATJAkAChQWAAoUFAAbEw0AGxRSABMkCAAMFBcAChQSABoTDwAbFFEAEiQJAA0UGAAKFBEAGRMQABwUTwASJAgADxQYAAsUEAAYExEAHBRPABEkCAAQFBkACxQOABgTEgAcFE4AESQIABEUGgAKFA4AFxMTABwUTQASJAYAExQbAAoUDAAXExQAHRRLABIkBgAUFBwAChQLABYTFQAdFEsAESQGABUUHQAKFAkAFhMXAB0USQARJAcAFRQdAAsUCAAVExgAHRRIABIkBgAWFB4ACxQGABUTGgAcFEgAESQGABcUHwAKFAYAFBMbAB0URgARJAYAGBQgAAoUBAAUEx4AHBREABEkBwAYFCEAChQDABMTIwAYFEQAESQGABkUIgAKFAEAExMnABYUQgAUJAMAGhQiAB0TKQAWFEEAFSQBABsUIwAcEyoAFhQ/ABYkAQAbFCQAGhMrABcUPgAyFCUAGBMsABkUOwAzFCYAFxMsABsUOQAzFCcAFhMrAB8UNQAvJAQAARQnABUTLAAiFDIALSQFAAIUKAAUEywAJhQtACwkBgADFCcAFhMqACsUKAAsJAYABBQnABcTKQAvFCQAKyQGAAUUJgAiEx4AMxQgACskBwAFFCYAJhMaADYUHQArJAYABhQlACkTFwA4FBsAKyQGAAcUJAArExUAOxQYACskBgAIFCMALBMVADwUFwAqJAcACBQjAC0TEwA+FBUAKyQGAAkUIgAuExIAQBQTACskBgAKFCEALxMSAEAUEgAsJAUACxQhADATEABCFBEAKyQGAAsUIAAxEw8AQxQQACwkBQAMFB8AMxMMAEUUDgAtJAYADBQeADQTCwBHFAwAEyQBABokBQANFB4ANRMIAEkUCwATJAQAFyQGAA0UHQA4EwQASxQKABMkBgAVJAYADhQcAIkBFAcAFSQGABUkBgAOFBsAigEUBgAVJAYAFSQGAA8UGgCLARQFABUkBgAWJAYADxQZAIwBFAMAFiQHABUkBgAQFBkAjAEUAgAXJAYAFiQFABEUGAClASQGABYkBgARFBcApAEkBwAXJAUAEhQWAKQBJAgAFiQGABIUFQCkASQIABYkBgATFBQApAEkCAAWJAcAExQTAKMBJAgAGCQGABQUEgCjASQIABgkBgAVFBEAowEkBgAaJAYAFhQRAKEBJAUAHSQGABYUEAChASQEAB4kBgAXFA8AogEkAgAfJAYAGBQOAKIBJAMAHiQHABgUDQChASQFAB4kBgAZFAwAoQEkBgAdJAYAGhQKAKIBJAYAHSQGABsUCQCiASQGAB0kBwAbFAgAZxMFADckBQAdJAcAHBQHAGkTBQA3JAIAICQFAB0UBgBkEwEABhMFAHoUBQAGEwcAVxMBAAgTBAB6FAQABRMKAFUTAQAKEwQAMCQBAEgUAwAEEw0AYBMDAC8kAgBIFAEABRMOAFITAQANEwMALyQBAE4TDwBREwMADRMCAC4kAQBOExEATxMFAA0TAQB8ExIAThMHAAsTAwB6ExMATRMJAAkTBAB5ExQATBMKAAgTBQB4ExUATBMLAAYTBgBGJAIAMBMVAEsTDQAEEwcARCQEADATFQBKEw8AARMKAEIkBQAwExUAShMaAEAkCAAvExYAShMXAEIkCAAvExYAShMWAEQkBQAxExYASxMTAEYkBAAyExcASxMRAEEkAQAGJAEANBMXAEwTDwBAJAQAJxMJAAoTGQBLEw0AICQCAB4kBQAkEwwAChMcAD0TAQALEwsAICQGABokBQAiEw8AChMhADgTAgAKEwkAICQIABkkBgAgExEAChMkADQTBAAKEwcAHiQKABkkBgAeExQAChMmADETBgAKEwUAGyQNABkkBgAdExUACxMnAC8TCAAKEwMAGSQPABkkBwAbExcACxMnAC8TCAALEwEAFyQRABkkBwAaExgADBMoAC0TCgAgJBAAGyQHABoTGAANEygALBMMAB0kDgAeJAcAGRMaAA0TBAABEyMALBMNABwkCwAgJAcAGBMbABkTHQArEw8AHiQEACQkBgAXExwAGxMcACoTEQBhExwAHRMbACoTEABgEx0AHhMaACoTEABfEx4AHxMaACkTEABeEyAAIBMYACoTDQBgEyAAIRMYACkTCgBjEyAAIhMXACoTBgBmEyAAIxMWACsTAwBoEyAAJBMVACwTAQBpEyAAJhMTAJYBEyAAJxMSAJUBEyEAKBMQAJYBEyEAKhMNAJgBEyAAKxMLAJkBEyAALhMGAJsBEyAA0QETHgDSARMdAKgBJAEAKhMcAKgBJAIAKhMbAKgBJAMAKhMaAHkkAQAtJAYAKRMYAHkkAwAsJAgAKBMXAHkkBAAIJAMAICQIACkTFgB5JAwAIyQIACoTFQB5JAkAJiQHACwTFAB5JAcAKiQFAC0TEwB5JAcALCQDAC4TEgB5JAcALSQCAC8TEQB5JAcAXxMPAHokBwBgEw4AeiQHACYkAwA4Ew0AeiQHACYkBAAlFAIAERMLAHskBwAmJAYAGxQCAAYUBAAREwkAeyQHACYkCAAWFAYABhQFABATBwB8JAcAJiQHABYUBwAGFAcAEBMEAH0kBwAlJAgAFhQHAAYUCgCOASQHACUkBAABJAMAFhQIAAYUDACLASQHAEMUCAAGFA8AiwEkBABDFAgABhQSAIoBJAIAQxQJAAYUFACIASQBAEUUBwAGFBcAzQEUBgAGFBkAzAEUBAAGFBwAywEUAgAGFB4AvwEUAQALFAEABhQfAL0BFAMAEBQhALsBFAUADhQjALkBFAcADRQjALgBFAkACxQlALUBFAsADBQkAI4BJAQAIhQNAAwUJACMASQFACEUDwAMFCMAiwEkBwAeFBIADRQhAGYkAQAjJAcAHhQUAA0UIABlJAMAISQHAB0UFwANFB8ANBQBAC4kBgAfJAcAGxQbAA4UHQA0FAEALSQIAB0kBwAZFCAADRQcADQUAQAsJAgAHSQHABYUJQAOFBoANBQBACokCQAdJAcAExQqAA4UGQA0FAEAKSQIAB4kBwATFC0ADRQYADQUARMCACUkCQAeJAcAExQvAA4UFgA0Ew0AGiQJAB4kBwATFDEADhQUADUTDwAWJAkAHyQHABMUNAANFBMANRMRABMkCQAfJAcAExQ2AA4UEQA1ExAAEyQIAB8kCAATFDkADRQPADYTDwATJAgAHyQIABQUOgANFA4ANhMOABMkBwAgJAgAFBQ8AA4UDAA2Ew4AEiQHACAkCAAUFD8ADRQKADcTDQASJAcAISQGABUUQQANFAkANxMMABIkBwAhJAYAFRRDAA4UBgA4EwsAEiQHACIkBQAVFEYADRQEADkTCgATJAYAIyQDABYUDBMDAAQUNQAOFAIABxMGACwTCgASJAYAJSQBABYUBRMLAAgUMgASEwwAKhMJABIkBgA8ExAACxQyAA0TEAAoFAETCAASJAcAOxMRAA0UMQAOEw8AJhQCEwgAESQHADsTEQAPFDEADhMOACUUAxMHABEkBwA7ExIADxQzAA0TDQAkFAQTBwAQJAcAOxMSABEUMwAOEwwAIxQEEwYAESQFADsTEwATFDQADRMLACIUBRMGABAkAQA/ExQAExQzEwIADRMKACEUBhMFAFATFAAUFDITBAAOEwgAIRQGEwUAThMVABYUMBMHAA0TBwAgFAcTBABOExYAFhQuEwoADRMFACEUBxMDAE0TFwAXFC0TDAAOEwMAIBQIEwMATBMXABgULBMPAA0TAgAgFAgTAgBMExcAGhQpExIALRQJEwEASxMYABsUKAABExMALBQJAEwTFwAcFCYAAxMVACkUCgBMExYAHRQkAAUTFgAoFAoATBMVAB4UIwAGExcAJxQKAEwTFAAfFCEACBMZACUUCgBMExIAIRQfAAoTGgAjFAsALiQBAB0TEAAjFB0ADBMcACEUCwAsJAMAHhMNACUUGwAOEx0AIRQKACokBAAgEwoAKBQYABETHAAhFAoAJyQGACQTAgAtFBYAExMbACIUCgAnJAUAVBQUABYTGAAlFAkAJiQGAFQUEgAZExUAKBQIACUkBgBVFA8AHRMQAC4UBgAlJAYAVhQMACQTBABfJAYAVxQJAIoBJAYAWRQEAHYkAQAVJAYA0wEkAgAVJAUA0wEkAgAVJAYA0gEkAgAWJAUA0gEkAwAVJAYA0gEkAgAVJAYA0wEkAQAWJAYA0wEkAQAVJAYA6gEkBgDpASQGAOkBJAYA6gEkBgDpASQGAOkBJAYA6gEkBgDpASQGAOkBJAYA6gEkBgDpASQGAOkBJAYA6gEkBgDuASQBAN4PEwYAeyQCAGcTDwB3JAQAXhQEExQAdCQGAF0UBRMVAHIkBwBbEwEUBhMVAHAkCQBZEwMUBhMVAFUTBgATJAoAWBMEFAYTFgBTEwgAESQKAFkTBBQHExYAUBMMAA8kCgBZEwUUBxMWAE4TDgAP"
+  }
+ }
+}
