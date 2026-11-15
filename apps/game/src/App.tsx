@@ -25,6 +25,7 @@ import { StartScreenDesk } from './ui/menu/StartScreenDesk';
 import { battleRosters, loadSetup, saveSetup, type SkirmishSetup } from './ui/menu/setupState';
 import { BattleEndPanel } from './ui/BattleEndPanel';
 import { EventCardPanel } from './ui/EventCardPanel';
+import { PlaytestEventsPanel } from './ui/PlaytestEventsPanel';
 import { closeEventCard, NO_EVENT_CARDS, openEventCards, type EventCardState } from './client/event-cards';
 import { clearBootcampProgress, loadLocale, loadRoutesVisible, saveLocale, saveRoutesVisible } from './storage';
 import { useAudio } from './hooks/useAudio';
@@ -237,7 +238,8 @@ export function App() {
       ...(rosters ? { rosters } : {}),
       ...(timeLimitTicks === undefined ? {} : { timeLimitTicks }),
       ...(playtestRef.current?.id === map
-        ? { mapDocument: playtestRef.current }
+        ? // add-battle-events 4.4: the editor's playtest can fire its events by hand.
+          { mapDocument: playtestRef.current, playtest: true }
         : documentsRef.current.has(map)
           ? { mapDocument: documentsRef.current.get(map)! }
           : {}),
@@ -547,6 +549,13 @@ export function App() {
           card={eventCards.cards[0]}
           waiting={eventCards.cards.length - 1}
           onClose={handleCloseEventCard}
+        />
+      ) : null}
+      {playtest && frame?.battleEvents && !hudHidden ? (
+        <PlaytestEventsPanel
+          locale={locale}
+          events={frame.battleEvents}
+          onFire={(eventId) => clientRef.current?.sendCommand({ type: 'fire_battle_event', eventId })}
         />
       ) : null}
       {frame && frame.outcome !== 'playing' ? (

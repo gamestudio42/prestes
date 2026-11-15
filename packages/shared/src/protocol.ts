@@ -557,6 +557,8 @@ export type WorkerRequest =
       deployment?: boolean;
       /** add-map-objectives: the battle's time limit (one of TIME_LIMITS); absent, DEFAULT_TIME_LIMIT. */
       timeLimitTicks?: number;
+      /** add-battle-events 4.4: the editor's playtest (events can be fired by hand; their states ride the frame). */
+      playtest?: boolean;
     }
   | { type: 'command'; command: Command }
   | { type: 'step'; ticks: number };

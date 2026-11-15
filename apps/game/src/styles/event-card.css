@@ -73,3 +73,50 @@
   outline: 2px solid var(--card-ink);
   outline-offset: 2px;
 }
+
+/* add-battle-events 4.4: the playtest's events list, for the map author. */
+.playtest-events {
+  position: fixed;
+  top: 48px;
+  right: 8px;
+  z-index: 5;
+  max-width: 320px;
+  max-height: 50vh;
+  overflow-y: auto;
+  padding: 6px 8px;
+  background: rgba(24, 22, 16, 0.88);
+  border: 1px solid #6b5f3f;
+  color: #efe6cc;
+  font-size: 12px;
+}
+
+.playtest-events-head {
+  width: 100%;
+  text-align: left;
+  font-weight: bold;
+}
+
+.playtest-events ol {
+  list-style: none;
+  margin: 4px 0 0;
+  padding: 0;
+}
+
+.playtest-events li {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 2px 6px;
+  padding: 3px 0;
+  border-top: 1px solid rgba(239, 230, 204, 0.15);
+}
+
+.playtest-events-state {
+  grid-column: 1;
+  color: #c9bd97;
+}
+
+.playtest-events li button {
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  align-self: center;
+}
