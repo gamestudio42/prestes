@@ -244,6 +244,11 @@ export interface BattleMap {
    * player brings a roster (built-in maps). Absent: the default roster.
    */
   enemyForces?: readonly Roster[];
+  /**
+   * The force the column fields on this map, whatever the player brings (a
+   * campaign mission's fixed force: the 18 of Copacabana). Absent: the player's.
+   */
+  columnForce?: Roster;
   /** add-map-objectives: the map's objectives (absent or empty: none). */
   objectives?: readonly Objective[];
   /** add-battle-events: the events the battle runs, in id order (absent: none). */

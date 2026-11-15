@@ -625,6 +625,7 @@ export const editorPtBR: Record<keyof typeof editorEn, string> = {
   'editor.problem.description-missing': 'O mapa não tem descrição em {language}.',
   'editor.problem.source-note-missing': 'O mapa não tem nota de fonte.',
   'editor.problem.mission-missing': 'O mapa de campanha não tem missão: escolha a vaga dele.',
+  'editor.problem.column-force-invalid': 'A força fixa da coluna quebra as regras de tropa ou tem seção de outro exército.',
   'editor.problem.section-count': 'O lado {side} tem {count} seções; precisa de 3.',
   'editor.problem.section-out-of-bounds': 'A seção {section} ({side}) sai do mapa.',
   'editor.problem.section-not-walkable': 'A seção {section} ({side}) não está em chão transitável.',

@@ -175,6 +175,18 @@ describe('map document', () => {
     expect(validateEditableMap(map).some((problem) => problem.code === 'mission-missing')).toBe(false);
   });
 
+  it("a fixed column force keeps the roster rules and the column's army, and survives a save", () => {
+    const map = createEditableMap({ id: 'dezoito', size: 'small', name: { en: 'X', 'pt-BR': 'X' } });
+    const invalid = (problems: ReturnType<typeof validateEditableMap>) => problems.some((problem) => problem.code === 'column-force-invalid');
+    map.columnForce = { sections: ['comando', 'esquadra-5', 'esquadra-5', 'esquadra-4'] };
+    expect(invalid(validateEditableMap(map))).toBe(false);
+    const parsed = parseMapDocument(JSON.parse(JSON.stringify(toMapDocument(map))));
+    expect(parsed.ok && compileMapDocument(parsed.document).columnForce?.sections).toEqual(['comando', 'esquadra-5', 'esquadra-5', 'esquadra-4']);
+    map.columnForce = { sections: ['infantaria-exercito'] };
+    expect(invalid(validateEditableMap(map))).toBe(true);
+    expect(parseMapDocument({ ...toMapDocument(map), columnForce: 'eighteen' })).toMatchObject({ ok: false, detail: 'columnForce' });
+  });
+
   it('shrinking lists the objects that fall outside', () => {
     const map = createEditableMap({ id: 'big', size: 'large' });
     map.objects.push({ id: 7, type: 'casa-terrea', x: 280, y: 0, rotation: 0 });

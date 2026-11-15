@@ -1,3 +1,4 @@
+import { validateRoster } from '../sections';
 import type { Vec2 } from '../protocol';
 import { findPath } from '../pathfinding';
 import { isPointBlockedByCovers } from '../world';
@@ -24,6 +25,7 @@ export type ProblemCode =
   | 'description-missing'
   | 'source-note-missing'
   | 'mission-missing'
+  | 'column-force-invalid'
   | 'section-count'
   | 'section-out-of-bounds'
   | 'section-not-walkable'
@@ -137,6 +139,8 @@ export function validateEditableMap(map: EditableMap): MapProblem[] {
   }
   // author-game-maps D1: a campaign map belongs to one mission.
   if (map.use === 'campaign' && !map.mission) add({ code: 'mission-missing', severity: 'error', params: {} });
+  // The column's fixed force keeps the roster rules, the column's army only.
+  if (map.columnForce && !validateRoster(map.columnForce, 'coluna').ok) add({ code: 'column-force-invalid', severity: 'error', params: {} });
 
   const compiled = compileMapDocument(map);
   setActiveMap(compiled);

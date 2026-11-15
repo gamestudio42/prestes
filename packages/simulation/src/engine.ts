@@ -163,6 +163,8 @@ function rosteredWeapon(unit: object): WeaponId | undefined {
  * none, both sides field the default and the RNG is not drawn.
  */
 export function resolveRosters(map: BattleMap, rosters: BattleRosters | undefined, rng: RNG): BattleRosters | undefined {
+  // The map's fixed column force wins over the player's (a campaign mission).
+  if (map.columnForce && map.columnForce.sections.length > 0) rosters = { ...rosters, column: { sections: [...map.columnForce.sections] } };
   if (!rosters) return undefined;
   if (rosters.legalist) return { column: rosters.column, legalist: rosters.legalist };
   const presets = map.enemyForces ?? [];

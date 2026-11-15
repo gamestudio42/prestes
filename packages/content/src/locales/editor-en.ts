@@ -623,6 +623,7 @@ export const editorEn = {
   'editor.problem.description-missing': 'The map has no description in {language}.',
   'editor.problem.source-note-missing': 'The map has no source note.',
   'editor.problem.mission-missing': 'The campaign map has no mission: choose its slot.',
+  'editor.problem.column-force-invalid': "The column's fixed force breaks the roster rules or holds another army's section.",
   'editor.problem.section-count': 'The {side} side has {count} sections; it needs 3.',
   'editor.problem.section-out-of-bounds': '{side} section {section} leaves the map.',
   'editor.problem.section-not-walkable': '{side} section {section} is not on walkable ground.',

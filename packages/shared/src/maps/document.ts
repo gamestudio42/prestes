@@ -169,6 +169,8 @@ interface MapDocumentBody {
    * brings a roster (pre-battle-roster 2.3); absent = the default roster.
    */
   enemyForces?: Roster[];
+  /** The column's fixed force on this map (a campaign mission's); absent = the player's roster. */
+  columnForce?: Roster;
   /** add-map-objectives 1.3: regions to take and hold; absent = none. */
   objectives?: Objective[];
   /** add-battle-events 1.1: what happens during the battle; absent = nothing. */
@@ -472,6 +474,7 @@ export function parseMapDocument(value: unknown): ParseResult {
   if (doc.light !== undefined && !(isObject(doc.light) && isNumber(doc.light.time) && isNumber(doc.light.bearing))) return fail('light');
   if (doc.north !== undefined && !isNumber(doc.north)) return fail('north');
   if (doc.enemyForces !== undefined && !(Array.isArray(doc.enemyForces) && doc.enemyForces.every((roster) => isObject(roster) && Array.isArray(roster.sections) && roster.sections.every(isString)))) return fail('enemyForces');
+  if (doc.columnForce !== undefined && !(isObject(doc.columnForce) && Array.isArray(doc.columnForce.sections) && doc.columnForce.sections.every(isString))) return fail('columnForce');
   if (doc.objectives !== undefined && !(Array.isArray(doc.objectives) && doc.objectives.every(isObjective))) return fail('objectives');
   if (doc.events !== undefined && !(Array.isArray(doc.events) && doc.events.every(isBattleEvent))) return fail('events');
   if (doc.eventPlaces !== undefined && !(Array.isArray(doc.eventPlaces) && doc.eventPlaces.every(isEventPlace))) return fail('eventPlaces');
@@ -1157,6 +1160,7 @@ export function compileMapDocument(source: EditableMap | MapDocument): BattleMap
     light: mapLight(map.light),
     north: mapNorth(map.north),
     ...(map.enemyForces && map.enemyForces.length > 0 ? { enemyForces: map.enemyForces.map((roster) => ({ sections: [...roster.sections] })) } : {}),
+    ...(map.columnForce && map.columnForce.sections.length > 0 ? { columnForce: { sections: [...map.columnForce.sections] } } : {}),
     ...(map.objectives && map.objectives.length > 0
       ? {
           objectives: map.objectives.map((objective) => ({

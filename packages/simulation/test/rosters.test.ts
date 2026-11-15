@@ -68,6 +68,17 @@ describe('rostered 3v3 (pre-battle-roster 3.1-3.4)', () => {
     expect(chosen.rng.getState()).toEqual(drawnState);
   });
 
+  it("the map's fixed column force wins over the player's, and fields with no roster at all", () => {
+    const eighteen: SectionTypeId[] = ['comando', 'esquadra-5', 'esquadra-5', 'esquadra-4'];
+    const map = { ...battleMap(TEST_MAP), columnForce: { sections: eighteen } };
+    const men = (engine: SimulationEngine) => engine.units.filter((unit) => unit.faction === 'column').length;
+    for (const rosters of [undefined, { column: { sections: six } }]) {
+      const engine = new SimulationEngine({ seed: 1922, scenario: 'battle3v3', battleMap: map, rosters });
+      expect(engine.rosters?.column.sections).toEqual(eighteen);
+      expect(men(engine)).toBe(18);
+    }
+  });
+
   it('a battle without rosters draws nothing', () => {
     const engine = battle(TEST_MAP);
     expect(engine.rosters).toBeUndefined();
