@@ -4,46 +4,51 @@ History before 2026-11-06 (the bootcamp era, the redesign plan, the
 per-change notes and the verification log) is in
 [`status-history.md`](status-history.md).
 
-## Where the game is (2026-11-11)
+## Where the game is (2026-11-14)
 
 A skirmish game on authored maps. A battle opens in a deployment phase, is
 fought for capture-and-hold objectives against an enemy commander under fog
 of war, and ends by objective value or by breaking the other side. Sections
-are built from a roster of types and period weapons; they take cover by
-slots, enter and assault buildings and trench lines, queue orders, walk or
-run. Maps are made in the in-game editor (`editor.html`) and chosen by slot
-from the desk menu. The bootcamp is retired. The campaign's eight chapters
-are written in the campaign book, none playable; there is no save/load.
+are built from a roster of three armies' types and period weapons; they take
+cover by slots, enter and assault buildings and trench lines, queue orders,
+walk or run. The battle HUD is the docked wood-and-leather one, with a
+figure per soldier in the troop panel. Maps are made in the in-game editor
+(`editor.html`), now with scripted battle events (reinforcements, enemy
+posture, narrative cards), and chosen by slot from the desk menu. The battle
+has ambient beds, water and footsteps; voices are not in yet. The campaign's
+eight chapters are written in the campaign book, none playable; there is no
+save/load.
 
-## Plan (2026-11-11)
+## Plan (2026-11-14)
 
 | Change | State | What is left |
 | --- | --- | --- |
-| `polish-menu-desk` | 31/35 | the owner's Aseprite redraws: both closed books, the reference pile, the gramophone |
-| `add-field-manual` | proposed 2026-11-11, 0/11, on hold (the owner: not yet) | a Manual part in the book "A Coluna Prestes", twelve text pages; replaces the dropped `video-tutorial-manual` |
-| `add-battle-events` | 18/18 on branch `add-battle-events` (worktree), not merged | scripted battle events authored in the editor: triggers (time, objective taken/lost, area entered, losses %, after another event, plus delay), actions (troops enter for either side at an edge entry point, enemy posture offensive/fall back/hold, a narrative card that pauses the battle), map document v9, map check, Events panel, playtest list with "fire now"; guide in `docs/maps/EVENTOS_DE_BATALHA.md`; `pnpm verify` 2026-11-14: check, build, determinism, tick budget and spec validation pass; bundle budget fails on index JS 716,078 B of 680,000 B (this branch predates the 760,000 B budget in the main checkout); events and editor e2e 33/33, the full e2e not run; waits for the owner to merge |
-| campaign maps | the owner's hand work | each campaign map is drawn by the owner in the editor, as the skirmish maps are; missions follow the maps |
+| `ambient-sound-and-voices` | 10/19 | beds, water, wading and footsteps are in (1-4); the voices (5.1-5.6: lines, script tool, voice director, playback, captions, the owner's recording), on-demand loading (6.1), verify (6.2) and the owner's headphone check (6.3). Next: the owner reviews `docs/audio/ROTEIRO_RASCUNHO.md` |
+| `enrich-texts-from-sources` | 12/15, committed 2026-11-14 | `pnpm verify` and strict validate (5.1), the owner's reading in the game in both languages (5.2); `superoitocine-2012` stays "not consulted" on purpose (5.3) |
+| `add-field-manual` | 0/11, on hold (the owner, 2026-11-11: not yet) | a Manual part in the book "A Coluna Prestes", twelve text pages |
+| campaign maps | the owner's hand work | each campaign map drawn in the editor, guided by `docs/maps/GUIA_MAPAS_CAMPANHA.md`; battle events by `docs/maps/EVENTOS_DE_BATALHA.md`; missions follow the maps |
+| not yet proposed | ideas | save/load of a battle (talked over on 2026-11-13, no proposal in the tree), a playable campaign with progression |
 
-Planned on 2026-11-11 at the owner's request, in the order they should
-land. No game code is applied yet; [`handoff.md`](handoff.md) says where to
-start, the rules and what each change decided:
+Done since the plan of 2026-11-11, all archived: `faction-armies`,
+`soldier-animation-and-textures`, `troop-thumbnails-and-panel`,
+`redo-battle-hud`, `biome-trees-and-plants`, `revise-buildings-and-stone`,
+`remove-sandbox-panel`, `polish-menu-desk`, `add-map-compass`,
+`camp-tent-menu`, `scrub-concealment-and-area-fire`, `route-around-wire`,
+`refine-battle-controls-and-content` and, on 2026-11-14, `add-battle-events`
+(18/18: triggers on time, objectives, areas, losses and other events;
+troops entering for either side, enemy posture, a card that pauses the
+battle; map document version 9; the Events panel and the playtest's "fire
+now"). `pnpm verify` for it passed but the index JS budget, measured before
+the budget was raised to 760 KB; events and editor e2e 33/33.
 
-| Order | Change | Tasks | Lands |
-| --- | --- | --- | --- |
-| 1 | `faction-armies` | 18/18: armies, 19 section types, successor table, map version 6, names and the Forças compendium section, values in the simulation, setup screen, editor presets and HUD done; `pnpm verify` green but the known `desk.spec` gap; hand check done; archived | three armies (the Column, the legalist regulars, the patriotic battalions), period names for armies and sections, section types per army; starts with research into `docs/history/FORCES.md`, which also answers whether the police fought for the government |
-| 2 | `soldier-animation-and-textures` | 18/18, archived | wound, carry and death clips, the crouch-walk and aim redone, blends, drawn uniform textures per army with variants |
-| 3 | `troop-thumbnails-and-panel` | 15/15, archived | a rendered thumbnail for every section type (roster, cards, panel), roster type cards, the troop panel redrawn with one figure per soldier (helmet = cover, body = health, cartridge clip = ammunition), gauges and alerts |
-| 3b | `redo-battle-hud` | 17 | the battle HUD redone from the owner's reference (`referencias para hud/`): wood and leather frames drawn in Aseprite, docked panels that only collapse, the status row moved, contour and cover layers in the strategic view (off by default) |
-| 4 | `biome-trees-and-plants` | 18 | the whole Refloreste tree suite by biome adapted to Prestes, bush families, more cacti and caatinga plants |
-| 5 | `revise-buildings-and-stone` | 19 | every building modelled with openings that agree with the battle, new buildings, variants, rock kinds and built stone |
-| any time | `remove-sandbox-panel` | 6/7 applied 2026-11-11 | the sandbox panel, F1 and its button removed; tests use the development test bridge; waits for the `battle-hud` baseline re-record once the compass and area-fire work is committed |
-| any time | `ambient-sound-and-voices` | 19 | the listening point, ambient beds, river/stream/pond, footsteps by ground, the commander's orders and the sections' answers (always clear), call-outs; the owner records the speech from a generated script |
-
-Why this order: uniforms and thumbnails need the armies; thumbnails need
-the uniforms. Trees and buildings are independent of those and of each
-other. Sound touches only the client and can run beside any of them; its
-voice lines wait for the board's final orders and for the forms of address
-the research fixes.
+Tidied on 2026-11-14: the work five finished sessions had left uncommitted
+was committed by topic (`enrich-texts-from-sources`, the window-height fire
+fix in `view3d`, the recording script draft, the campaign maps guide and the
+760 KB budget). The 24 ambient MP3s re-encoded by a later `prepare:audio`
+run were put back to their committed versions (copies kept outside the
+tree; `pnpm prepare:audio` makes them again from `audio-src/`).
+`referencias para hud/` (33 MB of the owner's reference images) stays out
+of git until the owner decides.
 
 Decisions of 2026-11-11 (the owner):
 
@@ -254,6 +259,8 @@ The desk replaces the bookmark shell.
 - The araucaria's crown reads as dark clumps without its candelabra shape
   (hand check pending).
 - The training-ground code is unused and still in the tree (see the plan).
+- The branch `main` is 164 commits behind `plan-art-factions-sound`, where
+  the work happens; nothing is pushed (local only, by the owner's rule).
 
 ## faction-armies apply (2026-11-11)
 
@@ -475,6 +482,32 @@ corrugated asbestos appears.
   the near and the far mesh, not a fault of the split. Shots re-taken. Still
   open: the open iron gate is a few thin dark bars at the tactical band;
   the owner keeps it as is (2026-11-13).
+
+## enrich-texts-from-sources drafts (3.1, approved by the owner 2026-11-12)
+
+- The owner read and approved the drafts in `docs/campaign/compendium/entries/`
+  ("Aprovo, importe"): the nine new entries (`manifesto-porto-nacional-1925`,
+  `porto-nacional`, `o-libertador-1924`, `lourenco-moreira-lima`,
+  `batalhoes-patrioticos-bahia`, `coluna-no-grande-sertao`, `vivandeiras`,
+  `tenentismo`, `positivismo-militar`), the "Viver da terra" section of
+  `army-coluna`, and the additions to Prestes (the motto framed as memory) and
+  Serra Nova (the patriotic battalions).
+- Imported into the content with chapter 6's Porto Nacional page and the
+  bullets in the tree, chapter 8's Moreira Lima quote, the prologue and
+  chapter 4 links, and the new epigraph. The entry docs are now `applied`.
+- Open from the drafts: which river the women crossed; the Macaulay page for
+  executions inside the column; `carvalho-2001` is still pending and cited as
+  further reading; Pang's battalion sizes are third hand.
+- The book's quote cost was raised (width x1.3, +240) after the overflow e2e
+  found the Porto Nacional page 32-54 px too long at 1280 x 720.
+- Index JS bundle budget raised from 680 KB to 760 KB at the owner's request
+  (2026-11-12): the new compendium and chapter text adds about 50 KB.
+- `pnpm verify` (2026-11-12): check, build, bundle budget (index JS 712 KB
+  / 760 KB), determinism, tick budget and openspec validate pass. The full e2e
+  ran apart: 146 passed, 1 skipped, 3 failed outside the books
+  (`battle.spec.ts` 3 vs 3 start, `compass.spec.ts` map document version 8 vs
+  7, `editor-scale-bar.spec.ts`), all in the maps and editor work another
+  session has in progress in this tree. Every desk-books test passes.
 
 ## ambient-sound-and-voices: the list of sounds (3.1, approved by the owner 2026-11-13)
 

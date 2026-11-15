@@ -20,7 +20,9 @@ mecânicas que ainda não existem.
 4. Preencha a ficha técnica da missão (vaga, tamanho, paleta, luz, norte, nota
    de fonte).
 5. Desenhe na ordem do guia: massas de terreno → água → estradas → construções →
-   cobertura → vegetação → desdobramento → objetivos.
+   cobertura → vegetação → desdobramento → objetivos → eventos (reforços,
+   postura do inimigo, cartões; passo a passo em
+   [`EVENTOS_DE_BATALHA.md`](EVENTOS_DE_BATALHA.md)).
 6. Rode **Verificar mapa**. Corrija erros; leia os avisos.
 7. Teste no editor. Jogue uma escaramuça 3 vs 3 no mapa e observe o que o mapa
    ensina.
