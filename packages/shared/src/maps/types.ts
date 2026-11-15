@@ -5,6 +5,7 @@ import type { Roster } from '../sections';
 import type { TrenchLineDef } from './trench-lines';
 import type { RockKind } from './rock-kinds';
 import type { BattleEvent, EventPlace } from './events';
+import type { Withdrawal } from './withdrawal';
 
 /** A battle map id: an authored map document's (author-game-maps; the hand-written maps are gone). */
 export type BattleMapId = string;
@@ -255,4 +256,6 @@ export interface BattleMap {
   events?: readonly BattleEvent[];
   /** add-battle-events: the places those events name (present when `events` is). */
   eventPlaces?: readonly EventPlace[];
+  /** add-withdrawal-exits: the column's exits and what must get out (absent: no withdrawal). */
+  withdrawal?: Withdrawal;
 }

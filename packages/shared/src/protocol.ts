@@ -123,7 +123,20 @@ export type FireControl = 'free' | 'contact' | 'hold';
 export type Outcome = 'playing' | 'victory' | 'defeat' | 'draw';
 
 /** add-map-objectives: how a battle was decided. */
-export type DecidedBy = 'annihilation' | 'broken' | 'all-objectives' | 'objectives' | 'draw';
+export type DecidedBy = 'annihilation' | 'broken' | 'all-objectives' | 'objectives' | 'draw' | 'withdrawal' | 'cut-off';
+
+/**
+ * add-withdrawal-exits D3: how far the column has got out on a map with a
+ * withdrawal: men and sections out, the sections it fielded, and the requirement.
+ */
+export interface WithdrawalSnapshot {
+  menOut: number;
+  sectionsOut: number;
+  sections: number;
+  required: number;
+  command: boolean;
+  commandOut: boolean;
+}
 
 /** add-map-objectives: the battle's time limits (ticks at 10 a second): 15, 20 and 30 minutes. */
 export const TIME_LIMITS = [9000, 12000, 18000] as const;
@@ -411,6 +424,8 @@ export type SimEvent =
       /** add-map-objectives: how it was decided, and each side's objective value at the end (battles with objectives). */
       decidedBy?: DecidedBy;
       values?: { column: number; legalist: number };
+      /** add-withdrawal-exits D3: the column's men and sections out (maps with a withdrawal). */
+      withdrawal?: WithdrawalSnapshot;
     }
   /** add-map-objectives: a side took an objective. */
   | { type: 'objective_taken'; tick: number; id: number; side: 'column' | 'legalist' }
@@ -421,6 +436,10 @@ export type SimEvent =
    * contact for 60 s) falls back off the field; its fit men rout.
    */
   | { type: 'side_fell_back'; tick: number; side: Faction }
+  /** add-withdrawal-exits D2: a fit column soldier left the field by an exit (saved). */
+  | { type: 'unit_exited'; tick: number; unitId: number; exitId: number }
+  /** add-withdrawal-exits D2: a column section's last fit man left by an exit; `command` for the command section. */
+  | { type: 'section_exited'; tick: number; squadId: number; exitId: number; command: boolean }
   /**
    * fog-of-war: a shot by a soldier the target's side does not see. The marker
    * lies near the shooter, off by up to `radius` metres; it never names him.
@@ -482,6 +501,8 @@ export interface Frame {
   queuedOrders?: readonly QueuedOrderSnapshot[];
   /** add-battle-events 2.5: the map events' states, in the editor's playtest only. */
   battleEvents?: readonly BattleEventState[];
+  /** add-withdrawal-exits D3: the withdrawal's progress (maps with a withdrawal). */
+  withdrawal?: WithdrawalSnapshot;
 }
 
 /** refine-battle-controls: an order waiting behind a section's current one. */

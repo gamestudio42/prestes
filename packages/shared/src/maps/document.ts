@@ -26,6 +26,7 @@ import { defaultDeploymentArea, sectionStartsFromArea } from './deployment-areas
 import { smoothCentreline } from './water-outline';
 import { detectWallYards, type YardWall } from './wall-yards';
 import { migrateEnemyPreset, type Roster } from '../sections';
+import { compileWithdrawal, isWithdrawal, type Withdrawal } from './withdrawal';
 import { compileEventPlaces, compileEvents, isBattleEvent, isEventPlace, type BattleEvent, type EventPlace } from './events';
 import { DEFAULT_MAP_LIGHT, MAP_LIGHT_TIME, type BattleMap, type DeploymentZone, type HeightShape, type LocalizedText, type MapLight, type Objective, type MapLine, type PropPlacement, type WaterArea } from './types';
 
@@ -38,7 +39,7 @@ import { DEFAULT_MAP_LIGHT, MAP_LIGHT_TIME, type BattleMap, type DeploymentZone,
  */
 
 export const MAP_DOCUMENT_FORMAT = 'prestes-map';
-export const MAP_DOCUMENT_VERSION = 9;
+export const MAP_DOCUMENT_VERSION = 10;
 
 /** Heights the editor allows (m). */
 export const MIN_HEIGHT = -12;
@@ -179,6 +180,8 @@ interface MapDocumentBody {
   events?: BattleEvent[];
   /** add-battle-events 1.1: entry points and trigger areas the events name. */
   eventPlaces?: EventPlace[];
+  /** add-withdrawal-exits D1: the column's exits and the withdrawal requirement; absent = none. */
+  withdrawal?: Withdrawal;
   setting: { label: SettingLabel; sourceNote: string };
   codexKey?: string;
   palette: MapPalette;
@@ -384,6 +387,9 @@ const isZone = (value: unknown): value is DeploymentZone => isObject(value) && i
  *
  * 8 -> 9 (add-battle-events 1.2): `events` and `eventPlaces` are new and
  * optional; a version 8 map opens with none.
+ *
+ * 9 -> 10 (add-withdrawal-exits D1): `withdrawal` is new and optional; a
+ * version 9 map opens with none.
  */
 function migrate(document: Record<string, unknown>): Record<string, unknown> {
   let doc = document;
@@ -395,6 +401,7 @@ function migrate(document: Record<string, unknown>): Record<string, unknown> {
   if (doc.version === 6) doc = { ...doc, version: 7 };
   if (doc.version === 7) doc = { ...doc, version: 8 };
   if (doc.version === 8) doc = { ...doc, version: 9 };
+  if (doc.version === 9) doc = { ...doc, version: 10 };
   return doc;
 }
 
@@ -481,6 +488,7 @@ export function parseMapDocument(value: unknown): ParseResult {
   if (doc.objectives !== undefined && !(Array.isArray(doc.objectives) && doc.objectives.every(isObjective))) return fail('objectives');
   if (doc.events !== undefined && !(Array.isArray(doc.events) && doc.events.every(isBattleEvent))) return fail('events');
   if (doc.eventPlaces !== undefined && !(Array.isArray(doc.eventPlaces) && doc.eventPlaces.every(isEventPlace))) return fail('eventPlaces');
+  if (doc.withdrawal !== undefined && !isWithdrawal(doc.withdrawal)) return fail('withdrawal');
   if (!isObject(doc.setting) || !isString(doc.setting.label) || !isString(doc.setting.sourceNote)) return fail('setting');
   if (!['training-ground', 'historical-setting-fictional-place', 'reconstructed-historical-place'].includes(doc.setting.label)) return fail('setting');
   if (!['temperate', 'cerrado', 'caatinga', 'urban'].includes(doc.palette as string)) return fail('palette');
@@ -1177,6 +1185,7 @@ export function compileMapDocument(source: EditableMap | MapDocument): BattleMap
         }
       : {}),
     ...compiledEvents(map),
+    ...compiledWithdrawal(map),
   };
   noteCoverPieces(compiled, coverPieces);
   return compiled;
@@ -1187,6 +1196,12 @@ function compiledEvents(map: MapDocumentBody): Pick<BattleMap, 'events' | 'event
   const events = compileEvents(map.events);
   if (events.length === 0) return {};
   return { events, eventPlaces: compileEventPlaces(map.eventPlaces) };
+}
+
+/** add-withdrawal-exits D1: a map's withdrawal; nothing for a map without exits. */
+function compiledWithdrawal(map: MapDocumentBody): Pick<BattleMap, 'withdrawal'> {
+  const withdrawal = compileWithdrawal(map.withdrawal);
+  return withdrawal ? { withdrawal } : {};
 }
 
 /** The name or description of a map in a language: an authored map's own text, else null (use its locale key). */

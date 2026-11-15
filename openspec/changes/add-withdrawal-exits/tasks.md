@@ -1,7 +1,7 @@
 ## 1. Map data
 
-- [ ] 1.1 Add `MapExit` and `Withdrawal` to `packages/shared/src/maps/types.ts` and `document.ts`; bump `MAP_DOCUMENT_VERSION` to 10 with the 9 → 10 relabel, the shape check and the compile copy; verify with a shared test that a version 9 document opens with no withdrawal and a version 10 one round-trips its exits and requirement
-- [ ] 1.2 Add `'withdrawal' | 'cut-off'` to `DecidedBy`, the `unit_exited` and `section_exited` events and the outcome's `withdrawal` block in `protocol.ts`; verify `pnpm typecheck`
+- [x] 1.1 Add `MapExit` and `Withdrawal` to `packages/shared/src/maps/types.ts` and `document.ts`; bump `MAP_DOCUMENT_VERSION` to 10 with the 9 → 10 relabel, the shape check and the compile copy; verify with a shared test that a version 9 document opens with no withdrawal and a version 10 one round-trips its exits and requirement
+- [x] 1.2 Add `'withdrawal' | 'cut-off'` to `DecidedBy`, the `unit_exited` and `section_exited` events and the outcome's `withdrawal` block in `protocol.ts`; verify `pnpm typecheck`
 
 ## 2. Leaving the field (simulation)
 
