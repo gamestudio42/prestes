@@ -685,6 +685,34 @@
   line-height: 1.35;
 }
 
+.desk-quote {
+  margin: 4px 0 10px;
+  padding: 2px 0 2px 14px;
+  border-left: 2px solid var(--book-edge);
+}
+
+.desk-quote-text {
+  margin: 0 0 4px;
+  color: var(--book-ink);
+  font-size: 15px;
+  font-style: italic;
+  line-height: 1.4;
+}
+
+.desk-quote-attribution {
+  color: var(--book-ink-soft);
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.desk-quote-attribution::before {
+  content: '— ';
+}
+
+.desk-quote-note {
+  margin-left: 4px;
+}
+
 .desk-related {
   margin: 6px 0 0;
   color: var(--book-ink-soft);

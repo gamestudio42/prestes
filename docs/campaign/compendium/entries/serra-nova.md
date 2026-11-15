@@ -9,6 +9,7 @@ sourceRefs:
   - anita-1991
   - nascimento-2026
   - almg-2026
+  - mozzer-2009
 status: applied
 runtimeId: serra-nova
 ---
@@ -33,6 +34,11 @@ troops tried to close the ring. The column broke contact and confused the
 pursuers with a series of circular movements, the "laço húngaro", and passed
 through Taiobeiras on 26 April.
 
+The men who struck the rearguard were not regular troops. Horácio de
+Matos and Abílio Wolney were backland chiefs whom the government had armed,
+paid and mustered as Patriotic Battalions. Their jagunços knew the country
+better than the column did.
+
 The place is a milestone, not a victory. The column escaped, and the decision to
 emigrate was already forming in the high command. The game's ridge-and-road map
 is an abstraction of the manoeuvre, not a survey of Serra Nova.
@@ -44,6 +50,11 @@ de Horácio de Matos e Abílio Wolney atacaram a retaguarda da coluna em 22 de
 abril de 1926; as tropas federais tentaram fechar o cerco. A coluna rompeu o
 contato e confundiu os perseguidores com uma série de movimentos circulares, o
 "laço húngaro", e passou por Taiobeiras em 26 de abril.
+
+Os homens que atacaram a retaguarda não eram tropa regular. Horácio
+de Matos e Abílio Wolney eram chefes sertanejos que o governo armara, pagara e
+incorporara como batalhões patrióticos. Seus jagunços conheciam a terra melhor
+que a coluna.
 
 O lugar é um marco, não uma vitória. A coluna escapou, e a decisão de emigrar já
 se formava no alto comando. O mapa de serra e estrada do jogo é uma abstração da

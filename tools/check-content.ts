@@ -6,12 +6,15 @@ import { FLORA_FILES, floraProblems, floraRegisterProblems, readModelHeights } f
 import { SECTION_THUMBS_DIR, sectionThumbProblems } from './section-thumbs-hash';
 import {
   CAMPAIGN_CHAPTERS,
+  CHAPTER_TEXT,
   COMPENDIUM,
+  COMPENDIUM_TEXT,
   COMPENDIUM_IMAGE_REGISTER,
   FIGURES,
   LOCALES,
   messages,
   parseNameRegister,
+  parseSourceRightsTable,
   SOURCE_KEYS,
   validateChapters,
   validateCodexEntry,
@@ -20,6 +23,8 @@ import {
   validateFigures,
   validateMissionCommander,
   validateNameRegister,
+  validateQuotes,
+  validateSourceRights,
   type MissionMetadata,
 } from '@prestes/content';
 import { ARMIES, CATALOG_OBJECTS, SECTION_TYPES, validateArmies, validateSectionTypes, validateWeapons, WEAPONS } from '@prestes/shared';
@@ -48,6 +53,7 @@ for (const key of SOURCE_KEYS) {
     errors.push(`SOURCE_KEYS entry not registered in SOURCES.md: ${key}`);
   }
 }
+errors.push(...validateSourceRights(parseSourceRightsTable(sourcesText)));
 
 errors.push(...validateFigures(FIGURES, SOURCE_KEYS));
 
@@ -107,6 +113,7 @@ for (const image of COMPENDIUM_IMAGE_REGISTER) {
   }
 }
 errors.push(...validateChapters());
+errors.push(...validateQuotes(COMPENDIUM_TEXT, CHAPTER_TEXT, COMPENDIUM, CAMPAIGN_CHAPTERS));
 
 // pre-battle-roster 1.1 and 1.3: every weapon is complete and named in every locale.
 errors.push(...validateWeapons());

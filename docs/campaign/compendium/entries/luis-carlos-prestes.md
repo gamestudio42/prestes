@@ -9,6 +9,7 @@ sourceRefs:
   - amado-1942
   - anita-1991
   - cpdoc-prestes
+  - historiafm-2024
 status: applied
 runtimeId: luis-carlos-prestes
 ---
@@ -90,6 +91,11 @@ figure to turn into a superhero. The record keeps the command structure, the
 cost and the absences in view: the fever in 1922, Miguel Costa's formal command,
 the men who did not come back, and the political uses of the march after 1927.
 
+The march he led covered about 25,000 kilometres in a little over two
+years, and it is remembered as "the greatest revolutionary march in the
+world". Historians put it more carefully, as one of the greatest marches of
+its kind.
+
 ## Nota estendida (PT-BR)
 
 ### Antes da coluna
@@ -149,6 +155,11 @@ Prestes liga os levantes, a marcha e a memória. É também a figura mais fácil
 transformar em super-herói. O registro mantém à vista a estrutura de comando, o
 custo e as ausências: a febre de 1922, o comando formal de Miguel Costa, os
 homens que não voltaram e os usos políticos da marcha depois de 1927.
+
+A marcha que ele comandou percorreu cerca de 25 mil quilômetros em
+pouco mais de dois anos e é lembrada como "a maior marcha revolucionária do
+mundo". Os historiadores dizem com mais cuidado: uma das maiores marchas do
+gênero.
 
 ## Design notes
 

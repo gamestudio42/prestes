@@ -2,7 +2,8 @@
 
 This is the working list of historical-photo, illustration and map slots for
 the compendium. Each slot has a home in an entry file; this file tracks the
-status, rights and next action across the set.
+status, rights and next action across the set. The detailed audit and candidate
+list for both books is in [`IMAGE_SURVEY.md`](IMAGE_SURVEY.md).
 
 ## Rules
 

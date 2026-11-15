@@ -105,6 +105,7 @@ export const COMPENDIUM_TEXT_EN: Readonly<Record<string, CompendiumText>> = {
         heading: 'Why he matters',
         paragraphs: [
           "Prestes connects the risings, the march and the memory. He is also the easiest figure to turn into a superhero. The record keeps the command structure, the cost and the absences in view: the fever in 1922, Miguel Costa's formal command, the men who did not come back, and the political uses of the march after 1927.",
+          "The march he led covered about 25,000 kilometres in a little over two years, and it is remembered as \"the greatest revolutionary march in the world\". Historians put it more carefully, as one of the greatest marches of its kind.",
         ],
       },
     ],
@@ -293,6 +294,7 @@ export const COMPENDIUM_TEXT_EN: Readonly<Record<string, CompendiumText>> = {
       {
         paragraphs: [
           'Serra Nova was a rearguard fight, not a highland pass. The jagunços of Horácio de Matos and Abílio Wolney attacked the column\'s rear on 22 April 1926; the federal troops tried to close the ring. The column broke contact and confused the pursuers with a series of circular movements, the "laço húngaro", and passed through Taiobeiras on 26 April.',
+          "The men who struck the rearguard were not regular troops. Horácio de Matos and Abílio Wolney were backland chiefs whom the government had armed, paid and mustered as Patriotic Battalions. Their jagunços knew the country better than the column did.",
           "The place is a milestone, not a victory. The column escaped, and the decision to emigrate was already forming in the high command. The game's ridge-and-road map is an abstraction of the manoeuvre, not a survey of Serra Nova.",
         ],
       },
@@ -305,6 +307,219 @@ export const COMPENDIUM_TEXT_EN: Readonly<Record<string, CompendiumText>> = {
           "Siqueira Campos led the 18 out of the fort and onto the beach. The game makes him the Prologue's commander because Prestes was absent with typhoid and because the beach is the moment that entered the legend. The 18 are the subject; Siqueira is the voice that holds them together.",
           'The legend says the eighteen died on the beach. The record says Siqueira Campos survived. Both belong here: he is the exception the legend remembers, and the man who later carried the 1922 story into the column. The exact command structure inside the fort is still an open question in the sources.',
           'He is not a superhero. The 1922 failure is the beginning of his story, not a victory.',
+        ],
+      },
+    ],
+  },
+  'army-coluna': {
+    note: [
+      {
+        heading: "Living off the land",
+        paragraphs: [
+          "No one supplied the column. It took food, horses and clothing from the country it crossed. The command gave written requisition notes, and from Mato Grosso on small mounted parties, the potreadas, rode off the flanks to round up horses. For a poor family, one ox or horse taken could mean ruin, and the command came to know it. The cost to the poor was one of the reasons for the exile in 1927.",
+          "There were abuses, above all in the first months. The command banned indiscriminate looting, expelled men who disobeyed and punished the worst crimes, at times with death. Government troops looted and raped as well, but the government's propaganda called the rebels bandits, and in many places people fled before they came.",
+          "The column also left marks of another kind. It burned tax registers, as at Carolina, opened the jails and destroyed stocks, iron collars and school paddles. It never had more than about 1,500 men, though rumour at Teresina put it at five or ten thousand. Many of its rank and file were Black, hidden in the records under words like \"caboclo\" and \"pelo-duro\". No one counted them.",
+        ],
+      },
+    ],
+  },
+  'positivismo-militar': {
+    note: [
+      {
+        heading: "Order and progress",
+        paragraphs: [
+          "Comte taught that society improves by scientific laws, and that a society which ranks people by religion, birth or race is backward. At the Military Academy on Praia Vermelha, in Rio, the mathematics professor Benjamin Constant Botelho de Magalhães taught this to a generation of cadets. Brazil, with an emperor, a state church and legal slavery, broke every one of those laws. The cadets joined the abolitionist cause, and on 15 November 1889 they gave the tottering monarchy a push. The new republic separated church and state and put the positivist motto on its flag.",
+        ],
+      },
+      {
+        heading: "Soldiers in politics",
+        paragraphs: [
+          "The academy kept its taste for rebellion. Its cadets rioted in 1895 and rose again in 1904, in the revolt against compulsory vaccination. The government then moved the school out to Realengo, far from the centre. Officers came to see themselves as the regenerators of the republic, soldier-citizens with a duty to act in politics. When Prestes entered Realengo in 1916, the old dogma still hung over it. His own father had been a positivist cadet of 1889.",
+        ],
+      },
+      {
+        heading: "The irony",
+        paragraphs: [
+          "Comte's ideal was a \"sociocracy\", rule by the virtuous and the competent, with free schooling and protection for the weak. It was not a democracy, and it was to come by moral evolution, never by force. The rebel cadets ignored that. Cândido Rondon did not. He was a pupil of Benjamin Constant, an orthodox positivist and a devout member of the Religion of Humanity, who held that force produces no social good. In 1924–1925 he commanded the government's forces against the rebels in Paraná. Positivism was in the tenentes' schooling and in their sense of mission. It was not their programme.",
+        ],
+      },
+    ],
+  },
+  'tenentismo': {
+    note: [
+      {
+        heading: "Young officers against the oligarchy",
+        paragraphs: [
+          "The tenentes were lieutenants and captains, most of them recent graduates of the Realengo military school. The generals did not join them. Their enemy was the arrangement by which Minas Gerais and São Paulo took turns choosing the president. In 1922 that choice was Artur Bernardes. The officers came mostly from the weaker states and from the cities, and they had been taught that their duty was to the nation, not to regional cliques. Bernardes stood for those cliques. In 1921 a newspaper printed letters, signed with his name, that insulted the army and Marshal Hermes da Fonseca. They were proved to be forgeries, but too late. Bernardes was elected in March 1922. In July, Epitácio Pessoa had Hermes arrested and the Military Club closed, and the Copacabana fort rose.",
+        ],
+      },
+      {
+        heading: "From a revolt to a programme",
+        paragraphs: [
+          "In 1922 the rebels knew whom they wanted out and little else. By 1924 they demanded Bernardes's resignation, a provisional government and a new constitution. Over the years of revolt they took up liberal banners: the secret ballot, honest politics, education. The Manifesto of Porto Nacional (1925) speaks that language. It was a reform of the republic from above, by soldiers, and not a social revolution.",
+        ],
+      },
+      {
+        heading: "How historians explain it",
+        paragraphs: [
+          "Historians disagree about why the tenentes rose. One school, from Virgínio Santa Rosa in the 1930s, sees the voice of a rising urban middle class. Another stresses the army itself: an institution with its own grievances and the means to act on them. A third, Anita Prestes among others, combines the two. The book does not choose.",
+        ],
+      },
+      {
+        heading: "The break",
+        paragraphs: [
+          "The march made Prestes see the interior that the tenentes' programme had left out. In May 1930 he broke with them. Most of his comrades, Miguel Costa, Juarez Távora, João Alberto and Cordeiro de Farias, went with Vargas in the revolution of 1930.",
+        ],
+      },
+    ],
+  },
+  'o-libertador-1924': {
+    note: [
+      {
+        heading: "A press on the march",
+        paragraphs: [
+          "O Libertador began at São Luiz Gonzaga, in the Missões of Rio Grande do Sul, where Prestes's railway battalion was dug in at the end of 1924. José Damião Pinheiro Machado printed it there. Under government censorship the newspapers of the time called the rebels seditious, rioters and bandits. A paper of their own was a way to say otherwise, and to call others to join.",
+          "The column carried no press. It used the ones it found. At Porto Nacional, in October 1925, Lourenço Moreira Lima, Pinheiro Machado and Padre Manuel de Macedo took over the press of the local paper, Norte de Goiás, and printed the seventh number. The eighth came out at Carolina, in Maranhão, and the ninth at Floriano, in Piauí, at the end of 1925.",
+          "It was a war paper, not a record. The ninth number announced a \"formidable victory\" at Uruçuí over loyalist trenches. The fight had been a few distant shots by a patrol. Moreira Lima held that propaganda needed it. The paper also said that the stars of the Southern Cross turned red during the fighting, on a night when fog hid them.",
+        ],
+      },
+      {
+        heading: "How many numbers?",
+        paragraphs: [
+          "The sources do not agree. Macaulay counts six at São Luís, the seventh at Porto Nacional, the eighth at Carolina and the ninth at Floriano. Anita Prestes counts five at São Luís Gonzaga and four afterwards, nine in all. Another account gives ten. The first number is dated November or December 1924. The book gives the range rather than pretend to one number.",
+        ],
+      },
+    ],
+  },
+  'manifesto-porto-nacional-1925': {
+    note: [
+      {
+        heading: "The document",
+        paragraphs: [
+          "The column reached Porto Nacional, then the main town of northern Goiás, in mid-October 1925 and stayed for ten days. There its three chiefs issued a manifesto addressed first to \"fellow citizens\" and then to the \"Brazilian people\". The order of the signatures, Miguel Costa first, matches the command structure: he was the division's formal commander, and Prestes and Távora were colonels.",
+          "The text is short and solemn. It calls the revolt a patriotic crusade begun on 5 July 1924 in São Paulo and joined by the gaúchos. It says that most Brazilians want the country restored to the liberal principles of the Constitution, which a clique of politicians has trampled. It admits that the people suffer the violence that war brings. It refuses to retreat, because that would betray the dead. It also refuses a peace that would hide what it calls the shame of the slave quarters.",
+        ],
+        quote: {
+          text: "And the people may be sure that the revolutionary soldiers will not furl the flag of Liberty until this climate of despotism and intolerance changes, which in a delirium of oppression stifles the best hopes of the national conscience!",
+          sourceKey: "manifesto-1925",
+          cite: "Manifesto of Porto Nacional, 19 Oct. 1925 (Marxists Internet Archive)",
+          attribution: "Miguel Costa, Luís Carlos Prestes and Juarez Távora, Porto Nacional, 19 October 1925",
+          translated: true,
+        },
+      },
+      {
+        heading: "What it does not say",
+        paragraphs: [
+          "The manifesto asks for liberty, the Constitution and a just peace. It does not set out a social programme. Land, labour and the backlands it was crossing are not in it. That gap is the tenentes' liberalism of 1925. Prestes would later say that the march itself showed him how little those words reached the interior.",
+        ],
+      },
+    ],
+  },
+  'coluna-no-grande-sertao': {
+    note: [
+      {
+        heading: "What Riobaldo remembers",
+        paragraphs: [
+          "Riobaldo, the old jagunço who narrates the novel, mentions the column only in passing. The revolutionaries came through from Goiás and took every saddle horse. There was shooting at the mouth of the Urucuia, at São Romão, where a government steamer landed troops from Bahia. Years later, he says, a farmer splitting a tree trunk finds bullets lodged in the wood.",
+          "The scene fits what the history records: the column's hunger for horses, the patriotic battalions of Bahia, and the rivers of northern Minas. It is still fiction, told by a fictional man.",
+        ],
+      },
+      {
+        heading: "One critic's reading",
+        paragraphs: [
+          "Marcelo Mozzer (2008/2009) goes further. He notes that the rivers of Riobaldo's wars include the Urucuia, the Carinhanha, the Preto, the Paracatu and the São Francisco. These are the rivers that Jorge Amado and Abguar Bastos name for the column's passage through Minas. He sets the novel's bands and chiefs beside the column's detachments and commanders. He compares the novel's rules against looting with the column's punishments for it. He wonders whether a \"Dr. Meigo de Lima\" in the novel echoes Lourenço Moreira Lima.",
+          "Mozzer himself calls this an intuition. Rosa read widely, and the column was the great military event of his youth in Minas, but no document shows that he drew on it. The book keeps the link as a possibility. What is certain is smaller: the march passed into the memory of the sertão, in songs, in cordel and in a great novel.",
+        ],
+      },
+    ],
+  },
+  'porto-nacional': {
+    note: [
+      {
+        heading: "The town",
+        paragraphs: [
+          "Porto Nacional had fewer than six thousand people. It had a bishop, a Dominican monastery, a convent school run by nuns and a newspaper, Norte de Goiás, printed on a worn press made in 1860. Its road to the world was the river, down to the Amazon. The nearest telegraph was at Carolina, in Maranhão, more than four hundred kilometres away.",
+        ],
+      },
+      {
+        heading: "Ten days in October",
+        paragraphs: [
+          "On the way in, the prior, Friar José M. Audrin, a Frenchman, promised no resistance and invited the officers to the monastery. The chiefs asked him to tell the townspeople to stay in their houses, so that no \"bad soldier\" could plunder them. Most fled into the bush anyway. Audrin said mass for the troops and baptized the camp followers' babies, and the rebels mostly left the empty houses alone.",
+          "The column used the town. Three of its men printed the seventh number of O Libertador on the Norte de Goiás press. They opened the jail. Among those freed was an old Black man serving thirty years despite a jury's acquittal. They destroyed the stocks, fetters and paddles. They gave receipts for what they took. On 19 October the three chiefs signed the Manifesto of Porto Nacional.",
+        ],
+      },
+      {
+        heading: "The friar's letter",
+        paragraphs: [
+          "After a week Audrin put in writing what the visit was costing. In a few days, he wrote, a mostly poor people had been brought to near-complete misery. He offered to seek an understanding between the government and the rebels, and they accepted without conditions. The talks went nowhere: to him an understanding meant laying down arms for amnesty, and to them it meant concessions. On 22 October the column crossed the Tocantins on rafts and left. The friar respected the rebels' ideals but judged their passage through the backlands harmful. He thought \"the Column of Death\" suited them better than \"the Unvanquished Column\".",
+        ],
+      },
+    ],
+  },
+  'lourenco-moreira-lima': {
+    note: [
+      {
+        heading: "The ferocious graduate",
+        paragraphs: [
+          "Among army officers, \"bacharéis\", the graduates, was a sneer for the lawyers, journalists and politicians they blamed for the country's ills. Moreira Lima was a bacharel his comrades trusted, and \"feroz\" said so. He had spent more than ten years as a lawyer in the Amazon rubber country and seen the semi-enslaved labour of the boom. He took part in the plots of 1922 and 1924 and was jailed for five months. He was on Isidoro's staff when the Paraná front fell. Sick, with a hernia he held in with a truss of rope and wire, he volunteered for the column and marched as its secretary.",
+        ],
+      },
+      {
+        heading: "The secretary",
+        paragraphs: [
+          "He measured each day's march in leagues of 6,666 metres and wrote it down. He edited O Libertador wherever the column found a press, and he did not mind printing a victory that had not happened. It was on his advice, which Prestes backed, that the column emptied jails, tore out stocks and chains and burned the paddles it found in jails and schools. He held that most convicts had been made criminals by the system he was fighting. His account is the main source for many episodes. It is also a partisan one, and it reduced the column's women to cooks and companions.",
+        ],
+      },
+      {
+        heading: "The farewell at La Gaiba",
+        paragraphs: [
+          "In exile in Bolivia he said farewell to the dead of the column buried at La Gaiba. He died in São Paulo in 1940, before the later edition of his book appeared.",
+        ],
+        quote: {
+          text: "Soldiers of Liberty! Sleep in peace in the foreign land that took you in so nobly, for your names and your deeds will live for ever in the generous heart of Brazil.",
+          sourceKey: "lima-1931",
+          cite: "Marchas e combates, 3rd ed. (1979), p. 523, via Mozzer 2009, p. 257",
+          attribution: "Lourenço Moreira Lima, La Gaiba, Bolivia, 1927",
+          translated: true,
+        },
+      },
+    ],
+  },
+  'batalhoes-patrioticos-bahia': {
+    note: [
+      {
+        heading: "Chiefs and their men",
+        paragraphs: [
+          "In the sertão, power lay with the \"colonels\", landowners and political bosses who kept bands of jagunços: gunmen called to arms by their patron, part-time, not bandits by trade. These chiefs fought each other as much as anyone. When the column came, the federal government paid them, gave them uniforms and Mausers, and mustered them into service as Patriotic Battalions.",
+          "By Anita Prestes's count, drawing on Eul-Soo Pang, about ten such battalions were raised in Bahia early in 1926. The largest were Horácio de Matos's from the Lavras Diamantinas (about 1,500 men), Franklin Lins de Albuquerque's from the middle São Francisco (about 800) and Abílio Wolney's jagunços from Barreiras and Goiás (about 1,000). Horácio de Matos raised his battalion at General Mariante's request, at first only to defend the Chapada Diamantina.",
+        ],
+      },
+      {
+        heading: "Why they mattered",
+        paragraphs: [
+          "They knew the trails, the water and the caatinga, and they appeared without warning. Siqueira Campos judged them led without any theory but more effective than the regular army. They hollowed their bullets, which caused terrible wounds. The theatre commander admitted in public that he had almost no control over them. At Serra Nova, in April 1926, the jagunços of Horácio de Matos and Abílio Wolney fell on the column's rearguard.",
+        ],
+      },
+    ],
+  },
+  'vivandeiras': {
+    note: [
+      {
+        heading: "The crossing",
+        paragraphs: [
+          "The women came to the rebel camps in the Missões at the end of 1924 and would not be left behind. At a river crossing into Santa Catarina, Prestes ordered them to stay on the near bank. They crossed first, by night, and were waiting on the far side when the troops arrived. Prestes let them stay. Siqueira Campos never accepted them: he kept women out of his detachment and made life hard for any he met on the trail.",
+        ],
+      },
+      {
+        heading: "What they did",
+        paragraphs: [
+          "Macaulay counts more than fifty, almost all from Rio Grande do Sul, and says that few carried firearms or fought. The historians who have studied them since, Maria Meire de Carvalho above all, read the record differently. The women cooked and kept the pack animals. They went forward under fire to bring back the wounded. They gathered information in the towns, and at times they fought. The men who wrote the march, Moreira Lima first among them, set them down as cooks and companions, and so did later accounts.",
+        ],
+      },
+      {
+        heading: "Names",
+        paragraphs: [
+          "The record keeps few names. Santa Rosa gave birth in Mato Grosso and was back on a horse with the child in her arms a few hours later. Hermínia, an Austrian nurse who joined in São Paulo, tended the wounded with a dedication everyone respected, and after the march settled on a farm in Bolivia. Tia Maria, an old Black woman who had been with the rebels since São Paulo, cooked for the staff. Tradition says that government troops caught and killed her in the Northeast, but the accounts of her death differ. Most of the others are known only as \"Chininha\", \"Cara de Macaca\" and other nicknames. Even their names were taken from them.",
         ],
       },
     ],

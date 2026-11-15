@@ -126,6 +126,16 @@ export function CompendiumBook({ locale, open, target }: CompendiumBookProps) {
             {item.text}
           </p>
         );
+      case 'quote':
+        return (
+        <blockquote key={key} className="desk-quote" data-testid="book-quote">
+          <p className="desk-quote-text">{item.text}</p>
+          <footer className="desk-quote-attribution">
+            {item.attribution}
+            {item.translated && <span className="desk-quote-note">{t('book.quoteTranslated')}</span>}
+          </footer>
+        </blockquote>
+      );
       case 'list':
         return (
           <ul key={key} className="desk-text-list">

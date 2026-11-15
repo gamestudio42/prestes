@@ -29,6 +29,20 @@ describe('book page model', () => {
     expect(pages[1]![0]).toMatchObject({ kind: 'para', continues: true });
   });
 
+  it('moves a quotation whole to the next page instead of splitting it', () => {
+    // The longest quotation the content check allows: 60 words of about eight characters.
+    const longest = Array.from({ length: 60 }, () => 'palavras').join(' ') + '.';
+    const pages = flow(
+      [
+        { kind: 'para', text: 'x'.repeat(PAGE_CHARS - 200) + '.' },
+        { kind: 'quote', text: longest, attribution: 'Miguel Costa, Luís Carlos Prestes e Juarez Távora' },
+      ],
+      PAGE_CHARS,
+    );
+    expect(pages).toHaveLength(2);
+    expect(pages[1]).toEqual([expect.objectContaining({ kind: 'quote', text: longest })]);
+  });
+
   it('never leaves a heading at the foot of a page', () => {
     const pages = flow(
       [
@@ -106,7 +120,7 @@ describe('book page model', () => {
       'forces',
       'corrections',
     ]);
-    expect(compendium.ribbons.find((ribbon) => ribbon.id === 'events')!.anchor).toBe('revolt-1922');
+    expect(compendium.ribbons.find((ribbon) => ribbon.id === 'events')!.anchor).toBe('positivismo-militar');
     expect(campaignBook('en').ribbons).toHaveLength(CAMPAIGN_CHAPTERS.length + 1);
   });
 });

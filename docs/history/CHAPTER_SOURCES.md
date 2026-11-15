@@ -78,6 +78,10 @@ Cordeiro. Cordeiro is the local detachment commander; Prestes was present.
 | Chronology          | `macaulay-1974`, ch. VIII, pp. 220–221 | full                   | Rearguard attacked at Serra Nova on 22 Apr. 1926 by Horácio de Matos and Abílio Wolney’s jagunços; column broke contact |
 | Encirclement/memory | `nascimento-2026`; `almg-2026`         | citation-only / Tier 4 | Federal troops tried to encircle the column; “laço húngaro”; Taiobeiras occupied 26 Apr.                                |
 | Social              | `blanc-2024`                           | full                   | interior history                                                                                                        |
+| Porto Nacional page | `macaulay-1974`, ch. VI, pp. 163–166   | full                   | Oct. 1925 at Porto Nacional: Audrin's monastery, the seventh _O Libertador_, the jail opened, Audrin's letter on the misery of the poor |
+| Manifesto           | `manifesto-1925`                       | full, GNU FDL          | Porto Nacional, 19 Oct. 1925; quoted on the opening page. Not in Macaulay                                               |
+| Patriotic battalions| `anita-1991` p. 262 via `mozzer-2009`  | citation-only / full   | Bahia, early 1926: Horácio de Matos ~1,500, Franklin de Albuquerque ~800, Abílio Wolney ~1,000 (after Eul-Soo Pang)      |
+| Literary memory     | `mozzer-2009`; `rosa-1956`             | full / citation-only   | Riobaldo's memory of Prestes's soldiers at the mouth of the Urucuia; dramatized, paraphrased, one critic's reading      |
 
 **Gaps:** the exact maneuver and the civilian evacuation. The “highland pass and
 river” in the draft mission is a dramatized invention; the sources describe a
@@ -102,6 +106,7 @@ mission’s single “border” compresses the Bolivia/Paraguay split.
 | Exile network | `cpdoc-coluna`                | Tier 3 | La Gaiba as a veteran settlement; the La Gaiba–Libres split                                 |
 | Exact date    | secondary tradition           | low    | The 5 July 1927 dedication is not confirmed by Macaulay; keep it as a low-confidence detail |
 | Social        | `blanc-2024`                  | full   | memory and exile                                                                            |
+| Farewell      | `lima-1931`, 3rd ed. (1979), p. 523, via `mozzer-2009`, p. 257 | public domain, second hand | Moreira Lima's farewell to the dead of La Gaiba ("Soldados da Liberdade!"), quoted |
 
 **Gaps:** the date, the attendees and the monument’s later fate. Macaulay does
 not mention La Gaiba.

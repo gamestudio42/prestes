@@ -1,5 +1,6 @@
 // Imported from docs/campaign/book and docs/campaign/missions; keep in step with the docs.
-// The prose is the project's own dramatization; no source text is reproduced.
+// The prose is the project's own dramatization; no source text is reproduced, apart from
+// attributed quotations of free texts (enrich-texts-from-sources D2).
 import type { ChapterText } from '../chapters';
 
 export const CHAPTER_TEXT_PT_BR: Readonly<Record<string, ChapterText>> = {
@@ -201,6 +202,18 @@ export const CHAPTER_TEXT_PT_BR: Readonly<Record<string, ChapterText>> = {
       'Luís Carlos Prestes, chefe do estado-maior, cobrindo a coluna pelo planalto de Minas Gerais.',
     pages: [
       {
+        heading: "Porto Nacional",
+        paragraphs: [
+          "Outubro de 1925. Seis meses depois do Paraná e quinze depois de São Paulo, a coluna chegou a Porto Nacional, à beira do Tocantins. Os moradores fugiram para o mato; os frades ficaram. No convento dominicano, os chefes tiveram tempo, pela primeira vez, de pôr por escrito pelo que marchavam. Em 19 de outubro, Miguel Costa, Prestes e Juarez Távora assinaram um manifesto à nação. Pedia liberdade e Constituição, e ainda não falava da terra. Seis meses depois, os mesmos homens estavam em Minas, com o cerco se fechando.",
+        ],
+        quote: {
+          text: "E o povo pode ficar certo de que os soldados revolucionários não enrolarão a bandeira da Liberdade enquanto se não modificar esse ambiente de despotismo e intolerância que asfixia, num delírio de opressão, os melhores anseios da consciência nacional!",
+          sourceKey: "manifesto-1925",
+          cite: "Manifesto of Porto Nacional, 19 Oct. 1925 (Marxists Internet Archive)",
+          attribution: "Miguel Costa, Luís Carlos Prestes e Juarez Távora, Porto Nacional, 19 de outubro de 1925",
+        },
+      },
+      {
         heading: 'A Retaguarda',
         paragraphs: [
           'Abril de 1926. A coluna descera da Chapada Diamantina para o norte de Minas Gerais. Os homens estavam cansados de um jeito que o sono não curava. Os jagunços de Horácio de Matos e Abílio Wolney estavam na retaguarda, e as tropas federais tentavam fechar as estradas à frente.',
@@ -219,6 +232,7 @@ export const CHAPTER_TEXT_PT_BR: Readonly<Record<string, ChapterText>> = {
         paragraphs: [
           'Serra Nova não foi uma vitória. Foi o momento em que a coluna escolheu continuar andando quando o cerco quase se fechou. A decisão de emigrar já se formava no alto comando; a marcha para o norte se tornaria uma marcha para a fronteira.',
           'A marcha não era um triunfo. Era uma decisão repetida todos os dias.',
+          "Trinta anos depois, Guimarães Rosa deu à marcha uma linha num romance. Seu velho jagunço lembra os soldados de Prestes passando pelos gerais de Minas, e um roceiro que, anos depois, racha um tronco e encontra balas na madeira. É ficção, e não diz que foi aqui. Mas o sertão guardou a marcha como a árvore guardou o chumbo.",
         ],
       },
     ],
@@ -284,6 +298,12 @@ export const CHAPTER_TEXT_PT_BR: Readonly<Record<string, ChapterText>> = {
         paragraphs: [
           'Os exilados dedicaram um monumento. Não era um monumento de vitória; era uma pedra para a marcha, para os mortos, para as cidades e os rios e os homens que não vieram. No granito, gravaram: “Glória aos Bandeirantes da Liberdade, 1924–1927.” A cerimônia foi pequena, e as palavras importavam porque não havia mais nada para construir.',
         ],
+        quote: {
+          text: "Soldados da Liberdade! Dormi tranqüilos na terra estrangeira que vos acolheu com tanta nobreza, porque os vossos nomes e os vossos feitos serão eternos no coração generoso do Brasil.",
+          sourceKey: "lima-1931",
+          cite: "Marchas e combates, 3rd ed. (1979), p. 523, via Mozzer 2009, p. 257",
+          attribution: "Lourenço Moreira Lima, La Gaiba, Bolívia, 1927",
+        },
       },
       {
         heading: 'A Memória',

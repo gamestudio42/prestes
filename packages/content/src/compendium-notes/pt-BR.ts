@@ -106,6 +106,7 @@ export const COMPENDIUM_TEXT_PT_BR: Readonly<Record<string, CompendiumText>> = {
         heading: 'Por que ele importa',
         paragraphs: [
           'Prestes liga os levantes, a marcha e a memória. É também a figura mais fácil de transformar em super-herói. O registro mantém à vista a estrutura de comando, o custo e as ausências: a febre de 1922, o comando formal de Miguel Costa, os homens que não voltaram e os usos políticos da marcha depois de 1927.',
+          "A marcha que ele comandou percorreu cerca de 25 mil quilômetros em pouco mais de dois anos e é lembrada como \"a maior marcha revolucionária do mundo\". Os historiadores dizem com mais cuidado: uma das maiores marchas do gênero.",
         ],
       },
     ],
@@ -298,6 +299,7 @@ export const COMPENDIUM_TEXT_PT_BR: Readonly<Record<string, CompendiumText>> = {
       {
         paragraphs: [
           'Serra Nova foi um combate de retaguarda, não uma passagem de serra. Os jagunços de Horácio de Matos e Abílio Wolney atacaram a retaguarda da coluna em 22 de abril de 1926; as tropas federais tentaram fechar o cerco. A coluna rompeu o contato e confundiu os perseguidores com uma série de movimentos circulares, o "laço húngaro", e passou por Taiobeiras em 26 de abril.',
+          "Os homens que atacaram a retaguarda não eram tropa regular. Horácio de Matos e Abílio Wolney eram chefes sertanejos que o governo armara, pagara e incorporara como batalhões patrióticos. Seus jagunços conheciam a terra melhor que a coluna.",
           'O lugar é um marco, não uma vitória. A coluna escapou, e a decisão de emigrar já se formava no alto comando. O mapa de serra e estrada do jogo é uma abstração da manobra, não um levantamento de Serra Nova.',
         ],
       },
@@ -310,6 +312,217 @@ export const COMPENDIUM_TEXT_PT_BR: Readonly<Record<string, CompendiumText>> = {
           'Siqueira Campos levou os 18 para fora do forte e para a praia. O jogo faz dele o comandante do Prólogo porque Prestes estava ausente com tifo e porque a praia é o momento que entrou para a lenda. Os 18 são o assunto; Siqueira é a voz que os mantém juntos.',
           'A lenda diz que os dezoito morreram na praia. O registro diz que Siqueira Campos sobreviveu. As duas coisas cabem aqui: ele é a exceção que a lenda lembra e o homem que depois levou a história de 1922 para a coluna. A estrutura de comando exata dentro do forte ainda é uma questão aberta nas fontes.',
           'Ele não é um super-herói. O fracasso de 1922 é o começo da sua história, não uma vitória.',
+        ],
+      },
+    ],
+  },
+  'army-coluna': {
+    note: [
+      {
+        heading: "Viver da terra",
+        paragraphs: [
+          "Ninguém abastecia a coluna. Ela tirava comida, cavalos e roupa da terra por onde passava. O comando dava recibos de requisição e, desde o Mato Grosso, pequenos grupos a cavalo, as potreadas, saíam pelos flancos para juntar cavalos. Para uma família pobre, um boi ou um cavalo levado podia ser a ruína, e o comando chegou a saber disso. O custo para os pobres foi uma das razões do exílio em 1927.",
+          "Houve abusos, sobretudo nos primeiros meses. O comando proibiu o saque indiscriminado, expulsou quem desobedecia e puniu os piores crimes, às vezes com a morte. As tropas do governo também saquearam e estupraram, mas a propaganda oficial chamava os rebeldes de bandidos, e em muitos lugares o povo fugia antes que chegassem.",
+          "A coluna deixou também marcas de outro tipo. Queimou livros de impostos, como em Carolina, abriu cadeias e destruiu troncos, gargalheiras e palmatórias. Nunca passou de cerca de 1.500 homens, embora em Teresina o boato falasse em cinco ou dez mil. Muitos dos seus soldados eram negros, escondidos nos registros sob palavras como \"caboclo\" e \"pelo-duro\". Ninguém os contou.",
+        ],
+      },
+    ],
+  },
+  'positivismo-militar': {
+    note: [
+      {
+        heading: "Ordem e progresso",
+        paragraphs: [
+          "Comte ensinava que a sociedade melhora por leis científicas e que uma sociedade que hierarquiza as pessoas por religião, nascimento ou raça é atrasada. Na Escola Militar da Praia Vermelha, no Rio, o professor de matemática Benjamin Constant Botelho de Magalhães ensinou isso a uma geração de cadetes. O Brasil, com imperador, Igreja oficial e escravidão legal, violava todas essas leis. Os cadetes aderiram ao abolicionismo e, em 15 de novembro de 1889, deram um empurrão na monarquia que já cambaleava. A nova República separou Igreja e Estado e pôs o lema positivista na bandeira.",
+        ],
+      },
+      {
+        heading: "Soldados na política",
+        paragraphs: [
+          "A escola manteve o gosto pela rebeldia. Seus cadetes se amotinaram em 1895 e se levantaram de novo em 1904, na revolta contra a vacina obrigatória. O governo então mudou a escola para o Realengo, longe do centro. Os oficiais passaram a se ver como regeneradores da República, soldados-cidadãos com o dever de agir na política. Quando Prestes entrou no Realengo, em 1916, o velho dogma ainda pairava sobre ela. O próprio pai dele fora um cadete positivista de 1889.",
+        ],
+      },
+      {
+        heading: "A ironia",
+        paragraphs: [
+          "O ideal de Comte era uma \"sociocracia\", o governo dos virtuosos e competentes, com escola gratuita e proteção aos fracos. Não era uma democracia, e devia chegar por evolução moral, nunca pela força. Os cadetes rebeldes ignoraram isso. Cândido Rondon, não. Era aluno de Benjamin Constant, positivista ortodoxo e devoto da Religião da Humanidade, e achava que a força não produz nenhum bem social. Em 1924–1925 comandou as forças do governo contra os rebeldes no Paraná. O positivismo estava na formação dos tenentes e no seu senso de missão. Não era o programa deles.",
+        ],
+      },
+    ],
+  },
+  'tenentismo': {
+    note: [
+      {
+        heading: "Jovens oficiais contra a oligarquia",
+        paragraphs: [
+          "Os tenentes eram tenentes e capitães, a maioria recém-formada na escola militar do Realengo. Os generais não os acompanharam. O inimigo era o arranjo pelo qual Minas Gerais e São Paulo se revezavam na escolha do presidente. Em 1922 a escolha foi Artur Bernardes. Os oficiais vinham sobretudo dos estados mais fracos e das cidades, e tinham aprendido que seu dever era com a nação, não com grupos regionais. Bernardes era esses grupos. Em 1921 um jornal publicou cartas assinadas com o nome dele que insultavam o Exército e o marechal Hermes da Fonseca. Provou-se que eram falsas, mas tarde demais. Bernardes foi eleito em março de 1922. Em julho, Epitácio Pessoa mandou prender Hermes e fechar o Clube Militar, e o Forte de Copacabana se levantou.",
+        ],
+      },
+      {
+        heading: "De revolta a programa",
+        paragraphs: [
+          "Em 1922 os rebeldes sabiam quem queriam fora e pouco mais. Em 1924 exigiam a renúncia de Bernardes, um governo provisório e uma nova Constituição. Ao longo dos anos de revolta adotaram bandeiras liberais: voto secreto, moralidade política, educação. O Manifesto de Porto Nacional (1925) fala essa língua. Era uma reforma da República feita de cima, por soldados, não uma revolução social.",
+        ],
+      },
+      {
+        heading: "Como os historiadores explicam",
+        paragraphs: [
+          "Os historiadores divergem sobre o porquê. Uma corrente, desde Virgínio Santa Rosa nos anos 1930, vê ali a voz de uma classe média urbana em ascensão. Outra destaca o próprio Exército: uma instituição com queixas próprias e meios de agir. Uma terceira, com Anita Prestes entre outros, combina as duas. O livro não escolhe.",
+        ],
+      },
+      {
+        heading: "A ruptura",
+        paragraphs: [
+          "A marcha fez Prestes ver o interior que o programa tenentista deixara de fora. Em maio de 1930 ele rompeu com os tenentes. A maioria dos companheiros, Miguel Costa, Juarez Távora, João Alberto e Cordeiro de Farias, foi com Vargas na revolução de 1930.",
+        ],
+      },
+    ],
+  },
+  'o-libertador-1924': {
+    note: [
+      {
+        heading: "Uma prensa em marcha",
+        paragraphs: [
+          "O Libertador nasceu em São Luiz Gonzaga, nas Missões do Rio Grande do Sul, onde o batalhão ferroviário de Prestes se entrincheirara no fim de 1924. José Damião Pinheiro Machado o imprimiu ali. Sob a censura do governo, os jornais da época chamavam os rebeldes de sediciosos, baderneiros e bandidos. Ter um jornal próprio era um jeito de dizer outra coisa e de chamar outros à adesão.",
+          "A coluna não levava prensa. Usava as que encontrava. Em Porto Nacional, em outubro de 1925, Lourenço Moreira Lima, Pinheiro Machado e o padre Manuel de Macedo ocuparam a oficina do jornal local, o Norte de Goiás, e imprimiram o sétimo número. O oitavo saiu em Carolina, no Maranhão, e o nono em Floriano, no Piauí, no fim de 1925.",
+          "Era um jornal de guerra, não um registro. O nono número anunciou uma \"formidável vitória\" em Uruçuí sobre trincheiras legalistas. O combate fora uns tiros de longe de uma patrulha. Moreira Lima achava que a propaganda exigia isso. O jornal também contou que as estrelas do Cruzeiro do Sul ficaram vermelhas durante a luta, numa noite em que a neblina as escondia.",
+        ],
+      },
+      {
+        heading: "Quantos números?",
+        paragraphs: [
+          "As fontes não concordam. Macaulay conta seis em São Luís, o sétimo em Porto Nacional, o oitavo em Carolina e o nono em Floriano. Anita Prestes conta cinco em São Luís Gonzaga e quatro depois, nove no total. Outro relato fala em dez. O primeiro número é datado de novembro ou dezembro de 1924. O livro dá o intervalo em vez de fingir um número só.",
+        ],
+      },
+    ],
+  },
+  'manifesto-porto-nacional-1925': {
+    note: [
+      {
+        heading: "O documento",
+        paragraphs: [
+          "A coluna chegou a Porto Nacional, então a principal cidade do norte de Goiás, em meados de outubro de 1925, e ficou dez dias. Ali os três chefes lançaram um manifesto dirigido primeiro aos \"concidadãos\" e depois ao \"povo brasileiro\". A ordem das assinaturas, com Miguel Costa à frente, segue a estrutura de comando: ele era o comandante formal da divisão; Prestes e Távora eram coronéis.",
+          "O texto é curto e solene. Chama a revolta de cruzada patriótica, iniciada em 5 de julho de 1924 em São Paulo e engrossada pelos gaúchos. Afirma que a maioria dos brasileiros quer o país de volta aos princípios liberais da Constituição, pisoteada por um grupo de políticos. Admite que o povo sofre as violências que acompanham a guerra. Recusa recuar, porque isso trairia os mortos. Recusa também uma paz que encobrisse o que chama de vilipêndio das senzalas.",
+        ],
+        quote: {
+          text: "E o povo pode ficar certo de que os soldados revolucionários não enrolarão a bandeira da Liberdade enquanto se não modificar esse ambiente de despotismo e intolerância que asfixia, num delírio de opressão, os melhores anseios da consciência nacional!",
+          sourceKey: "manifesto-1925",
+          cite: "Manifesto of Porto Nacional, 19 Oct. 1925 (Marxists Internet Archive)",
+          attribution: "Miguel Costa, Luís Carlos Prestes e Juarez Távora, Porto Nacional, 19 de outubro de 1925",
+        },
+      },
+      {
+        heading: "O que ele não diz",
+        paragraphs: [
+          "O manifesto pede liberdade, Constituição e uma paz justa. Não traz um programa social. A terra, o trabalho e o sertão que a coluna atravessava não aparecem nele. Essa lacuna é o liberalismo tenentista de 1925. Prestes diria mais tarde que foi a própria marcha que lhe mostrou o quanto essas palavras chegavam pouco ao interior.",
+        ],
+      },
+    ],
+  },
+  'coluna-no-grande-sertao': {
+    note: [
+      {
+        heading: "O que Riobaldo lembra",
+        paragraphs: [
+          "Riobaldo, o velho jagunço que narra o romance, cita a coluna só de passagem. Os revoltosos vieram de Goiás e tomaram todos os animais de sela. Houve fogo na barra do Urucuia, em São Romão, onde aportou um vapor do governo com tropas da Bahia. Anos depois, conta ele, um roceiro que lavra um tronco encontra balas cravadas na madeira.",
+          "A cena combina com o que a história registra: a fome de cavalos da coluna, os batalhões patrióticos da Bahia, os rios do norte de Minas. Mas é ficção, contada por um homem de ficção.",
+        ],
+      },
+      {
+        heading: "A leitura de um crítico",
+        paragraphs: [
+          "Marcelo Mozzer (2008/2009) vai além. Observa que os rios das guerras de Riobaldo incluem o Urucuia, o Carinhanha, o Preto, o Paracatu e o São Francisco. São os mesmos rios que Jorge Amado e Abguar Bastos citam na passagem da coluna por Minas. Põe os bandos e chefes do romance ao lado dos destacamentos e comandantes da coluna. Compara as regras do romance contra o saque com as punições da coluna para quem saqueava. Pergunta se um \"Dr. Meigo de Lima\" do romance não ecoa Lourenço Moreira Lima.",
+          "O próprio Mozzer chama isso de intuição. Rosa lia muito, e a coluna foi o grande acontecimento militar da sua juventude em Minas, mas nenhum documento mostra que ele se inspirou nela. O livro guarda a ligação como possibilidade. O que é certo é menor: a marcha entrou na memória do sertão, em cantigas, no cordel e num grande romance.",
+        ],
+      },
+    ],
+  },
+  'porto-nacional': {
+    note: [
+      {
+        heading: "A cidade",
+        paragraphs: [
+          "Porto Nacional tinha menos de seis mil habitantes. Tinha bispo, um convento dominicano, uma escola de freiras e um jornal, o Norte de Goiás, impresso numa prensa gasta de 1860. O caminho para o mundo era o rio, até o Amazonas. O telégrafo mais próximo ficava em Carolina, no Maranhão, a mais de quatrocentos quilômetros.",
+        ],
+      },
+      {
+        heading: "Dez dias de outubro",
+        paragraphs: [
+          "No caminho, o prior, frei José M. Audrin, um francês, garantiu que não haveria resistência e convidou os oficiais para o convento. Os chefes lhe pediram que aconselhasse os moradores a ficar em casa, para que nenhum \"mau soldado\" pudesse saqueá-las. A maioria fugiu para o mato assim mesmo. Audrin rezou missa para a tropa e batizou os bebês das acompanhantes, e os rebeldes em geral respeitaram as casas vazias.",
+          "A coluna usou a cidade. Três de seus homens imprimiram o sétimo número de O Libertador na prensa do Norte de Goiás. Abriram a cadeia. Entre os soltos estava um velho negro que cumpria trinta anos apesar de absolvido pelo júri. Destruíram o tronco, os grilhões e as palmatórias. Deram recibo do que tomaram. Em 19 de outubro os três chefes assinaram o Manifesto de Porto Nacional.",
+        ],
+      },
+      {
+        heading: "A carta do frade",
+        paragraphs: [
+          "Depois de uma semana, Audrin pôs por escrito o que a visita estava custando. Em poucos dias, escreveu, um povo na maioria pobre fora reduzido a uma miséria quase completa. Ofereceu-se para buscar um entendimento entre o governo e os revoltosos, e eles aceitaram sem condições. A conversa não andou: para ele, entendimento era depor as armas em troca de anistia; para eles, eram concessões. Em 22 de outubro a coluna atravessou o Tocantins em balsas e partiu. O frade respeitava o ideal dos rebeldes, mas julgou nociva a passagem pelo sertão. Achava que \"Coluna da Morte\" lhes cabia melhor que \"Coluna Invicta\".",
+        ],
+      },
+    ],
+  },
+  'lourenco-moreira-lima': {
+    note: [
+      {
+        heading: "O bacharel feroz",
+        paragraphs: [
+          "Entre os oficiais do Exército, \"bacharéis\" era o desprezo reservado aos advogados, jornalistas e políticos que culpavam pelos males do país. Moreira Lima era um bacharel em quem os companheiros confiavam, e o \"feroz\" dizia isso. Passara mais de dez anos como advogado nos seringais da Amazônia e vira o trabalho semiescravo do auge da borracha. Participou das conspirações de 1922 e 1924 e ficou cinco meses preso. Estava no estado-maior de Isidoro quando a frente do Paraná caiu. Doente, com uma hérnia presa por uma funda de corda e arame, apresentou-se à coluna e marchou como secretário.",
+        ],
+      },
+      {
+        heading: "O secretário",
+        paragraphs: [
+          "Media a marcha de cada dia em léguas de 6.666 metros e anotava. Redigia O Libertador onde a coluna achasse uma prensa, e não se incomodava de imprimir uma vitória que não aconteceu. Foi por conselho dele, apoiado por Prestes, que a coluna esvaziou cadeias, arrancou troncos e correntes e queimou as palmatórias que achava nas cadeias e nas escolas. Achava que a maioria dos presos fora feita criminosa pelo sistema que combatia. Seu relato é a fonte principal de muitos episódios. É também um relato de parte, e reduziu as mulheres da coluna a cozinheiras e companheiras.",
+        ],
+      },
+      {
+        heading: "A despedida em La Gaiba",
+        paragraphs: [
+          "No exílio, na Bolívia, despediu-se dos mortos da coluna enterrados em La Gaiba. Morreu em São Paulo em 1940, antes da edição póstuma do livro.",
+        ],
+        quote: {
+          text: "Soldados da Liberdade! Dormi tranqüilos na terra estrangeira que vos acolheu com tanta nobreza, porque os vossos nomes e os vossos feitos serão eternos no coração generoso do Brasil.",
+          sourceKey: "lima-1931",
+          cite: "Marchas e combates, 3rd ed. (1979), p. 523, via Mozzer 2009, p. 257",
+          attribution: "Lourenço Moreira Lima, La Gaiba, Bolívia, 1927",
+        },
+      },
+    ],
+  },
+  'batalhoes-patrioticos-bahia': {
+    note: [
+      {
+        heading: "Os chefes e seus homens",
+        paragraphs: [
+          "No sertão, o poder era dos \"coronéis\", fazendeiros e chefes políticos que mantinham bandos de jagunços: homens de armas chamados pelo patrão, de tempo parcial, não bandidos de ofício. Esses chefes brigavam entre si tanto quanto com qualquer outro. Quando a coluna chegou, o governo federal lhes pagou, deu fardas e Mausers e os incorporou como batalhões patrióticos.",
+          "Pela conta de Anita Prestes, apoiada em Eul-Soo Pang, cerca de dez desses batalhões foram organizados na Bahia no início de 1926. Os maiores foram o de Horácio de Matos, das Lavras Diamantinas (cerca de 1.500 homens), o de Franklin Lins de Albuquerque, do médio São Francisco (cerca de 800), e os jagunços de Abílio Wolney, de Barreiras e Goiás (cerca de 1.000). Horácio de Matos levantou o seu a pedido do general Mariante, de início só para defender a Chapada Diamantina.",
+        ],
+      },
+      {
+        heading: "Por que pesaram",
+        paragraphs: [
+          "Conheciam as trilhas, a água e a caatinga, e surgiam sem aviso. Siqueira Campos os achava comandados sem teoria nenhuma, mas mais eficazes que o Exército regular. Ocavam as balas, o que causava ferimentos terríveis. O comandante da região admitiu em público que quase não tinha controle sobre eles. Em Serra Nova, em abril de 1926, os jagunços de Horácio de Matos e Abílio Wolney caíram sobre a retaguarda da coluna.",
+        ],
+      },
+    ],
+  },
+  'vivandeiras': {
+    note: [
+      {
+        heading: "A travessia",
+        paragraphs: [
+          "As mulheres chegaram aos acampamentos rebeldes das Missões no fim de 1924 e não aceitaram ficar para trás. Numa travessia de rio para Santa Catarina, Prestes mandou que ficassem na margem de cá. Elas atravessaram antes, de noite, e esperavam do outro lado quando a tropa chegou. Prestes as deixou ficar. Siqueira Campos nunca as aceitou: não admitia mulheres no seu destacamento e dificultava a vida de qualquer uma que encontrasse na trilha.",
+        ],
+      },
+      {
+        heading: "O que faziam",
+        paragraphs: [
+          "Macaulay conta mais de cinquenta, quase todas do Rio Grande do Sul, e diz que poucas portavam armas ou combatiam. As historiadoras que as estudaram depois, Maria Meire de Carvalho antes de todas, leem o registro de outro modo. As mulheres cozinhavam e cuidavam dos animais de carga. Iam à frente sob fogo buscar feridos. Colhiam informações nas cidades e, às vezes, combatiam. Os homens que escreveram a marcha, Moreira Lima à frente, as registraram como cozinheiras e companheiras, e os relatos posteriores fizeram o mesmo.",
+        ],
+      },
+      {
+        heading: "Nomes",
+        paragraphs: [
+          "O registro guarda poucos nomes. Santa Rosa deu à luz no Mato Grosso e poucas horas depois estava de novo a cavalo, com a criança no colo. Hermínia, enfermeira austríaca que entrou em São Paulo, cuidava dos feridos com uma dedicação que todos respeitavam e, depois da marcha, foi viver num sítio na Bolívia. Tia Maria, uma velha negra que estava com os rebeldes desde São Paulo, cozinhava para o estado-maior. A tradição diz que tropas do governo a prenderam e mataram no Nordeste, mas os relatos sobre sua morte divergem. A maioria das outras é conhecida só como \"Chininha\", \"Cara de Macaca\" e outros apelidos. Até o nome lhes foi tirado.",
         ],
       },
     ],

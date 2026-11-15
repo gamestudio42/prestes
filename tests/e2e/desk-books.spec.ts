@@ -102,7 +102,7 @@ test('a section ribbon opens that section at its first entry', async ({ page }) 
   await openDesk(page);
   await page.getByTestId('start-codex').click();
   await page.getByTestId('book-ribbon-events').click();
-  await expect(page.getByTestId('codex-page')).toHaveAttribute('data-entry', 'revolt-1922');
+  await expect(page.getByTestId('codex-page')).toHaveAttribute('data-entry', 'positivismo-militar');
   await page.getByTestId('book-ribbon-contents').click();
   await expect(page.getByTestId('codex-page')).toHaveAttribute('data-entry', 'contents');
 });
@@ -200,4 +200,33 @@ test('a mission with a map plays it; a chapter without one has no play action', 
   await expect
     .poll(() => page.evaluate(() => (window as unknown as { __prestes?: { frame: () => { units: unknown[] } | null } }).__prestes?.frame()?.units.length ?? 0))
     .toBe(66);
+});
+
+// enrich-texts-from-sources 4.3: the motto is the campaign book's epigraph.
+for (const [locale, motto] of [
+  ['en', 'The greatest revolutionary march in the world.'],
+  ['pt-BR', 'A maior marcha revolucionária do mundo.'],
+] as const) {
+  test(`the title spread reads the motto in ${locale}`, async ({ page }) => {
+    await openDesk(page, locale);
+    await page.getByTestId('menu-mark-campaign').click();
+    await expect(page.locator('.desk-book-epigraph')).toHaveText(motto);
+  });
+}
+
+// enrich-texts-from-sources 4.2: chapter 8 quotes Moreira Lima, with his attribution.
+test("chapter 8 quotes Moreira Lima's farewell with its attribution line", async ({ page }) => {
+  await openDesk(page);
+  await page.getByTestId('menu-mark-campaign').click();
+  await page.getByTestId('book-ribbon-contents').click();
+  await page.getByTestId('campaign-chapter-la-gaiba').click();
+  const frame = page.getByTestId('campaign-book').locator('.desk-book-frame');
+  await frame.focus();
+  for (let i = 0; i < 10 && (await page.getByTestId('book-quote').count()) === 0; i += 1) {
+    await page.keyboard.press('ArrowRight');
+  }
+  const quote = page.getByTestId('book-quote').first();
+  await expect(quote).toContainText('Soldiers of Liberty!');
+  await expect(quote.locator('.desk-quote-attribution')).toContainText('Lourenço Moreira Lima, La Gaiba');
+  await expect(quote.locator('.desk-quote-attribution')).toContainText('(translated from the Portuguese)');
 });

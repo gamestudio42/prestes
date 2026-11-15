@@ -25,7 +25,7 @@ describe('compendium', () => {
     }
     expect(
       COMPENDIUM.filter((entry) => entry.section === 'figures').map((entry) => entry.id),
-    ).toEqual(['siqueira-campos', 'luis-carlos-prestes', 'miguel-costa', 'isidoro-dias-lopes']);
+    ).toEqual(['siqueira-campos', 'luis-carlos-prestes', 'miguel-costa', 'isidoro-dias-lopes', 'lourenco-moreira-lima']);
     expect(COMPENDIUM.find((entry) => entry.id === 'revolt-1922')).toMatchObject({
       date: '1922-07-05',
       confidence: 'high',

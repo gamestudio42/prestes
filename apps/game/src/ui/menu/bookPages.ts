@@ -10,6 +10,7 @@ import {
   type CompendiumSection,
   type ImageRef,
   type Locale,
+  type Quote,
 } from '@prestes/content';
 
 /**
@@ -28,6 +29,7 @@ export type TextItem =
   | { kind: 'entry-head'; entryId: string }
   | { kind: 'heading'; text: string }
   | { kind: 'para'; text: string; continues?: boolean }
+  | { kind: 'quote'; text: string; attribution: string; translated?: boolean }
   | { kind: 'list'; items: readonly string[] }
   | { kind: 'sources'; entryId: string }
   | { kind: 'related'; ids: readonly string[] };
@@ -72,6 +74,9 @@ function cost(item: TextItem): number {
   switch (item.kind) {
     case 'para':
       return item.text.length;
+    case 'quote':
+      // Never split: the block moves whole to the next page (enrich-texts-from-sources D2).
+      return Math.ceil(item.text.length * QUOTE_WIDTH) + QUOTE_EXTRA;
     case 'list':
       return item.items.reduce((sum, text) => sum + text.length + 40, 0);
     case 'related':
@@ -80,6 +85,14 @@ function cost(item: TextItem): number {
       return ITEM_COST[item.kind];
   }
 }
+
+/**
+ * The indented, italic quote runs fewer characters to the line than a paragraph,
+ * and its margins and attribution line cost about QUOTE_EXTRA on top. Sized
+ * against the overflow e2e at 1280 x 720 with the Porto Nacional page.
+ */
+const QUOTE_WIDTH = 1.3;
+const QUOTE_EXTRA = 240;
 
 const SENTENCE = /(?<=[.!?…])\s+/;
 
@@ -166,6 +179,13 @@ export function resolve(book: Book, position: BookPosition): number {
 /** Page number shown on a page: the title page is page 1. */
 export const folio = (pageIndex: number) => pageIndex + 1;
 
+const quoteItem = (quote: Quote): TextItem => ({
+  kind: 'quote',
+  text: quote.text,
+  attribution: quote.attribution,
+  ...(quote.translated ? { translated: true } : {}),
+});
+
 // --- Compendium ---------------------------------------------------------
 
 export const COMPENDIUM_ORDER = COMPENDIUM_SECTIONS.flatMap((section) =>
@@ -212,6 +232,7 @@ export function compendiumBook(locale: Locale): Book {
     for (const section of long?.note ?? []) {
       if (section.heading) items.push({ kind: 'heading', text: section.heading });
       for (const text of section.paragraphs) items.push({ kind: 'para', text });
+      if (section.quote) items.push(quoteItem(section.quote));
     }
     const named = [body, ...(long?.note ?? []).flatMap((section) => section.paragraphs)].join(' ');
     const related = relatedEntries(entry.id, named, locale);
@@ -263,6 +284,7 @@ export function campaignBook(locale: Locale): Book {
     const items: TextItem[] = (text?.pages ?? []).flatMap((page) => [
       { kind: 'heading' as const, text: page.heading },
       ...page.paragraphs.map((paragraph) => ({ kind: 'para' as const, text: paragraph })),
+      ...(page.quote ? [quoteItem(page.quote)] : []),
     ]);
     pages.push({ kind: 'chapter-plate', anchor: chapter.id, chapterId: chapter.id });
     for (const page of flow(items)) pages.push({ kind: 'text', anchor: chapter.id, items: page });

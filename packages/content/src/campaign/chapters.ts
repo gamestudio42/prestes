@@ -6,6 +6,7 @@
 import { COMPENDIUM, COMPENDIUM_TEXT } from '../compendium';
 import { FIGURES, type ContentLabel, type HistoricalFigure } from '../figures';
 import type { Locale } from '../locales';
+import { quoteWords, type Quote } from '../quotes';
 import { isSourceKey } from '../sources';
 import { CHAPTER_TEXT_EN } from './text/en';
 import { CHAPTER_TEXT_PT_BR } from './text/pt-BR';
@@ -49,6 +50,7 @@ export const CAMPAIGN_CHAPTERS: readonly CampaignChapter[] = [
       'luis-carlos-prestes',
       'forte-copacabana',
       'revolt-1922',
+      'tenentismo',
       'mauser-7mm',
     ],
     playable: false,
@@ -92,7 +94,7 @@ export const CAMPAIGN_CHAPTERS: readonly CampaignChapter[] = [
     label: 'dramatized',
     sourceRefs: ['macaulay-1974', 'castro-2022', 'blanc-2024'],
     image: { entryId: 'map-fazenda', slot: 'hero-photo' },
-    links: ['isidoro-dias-lopes', 'sao-paulo-1924', 'map-fazenda', 'mauser-7mm'],
+    links: ['isidoro-dias-lopes', 'sao-paulo-1924', 'positivismo-militar', 'map-fazenda', 'mauser-7mm'],
     playable: false,
   },
   {
@@ -113,8 +115,16 @@ export const CAMPAIGN_CHAPTERS: readonly CampaignChapter[] = [
     dateEnd: '1926-04-26',
     commanderId: 'luis-carlos-prestes',
     label: 'dramatized',
-    sourceRefs: ['macaulay-1974', 'blanc-2024', 'anita-1991', 'nascimento-2026', 'almg-2026'],
-    links: ['luis-carlos-prestes', 'serra-nova', 'mauser-7mm'],
+    sourceRefs: ['macaulay-1974', 'blanc-2024', 'anita-1991', 'nascimento-2026', 'almg-2026', 'manifesto-1925', 'mozzer-2009'],
+    links: [
+      'luis-carlos-prestes',
+      'porto-nacional',
+      'manifesto-porto-nacional-1925',
+      'serra-nova',
+      'batalhoes-patrioticos-bahia',
+      'coluna-no-grande-sertao',
+      'mauser-7mm',
+    ],
     playable: false,
   },
   {
@@ -135,8 +145,8 @@ export const CAMPAIGN_CHAPTERS: readonly CampaignChapter[] = [
     date: '1927-07-05',
     commanderId: 'luis-carlos-prestes',
     label: 'dramatized',
-    sourceRefs: ['macaulay-1974', 'anita-1991', 'blanc-2024'],
-    links: ['luis-carlos-prestes', 'la-gaiba'],
+    sourceRefs: ['macaulay-1974', 'anita-1991', 'blanc-2024', 'lima-1931'],
+    links: ['luis-carlos-prestes', 'la-gaiba', 'lourenco-moreira-lima'],
     playable: false,
   },
 ];
@@ -145,6 +155,8 @@ export const CAMPAIGN_CHAPTERS: readonly CampaignChapter[] = [
 export interface ChapterPage {
   heading: string;
   paragraphs: readonly string[];
+  /** An attributed quotation shown after the paragraphs (enrich-texts-from-sources D2). */
+  quote?: Quote;
 }
 
 /** A chapter's long, localized text (design D12). */
@@ -175,7 +187,7 @@ const words = (page: ChapterPage) =>
   page.paragraphs.reduce(
     (sum, paragraph) => sum + paragraph.split(/\s+/).filter(Boolean).length,
     0,
-  );
+  ) + (page.quote ? quoteWords(page.quote) : 0);
 
 /**
  * Chapter validation: commander, sources, links, image, text in every locale,

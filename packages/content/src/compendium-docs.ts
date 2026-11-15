@@ -152,7 +152,7 @@ export const DOC_ENTRY_META: Readonly<Record<string, DocEntryMeta>> = {
   'luis-carlos-prestes': {
     label: 'historical',
     confidence: 'high',
-    sourceRefs: ['macaulay-1974', 'blanc-2024', 'amado-1942', 'anita-1991', 'cpdoc-prestes'],
+    sourceRefs: ['macaulay-1974', 'blanc-2024', 'amado-1942', 'anita-1991', 'cpdoc-prestes', 'historiafm-2024'],
     images: [
       {
         slot: 'portrait-1922',
@@ -247,11 +247,22 @@ export const DOC_ENTRY_META: Readonly<Record<string, DocEntryMeta>> = {
   'serra-nova': {
     label: 'historical',
     confidence: 'medium',
-    sourceRefs: ['macaulay-1974', 'blanc-2024', 'anita-1991', 'nascimento-2026', 'almg-2026'],
+    sourceRefs: ['macaulay-1974', 'blanc-2024', 'anita-1991', 'nascimento-2026', 'almg-2026', 'mozzer-2009'],
   },
   'siqueira-campos': {
     label: 'historical',
     confidence: 'high',
     sourceRefs: ['macaulay-1974', 'helio-1922', 'castro-2022'],
   },
+  // enrich-texts-from-sources 3.2-3.3, approved by the owner on 2026-11-12.
+  'positivismo-militar': { label: 'historical', confidence: 'high', sourceRefs: ['macaulay-1974', 'historiafm-2024'] },
+  'tenentismo': { label: 'historical', confidence: 'high', sourceRefs: ['macaulay-1974', 'historiafm-2024', 'anita-1991'] },
+  'o-libertador-1924': { label: 'historical', confidence: 'medium', sourceRefs: ['libertador-1924', 'macaulay-1974', 'anita-1991', 'historiafm-2024'] },
+  'manifesto-porto-nacional-1925': { label: 'historical', confidence: 'high', sourceRefs: ['manifesto-1925', 'macaulay-1974'] },
+  'coluna-no-grande-sertao': { label: 'dramatized', confidence: 'low', sourceRefs: ['mozzer-2009', 'rosa-1956'] },
+  'porto-nacional': { label: 'historical', confidence: 'high', sourceRefs: ['macaulay-1974', 'manifesto-1925'] },
+  'lourenco-moreira-lima': { label: 'historical', confidence: 'medium', sourceRefs: ['macaulay-1974', 'lima-1931', 'mozzer-2009'] },
+  'batalhoes-patrioticos-bahia': { label: 'historical', confidence: 'medium', sourceRefs: ['macaulay-1974', 'anita-1991', 'mozzer-2009'] },
+  'vivandeiras': { label: 'historical', confidence: 'medium', sourceRefs: ['macaulay-1974', 'historiafm-2024', 'mozzer-2009', 'carvalho-2001'] },
+  'army-coluna': { label: 'historical', confidence: 'high', sourceRefs: ['macaulay-1974', 'historiafm-2024', 'mozzer-2009', 'blanc-2024'] },
 };

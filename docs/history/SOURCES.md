@@ -43,7 +43,32 @@ Hope" myth. Not a factual authority. No verbatim reproduction.
 - `lima-1931` — Lourenço Moreira Lima, _Marchas e combates: a Columna invicta e
   a Revolução de Outubro_ (Pelotas: Livraria do Globo, 1931); later edition
   _A Coluna Prestes: marchas e combates_ (São Paulo: Afa-Omega, 1979).
-  Status: pending; search for a public-domain scan.
+  Status: pending; search for a public-domain scan. Rights: public domain
+  (Moreira Lima died on 5 Sep. 1940; Brazilian copyright runs 70 years from
+  the following 1 January). Quoted so far only at second hand: the La Gaiba
+  farewell, from the 3rd ed. (1979), p. 523, as quoted in `mozzer-2009`,
+  p. 257.
+- `manifesto-1925` — Miguel Costa, Luís Carlos Prestes and Juarez Távora,
+  "Manifesto da Coluna Prestes" (Porto Nacional, 19 Oct. 1925). Transcription
+  on the Marxists Internet Archive,
+  <https://www.marxists.org/portugues/prestes/1925/10/19.htm> (source given
+  there: Franklin Martins, _Conexão Política_; transcription by Fernando A. S.
+  Araújo; included 8 Nov. 2010), read through the Internet Archive copy on
+  12 Nov. 2026 because the site does not open from this machine. Tier 2
+  primary document. Status: full. Rights: free licence — the page states
+  that copying and distribution are free under the GNU Free Documentation
+  License. If that notice proves wrong, the quotation falls back to a
+  paraphrase.
+- `libertador-1924` — _O Libertador_, the column's newspaper, first printed at
+  São Luiz Gonzaga (RS) at the end of 1924, later issues along the march.
+  Editors named in Lima (facsimile, p. 25, as cited by the Portuguese
+  Wikipédia article on Lourenço Moreira Lima): Moreira Lima, José D. Pinheiro
+  Machado and Manoel de Macedo. No issue has been read. Status:
+  citation-only. Finding-level evidence for the issue count: Anita Prestes,
+  interview, _Brasil de Fato_, 7 Sep. 2024 (five at São Luís Gonzaga, four
+  later, mainly in Maranhão and Piauí); _Brasil Cultura_ photo caption
+  (2009; ten in all); `historiafm-2024` (five at São Luiz Gonzaga). The
+  divergence is logged in `TIMELINE.md`.
 - `joao-alberto-1954` — João Alberto Lins de Barros, _Memórias de um
   revolucionário_ (Rio de Janeiro: Civilização Brasileira, 1954); _A marcha da
   coluna_ (Rio de Janeiro: Biblioteca do Exército, 1997). Status: citation-only.
@@ -51,6 +76,23 @@ Hope" myth. Not a factual authority. No verbatim reproduction.
   Brasileira de 1924_ (São Paulo: O Combate, 1928). Status: citation-only.
 
 ## Academic and regional studies
+
+- `mozzer-2009` — Marcelo Luiz Cesar Mozzer, "Presença da Coluna Prestes nas
+  veredas do Grande sertão", _Contexto_ (Ufes) 15/16 (2008/2009): 246–259.
+  Status: full (owner's PDF, not committed). Tier 3: a literary reading of
+  Guimarães Rosa that the author himself calls an intuition; used for what
+  it reports from Rosa, Anita Prestes, Veiga, Amado and Lima, with their page
+  numbers, never as proof that Rosa drew on the column.
+- `rosa-1956` — João Guimarães Rosa, _Grande sertão: veredas_ (1956; Rio de
+  Janeiro: Nova Fronteira, 36th ed., 1986). Status: citation-only, through
+  `mozzer-2009`. Fiction; cited only for what the novel says. Paraphrase only.
+- `historiafm-2024` — Icles Rodrigues (host) with Amilcar Guidolim Vitor,
+  "Coluna Prestes: a maior marcha militar da história", _História FM_ ep. 190
+  (Leitura ObrigaHistória, 15 Dec. 2024),
+  <https://www.youtube.com/watch?v=cGJq1BT6SPQ>. Status: full, through
+  YouTube's automatic Portuguese transcript (names are error prone and are
+  checked against a written source). Tier 3: a historian's oral synthesis;
+  detail and counterpoint, never the only source for a date.
 
 - `anita-1991` — Anita Leocádia Prestes, _A Coluna Prestes_ (3rd ed.; São Paulo:
   Brasiliense, 1991). Status: citation-only.
@@ -102,6 +144,13 @@ Hope" myth. Not a factual authority. No verbatim reproduction.
 - `bandeira-2013` — Renato Luís Bandeira, _A Coluna Prestes na Bahia: trilhas,
   combates e desafios_ (Salvador: Edição do Autor, 2013). Status: citation-only.
 
+## Not yet consulted
+
+- `superoitocine-2012` — "Coluna Prestes | DOC", superoitocine (YouTube,
+  16 Nov. 2012, 17:56), <https://www.youtube.com/watch?v=d9a3Pf3LFFg>. Status:
+  not consulted — no description, and the captions could not be read. No
+  entry may cite it until it is reviewed.
+
 ## Finding aids
 
 - `mvcp-portal` — Portal Anticolonialismo / Memorial Virtual Coluna Prestes
@@ -133,6 +182,54 @@ Hope" myth. Not a factual authority. No verbatim reproduction.
   <https://www.revolucaocultural.com.br/post/sc-cidade-de-descanso-comemora-os-100-anos-da-passagem-da-coluna-prestes-por-suas-terras>.
   Accessed 6 Nov. 2026. Tier 4: local memory and date confirmation for Ramada
   (3 Jan. 1925); not a page-level authority.
+
+## Rights and consultation register
+
+Machine-read by `pnpm check:content` and compared with `SOURCE_RIGHTS` in
+`packages/content/src/sources.ts`. Only `public-domain` and `free-licence`
+sources may be quoted verbatim in the game; a `not-consulted` source may not
+be cited.
+
+| Key | Rights | Licence | Consulted |
+| --- | --- | --- | --- |
+| `macaulay-1974` | copyrighted | — | full |
+| `blanc-2024` | copyrighted | — | partial |
+| `amado-1942` | copyrighted | — | citation-only |
+| `lima-1931` | public-domain | — | pending |
+| `joao-alberto-1954` | unknown | — | citation-only |
+| `tavora-1928` | copyrighted | — | citation-only |
+| `anita-1991` | copyrighted | — | citation-only |
+| `helio-1922` | copyrighted | — | citation-only |
+| `helio-1926` | copyrighted | — | citation-only |
+| `meirelles-1995` | copyrighted | — | citation-only |
+| `brum-1994` | copyrighted | — | citation-only |
+| `castro-2016` | copyrighted | — | citation-only |
+| `castro-2022` | copyrighted | — | citation-only |
+| `cohen-2007` | copyrighted | — | citation-only |
+| `campoi-2001` | copyrighted | — | pending |
+| `carvalho-2001` | copyrighted | — | pending |
+| `tecchio-2021` | copyrighted | — | citation-only |
+| `silva-2022` | copyrighted | — | citation-only |
+| `vitor-2011` | copyrighted | — | citation-only |
+| `xavier-2011` | copyrighted | — | citation-only |
+| `teles-2008` | copyrighted | — | citation-only |
+| `castro-chico-2008` | copyrighted | — | citation-only |
+| `ferreira-1980` | copyrighted | — | citation-only |
+| `otaviano-1979` | copyrighted | — | citation-only |
+| `bandeira-2013` | copyrighted | — | citation-only |
+| `nascimento-2026` | copyrighted | — | citation-only |
+| `almg-2026` | copyrighted | — | full |
+| `fapesp-2007` | copyrighted | — | full |
+| `revolucao-cultural-2025` | copyrighted | — | full |
+| `cpdoc-coluna` | copyrighted | — | full |
+| `cpdoc-prestes` | copyrighted | — | full |
+| `mvcp-portal` | copyrighted | — | partial |
+| `manifesto-1925` | free-licence | GNU FDL | full |
+| `libertador-1924` | copyrighted | — | citation-only |
+| `mozzer-2009` | copyrighted | — | full |
+| `rosa-1956` | copyrighted | — | citation-only |
+| `historiafm-2024` | copyrighted | — | full |
+| `superoitocine-2012` | unknown | — | not-consulted |
 
 ## Rules
 

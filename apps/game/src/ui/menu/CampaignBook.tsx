@@ -98,6 +98,17 @@ export function CampaignBook({ locale, open, onStartSkirmish, onOpenEntry, onPla
         </h4>
       );
     }
+    if (item.kind === 'quote') {
+      return (
+        <blockquote key={key} className="desk-quote" data-testid="book-quote">
+          <p className="desk-quote-text">{item.text}</p>
+          <footer className="desk-quote-attribution">
+            {item.attribution}
+            {item.translated && <span className="desk-quote-note">{t('book.quoteTranslated')}</span>}
+          </footer>
+        </blockquote>
+      );
+    }
     if (item.kind === 'para') {
       return (
         <p key={key} className={`desk-text ${item.continues ? 'continues' : ''}`}>

@@ -64,6 +64,7 @@ two independent sources and a recorded label.
 | [`book/`](book/)                                 | Long-form dramatized chapters, EN source + PT-BR.  |
 | [`compendium/`](compendium/)                     | Historical entries and image placeholders.         |
 | [`compendium/images.md`](compendium/images.md)   | The image, photo and illustration manifest.        |
+| [`compendium/IMAGE_SURVEY.md`](compendium/IMAGE_SURVEY.md) | Detailed image audit and candidate list for both books. |
 
 ## Campaign book and compendium
 

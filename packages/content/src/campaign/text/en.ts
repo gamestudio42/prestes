@@ -1,5 +1,6 @@
 // Imported from docs/campaign/book and docs/campaign/missions; keep in step with the docs.
-// The prose is the project's own dramatization; no source text is reproduced.
+// The prose is the project's own dramatization; no source text is reproduced, apart from
+// attributed quotations of free texts (enrich-texts-from-sources D2).
 import type { ChapterText } from '../chapters';
 
 export const CHAPTER_TEXT_EN: Readonly<Record<string, ChapterText>> = {
@@ -201,6 +202,19 @@ export const CHAPTER_TEXT_EN: Readonly<Record<string, ChapterText>> = {
       'Luís Carlos Prestes, chief of staff, screening the column through the Minas Gerais highlands.',
     pages: [
       {
+        heading: "Porto Nacional",
+        paragraphs: [
+          "October 1925. Six months after the Paraná and fifteen after São Paulo, the column reached Porto Nacional, on the Tocantins. The townspeople fled into the bush; the friars stayed. In the Dominican monastery the chiefs had time, for once, to put in writing what they were marching for. On 19 October Miguel Costa, Prestes and Juarez Távora signed a manifesto to the nation. It asked for liberty and the Constitution, and it did not yet speak of the land. Six months later the same men were in Minas, with the ring closing.",
+        ],
+        quote: {
+          text: "And the people may be sure that the revolutionary soldiers will not furl the flag of Liberty until this climate of despotism and intolerance changes, which in a delirium of oppression stifles the best hopes of the national conscience!",
+          sourceKey: "manifesto-1925",
+          cite: "Manifesto of Porto Nacional, 19 Oct. 1925 (Marxists Internet Archive)",
+          attribution: "Miguel Costa, Luís Carlos Prestes and Juarez Távora, Porto Nacional, 19 October 1925",
+          translated: true,
+        },
+      },
+      {
         heading: 'The Rearguard',
         paragraphs: [
           'April 1926. The column had come down from the Chapada Diamantina and into northern Minas Gerais. The men were tired in a way that sleep did not fix. The jagunços of Horácio de Matos and Abílio Wolney were on the rear, and the federal troops were trying to close the roads ahead.',
@@ -219,6 +233,7 @@ export const CHAPTER_TEXT_EN: Readonly<Record<string, ChapterText>> = {
         paragraphs: [
           'Serra Nova was not a victory. It was the moment the column chose to keep moving when the ring was almost closed. The decision to emigrate was already forming in the high command; the march north would become a march to the border.',
           'The march was not a triumph. It was a decision repeated every day.',
+          "Thirty years later, Guimarães Rosa gave the march a line in a novel. His old jagunço remembers Prestes's soldiers passing through the Minas backlands, and a farmer, years on, splitting a tree and finding bullets in the wood. It is fiction, and it does not name this place. But the sertão kept the march the way the tree kept the lead.",
         ],
       },
     ],
@@ -284,6 +299,13 @@ export const CHAPTER_TEXT_EN: Readonly<Record<string, ChapterText>> = {
         paragraphs: [
           'The exiles dedicated a monument. It was not a victory monument; it was a stone for the march, for the dead, for the towns and the rivers and the men who had not come. On the granite they cut: “Glory to the Bandeirantes of Freedom, 1924–1927.” The ceremony was small, and the words mattered because there was nothing else left to build.',
         ],
+        quote: {
+          text: "Soldiers of Liberty! Sleep in peace in the foreign land that took you in so nobly, for your names and your deeds will live for ever in the generous heart of Brazil.",
+          sourceKey: "lima-1931",
+          cite: "Marchas e combates, 3rd ed. (1979), p. 523, via Mozzer 2009, p. 257",
+          attribution: "Lourenço Moreira Lima, La Gaiba, Bolivia, 1927",
+          translated: true,
+        },
       },
       {
         heading: 'The Memory',

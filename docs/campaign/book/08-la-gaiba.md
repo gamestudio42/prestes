@@ -7,6 +7,7 @@ sourceRefs:
   - macaulay-1974
   - anita-1991
   - blanc-2024
+  - lima-1931
 ---
 
 # Chapter 8 - La Gaiba
@@ -15,7 +16,8 @@ sourceRefs:
 > the granite reads “Glory to the Bandeirantes of Freedom, 1924–1927.” The 5 July
 > 1927 date is a secondary tradition; the prose, the ceremony and the choices are
 > a dramatization. **Tone reference:** Jorge Amado, _O Cavaleiro da Esperança_.
-> No text is reproduced; the prose is original.
+> The prose is original apart from one attributed quotation of Moreira Lima
+> (public domain).
 
 ## English
 
@@ -33,6 +35,12 @@ for the march, for the dead, for the towns and the rivers and the men who had no
 come. On the granite they cut: “Glory to the Bandeirantes of Freedom, 1924–1927.”
 The ceremony was small, and the words mattered because there was nothing else
 left to build.
+
+> Soldiers of Liberty! Sleep in peace in the foreign land that took you in so nobly, for your names and your deeds will live for ever in the generous heart of Brazil.
+>
+> — Lourenço Moreira Lima, La Gaiba, Bolivia, 1927
+
+(Translated from the Portuguese. Cite: Marchas e combates, 3rd ed. (1979), p. 523, via Mozzer 2009, p. 257.)
 
 ### The Memory
 
@@ -56,6 +64,12 @@ pedra para a marcha, para os mortos, para as cidades e os rios e os homens que
 não vieram. No granito, gravaram: “Glória aos Bandeirantes da Liberdade,
 1924–1927.” A cerimônia foi pequena, e as palavras importavam porque não havia
 mais nada para construir.
+
+> Soldados da Liberdade! Dormi tranqüilos na terra estrangeira que vos acolheu com tanta nobreza, porque os vossos nomes e os vossos feitos serão eternos no coração generoso do Brasil.
+>
+> — Lourenço Moreira Lima, La Gaiba, Bolívia, 1927
+
+(Cite: Marchas e combates, 3rd ed. (1979), p. 523, via Mozzer 2009, p. 257.)
 
 ### A Memória
 

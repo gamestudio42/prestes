@@ -18,7 +18,19 @@ export {
   type MissionMetadata,
 } from './figures';
 export { CONTENT_LABELS, validateCodexEntry, type CodexEntry } from './codex';
-export { SOURCE_KEYS, isSourceKey, type SourceKey } from './sources';
+export {
+  SOURCE_KEYS,
+  SOURCE_RIGHTS,
+  isQuotable,
+  isSourceKey,
+  parseSourceRightsTable,
+  validateSourceRights,
+  type Consultation,
+  type SourceKey,
+  type SourceRights,
+  type SourceRightsEntry,
+  type SourceRightsRow,
+} from './sources';
 export { parseNameRegister, validateNameRegister, type NameRow, type NameStatus } from './name-register';
 
 export {
@@ -59,3 +71,5 @@ export {
   type ChapterPage,
   type ChapterText,
 } from './campaign/chapters';
+
+export { QUOTE_WORD_LIMIT, quoteWords, validateQuotes, type Quote } from './quotes';
