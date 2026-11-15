@@ -12,6 +12,7 @@ import {
   type BattleRosters,
   type Frame,
   type MapDocument,
+  type LocalizedText,
 } from '@prestes/shared';
 import { loadPlaytest } from './editor/persistence';
 import type { CameraBand, SceneView } from '@prestes/view3d';
@@ -100,6 +101,14 @@ export function App() {
     setOrderNotice(reason);
     if (orderNoticeTimer.current !== null) window.clearTimeout(orderNoticeTimer.current);
     orderNoticeTimer.current = window.setTimeout(() => setOrderNotice(null), 3000);
+  };
+  // add-withdrawal-exits 7.2: a section that got out, announced for a few seconds.
+  const [exitNotice, setExitNotice] = useState<{ command: boolean; exit: LocalizedText } | null>(null);
+  const exitNoticeTimer = useRef<number | null>(null);
+  const showExitNotice = (notice: { command: boolean; exit: LocalizedText }): void => {
+    setExitNotice(notice);
+    if (exitNoticeTimer.current !== null) window.clearTimeout(exitNoticeTimer.current);
+    exitNoticeTimer.current = window.setTimeout(() => setExitNotice(null), 4000);
   };
   const showDeploymentRefusal = (reason: DeploymentRefusal): void => {
     setDeploymentRefusal(reason);
@@ -248,6 +257,10 @@ export function App() {
         // add-deployment-phase 3.1: a refused deployment order says why, for a few seconds.
         if (event.type === 'command_rejected' && isDeploymentRefusal(event.reason)) showDeploymentRefusal(event.reason);
         else if (event.type === 'command_rejected') showOrderNotice(event.reason);
+        if (event.type === 'section_exited') {
+          const exit = sceneRef.current?.mapWithdrawal()?.exits.find((entry) => entry.id === event.exitId);
+          if (exit) showExitNotice({ command: event.command, exit: exit.name });
+        }
         // add-battle-events 3.1: an event's cards pause the battle until the player closes them.
         if (event.type === 'battle_event_fired' && event.cards && event.cards.length > 0) {
           const cards = event.cards.map((card) => ({ eventId: event.eventId, ...card }));
@@ -512,6 +525,7 @@ export function App() {
         onResetDeployment={handleResetDeployment}
         deploymentRefusal={deploymentRefusal}
         orderNotice={orderNotice}
+        exitNotice={exitNotice}
         onCenterSquad={handleCenterSquad}
         onLeave={handleBackToMenu}
         />

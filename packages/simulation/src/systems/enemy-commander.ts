@@ -756,7 +756,7 @@ function blockExit(ctx: SimContext, own: Map<number, MutableUnit[]>, plans: Map<
  * add-withdrawal-exits D5: a column man the legalists know of near an exit
  * draws the attacking (and idle holding) sections onto him.
  */
-function turnOnExit(ctx: SimContext, own: Map<number, MutableUnit[]>, plans: Map<number, SectionPlan>, tick: number, events: SimEvent[]): void {
+export function turnOnExit(ctx: SimContext, own: Map<number, MutableUnit[]>, plans: Map<number, SectionPlan>, tick: number, events: SimEvent[]): void {
   const exits = ctx.withdrawal!.withdrawal.exits;
   const near = knownEnemies(ctx, 'legalist', tick)
     .map((entry) => {

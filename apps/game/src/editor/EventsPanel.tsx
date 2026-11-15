@@ -5,6 +5,7 @@ import {
   MAX_ARRIVING_SECTIONS,
   MAX_EVENT_ACTIONS,
   MAX_EVENT_DELAY,
+  MAX_EXIT_SECTIONS,
   MAX_TRIGGER_TIME,
   POSTURE_SECONDS,
   SECTION_TYPE_IDS,
@@ -22,7 +23,7 @@ import { addEvent, deleteEvent, deletePlace, duplicateEvent, eventDependents, mo
 type T = (key: string, values?: Readonly<Record<string, string | number>>) => string;
 
 const SIDES: readonly EventSide[] = ['column', 'legalist'];
-const TRIGGERS: readonly EventTrigger['kind'][] = ['time', 'objective', 'area', 'losses', 'after'];
+const TRIGGERS: readonly EventTrigger['kind'][] = ['time', 'objective', 'area', 'losses', 'after', 'exited'];
 const ACTIONS: readonly EventAction['kind'][] = ['troops', 'posture', 'card'];
 
 /** Seconds as m:ss. */
@@ -54,6 +55,8 @@ export function defaultTrigger(kind: EventTrigger['kind'], map: EditableMap, eve
       return { kind, side: 'column', percent: 30 };
     case 'after':
       return { kind, event: (map.events ?? []).find((event) => event.id !== eventId)?.id ?? 0 };
+    case 'exited':
+      return { kind, sections: 1 };
   }
 }
 
@@ -84,7 +87,9 @@ export function eventSummary(event: BattleEvent, map: EditableMap, t: T): string
   else if (trigger.kind === 'objective') when = t(`editor.events.summary.objective.${trigger.change}`, { objective: objectiveName(trigger.objective), side: sideName(trigger.side, t) });
   else if (trigger.kind === 'area') when = t('editor.events.summary.area', { side: sideName(trigger.side, t), area: placeName(trigger.area) });
   else if (trigger.kind === 'losses') when = t('editor.events.summary.losses', { side: sideName(trigger.side, t), percent: trigger.percent });
-  else when = t('editor.events.summary.after', { event: trigger.event });
+  else if (trigger.kind === 'after') when = t('editor.events.summary.after', { event: trigger.event });
+  else if (trigger.command) when = t('editor.events.summary.exited.command');
+  else when = t('editor.events.summary.exited', { count: trigger.sections });
   if (event.delay > 0) when += ` ${t('editor.events.summary.delay', { time: formatClock(event.delay) })}`;
   const what = event.actions.map((action) => t(`editor.events.action.${action.kind}`)).join(', ') || t('editor.events.summary.nothing');
   return `${when} → ${what}`;
@@ -250,7 +255,8 @@ function EventForm({ event, map, onChange, t }: { event: BattleEvent; map: Edita
         <legend>{t('editor.events.trigger')}</legend>
         <select data-testid="event-trigger" aria-label={t('editor.events.trigger')} value={trigger?.kind ?? ''} onChange={(entry) => setTrigger(entry.target.value ? defaultTrigger(entry.target.value as EventTrigger['kind'], map, event.id) : null)}>
           {!trigger ? <option value="">{t('editor.events.choose')}</option> : null}
-          {TRIGGERS.map((kind) => (
+          {/* add-withdrawal-exits D6: "exited" only while the map has exits (or the event already uses it). */}
+          {TRIGGERS.filter((kind) => kind !== 'exited' || (map.withdrawal?.exits.length ?? 0) > 0 || trigger?.kind === 'exited').map((kind) => (
             <option key={kind} value={kind}>{t(`editor.events.trigger.${kind}`)}</option>
           ))}
         </select>
@@ -286,6 +292,23 @@ function EventForm({ event, map, onChange, t }: { event: BattleEvent; map: Edita
                 if (Number.isFinite(value)) setTrigger({ ...trigger, percent: Math.max(LOSSES_PERCENT.min, Math.min(LOSSES_PERCENT.max, Math.round(value / LOSSES_PERCENT.step) * LOSSES_PERCENT.step)) });
               }} />
             </label>
+          </>
+        ) : null}
+        {trigger?.kind === 'exited' ? (
+          <>
+            <label>
+              <input type="checkbox" data-testid="event-exited-command" checked={trigger.command === true} onChange={(entry) => setTrigger(entry.target.checked ? { kind: 'exited', command: true } : { kind: 'exited', sections: 1 })} />
+              {t('editor.events.exitedCommand')}
+            </label>
+            {!trigger.command ? (
+              <label>
+                {t('editor.events.exitedSections')}
+                <input type="number" data-testid="event-exited-sections" min={1} max={MAX_EXIT_SECTIONS} step={1} value={trigger.sections} onChange={(entry) => {
+                  const value = Number(entry.target.value);
+                  if (Number.isFinite(value)) setTrigger({ kind: 'exited', sections: Math.max(1, Math.min(MAX_EXIT_SECTIONS, Math.round(value))) });
+                }} />
+              </label>
+            ) : null}
           </>
         ) : null}
         {trigger?.kind === 'after' ? (

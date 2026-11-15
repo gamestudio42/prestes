@@ -287,6 +287,15 @@ export function GameCanvas({
     });
   }, [locale, client, trainingField]);
 
+  // add-withdrawal-exits 7.1: the exits on the ground, named in the player's language.
+  useEffect(() => {
+    const scene = sceneRef.current;
+    const exits = scene?.mapWithdrawal()?.exits ?? [];
+    if (!scene || exits.length === 0) return;
+    const language: Locale = locale === 'pt-BR' ? 'pt-BR' : 'en';
+    scene.setExitNames(new Map(exits.map((exit) => [exit.id, exit.name[language] || exit.name.en || exit.name['pt-BR']])));
+  }, [locale, client]);
+
   const focusKey = cameraFocus?.key ?? null;
   useEffect(() => {
     if (cameraFocus) {

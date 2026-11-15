@@ -13,7 +13,7 @@ import { SimulationEngine } from '../src/engine';
 import { updateOutcome } from '../src/systems/combat';
 import type { SimContext } from '../src/systems/context';
 import { createScriptedState, updateBattleEvents } from '../src/systems/battle-events';
-import { createBattleMemory } from '../src/systems/enemy-commander';
+import { createBattleMemory, turnOnExit } from '../src/systems/enemy-commander';
 import type { MutableUnit } from '../src/systems/model';
 import { ALL_HELD_TICKS, type ObjectiveState } from '../src/systems/objectives';
 import { createWithdrawalState, updateWithdrawal } from '../src/systems/withdrawal';
@@ -226,6 +226,17 @@ describe('withdrawal: the commander cuts the exit', () => {
       turned = [...engine.battle.exitChase.values()].some((id) => ids.includes(id)) && frame.units.some((unit) => unit.faction === 'legalist' && unit.order === 'attack');
     }
     expect(turned).toBe(true);
+  });
+
+  it('an unseen column at the exit is not chased (fog-limited knowledge)', () => {
+    const legalist = man(50, { faction: 'legalist', squadId: 9, x: -150, y: 100 });
+    const ctx = bareContext([man(1, { ...INSIDE, x: -175 }), legalist], { sections: 1, command: false }, {
+      fog: true,
+      vision: { seen: { column: new Set<number>(), legalist: new Set<number>() }, lastSeen: { column: new Map(), legalist: new Map() } },
+    });
+    const plans = new Map([[9, 'attack' as const]]);
+    turnOnExit(ctx, new Map([[9, [legalist]]]), plans, 400, []);
+    expect(ctx.battle.exitChase.size).toBe(0);
   });
 
   it('a hold posture keeps the block back until it ends', () => {

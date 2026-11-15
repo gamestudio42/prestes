@@ -39,6 +39,8 @@ export function BattleEndPanel({ locale, frame, onRestart, onMenu, onBackToEdito
     translate(locale, key, values);
   const end = frame.events.find((event) => event.type === 'outcome');
   const decidedBy = end?.type === 'outcome' ? end.decidedBy : undefined;
+  // add-withdrawal-exits 3.2: the men and sections that got out, whatever the result.
+  const withdrawal = (end?.type === 'outcome' ? end.withdrawal : undefined) ?? frame.withdrawal;
   const objectives = frame.objectives ?? [];
   const values =
     (end?.type === 'outcome' ? end.values : undefined) ??
@@ -91,6 +93,14 @@ export function BattleEndPanel({ locale, frame, onRestart, onMenu, onBackToEdito
               <dd data-testid="battle-end-decided">{t(`battle.end.decided.${decidedBy}` as MessageKey)}</dd>
             </>
           ) : null}
+          {withdrawal ? (
+            <>
+              <dt>{t('battle.end.withdrawal')}</dt>
+              <dd data-testid="battle-end-withdrawal">
+                {t('battle.end.withdrawalValue', { men: withdrawal.menOut, out: withdrawal.sectionsOut, sections: withdrawal.sections, required: withdrawal.required })}
+              </dd>
+            </>
+          ) : null}
           {objectives.length > 0 ? (
             <>
               <dt>{t('battle.end.value')}</dt>
@@ -107,6 +117,7 @@ export function BattleEndPanel({ locale, frame, onRestart, onMenu, onBackToEdito
               <th scope="col">{t('battle.end.dead')}</th>
               <th scope="col">{t('battle.end.wounded')}</th>
               <th scope="col">{t('battle.end.routed')}</th>
+              {withdrawal ? <th scope="col">{t('battle.end.exited')}</th> : null}
             </tr>
           </thead>
           <tbody>
@@ -116,6 +127,7 @@ export function BattleEndPanel({ locale, frame, onRestart, onMenu, onBackToEdito
                 <td>{side.dead}</td>
                 <td>{side.wounded}</td>
                 <td>{side.routed}</td>
+                {withdrawal ? <td data-testid={`battle-end-${faction}-exited`}>{faction === 'column' ? withdrawal.menOut : '—'}</td> : null}
               </tr>
             ))}
           </tbody>

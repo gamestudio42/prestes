@@ -54,7 +54,9 @@ export type ToolId =
   | 'objective'
   /** add-battle-events 4.1: entry points on the edge and trigger areas. */
   | 'entry-point'
-  | 'event-area';
+  | 'event-area'
+  /** add-withdrawal-exits 6.1: the column's exits. */
+  | 'exit';
 
 export interface ToolSettings {
   size: number;
@@ -120,7 +122,9 @@ export type SelectionItem =
   /** add-battle-events 4.1: an event place, or one corner of a trigger area. */
   | { kind: 'event-place'; id: number; point?: number }
   /** add-battle-events 4.1: an event in the Events panel (its places and objectives are highlighted). */
-  | { kind: 'event'; id: number };
+  | { kind: 'event'; id: number }
+  /** add-withdrawal-exits 6.1: an exit, or one of its corners. */
+  | { kind: 'exit'; id: number; point?: number };
 
 /** add-map-objectives 1.3: a new objective's area is this circle (m), as a 16-gon. */
 export const OBJECTIVE_RADIUS = 16;
@@ -416,6 +420,10 @@ export class EditorStore {
       }
       case 'event':
         return (this.map.events ?? []).some((event) => event.id === item.id);
+      case 'exit': {
+        const exit = (this.map.withdrawal?.exits ?? []).find((entry) => entry.id === item.id);
+        return exit !== undefined && (item.point === undefined || item.point < exit.polygon.length);
+      }
     }
   }
 

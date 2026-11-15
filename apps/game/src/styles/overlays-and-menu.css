@@ -515,6 +515,18 @@
   color: #9fb4d0;
 }
 
+/* add-withdrawal-exits 7.1: an exit's name over it on the field. */
+.exit-label {
+  padding: 3px 8px 4px;
+  border: 2px solid currentColor;
+  background: rgba(23, 20, 15, 0.82);
+  color: #9fe0b4;
+  font: 600 12px/1.2 var(--px-font);
+  white-space: nowrap;
+  transform: translate(-50%, calc(-100% - 12px));
+  pointer-events: none;
+}
+
 /* add-deployment-phase 3.1: the deployment phase's banner, under the top bar. */
 .deployment-banner {
   position: absolute;

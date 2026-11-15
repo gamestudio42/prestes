@@ -183,6 +183,15 @@
   display: none;
 }
 
+/* add-withdrawal-exits 7.2: sections out against the requirement, beside the clock. */
+.app.game .hud-top .withdrawal-progress {
+  padding: 0 8px;
+  color: #9fe0b4;
+  font-size: 15px;
+  white-space: nowrap;
+  text-shadow: 2px 2px 0 var(--kit-ink);
+}
+
 .app.game .hud-top .hud-clock {
   min-width: 80px;
   padding: 0 8px;
