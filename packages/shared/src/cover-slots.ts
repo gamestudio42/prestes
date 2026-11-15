@@ -21,6 +21,8 @@ export interface CoverSlot {
 const SLOT_OFFSET = 1.0;
 const LINEAR_SPACING = 1.2;
 const BUILDING_SPACING = 2.0;
+/** A log, a cart or a boat: a man every 1.5 m of a face (a 6 m log shelters four a side). */
+const PROP_SPACING = 1.5;
 const LOW_COVER_HEIGHT = 1.2;
 const MAX_SLOTS = 64;
 /** Metres a cover slot may lie closer to the threat than the soldier's formation spot. */
@@ -92,12 +94,14 @@ export function coverSlots(cover: CoverPoint): CoverSlot[] {
       local.push({ x, y: 0, guard: null });
     }
   } else if (cover.kind === 'barrel') {
-    local.push(
-      { x: 0, y: cover.halfDepth + SLOT_OFFSET, guard: { x: 0, y: -1 } },
-      { x: 0, y: -(cover.halfDepth + SLOT_OFFSET), guard: { x: 0, y: 1 } },
-      { x: cover.halfWidth + SLOT_OFFSET, y: 0, guard: { x: -1, y: 0 } },
-      { x: -(cover.halfWidth + SLOT_OFFSET), y: 0, guard: { x: 1, y: 0 } },
-    );
+    // A man every 1.5 m along each face (the owner, 2026-11-15: a 6 m log
+    // shelters four on one side, not one); a barrel or a crate keeps one a face.
+    for (const x of spread(cover.halfWidth * 2, PROP_SPACING)) {
+      local.push({ x, y: cover.halfDepth + SLOT_OFFSET, guard: { x: 0, y: -1 } }, { x, y: -(cover.halfDepth + SLOT_OFFSET), guard: { x: 0, y: 1 } });
+    }
+    for (const y of spread(cover.halfDepth * 2, PROP_SPACING)) {
+      local.push({ x: cover.halfWidth + SLOT_OFFSET, y, guard: { x: -1, y: 0 } }, { x: -(cover.halfWidth + SLOT_OFFSET), y, guard: { x: 1, y: 0 } });
+    }
   } else if (cover.kind === 'building') {
     const cx = cover.halfWidth + SLOT_OFFSET;
     const cy = cover.halfDepth + SLOT_OFFSET;
@@ -117,6 +121,13 @@ export function coverSlots(cover: CoverPoint): CoverSlot[] {
         { x, y: cover.halfDepth + SLOT_OFFSET, guard: { x: 0, y: -1 } },
         { x, y: -(cover.halfDepth + SLOT_OFFSET), guard: { x: 0, y: 1 } },
       );
+    }
+    // A thick block (a boulder, a car or a lorry lying along y) also shelters
+    // men along its other faces; a thin wall keeps its two (2026-11-15).
+    if (cover.halfDepth * 2 >= LINEAR_SPACING * 1.5) {
+      for (const y of spread(cover.halfDepth * 2, LINEAR_SPACING)) {
+        local.push({ x: cover.halfWidth + SLOT_OFFSET, y, guard: { x: -1, y: 0 } }, { x: -(cover.halfWidth + SLOT_OFFSET), y, guard: { x: 1, y: 0 } });
+      }
     }
   }
 

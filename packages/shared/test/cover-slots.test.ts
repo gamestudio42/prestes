@@ -37,6 +37,13 @@ describe('cover slots', () => {
     expect(covered).toBeGreaterThan(0.3);
   });
 
+  it('shelters four men along one side of a 6 m log, one a face of a barrel', () => {
+    const log: CoverPoint = { ...wall, id: 3, kind: 'barrel', halfWidth: 3, halfDepth: 0.3, height: 0.6 };
+    const north = coverSlots(log).filter((slot) => slot.y > log.y + 0.3);
+    expect(north).toHaveLength(4);
+    expect(coverSlots({ ...log, halfWidth: 0.35, halfDepth: 0.35 })).toHaveLength(4);
+  });
+
   it('keeps every bootcamp slot outside blocking footprints', () => {
     const slots = allCoverSlots(BOOTCAMP_COVERS);
     expect(slots.every((slot) => !isPointBlockedByCovers(slot.x, slot.y, BOOTCAMP_COVERS, 0.8))).toBe(true);
