@@ -452,6 +452,22 @@
   width: min(440px, 100%);
 }
 
+/* A mission's epilogue: the legend and the record, in the book's voice. */
+.battle-end-epilogue {
+  max-height: 34vh;
+  overflow-y: auto;
+  padding: 8px 10px;
+  border-left: 2px solid #8a6a3a;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #e6d8b8;
+  font-style: italic;
+}
+
+.battle-end-epilogue p {
+  margin: 0 0 8px;
+}
+
 .battle-end-losses {
   width: 100%;
   border-collapse: collapse;

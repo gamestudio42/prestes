@@ -76,6 +76,7 @@ import { editorBridge, type EditorBridge } from './test-bridge';
 import { EditorViewport, PROTECTION_COLORS, type CursorInfo } from './viewport';
 import { useThumbnails } from './thumbnails';
 import { EnemyForces } from './EnemyForces';
+import { ColumnForce } from './ColumnForce';
 // add-battle-events 4.3: the Events panel loads when first opened (the editor chunk stays in its budget).
 const EventsPanel = lazy(() => import('./EventsPanel').then((module) => ({ default: module.EventsPanel })));
 import { Compass } from '../ui/hud/Compass';
@@ -1497,6 +1498,9 @@ function MapDialog(props: {
     props.onPreviewLight(light, next);
   };
   const [enemyForces, setEnemyForces] = useState<Roster[]>(mode === 'new' ? [] : (map.enemyForces ?? []).map((roster) => ({ sections: [...roster.sections] })));
+  const [columnForce, setColumnForce] = useState<Roster | undefined>(mode === 'new' || !map.columnForce ? undefined : { sections: [...map.columnForce.sections] });
+  const [epiloguePt, setEpiloguePt] = useState(mode === 'new' ? '' : (map.epilogue?.['pt-BR'] ?? ''));
+  const [epilogueEn, setEpilogueEn] = useState(mode === 'new' ? '' : (map.epilogue?.en ?? ''));
   const valid = isValidMapId(id);
   const outside = mode === 'properties' && size !== map.size ? resizeEditableMap(map, size).outside : [];
 
@@ -1517,6 +1521,9 @@ function MapDialog(props: {
       north: north === 0 ? undefined : north,
       // An empty preset is dropped; none at all leaves the field out (the default roster).
       enemyForces: enemyForces.some((roster) => roster.sections.length > 0) ? enemyForces.filter((roster) => roster.sections.length > 0) : undefined,
+      columnForce,
+      // Both texts empty: the field is left out.
+      epilogue: epiloguePt.trim() || epilogueEn.trim() ? { 'pt-BR': epiloguePt.trim(), en: epilogueEn.trim() } : undefined,
     };
     if (mode === 'new') {
       const created = createEditableMap({ id, size, baseMaterial, palette, use: slot.use, mission: slot.use === 'campaign' ? slot.mission : undefined });
@@ -1642,7 +1649,20 @@ function MapDialog(props: {
           </label>
           <p className="editor-hint">{t('editor.north.hint')}</p>
         </fieldset>
+        <ColumnForce force={columnForce} onChange={setColumnForce} t={t} />
         <EnemyForces presets={enemyForces} onChange={setEnemyForces} t={t} />
+        <fieldset className="editor-enemy" data-testid="map-epilogue">
+          <legend>{t('editor.epilogue.title')}</legend>
+          <p className="editor-hint">{t('editor.epilogue.hint')}</p>
+          <label>
+            {t('editor.epilogue.pt')}
+            <textarea data-testid="map-epilogue-pt" value={epiloguePt} rows={4} onChange={(event) => setEpiloguePt(event.target.value)} />
+          </label>
+          <label>
+            {t('editor.epilogue.en')}
+            <textarea data-testid="map-epilogue-en" value={epilogueEn} rows={4} onChange={(event) => setEpilogueEn(event.target.value)} />
+          </label>
+        </fieldset>
         <div className="editor-row">
           <button type="button" onClick={props.onClose}>{t('editor.map.close')}</button>
           <button type="submit" className="editor-primary" data-testid="map-submit" disabled={!valid}>{t(mode === 'new' ? 'editor.map.create' : 'editor.map.apply')}</button>

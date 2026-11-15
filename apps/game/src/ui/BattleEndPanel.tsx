@@ -1,5 +1,5 @@
 import { translate, type Locale, type MessageKey } from '@prestes/content';
-import type { Frame, UnitSnapshot } from '@prestes/shared';
+import type { Frame, LocalizedText, UnitSnapshot } from '@prestes/shared';
 import { Restart } from './icons';
 
 export interface BattleEndPanelProps {
@@ -9,6 +9,8 @@ export interface BattleEndPanelProps {
   onMenu: () => void;
   /** add-map-editor: a playtest returns to the editor. */
   onBackToEditor?: () => void;
+  /** The map's epilogue (a mission's legend and record), under the result. */
+  epilogue?: LocalizedText;
 }
 
 function formatTicks(ticks: number): string {
@@ -32,7 +34,7 @@ function losses(units: readonly UnitSnapshot[], faction: 'column' | 'legalist'):
 }
 
 /** The 3 vs 3 battle's end (battle-feel-3v3): result, time, losses, and with objectives how it was decided. */
-export function BattleEndPanel({ locale, frame, onRestart, onMenu, onBackToEditor }: BattleEndPanelProps) {
+export function BattleEndPanel({ locale, frame, onRestart, onMenu, onBackToEditor, epilogue }: BattleEndPanelProps) {
   const t = (key: MessageKey, values?: Readonly<Record<string, string | number>>) =>
     translate(locale, key, values);
   const end = frame.events.find((event) => event.type === 'outcome');
@@ -73,6 +75,13 @@ export function BattleEndPanel({ locale, frame, onRestart, onMenu, onBackToEdito
           </strong>
           <p>{t(textKey)}</p>
         </div>
+        {epilogue ? (
+          <div className="battle-end-epilogue" data-testid="battle-end-epilogue">
+            {(epilogue[locale] || epilogue.en || epilogue['pt-BR']).split('\n').filter((line) => line.trim()).map((line, index) => (
+              <p key={index}>{line}</p>
+            ))}
+          </div>
+        ) : null}
         <dl className="training-debrief-grid">
           <dt>{t('battle.end.time')}</dt>
           <dd data-testid="battle-end-time">{formatTicks(frame.tick)}</dd>

@@ -418,6 +418,9 @@ export function App() {
     return null;
   }
 
+  // The map's epilogue (a mission's legend and record) for the end panel.
+  const battleEpilogue = (playtestRef.current?.id === battleMapId ? playtestRef.current : documentsRef.current.get(battleMapId))?.epilogue;
+
   return (
     <div className="app game" data-testid="app" data-tick={frame?.tick ?? 0}>
       <GameCanvas
@@ -565,6 +568,7 @@ export function App() {
           onRestart={handleStartBattle3v3}
           onMenu={handleBackToMenu}
           {...(playtest ? { onBackToEditor: handleBackToEditor } : {})}
+          {...(battleEpilogue ? { epilogue: battleEpilogue } : {})}
         />
       ) : null}
       {playtest && !hudHidden ? (
