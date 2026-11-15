@@ -928,6 +928,13 @@ function placeholderProp(name: string): THREE.Group | null {
         }
       }
       return group;
+    case 'construction-pipes':
+      // Placeholder until props.glb is loaded: three concrete pipes.
+      for (const [y, z] of [[-0.52, 0.5], [0.52, 0.5], [0, 1.38]] as const) {
+        const pipe = placed(group, unitCylinder, PALETTE.stone, 0, z, y, [0.5, 2, 0.5]);
+        pipe.rotation.z = Math.PI / 2;
+      }
+      return group;
     case 'fallen-log': {
       const log = placed(group, unitCylinder, PALETTE.bark, 0, 0.32, 0, [0.32, 6, 0.32]);
       log.rotation.z = Math.PI / 2;

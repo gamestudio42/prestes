@@ -332,6 +332,9 @@ export const CATALOG_OBJECTS: readonly CatalogObject[] = [
   town('fuel-tins', 0.6, 0.4, 0.8, WOOD),
   town('street-sign', 0.1, 0.1, 2.2, THIN),
   town('kiosk', 1.3, 1.3, 3.2, WOOD),
+  // Concrete drain pipes of a street works (Copacabana, 1922: four of the 18
+  // sheltered in them, Macaulay ch. I); concrete covers like stone.
+  town('construction-pipes', 1, 1.05, 1.9, SOLID_STONE),
   // revise-buildings-and-stone 5.2 (D11): the Column's camp and train
   // (Macaulay page numbers; "generic" a generic period type). Canvas gives no
   // cover; boxes, barrels, carts and saddles cover like a barrel; the gun's

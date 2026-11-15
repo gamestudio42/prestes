@@ -450,12 +450,27 @@ def iron_gate():
     b.to_object("iron-gate")
 
 
+def construction_pipes():
+    """Concrete drain pipes (manilhas) of a street works, two on the ground and
+    one on top, wedged with timber; the open ends dark (Copacabana, 1922:
+    four of the 18 sheltered in them, Macaulay ch. I)."""
+    b = MeshBuilder("environment")
+    for y, z in ((-0.52, 0.5), (0.52, 0.5), (0.0, 1.38)):
+        b.cylinder((0, 0, 0), 0.5, 2.0, "stone", sides=10, top="ink", matrix=placed(0, y, z, rx=math.pi / 2, rz=ALONG_X))
+        for x in (-0.88, 0.88):
+            b.cylinder((0, 0, 0), 0.52, 0.12, "granite", sides=10, top="ink", matrix=placed(x, y, z, rx=math.pi / 2, rz=ALONG_X))
+    for x in (-0.6, 0.6):
+        for y in (-1.02, 1.02):
+            b.box((x, y, 0.12), (0.14, 0.12, 0.24), "timber")
+    b.to_object("construction-pipes")
+
+
 BUILDERS = [
     dugout_canoe, motor_launch, river_raft, river_barge, horse_boat, canoa_de_tolda, jangada, boat_overturned,
     net_line, fish_trap, landing_stage, mooring_post,
     ox_cart, tractor, plough, cane_press, coffee_sacks, hen_house, pigsty, cart_wheel, millstone,
     motor_car, lorry, square_bench, fountain, market_stall, fuel_tins, street_sign, kiosk,
-    farm_gate, rail_gate, yard_gate, iron_gate,
+    farm_gate, rail_gate, yard_gate, iron_gate, construction_pipes,
 ]
 
 
