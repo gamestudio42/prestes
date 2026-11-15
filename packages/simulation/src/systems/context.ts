@@ -18,6 +18,7 @@ import type { FerryState } from './ferry';
 import type { Garrison } from './garrison';
 import type { Assault } from './assault';
 import type { ScriptedState } from './battle-events';
+import type { WithdrawalState } from './withdrawal';
 
 /**
  * The mutable simulation state every system reads and writes. The engine
@@ -82,4 +83,6 @@ export interface SimContext {
   readonly scripted?: ScriptedState;
   /** add-battle-events 2.5: the battle is the editor's playtest (events can be fired by hand). */
   readonly playtest?: boolean;
+  /** add-withdrawal-exits: the map's exits and the men who left by them (maps with a withdrawal). */
+  readonly withdrawal?: WithdrawalState;
 }

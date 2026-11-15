@@ -90,6 +90,7 @@ import {
 import { applyCommand, applyQueuedOrders, queuedOrdersSnapshot } from './systems/commands';
 import { createBattleMemory, updateBattleFlow } from './systems/enemy-commander';
 import { createObjectives, objectiveHashState, objectiveSnapshot, updateObjectives, type ObjectiveState } from './systems/objectives';
+import { createWithdrawalState, updateWithdrawal, withdrawalHashState, withdrawalSnapshot, type WithdrawalState } from './systems/withdrawal';
 import { createScriptedState, scriptedHashState, scriptedSnapshot, updateBattleEvents, type ScriptedState } from './systems/battle-events';
 import { createVisionState, seenSnapshot, updateVision } from './systems/vision';
 import { createFerries, ferrySnapshot, headingForLanding, heldByFerry, updateFerries } from './systems/ferry';
@@ -224,6 +225,7 @@ export class SimulationEngine implements SimContext {
   gunPools?: Record<number, number>;
   /** add-battle-events: the map's events and their state (battle maps with events only). */
   readonly scripted?: ScriptedState;
+  readonly withdrawal?: WithdrawalState;
   /** add-battle-events 2.5: the editor's playtest. */
   readonly playtest: boolean;
   fog: boolean;
@@ -281,6 +283,7 @@ export class SimulationEngine implements SimContext {
     this.timeLimitTicks = options.timeLimitTicks ?? DEFAULT_TIME_LIMIT;
     this.playtest = options.playtest === true;
     if (this.battleMap?.events && this.battleMap.events.length > 0) this.scripted = createScriptedState(this.battleMap.events, this.battleMap.eventPlaces);
+    this.withdrawal = createWithdrawalState(this.battleMap?.withdrawal);
     this.positionById = positions.byId;
     this.selectTerrain();
     this.rosters = this.battleMap ? resolveRosters(this.battleMap, options.rosters, this.rng) : undefined;
@@ -491,6 +494,8 @@ export class SimulationEngine implements SimContext {
       if (this.positions.length > 0) updateAssaults(this, nextTick, events);
       separateUnits(this);
       if (this.battleMap?.height.kind === 'field') keepOutOfDeepWater(this);
+      // add-withdrawal-exits D2: men in an exit leave before anyone looks or shoots.
+      if (this.withdrawal) updateWithdrawal(this, nextTick, events);
       // Vision before targets and fire: a side shoots with what it knows.
       updateVision(this, nextTick);
 
@@ -587,7 +592,8 @@ export class SimulationEngine implements SimContext {
       ...(this.garrisons.size > 0 ? { garrisons: garrisonSnapshot(this) } : {}),
       ...(this.assaults.size > 0 ? { assaults: assaultSnapshot(this) } : {}),
       ...(this.objectives.length > 0 ? { objectives: objectiveSnapshot(this) } : {}),
-      ...(this.objectives.length > 0
+      ...(this.withdrawal ? { withdrawal: withdrawalSnapshot(this.withdrawal) } : {}),
+      ...(this.objectives.length > 0 || this.withdrawal
         ? { clock: { tick: this.tickCount - this.battleStartTick, limit: this.timeLimitTicks } }
         : {}),
       ...(this.orderQueues.size > 0 ? { queuedOrders: queuedOrdersSnapshot(this) } : {}),
@@ -683,6 +689,8 @@ export class SimulationEngine implements SimContext {
         ...(this.orderQueues.size > 0 ? { orderQueues: [...this.orderQueues] } : {}),
         // add-battle-events D3: hashed only on maps with events, so other maps hash as before.
         ...(this.scripted ? { scripted: scriptedHashState(this.scripted) } : {}),
+        // add-withdrawal-exits D8: hashed only on maps with a withdrawal.
+        ...(this.withdrawal ? { withdrawal: withdrawalHashState(this.withdrawal) } : {}),
       }),
     );
   }

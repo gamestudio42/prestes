@@ -1,4 +1,4 @@
-import { MAP_BOUNDS, bridgePolygon, findPath, vegetationAt } from '@prestes/shared';
+import { MAP_BOUNDS, bridgePolygon, exitCentre, findPath, nearestExitPoint, vegetationAt } from '@prestes/shared';
 import type { Command, SimEvent, Vec2, VegetationKind } from '@prestes/shared';
 import type { SimContext } from './context';
 import type { MutableUnit } from './model';
@@ -15,7 +15,7 @@ import { arrivalSettled, fallBackPoint, type ActivePosture } from './battle-even
  */
 
 /** A withdrawn section that has stopped rallies: it defends where it stands and is never pulled back again. */
-export type SectionPlan = 'hold' | 'attack' | 'withdraw' | 'rallied' | 'garrison' | 'hold-objective' | 'arriving';
+export type SectionPlan = 'hold' | 'attack' | 'withdraw' | 'rallied' | 'garrison' | 'hold-objective' | 'arriving' | 'block-exit';
 
 export interface BattleMemory {
   /** Each side's deployment line (centroid at the start): a fact of the map both sides know. */
@@ -50,6 +50,8 @@ export interface BattleMemory {
   retake: { objectiveId: number; tick: number } | null;
   /** add-map-objectives D4: each objective's owner as the commander last saw it (ownership is public). */
   readonly objectiveOwners: Map<number, 'neutral' | 'column' | 'legalist'>;
+  /** add-withdrawal-exits D5: the column man each section was turned on near an exit, by squad id. */
+  readonly exitChase: Map<number, number>;
 }
 
 export function createBattleMemory(): BattleMemory {
@@ -69,6 +71,7 @@ export function createBattleMemory(): BattleMemory {
     objectiveGuards: new Map(),
     retake: null,
     objectiveOwners: new Map(),
+    exitChase: new Map(),
   };
 }
 
@@ -400,7 +403,9 @@ function fallBack(ctx: SimContext, tick: number, events: SimEvent[]): void {
     if (ctx.battle.fellBack.has(side)) continue;
     const start = ctx.battle.strength.get(side) ?? 0;
     const men = ctx.units.filter((unit) => unit.faction === side && fit(unit));
-    if (start === 0 || men.length === 0 || men.length >= start * BROKEN_SHARE) continue;
+    // add-withdrawal-exits D3: men who got out are saved, not lost: they count as fit here.
+    const saved = side === 'column' ? (ctx.withdrawal?.exited.length ?? 0) : 0;
+    if (start === 0 || men.length === 0 || men.length + saved >= start * BROKEN_SHARE) continue;
     if (tick - ctx.battle.lastContact[side] < FALL_BACK_TICKS) continue;
     ctx.battle.fellBack.add(side);
     events.push({ type: 'side_fell_back', tick, side });
@@ -581,6 +586,8 @@ function commandLegalists(ctx: SimContext, tick: number, events: SimEvent[]): vo
     commandPosture(ctx, own, posture, tick, events);
     return;
   }
+  // add-withdrawal-exits D5: block the column's way out before anything else.
+  if (ctx.withdrawal) blockExit(ctx, own, plans, tick, events);
   for (const [squadId, section] of own) {
     // garrison-and-assault 3.4: a section going in or assaulting keeps to it;
     // one inside holds it, and leaves it only when it is lost.
@@ -627,6 +634,14 @@ function commandLegalists(ctx: SimContext, tick: number, events: SimEvent[]): vo
       continue;
     }
     const pinned = section.filter((unit) => unit.state === 'pinned' || unit.state === 'panicked').length;
+    // add-withdrawal-exits D5: a blocking section holds the route; a broken one withdraws.
+    if (plan === 'block-exit') {
+      if (section.length < BROKEN_SECTION || pinned * 2 > section.length) {
+        issue(ctx, { type: 'withdraw', unitIds: ids }, tick, events);
+        plans.set(squadId, 'withdraw');
+      }
+      continue;
+    }
     // add-map-objectives D4: a section holding an objective stays on it; a
     // broken one withdraws and another takes the objective over.
     if (plan === 'hold-objective') {
@@ -656,6 +671,7 @@ function commandLegalists(ctx: SimContext, tick: number, events: SimEvent[]): vo
 
   // add-map-objectives D4: one section on each objective of value 2 or more it
   // holds, then retake one the player took, then the last three minutes.
+  if (ctx.withdrawal) turnOnExit(ctx, own, plans, tick, events);
   assignObjectiveGuards(ctx, own, plans, tick, events);
   retakeObjective(ctx, own, plans, tick, events);
 
@@ -681,6 +697,89 @@ function commandLegalists(ctx: SimContext, tick: number, events: SimEvent[]): vo
   }
 
   commitLastMinutes(ctx, own, plans, tick, events);
+}
+
+/** add-withdrawal-exits D5: the commander turns on a column man known this close (m) to an exit. */
+const EXIT_WATCH = 60;
+/** add-withdrawal-exits D5: the block stands this far along the route from the column to its exit. */
+const BLOCK_SHARE = 0.6;
+
+/** The point a share of the way along a path. */
+function alongPath(points: readonly Vec2[], share: number): Vec2 {
+  const lengths = points.slice(1).map((point, index) => Math.sqrt(distanceTo(points[index]!, point)));
+  let left = lengths.reduce((sum, length) => sum + length, 0) * share;
+  for (let index = 0; index < lengths.length; index += 1) {
+    const length = lengths[index]!;
+    if (left <= length) {
+      const a = points[index]!;
+      const b = points[index + 1]!;
+      const t = length === 0 ? 0 : left / length;
+      return { x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t };
+    }
+    left -= length;
+  }
+  return points[points.length - 1]!;
+}
+
+/**
+ * add-withdrawal-exits D5: one section (two with four or more) defends a point
+ * on the route from the column's deployment to the exit nearest it; the exits
+ * and the deployment are facts of the map. Re-applied whenever none blocks.
+ */
+function blockExit(ctx: SimContext, own: Map<number, MutableUnit[]>, plans: Map<number, SectionPlan>, tick: number, events: SimEvent[]): void {
+  const exits = ctx.withdrawal!.withdrawal.exits;
+  const start = ctx.battle.deployment.get('column');
+  if (!start || exits.length === 0) return;
+  const wanted = own.size >= 4 ? 2 : 1;
+  const blocking = [...own.keys()].filter((squadId) => plans.get(squadId) === 'block-exit').length;
+  if (blocking >= wanted) return;
+  const exit = [...exits].sort((a, b) => distanceTo(start, exitCentre(a)) - distanceTo(start, exitCentre(b)) || a.id - b.id)[0]!;
+  const end = nearestExitPoint(exit, start);
+  const path = findPath(start, end, ctx.covers);
+  const point = alongPath(path.length > 0 ? [start, ...path] : [start, end], BLOCK_SHARE);
+  const to = { x: Math.round(point.x), y: Math.round(point.y) };
+  const free = [...own]
+    .filter(([squadId, section]) => {
+      const plan = plans.get(squadId);
+      if (plan === 'garrison' || plan === 'withdraw' || plan === 'arriving' || plan === 'block-exit') return false;
+      return section.every((unit) => unit.garrison === undefined && unit.entering === undefined && unit.assaulting === undefined);
+    })
+    .sort((left, right) => distanceTo(centroid(left[1]), to) - distanceTo(centroid(right[1]), to) || left[0] - right[0]);
+  for (const [squadId, section] of free.slice(0, wanted - blocking)) {
+    issue(ctx, { type: 'order', order: 'defend', unitIds: section.map((unit) => unit.id), to, facing: facingFrom(to, start) }, tick, events);
+    plans.set(squadId, 'block-exit');
+    ctx.battle.objectiveGuards.delete(squadId);
+  }
+}
+
+/**
+ * add-withdrawal-exits D5: a column man the legalists know of near an exit
+ * draws the attacking (and idle holding) sections onto him.
+ */
+function turnOnExit(ctx: SimContext, own: Map<number, MutableUnit[]>, plans: Map<number, SectionPlan>, tick: number, events: SimEvent[]): void {
+  const exits = ctx.withdrawal!.withdrawal.exits;
+  const near = knownEnemies(ctx, 'legalist', tick)
+    .map((entry) => {
+      const distance = Math.sqrt(Math.min(...exits.map((exit) => distanceTo(entry, nearestExitPoint(exit, entry)))));
+      return { entry, distance };
+    })
+    .filter(({ distance }) => distance <= EXIT_WATCH)
+    .sort((a, b) => a.distance - b.distance || a.entry.unit.id - b.entry.unit.id);
+  if (near.length === 0) return;
+  const marked = new Set(near.map(({ entry }) => entry.unit.id));
+  const target = near[0]!.entry.unit;
+  for (const [squadId, section] of own) {
+    const plan = plans.get(squadId);
+    if (plan !== 'attack' && plan !== 'hold' && plan !== 'rallied') continue;
+    if (section.some((unit) => unit.garrison !== undefined || unit.entering !== undefined || unit.assaulting !== undefined)) continue;
+    // Already sent after one of them and still on it: left to it.
+    const chased = ctx.battle.exitChase.get(squadId);
+    if (chased !== undefined && marked.has(chased) && section.some((unit) => unit.currentOrder === 'attack')) continue;
+    issue(ctx, { type: 'attack', unitIds: section.map((unit) => unit.id), targetId: target.id }, tick, events);
+    ctx.battle.exitChase.set(squadId, target.id);
+    plans.set(squadId, 'attack');
+    ctx.battle.objectiveGuards.delete(squadId);
+  }
 }
 
 /** add-battle-events D5: metres between the sections of a fall-back line. */
@@ -825,7 +924,7 @@ function retakeObjective(
   const pick = [...own]
     .filter(([squadId]) => {
       const plan = plans.get(squadId);
-      return plan !== 'garrison' && plan !== 'hold-objective' && plan !== 'withdraw';
+      return plan !== 'garrison' && plan !== 'hold-objective' && plan !== 'withdraw' && plan !== 'block-exit';
     })
     .filter(([, section]) =>
       section.every((unit) => unit.garrison === undefined && unit.entering === undefined && unit.assaulting === undefined),
@@ -865,7 +964,7 @@ function commitLastMinutes(
   if (values.legalist >= values.column) return;
   const inside = ([, section]: [number, MutableUnit[]]) =>
     section.some((unit) => unit.garrison !== undefined || unit.entering !== undefined || unit.assaulting !== undefined);
-  const notAttacking = [...own].filter(([squadId]) => plans.get(squadId) !== 'attack');
+  const notAttacking = [...own].filter(([squadId]) => plans.get(squadId) !== 'attack' && plans.get(squadId) !== 'block-exit');
   if (notAttacking.length === 0) return;
   // One section stays back: a section inside a position if there is one (it
   // cannot be ordered out mid-fight), else the weakest mobile one.

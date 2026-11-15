@@ -14,6 +14,7 @@ import { CONCEALED_CONTACT_RADIUS, CONTACT_RADIUS, AMBUSH_RADIUS, AWARENESS_RANG
 import type { MutableUnit } from './model';
 import type { SimContext } from './context';
 import { ALL_HELD_TICKS, objectiveValues } from './objectives';
+import { requirementMet, withdrawalSnapshot } from './withdrawal';
 import { nearestEnemy, nearestKnownEnemyAt } from './geometry';
 import { woundAccuracyFactor } from './casualties';
 import { markUnderFire, shooterOf } from './fire-reaction';
@@ -912,6 +913,52 @@ export function updateOutcome(ctx: SimContext, tick: number, events: SimEvent[])
   let decidedBy: DecidedBy | undefined;
   const columnBroken = ctx.battle.fellBack.has('column');
   const legalistBroken = ctx.battle.fellBack.has('legalist');
+  const withdrawal = ctx.withdrawal;
+
+  // add-withdrawal-exits D3: on a map with a withdrawal, getting out decides
+  // for the column; its objective victories do not apply.
+  if (withdrawal) {
+    if (requirementMet(withdrawal)) {
+      next = 'victory';
+      decidedBy = 'withdrawal';
+    } else if (columnBroken) {
+      next = 'defeat';
+      decidedBy = 'broken';
+    } else if (!columnAlive) {
+      next = 'defeat';
+      decidedBy = withdrawal.exited.length > 0 ? 'cut-off' : 'annihilation';
+    } else if (legalistBroken) {
+      next = 'victory';
+      decidedBy = 'broken';
+    } else if (!ctx.opposition) {
+      next = 'playing';
+    } else if (!legalistAlive) {
+      next = 'victory';
+      decidedBy = 'annihilation';
+    } else if (
+      hasObjectives &&
+      ctx.allHeldSince.legalist !== null &&
+      tick - ctx.allHeldSince.legalist + 1 >= ALL_HELD_TICKS
+    ) {
+      next = 'defeat';
+      decidedBy = 'all-objectives';
+    } else if (tick - ctx.battleStartTick >= ctx.timeLimitTicks) {
+      next = 'defeat';
+      decidedBy = 'cut-off';
+    }
+    if (next !== ctx.outcome) {
+      ctx.outcome = next;
+      events.push({
+        type: 'outcome',
+        tick,
+        outcome: next,
+        ...(decidedBy ? { decidedBy } : {}),
+        ...(values ? { values } : {}),
+        withdrawal: withdrawalSnapshot(withdrawal),
+      });
+    }
+    return;
+  }
 
   // A side that fell back off the field is the broken one; reporting
   // `broken` keeps the reason when its last fit men also rout (annihilation
