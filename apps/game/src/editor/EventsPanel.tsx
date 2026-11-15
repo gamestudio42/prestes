@@ -1,6 +1,10 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import {
   ARMIES,
+  BOMBARD_RATE,
+  BOMBARD_SECONDS,
+  BOMBARD_SPREAD,
+  GUN_IDS,
   LOSSES_PERCENT,
   MAX_ARRIVING_SECTIONS,
   MAX_EVENT_ACTIONS,
@@ -23,7 +27,7 @@ type T = (key: string, values?: Readonly<Record<string, string | number>>) => st
 
 const SIDES: readonly EventSide[] = ['column', 'legalist'];
 const TRIGGERS: readonly EventTrigger['kind'][] = ['time', 'objective', 'area', 'losses', 'after'];
-const ACTIONS: readonly EventAction['kind'][] = ['troops', 'posture', 'card'];
+const ACTIONS: readonly EventAction['kind'][] = ['troops', 'posture', 'card', 'bombardment'];
 
 /** Seconds as m:ss. */
 export function formatClock(seconds: number): string {
@@ -66,6 +70,11 @@ export function defaultAction(kind: EventAction['kind'], map: EditableMap): Even
       return { kind, posture: 'offensive', until: { seconds: 120 } };
     case 'card':
       return { kind, title: { en: '', 'pt-BR': '' }, text: { en: '', 'pt-BR': '' } };
+    case 'bombardment': {
+      // add-artillery-bombardment 4.1: the government's field guns on the map's first area (or the enemy's positions).
+      const area = (map.eventPlaces ?? []).find((place) => place.kind === 'area');
+      return { kind, side: 'legalist', gun: 'field-75', target: area ? { kind: 'area', area: area.id } : { kind: 'enemy' }, perMinute: 6, spread: 25, until: { seconds: 120 } };
+    }
   }
 }
 
@@ -86,7 +95,20 @@ export function eventSummary(event: BattleEvent, map: EditableMap, t: T): string
   else if (trigger.kind === 'losses') when = t('editor.events.summary.losses', { side: sideName(trigger.side, t), percent: trigger.percent });
   else when = t('editor.events.summary.after', { event: trigger.event });
   if (event.delay > 0) when += ` ${t('editor.events.summary.delay', { time: formatClock(event.delay) })}`;
-  const what = event.actions.map((action) => t(`editor.events.action.${action.kind}`)).join(', ') || t('editor.events.summary.nothing');
+  const what =
+    event.actions
+      .map((action) =>
+        action.kind === 'bombardment'
+          ? t('editor.events.summary.bombardment', {
+              side: sideName(action.side, t),
+              gun: t(`editor.events.gun.${action.gun}`),
+              target: action.target.kind === 'area' ? placeName(action.target.area) : t('editor.events.target.enemy'),
+              rate: action.perMinute,
+              duration: 'event' in action.until ? t('editor.events.summary.untilEvent', { event: action.until.event }) : formatClock(action.until.seconds),
+            })
+          : t(`editor.events.action.${action.kind}`),
+      )
+      .join(', ') || t('editor.events.summary.nothing');
   return `${when} → ${what}`;
 }
 
@@ -347,6 +369,7 @@ function EventForm({ event, map, onChange, t }: { event: BattleEvent; map: Edita
                 )}
               </>
             ) : null}
+            {action.kind === 'bombardment' ? <BombardmentFields action={action} index={index} areas={areas} others={others} onChange={(next) => setAction(index, next)} t={t} /> : null}
             {action.kind === 'card' ? (
               <div className="editor-event-card">
                 {(['pt-BR', 'en'] as const).map((language) => (
@@ -378,6 +401,73 @@ function EventForm({ event, map, onChange, t }: { event: BattleEvent; map: Edita
         ) : null}
       </fieldset>
     </div>
+  );
+}
+
+/** add-artillery-bombardment 4.1: whose guns, which gun, the target, rate, spread and how long. */
+function BombardmentFields({ action, index, areas, others, onChange, t }: {
+  action: Extract<EventAction, { kind: 'bombardment' }>;
+  index: number;
+  areas: readonly { id: number; name: string }[];
+  others: readonly { id: number; name: string }[];
+  onChange: (action: Extract<EventAction, { kind: 'bombardment' }>) => void;
+  t: T;
+}): ReactNode {
+  const number = (value: string, range: { min: number; max: number }): number | null => {
+    const parsed = Math.round(Number(value));
+    return Number.isFinite(parsed) ? Math.max(range.min, Math.min(range.max, parsed)) : null;
+  };
+  return (
+    <>
+      <SideSelect side={action.side} label={t('editor.events.guns')} testId={`event-action-${index}-side`} onChange={(side) => onChange({ ...action, side })} t={t} />
+      <label>
+        {t('editor.events.gun')}
+        <select data-testid={`event-action-${index}-gun`} value={action.gun} onChange={(entry) => onChange({ ...action, gun: entry.target.value as typeof action.gun })}>
+          {GUN_IDS.map((gun) => (
+            <option key={gun} value={gun}>{t(`editor.events.gun.${gun}`)}</option>
+          ))}
+        </select>
+      </label>
+      <label>
+        {t('editor.events.target')}
+        <select
+          data-testid={`event-action-${index}-target`}
+          value={action.target.kind === 'area' ? String(action.target.area) : 'enemy'}
+          onChange={(entry) => onChange({ ...action, target: entry.target.value === 'enemy' ? { kind: 'enemy' } : { kind: 'area', area: Number(entry.target.value) } })}
+        >
+          <option value="enemy">{t('editor.events.target.enemy')}</option>
+          {areas.map((area) => (
+            <option key={area.id} value={area.id}>{t('editor.events.target.area', { area: area.name })}</option>
+          ))}
+        </select>
+      </label>
+      <label>
+        {t('editor.events.rate')}
+        <input type="number" data-testid={`event-action-${index}-rate`} min={BOMBARD_RATE.min} max={BOMBARD_RATE.max} value={action.perMinute} onChange={(entry) => {
+          const value = number(entry.target.value, BOMBARD_RATE);
+          if (value !== null) onChange({ ...action, perMinute: value });
+        }} />
+      </label>
+      <label>
+        {t('editor.events.spread')}
+        <input type="number" data-testid={`event-action-${index}-spread`} min={BOMBARD_SPREAD.min} max={BOMBARD_SPREAD.max} value={action.spread} onChange={(entry) => {
+          const value = number(entry.target.value, BOMBARD_SPREAD);
+          if (value !== null) onChange({ ...action, spread: value });
+        }} />
+      </label>
+      <label>
+        {t('editor.events.until')}
+        <select data-testid={`event-action-${index}-until`} value={'event' in action.until ? 'event' : 'seconds'} onChange={(entry) => onChange({ ...action, until: entry.target.value === 'event' ? { event: others[0]?.id ?? 0 } : { seconds: 120 } })}>
+          <option value="seconds">{t('editor.events.until.seconds')}</option>
+          <option value="event">{t('editor.events.until.event')}</option>
+        </select>
+      </label>
+      {'event' in action.until ? (
+        <IdSelect value={action.until.event} label={t('editor.events.afterEvent')} testId={`event-action-${index}-until-event`} options={others} onChange={(id) => onChange({ ...action, until: { event: id } })} t={t} />
+      ) : (
+        <ClockInput seconds={action.until.seconds} min={BOMBARD_SECONDS.min} max={BOMBARD_SECONDS.max} label={t('editor.events.duration')} testId={`event-action-${index}-duration`} onChange={(seconds) => onChange({ ...action, until: { seconds } })} />
+      )}
+    </>
   );
 }
 

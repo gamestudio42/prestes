@@ -22,6 +22,7 @@ import {
   type DocBridge,
   type EditableMap,
   type Vec2,
+  polygonMiddle,
 } from '@prestes/shared';
 import { SceneView } from '@prestes/view3d';
 import { loadGraphicsSettings } from '../storage';
@@ -1147,8 +1148,8 @@ export class EditorViewport {
   }
 
   /** What the selected event uses: its places, objectives and move points. */
-  private eventUses(): { places: Set<number>; objectives: Set<number>; points: Vec2[] } {
-    const uses = { places: new Set<number>(), objectives: new Set<number>(), points: [] as Vec2[] };
+  private eventUses(): { places: Set<number>; objectives: Set<number>; points: Vec2[]; rings: Array<{ area: number; spread: number }> } {
+    const uses = { places: new Set<number>(), objectives: new Set<number>(), points: [] as Vec2[], rings: [] as Array<{ area: number; spread: number }> };
     const selectedEvents = new Set(this.store.selection.filter((item) => item.kind === 'event').map((item) => ('id' in item ? item.id : -1)));
     for (const event of this.store.map.events ?? []) {
       if (!selectedEvents.has(event.id)) continue;
@@ -1161,6 +1162,11 @@ export class EditorViewport {
           if (action.order.kind === 'objective') uses.objectives.add(action.order.objective);
           if (action.order.kind === 'move') uses.points.push(action.order.to);
         } else if (action.kind === 'posture' && action.area !== undefined) uses.places.add(action.area);
+        else if (action.kind === 'bombardment' && action.target.kind === 'area') {
+          // add-artillery-bombardment 4.2: the target area and the ring the shells fall in.
+          uses.places.add(action.target.area);
+          uses.rings.push({ area: action.target.area, spread: action.spread });
+        }
       }
     }
     return uses;
@@ -1188,6 +1194,10 @@ export class EditorViewport {
       if (uses.objectives.has(objective.id)) this.overlay.add(this.line(objective.area as Vec2[], COLORS.eventHighlight, true, 0.6));
     }
     for (const point of uses.points) this.overlay.add(this.ring(point, 3, COLORS.eventHighlight));
+    for (const { area, spread } of uses.rings) {
+      const place = (this.store.map.eventPlaces ?? []).find((entry) => entry.id === area);
+      if (place?.kind === 'area') this.overlay.add(this.ring(polygonMiddle(place.polygon), spread, COLORS.eventHighlight));
+    }
   }
 
   /** add-battle-events 4.2: each event place's name over it while places are shown. */

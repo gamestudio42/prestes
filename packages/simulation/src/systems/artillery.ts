@@ -181,7 +181,7 @@ function leaveCrater(ctx: SimContext, state: ScriptedState, x: number, y: number
   return crater.id;
 }
 
-function land(ctx: SimContext, state: ScriptedState, shell: PendingShell, tick: number, events: SimEvent[]): void {
+export function landShell(ctx: SimContext, state: ScriptedState, shell: PendingShell, tick: number, events: SimEvent[]): void {
   const gun = GUNS[shell.gun];
   const crater = leaveCrater(ctx, state, shell.x, shell.y);
   events.push({ type: 'shell_impact', tick, gun: shell.gun, x: shell.x, y: shell.y, ...(crater !== undefined ? { crater } : {}) });
@@ -222,7 +222,7 @@ export function updateArtillery(ctx: SimContext, tick: number, events: SimEvent[
   const due = state.shells.filter((shell) => shell.landsAt <= tick);
   if (due.length === 0) return;
   state.shells.splice(0, state.shells.length, ...state.shells.filter((shell) => shell.landsAt > tick));
-  for (const shell of due) land(ctx, state, shell, tick, events);
+  for (const shell of due) landShell(ctx, state, shell, tick, events);
 }
 
 /** D2: the artillery state the engine hashes, only once a bombardment has fired. */
