@@ -117,7 +117,8 @@ export class TracerLayer {
     return Math.max(style.width, style.minPixels * this.metresPerPixel);
   }
 
-  spawn(event: ShotEvent, kind: TracerKind = 'rifle', rise0 = 0, rise1 = 0): void {
+  /** `from` / `to`: a window's height the round leaves or meets, instead of the man's ground and rise. */
+  spawn(event: ShotEvent, kind: TracerKind = 'rifle', rise0 = 0, rise1 = 0, from?: number, to?: number): void {
     if (this.tracers.length >= MAX_TRACERS) {
       this.tracers.shift();
     }
@@ -126,10 +127,10 @@ export class TracerLayer {
       kind,
       x0: event.x,
       y0: event.y,
-      h0: terrainHeightAt(event.x, event.y) + 1.3 + rise0,
+      h0: from ?? terrainHeightAt(event.x, event.y) + 1.3 + rise0,
       x1: event.x2,
       y1: event.y2,
-      h1: terrainHeightAt(event.x2, event.y2) + 1.0 + rise1,
+      h1: to !== undefined && event.hit ? to : terrainHeightAt(event.x2, event.y2) + 1.0 + rise1,
       length: Math.max(0.5, length),
       travelled: 0,
     });

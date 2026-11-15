@@ -591,11 +591,18 @@ export class SceneView {
       const raised = new Map(frame.units.filter((unit) => unit.elevation).map((unit) => [unit.id, unit.elevation!]));
       for (const event of frame.events) {
         if (event.type === 'shot') {
-          this.tracers.spawn(event, tracerKind(weapons.get(event.source), event), raised.get(event.source) ?? 0, raised.get(event.target) ?? 0);
+          this.tracers.spawn(
+            event,
+            tracerKind(weapons.get(event.source), event),
+            raised.get(event.source) ?? 0,
+            raised.get(event.target) ?? 0,
+            this.characters.windowMuzzleHeight(event.source),
+            this.characters.windowMuzzleHeight(event.target),
+          );
         }
       }
     }
-    this.effects.onFrame(frame);
+    this.effects.onFrame(frame, (unitId) => this.characters.windowMuzzleHeight(unitId));
   }
 
   /** Nearest unit to a screen point (within 28 px) that `accept` allows. */

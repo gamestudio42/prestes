@@ -54,6 +54,13 @@ const ENGAGED_MS = 4000;
 
 /** garrison-and-assault 4.7 and 1.4: a building's window heights, and its tower's middle and face (world). */
 interface BuildingWindows {
+  /**
+   * The ground the building's model stands on: the terrain at its middle
+   * (ModelPlacements.add). Its windows are this high plus theirs, not the
+   * terrain under each window, which on a slope lies up to a metre or more
+   * off (the Paiolzinho casa-sede).
+   */
+  base: number;
   ground: number;
   upper: number;
   /** The roof's ridge (m): an upper floor's marker floats over it. */
@@ -244,6 +251,8 @@ export class CharacterLayer {
    * their rifle barrels out of the windows.
    */
   private readonly barrels: THREE.InstancedMesh;
+  /** Men inside buildings at the last update: the height they fire from. */
+  private readonly windowMuzzles = new Map<number, number>();
   /**
    * garrison-and-assault 1.4: a diamond in the side's colour over each
    * occupied tower and upper floor (the men there are not drawn).
@@ -371,6 +380,7 @@ export class CharacterLayer {
     let corpseIndex = 0;
     const farBand = span > TACTICAL_SPAN;
     const windows = this.buildingWindows();
+    this.windowMuzzles.clear();
     let barrelIndex = 0;
     // Occupied raised floors: building id and floor ('upper' | 'tower') -> where its marker floats.
     const raised = new Map<string, { x: number; y: number; z: number; count: number; faction: string }>();
@@ -448,9 +458,11 @@ export class CharacterLayer {
         view.facingAngle = turnToward(view.facingAngle, Math.atan2(-unit.facingX, -unit.facingY), seconds);
         // A man up in a church is in its tower; his barrel shows at the tower's face he looks out of.
         const tower = unit.elevation ? inside.tower : undefined;
+        // His shots leave from his window's height, where his barrel shows.
+        this.windowMuzzles.set(unit.id, inside.base + (tower ? tower.height : unit.elevation ? inside.upper : inside.ground));
         if (unit.elevation && !down) {
           const key = `${unit.garrison}:${tower ? 'tower' : 'upper'}`;
-          const ground = terrainHeightAt(unit.x, unit.y);
+          const ground = inside.base;
           const at = tower
             ? { x: tower.x + tower.frontX * (tower.half + 0.6), y: tower.y + tower.frontY * (tower.half + 0.6), z: ground + tower.height + 2 }
             : { x: unit.x, y: unit.y, z: ground + inside.ridge + 1.4 };
@@ -468,7 +480,7 @@ export class CharacterLayer {
           const height = tower ? tower.height : unit.elevation ? inside.upper : inside.ground;
           const from = tower ? { x: tower.x, y: tower.y, out: tower.half + 0.45 } : { x: unit.x, y: unit.y, out: 0.45 };
           this.proxyQuaternion.setFromAxisAngle(new THREE.Vector3(0, 1, 0), view.facingAngle);
-          this.proxyPosition.set(from.x + fx * from.out, terrainHeightAt(unit.x, unit.y) + height, from.y + fy * from.out);
+          this.proxyPosition.set(from.x + fx * from.out, inside.base + height, from.y + fy * from.out);
           this.proxyScale.set(1, 1, 1.1);
           this.proxyMatrix.compose(this.proxyPosition, this.proxyQuaternion, this.proxyScale);
           this.barrels.setMatrixAt(barrelIndex, this.proxyMatrix);
@@ -676,6 +688,7 @@ export class CharacterLayer {
       const sin = Math.sin(building.rotation);
       const front = building.front ?? 1;
       this.windowHeights.set(building.id, {
+        base: terrainHeightAt(building.x, building.y),
         ground: windowMiddleHeight(openings, { elevation: 0, level: 0 }, building.model),
         upper: windowMiddleHeight(openings, upper, building.model),
         ridge: building.height,
@@ -694,6 +707,11 @@ export class CharacterLayer {
       });
     }
     return this.windowHeights;
+  }
+
+  /** The height (m, world) a man inside a building fires from: his window's, on the model's ground. */
+  windowMuzzleHeight(unitId: number): number | undefined {
+    return this.windowMuzzles.get(unitId);
   }
 
   /** garrison-and-assault 4.7: the barrels out of the windows (dev checks). */

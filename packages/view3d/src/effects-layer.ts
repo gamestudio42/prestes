@@ -216,16 +216,17 @@ export class EffectsLayer {
   }
 
   /** New shots of a tick, once per tick. */
-  onFrame(frame: Frame | InterpolatedFrame): void {
+  /** `muzzleAt`: the height a man inside a building fires from (his window's), if he is in one. */
+  onFrame(frame: Frame | InterpolatedFrame, muzzleAt: (unitId: number) => number | undefined = () => undefined): void {
     if (frame.tick === this.lastTick) return;
     this.lastTick = frame.tick;
     const units = new Map(frame.units.map((unit) => [unit.id, unit]));
     for (const event of frame.events) {
-      if (event.type === 'shot') this.shot(event, units, frame.covers);
+      if (event.type === 'shot') this.shot(event, units, frame.covers, muzzleAt(event.source));
     }
   }
 
-  private shot(event: ShotEvent, units: ReadonlyMap<number, UnitSnapshot>, covers: readonly CoverPoint[]): void {
+  private shot(event: ShotEvent, units: ReadonlyMap<number, UnitSnapshot>, covers: readonly CoverPoint[], window?: number): void {
     const source = units.get(event.source);
     const target = units.get(event.target);
     const dx = event.x2 - event.x;
@@ -233,10 +234,11 @@ export class EffectsLayer {
     const length = Math.sqrt(dx * dx + dy * dy) || 1;
     const ux = dx / length;
     const uy = dy / length;
-    // Flash and smoke at the muzzle, about 0.8 m in front of the shooter.
-    const mx = event.x + ux * 0.8;
-    const my = event.y + uy * 0.8;
-    const mh = terrainHeightAt(mx, my) + muzzleHeight(source?.stance ?? 'standing') + (source?.elevation ?? 0);
+    // Flash and smoke at the muzzle, about 0.8 m in front of the shooter (his barrel's tip, at a window).
+    const reach = window === undefined ? 0.8 : 0.9;
+    const mx = event.x + ux * reach;
+    const my = event.y + uy * reach;
+    const mh = window ?? terrainHeightAt(mx, my) + muzzleHeight(source?.stance ?? 'standing') + (source?.elevation ?? 0);
     this.spawn({ kind: 'muzzle', x: mx, y: mh, z: my, vx: 0, vy: 0, vz: 0, life: 0.16, size: 1.1, grow: 0, tint: 'none' });
     // machine-gun-fire-feedback 5.2: a flash for every round, smoke once per burst.
     if (event.burstStart !== false) {
