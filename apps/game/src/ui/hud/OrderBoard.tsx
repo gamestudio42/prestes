@@ -43,16 +43,18 @@ const CrouchIcon = ICONS['stance-crouched'];
 const ProneIcon = ICONS['stance-prone'];
 const HoldFireIcon = ICONS['hold-fire'];
 const ContactIcon = ICONS['fire-contact'];
+const EconomyIcon = ICONS['fire-economy'];
 const FreeFireIcon = Crosshair;
 
 const FIRE_CONTROLS: ReadonlyArray<{
   mode: FireControl;
   icon: typeof Crosshair;
-  label: 'hud.fireFree' | 'hud.fireContact' | 'hud.holdFire';
-  tip: 'hud.tip.fireFree' | 'hud.tip.fireContact' | 'hud.tip.holdFire';
+  label: 'hud.fireFree' | 'hud.fireEconomy' | 'hud.fireContact' | 'hud.holdFire';
+  tip: 'hud.tip.fireFree' | 'hud.tip.fireEconomy' | 'hud.tip.fireContact' | 'hud.tip.holdFire';
   testId: string;
 }> = [
   { mode: 'free', icon: FreeFireIcon, label: 'hud.fireFree', tip: 'hud.tip.fireFree', testId: 'fire-free' },
+  { mode: 'economy', icon: EconomyIcon, label: 'hud.fireEconomy', tip: 'hud.tip.fireEconomy', testId: 'fire-economy' },
   { mode: 'contact', icon: ContactIcon, label: 'hud.fireContact', tip: 'hud.tip.fireContact', testId: 'fire-contact' },
   { mode: 'hold', icon: HoldFireIcon, label: 'hud.holdFire', tip: 'hud.tip.holdFire', testId: 'hold-fire' },
 ];

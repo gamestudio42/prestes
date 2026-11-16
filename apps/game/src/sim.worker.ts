@@ -8,9 +8,9 @@ const port: PortLike = {
 };
 
 const host = createSimulationHost(
-  (seed, sandbox, training, opposition, bounding, scenario, battleMap, rosters, deployment, timeLimitTicks, playtest) =>
+  (seed, sandbox, training, opposition, bounding, scenario, battleMap, rosters, deployment, timeLimitTicks, playtest, difficulty) =>
     // add-deployment-phase: a battle with the phase also has the enemy deploy.
-    new SimulationEngine({ seed, sandbox, training, opposition, bounding, scenario, battleMap, rosters, deployment, enemyDeployment: deployment, timeLimitTicks, playtest }),
+    new SimulationEngine({ seed, sandbox, training, opposition, bounding, scenario, battleMap, rosters, deployment, enemyDeployment: deployment, timeLimitTicks, playtest, difficulty }),
   port,
 );
 

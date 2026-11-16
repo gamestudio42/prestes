@@ -223,3 +223,14 @@ export * from './sections';
 export * from './bands';
 export * from './armies';
 export * from './deploy-roster';
+export {
+  checkDifficultyTable,
+  DEFAULT_DIFFICULTY,
+  DIFFICULTIES,
+  DIFFICULTY_FACTORS,
+  FACTOR_FAVOURS_PLAYER_WHEN_HIGHER,
+  isDifficulty,
+  resolveDifficulty,
+  type Difficulty,
+  type DifficultyFactors,
+} from './difficulty';

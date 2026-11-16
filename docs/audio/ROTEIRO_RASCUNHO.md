@@ -45,6 +45,25 @@ dezenas de metros. Resposta: um soldado só, confirmação rápida.
 
 **84 tomadas.**
 
+## 1b. Controle de fogo — comandante e resposta (3 + 3 tomadas)
+
+Do `add-difficulty-levels`: trocar o controle de fogo de uma seção é falado
+como uma ordem. A primeira tomada do Econômico é a frase do dono. Rascunho
+para revisão: o dono aprova ou troca as frases antes de gravar.
+
+| id | Controle | Tom | Comandante (`comandante/<id>-1..3`) | Resposta (`soldado/<id>-ack-1..3`) |
+|---|---|---|---|---|
+| fire-free | Fogo livre | solto, alto | "Fogo à vontade!" · "Atirem à vontade!" · "Fogo livre, pessoal!" | "Fogo à vontade!" · "Atirando!" · "Pode deixar!" |
+| fire-economy | Econômico | contido, firme | "Só atirem quando virem o branco dos olhos deles!" · "Poupem bala! Cada tiro, um inimigo!" · "Nada de gastar à toa, mirem bem!" | "Poupando bala!" · "Só no certo, senhor." · "Esperando eles chegarem!" |
+| fire-contact | Ao contato | baixo, tenso | "Ninguém atira antes da hora!" · "Esperem eles chegarem perto!" · "Fogo só se chegarem em cima!" | "Esperando!" · "Quando chegarem, senhor." · "Dedo fora do gatilho." |
+| fire-hold | Segurar fogo | seco, cortante | "Segurem o fogo!" · "Ninguém atira!" · "Cessar fogo!" | "Segurando!" · "Ninguém atira." · "Cessar fogo!" |
+
+A frase "o branco dos olhos" é um dito militar antigo (mais conhecido da
+guerra de independência dos Estados Unidos), usado aqui como fala
+dramatizada, sem afirmar que a Coluna o usou.
+
+**24 tomadas.**
+
 ## 2. Avisos dos nossos soldados (3 tomadas)
 
 Gritados de onde o soldado está, com o fogo por perto.

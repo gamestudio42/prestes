@@ -1,4 +1,4 @@
-import { compileMapDocument, registerBattleMap, validateRoster, type BattleMapId, type BattleRosters, type PortLike, type WorkerRequest } from '@prestes/shared';
+import { compileMapDocument, registerBattleMap, validateRoster, type BattleMapId, type BattleRosters, type Difficulty, type PortLike, type WorkerRequest } from '@prestes/shared';
 import type { SimulationEngine } from './engine';
 
 const GAME_FRAME = { hash: false } as const;
@@ -24,6 +24,7 @@ export function createSimulationHost(
     deployment?: boolean,
     timeLimitTicks?: number,
     playtest?: boolean,
+    difficulty?: Difficulty,
   ) => SimulationEngine,
   port: PortLike,
 ): SimulationHost {
@@ -58,6 +59,7 @@ export function createSimulationHost(
           message.deployment,
           message.timeLimitTicks,
           message.playtest,
+          message.difficulty,
         );
         // The game never reads the state hash: frames to it go without one.
         port.postMessage({ type: 'ready', frame: engine.frame(GAME_FRAME) });

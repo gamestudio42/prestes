@@ -131,6 +131,8 @@ export interface MutableUnit {
   fireCoverCooldown?: number;
   /** Fire control on contact: hold fire beyond `CONTACT_RADIUS` until the section opens. */
   fireOnContact?: boolean;
+  /** add-difficulty-levels D3: economical fire (short range, slower aimed shots, short bursts). */
+  economyFire?: boolean;
   /** Where an attack turned into a pursuit (the 40 m leash). */
   pursueOrigin?: Vec2 | null;
   orderDestination: Vec2 | null;

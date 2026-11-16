@@ -342,6 +342,18 @@ describe('area fire: the end', () => {
     expect(t.engine.frame().units.filter((unit) => ids.includes(unit.id)).every((unit) => unit.fireControl === 'hold')).toBe(true);
   });
 
+  it('under economical fire: fires into the area as ordered and keeps economical fire afterwards (add-difficulty-levels 2.1)', () => {
+    const t = field();
+    t.hear(0, 70, 6);
+    const ids = t.riflemen.map((unit) => unit.id);
+    t.engine.enqueue({ type: 'fire_control', unitIds: ids, mode: 'economy' });
+    t.engine.enqueue({ type: 'area_fire', unitIds: ids, to: { x: 0, y: 70 } });
+    t.run(AREA_FIRE_TICKS + 10);
+    expect(areaShots(t.events, ids).length).toBeGreaterThan(10);
+    expect(t.riflemen.every((unit) => unit.areaFire === undefined && unit.economyFire)).toBe(true);
+    expect(t.engine.frame().units.filter((unit) => ids.includes(unit.id)).every((unit) => unit.fireControl === 'economy')).toBe(true);
+  });
+
   it('same result every run', () => {
     const run = () => {
       const t = field(7);

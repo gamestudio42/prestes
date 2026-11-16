@@ -1369,6 +1369,28 @@ def _():  # a watching eye: fire only when the enemy comes close
 """)
 
 
+@icon("fire-economy")
+def _():  # an open cartridge box with three rounds: spare the ammunition (add-difficulty-levels)
+    return grid_from("""
+................
+.....#..#..#....
+....###.###.###.
+....###.###.###.
+....###.###.###.
+....###.###.###.
+..############..
+..#..........#..
+..#.########.#..
+..#.#......#.#..
+..#.########.#..
+..#..........#..
+..#..........#..
+..############..
+................
+................
+""")
+
+
 def _dots(points):
     g = Grid()
     for x, y in points:
@@ -1394,6 +1416,28 @@ def _():
 @icon("formation-free")
 def _():
     return _dots([(2, 2), (10, 1), (6, 6), (12, 8), (3, 11), (9, 13)])
+
+
+@icon("order-area-fire")
+def _():  # fire bursts in brackets: area fire on a suspected contact (scrub-concealment-and-area-fire)
+    return grid_from("""
+##............##
+#..............#
+..#.#.#.........
+...###..........
+..#####..#.#.#..
+...###....###...
+..#.#.#..#####..
+..........###...
+.........#.#.#..
+....#.#.#.......
+.....###........
+....#####.......
+.....###........
+....#.#.#.......
+#..............#
+##............##
+""")
 
 
 def write() -> None:

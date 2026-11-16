@@ -53,7 +53,7 @@ export function snapshotUnits(ctx: SimContext): UnitSnapshot[] {
       targetId: unit.targetId,
       slotId: unit.slotId,
       holdFire: unit.holdFire,
-      fireControl: unit.holdFire ? 'hold' : unit.fireOnContact ? 'contact' : 'free',
+      fireControl: unit.holdFire ? 'hold' : unit.fireOnContact ? 'contact' : unit.economyFire ? 'economy' : 'free',
       posture: unit.posture,
       boundTeam: unit.boundTeam,
       boundPhase: unit.boundPhase,

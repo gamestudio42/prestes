@@ -395,6 +395,7 @@ export function applyCommand(
       for (const unit of actionable) {
         unit.fireOnContact = command.order === 'ambush';
         unit.holdFire = command.order === 'reserve';
+        delete unit.economyFire;
         unit.fireControlSet = true;
         unit.autoContact = undefined;
       }
@@ -432,6 +433,7 @@ export function applyCommand(
     for (const unit of actionable) {
       unit.holdFire = command.hold;
       unit.fireOnContact = false;
+      delete unit.economyFire;
       unit.fireControlSet = true;
       unit.autoContact = undefined;
     }
@@ -450,6 +452,8 @@ export function applyCommand(
     for (const unit of actionable) {
       unit.holdFire = command.mode === 'hold';
       unit.fireOnContact = command.mode === 'contact';
+      if (command.mode === 'economy') unit.economyFire = true;
+      else delete unit.economyFire;
       unit.fireControlSet = true;
       unit.autoContact = undefined;
     }

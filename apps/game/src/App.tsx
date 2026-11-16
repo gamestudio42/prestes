@@ -10,6 +10,7 @@ import {
   TRAINING_AMMUNITION,
   type BattleMapId,
   type BattleRosters,
+  type Difficulty,
   type Frame,
   type MapDocument,
 } from '@prestes/shared';
@@ -240,7 +241,7 @@ export function App() {
     saveLocale(next);
   };
 
-  const createClient = (map: BattleMapId, rosters?: BattleRosters, timeLimitTicks?: number): GameClient => {
+  const createClient = (map: BattleMapId, rosters?: BattleRosters, timeLimitTicks?: number, difficulty?: Difficulty): GameClient => {
     const client = new GameClient({
       seed: 1922,
       sandbox: true,
@@ -252,6 +253,7 @@ export function App() {
       deployment: true,
       ...(rosters ? { rosters } : {}),
       ...(timeLimitTicks === undefined ? {} : { timeLimitTicks }),
+      ...(difficulty ? { difficulty } : {}),
       ...(playtestRef.current?.id === map
         ? // add-battle-events 4.4: the editor's playtest can fire its events by hand.
           { mapDocument: playtestRef.current, playtest: true }
@@ -323,7 +325,12 @@ export function App() {
 
   // The setup's forces go with its map; the editor's playtest map fields the default.
   const handleStartBattle3v3 = (): void =>
-    startBattle(battleMapId, battleMapId === setup.map ? battleRosters(setup) : undefined, battleMapId === setup.map ? setup.timeLimit : undefined);
+    startBattle(
+      battleMapId,
+      battleMapId === setup.map ? battleRosters(setup) : undefined,
+      battleMapId === setup.map ? setup.timeLimit : undefined,
+      battleMapId === setup.map ? setup.difficulty : undefined,
+    );
 
   // author-game-maps 5.3: a campaign chapter's map plays the 3 vs 3 with the default forces.
   const handlePlayMap = (map: BattleMapId): void => {
@@ -331,13 +338,13 @@ export function App() {
     startBattle(map);
   };
 
-  const startBattle = (map: BattleMapId, rosters?: BattleRosters, timeLimitTicks?: number): void => {
+  const startBattle = (map: BattleMapId, rosters?: BattleRosters, timeLimitTicks?: number, difficulty?: Difficulty): void => {
     // An authored map not fetched yet: fetch it, then start (the document goes to the worker with the start).
     if (playtestRef.current?.id !== map && !documentsRef.current.has(map) && authoredMapIndex().some((entry) => entry.id === map)) {
       void loadAuthoredMap(map).then((document) => {
         if (!document) return;
         documentsRef.current.set(map, document);
-        startBattle(map, rosters, timeLimitTicks);
+        startBattle(map, rosters, timeLimitTicks, difficulty);
       });
       return;
     }
@@ -358,7 +365,7 @@ export function App() {
     setEventCards(NO_EVENT_CARDS);
     cardOpenRef.current = false;
     setStarted(true);
-    createClient(map, rosters, timeLimitTicks);
+    createClient(map, rosters, timeLimitTicks, difficulty);
   };
 
   // add-map-editor: `?playtest` starts the editor's map straight away.

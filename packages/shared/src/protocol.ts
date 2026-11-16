@@ -1,3 +1,4 @@
+import type { Difficulty } from './difficulty';
 import type { BattleMapId, LocalizedText } from './maps/types';
 import type { MapDocument } from './maps/document';
 import type { Gait } from './gait';
@@ -118,7 +119,8 @@ export type Stance = 'standing' | 'crouched' | 'prone';
 export type Posture = 'balanced' | 'aggressive' | 'defensive' | 'protect-officer';
 
 /** A section's fire control. */
-export type FireControl = 'free' | 'contact' | 'hold';
+/** add-difficulty-levels D3: economical fire joins the three earlier settings. */
+export type FireControl = 'free' | 'economy' | 'contact' | 'hold';
 
 export type Outcome = 'playing' | 'victory' | 'defeat' | 'draw';
 
@@ -486,6 +488,8 @@ export interface Frame {
   queuedOrders?: readonly QueuedOrderSnapshot[];
   /** add-battle-events 2.5: the map events' states, in the editor's playtest only. */
   battleEvents?: readonly BattleEventState[];
+  /** add-difficulty-levels: the level the 3v3 is fought at. */
+  difficulty?: Difficulty;
 }
 
 /** refine-battle-controls: an order waiting behind a section's current one. */
@@ -563,6 +567,8 @@ export type WorkerRequest =
       timeLimitTicks?: number;
       /** add-battle-events 4.4: the editor's playtest (events can be fired by hand; their states ride the frame). */
       playtest?: boolean;
+      /** add-difficulty-levels: the level the 3v3 is fought at; absent, Soldado. */
+      difficulty?: Difficulty;
     }
   | { type: 'command'; command: Command }
   | { type: 'step'; ticks: number };

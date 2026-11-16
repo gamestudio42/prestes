@@ -1,5 +1,5 @@
 import { fileURLToPath } from 'node:url';
-import { battleMap, DEFAULT_BATTLE_MAP, hasBattleMap, loadAuthoredMap, type BattleMap, type BattleMapId, type BattleRosters, type DecidedBy, type Frame, type Roster, type UnitSnapshot, type WeaponId, getWeapon } from '../packages/shared/src';
+import { battleMap, DEFAULT_BATTLE_MAP, isDifficulty, type Difficulty, type DifficultyFactors, hasBattleMap, loadAuthoredMap, type BattleMap, type BattleMapId, type BattleRosters, type DecidedBy, type Frame, type Roster, type UnitSnapshot, type WeaponId, getWeapon } from '../packages/shared/src';
 import { SimulationEngine } from '../packages/simulation/src/engine';
 import { visible } from '../packages/simulation/src/systems/combat';
 
@@ -224,6 +224,8 @@ export async function battleReport(
   rosters?: BattleRosters,
   /** add-deployment-phase 4.1: the enemy places itself on the map's cover before the battle. */
   enemyDeployment = false,
+  /** add-difficulty-levels 4.1: the level (Soldado by default) and, for tuning, factors over it. */
+  level: { difficulty?: Difficulty; factors?: Partial<DifficultyFactors>; economy?: boolean } = {},
 ): Promise<BattleReport> {
   // author-game-maps 3.3: any authored map loads on demand (the test map by default).
   if (!hasBattleMap(mapId)) throw new Error(`unknown battle map ${mapId}`);
@@ -237,7 +239,14 @@ export async function battleReport(
     rosters,
     enemyDeployment,
     timeLimitTicks: REPORT_TIME_LIMIT_TICKS,
+    ...(level.difficulty ? { difficulty: level.difficulty } : {}),
+    ...(level.factors ? { factors: level.factors } : {}),
   });
+  // add-difficulty-levels D6: on request (tuning) the scripted player spares his rounds; by default he fires freely.
+  if (level.economy === true) {
+    const column = engine.units.filter((unit) => unit.faction === 'column').map((unit) => unit.id);
+    engine.enqueue({ type: 'fire_control', unitIds: column, mode: 'economy' });
+  }
   let frame = engine.frame();
   const faction = new Map(frame.units.map((unit) => [unit.id, unit.faction]));
   const casualties = { column: 0, legalist: 0 };
@@ -498,8 +507,20 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
     await presetTable(map);
     process.exit(0);
   }
-  const seeds = args.filter((_, index) => index !== mapAt && index !== mapAt + 1).map(Number).filter((value) => Number.isFinite(value));
+  // add-difficulty-levels 4.1: --difficulty <historia|soldado|oficial>.
+  const levelAt = args.indexOf('--difficulty');
+  const difficulty = levelAt >= 0 ? args[levelAt + 1] : undefined;
+  if (difficulty !== undefined && !isDifficulty(difficulty)) {
+    console.error(`unknown difficulty ${difficulty}`);
+    process.exit(1);
+  }
+  // add-difficulty-levels 4.3: --factors '<json>' overrides the level's factors (tuning only).
+  const factorsAt = args.indexOf('--factors');
+  const factors = factorsAt >= 0 ? (JSON.parse(args[factorsAt + 1]!) as Partial<DifficultyFactors>) : undefined;
+  const economy = args.includes('--economy');
+  const skip = new Set([mapAt, mapAt + 1, levelAt, levelAt + 1, factorsAt, factorsAt + 1].filter((index) => index >= 0));
+  const seeds = args.filter((_, index) => !skip.has(index)).map(Number).filter((value) => Number.isFinite(value));
   for (const seed of seeds.length > 0 ? seeds : [1922]) {
-    console.log(JSON.stringify({ map, ...(await battleReport(seed, 900, map)) }));
+    console.log(JSON.stringify({ map, difficulty: difficulty ?? 'soldado', ...(await battleReport(seed, 900, map, undefined, false, { difficulty, factors, economy })) }));
   }
 }

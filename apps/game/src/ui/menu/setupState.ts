@@ -2,17 +2,20 @@ import {
   battleMap as findBattleMap,
   DEFAULT_BATTLE_MAP,
   DEFAULT_ROSTER,
+  DEFAULT_DIFFICULTY,
   DEFAULT_TIME_LIMIT,
   defaultRoster,
   ENEMY_ARMY_IDS,
   hasBattleMap,
   isArmyId,
+  isDifficulty,
   migrateRoster,
   TIME_LIMITS,
   validateRoster,
   type ArmyId,
   type BattleMapId,
   type BattleRosters,
+  type Difficulty,
   type Roster,
   type RosterRefusal,
 } from '@prestes/shared';
@@ -31,6 +34,8 @@ export interface SkirmishSetup {
   enemy: EnemyChoice;
   /** add-map-objectives 3.3: the battle's time limit in ticks (one of TIME_LIMITS). */
   timeLimit: number;
+  /** add-difficulty-levels: the level the battle is fought at. */
+  difficulty: Difficulty;
   /**
    * faction-armies 4.3: a stored roster had section types replaced on load
    * (saved before the armies); the screen says so once. Never saved.
@@ -46,6 +51,7 @@ export function defaultSetup(): SkirmishSetup {
     roster: { sections: [...DEFAULT_ROSTER.sections] },
     enemy: { kind: 'drawn' },
     timeLimit: DEFAULT_TIME_LIMIT,
+    difficulty: DEFAULT_DIFFICULTY,
   };
 }
 
@@ -75,7 +81,7 @@ export function parseSetup(raw: string | null): SkirmishSetup {
     return fallback;
   }
   if (!data || typeof data !== 'object') return fallback;
-  const value = data as { map?: unknown; roster?: unknown; enemy?: unknown; timeLimit?: unknown };
+  const value = data as { map?: unknown; roster?: unknown; enemy?: unknown; timeLimit?: unknown; difficulty?: unknown };
   const map = typeof value.map === 'string' && hasBattleMap(value.map) ? value.map : fallback.map;
   const own = readRoster(value.roster, DEFAULT_ARMY);
   const roster = own?.roster ?? fallback.roster;
@@ -85,6 +91,8 @@ export function parseSetup(raw: string | null): SkirmishSetup {
     typeof value.timeLimit === 'number' && (TIME_LIMITS as readonly number[]).includes(value.timeLimit)
       ? value.timeLimit
       : fallback.timeLimit;
+  // add-difficulty-levels: a setup saved without a level, or with an unknown one, offers Soldado.
+  const difficulty = isDifficulty(value.difficulty) ? value.difficulty : fallback.difficulty;
   let enemy: EnemyChoice = fallback.enemy;
   const saved = value.enemy as { kind?: unknown; index?: unknown; army?: unknown; roster?: unknown } | undefined;
   if (saved?.kind === 'preset' && typeof saved.index === 'number') {
@@ -99,7 +107,7 @@ export function parseSetup(raw: string | null): SkirmishSetup {
       migrated ||= built.changed;
     }
   }
-  return { map, roster, enemy, timeLimit, ...(migrated ? { migrated: true } : {}) };
+  return { map, roster, enemy, timeLimit, difficulty, ...(migrated ? { migrated: true } : {}) };
 }
 
 export function loadSetup(): SkirmishSetup {

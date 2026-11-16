@@ -12,7 +12,7 @@ import type { DecidedBy, Outcome, SimEvent } from '@prestes/shared';
 import { TARGET_HYSTERESIS, targetScore } from '../tactical';
 import { CONCEALED_CONTACT_RADIUS, CONTACT_RADIUS, AMBUSH_RADIUS, AWARENESS_RANGE, SUPPRESS_FIRE_INTERVAL, clamp } from './model';
 import type { MutableUnit } from './model';
-import type { SimContext } from './context';
+import { factorsOf, moraleLossFactor, type SimContext } from './context';
 import { ALL_HELD_TICKS, objectiveValues } from './objectives';
 import { nearestEnemy, nearestKnownEnemyAt } from './geometry';
 import { woundAccuracyFactor } from './casualties';
@@ -36,8 +36,31 @@ import {
  */
 function withinHoldRange(unit: MutableUnit, target: MutableUnit): boolean {
   const contact = unit.autoContact === 'armed' ? CONCEALED_CONTACT_RADIUS : CONTACT_RADIUS;
-  const radius = unit.fireOnContact ? contact : unit.ambush ? AMBUSH_RADIUS : Infinity;
+  const radius = unit.fireOnContact
+    ? contact
+    : unit.ambush
+      ? AMBUSH_RADIUS
+      : economical(unit)
+        ? ECONOMY_RANGE_SHARE * (getWeapon(unit.weaponId)?.range ?? 0)
+        : Infinity;
   return (target.x - unit.x) ** 2 + (target.y - unit.y) ** 2 <= radius * radius;
+}
+
+/** add-difficulty-levels D3: economical fire opens only within this share of the weapon's range. */
+export const ECONOMY_RANGE_SHARE = 0.6;
+/** add-difficulty-levels D3: an economical aimed shot waits this many times the usual interval... */
+export const ECONOMY_INTERVAL = 1.5;
+/** ...and is this much better aimed. */
+export const ECONOMY_AIM = 1.15;
+
+/** Economical fire rules apply: the setting is on and no explicit fire order overrides it. */
+function economical(unit: MutableUnit): boolean {
+  return unit.economyFire === true && !unit.suppress;
+}
+
+/** add-difficulty-levels D1: the enemy side's hit chance follows the level. */
+function levelAim(ctx: SimContext, unit: MutableUnit): number {
+  return unit.faction === 'legalist' ? factorsOf(ctx).enemyAim : 1;
 }
 
 /** A section on fire-on-contact opens fire all together. */
@@ -380,7 +403,10 @@ export function fire(ctx: SimContext, tick: number, events: SimEvent[]): void {
     const burst = weapon.fire !== 'aimed' ? weapon.burst : undefined;
     const burstStart = burst !== undefined && (unit.burstLeft ?? 0) <= 0;
     if (burstStart) {
-      unit.burstLeft = burst.rounds[0] + Math.floor(ctx.rng.nextFloat() * (burst.rounds[1] - burst.rounds[0] + 1));
+      // add-difficulty-levels D3: economical bursts are the weapon's shortest (no draw).
+      unit.burstLeft = economical(unit)
+        ? burst.rounds[0]
+        : burst.rounds[0] + Math.floor(ctx.rng.nextFloat() * (burst.rounds[1] - burst.rounds[0] + 1));
     }
     // garrison-and-assault D4: a man at a port has the position's cover on top of his stance's.
     const targetCover = garrisonCover(ctx, target) ?? coverAgainst(target.x, target.y, unit.x, unit.y, target.stance, ctx.covers);
@@ -401,7 +427,9 @@ export function fire(ctx: SimContext, tick: number, events: SimEvent[]): void {
         woundAccuracyFactor(ctx, unit) *
         // faction-armies 3.1: his army's and section's marksmanship.
         unitValues(unit).accuracy *
-        (burst ? burst.hitFactor : 1),
+        (burst ? burst.hitFactor : 1) *
+        levelAim(ctx, unit) *
+        (economical(unit) && !burst ? ECONOMY_AIM : 1),
       0.05,
       0.95,
     );
@@ -440,7 +468,9 @@ export function fire(ctx: SimContext, tick: number, events: SimEvent[]): void {
       ? target.state !== 'pinned'
         ? SUPPRESS_FIRE_INTERVAL
         : weapon.fireIntervalTicks
-      : drawTicks(ctx, weapon.aimedIntervalTicks);
+      : economical(unit)
+        ? Math.ceil(ECONOMY_INTERVAL * drawTicks(ctx, weapon.aimedIntervalTicks))
+        : drawTicks(ctx, weapon.aimedIntervalTicks);
     if (burst) {
       unit.burstLeft = (unit.burstLeft ?? 1) - 1;
       if (unit.magazine === 0) unit.burstLeft = 0;
@@ -492,7 +522,7 @@ function applyHit(
   events: SimEvent[],
 ): void {
   // faction-armies 3.1: morale falls at the rate his army and section define.
-  const moraleDamage = Math.round((reduced ? 16 : 10) * weapon.suppression * unitValues(target).moraleLoss);
+  const moraleDamage = Math.round((reduced ? 16 : 10) * weapon.suppression * unitValues(target).moraleLoss * moraleLossFactor(ctx, target));
   if (unit.nonLethal) {
     target.morale = Math.max(25, target.morale - Math.round(moraleDamage * 0.5));
     return;
@@ -537,7 +567,7 @@ function applyHit(
         }
         const distance = Math.sqrt((ally.x - target.x) ** 2 + (ally.y - target.y) ** 2);
         if (distance <= 12) {
-          ally.morale = Math.max(0, ally.morale - Math.round(8 * unitValues(ally).moraleLoss));
+          ally.morale = Math.max(0, ally.morale - Math.round(8 * unitValues(ally).moraleLoss * moraleLossFactor(ctx, ally)));
           ally.suppression = clamp(ally.suppression + 8 / suppressionDivisor(ally), 0, 100);
         }
       }
@@ -732,7 +762,7 @@ export function areaHitChance(ctx: SimContext, unit: MutableUnit, target: Mutabl
   const rangeFactor = Math.max(0.25, 1 - (distance / engageRange(ctx, unit)) * 0.55);
   const burst = weapon.fire !== 'aimed' ? weapon.burst : undefined;
   return clamp(
-    weapon.accuracy * rangeFactor * (1 - targetCover) * unitValues(unit).accuracy * (burst ? burst.hitFactor : 1) * AREA_FIRE_ACCURACY,
+    weapon.accuracy * rangeFactor * (1 - targetCover) * unitValues(unit).accuracy * (burst ? burst.hitFactor : 1) * levelAim(ctx, unit) * AREA_FIRE_ACCURACY,
     0,
     AREA_FIRE_ACCURACY,
   );

@@ -3,19 +3,19 @@
   "ticks": 600,
   "hash": "0ae3084b",
   "battleMaps": {
-    "campo-de-provas": "94b68f47",
-    "catanduvas": "9bb6a14b",
-    "copacabana": "3d4d534d",
-    "la-gaiba": "b1d3e8a2",
-    "paiolzinho": "06d97225",
-    "pantanal": "9c6ee651",
-    "ponte-de-verdinho": "71337a15",
-    "porto-mendes": "aad94d41",
-    "sao-luiz-ramada": "de48ddf4",
-    "serra-nova": "4ab759d7"
+    "campo-de-provas": "cb5b4ac6",
+    "catanduvas": "35981fda",
+    "copacabana": "a2805a23",
+    "la-gaiba": "e4ff97ed",
+    "paiolzinho": "6e600551",
+    "pantanal": "22e265cb",
+    "ponte-de-verdinho": "e335744b",
+    "porto-mendes": "333578ab",
+    "sao-luiz-ramada": "80de832c",
+    "serra-nova": "3edba1d5"
   },
   "mixedRosters": {
-    "campo-de-provas": "60476373"
+    "campo-de-provas": "d9c5a820"
   },
-  "reason": "add-historical-commander: the campaign maps' field commanders (figure flag, command radius, loss)"
+  "reason": "add-difficulty-levels: Soldado rebalanced and the level hashed"
 }

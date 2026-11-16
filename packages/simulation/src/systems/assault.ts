@@ -1,5 +1,5 @@
 import type { AssaultSnapshot, PositionDef, SimEvent, Vec2, WeaponId } from '@prestes/shared';
-import type { SimContext } from './context';
+import { moraleLossFactor, type SimContext } from './context';
 import { clamp, type MutableUnit } from './model';
 import { reject } from './commands';
 import { applyTacticalOrder } from './orders';
@@ -163,7 +163,7 @@ function fall(ctx: SimContext, unit: MutableUnit, tick: number, events: SimEvent
   for (const ally of ctx.units) {
     if (!ally.alive || ally.incapacitated || ally.faction !== unit.faction || ally.id === unit.id) continue;
     if (squared(ally, unit) > 12 * 12) continue;
-    ally.morale = Math.max(0, ally.morale - 8);
+    ally.morale = Math.max(0, ally.morale - Math.round(8 * moraleLossFactor(ctx, ally)));
     ally.suppression = clamp(ally.suppression + 8, 0, 100);
   }
 }

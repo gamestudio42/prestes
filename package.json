@@ -24,6 +24,7 @@
     "check": "pnpm typecheck && pnpm lint && pnpm test && pnpm check:locales && pnpm check:content && pnpm check:maps",
     "check:bundle": "tsx tools/check-bundle.ts",
     "check:determinism": "tsx tools/check-determinism.ts",
+    "check:difficulty": "tsx tools/check-difficulty.ts",
     "maps:previews": "tsx tools/map-previews.ts",
     "thumbs": "tsx tools/section-thumbs.ts",
     "verify": "tsx tools/verify.ts",

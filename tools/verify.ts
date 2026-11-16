@@ -23,6 +23,8 @@ const steps: Step[] = [
   { name: 'build', command: 'pnpm build' },
   { name: 'bundle budget', command: 'pnpm check:bundle' },
   { name: 'determinism', command: 'pnpm check:determinism' },
+  // add-difficulty-levels 4.2: 60 headless battles in parallel, a few minutes.
+  { name: 'difficulty', command: 'pnpm check:difficulty', slow: true },
   { name: 'tick budget', command: 'pnpm check:budget' },
   { name: 'openspec validate', command: `${openspec} validate --specs`, requires: openspec },
   { name: 'e2e', command: 'pnpm e2e', slow: true },

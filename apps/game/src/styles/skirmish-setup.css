@@ -450,6 +450,7 @@
 }
 
 .setup-time-limit h4,
+.setup-difficulty h4,
 .setup-objectives h4 {
   margin: 4px 0 2px;
   color: var(--book-accent);
@@ -477,6 +478,24 @@
   border-color: var(--book-accent);
   background: var(--book-accent);
   color: var(--book-paper);
+}
+
+/* add-difficulty-levels: three levels share the narrow map column, wrapping when they must. */
+.setup-difficulty .setup-time-buttons {
+  flex-wrap: wrap;
+}
+
+.setup-difficulty .setup-time-buttons button {
+  flex: 1 1 auto;
+  padding: 4px 6px;
+}
+
+/* add-difficulty-levels: the level's one-line description under its buttons. */
+.setup-difficulty-description {
+  margin: 4px 0 0;
+  color: var(--book-ink);
+  font-size: 12px;
+  line-height: 1.35;
 }
 
 .setup-objectives ul {

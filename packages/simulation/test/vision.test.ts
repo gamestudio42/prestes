@@ -1,3 +1,4 @@
+import { PRE_LEVEL_FACTORS } from './fixtures/pre-levels';
 import { describe, expect, it } from 'vitest';
 import type { CoverPoint } from '@prestes/shared';
 import { SimulationEngine } from '../src/engine';
@@ -6,7 +7,7 @@ import { openField } from './open-field';
 
 // fog-of-war: what each side sees.
 function field() {
-  const engine = new SimulationEngine({ seed: 1922, scenario: 'battle3v3', sandbox: true, battleMap: openField() });
+  const engine = new SimulationEngine({ seed: 1922, scenario: 'battle3v3', sandbox: true, battleMap: openField(), factors: PRE_LEVEL_FACTORS });
   engine.covers.splice(0);
   // One observer, one enemy, everyone else far away and out of sight.
   for (const unit of engine.units) {

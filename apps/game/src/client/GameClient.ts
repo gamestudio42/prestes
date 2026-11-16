@@ -4,6 +4,7 @@ import {
   type BattleMapId,
   type BattleRosters,
   type Command,
+  type Difficulty,
   type Frame,
   type InterpolatedFrame,
   type MapDocument,
@@ -37,6 +38,8 @@ export interface GameClientOptions {
   timeLimitTicks?: number;
   /** add-battle-events 4.4: the editor's playtest. */
   playtest?: boolean;
+  /** add-difficulty-levels: the level the skirmish is fought at (absent: Soldado). */
+  difficulty?: Difficulty;
   onFrame?: (frame: Frame) => void;
   onEvent?: (event: SimEvent) => void;
 }
@@ -63,6 +66,7 @@ export class GameClient {
   private readonly deployment?: boolean;
   private readonly timeLimitTicks?: number;
   private readonly playtest?: boolean;
+  private readonly difficulty?: Difficulty;
   private bounding?: boolean;
   private timer: number | null = null;
   /** Half ticks owed: the interval runs every 100 ms, the speed is per 200 ms. */
@@ -87,6 +91,7 @@ export class GameClient {
     this.deployment = options.deployment;
     this.timeLimitTicks = options.timeLimitTicks;
     this.playtest = options.playtest;
+    this.difficulty = options.difficulty;
     this.worker = new Worker(new URL('../sim.worker.ts', import.meta.url), { type: 'module' });
     this.worker.onmessage = (event: MessageEvent<WorkerResponse>) => {
       const message = event.data;
@@ -110,7 +115,7 @@ export class GameClient {
       }
     };
 
-    this.send({ type: 'start', seed: options.seed, sandbox: options.sandbox, training: options.training, opposition: options.opposition, bounding: options.bounding, scenario: options.scenario, battleMap: options.battleMap, ...(options.mapDocument ? { mapDocument: options.mapDocument } : {}), ...(options.rosters ? { rosters: options.rosters } : {}), ...(options.deployment ? { deployment: true } : {}), ...(options.timeLimitTicks === undefined ? {} : { timeLimitTicks: options.timeLimitTicks }), ...(options.playtest ? { playtest: true } : {}) });
+    this.send({ type: 'start', seed: options.seed, sandbox: options.sandbox, training: options.training, opposition: options.opposition, bounding: options.bounding, scenario: options.scenario, battleMap: options.battleMap, ...(options.mapDocument ? { mapDocument: options.mapDocument } : {}), ...(options.rosters ? { rosters: options.rosters } : {}), ...(options.deployment ? { deployment: true } : {}), ...(options.timeLimitTicks === undefined ? {} : { timeLimitTicks: options.timeLimitTicks }), ...(options.playtest ? { playtest: true } : {}), ...(options.difficulty ? { difficulty: options.difficulty } : {}) });
   }
 
   start(): void {
@@ -150,7 +155,7 @@ export class GameClient {
       outcome: 'playing',
       hash: '',
     });
-    this.send({ type: 'start', seed: this.seed, sandbox: this.sandbox, training: this.training, opposition: this.opposition, bounding: this.bounding, scenario: this.scenario, battleMap: this.battleMap, ...(this.mapDocument ? { mapDocument: this.mapDocument } : {}), ...(this.rosters ? { rosters: this.rosters } : {}), ...(this.deployment ? { deployment: true } : {}), ...(this.timeLimitTicks === undefined ? {} : { timeLimitTicks: this.timeLimitTicks }), ...(this.playtest ? { playtest: true } : {}) });
+    this.send({ type: 'start', seed: this.seed, sandbox: this.sandbox, training: this.training, opposition: this.opposition, bounding: this.bounding, scenario: this.scenario, battleMap: this.battleMap, ...(this.mapDocument ? { mapDocument: this.mapDocument } : {}), ...(this.rosters ? { rosters: this.rosters } : {}), ...(this.deployment ? { deployment: true } : {}), ...(this.timeLimitTicks === undefined ? {} : { timeLimitTicks: this.timeLimitTicks }), ...(this.playtest ? { playtest: true } : {}), ...(this.difficulty ? { difficulty: this.difficulty } : {}) });
   }
 
   step(ticks = 1): void {

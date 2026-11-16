@@ -26,7 +26,7 @@ import type {
 } from '@prestes/shared';
 import { TRAINING_ENEMY_HP } from './model';
 import type { MutableUnit } from './model';
-import type { SimContext } from './context';
+import { factorsOf, type SimContext } from './context';
 import { reject } from './commands';
 import { incapacitate } from './casualties';
 
@@ -262,7 +262,7 @@ export function spawnSection(ctx: SimContext, spec: SectionSpec): number {
       weaponId,
       magazine: dummy ? 0 : load.magazine,
       // faction-armies 3.1: a section's ammunition, morale and cohesion are its army's and type's.
-      reserve: dummy ? 0 : section?.ammunitionFactor !== undefined ? Math.round(load.reserve * section.ammunitionFactor) : load.reserve,
+      reserve: dummy ? 0 : levelReserve(ctx, spec.faction, section?.ammunitionFactor !== undefined ? Math.round(load.reserve * section.ammunitionFactor) : load.reserve),
       ...(man?.sidearm ? { sidearmId: man.sidearm } : {}),
       ...(section ? { sectionType: section.id } : {}),
       morale: section ? unitValues({ sectionType: section.id }).morale : MAX_MORALE,
@@ -606,4 +606,13 @@ export function reinforce(
     recoveryTicks: 0,
   });
   ctx.nextUnitId += 1;
+}
+
+/**
+ * add-difficulty-levels: the player's side carries the level's share of its
+ * reserve (60 % at Oficial), rounded, after the section type's own factor.
+ */
+export function levelReserve(ctx: Pick<SimContext, 'factors'>, faction: MutableUnit['faction'], reserve: number): number {
+  const factor = faction === 'column' ? factorsOf(ctx).playerReserve : 1;
+  return factor === 1 ? reserve : Math.round(reserve * factor);
 }

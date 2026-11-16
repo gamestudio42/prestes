@@ -90,7 +90,8 @@
    { "name": "weapon-carbine", "keys": [{ "frame": 0, "bounds": {"x": 108, "y": 144, "w": 16, "h": 16 } }] },
    { "name": "weapon-automatic", "keys": [{ "frame": 0, "bounds": {"x": 126, "y": 144, "w": 16, "h": 16 } }] },
    { "name": "weapon-machine-gun", "keys": [{ "frame": 0, "bounds": {"x": 0, "y": 162, "w": 16, "h": 16 } }] },
-   { "name": "weapon-pistol", "keys": [{ "frame": 0, "bounds": {"x": 18, "y": 162, "w": 16, "h": 16 } }] }
+   { "name": "weapon-pistol", "keys": [{ "frame": 0, "bounds": {"x": 18, "y": 162, "w": 16, "h": 16 } }] },
+   { "name": "fire-economy", "keys": [{ "frame": 0, "bounds": {"x": 36, "y": 162, "w": 16, "h": 16 } }] }
   ]
  }
 }

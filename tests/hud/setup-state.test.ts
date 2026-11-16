@@ -24,14 +24,30 @@ describe('skirmish setup state', () => {
   });
 
   it('keeps a valid saved setup', () => {
-    const saved = { map: PROVING, roster: { sections: ['comando', 'metralhadora'] }, enemy: { kind: 'preset', index: 2 }, timeLimit: 18000 };
+    const saved = { map: PROVING, roster: { sections: ['comando', 'metralhadora'] }, enemy: { kind: 'preset', index: 2 }, timeLimit: 18000, difficulty: 'oficial' };
     expect(parseSetup(JSON.stringify(saved))).toEqual(saved);
-    const built = { map: FIELD, roster: { sections: ['irregulares'] }, enemy: { kind: 'built', army: 'legalista', roster: { sections: ['infantaria-exercito'] } }, timeLimit: DEFAULT_TIME_LIMIT };
+    const built = { map: FIELD, roster: { sections: ['irregulares'] }, enemy: { kind: 'built', army: 'legalista', roster: { sections: ['infantaria-exercito'] } }, timeLimit: DEFAULT_TIME_LIMIT, difficulty: 'historia' };
     expect(parseSetup(JSON.stringify(built))).toEqual(built);
     // A preset index the map does not have falls back to "Sorteado".
     expect(parseSetup(JSON.stringify({ ...saved, enemy: { kind: 'preset', index: 9 } })).enemy).toEqual({ kind: 'drawn' });
     // add-map-objectives 3.3: only a game time limit is kept.
     expect(parseSetup(JSON.stringify({ ...saved, timeLimit: 5 })).timeLimit).toBe(DEFAULT_TIME_LIMIT);
+  });
+
+  it('add-difficulty-levels 3.1: Level remembered; Older saved setup offers Soldado and keeps the rest', () => {
+    const saved = { map: PROVING, roster: { sections: ['comando', 'metralhadora'] }, enemy: { kind: 'drawn' }, timeLimit: 18000 };
+    const older = parseSetup(JSON.stringify(saved));
+    expect(older).toEqual({ ...saved, difficulty: 'soldado' });
+    expect(parseSetup(JSON.stringify({ ...saved, difficulty: 'impossivel' })).difficulty).toBe('soldado');
+    expect(defaultSetup().difficulty).toBe('soldado');
+    const store = new Map<string, string>();
+    vi.stubGlobal('window', { localStorage: { getItem: (key: string) => store.get(key) ?? null, setItem: (key: string, value: string) => store.set(key, value) } });
+    try {
+      saveSetup({ ...older, difficulty: 'historia' });
+      expect(parseSetup([...store.values()][0]!).difficulty).toBe('historia');
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 
   it('fields the enemy the setup chose', () => {

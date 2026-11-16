@@ -1,9 +1,12 @@
 import type { RNG } from '@prestes/kernel';
+import { DIFFICULTY_FACTORS } from '@prestes/shared';
 import type {
   BattleMap,
   Command,
   CommandEnvelope,
   CoverPoint,
+  Difficulty,
+  DifficultyFactors,
   Outcome,
   PositionDef,
   SightObstacle,
@@ -61,6 +64,9 @@ export interface SimContext {
   readonly objectives: ObjectiveState[];
   /** add-map-objectives D3: the battle's time limit in ticks. */
   readonly timeLimitTicks: number;
+  /** add-difficulty-levels D2: the battle's level and its factors. */
+  readonly difficulty: Difficulty;
+  readonly factors: DifficultyFactors;
   /** add-map-objectives D3: the tick the battle started (0 without a deployment phase). */
   battleStartTick: number;
   /** add-map-objectives D3: the tick each side first held every objective, cleared when it loses one. */
@@ -82,4 +88,22 @@ export interface SimContext {
   readonly scripted?: ScriptedState;
   /** add-battle-events 2.5: the battle is the editor's playtest (events can be fired by hand). */
   readonly playtest?: boolean;
+}
+
+/**
+ * add-difficulty-levels D2: the battle's factors. A hand-built test context
+ * without them plays at Soldado.
+ */
+export function factorsOf(ctx: Pick<SimContext, 'factors'>): DifficultyFactors {
+  return ctx.factors ?? DIFFICULTY_FACTORS.soldado;
+}
+
+/** add-difficulty-levels D1: × a morale loss of this man (the player's side only). */
+export function moraleLossFactor(ctx: Pick<SimContext, 'factors'>, unit: Pick<MutableUnit, 'faction'>): number {
+  return unit.faction === 'column' ? factorsOf(ctx).playerMoraleLoss : 1;
+}
+
+/** add-difficulty-levels D1: × a rally rate of this man (the player's side only). */
+export function rallyFactor(ctx: Pick<SimContext, 'factors'>, unit: Pick<MutableUnit, 'faction'>): number {
+  return unit.faction === 'column' ? factorsOf(ctx).playerRally : 1;
 }

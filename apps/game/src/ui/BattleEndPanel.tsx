@@ -85,6 +85,14 @@ export function BattleEndPanel({ locale, frame, onRestart, onMenu, onBackToEdito
         <dl className="training-debrief-grid">
           <dt>{t('battle.end.time')}</dt>
           <dd data-testid="battle-end-time">{formatTicks(frame.tick)}</dd>
+          {frame.difficulty !== undefined ? (
+            <>
+              <dt>{t('battle.end.difficulty')}</dt>
+              <dd data-testid="battle-end-difficulty" data-value={frame.difficulty}>
+                {t(`difficulty.${frame.difficulty}.name`)}
+              </dd>
+            </>
+          ) : null}
           {decidedBy !== undefined ? (
             <>
               <dt>{t('battle.end.decided')}</dt>

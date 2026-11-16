@@ -1,3 +1,4 @@
+import { PRE_LEVEL_FACTORS } from './fixtures/pre-levels';
 import { expect } from 'vitest';
 import { buildingCover, type BattleMap, type Building } from '@prestes/shared';
 import { SimulationEngine } from '../src';
@@ -34,7 +35,7 @@ export function duel(
 ) {
   const HOUSE = options.house ?? DEFAULT_HOUSE;
   const map = duelMap(HOUSE);
-  const engine = new SimulationEngine({ seed, scenario: 'battle3v3', sandbox: true, battleMap: map });
+  const engine = new SimulationEngine({ seed, scenario: 'battle3v3', sandbox: true, battleMap: map, factors: PRE_LEVEL_FACTORS });
   const column = engine.units.filter((unit) => unit.faction === 'column');
   const legalist = engine.units.filter((unit) => unit.faction === 'legalist');
   const legalistInside = options.insideFaction === 'legalist';

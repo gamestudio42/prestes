@@ -2,7 +2,7 @@ import { armyOfUnit, IN_COVER, MAP_BOUNDS, MAX_MORALE, moraleStateFor, findPath,
 import type { SimEvent, Vec2 } from '@prestes/shared';
 import { SUPPRESSION_COOLDOWN, clamp } from './model';
 import type { MutableUnit } from './model';
-import type { SimContext } from './context';
+import { moraleLossFactor, rallyFactor, type SimContext } from './context';
 import { occupied, nearestEnemy } from './geometry';
 import { queueUnitOrder } from './movement';
 import { woundFor, releaseCarry } from './casualties';
@@ -46,7 +46,7 @@ export function selfRally(ctx: SimContext): void {
     if (!unit.alive || unit.dummy || unit.routed || unit.incapacitated) continue;
     const cap = figures.length > 0 && underCommand(figures, unit) ? COMMAND_RALLY_CAP : SELF_RALLY_CAP;
     if (unit.suppression < OUT_OF_FIRE && unit.morale < cap) {
-      unit.morale = Math.min(cap, unit.morale + SELF_RALLY_RATE);
+      unit.morale = Math.min(cap, unit.morale + SELF_RALLY_RATE * rallyFactor(ctx, unit));
     }
   }
 }
@@ -60,7 +60,7 @@ export function applyCommandRadius(ctx: SimContext): void {
   if (figures.length === 0) return;
   for (const ally of ctx.units) {
     if (!ally.alive || ally.dummy || ally.routed || ally.incapacitated || ally.morale >= COMMAND_RALLY_CAP) continue;
-    if (underCommand(figures, ally)) ally.morale = Math.min(COMMAND_RALLY_CAP, ally.morale + COMMAND_RATE);
+    if (underCommand(figures, ally)) ally.morale = Math.min(COMMAND_RALLY_CAP, ally.morale + COMMAND_RATE * rallyFactor(ctx, ally));
   }
 }
 
@@ -88,7 +88,7 @@ export function applyOfficerAura(ctx: SimContext): void {
         continue;
       }
       if ((ally.x - officer.x) ** 2 + (ally.y - officer.y) ** 2 <= 12 * 12) {
-        ally.morale = Math.min(MAX_MORALE, ally.morale + 0.25);
+        ally.morale = Math.min(MAX_MORALE, ally.morale + 0.25 * rallyFactor(ctx, ally));
       }
     }
   }
@@ -121,7 +121,7 @@ export function updateOfficerLoss(ctx: SimContext, tick: number, events: SimEven
         continue;
       }
       if ((ally.x - officer.x) ** 2 + (ally.y - officer.y) ** 2 <= radius ** 2) {
-        ally.morale = Math.max(0, ally.morale - loss);
+        ally.morale = Math.max(0, ally.morale - Math.round(loss * moraleLossFactor(ctx, ally)));
       }
       if (ally.squadId === officer.squadId) {
         ally.cohesion = Math.max(0, ally.cohesion - OFFICER_LOSS_COHESION);

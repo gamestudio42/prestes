@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { mapText } from './SkirmishMaps';
-import { ARMIES, ENEMY_ARMY_IDS, rosterArmies, rosterMen, SECTION_TYPES, TIME_LIMITS, type BattleMap, type BattleMapId, type Roster } from '@prestes/shared';
+import { ARMIES, DIFFICULTIES, ENEMY_ARMY_IDS, rosterArmies, rosterMen, SECTION_TYPES, TIME_LIMITS, type BattleMap, type BattleMapId, type Roster } from '@prestes/shared';
 import { translate, type Locale, type MessageKey } from '@prestes/content';
 import { Troop as Users } from '../icons';
 import { moveFocus, RosterBuilder } from './RosterBuilder';
@@ -162,6 +162,27 @@ export function SkirmishSetup({ locale, setup, maps, onChange, onStart, onBack }
                 </button>
               ))}
             </div>
+          </div>
+
+          <div className="setup-difficulty" data-testid="setup-difficulty" data-value={setup.difficulty}>
+            <h4>{t('setup.difficulty')}</h4>
+            <div className="setup-time-buttons" role="radiogroup" aria-label={t('setup.difficulty')}>
+              {DIFFICULTIES.map((level) => (
+                <button
+                  key={level}
+                  type="button"
+                  className={setup.difficulty === level ? 'active' : ''}
+                  aria-pressed={setup.difficulty === level}
+                  onClick={() => onChange({ ...setup, difficulty: level })}
+                  data-testid={`difficulty-${level}`}
+                >
+                  {t(`difficulty.${level}.name`)}
+                </button>
+              ))}
+            </div>
+            <p className="setup-difficulty-description" data-testid="setup-difficulty-description">
+              {t(`difficulty.${setup.difficulty}.description`)}
+            </p>
           </div>
 
           <div className="setup-objectives" data-testid="setup-objectives">

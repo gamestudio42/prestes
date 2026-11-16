@@ -5,7 +5,7 @@ import {
   useState,
   type MutableRefObject,
 } from 'react';
-import { ORDER_CATALOG, translate, type Locale } from '@prestes/content';
+import { ORDER_CATALOG, translate, type Locale, type MessageKey } from '@prestes/content';
 import {
   nearestTargetGroups,
   spreadTargetGroups,
@@ -56,6 +56,20 @@ function dragOrder(facing: Vec2 | undefined): { facing?: Vec2; spacing?: number 
 }
 
 /** Selection, pending orders, previews, officer callouts and every order handler. */
+/** add-difficulty-levels 5.2: the commander's line for each fire control setting. */
+const FIRE_CONTROL_CALLOUT: Record<FireControl, MessageKey> = {
+  free: 'hud.calloutFire',
+  economy: 'hud.calloutFireEconomy',
+  contact: 'hud.calloutFireContact',
+  hold: 'hud.calloutHoldFire',
+};
+
+/** The section's answer where it has its own words (the others repeat the order). */
+const FIRE_CONTROL_ANSWER: Partial<Record<FireControl, MessageKey>> = {
+  economy: 'hud.calloutFireEconomyAnswer',
+  contact: 'hud.calloutFireContactAnswer',
+};
+
 export function useOrders({
   frame,
   locale,
@@ -375,7 +389,12 @@ export function useOrders({
     });
   };
 
-  const triggerHoldFireCallout = (holding: boolean): void => {
+  /**
+   * add-difficulty-levels 5.2: each fire control setting has its own line and
+   * answer (the captions of the voice lines; until they are recorded, the
+   * caption is all there is).
+   */
+  const triggerFireControlCallout = (mode: FireControl): void => {
     if (selectedIds.length === 0) {
       return;
     }
@@ -383,12 +402,18 @@ export function useOrders({
     const officer = frame?.units.find(
       (unit) => unit.kind === 'officer' && unit.faction === faction && unit.alive,
     );
-    const text = translate(locale, holding ? 'hud.calloutHoldFire' : 'hud.calloutFire');
+    const text = translate(locale, FIRE_CONTROL_CALLOUT[mode]);
+    const answer = FIRE_CONTROL_ANSWER[mode];
     setOrderCallout({
       officerId: officer?.id ?? null,
       troopIds: selectedIds,
       officerText: text,
-      troopText: translate(locale, 'hud.calloutTroop', { order: text }),
+      // With no officer to speak it, the section's bubble carries the command too.
+      troopText: answer
+        ? officer
+          ? translate(locale, answer)
+          : `${text} ${translate(locale, answer)}`
+        : translate(locale, 'hud.calloutTroop', { order: text }),
     });
   };
 
@@ -921,13 +946,13 @@ export function useOrders({
     triggerOrderCallout('regroup', selectedIds);
   };
 
-  /** Free fire, fire on contact (ambush) or hold fire. */
+  /** Free fire, economical fire, fire on contact (ambush) or hold fire. */
   const handleFireControl = (mode: FireControl): void => {
     if (selectedIds.length === 0) {
       return;
     }
     clientRef.current?.sendCommand({ type: 'fire_control', unitIds: selectedIds, mode });
-    triggerHoldFireCallout(mode !== 'free');
+    triggerFireControlCallout(mode);
   };
   /** add-run-toggle: Walk or Run for the selected sections. */
   const handleHurry = (on: boolean): void => {

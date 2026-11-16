@@ -28,6 +28,10 @@ import {
   reloadMagazine,
   SUPPRESSION_DECAY,
   DEFAULT_TIME_LIMIT,
+  DIFFICULTY_FACTORS,
+  resolveDifficulty,
+  type Difficulty,
+  type DifficultyFactors,
 } from '@prestes/shared';
 import type {
   BattlePhase,
@@ -98,7 +102,7 @@ import { defaultConcealedFire, settleLowInScrub } from './systems/concealment';
 import type { FerryState } from './systems/ferry';
 import { createPositions, garrisonSnapshot, pinGarrisons, updateGarrisons, type Garrison } from './systems/garrison';
 import { assaultSnapshot, updateAssaults, type Assault } from './systems/assault';
-import { applyRoster } from './systems/spawning';
+import { applyRoster, levelReserve } from './systems/spawning';
 import { reactToFire, screenOfficers } from './systems/fire-reaction';
 import { handoverSuppress } from './systems/orders';
 
@@ -144,6 +148,13 @@ export interface SimulationOptions {
   timeLimitTicks?: number;
   /** add-battle-events 2.5: the editor's playtest; map events can be fired by hand and their states ride the frame. */
   playtest?: boolean;
+  /** add-difficulty-levels: the level the 3v3 is fought at; absent, Soldado. */
+  difficulty?: Difficulty;
+  /**
+   * add-difficulty-levels 4.3: factors over the level's, for tests that pin the
+   * balance before the levels and for the tuning tools. Never sent by the game.
+   */
+  factors?: Partial<DifficultyFactors>;
 }
 
 /** faction-armies 3.1: a section short of ammunition carries less in reserve. */
@@ -229,6 +240,10 @@ export class SimulationEngine implements SimContext {
   readonly scripted?: ScriptedState;
   /** add-battle-events 2.5: the editor's playtest. */
   readonly playtest: boolean;
+  /** add-difficulty-levels D2: the battle's level and its factors, fixed for the battle. */
+  readonly difficulty: Difficulty;
+  readonly factors: DifficultyFactors;
+  private readonly factorOverride: boolean;
   fog: boolean;
   /** add-deployment-phase D1: no tick passes in deployment; `start_battle` begins the battle. */
   phase: BattlePhase;
@@ -283,6 +298,9 @@ export class SimulationEngine implements SimContext {
     this.objectives = createObjectives(this.battleMap);
     this.timeLimitTicks = options.timeLimitTicks ?? DEFAULT_TIME_LIMIT;
     this.playtest = options.playtest === true;
+    this.difficulty = resolveDifficulty(options.difficulty);
+    this.factors = { ...DIFFICULTY_FACTORS[this.difficulty], ...options.factors };
+    this.factorOverride = options.factors !== undefined;
     if (this.battleMap?.events && this.battleMap.events.length > 0) this.scripted = createScriptedState(this.battleMap.events, this.battleMap.eventPlaces);
     this.positionById = positions.byId;
     this.selectTerrain();
@@ -378,6 +396,10 @@ export class SimulationEngine implements SimContext {
         beingCarriedBy: null,
         recoveryTicks: 0,
       }));
+    // add-difficulty-levels: the player's side carries the level's share of its reserve.
+    if (this.scenario === 'battle3v3') {
+      for (const unit of this.units) unit.reserve = levelReserve(this, unit.faction, unit.reserve);
+    }
     applyRoster(this, options.roster ?? []);
     if (this.rosters) {
       const pools = initialGunPools(this.units);
@@ -591,6 +613,7 @@ export class SimulationEngine implements SimContext {
       ...(this.garrisons.size > 0 ? { garrisons: garrisonSnapshot(this) } : {}),
       ...(this.assaults.size > 0 ? { assaults: assaultSnapshot(this) } : {}),
       ...(this.objectives.length > 0 ? { objectives: objectiveSnapshot(this) } : {}),
+      ...(this.scenario === 'battle3v3' ? { difficulty: this.difficulty } : {}),
       ...(this.objectives.length > 0
         ? { clock: { tick: this.tickCount - this.battleStartTick, limit: this.timeLimitTicks } }
         : {}),
@@ -685,6 +708,10 @@ export class SimulationEngine implements SimContext {
         ...(this.objectives.length > 0 ? { objectives: objectiveHashState(this) } : {}),
         // refine-battle-controls: the queued orders are state too.
         ...(this.orderQueues.size > 0 ? { orderQueues: [...this.orderQueues] } : {}),
+        // add-difficulty-levels D2: the level is part of a 3v3's state.
+        ...(this.scenario === 'battle3v3' ? { difficulty: this.difficulty } : {}),
+        // An override (tests, tuning) is state too.
+        ...(this.factorOverride ? { factors: this.factors } : {}),
         // add-battle-events D3: hashed only on maps with events, so other maps hash as before.
         ...(this.scripted ? { scripted: scriptedHashState(this.scripted) } : {}),
       }),

@@ -98,6 +98,8 @@ export const ICONS = {
   'stance-prone': pixelIcon('stance-prone'),
   'hold-fire': pixelIcon('hold-fire'),
   'fire-contact': pixelIcon('fire-contact'),
+  // add-difficulty-levels 2.2: an open cartridge box (economical fire).
+  'fire-economy': pixelIcon('fire-economy'),
   'formation-line': pixelIcon('formation-line'),
   'formation-column': pixelIcon('formation-column'),
   'formation-wedge': pixelIcon('formation-wedge'),

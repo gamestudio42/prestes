@@ -1,6 +1,6 @@
 import { MAP_BOUNDS, bridgePolygon, findPath, vegetationAt } from '@prestes/shared';
 import type { Command, SimEvent, Vec2, VegetationKind } from '@prestes/shared';
-import type { SimContext } from './context';
+import { factorsOf, type SimContext } from './context';
 import type { MutableUnit } from './model';
 import { applyCommand } from './commands';
 import { MARKER_TICKS, REMEMBER_TICKS, otherSide, type Side } from './vision';
@@ -76,8 +76,10 @@ export function createBattleMemory(): BattleMemory {
 const THINK_EVERY = 10;
 /** A section idle this long (ticks) after its last contact closes on it. */
 const LOST_CONTACT_TICKS = 100;
-/** The commander counterattacks at this ratio of fit soldiers. */
-const ADVANTAGE = 1.4;
+/*
+ * The commander counterattacked at a 1.4 ratio of fit soldiers before
+ * add-difficulty-levels; the ratio is now the level's `commanderAdvantage`.
+ */
 /** add-map-objectives D4: a section has this long (ticks, 60 s) to be sent to retake a lost objective. */
 const RETAKE_TICKS = 600;
 /** add-map-objectives D4: with less than this left (ticks, 3 min) and less value, all but one section attacks. */
@@ -663,7 +665,7 @@ function commandLegalists(ctx: SimContext, tick: number, events: SimEvent[]): vo
   // gone quiet he must find the enemy: he attacks with all but one section,
   // keeping the weakest back in its line as a reserve.
   const quiet = tick - ctx.battle.lastShotTick > QUIET_TICKS;
-  if ((theirFit > 0 && ownFit >= theirFit * ADVANTAGE) || quiet) {
+  if ((theirFit > 0 && ownFit >= theirFit * factorsOf(ctx).commanderAdvantage) || quiet) {
     const ready = [...own]
       .filter(([squadId]) => {
         const plan = plans.get(squadId);
@@ -813,7 +815,9 @@ function retakeObjective(
 ): void {
   const retake = ctx.battle.retake;
   if (retake === null) return;
-  if (tick - retake.tick > RETAKE_TICKS) {
+  // add-difficulty-levels D1: how many sections the level sends (none at História).
+  const force = Math.round(factorsOf(ctx).commanderRetake);
+  if (tick - retake.tick > RETAKE_TICKS || force <= 0) {
     ctx.battle.retake = null;
     return;
   }
@@ -822,7 +826,7 @@ function retakeObjective(
     ctx.battle.retake = null;
     return;
   }
-  const pick = [...own]
+  const picks = [...own]
     .filter(([squadId]) => {
       const plan = plans.get(squadId);
       return plan !== 'garrison' && plan !== 'hold-objective' && plan !== 'withdraw';
@@ -833,16 +837,18 @@ function retakeObjective(
     .sort(
       (left, right) =>
         distanceTo(centroid(left[1]), objective.flag) - distanceTo(centroid(right[1]), objective.flag) || left[0] - right[0],
-    )[0];
-  if (pick === undefined) return;
-  const [squadId, section] = pick;
-  issue(
-    ctx,
-    { type: 'order', order: 'advance', unitIds: section.map((unit) => unit.id), to: { x: objective.flag.x, y: objective.flag.y } },
-    tick,
-    events,
-  );
-  plans.set(squadId, 'attack');
+    )
+    .slice(0, force);
+  if (picks.length === 0) return;
+  for (const [squadId, section] of picks) {
+    issue(
+      ctx,
+      { type: 'order', order: 'advance', unitIds: section.map((unit) => unit.id), to: { x: objective.flag.x, y: objective.flag.y } },
+      tick,
+      events,
+    );
+    plans.set(squadId, 'attack');
+  }
   ctx.battle.retake = null;
 }
 
@@ -860,7 +866,7 @@ function commitLastMinutes(
 ): void {
   if (ctx.objectives.length === 0) return;
   const remaining = ctx.timeLimitTicks - (tick - ctx.battleStartTick);
-  if (remaining >= LAST_MINUTES_TICKS || remaining <= 0) return;
+  if (remaining >= LAST_MINUTES_TICKS * factorsOf(ctx).commanderLastMinutes || remaining <= 0) return;
   const values = objectiveValues(ctx);
   if (values.legalist >= values.column) return;
   const inside = ([, section]: [number, MutableUnit[]]) =>
@@ -906,9 +912,20 @@ export function updateBattleFlow(ctx: SimContext, tick: number, events: SimEvent
   }
   recordContacts(ctx, tick, events);
   recordObjectiveLoss(ctx, tick);
-  if (tick % THINK_EVERY !== 0) return;
-  for (const side of SIDES) sweep(ctx, side);
-  fallBack(ctx, tick, events);
-  commandLegalists(ctx, tick, events);
-  closeOnLostContact(ctx, tick, events);
+  // add-difficulty-levels D1: the commander reviews the field at the level's
+  // tempo; the contact rule and the fall-back keep THINK_EVERY for both sides.
+  const think = tick % THINK_EVERY === 0;
+  const command = tick % commanderEvery(ctx) === 0;
+  if (!think && !command) return;
+  if (think) {
+    for (const side of SIDES) sweep(ctx, side);
+    fallBack(ctx, tick, events);
+  }
+  if (command) commandLegalists(ctx, tick, events);
+  if (think) closeOnLostContact(ctx, tick, events);
+}
+
+/** add-difficulty-levels D1: ticks between the enemy commander's reviews of the field. */
+export function commanderEvery(ctx: SimContext): number {
+  return Math.max(1, Math.round(THINK_EVERY * factorsOf(ctx).commanderThinkEvery));
 }
