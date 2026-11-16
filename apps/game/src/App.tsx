@@ -238,7 +238,9 @@ export function App() {
     onRegroup: handleRegroup,
     onToggleHurry: () => handleHurry(!hurry),
   });
-  useTestBridge(clientRef, setSpeed, setControlBothSides);
+  const battleMapRef = useRef(battleMapId);
+  battleMapRef.current = battleMapId;
+  useTestBridge(clientRef, setSpeed, setControlBothSides, () => mapDocumentFor(battleMapRef.current));
 
   // The player's last order, shown over his officer.
   const [callout, setCallout] = useState<typeof orderCallout>(null);

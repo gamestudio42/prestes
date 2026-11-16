@@ -43,4 +43,16 @@ for (const group of budget.groups) {
   failed ||= over;
 }
 
+// make-campaign-playable D6: the campaign book's "Edit this map" link is for the dev server only.
+const DEV_ONLY = ['Edit this map', 'Editar este mapa', 'editor.html?map='];
+for (const file of files.filter((name) => name.endsWith('.js'))) {
+  const text = readFileSync(join(assetsDir, file), 'utf8');
+  for (const word of DEV_ONLY) {
+    if (text.includes(word)) {
+      console.error(`FAIL ${file} contains the dev-only "${word}"`);
+      failed = true;
+    }
+  }
+}
+
 process.exit(failed ? 1 : 0);

@@ -35,6 +35,7 @@ import {
   type CatalogObject,
   type ObjectGroup,
   type EditableMap,
+  type MapDocument,
   type GroundMaterialId,
   type LineKind,
   trenchLength,
@@ -70,7 +71,8 @@ import {
 } from '@prestes/shared';
 import { LOCALES, translate, type Locale, type MessageKey } from '@prestes/content';
 import { loadLocale, saveLocale } from '../storage';
-import { autosave, exportDocument, listProjectMaps, loadLast, loadProjectMap, readDocumentFile, saveThumbnail, saveToProject, storePlaytest } from './persistence';
+import { autosave, exportDocument, listProjectMaps, loadLast, loadProjectMap, loadStored, readDocumentFile, saveThumbnail, saveToProject, storePlaytest } from './persistence';
+import { openChoice, openRequest } from './open-map';
 import { missionLabel, OpenDialog, slotOf, SlotSelect, type Slot } from './MapSlots';
 import { EditorStore, objectiveCircle, replaceCommand, type SelectionItem, type ToolId, type ToolSettings } from './store';
 import { editorBridge, type EditorBridge } from './test-bridge';
@@ -253,6 +255,10 @@ export function EditorApp(): ReactNode {
   const fileInput = useRef<HTMLInputElement | null>(null);
   const [cursor, setCursor] = useState<CursorInfo | null>(null);
   const [dialog, setDialog] = useState<'new' | 'properties' | 'open' | null>(null);
+  // make-campaign-playable D6: a project map and a differing autosave of it, until the owner picks one.
+  const [openConflict, setOpenConflict] = useState<{ project: MapDocument; local: MapDocument } | null>(null);
+  // The campaign book's "Edit this map" for a chapter without a map: New, with its slot chosen.
+  const [newMission, setNewMission] = useState<string | undefined>(undefined);
   // add-map-compass: the north the properties dialog is previewing (null: the map's own).
   const [previewNorth, setPreviewNorth] = useState<number | null>(null);
   // The editor's camera turns with Q and E too: the arrow follows it.
@@ -286,14 +292,42 @@ export function EditorApp(): ReactNode {
     view.confirmPlaceDelete = (users) => window.confirm(tRef.current('editor.event.place.confirmDelete', { events: users.join(', ') }));
     viewport.current = view;
     let cancelled = false;
-    void loadLast().then((document) => {
+    const show = (document: MapDocument | null): void => {
       if (cancelled) return;
       if (document) {
         store.load(fromMapDocument(document));
         view.frameMap();
       }
       setReady(true);
-    });
+    };
+    // make-campaign-playable D6: `?map=<id>` opens the project's map, asking when an autosave differs.
+    const request = openRequest(window.location.search);
+    if (request.kind === 'map') {
+      void Promise.all([loadProjectMap(request.id), loadStored(request.id)]).then(([result, local]) => {
+        if (cancelled) return;
+        if (!result.ok) {
+          store.setMessage(tRef.current(`editor.import.error.${result.error}`, { detail: result.detail ?? '' }), true);
+          void loadLast().then(show);
+          return;
+        }
+        if (openChoice(result.document, local) === 'ask') {
+          setOpenConflict({ project: result.document, local: local! });
+          setReady(true);
+          return;
+        }
+        show(result.document);
+      });
+    } else {
+      void loadLast().then((document) => {
+        show(document);
+        if (!cancelled && request.kind === 'mission') {
+          setNewMission(request.mission);
+          setProjectMaps(null);
+          setDialog('new');
+          void listProjectMaps().then(setProjectMaps);
+        }
+      });
+    }
     return () => {
       cancelled = true;
       view.dispose();
@@ -590,6 +624,39 @@ export function EditorApp(): ReactNode {
         {store.message ? <span data-testid="editor-message" className={store.message.error ? 'editor-error' : 'editor-ok'}>{store.message.text}</span> : null}
       </footer>
 
+      {openConflict ? (
+        <div className="editor-dialog" role="dialog" aria-modal="true" aria-label={t('editor.openConflict.title')}>
+          <form data-testid="open-conflict" onSubmit={(event) => event.preventDefault()}>
+            <h2>{t('editor.openConflict.title')}</h2>
+            <p className="editor-hint">{t('editor.openConflict.text', { id: openConflict.project.id })}</p>
+            <div className="editor-row">
+              <button
+                type="button"
+                className="primary"
+                data-testid="open-conflict-project"
+                onClick={() => {
+                  store.load(fromMapDocument(openConflict.project));
+                  viewport.current?.frameMap();
+                  setOpenConflict(null);
+                }}
+              >
+                {t('editor.openConflict.project')}
+              </button>
+              <button
+                type="button"
+                data-testid="open-conflict-local"
+                onClick={() => {
+                  store.load(fromMapDocument(openConflict.local));
+                  viewport.current?.frameMap();
+                  setOpenConflict(null);
+                }}
+              >
+                {t('editor.openConflict.local')}
+              </button>
+            </div>
+          </form>
+        </div>
+      ) : null}
       {dialog === 'open' ? (
         <OpenDialog maps={projectMaps} locale={locale} t={t} onOpen={(id) => void onOpenProjectMap(id)} onClose={() => setDialog(null)} />
       ) : null}
@@ -598,6 +665,7 @@ export function EditorApp(): ReactNode {
           mode={dialog}
           map={map}
           maps={projectMaps ?? []}
+          {...(dialog === 'new' && newMission ? { initialMission: newMission } : {})}
           locale={locale}
           t={t}
           onClose={() => {
@@ -1466,6 +1534,8 @@ const compassPoint = (bearing: number): string => ['n', 'ne', 'e', 'se', 's', 's
 function MapDialog(props: {
   mode: 'new' | 'properties';
   map: EditableMap;
+  /** make-campaign-playable D6: New opened from a chapter without a map starts on its slot. */
+  initialMission?: string;
   maps: readonly AuthoredMapEntry[];
   locale: Locale;
   t: T;
@@ -1481,7 +1551,7 @@ function MapDialog(props: {
   const [namePt, setNamePt] = useState(mode === 'new' ? '' : map.name['pt-BR']);
   const [descriptionEn, setDescriptionEn] = useState(mode === 'new' ? '' : map.description.en);
   const [descriptionPt, setDescriptionPt] = useState(mode === 'new' ? '' : map.description['pt-BR']);
-  const [slot, setSlot] = useState<Slot>(mode === 'new' ? { use: 'skirmish' } : slotOf(map));
+  const [slot, setSlot] = useState<Slot>(mode === 'new' ? (props.initialMission ? { use: 'campaign', mission: props.initialMission } : { use: 'skirmish' }) : slotOf(map));
   const [setting, setSetting] = useState<SettingLabel>(mode === 'new' ? 'historical-setting-fictional-place' : map.setting.label);
   const [sourceNote, setSourceNote] = useState(mode === 'new' ? '' : map.setting.sourceNote);
   const [palette, setPalette] = useState<MapPalette>(mode === 'new' ? 'temperate' : map.palette);

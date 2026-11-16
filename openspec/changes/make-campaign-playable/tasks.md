@@ -42,11 +42,11 @@
 
 ## 3. Hand edits to campaign maps
 
-- [ ] 3.1 The edit link in development (D6).
+- [x] 3.1 The edit link in development (D6).
   - "Edit this map" / "Editar este mapa" on briefings with a map, behind `import.meta.env.DEV`; `?mission=<chapter>` for an empty slot.
   - `EditorApp` opens `?map=<id>` from the project, and asks when an autosave of the same id differs (project or local).
   - Verify: an e2e on the dev server opens chapter 6's link and finds Serra Nova loaded in the editor; a unit test of the autosave choice; the built bundle contains no "Edit this map" string (`pnpm build`, then a grep test in `tools/check-bundle.ts`).
-- [ ] 3.2 "Save to project", then play.
+- [x] 3.2 "Save to project", then play.
   - Verify with an e2e on the dev server: move one prop on a copy of a campaign map in a temporary fixture, save to the project, play the chapter, and see the change in the battle's map document. Restore the fixture afterwards. A real campaign map is never left edited.
 - [ ] 3.3 `pnpm maps:accept <id> --reason` (D7).
   - Add the id filter to `check-maps.ts`, and `--map` to `check-determinism.ts --update`, which rewrites only that map's entries and keeps the others and the base hash.

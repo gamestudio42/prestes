@@ -60,6 +60,12 @@ export async function autosave(document: MapDocument): Promise<boolean> {
   return saved;
 }
 
+/** make-campaign-playable D6: the browser's autosave of one map id, if any. */
+export async function loadStored(id: string): Promise<MapDocument | null> {
+  const result = parseMapDocument(await get(id));
+  return result.ok ? result.document : null;
+}
+
 /** The last map the editor had open, if the browser kept it. */
 export async function loadLast(): Promise<MapDocument | null> {
   const id = await get(LAST_KEY);

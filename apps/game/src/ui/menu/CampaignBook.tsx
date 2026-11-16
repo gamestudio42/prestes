@@ -3,6 +3,7 @@ import {
   CAMPAIGN_CHAPTERS,
   COMPENDIUM,
   FIGURES,
+  chapterMapId,
   chapterText,
   compendiumText,
   isChapterPlayable,
@@ -17,6 +18,7 @@ import { DESK_ART, deskArtData, deskArtStyle } from './deskArt';
 import { BookEndOrnament, BookFrame, creditLine, InlinePlate, PlateImage, QuoteFooter, useBookPosition } from './BookFrame';
 import { campaignBook, folio, sourceAnchor, type BookPage, type TextItem } from './bookPages';
 import { PixelPhoto } from '../PixelPhoto';
+import { EDIT_MAP_LABEL, editMapHref } from '../../campaign/dev-edit';
 import { chapterState, isCompleted, previousChapter, type CampaignProgress, type ChapterState } from '../../campaign/progress';
 import coverImage from '../../assets/menu/coluna-prestes.webp';
 
@@ -326,6 +328,11 @@ export function CampaignBook({ locale, open, onStartSkirmish, onOpenEntry, progr
                 )
               ) : null}
               {skirmish(`chapter-skirmish-${chapter.id}`)}
+              {import.meta.env.DEV ? (
+                <a className="desk-link" href={editMapHref(chapter.id, chapterMapId(chapter.id))} data-testid={`chapter-edit-map-${chapter.id}`}>
+                  {EDIT_MAP_LABEL[locale]}
+                </a>
+              ) : null}
             </div>
             <p className="desk-sources">
               <span className="desk-chip">{t(`book.label.${chapter.label}` as MessageKey)}</span>{' '}
