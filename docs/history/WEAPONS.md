@@ -61,6 +61,13 @@ used 105 mm howitzers; the surrendered material included a 105 mm howitzer, two
 the division (p. 93). Artillery belongs to a later sandbox slice and must not be
 implied in the opening rifle skirmish.
 
+Game abstraction (add-artillery-bombardment, 2026-11-15): artillery exists
+only as a battle event, a bombardment by off-map guns of either side, with two
+profiles: the 75 mm field gun (lethal 5 m, wounds to 15 m, suppresses to 30 m)
+and the 105 mm howitzer (7, 22 and 40 m). The radii are game values at section
+scale, not ballistic data. The guns are not units; a placed `field-gun-75` is
+still a prop.
+
 ## Game abstraction: Mauser 7 mm
 
 The first equipable weapon is the **Fuzil Mauser 7 mm**. The source supports the

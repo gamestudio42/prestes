@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import {
+  GUNS,
   coverAtPoint,
   terrainHeightAt,
   terrainSurfaceAt,
@@ -11,6 +12,7 @@ import {
 import type { InterpolatedFrame } from '@prestes/shared';
 
 type ShotEvent = Extract<SimEvent, { type: 'shot' }>;
+type ImpactEvent = Extract<SimEvent, { type: 'shell_impact' }>;
 
 /** Frames of `effects.png` (8 x 8 px each, left to right). */
 export const EFFECT_FRAMES = {
@@ -223,6 +225,70 @@ export class EffectsLayer {
     const units = new Map(frame.units.map((unit) => [unit.id, unit]));
     for (const event of frame.events) {
       if (event.type === 'shot') this.shot(event, units, frame.covers, muzzleAt(event.source));
+      else if (event.type === 'shell_impact') this.burst(event);
+    }
+  }
+
+  /**
+   * add-artillery-bombardment 3.1: a shell burst: a flash, a column of dust
+   * tinted by the ground, dark smoke that rises and drifts, and debris thrown
+   * out. The scatter is seeded by the shell, so a replay looks the same.
+   */
+  burst(event: ImpactEvent): void {
+    const scale = GUNS[event.gun].burstScale;
+    const ground = terrainHeightAt(event.x, event.y);
+    const surface = terrainSurfaceAt(event.x, event.y);
+    const earth: Tint = surface === 'road' || surface === 'dirt-road' ? 'sand' : surface === 'cobbles' ? 'stone' : 'grass';
+    const salt = Math.round(event.x * 10) * 31 + Math.round(event.y * 10);
+    const noise = (index: number) => shotNoise(event.tick, salt, index);
+    const at = (x: number, y: number, z: number) => ({ x: event.x + x, y: ground + y, z: event.y + z });
+    this.spawn({ kind: 'muzzle', ...at(0, 0.8 * scale, 0), vx: 0, vy: 0, vz: 0, life: 0.12, size: 4 * scale, grow: 0.5, tint: 'none' });
+    const dust = Math.round(14 * scale);
+    for (let index = 0; index < dust; index += 1) {
+      const angle = noise(index * 3) * Math.PI * 2;
+      const out = noise(index * 3 + 1) * 1.6 * scale;
+      this.spawn({
+        kind: 'dust',
+        ...at(Math.cos(angle) * out * 0.4, 0.3, Math.sin(angle) * out * 0.4),
+        vx: Math.cos(angle) * out,
+        vy: (3 + noise(index * 3 + 2) * 5) * scale,
+        vz: Math.sin(angle) * out,
+        life: 1.4 + noise(index * 5) * 0.8,
+        size: (1.6 + noise(index * 7) * 1.2) * scale,
+        grow: 1.4,
+        tint: earth,
+      });
+    }
+    const smoke = Math.round(8 * scale);
+    for (let index = 0; index < smoke; index += 1) {
+      const angle = noise(100 + index) * Math.PI * 2;
+      this.spawn({
+        kind: 'smoke',
+        ...at(Math.cos(angle) * 0.8, 0.8 + index * 0.25, Math.sin(angle) * 0.8),
+        vx: 0.5 + Math.cos(angle) * 0.4,
+        vy: (1.2 + noise(120 + index) * 1.4) * scale,
+        vz: 0.3 + Math.sin(angle) * 0.4,
+        life: 3.5 + noise(140 + index) * 2,
+        size: (2 + noise(160 + index)) * scale,
+        grow: 1.8,
+        tint: 'none',
+      });
+    }
+    const debris = Math.round(10 * scale);
+    for (let index = 0; index < debris; index += 1) {
+      const angle = noise(200 + index) * Math.PI * 2;
+      const speed = (4 + noise(220 + index) * 6) * scale;
+      this.spawn({
+        kind: 'splinter',
+        ...at(0, 0.4, 0),
+        vx: Math.cos(angle) * speed,
+        vy: 4 + noise(240 + index) * 5,
+        vz: Math.sin(angle) * speed,
+        life: 0.7 + noise(260 + index) * 0.5,
+        size: 0.6,
+        grow: 0,
+        tint: earth === 'stone' ? 'stone' : 'wood',
+      });
     }
   }
 

@@ -235,3 +235,4 @@ export {
   type Difficulty,
   type DifficultyFactors,
 } from './difficulty';
+export * from './artillery';

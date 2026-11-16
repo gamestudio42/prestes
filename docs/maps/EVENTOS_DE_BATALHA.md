@@ -45,10 +45,29 @@ partida.
    - **Cartão narrativo**: título e texto em português e em inglês, lado a
      lado. Na batalha o jogo pausa e mostra o cartão até o jogador fechar; a
      velocidade volta à de antes.
+   - **Bombardeio de artilharia** (desde 2026-11-15): canhões fora do mapa
+     atirando sobre o campo. Escolha:
+     - **Canhões de**: Coluna ou legalistas (de quem são os canhões);
+     - **Canhão**: de campanha 75 mm (mata até 5 m, fere até 15 m, abala até
+       30 m) ou obus 105 mm (7, 22 e 40 m);
+     - **Alvo**: uma área de gatilho (os tiros miram o meio dela) ou as
+       posições inimigas (cada tiro mira um inimigo que aquele lado vê ou viu
+       nos últimos 30 s; sem ninguém à vista, os canhões não atiram);
+     - **Tiros por minuto** (1 a 30) e **Dispersão** (5 a 60 m: até onde os
+       tiros caem longe do ponto de mira);
+     - **Dura**: por um tempo (0:10 a 10:00) ou até outro evento.
+     Com o evento selecionado, o mapa mostra a área e o anel da dispersão.
+     Na batalha cada tiro assobia 2 s antes de cair; a granada não escolhe
+     lado, fere quem estiver perto, deixa crateras (cobertura baixa) e faz a
+     tela tremer quando cai perto. Deitado, atrás de muro, guarnecido ou numa
+     trincheira o soldado se protege muito mais. O som ainda é provisório
+     (sintetizado) até escolhermos gravações CC0.
 6. **Verificar mapa.** A verificação aponta evento sem gatilho ou sem ação,
    lugar ou objetivo que não existe, seção do lado errado, cartão sem texto,
    eventos que dependem um do outro em círculo, ponto de entrada fora da borda
-   ou na água, destino inalcançável e evento que nunca vai acontecer (aviso).
+   ou na água, destino inalcançável, valores do bombardeio fora da faixa,
+   evento que nunca vai acontecer (aviso) e bombardeio sobre a área de
+   desdobramento do próprio lado (aviso).
    Clicar num problema abre o painel no evento ou seleciona o lugar.
 7. **Testar.** No teste a partir do editor aparece, no alto à direita, a lista
    **Eventos do mapa (teste)**: o estado de cada evento, o tempo em que

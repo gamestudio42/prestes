@@ -20,6 +20,7 @@ import type { SimContext } from './context';
 import type { MutableUnit } from './model';
 import { applyCommand } from './commands';
 import { spawnSection, type SectionSlot } from './spawning';
+import { artilleryHashState, startBombardment, type ActiveBombardment, type PendingShell } from './artillery';
 
 /**
  * add-battle-events D3: the map's planned events, run inside the simulation
@@ -65,6 +66,12 @@ export interface ScriptedState {
   posture: ActivePosture | null;
   /** Legalist squads that arrived by an event and are still on their first order. */
   readonly arriving: Map<number, ArrivalOrder>;
+  /** add-artillery-bombardment D2: the bombardments running, oldest first. */
+  readonly bombardments: ActiveBombardment[];
+  /** add-artillery-bombardment D2: shells announced and not yet landed, in announcement order. */
+  readonly shells: PendingShell[];
+  /** add-artillery-bombardment D5: craters left so far. */
+  craters: number;
   /** Events the playtest fired by hand this tick (consumed by the next update). */
   pendingNow?: number[];
 }
@@ -80,6 +87,9 @@ export function createScriptedState(events: readonly BattleEvent[] | undefined, 
     arrivals: [],
     posture: null,
     arriving: new Map(),
+    bombardments: [],
+    shells: [],
+    craters: 0,
   };
 }
 
@@ -195,6 +205,8 @@ function fire(ctx: SimContext, state: ScriptedState, event: BattleEvent, tick: n
       });
     } else if (action.kind === 'posture') {
       setPosture(ctx, state, action, tick);
+    } else if (action.kind === 'bombardment') {
+      startBombardment(state, event.id, action, tick);
     } else {
       cards.push({ title: { ...action.title }, text: { ...action.text } });
     }
@@ -278,6 +290,8 @@ export function scriptedHashState(state: ScriptedState): unknown {
     arrivals: state.arrivals,
     posture: state.posture,
     arriving: [...state.arriving.keys()],
+    // add-artillery-bombardment D2: only once a bombardment has fired, so other maps with events hash as before.
+    ...artilleryHashState(state),
   };
 }
 

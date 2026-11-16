@@ -3,7 +3,18 @@ import { findPath } from '../pathfinding';
 import { isSectionTypeId } from '../sections';
 import { isPointBlockedByCovers } from '../world';
 import type { EditableMap } from './document';
-import { ENTRY_EDGE_DISTANCE, MAX_BATTLE_EVENTS, MAX_TRIGGER_TIME, sectionSide, type BattleEvent, type EventPlace } from './events';
+import {
+  BOMBARD_RATE,
+  BOMBARD_SECONDS,
+  BOMBARD_SPREAD,
+  ENTRY_EDGE_DISTANCE,
+  MAX_BATTLE_EVENTS,
+  MAX_TRIGGER_TIME,
+  sectionSide,
+  type BattleEvent,
+  type EventPlace,
+} from './events';
+import { pointInPolygon } from './geometry';
 import { isDeepWater } from './runtime';
 import type { BattleMap } from './types';
 import { columnSectionCount } from './validate-withdrawal';
@@ -28,7 +39,9 @@ export type EventProblemCode =
   | 'event-move-unreachable'
   | 'event-commander-without-figure'
   | 'event-exited-no-exits'
-  | 'event-exited-too-many';
+  | 'event-exited-too-many'
+  | 'bombard-out-of-range'
+  | 'bombard-own-lines';
 
 export interface EventProblem {
   code: EventProblemCode;
@@ -36,6 +49,15 @@ export interface EventProblem {
   params: Record<string, string | number>;
   at?: Vec2;
   target?: { kind: 'event' | 'event-place'; id: number };
+}
+
+/** add-artillery-bombardment: an area bombardment's aim point, its corners' mean. */
+export function polygonMiddle(polygon: readonly Vec2[]): Vec2 {
+  if (polygon.length === 0) return { x: 0, y: 0 };
+  return {
+    x: polygon.reduce((sum, point) => sum + point.x, 0) / polygon.length,
+    y: polygon.reduce((sum, point) => sum + point.y, 0) / polygon.length,
+  };
 }
 
 function walkable(point: Vec2, map: BattleMap): boolean {
@@ -139,6 +161,19 @@ export function checkEvents(map: EditableMap, compiled: BattleMap): EventProblem
       } else if (action.kind === 'posture') {
         if (action.area !== undefined) place(action.area, 'area');
         if ('event' in action.until) other(action.until.event);
+      } else if (action.kind === 'bombardment') {
+        // add-artillery-bombardment 1.3: the target area, the "until" event, the ranges, and one's own lines.
+        const area = action.target.kind === 'area' ? place(action.target.area, 'area') : null;
+        if ('event' in action.until) other(action.until.event);
+        const outside = (value: number, range: { min: number; max: number }) => !Number.isFinite(value) || value < range.min || value > range.max;
+        if (outside(action.perMinute, BOMBARD_RATE)) report('bombard-out-of-range', { field: 'rate', min: BOMBARD_RATE.min, max: BOMBARD_RATE.max });
+        if (outside(action.spread, BOMBARD_SPREAD)) report('bombard-out-of-range', { field: 'spread', min: BOMBARD_SPREAD.min, max: BOMBARD_SPREAD.max });
+        if ('seconds' in action.until && outside(action.until.seconds, BOMBARD_SECONDS)) report('bombard-out-of-range', { field: 'duration', min: BOMBARD_SECONDS.min, max: BOMBARD_SECONDS.max });
+        if (area?.kind === 'area') {
+          const aim = polygonMiddle(area.polygon);
+          const own = compiled.deployment[action.side]?.area;
+          if (own && own.length >= 3 && pointInPolygon(aim.x, aim.y, own)) report('bombard-own-lines', { place: area.name }, aim, 'warning');
+        }
       } else {
         for (const language of ['pt-BR', 'en'] as const) {
           if (!action.title[language].trim() || !action.text[language].trim()) report('event-card-missing', { language });

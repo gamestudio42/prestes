@@ -96,6 +96,7 @@ import { applyCommand, applyQueuedOrders, queuedOrdersSnapshot } from './systems
 import { createBattleMemory, updateBattleFlow } from './systems/enemy-commander';
 import { createObjectives, objectiveHashState, objectiveSnapshot, updateObjectives, type ObjectiveState } from './systems/objectives';
 import { createWithdrawalState, updateWithdrawal, withdrawalHashState, withdrawalSnapshot, type WithdrawalState } from './systems/withdrawal';
+import { updateArtillery } from './systems/artillery';
 import { createScriptedState, scriptedHashState, scriptedSnapshot, updateBattleEvents, type ScriptedState } from './systems/battle-events';
 import { createVisionState, seenSnapshot, updateVision } from './systems/vision';
 import { createFerries, ferrySnapshot, headingForLanding, heldByFerry, updateFerries } from './systems/ferry';
@@ -567,7 +568,11 @@ export class SimulationEngine implements SimContext {
       if (this.battleMap?.height.kind === 'field') keepOffFordFloor(this);
       if (this.objectives.length > 0) updateObjectives(this, nextTick, events);
       // add-battle-events D3: after objectives and casualties, before the outcome.
-      if (this.scripted) updateBattleEvents(this, nextTick, events);
+      if (this.scripted) {
+        updateBattleEvents(this, nextTick, events);
+        // add-artillery-bombardment D2: right after the events, so a bombardment fired now announces its first shell now.
+        updateArtillery(this, nextTick, events);
+      }
       updateOutcome(this, nextTick, events);
     } else {
       this.queue.length = 0;

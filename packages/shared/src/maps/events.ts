@@ -3,6 +3,7 @@ import { ARMIES } from '../armies';
 import { isSectionTypeId, SECTION_TYPES, type SectionTypeId } from '../sections';
 import type { LocalizedText } from './types';
 import { MAX_EXIT_SECTIONS } from './withdrawal';
+import { isGunId, type GunId } from '../artillery';
 
 /**
  * add-battle-events D1: what the map author plans to happen during a battle.
@@ -28,6 +29,14 @@ export const MAX_TRIGGER_TIME = 30 * 60;
 export const POSTURE_SECONDS = { min: 30, max: 20 * 60 } as const;
 /** A losses trigger's share (%), in steps of 5. */
 export const LOSSES_PERCENT = { min: 10, max: 90, step: 5 } as const;
+/** add-artillery-bombardment D1: a bombardment's shells per minute. */
+export const BOMBARD_RATE = { min: 1, max: 30 } as const;
+/** add-artillery-bombardment D1: how far (m) shells fall from the aim point. */
+export const BOMBARD_SPREAD = { min: 5, max: 60 } as const;
+/** add-artillery-bombardment D1: how long (s) a timed bombardment lasts. */
+export const BOMBARD_SECONDS = { min: 10, max: 10 * 60 } as const;
+/** add-artillery-bombardment: at most this many bombardments run at once. */
+export const MAX_BOMBARDMENTS = 4;
 /** A trigger area has this many corners. */
 export const AREA_CORNERS = { min: 3, max: 16 } as const;
 
@@ -55,10 +64,23 @@ export type ArrivalOrder =
 
 export type EnemyPosture = 'offensive' | 'fall-back' | 'hold';
 
+/** add-artillery-bombardment D1: an area's middle, or the enemy the firing side knows of. */
+export type BombardmentTarget = { kind: 'area'; area: number } | { kind: 'enemy' };
+
 export type EventAction =
   | { kind: 'troops'; side: EventSide; entry: number; sections: SectionTypeId[]; order: ArrivalOrder }
   | { kind: 'posture'; posture: EnemyPosture; area?: number; until: { seconds: number } | { event: number } }
-  | { kind: 'card'; title: LocalizedText; text: LocalizedText };
+  | { kind: 'card'; title: LocalizedText; text: LocalizedText }
+  | {
+      kind: 'bombardment';
+      /** Whose guns fire. */
+      side: EventSide;
+      gun: GunId;
+      target: BombardmentTarget;
+      perMinute: number;
+      spread: number;
+      until: { seconds: number } | { event: number };
+    };
 
 export interface BattleEvent {
   id: number;
@@ -133,6 +155,17 @@ function isAction(value: unknown): value is EventAction {
       );
     case 'card':
       return isText(value.title) && isText(value.text);
+    case 'bombardment':
+      return (
+        isSide(value.side) &&
+        isGunId(value.gun) &&
+        isObject(value.target) &&
+        ((value.target.kind === 'area' && isNumber(value.target.area)) || value.target.kind === 'enemy') &&
+        isNumber(value.perMinute) &&
+        isNumber(value.spread) &&
+        isObject(value.until) &&
+        (isNumber(value.until.seconds) || isNumber(value.until.event))
+      );
     default:
       return false;
   }
@@ -184,6 +217,19 @@ function compileAction(action: EventAction): EventAction | null {
     }
     case 'card':
       return { kind: 'card', title: { ...action.title }, text: { ...action.text } };
+    case 'bombardment': {
+      const until = 'event' in action.until ? { event: action.until.event } : { seconds: clamp(Math.round(action.until.seconds), BOMBARD_SECONDS.min, BOMBARD_SECONDS.max) };
+      const target: BombardmentTarget = action.target.kind === 'area' ? { kind: 'area', area: action.target.area } : { kind: 'enemy' };
+      return {
+        kind: 'bombardment',
+        side: action.side,
+        gun: action.gun,
+        target,
+        perMinute: clamp(Math.round(action.perMinute), BOMBARD_RATE.min, BOMBARD_RATE.max),
+        spread: clamp(Math.round(action.spread), BOMBARD_SPREAD.min, BOMBARD_SPREAD.max),
+        until,
+      };
+    }
   }
 }
 
