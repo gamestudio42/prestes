@@ -98,6 +98,21 @@ dicionário; "falta a página" é termo de época que precisa de fonte. Os dois
 últimos não são gerados. Insultos de raça ou de orientação sexual ficam
 fora por decisão de projeto.
 
+### Momento de cada xingamento
+
+O jogo sorteia o xingamento, mas só entre os que combinam com o que está
+acontecendo com a seção (catálogo `voice-lines.ts`, campo `moment`).
+Cerca de dois terços das vezes sai um do momento; o resto, um insulto
+geral. Se a facção não tem xingamento daquele momento, sai um insulto.
+
+| Momento | Quando | Coluna | Legalistas | Cangaceiros |
+|---|---|---|---|---|
+| acertou (`fire`) | o tiro da seção acertou | 05 | 03, 07 | 10, 11, 14 |
+| errou (`miss`) | o tiro da seção errou | 09, 10, 12 | — | 09 |
+| sob fogo (`under-fire`) | a seção leva tiro, ou é pega de surpresa | 11, 18 | 04, 13, 15 | 07, 08 |
+| fuga (`flee`) | um homem do outro lado debanda perto | 06, 17 | 09 | 13 |
+| insulto (`insult`) | qualquer momento do combate | os demais | os demais | os demais |
+
 ### 3a. Coluna (`column`) — gaúchos e paulistas
 
 | nº | Tom | Texto | Fonte |

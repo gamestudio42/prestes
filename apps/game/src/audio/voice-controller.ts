@@ -1,4 +1,4 @@
-import { VOICE_LINES, curseLines, voiceFile, voiceLine, type VoiceLine } from '@prestes/content';
+import { VOICE_LINES, curseLines, voiceFile, voiceLine, type CurseMoment, type VoiceFaction, type VoiceLine } from '@prestes/content';
 import type { Command, Frame, SimEvent } from '@prestes/shared';
 import { hear, type ListeningPoint } from './listening';
 import type { AudioEngine } from './mixer';
@@ -66,6 +66,16 @@ class WebVoiceOutput implements VoiceOutput {
     source.start();
     return buffer.duration;
   }
+}
+
+/** The share of curses taken from the moment's own lines; the rest are insults for any moment. */
+export const MOMENT_SHARE = 0.65;
+
+/** A curse that fits the moment: mostly its own lines, else a general insult. */
+export function pickCurse(faction: VoiceFaction, moment: CurseMoment, random: () => number): VoiceLine | undefined {
+  const own = moment === 'insult' ? [] : curseLines(faction, moment);
+  const pool = own.length > 0 && random() < MOMENT_SHARE ? own : curseLines(faction, 'insult');
+  return pool[Math.floor(random() * pool.length)];
 }
 
 export class VoiceController {
@@ -141,8 +151,7 @@ export class VoiceController {
     const placement = this.place(request.x, request.y);
     if (!placement) return;
     if (request.kind === 'curse') {
-      const lines = curseLines(request.faction);
-      const line = lines[Math.floor(this.random() * lines.length)];
+      const line = pickCurse(request.faction, request.moment, this.random);
       if (line) this.director.curse({ line, section: request.section, placement, enemy: request.enemy }, now);
       return;
     }

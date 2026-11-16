@@ -4,7 +4,8 @@ import type { Command, Frame, SimEvent, UnitSnapshot } from '../../packages/shar
 import { SOUND_FILES } from '../../apps/game/src/audio/sound-files';
 import { captionsOn } from '../../apps/game/src/audio/settings-store';
 import { parseAudioSettings } from '../../apps/game/src/storage';
-import { ANSWER_GAP_MS, CALLOUT_KIND_GAP_MS, CALLOUT_QUIET_MS, CURSE_CAP_MS, CURSE_QUIET_MS, VoiceDirector, type VoiceCaption, type VoiceOutput } from '../../apps/game/src/audio/voice-director';
+import { ANSWER_GAP_MS, CALLOUT_KIND_GAP_MS, CALLOUT_QUIET_MS, RARE_CALLOUTS, CURSE_CAP_MS, CURSE_QUIET_MS, VoiceDirector, type VoiceCaption, type VoiceOutput } from '../../apps/game/src/audio/voice-director';
+import { pickCurse } from '../../apps/game/src/audio/voice-controller';
 import { commandOrder } from '../../apps/game/src/audio/voice-orders';
 import { VoiceWatch } from '../../apps/game/src/audio/voice-watch';
 
@@ -51,6 +52,15 @@ describe('the voice catalogue', () => {
   it('flags an order without its answer', () => {
     const problems = validateVoiceLines(VOICE_LINES.filter((entry) => !(entry.kind === 'answer' && entry.key === 'move')));
     expect(problems).toContain('voice: order "move" has no answer line');
+  });
+
+  it('gives every curse a moment, and picks curses that fit the moment', () => {
+    expect(VOICE_LINES.filter((entry) => entry.kind === 'curse' && !entry.moment)).toEqual([]);
+    expect(curseLines('column', 'miss').map((entry) => entry.key)).toEqual(['09', '10', '12']);
+    expect(pickCurse('column', 'flee', () => 0)?.moment).toBe('flee');
+    expect(pickCurse('column', 'flee', () => 0.99)?.moment).toBe('insult');
+    // The legalists have no curse for a miss: an insult instead.
+    expect(pickCurse('legalist', 'miss', () => 0)?.moment).toBe('insult');
   });
 
   it('keeps each faction to its own curses', () => {
@@ -160,6 +170,18 @@ describe('the voice director', () => {
     expect(output.played.every((p) => p.id.startsWith('xingamento/legalist/'))).toBe(true);
   });
 
+  it('says reloading much more rarely than other call-outs', () => {
+    const { voice } = director();
+    const reloading = line('callout', 'reloading');
+    expect(voice.callOut({ line: reloading, section: 1, placement: near }, 0)).toBe(true);
+    voice.update(2000);
+    expect(voice.callOut({ line: reloading, section: 2, placement: near }, RARE_CALLOUTS.reloading!.gap - 1)).toBe(false);
+    expect(voice.callOut({ line: reloading, section: 2, placement: near }, RARE_CALLOUTS.reloading!.gap)).toBe(true);
+    voice.update(40_000);
+    expect(voice.callOut({ line: reloading, section: 1, placement: near }, RARE_CALLOUTS.reloading!.gap * 1.5)).toBe(false);
+    expect(voice.callOut({ line: reloading, section: 1, placement: near }, RARE_CALLOUTS.reloading!.quiet)).toBe(true);
+  });
+
   it('never curses when the curses setting is off', () => {
     const { output, voice } = director({ curses: false });
     expect(voice.curse({ line: curseLines('column')[0]!, section: 1, placement: near }, 0)).toBe(false);
@@ -204,8 +226,17 @@ describe('the call-out watch', () => {
     watch.frame(frame(1, units, [], [10]), 'column');
     const shot: SimEvent = { type: 'shot', tick: 2, source: 1, target: 10, x: 0, y: 0, x2: 50, y2: 0, hit: false };
     const out = watch.frame(frame(2, units, [shot], [10]), 'column');
-    expect(out.filter((r) => r.kind === 'curse').map((r) => r.kind === 'curse' && r.faction)).toEqual(['column', 'cangaceiro']);
+    expect(out.filter((r) => r.kind === 'curse').map((r) => r.kind === 'curse' && `${r.faction}:${r.moment}`)).toEqual(['column:miss', 'cangaceiro:under-fire']);
     expect(watch.frame(frame(3, units, [{ ...shot, tick: 3 }], [10]), 'column').filter((r) => r.kind === 'curse')).toEqual([]);
+  });
+
+  it('a rout gives the other side a jeer, the strongest moment of the frame', () => {
+    const watch = new VoiceWatch();
+    const units = [unit(1, 'column'), unit(10, 'legalist', { squadId: 4 })];
+    watch.frame(frame(1, units, [], [10]), 'column');
+    const hit: SimEvent = { type: 'shot', tick: 2, source: 1, target: 10, x: 0, y: 0, x2: 50, y2: 0, hit: true };
+    const out = watch.frame(frame(2, units, [hit, { type: 'unit_routed', tick: 2, unitId: 10 }], [10]), 'column');
+    expect(out.filter((r) => r.kind === 'curse').map((r) => r.kind === 'curse' && `${r.faction}:${r.moment}`)).toEqual(['column:flee', 'legalist:under-fire']);
   });
 
   it('says nothing in deployment', () => {

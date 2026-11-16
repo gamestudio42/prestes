@@ -30,6 +30,14 @@ export type VoiceCallout = (typeof VOICE_CALLOUTS)[number];
 export const VOICE_ENEMY_CALLOUTS = ['contact', 'advance', 'hold', 'man-down', 'no-ammo', 'pinned', 'machine-gun', 'falling-back', 'objective'] as const;
 export type VoiceEnemyCallout = (typeof VOICE_ENEMY_CALLOUTS)[number];
 
+/**
+ * When a curse fits: his shot hit (`fire`), he missed (`miss`), he is fired
+ * on or caught by surprise (`under-fire`), the other side runs (`flee`), or
+ * any moment of the fight (`insult`).
+ */
+export const CURSE_MOMENTS = ['fire', 'miss', 'under-fire', 'flee', 'insult'] as const;
+export type CurseMoment = (typeof CURSE_MOMENTS)[number];
+
 export interface VoiceTake {
   /** What is said (the recording's text). */
   pt: string;
@@ -42,6 +50,8 @@ export interface VoiceLine {
   kind: VoiceKind;
   /** The order, the call-out, or the curse's number. */
   key: string;
+  /** A curse's moment. */
+  moment?: CurseMoment;
   takes: readonly VoiceTake[];
 }
 
@@ -90,54 +100,54 @@ export const VOICE_LINES: readonly VoiceLine[] = [
   { speaker: 'soldado', kind: 'callout', key: 'gun-set', takes: [{ pt: 'Metralhadora pronta!', en: 'Machine gun ready!' }, { pt: 'Peça montada!', en: 'Gun set up!' }, { pt: 'Pronta pra atirar!', en: 'Ready to fire!' }] },
   { speaker: 'soldado', kind: 'callout', key: 'objective', takes: [{ pt: 'Posição tomada!', en: 'Position taken!' }, { pt: 'É nossa!', en: "It's ours!" }, { pt: 'Tomamos!', en: 'We took it!' }] },
   { speaker: 'soldado', kind: 'callout', key: 'falling-back', takes: [{ pt: 'Pra trás, pra trás!', en: 'Back, back!' }, { pt: 'Não segura mais, recua!', en: "Can't hold, fall back!" }, { pt: 'Vamos embora daqui!', en: "Let's get out of here!" }] },
-  { speaker: 'xingamento/column', kind: 'curse', key: '01', takes: [{ pt: 'Filho da puta!', en: 'Son of a bitch!' }] },
-  { speaker: 'xingamento/column', kind: 'curse', key: '02', takes: [{ pt: 'Vai pra puta que te pariu!', en: 'Go to hell, you bastard!' }] },
-  { speaker: 'xingamento/column', kind: 'curse', key: '03', takes: [{ pt: 'Filho duma égua!', en: 'Son of a mare!' }] },
-  { speaker: 'xingamento/column', kind: 'curse', key: '04', takes: [{ pt: 'Corno manso!', en: 'Tame cuckold!' }] },
-  { speaker: 'xingamento/column', kind: 'curse', key: '05', takes: [{ pt: 'Toma, chifrudo!', en: 'Take that, cuckold!' }] },
-  { speaker: 'xingamento/column', kind: 'curse', key: '06', takes: [{ pt: 'Corre, cagão!', en: 'Run, coward!' }] },
-  { speaker: 'xingamento/column', kind: 'curse', key: '07', takes: [{ pt: 'Cachorro do governo!', en: 'Government dog!' }] },
-  { speaker: 'xingamento/column', kind: 'curse', key: '08', takes: [{ pt: 'Pau-mandado de coronel!', en: "Colonel's lackey!" }] },
-  { speaker: 'xingamento/column', kind: 'curse', key: '09', takes: [{ pt: 'Porra, errei o desgraçado!', en: 'Damn it, missed the bastard!' }] },
-  { speaker: 'xingamento/column', kind: 'curse', key: '10', takes: [{ pt: 'Merda de espingarda!', en: 'Shit rifle!' }] },
-  { speaker: 'xingamento/column', kind: 'curse', key: '11', takes: [{ pt: 'Barbaridade, que tiroteio!', en: 'Good grief, what a firefight!' }] },
-  { speaker: 'xingamento/column', kind: 'curse', key: '12', takes: [{ pt: 'Bah, mas que porcaria!', en: 'Bah, what rubbish!' }] },
-  { speaker: 'xingamento/column', kind: 'curse', key: '14', takes: [{ pt: 'Vai pros quinto dos inferno, desgraçado!', en: 'Go to the pits of hell, you bastard!' }] },
-  { speaker: 'xingamento/column', kind: 'curse', key: '15', takes: [{ pt: 'Mardito seja!', en: 'Damn you!' }] },
-  { speaker: 'xingamento/column', kind: 'curse', key: '16', takes: [{ pt: 'Chimangos!', en: 'Chimangos!' }, { pt: 'Lá vêm os chimangos!', en: 'Here come the chimangos!' }] },
-  { speaker: 'xingamento/column', kind: 'curse', key: '17', takes: [{ pt: 'Corre, provisório!', en: 'Run, provisional!' }] },
-  { speaker: 'xingamento/column', kind: 'curse', key: '18', takes: [{ pt: 'Raios e coriscos!', en: 'Thunder and lightning!' }] },
-  { speaker: 'xingamento/column', kind: 'curse', key: '19', takes: [{ pt: 'Canalhas!', en: 'Scoundrels!' }] },
-  { speaker: 'xingamento/legalist', kind: 'curse', key: '01', takes: [{ pt: 'Filho da puta!', en: 'Son of a bitch!' }] },
-  { speaker: 'xingamento/legalist', kind: 'curse', key: '02', takes: [{ pt: 'Bando de filhos da puta!', en: 'Pack of sons of bitches!' }] },
-  { speaker: 'xingamento/legalist', kind: 'curse', key: '03', takes: [{ pt: 'Toma, corno!', en: 'Take that, cuckold!' }] },
-  { speaker: 'xingamento/legalist', kind: 'curse', key: '04', takes: [{ pt: 'Puta que pariu, de onde vem esse tiro?', en: "Damn it, where's that fire coming from?" }] },
-  { speaker: 'xingamento/legalist', kind: 'curse', key: '05', takes: [{ pt: 'Vagabundos!', en: 'Bums!' }] },
-  { speaker: 'xingamento/legalist', kind: 'curse', key: '06', takes: [{ pt: 'Rende, cachorro!', en: 'Surrender, dog!' }] },
-  { speaker: 'xingamento/legalist', kind: 'curse', key: '07', takes: [{ pt: 'Hoje tu morre, desgraçado!', en: 'Today you die, bastard!' }] },
-  { speaker: 'xingamento/legalist', kind: 'curse', key: '08', takes: [{ pt: 'Bando de ladrão de cavalo!', en: 'Pack of horse thieves!' }] },
-  { speaker: 'xingamento/legalist', kind: 'curse', key: '09', takes: [{ pt: 'Foge não, covarde!', en: "Don't run, coward!" }] },
-  { speaker: 'xingamento/legalist', kind: 'curse', key: '10', takes: [{ pt: 'Cabra safado!', en: 'Dirty rogue!' }] },
-  { speaker: 'xingamento/legalist', kind: 'curse', key: '11', takes: [{ pt: 'Daqui vocês não saem!', en: "You're not getting out of here!" }] },
-  { speaker: 'xingamento/legalist', kind: 'curse', key: '12', takes: [{ pt: 'Cadê o tal do Prestes?', en: "Where's this Prestes, then?" }] },
-  { speaker: 'xingamento/legalist', kind: 'curse', key: '13', takes: [{ pt: 'Merda, não acaba essa gente!', en: "Shit, there's no end to them!" }] },
-  { speaker: 'xingamento/legalist', kind: 'curse', key: '14', takes: [{ pt: 'Filho duma égua!', en: 'Son of a mare!' }] },
-  { speaker: 'xingamento/legalist', kind: 'curse', key: '15', takes: [{ pt: 'Bah, de onde saiu essa gente?', en: 'Bah, where did these men come from?' }] },
-  { speaker: 'xingamento/cangaceiro', kind: 'curse', key: '01', takes: [{ pt: 'Fi duma rapariga!', en: 'Son of a whore!' }] },
-  { speaker: 'xingamento/cangaceiro', kind: 'curse', key: '02', takes: [{ pt: 'Filho de uma rapariga!', en: 'Son of a whore!' }] },
-  { speaker: 'xingamento/cangaceiro', kind: 'curse', key: '03', takes: [{ pt: 'Fela da puta!', en: 'Son of a bitch!' }] },
-  { speaker: 'xingamento/cangaceiro', kind: 'curse', key: '04', takes: [{ pt: 'Corno véio!', en: 'Old cuckold!' }] },
-  { speaker: 'xingamento/cangaceiro', kind: 'curse', key: '05', takes: [{ pt: 'Cabra da peste!', en: 'Plague of a man!' }] },
-  { speaker: 'xingamento/cangaceiro', kind: 'curse', key: '06', takes: [{ pt: 'Arreda, cabra frouxo!', en: 'Out of the way, weakling!' }] },
-  { speaker: 'xingamento/cangaceiro', kind: 'curse', key: '07', takes: [{ pt: 'Oxente, de onde vem esse tiro?', en: "Hey, where's that fire coming from?" }] },
-  { speaker: 'xingamento/cangaceiro', kind: 'curse', key: '08', takes: [{ pt: 'Vôte, que tiroteio!', en: 'Lord, what a firefight!' }] },
-  { speaker: 'xingamento/cangaceiro', kind: 'curse', key: '09', takes: [{ pt: 'Eita porra, errei!', en: 'Damn it, I missed!' }] },
-  { speaker: 'xingamento/cangaceiro', kind: 'curse', key: '10', takes: [{ pt: 'Vou sangrar tu, desgraçado.', en: "I'll bleed you, bastard." }] },
-  { speaker: 'xingamento/cangaceiro', kind: 'curse', key: '11', takes: [{ pt: 'Vou te furar, fi do cão!', en: "I'll stick you, son of the devil!" }] },
-  { speaker: 'xingamento/cangaceiro', kind: 'curse', key: '12', takes: [{ pt: 'Mizerave!', en: 'Wretch!' }] },
-  { speaker: 'xingamento/cangaceiro', kind: 'curse', key: '13', takes: [{ pt: 'Corre, cabra mole!', en: 'Run, soft man!' }] },
-  { speaker: 'xingamento/cangaceiro', kind: 'curse', key: '14', takes: [{ pt: 'Atira, que o coronel paga!', en: 'Shoot, the colonel pays!' }] },
-  { speaker: 'xingamento/cangaceiro', kind: 'curse', key: '15', takes: [{ pt: 'Peste dos inferno!', en: 'Plague from hell!' }] },
+  { speaker: 'xingamento/column', kind: 'curse', key: '01', moment: 'insult', takes: [{ pt: 'Filho da puta!', en: 'Son of a bitch!' }] },
+  { speaker: 'xingamento/column', kind: 'curse', key: '02', moment: 'insult', takes: [{ pt: 'Vai pra puta que te pariu!', en: 'Go to hell, you bastard!' }] },
+  { speaker: 'xingamento/column', kind: 'curse', key: '03', moment: 'insult', takes: [{ pt: 'Filho duma égua!', en: 'Son of a mare!' }] },
+  { speaker: 'xingamento/column', kind: 'curse', key: '04', moment: 'insult', takes: [{ pt: 'Corno manso!', en: 'Tame cuckold!' }] },
+  { speaker: 'xingamento/column', kind: 'curse', key: '05', moment: 'fire', takes: [{ pt: 'Toma, chifrudo!', en: 'Take that, cuckold!' }] },
+  { speaker: 'xingamento/column', kind: 'curse', key: '06', moment: 'flee', takes: [{ pt: 'Corre, cagão!', en: 'Run, coward!' }] },
+  { speaker: 'xingamento/column', kind: 'curse', key: '07', moment: 'insult', takes: [{ pt: 'Cachorro do governo!', en: 'Government dog!' }] },
+  { speaker: 'xingamento/column', kind: 'curse', key: '08', moment: 'insult', takes: [{ pt: 'Pau-mandado de coronel!', en: "Colonel's lackey!" }] },
+  { speaker: 'xingamento/column', kind: 'curse', key: '09', moment: 'miss', takes: [{ pt: 'Porra, errei o desgraçado!', en: 'Damn it, missed the bastard!' }] },
+  { speaker: 'xingamento/column', kind: 'curse', key: '10', moment: 'miss', takes: [{ pt: 'Merda de espingarda!', en: 'Shit rifle!' }] },
+  { speaker: 'xingamento/column', kind: 'curse', key: '11', moment: 'under-fire', takes: [{ pt: 'Barbaridade, que tiroteio!', en: 'Good grief, what a firefight!' }] },
+  { speaker: 'xingamento/column', kind: 'curse', key: '12', moment: 'miss', takes: [{ pt: 'Bah, mas que porcaria!', en: 'Bah, what rubbish!' }] },
+  { speaker: 'xingamento/column', kind: 'curse', key: '14', moment: 'insult', takes: [{ pt: 'Vai pros quinto dos inferno, desgraçado!', en: 'Go to the pits of hell, you bastard!' }] },
+  { speaker: 'xingamento/column', kind: 'curse', key: '15', moment: 'insult', takes: [{ pt: 'Mardito seja!', en: 'Damn you!' }] },
+  { speaker: 'xingamento/column', kind: 'curse', key: '16', moment: 'insult', takes: [{ pt: 'Chimangos!', en: 'Chimangos!' }, { pt: 'Lá vêm os chimangos!', en: 'Here come the chimangos!' }] },
+  { speaker: 'xingamento/column', kind: 'curse', key: '17', moment: 'flee', takes: [{ pt: 'Corre, provisório!', en: 'Run, provisional!' }] },
+  { speaker: 'xingamento/column', kind: 'curse', key: '18', moment: 'under-fire', takes: [{ pt: 'Raios e coriscos!', en: 'Thunder and lightning!' }] },
+  { speaker: 'xingamento/column', kind: 'curse', key: '19', moment: 'insult', takes: [{ pt: 'Canalhas!', en: 'Scoundrels!' }] },
+  { speaker: 'xingamento/legalist', kind: 'curse', key: '01', moment: 'insult', takes: [{ pt: 'Filho da puta!', en: 'Son of a bitch!' }] },
+  { speaker: 'xingamento/legalist', kind: 'curse', key: '02', moment: 'insult', takes: [{ pt: 'Bando de filhos da puta!', en: 'Pack of sons of bitches!' }] },
+  { speaker: 'xingamento/legalist', kind: 'curse', key: '03', moment: 'fire', takes: [{ pt: 'Toma, corno!', en: 'Take that, cuckold!' }] },
+  { speaker: 'xingamento/legalist', kind: 'curse', key: '04', moment: 'under-fire', takes: [{ pt: 'Puta que pariu, de onde vem esse tiro?', en: "Damn it, where's that fire coming from?" }] },
+  { speaker: 'xingamento/legalist', kind: 'curse', key: '05', moment: 'insult', takes: [{ pt: 'Vagabundos!', en: 'Bums!' }] },
+  { speaker: 'xingamento/legalist', kind: 'curse', key: '06', moment: 'insult', takes: [{ pt: 'Rende, cachorro!', en: 'Surrender, dog!' }] },
+  { speaker: 'xingamento/legalist', kind: 'curse', key: '07', moment: 'fire', takes: [{ pt: 'Hoje tu morre, desgraçado!', en: 'Today you die, bastard!' }] },
+  { speaker: 'xingamento/legalist', kind: 'curse', key: '08', moment: 'insult', takes: [{ pt: 'Bando de ladrão de cavalo!', en: 'Pack of horse thieves!' }] },
+  { speaker: 'xingamento/legalist', kind: 'curse', key: '09', moment: 'flee', takes: [{ pt: 'Foge não, covarde!', en: "Don't run, coward!" }] },
+  { speaker: 'xingamento/legalist', kind: 'curse', key: '10', moment: 'insult', takes: [{ pt: 'Cabra safado!', en: 'Dirty rogue!' }] },
+  { speaker: 'xingamento/legalist', kind: 'curse', key: '11', moment: 'insult', takes: [{ pt: 'Daqui vocês não saem!', en: "You're not getting out of here!" }] },
+  { speaker: 'xingamento/legalist', kind: 'curse', key: '12', moment: 'insult', takes: [{ pt: 'Cadê o tal do Prestes?', en: "Where's this Prestes, then?" }] },
+  { speaker: 'xingamento/legalist', kind: 'curse', key: '13', moment: 'under-fire', takes: [{ pt: 'Merda, não acaba essa gente!', en: "Shit, there's no end to them!" }] },
+  { speaker: 'xingamento/legalist', kind: 'curse', key: '14', moment: 'insult', takes: [{ pt: 'Filho duma égua!', en: 'Son of a mare!' }] },
+  { speaker: 'xingamento/legalist', kind: 'curse', key: '15', moment: 'under-fire', takes: [{ pt: 'Bah, de onde saiu essa gente?', en: 'Bah, where did these men come from?' }] },
+  { speaker: 'xingamento/cangaceiro', kind: 'curse', key: '01', moment: 'insult', takes: [{ pt: 'Fi duma rapariga!', en: 'Son of a whore!' }] },
+  { speaker: 'xingamento/cangaceiro', kind: 'curse', key: '02', moment: 'insult', takes: [{ pt: 'Filho de uma rapariga!', en: 'Son of a whore!' }] },
+  { speaker: 'xingamento/cangaceiro', kind: 'curse', key: '03', moment: 'insult', takes: [{ pt: 'Fela da puta!', en: 'Son of a bitch!' }] },
+  { speaker: 'xingamento/cangaceiro', kind: 'curse', key: '04', moment: 'insult', takes: [{ pt: 'Corno véio!', en: 'Old cuckold!' }] },
+  { speaker: 'xingamento/cangaceiro', kind: 'curse', key: '05', moment: 'insult', takes: [{ pt: 'Cabra da peste!', en: 'Plague of a man!' }] },
+  { speaker: 'xingamento/cangaceiro', kind: 'curse', key: '06', moment: 'insult', takes: [{ pt: 'Arreda, cabra frouxo!', en: 'Out of the way, weakling!' }] },
+  { speaker: 'xingamento/cangaceiro', kind: 'curse', key: '07', moment: 'under-fire', takes: [{ pt: 'Oxente, de onde vem esse tiro?', en: "Hey, where's that fire coming from?" }] },
+  { speaker: 'xingamento/cangaceiro', kind: 'curse', key: '08', moment: 'under-fire', takes: [{ pt: 'Vôte, que tiroteio!', en: 'Lord, what a firefight!' }] },
+  { speaker: 'xingamento/cangaceiro', kind: 'curse', key: '09', moment: 'miss', takes: [{ pt: 'Eita porra, errei!', en: 'Damn it, I missed!' }] },
+  { speaker: 'xingamento/cangaceiro', kind: 'curse', key: '10', moment: 'fire', takes: [{ pt: 'Vou sangrar tu, desgraçado.', en: "I'll bleed you, bastard." }] },
+  { speaker: 'xingamento/cangaceiro', kind: 'curse', key: '11', moment: 'fire', takes: [{ pt: 'Vou te furar, fi do cão!', en: "I'll stick you, son of the devil!" }] },
+  { speaker: 'xingamento/cangaceiro', kind: 'curse', key: '12', moment: 'insult', takes: [{ pt: 'Mizerave!', en: 'Wretch!' }] },
+  { speaker: 'xingamento/cangaceiro', kind: 'curse', key: '13', moment: 'flee', takes: [{ pt: 'Corre, cabra mole!', en: 'Run, soft man!' }] },
+  { speaker: 'xingamento/cangaceiro', kind: 'curse', key: '14', moment: 'fire', takes: [{ pt: 'Atira, que o coronel paga!', en: 'Shoot, the colonel pays!' }] },
+  { speaker: 'xingamento/cangaceiro', kind: 'curse', key: '15', moment: 'insult', takes: [{ pt: 'Peste dos inferno!', en: 'Plague from hell!' }] },
   { speaker: 'inimigo', kind: 'enemy', key: 'contact', takes: [{ pt: 'Olha eles ali!', en: 'There they are!' }, { pt: 'Tão lá no mato!', en: "They're in the brush!" }, { pt: 'Gente na frente, cuidado!', en: 'Men ahead, watch out!' }] },
   { speaker: 'inimigo', kind: 'enemy', key: 'advance', takes: [{ pt: 'Pra cima deles!', en: 'At them!' }, { pt: 'Avança, cambada!', en: 'Advance, you lot!' }, { pt: 'Cerca pelo lado!', en: 'Round them by the side!' }] },
   { speaker: 'inimigo', kind: 'enemy', key: 'hold', takes: [{ pt: 'Segura aí!', en: 'Hold there!' }, { pt: 'Ninguém arreda o pé!', en: 'Nobody moves a foot!' }] },
@@ -159,9 +169,9 @@ export function voiceLine(kind: VoiceKind, key: string): VoiceLine | undefined {
   return VOICE_LINES.find((line) => line.kind === kind && line.key === key);
 }
 
-/** A faction's curses. */
-export function curseLines(faction: VoiceFaction): VoiceLine[] {
-  return VOICE_LINES.filter((line) => line.kind === 'curse' && line.speaker === `xingamento/${faction}`);
+/** A faction's curses; with a moment, only those of that moment. */
+export function curseLines(faction: VoiceFaction, moment?: CurseMoment): VoiceLine[] {
+  return VOICE_LINES.filter((line) => line.kind === 'curse' && line.speaker === `xingamento/${faction}` && (moment === undefined || line.moment === moment));
 }
 
 /** Problems with the catalogue: every order has its line and answer of three takes, every call-out a line, every take both texts. */
@@ -179,6 +189,9 @@ export function validateVoiceLines(lines: readonly VoiceLine[] = VOICE_LINES): s
   for (const callout of VOICE_ENEMY_CALLOUTS) if (!find('enemy', callout)) problems.push(`voice: enemy call-out "${callout}" has no line`);
   for (const faction of ['column', 'legalist', 'cangaceiro'] as const) {
     if (!lines.some((line) => line.kind === 'curse' && line.speaker === `xingamento/${faction}`)) problems.push(`voice: faction "${faction}" has no curses`);
+  }
+  for (const line of lines) {
+    if (line.kind === 'curse' && !(line.moment && (CURSE_MOMENTS as readonly string[]).includes(line.moment))) problems.push(`voice: curse ${line.speaker}/${line.key} has no moment`);
   }
   const seen = new Set<string>();
   for (const line of lines) {

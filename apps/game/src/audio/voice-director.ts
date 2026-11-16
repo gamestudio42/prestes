@@ -28,6 +28,10 @@ export const ANSWER_GAP_MS = 250;
 export const CALLOUT_QUIET_MS = 8000;
 /** The same call-out from any section, at most this often (ms): many men reload, one says so. */
 export const CALLOUT_KIND_GAP_MS = 5000;
+/** Call-outs said far more rarely (the owner, 2026-11-16: reloading much rarer): per section and per kind (ms). */
+export const RARE_CALLOUTS: Readonly<Record<string, { quiet: number; gap: number }>> = {
+  reloading: { quiet: 60_000, gap: 30_000 },
+};
 /** Quiet time of a curse per section (ms). */
 export const CURSE_QUIET_MS = 25_000;
 /** No curse within this long of any other curse, over all sections (ms). */
@@ -150,9 +154,10 @@ export class VoiceDirector {
     if ((this.quiet.get(key) ?? Number.NEGATIVE_INFINITY) > now) return false;
     if ((this.quiet.get(kindKey) ?? Number.NEGATIVE_INFINITY) > now) return false;
     if (this.callout) return false;
-    this.quiet.set(kindKey, now + CALLOUT_KIND_GAP_MS);
+    const rare = request.line.kind === 'callout' ? RARE_CALLOUTS[request.line.key] : undefined;
+    this.quiet.set(kindKey, now + (rare?.gap ?? CALLOUT_KIND_GAP_MS));
     this.callout = { line: request.line, placement: request.placement, priority: false, at: now, until: now + CALLOUT_WAIT_MS, section: request.section, enemy: request.enemy === true };
-    this.quiet.set(key, now + CALLOUT_QUIET_MS);
+    this.quiet.set(key, now + (rare?.quiet ?? CALLOUT_QUIET_MS));
     this.update(now);
     return true;
   }

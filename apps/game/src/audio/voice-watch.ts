@@ -1,4 +1,4 @@
-import type { VoiceCallout, VoiceEnemyCallout, VoiceFaction } from '@prestes/content';
+import type { CurseMoment, VoiceCallout, VoiceEnemyCallout, VoiceFaction } from '@prestes/content';
 import type { Frame, UnitSnapshot } from '@prestes/shared';
 
 /**
@@ -12,14 +12,15 @@ import type { Frame, UnitSnapshot } from '@prestes/shared';
  * - gun set: a machine gun's `gunState` becomes `set`.
  *
  * Enemy lines are asked for only when our side sees the speaker, and curses
- * only for a section that is engaged (firing, or fired on) at that moment, at
- * most one chance per section a second.
+ * only for a section that is engaged at that moment, at most one chance per
+ * section a second, with the moment it fits: the other side runs (`flee`),
+ * it is fired on (`under-fire`), its shot hit (`fire`) or missed (`miss`).
  */
 
 export type VoiceRequest =
   | { kind: 'callout'; key: VoiceCallout; section: number; x: number; y: number }
   | { kind: 'enemy'; key: VoiceEnemyCallout; section: number; x: number; y: number }
-  | { kind: 'curse'; faction: VoiceFaction; section: number; x: number; y: number; enemy: boolean };
+  | { kind: 'curse'; faction: VoiceFaction; moment: CurseMoment; section: number; x: number; y: number; enemy: boolean };
 
 /** Ticks with no enemy seen before seeing one is "contact" again (10 ticks a second). */
 export const CONTACT_AGAIN_TICKS = 300;
@@ -29,6 +30,8 @@ export const CURSE_CHANCE_TICKS = 10;
 export const MACHINE_GUN_NEAR = 40;
 
 const VOICE_FACTIONS: readonly string[] = ['column', 'legalist', 'cangaceiro'];
+/** Which moment wins when a section has several in one frame. */
+const MOMENT_RANK: Readonly<Record<Exclude<CurseMoment, 'insult'>, number>> = { miss: 0, fire: 1, 'under-fire': 2, flee: 3 };
 
 interface Was {
   magazine: number;
@@ -112,9 +115,13 @@ export class VoiceWatch {
       }
     }
 
-    const engaged = new Map<number, UnitSnapshot>();
-    const engage = (unit: UnitSnapshot | undefined) => {
-      if (unit && fit(unit) && VOICE_FACTIONS.includes(unit.faction) && !engaged.has(sectionOf(unit))) engaged.set(sectionOf(unit), unit);
+    // The strongest moment of each engaged section this frame.
+    const engaged = new Map<number, { unit: UnitSnapshot; moment: Exclude<CurseMoment, 'insult'> }>();
+    const engage = (unit: UnitSnapshot | undefined, moment: Exclude<CurseMoment, 'insult'>) => {
+      if (!unit || !fit(unit) || !VOICE_FACTIONS.includes(unit.faction)) return;
+      const section = sectionOf(unit);
+      const was = engaged.get(section);
+      if (!was || MOMENT_RANK[moment] > MOMENT_RANK[was.moment]) engaged.set(section, { unit, moment });
     };
     for (const event of frame.events) {
       switch (event.type) {
@@ -129,7 +136,12 @@ export class VoiceWatch {
         }
         case 'unit_routed': {
           const routed = units.get(event.unitId);
-          if (routed) say(routed, 'falling-back');
+          if (routed) {
+            say(routed, 'falling-back');
+            // The nearest man of the other side jeers at him.
+            const other = (unit: UnitSnapshot) => fit(unit) && VOICE_FACTIONS.includes(unit.faction) && ours(unit) !== ours(routed);
+            engage(nearest(frame.units.filter(other), routed), 'flee');
+          }
           break;
         }
         case 'objective_taken': {
@@ -139,8 +151,8 @@ export class VoiceWatch {
         }
         case 'shot': {
           const shooter = units.get(event.source);
-          engage(shooter);
-          engage(units.get(event.target));
+          engage(shooter, event.hit ? 'fire' : 'miss');
+          engage(units.get(event.target), 'under-fire');
           // Our machine gun firing near an enemy our side sees.
           if (shooter && ours(shooter) && event.burstStart === true) {
             const scared = seenEnemies.find((unit) => Math.hypot(unit.x - event.x2, unit.y - event.y2) <= MACHINE_GUN_NEAR);
@@ -149,17 +161,17 @@ export class VoiceWatch {
           break;
         }
         case 'unit_hit':
-          engage(units.get(event.unitId));
+          engage(units.get(event.unitId), 'under-fire');
           break;
         default:
           break;
       }
     }
-    for (const [section, unit] of engaged) {
+    for (const [section, { unit, moment }] of engaged) {
       if (frame.tick - (this.curseAt.get(section) ?? Number.NEGATIVE_INFINITY) < CURSE_CHANCE_TICKS) continue;
       if (enemy(unit) && !visible(unit)) continue;
       this.curseAt.set(section, frame.tick);
-      out.push({ kind: 'curse', faction: unit.faction as VoiceFaction, section, x: unit.x, y: unit.y, enemy: enemy(unit) });
+      out.push({ kind: 'curse', faction: unit.faction as VoiceFaction, moment, section, x: unit.x, y: unit.y, enemy: enemy(unit) });
     }
 
     this.remember(frame.units);
