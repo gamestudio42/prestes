@@ -5,6 +5,7 @@ import type { Roster } from '../sections';
 import type { TrenchLineDef } from './trench-lines';
 import type { RockKind } from './rock-kinds';
 import type { BattleEvent, EventPlace } from './events';
+import type { Withdrawal } from './withdrawal';
 
 /**
  * add-historical-commander D1: a campaign map's historical figure, on the
@@ -279,4 +280,6 @@ export interface BattleMap {
   events?: readonly BattleEvent[];
   /** add-battle-events: the places those events name (present when `events` is). */
   eventPlaces?: readonly EventPlace[];
+  /** add-withdrawal-exits: the column's exits and what must get out (absent: no withdrawal). */
+  withdrawal?: Withdrawal;
 }

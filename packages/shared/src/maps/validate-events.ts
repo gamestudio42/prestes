@@ -6,6 +6,7 @@ import type { EditableMap } from './document';
 import { ENTRY_EDGE_DISTANCE, MAX_BATTLE_EVENTS, MAX_TRIGGER_TIME, sectionSide, type BattleEvent, type EventPlace } from './events';
 import { isDeepWater } from './runtime';
 import type { BattleMap } from './types';
+import { columnSectionCount } from './validate-withdrawal';
 
 /** add-battle-events 1.3: the problems the event checks report (locale `editor.problem.<code>`). */
 export type EventProblemCode =
@@ -25,7 +26,9 @@ export type EventProblemCode =
   | 'entry-off-edge'
   | 'entry-not-walkable'
   | 'event-move-unreachable'
-  | 'event-commander-without-figure';
+  | 'event-commander-without-figure'
+  | 'event-exited-no-exits'
+  | 'event-exited-too-many';
 
 export interface EventProblem {
   code: EventProblemCode;
@@ -113,6 +116,11 @@ export function checkEvents(map: EditableMap, compiled: BattleMap): EventProblem
     else if (trigger.kind === 'after') other(trigger.event);
     // add-historical-commander: only a map with a field commander can lose him.
     else if (trigger.kind === 'commander' && map.commander?.presence !== 'field') report('event-commander-without-figure');
+    else if (trigger.kind === 'exited') {
+      // add-withdrawal-exits 4.1: only on a map with exits, and no more sections than the column fields.
+      if ((map.withdrawal?.exits.length ?? 0) === 0) report('event-exited-no-exits');
+      else if (!trigger.command && trigger.sections > columnSectionCount(map)) report('event-exited-too-many', { count: trigger.sections, sections: columnSectionCount(map) });
+    }
     if (event.actions.length === 0) report('event-no-action');
 
     for (const action of event.actions) {

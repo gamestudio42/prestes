@@ -14,6 +14,7 @@ import {
   type Difficulty,
   type Frame,
   type MapDocument,
+  type LocalizedText,
 } from '@prestes/shared';
 import { loadPlaytest } from './editor/persistence';
 import type { CameraBand, SceneView } from '@prestes/view3d';
@@ -130,6 +131,14 @@ export function App() {
     setCommanderNotice(text);
     if (commanderNoticeTimer.current !== null) window.clearTimeout(commanderNoticeTimer.current);
     commanderNoticeTimer.current = window.setTimeout(() => setCommanderNotice(null), 6000);
+  };
+  // add-withdrawal-exits 7.2: a section that got out, announced for a few seconds.
+  const [exitNotice, setExitNotice] = useState<{ command: boolean; exit: LocalizedText } | null>(null);
+  const exitNoticeTimer = useRef<number | null>(null);
+  const showExitNotice = (notice: { command: boolean; exit: LocalizedText }): void => {
+    setExitNotice(notice);
+    if (exitNoticeTimer.current !== null) window.clearTimeout(exitNoticeTimer.current);
+    exitNoticeTimer.current = window.setTimeout(() => setExitNotice(null), 4000);
   };
   const showDeploymentRefusal = (reason: DeploymentRefusal): void => {
     setDeploymentRefusal(reason);
@@ -289,6 +298,10 @@ export function App() {
         if (event.type === 'commander_down') {
           const view = commanderView(mapDocumentFor(map)?.commander);
           if (view) showCommanderNotice(commanderDownText(event, view, (key, values) => translate(localeRef.current, key, values)));
+        }
+        if (event.type === 'section_exited') {
+          const exit = sceneRef.current?.mapWithdrawal()?.exits.find((entry) => entry.id === event.exitId);
+          if (exit) showExitNotice({ command: event.command, exit: exit.name });
         }
         // add-battle-events 3.1: an event's cards pause the battle until the player closes them.
         if (event.type === 'battle_event_fired' && event.cards && event.cards.length > 0) {
@@ -626,6 +639,7 @@ export function App() {
         orderNotice={orderNotice}
         commander={commanderView(mapDocumentFor(battleMapId)?.commander)}
         commanderNotice={commanderNotice}
+        exitNotice={exitNotice}
         onCenterSquad={handleCenterSquad}
         onLeave={handleBackToMenu}
         />

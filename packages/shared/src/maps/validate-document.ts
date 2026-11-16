@@ -12,6 +12,7 @@ import { isDeepWater, vegetationAt } from './runtime';
 import type { BattleMap } from './types';
 import { insideDeploymentArea, polygonsOverlap } from './deployment-areas';
 import { checkEvents, type EventProblemCode } from './validate-events';
+import { checkWithdrawal, type WithdrawalProblemCode } from './validate-withdrawal';
 import { MIN_DEPLOYMENT_GAP, MIN_WALKABLE_AREA_SHARE, walkableShare } from './validate';
 
 /**
@@ -48,7 +49,8 @@ export type ProblemCode =
   | 'objective-in-deep-water'
   | 'objective-unreachable'
   | 'objectives-overlap'
-  | EventProblemCode;
+  | EventProblemCode
+  | WithdrawalProblemCode;
 
 export interface MapProblem {
   code: ProblemCode;
@@ -56,7 +58,7 @@ export interface MapProblem {
   params: Record<string, string | number>;
   at?: Vec2;
   /** What to select when the problem is chosen. */
-  target?: { kind: 'object' | 'section' | 'area' | 'bridge' | 'objective' | 'event' | 'event-place'; id: number | string };
+  target?: { kind: 'object' | 'section' | 'area' | 'bridge' | 'objective' | 'event' | 'event-place' | 'exit' | 'map-properties'; id: number | string };
 }
 
 /** Longest stretch without cover on the line between the zones (m) before a warning. */
@@ -254,6 +256,8 @@ export function validateEditableMap(map: EditableMap): MapProblem[] {
   checkObjectives(map, compiled, add);
   // add-battle-events 1.3: the events and their places.
   for (const problem of checkEvents(map, compiled)) add(problem);
+  // add-withdrawal-exits 6.2: the exits and the requirement.
+  for (const problem of checkWithdrawal(map, compiled)) add(problem);
   return problems;
 }
 

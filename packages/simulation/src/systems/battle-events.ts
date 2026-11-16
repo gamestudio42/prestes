@@ -112,6 +112,13 @@ function triggerMet(ctx: SimContext, state: ScriptedState, event: BattleEvent, t
     case 'commander':
       // add-historical-commander D5: the field commander is killed or incapacitated.
       return ctx.units.some((unit) => unit.figure && (!unit.alive || unit.incapacitated));
+    case 'exited': {
+      // add-withdrawal-exits D4: read from the sections that got out.
+      const withdrawal = ctx.withdrawal;
+      if (!withdrawal) return false;
+      if (trigger.command) return [...withdrawal.out.keys()].some((squadId) => withdrawal.commandSquads.has(squadId));
+      return withdrawal.out.size >= trigger.sections;
+    }
   }
 }
 
@@ -224,7 +231,8 @@ export function updateBattleEvents(ctx: SimContext, tick: number, events: SimEve
   if (!state || state.events.length === 0) return;
   if (!state.fielded) {
     state.fielded = {
-      column: ctx.units.filter((unit) => ofSide(unit, 'column')).length,
+      // add-withdrawal-exits D4: a man already out was fielded too.
+      column: ctx.units.filter((unit) => ofSide(unit, 'column')).length + (ctx.withdrawal?.exited.length ?? 0),
       legalist: ctx.units.filter((unit) => ofSide(unit, 'legalist')).length,
     };
     for (const objective of ctx.objectives) state.owners.set(objective.id, objective.owner);

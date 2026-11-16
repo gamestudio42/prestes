@@ -68,7 +68,9 @@ import {
   CAMP_SIDES,
   SIDED_CAMP,
   type RockKind,
+  ROSTER_MAX_SECTIONS,
 } from '@prestes/shared';
+import { renameExit } from './exits';
 import { LOCALES, translate, type Locale, type MessageKey } from '@prestes/content';
 import { loadLocale, saveLocale } from '../storage';
 import { autosave, exportDocument, listProjectMaps, loadLast, loadProjectMap, loadStored, readDocumentFile, saveThumbnail, saveToProject, storePlaytest } from './persistence';
@@ -108,7 +110,7 @@ const TOOL_GROUPS: readonly { layer: string; tools: readonly PaletteEntry[] }[] 
   { layer: 'editor.layer.structures', tools: ['line', 'trench'] },
   { layer: 'editor.layer.objects', tools: ['place', 'trees', 'eraseTrees'] },
   { layer: 'editor.layer.vegetation', tools: ['vegetation', 'eraseVegetation'] },
-  { layer: 'editor.layer.gameplay', tools: ['deployment', 'objective', 'entry-point', 'event-area'] },
+  { layer: 'editor.layer.gameplay', tools: ['deployment', 'objective', 'exit', 'entry-point', 'event-area'] },
 ];
 
 /**
@@ -140,6 +142,7 @@ const TOOL_KEYS: Record<ToolId, string> = {
   objective: 'J',
   'entry-point': '',
   'event-area': '',
+  exit: '',
 };
 
 const OBJECT_GROUPS = ['building', 'stone', 'water', 'camp', 'tree', 'post', 'cover', 'prop', 'decal'] as const;
@@ -181,6 +184,7 @@ function hintKey(tool: ToolId): string {
   if (tool === 'objective') return 'editor.tool.hint.objective';
   if (tool === 'entry-point') return 'editor.tool.hint.entry-point';
   if (tool === 'event-area') return 'editor.tool.hint.event-area';
+  if (tool === 'exit') return 'editor.tool.hint.exit';
   return 'editor.tool.hint.select';
 }
 
@@ -238,6 +242,8 @@ function problemSelection(problem: MapProblem): SelectionItem[] {
     return [];
   }
   if (target.kind === 'area') return target.id === 'column' || target.id === 'legalist' ? [{ kind: 'area', side: target.id }] : [];
+  // add-withdrawal-exits 6.2: a requirement problem opens Map properties (chooseProblem), nothing to select.
+  if (target.kind === 'map-properties') return [];
   if (typeof target.id !== 'number') return [];
   return [{ kind: target.kind, id: target.id }];
 }
@@ -273,6 +279,8 @@ export function EditorApp(): ReactNode {
   const [ready, setReady] = useState(false);
   const tRef = useRef(t);
   tRef.current = t;
+  const localeRef = useRef(locale);
+  localeRef.current = locale;
 
   // The viewport lives outside React.
   useEffect(() => {
@@ -289,6 +297,8 @@ export function EditorApp(): ReactNode {
     view.onCursor = setCursor;
     // add-battle-events 4.1: new places are named in the editor's language; deleting a used one asks first.
     view.placeName = (kind, id) => tRef.current(`editor.event.place.${kind}`, { n: id });
+    view.exitName = (n) => tRef.current('editor.exit.defaultName', { n });
+    view.exitLabel = (exit) => (localeRef.current === 'pt-BR' ? exit.name['pt-BR'] || exit.name.en : exit.name.en || exit.name['pt-BR']);
     view.confirmPlaceDelete = (users) => window.confirm(tRef.current('editor.event.place.confirmDelete', { events: users.join(', ') }));
     viewport.current = view;
     let cancelled = false;
@@ -461,6 +471,10 @@ export function EditorApp(): ReactNode {
 
   const chooseProblem = (problem: MapProblem): void => {
     if (problem.at) viewport.current?.centreOn(problem.at);
+    if (problem.target?.kind === 'map-properties') {
+      openDialog('properties');
+      return;
+    }
     const selection = problemSelection(problem);
     if (selection.length > 0) {
       const first = selection[0]!;
@@ -469,7 +483,7 @@ export function EditorApp(): ReactNode {
         store.updateView({ events: true });
         const place = first.kind === 'event-place' ? (store.map.eventPlaces ?? []).find((entry) => entry.id === first.id) : undefined;
         store.setTool(place ? (place.kind === 'entry' ? 'entry-point' : 'event-area') : 'select');
-      } else store.setTool(first.kind === 'section' || first.kind === 'area' ? 'deployment' : first.kind === 'objective' ? 'objective' : 'select');
+      } else store.setTool(first.kind === 'section' || first.kind === 'area' ? 'deployment' : first.kind === 'objective' ? 'objective' : first.kind === 'exit' ? 'exit' : 'select');
       store.setSelection(selection);
     }
   };
@@ -768,6 +782,36 @@ function heightRange(map: EditableMap): { low: number; high: number } {
   return { low: low / 100, high: high / 100 };
 }
 
+/** add-withdrawal-exits 6.1: the selected exit's names, and the requirement as it stands. */
+function ExitPanel({ store, t }: { store: EditorStore; t: T }): ReactNode {
+  const withdrawal = store.map.withdrawal;
+  const selected = store.selection.find((item) => item.kind === 'exit');
+  const exit = selected && 'id' in selected ? withdrawal?.exits.find((entry) => entry.id === selected.id) : undefined;
+  return (
+    <div className="editor-exit" data-testid="exit-panel">
+      {withdrawal ? (
+        <p className="editor-hint" data-testid="exit-requirement">
+          {t(withdrawal.requirement.command ? 'editor.exit.requirementCommand' : 'editor.exit.requirement', { count: withdrawal.requirement.sections })}
+        </p>
+      ) : (
+        <p className="editor-hint">{t('editor.exit.none')}</p>
+      )}
+      {exit ? (
+        <>
+          <label>
+            {t('editor.exit.namePt')}
+            <input type="text" data-testid="exit-name-pt" value={exit.name['pt-BR']} onChange={(event) => store.editVector((draft) => renameExit(draft, exit.id, 'pt-BR', event.target.value))} />
+          </label>
+          <label>
+            {t('editor.exit.nameEn')}
+            <input type="text" data-testid="exit-name-en" value={exit.name.en} onChange={(event) => store.editVector((draft) => renameExit(draft, exit.id, 'en', event.target.value))} />
+          </label>
+        </>
+      ) : null}
+    </div>
+  );
+}
+
 function ToolProperties({ store, t }: { store: EditorStore; t: T }): ReactNode {
   const { tool, settings } = store;
   const set = store.updateSettings.bind(store);
@@ -934,6 +978,7 @@ function ToolProperties({ store, t }: { store: EditorStore; t: T }): ReactNode {
       );
     }
   }
+  if (tool === 'exit') fields.push(<ExitPanel key="exit" store={store} t={t} />);
   return <div className="editor-fields">{fields}</div>;
 }
 
@@ -1575,6 +1620,9 @@ function MapDialog(props: {
   // add-historical-commander 4.1: the chapter's figure, campaign maps only.
   const [commander, setCommander] = useState<MapCommander | undefined>(mode === 'new' || !map.commander ? undefined : { ...map.commander });
   const [epiloguePt, setEpiloguePt] = useState(mode === 'new' ? '' : (map.epilogue?.['pt-BR'] ?? ''));
+  // add-withdrawal-exits 6.1: the requirement, edited while the map has exits.
+  const [required, setRequired] = useState(map.withdrawal?.requirement.sections ?? 1);
+  const [requireCommand, setRequireCommand] = useState(map.withdrawal?.requirement.command ?? false);
   const [epilogueEn, setEpilogueEn] = useState(mode === 'new' ? '' : (map.epilogue?.en ?? ''));
   const valid = isValidMapId(id);
   const outside = mode === 'properties' && size !== map.size ? resizeEditableMap(map, size).outside : [];
@@ -1603,6 +1651,7 @@ function MapDialog(props: {
       commander: offersCommander(slot.use as MapUse) ? commander : undefined,
       // Both texts empty: the field is left out.
       epilogue: epiloguePt.trim() || epilogueEn.trim() ? { 'pt-BR': epiloguePt.trim(), en: epilogueEn.trim() } : undefined,
+      withdrawal: mode === 'properties' && map.withdrawal ? { ...map.withdrawal, requirement: { sections: Math.max(1, Math.round(required)), command: requireCommand } } : undefined,
     };
     if (mode === 'new') {
       const created = createEditableMap({ id, size, baseMaterial, palette, use: slot.use, mission: slot.use === 'campaign' ? slot.mission : undefined });
@@ -1738,6 +1787,20 @@ function MapDialog(props: {
           </label>
           <p className="editor-hint">{t('editor.noEnemy.hint')}</p>
         </fieldset>
+        {mode === 'properties' && map.withdrawal ? (
+          <fieldset className="editor-enemy" data-testid="map-withdrawal">
+            <legend>{t('editor.withdrawal.title')}</legend>
+            <p className="editor-hint">{t('editor.withdrawal.hint')}</p>
+            <label>
+              {t('editor.withdrawal.sections')}
+              <input type="number" data-testid="map-withdrawal-sections" min={1} max={ROSTER_MAX_SECTIONS} step={1} value={required} onChange={(event) => setRequired(Number(event.target.value) || 1)} />
+            </label>
+            <label>
+              <input type="checkbox" data-testid="map-withdrawal-command" checked={requireCommand} onChange={(event) => setRequireCommand(event.target.checked)} />
+              {t('editor.withdrawal.command')}
+            </label>
+          </fieldset>
+        ) : null}
         {noEnemy ? null : <EnemyForces presets={enemyForces} onChange={setEnemyForces} t={t} />}
         <fieldset className="editor-enemy" data-testid="map-epilogue">
           <legend>{t('editor.epilogue.title')}</legend>

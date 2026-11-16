@@ -2,6 +2,7 @@ export * from './types';
 export * from './objectives';
 export * from './events';
 export * from './commander';
+export * from './withdrawal';
 export {
   activeMapGeneration,
   activeMapRuntime,
@@ -82,3 +83,4 @@ export * from './openings';
 export * from './positions';
 export { sameCovers } from './cover-index';
 export * from './validate-document';
+export { checkWithdrawal, columnSectionCount, type WithdrawalProblem, type WithdrawalProblemCode } from './validate-withdrawal';

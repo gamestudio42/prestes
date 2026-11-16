@@ -1,7 +1,7 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
-import { authoredMapIds, DEFAULT_BATTLE_MAP, loadAuthoredMap, type BattleMapId, type SectionTypeId } from '@prestes/shared';
+import { authoredMapIds, compileMapDocument, createEditableMap, DEFAULT_BATTLE_MAP, loadAuthoredMap, toMapDocument, type BattleMapId, type SectionTypeId } from '@prestes/shared';
 import { SimulationEngine } from '@prestes/simulation';
 import { mergeMapGolden } from './golden-merge';
 
@@ -13,6 +13,8 @@ interface Golden {
   battleMaps?: Partial<Record<BattleMapId, string>>;
   /** pre-battle-roster 4.5: the same 3v3 with a fixed mixed roster against a drawn enemy. */
   mixedRosters?: Partial<Record<BattleMapId, string>>;
+  /** add-withdrawal-exits 8.2: a 1,000-tick 3v3 on a test field with two exits, a section sent out. */
+  withdrawal?: string;
   /** Why the goldens were last re-recorded. */
   reason?: string;
 }
@@ -38,6 +40,37 @@ function runMixedBattle(map: BattleMapId): string {
   const engine = new SimulationEngine({ seed: SEED, scenario: 'battle3v3', sandbox: true, battleMap: map, rosters: { column: { sections: MIXED_ROSTER } } });
   return engine.runTicks(BATTLE_TICKS).hash;
 }
+/**
+ * add-withdrawal-exits 8.2: a test field built here (not an authored map):
+ * two exits west and east, level with the column (the west one near it), a requirement
+ * of two sections, and an "exited" event; the column's first section is sent
+ * out west at once, so leaving, the trigger and the commander's block run.
+ */
+function runWithdrawal(): string {
+  const map = createEditableMap({ id: 'withdrawal-fixture', size: 'medium', name: { en: 'Withdrawal', 'pt-BR': 'Retirada' } });
+  const square = (x: number) => [{ x, y: 60 }, { x: x + 18, y: 60 }, { x: x + 18, y: 140 }, { x, y: 140 }];
+  const battleMap = compileMapDocument(
+    toMapDocument({
+      ...map,
+      withdrawal: {
+        exits: [
+          // Nearer than the edge, so the section gets out within the run.
+          { id: 1, name: { en: 'West ford', 'pt-BR': 'Vau oeste' }, polygon: square(-130) },
+          { id: 2, name: { en: 'East road', 'pt-BR': 'Estrada leste' }, polygon: square(182) },
+        ],
+        requirement: { sections: 2, command: false },
+      },
+      events: [{ id: 1, label: 'out', trigger: { kind: 'exited', sections: 1 }, delay: 0, actions: [{ kind: 'posture', posture: 'offensive', until: { seconds: 120 } }] }],
+      eventPlaces: [],
+    }),
+  );
+  const engine = new SimulationEngine({ seed: SEED, scenario: 'battle3v3', sandbox: true, battleMap });
+  const start = engine.runTicks(1);
+  const squad = start.units.find((unit) => unit.faction === 'column')!.squadId;
+  engine.enqueue({ type: 'move', unitIds: start.units.filter((unit) => unit.faction === 'column' && unit.squadId === squad).map((unit) => unit.id), to: { x: -121, y: 100 } });
+  return engine.runTicks(BATTLE_TICKS - 1).hash;
+}
+
 const TICKS = 600;
 const GOLDEN_PATH = fileURLToPath(new URL('./determinism-golden.json', import.meta.url));
 
@@ -173,11 +206,18 @@ for (const map of [DEFAULT_BATTLE_MAP]) {
   console.log(`mixed-roster 3v3 on ${map}, ${BATTLE_TICKS} ticks: ${hash}`);
 }
 
+const withdrawal = runWithdrawal();
+if (withdrawal !== runWithdrawal()) {
+  console.error('FAIL nondeterminism: two withdrawal runs produced different hashes');
+  process.exit(1);
+}
+console.log(`withdrawal 3v3 on the test field, ${BATTLE_TICKS} ticks: ${withdrawal}`);
+
 const golden = readGolden();
 if (update) {
   writeFileSync(
     GOLDEN_PATH,
-    `${JSON.stringify({ seed: SEED, ticks: TICKS, hash: first, battleMaps: battles, mixedRosters: mixed, reason: reasonArg() ?? golden?.reason }, null, 2)}\n`,
+    `${JSON.stringify({ seed: SEED, ticks: TICKS, hash: first, battleMaps: battles, mixedRosters: mixed, withdrawal, reason: reasonArg() ?? golden?.reason }, null, 2)}\n`,
   );
   console.log(`golden updated: ${golden?.hash ?? '(none)'} -> ${first}`);
   process.exit(0);
@@ -201,6 +241,12 @@ for (const [map, hash] of Object.entries(mixed)) {
     console.error('If the simulation change is intended, run pnpm check:determinism --update');
     process.exit(1);
   }
+}
+
+if (golden?.withdrawal !== withdrawal) {
+  console.error(`FAIL withdrawal golden ${golden?.withdrawal === undefined ? 'missing' : 'mismatch'}: expected ${golden?.withdrawal}, actual ${withdrawal}`);
+  console.error('If the simulation change is intended, run pnpm check:determinism --update');
+  process.exit(1);
 }
 
 if (!golden) {

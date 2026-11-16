@@ -8,6 +8,7 @@ import type {
   Posture,
   Stance,
   TacticalOrder,
+  LocalizedText,
 } from '@prestes/shared';
 import { useState } from 'react';
 import { DockedPanel } from './DockedPanel';
@@ -95,6 +96,8 @@ export interface HudProps {
   /** add-historical-commander: the map's field commander, and the line shown when he falls. */
   commander?: CommanderView | null;
   commanderNotice?: string | null;
+  /** add-withdrawal-exits 7.2: a section that just got out, and by which exit. */
+  exitNotice?: { command: boolean; exit: LocalizedText } | null;
 }
 
 export function Hud({
@@ -140,6 +143,7 @@ export function Hud({
   orderNotice = null,
   commander = null,
   commanderNotice = null,
+  exitNotice = null,
 }: HudProps) {
   // redo-battle-hud D3: which docked panels are collapsed.
   const [docks, setDocks] = useState<DockLayout>(() => loadDocks(layoutStorage()));
@@ -182,6 +186,7 @@ export function Hud({
         deploying={deploying}
         objectives={frame?.objectives ?? []}
         {...(frame?.clock ? { clock: frame.clock } : {})}
+        {...(frame?.withdrawal ? { withdrawal: frame.withdrawal } : {})}
         {...(mapLayers && onToggleLayer ? { layers: mapLayers, onToggleLayer } : {})}
         onLocaleChange={onLocaleChange}
         onCameraBand={onCameraBand}
@@ -194,6 +199,11 @@ export function Hud({
 
       {deploying && onStartBattle && onResetDeployment ? (
         <DeploymentBanner t={t} refusal={deploymentRefusal} onStartBattle={onStartBattle} onReset={onResetDeployment} />
+      ) : null}
+      {exitNotice ? (
+        <div className="hud-notice" data-testid="exit-notice" role="status">
+          {t(exitNotice.command ? 'hud.commandExited' : 'hud.sectionExited', { exit: exitNotice.exit[locale === 'pt-BR' ? 'pt-BR' : 'en'] || exitNotice.exit.en })}
+        </div>
       ) : null}
       {orderNotice ? (
         <div className="hud-notice" data-testid="order-notice" role="status">

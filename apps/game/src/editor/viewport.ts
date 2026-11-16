@@ -1,4 +1,4 @@
-import type { MapLight } from '@prestes/shared';
+import type { MapExit, MapLight } from '@prestes/shared';
 import * as THREE from 'three';
 import {
   TRENCH,
@@ -29,6 +29,7 @@ import { fill, layerOf, sampleHeight, Stroke } from './brush';
 import { chooseScaleBar, drawScaleBar, EDITOR_SCALE_STYLE, scaleBarBox, THUMBNAIL_SCALE_STYLE, type ScaleBar, type ScaleBarText } from './scale-bar';
 import { OBJECTIVE_RADIUS, objectiveCircle, rasterCommand, type EditorStore, type SelectionItem } from './store';
 import { addEntryPoint, addTriggerArea, deletePlace, movePlace, placeUsers } from './events';
+import { addExit, deleteExit, deleteExitCorner, exitAt, exitedUsers, insertExitCorner, moveExit } from './exits';
 
 /**
  * The editor's view (add-map-editor): the game's own SceneView showing the
@@ -57,6 +58,8 @@ const COLORS = {
   /** add-battle-events 4.2: event places, and what the selected event uses. */
   eventPlace: 0xd98cf2,
   eventHighlight: 0xffd54a,
+  /** add-withdrawal-exits 6.1: the column's exits. */
+  exit: 0x7fe0a0,
 };
 
 /** refine-map-editor 6.1: slot dots by what they protect (the panel's legend uses the same). */
@@ -112,6 +115,9 @@ export class EditorViewport {
   onCursor: ((cursor: CursorInfo | null) => void) | null = null;
   /** add-battle-events 4.1: a new place's default name, in the editor's language. */
   placeName: ((kind: 'entry' | 'area', id: number) => string) | null = null;
+  /** add-withdrawal-exits 6.1: a new exit's name, and an exit's label in the editor's language. */
+  exitName: ((number: number) => string) | null = null;
+  exitLabel: ((exit: MapExit) => string) | null = null;
   /** add-battle-events 4.1: asks before deleting a place events use (their labels); true deletes. */
   confirmPlaceDelete: ((users: string[]) => boolean) | null = null;
 
@@ -522,6 +528,22 @@ export class EditorViewport {
       this.store.setSelection([{ kind: 'objective', id }]);
       return;
     }
+    if (tool === 'exit') {
+      // add-withdrawal-exits 6.1: a click on an exit takes it (drag moves it, or a corner); elsewhere adds one.
+      const hit = this.exitHit(point);
+      if (hit) {
+        this.store.setSelection([hit]);
+        this.drag = { kind: 'move', start: point, current: point, items: [hit] };
+        return;
+      }
+      let id = 0;
+      const number = (this.store.map.withdrawal?.exits.length ?? 0) + 1;
+      this.store.editVector((draft) => {
+        id = addExit(draft, this.snap(point), () => this.exitName?.(number) ?? `Exit ${number}`);
+      });
+      if (id > 0) this.store.setSelection([{ kind: 'exit', id }]);
+      return;
+    }
     if (tool === 'entry-point' || tool === 'event-area') {
       // add-battle-events 4.1: a click on a place of the tool's kind takes it (drag moves it); elsewhere adds one.
       const kind = tool === 'entry-point' ? 'entry' : 'area';
@@ -654,6 +676,12 @@ export class EditorViewport {
     // Insert a point on the selected polyline's nearest segment.
     const ground = this.groundAt(event);
     const item = this.store.selection[0];
+    if (ground && item?.kind === 'exit') {
+      const point = this.snap(ground);
+      this.store.editVector((draft) => insertExitCorner(draft, item.id, point));
+      this.store.setSelection([{ kind: 'exit', id: item.id }]);
+      return;
+    }
     if (ground && item?.kind === 'event-place') {
       const point = this.snap(ground);
       this.store.editVector((draft) => {
@@ -889,6 +917,9 @@ export class EditorViewport {
           case 'event-place':
             movePlace(draft, item.id, dx, dy, item.point, round);
             break;
+          case 'exit':
+            moveExit(draft, item.id, dx, dy, item.point, round);
+            break;
           case 'event':
             break;
           case 'objective': {
@@ -924,6 +955,12 @@ export class EditorViewport {
     const doomed = items.filter((item): item is Extract<SelectionItem, { kind: 'event-place' }> => item.kind === 'event-place' && item.point === undefined);
     const users = doomed.flatMap((item) => placeUsers(this.store.map.events ?? [], item.id).map((event) => event.label || String(event.id)));
     if (users.length > 0 && this.confirmPlaceDelete && !this.confirmPlaceDelete([...new Set(users)])) return;
+    // add-withdrawal-exits 6.1: deleting the last exit asks first when events use the "exited" trigger.
+    const exitsLeft = (this.store.map.withdrawal?.exits ?? []).filter((exit) => !items.some((item) => item.kind === 'exit' && item.point === undefined && item.id === exit.id));
+    if (this.store.map.withdrawal && exitsLeft.length === 0) {
+      const exitUsers = exitedUsers(this.store.map.events ?? []).map((event) => event.label || String(event.id));
+      if (exitUsers.length > 0 && this.confirmPlaceDelete && !this.confirmPlaceDelete(exitUsers)) return;
+    }
     this.store.editVector((draft) => {
       for (const item of items) {
         switch (item.kind) {
@@ -940,6 +977,10 @@ export class EditorViewport {
             break;
           case 'objective':
             draft.objectives = (draft.objectives ?? []).filter((objective) => objective.id !== item.id);
+            break;
+          case 'exit':
+            if (item.point !== undefined) deleteExitCorner(draft, item.id, item.point);
+            else deleteExit(draft, item.id);
             break;
           case 'event-place': {
             const place = (draft.eventPlaces ?? []).find((entry) => entry.id === item.id);
@@ -998,6 +1039,12 @@ export class EditorViewport {
     if (flag) return { kind: 'objective', id: flag.id };
     const inside = objectives.find((objective) => insideDeploymentArea(objective.area as Vec2[], point.x, point.y));
     return inside ? { kind: 'objective', id: inside.id } : null;
+  }
+
+  /** add-withdrawal-exits 6.1: an exit's corner, edge or inside under the pointer. */
+  private exitHit(point: Vec2): SelectionItem | null {
+    const hit = exitAt(this.store.map, point, this.pick);
+    return hit ? { kind: 'exit', ...hit } : null;
   }
 
   /** add-battle-events 4.1: an entry point under the pointer, or a trigger area's corner, edge or inside. */
@@ -1215,6 +1262,26 @@ export class EditorViewport {
         index += 1;
       }
     }
+    // add-withdrawal-exits 6.1: each exit's name over it, always.
+    for (const exit of this.store.map.withdrawal?.exits ?? []) {
+      if (exit.polygon.length === 0) continue;
+      const at = { x: exit.polygon.reduce((sum, p) => sum + p.x, 0) / exit.polygon.length, y: exit.polygon.reduce((sum, p) => sum + p.y, 0) / exit.polygon.length };
+      const screen = this.view.groundToScreen(at.x, at.y);
+      if (!screen) continue;
+      let label = this.placeLabels_[index];
+      if (!label) {
+        label = document.createElement('div');
+        label.className = 'editor-label editor-place-label';
+        this.labels.appendChild(label);
+        this.placeLabels_[index] = label;
+      }
+      label.style.display = 'block';
+      label.style.transform = `translate(${Math.round(screen.x)}px, ${Math.round(screen.y) - 24}px) translateX(-50%)`;
+      const text = this.exitLabel?.(exit) ?? exit.name['pt-BR'];
+      if (label.textContent !== text) label.textContent = text;
+      label.dataset.place = `exit-${exit.id}`;
+      index += 1;
+    }
     for (; index < this.placeLabels_.length; index += 1) this.placeLabels_[index]!.style.display = 'none';
   }
 
@@ -1381,6 +1448,15 @@ export class EditorViewport {
       this.overlay.add(this.line(objective.area as Vec2[], colour, true));
       this.overlay.add(this.marker(objective.flag, colour, pick * (tool === 'objective' ? 0.9 : 0.6)));
     }
+    // add-withdrawal-exits 6.1: the exits, with the deployment areas.
+    for (const exit of map.withdrawal?.exits ?? []) {
+      const isSelected = selected({ kind: 'exit', id: exit.id });
+      const colour = isSelected ? COLORS.selection : COLORS.exit;
+      this.overlay.add(this.line(exit.polygon, colour, true));
+      if (isSelected || tool === 'exit') {
+        exit.polygon.forEach((corner, point) => this.overlay.add(this.marker(corner, isSelected || selected({ kind: 'exit', id: exit.id, point }) ? COLORS.selection : colour, pick * 0.6)));
+      }
+    }
     this.drawEventPlaces(selected);
     this.drawCoverHover();
     // Drafts and the cursor.
@@ -1498,6 +1574,10 @@ function itemPoint(map: EditableMap, item: SelectionItem): Vec2 | null {
       return (map.objectives ?? []).find((entry) => entry.id === item.id)?.flag ?? null;
     case 'event':
       return null;
+    case 'exit': {
+      const exit = (map.withdrawal?.exits ?? []).find((entry) => entry.id === item.id);
+      return exit ? (exit.polygon[item.point ?? 0] ?? null) : null;
+    }
     case 'event-place': {
       const place = (map.eventPlaces ?? []).find((entry) => entry.id === item.id);
       if (!place) return null;

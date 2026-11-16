@@ -17,5 +17,6 @@
   "mixedRosters": {
     "campo-de-provas": "d9c5a820"
   },
-  "reason": "add-difficulty-levels: Soldado rebalanced and the level hashed"
+  "withdrawal": "7add6e16",
+  "reason": "merge of add-withdrawal-exits: the withdrawal golden re-recorded on the merged simulation (difficulty and commander in); the other goldens unchanged"
 }

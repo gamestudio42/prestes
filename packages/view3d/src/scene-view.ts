@@ -42,6 +42,7 @@ import { TrainingLayer, type TrainingMarker } from './training-layer';
 import { WorldLayer } from './world-layer';
 import { BattleMapLayer, STRATEGIC_PLANT_SPAN } from './battle-map-layer';
 import { DeploymentAreasLayer, DeploymentLayer, type DeploymentLabels } from './deployment-layer';
+import { ExitLayer } from './exit-layer';
 
 
 export interface OrderCallout {
@@ -123,6 +124,8 @@ export class SceneView {
   private slotBadgeLabels: { badge: SlotBadge; element: HTMLDivElement }[] = [];
   /** add-deployment-phase 3.1: the deployment areas, while the phase lasts. */
   private deploymentAreas: DeploymentAreasLayer | null = null;
+  /** add-withdrawal-exits 7.1: the column's exits (maps with a withdrawal). */
+  private exitLayer: ExitLayer | null = null;
   /** The battle's map for the deployment areas: any battle map, the Vila Militar field included. */
   private areasMap: BattleMap | null = null;
   private environment: EnvironmentAsset | null = null;
@@ -934,6 +937,22 @@ export class SceneView {
     this.deployment.setLabels(labels);
   }
 
+  /** add-withdrawal-exits 7.1: the battle map's withdrawal, if any. */
+  mapWithdrawal(): BattleMap['withdrawal'] {
+    return this.battleMap?.withdrawal;
+  }
+
+  /** add-withdrawal-exits 7.1: draws the map's exits (once) and names them in the player's language. */
+  setExitNames(names: ReadonlyMap<number, string>): void {
+    const exits = this.battleMap?.withdrawal?.exits;
+    if (!this.battleMap || !exits || exits.length === 0) return;
+    if (!this.exitLayer) {
+      this.exitLayer = new ExitLayer(exits, this.battleMap.bounds, this.calloutRoot, terrainHeightAt);
+      this.scene.add(this.exitLayer.group);
+    }
+    this.exitLayer.setNames(names);
+  }
+
   /** add-deployment-phase 3.1: shows the two deployment areas (the phase) or takes them away. */
   setDeploymentAreas(shown: boolean): void {
     if (shown && !this.deploymentAreas && this.areasMap) {
@@ -981,6 +1000,7 @@ export class SceneView {
     window.removeEventListener('keyup', this.onKeyUp);
     this.renderer.domElement.removeEventListener('wheel', this.onWheel);
     this.deployment?.dispose();
+    this.exitLayer?.dispose();
     this.deploymentAreas?.dispose();
     this.coverMap?.dispose();
     for (const label of this.slotBadgeLabels) label.element.remove();
@@ -1100,6 +1120,7 @@ export class SceneView {
     // The marks' 10 s run from the battle's first frame.
     if (this.deployment && this.deploymentAreas) this.deployment.hold();
     if (this.deployment && this.lastFrame) this.deployment.update(time, (x, y) => this.groundToScreen(x, y));
+    this.exitLayer?.update((x, y) => this.groundToScreen(x, y));
     if (this.slotBadgeLabels.length > 0) this.placeSlotBadges();
     this.effects.update(this.lastFrame, delta, this.post.target.height / Math.max(1, metresHigh));
     this.updateCallout(time);

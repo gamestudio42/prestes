@@ -21,12 +21,11 @@ function documentWith(events?: BattleEvent[], places?: EventPlace[]) {
 }
 
 describe('events in the map document', () => {
-  it('a version 8 file opens with no events and saves as version 9', () => {
+  it('a version 8 file opens with no events and saves as the current version', () => {
     const parsed = parseMapDocument({ ...documentWith(), version: 8 });
     expect(parsed.ok).toBe(true);
     if (!parsed.ok) return;
-    expect(MAP_DOCUMENT_VERSION).toBe(9);
-    expect(parsed.document.version).toBe(9);
+    expect(parsed.document.version).toBe(MAP_DOCUMENT_VERSION);
     expect(parsed.document.events).toBeUndefined();
     const compiled = compileMapDocument(parsed.document);
     expect(compiled.events).toBeUndefined();

@@ -2,6 +2,7 @@ import type { Vec2 } from '../protocol';
 import { ARMIES } from '../armies';
 import { isSectionTypeId, SECTION_TYPES, type SectionTypeId } from '../sections';
 import type { LocalizedText } from './types';
+import { MAX_EXIT_SECTIONS } from './withdrawal';
 
 /**
  * add-battle-events D1: what the map author plans to happen during a battle.
@@ -41,7 +42,10 @@ export type EventTrigger =
   | { kind: 'losses'; side: EventSide; percent: number }
   | { kind: 'after'; event: number }
   /** add-historical-commander: the map's field commander is killed or incapacitated. */
-  | { kind: 'commander' };
+  | { kind: 'commander' }
+  /** add-withdrawal-exits D4: N column sections got out, or (command) the command section did. */
+  | { kind: 'exited'; sections: number; command?: undefined }
+  | { kind: 'exited'; command: true; sections?: undefined };
 
 export type ArrivalOrder =
   | { kind: 'move'; to: Vec2 }
@@ -101,6 +105,8 @@ function isTrigger(value: unknown): value is EventTrigger {
       return isNumber(value.event);
     case 'commander':
       return true;
+    case 'exited':
+      return value.command === true ? value.sections === undefined : value.command === undefined && isNumber(value.sections);
     default:
       return false;
   }
@@ -156,6 +162,8 @@ function compileTrigger(trigger: EventTrigger): EventTrigger {
       const percent = Math.round(trigger.percent / LOSSES_PERCENT.step) * LOSSES_PERCENT.step;
       return { kind: 'losses', side: trigger.side, percent: clamp(percent, LOSSES_PERCENT.min, LOSSES_PERCENT.max) };
     }
+    case 'exited':
+      return trigger.command ? { kind: 'exited', command: true } : { kind: 'exited', sections: clamp(Math.round(trigger.sections), 1, MAX_EXIT_SECTIONS) };
     default:
       return { ...trigger };
   }

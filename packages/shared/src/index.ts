@@ -14,6 +14,7 @@ export type {
   OrderPath,
   Outcome,
   DecidedBy,
+  WithdrawalSnapshot,
   ObjectiveSnapshot,
   QueuedOrderSnapshot,
   MoraleState,

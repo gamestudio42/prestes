@@ -3,7 +3,7 @@ import { Camera, PostEffect as Contrast, Eye, EyeOff, Languages, Pause, Play, So
 import { audioSettings, useAudioSettings } from '../../audio/settings-store';
 import { AudioChannels } from '../AudioChannels';
 import type { Locale } from '@prestes/content';
-import type { ObjectiveSnapshot } from '@prestes/shared';
+import type { ObjectiveSnapshot, WithdrawalSnapshot } from '@prestes/shared';
 import type { CameraBand } from '@prestes/view3d';
 import { IconButton } from './IconButton';
 import type { Translate } from './orderMeta';
@@ -27,6 +27,8 @@ interface TopBarProps {
   /** add-map-objectives 3.2: the objectives and the battle clock, on maps with objectives. */
   objectives?: readonly ObjectiveSnapshot[];
   clock?: { tick: number; limit: number };
+  /** add-withdrawal-exits 7.2: the withdrawal's progress, on maps with exits. */
+  withdrawal?: WithdrawalSnapshot;
   /** redo-battle-hud D6: the layer switches, shown in the strategic band only. */
   layers?: MapLayers;
   onToggleLayer?: (layer: keyof MapLayers) => void;
@@ -124,6 +126,7 @@ export function TopBar({
   deploying = false,
   objectives = [],
   clock,
+  withdrawal,
   layers,
   onToggleLayer,
   onLocaleChange,
@@ -138,6 +141,13 @@ export function TopBar({
     band === 'strategic' ? 'hud.strategic' : band === 'tactical' ? 'hud.tactical' : 'hud.transition';
   const postKey = postStrong ? 'hud.postStrong' : 'hud.postClean';
   const clockLeft = clock === undefined ? null : Math.max(0, Math.ceil((clock.limit - clock.tick) / 10));
+  // add-withdrawal-exits 7.2: sections out against the requirement, and the command section when it counts.
+  const withdrawalChip = withdrawal ? (
+    <span className="withdrawal-progress" data-testid="withdrawal-progress">
+      {t('hud.withdrawal', { out: withdrawal.sectionsOut, required: withdrawal.required })}
+      {withdrawal.command ? ` · ${t(withdrawal.commandOut ? 'hud.withdrawalCommandOut' : 'hud.withdrawalCommandIn')}` : ''}
+    </span>
+  ) : null;
   const clockText =
     clockLeft === null ? '' : `${Math.floor(clockLeft / 60)}:${(clockLeft % 60).toString().padStart(2, '0')}`;
   const objectiveName = (objective: ObjectiveSnapshot) => objective.name[locale];
@@ -232,6 +242,18 @@ export function TopBar({
               );
             })}
           </div>
+          {withdrawalChip}
+          {clockText ? (
+            <span className="hud-clock" data-testid="battle-clock" title={t('hud.clock', { time: clockText })}>
+              {clockText}
+            </span>
+          ) : null}
+        </div>
+      ) : null}
+
+      {withdrawal && objectives.length === 0 ? (
+        <div className="hud-rail objective-rail withdrawal-rail">
+          {withdrawalChip}
           {clockText ? (
             <span className="hud-clock" data-testid="battle-clock" title={t('hud.clock', { time: clockText })}>
               {clockText}
