@@ -22,6 +22,8 @@ export const CALLOUT_RANGE = 140;
 /** A call-out heard thinner than this is not said at all. */
 export const CALLOUT_MIN_GAIN = 0.04;
 const TICK_MS = 100;
+/** The call-outs' files are asked for this long after the order lines' (ms). */
+export const LATER_VOICES_MS = 4000;
 
 /** The caption on screen, one store for the HUD. */
 let caption: VoiceCaption | null = null;
@@ -122,6 +124,7 @@ export class VoiceController {
   private side: 'column' | 'legalist' = 'column';
   private frame: Pick<Frame, 'tick' | 'units' | 'phase'> | null = null;
   private loaded = false;
+  private later: ReturnType<typeof setTimeout> | null = null;
 
   constructor(
     private readonly engine: AudioEngine,
@@ -178,6 +181,7 @@ export class VoiceController {
 
   dispose(): void {
     clearInterval(this.timer);
+    if (this.later) clearTimeout(this.later);
     this.director.reset();
   }
 
@@ -202,16 +206,26 @@ export class VoiceController {
     return heard;
   }
 
-  /** Order lines and answers first, then the rest (D9). */
+  /**
+   * D9, loading in priority order: the order lines and answers at once; the
+   * call-outs, curses and enemy lines a few seconds later, behind the water,
+   * beds and footsteps the ambience asks for as the battle opens. Nothing
+   * here holds the battle: a take not yet loaded is skipped (or, an order,
+   * captioned alone).
+   */
   private preload(): void {
     if (!this.engine.context) return;
     this.loaded = true;
-    const first = (line: VoiceLine) => (line.kind === 'order' || line.kind === 'answer' ? 0 : 1);
-    for (const line of [...VOICE_LINES].sort((a, b) => first(a) - first(b))) {
-      line.takes.forEach((_, index) => {
-        const id = voiceFile(line, index + 1);
-        if (this.bank.exists(id)) this.bank.request(id);
-      });
-    }
+    const request = (lines: readonly VoiceLine[]) => {
+      for (const line of lines) {
+        line.takes.forEach((_, index) => {
+          const id = voiceFile(line, index + 1);
+          if (this.bank.exists(id)) this.bank.request(id);
+        });
+      }
+    };
+    const orders = (line: VoiceLine) => line.kind === 'order' || line.kind === 'answer';
+    request(VOICE_LINES.filter(orders));
+    this.later = setTimeout(() => request(VOICE_LINES.filter((line) => !orders(line))), LATER_VOICES_MS);
   }
 }
