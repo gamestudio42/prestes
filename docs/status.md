@@ -31,8 +31,8 @@ that unblocks the most.
 1. **Campaign gates** (`make-campaign-playable` 6.2; 6.1 done
    2026-11-16): every chapter starts from the book and reaches its
    debrief, but scripted plans lose six of the eight chapters (see the
-   notes of 2026-11-16). Next: find why the commander falls so early on
-   chapters 2-7 and decide, with the owner, whether the maps change.
+   notes of 2026-11-16). Why the commander falls early is found (same
+   notes); the two fixes wait on the owner's word.
 2. **Books gate** (`complete-books-and-bibliography` 7.1): `pnpm check`,
    `pnpm verify` and strict validate.
 3. **Voices code** (`ambient-sound-and-voices` 5.1-5.5, 6.1: line catalog,
@@ -140,6 +140,46 @@ that unblocks the most.
   - Chapter 8 has no enemy (`noEnemy`). It is the epilogue: four story
     cards while the column holds its objective for two minutes. That is by
     design.
+
+- **Why the commander falls early.** Traced on chapters 2, 3, 5, 6 and 7.
+  The commander is never singled out and never falls to long-range fire.
+  In every chapter the commander falls in about 1.5 seconds to three rifle
+  hits from 18-22 m, once the enemy is on top of the column. Two causes:
+  1. **The commander flanks on their own** (code).
+     `seekFlank` ([orders.ts:429](../packages/simulation/src/systems/orders.ts))
+     sends any man who has no order and no Hold, and whose target is in
+     cover, on a flanking move of his own. The figure is not excluded. On
+     Ponte de Verdinho and Serra Nova the idle commander walked about 90 m
+     forward into the fight and died there. A Hold order stops it, but the
+     design's answer to "defeat on the commander's fall feels harsh" is
+     "the player's counter is positioning", and a commander who leaves the
+     place the player chose breaks that counter. The spec says the figure
+     keeps every officer rule "with no bonus of his own", so changing this
+     is a spec change and the owner's call.
+  2. **The commander starts on the enemy's first target** (maps 2 and 3).
+     On `sao-luiz-ramada` and `porto-mendes` the Comando slot of the
+     deployment sits on the column's own objective. The enemy goes for that
+     objective first and reaches it at 5-8 min. With the commander's section
+     on Hold there, the commander falls at 6.0 min (chapter 2, 4 men down)
+     and 8.0 min (chapter 3, 4 men down). With the whole column on Hold, the
+     commander falls at 5.4 min and 8.7 min.
+- Whole column on Hold, with a real Hold order (seed 1922):
+  - Prologue: defeat, broken, 9.8 min.
+  - 2: defeat, commander, 5.4 min.
+  - 3: defeat, commander, 8.7 min.
+  - 4: defeat, broken, 19.1 min.
+  - 5: defeat, all objectives, 19.2 min.
+  - 6: defeat, commander, 13.5 min.
+  - 7: defeat on objectives at the 20-minute limit, 1 man lost. Holding
+    alone cannot win it.
+  - 8: victory.
+- Proposed, not applied:
+  - (a) The figure does not flank on their own. This is a spec change to
+    `historical-commander`, and the campaign determinism goldens move.
+  - (b) On maps 2 and 3, move the Comando deployment slot back from the
+    column's objective.
+
+  Then replay with the same plans.
 
 ## Notes of 2026-11-15
 
