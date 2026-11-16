@@ -17,6 +17,7 @@ import {
   parseNameRegister,
   parseSourceRightsTable,
   SOURCE_KEYS,
+  validateChapterMaps,
   validateChapters,
   validateCodexEntry,
   validateCompendium,
@@ -127,6 +128,9 @@ for (const image of COMPENDIUM_IMAGE_REGISTER) {
   }
 }
 errors.push(...validateChapters());
+// make-campaign-playable D4: one map per mission; the published build has a map for every chapter.
+const published = process.argv.includes('--published');
+errors.push(...validateChapterMaps({ published }));
 errors.push(...validateQuotes(COMPENDIUM_TEXT, CHAPTER_TEXT, COMPENDIUM, CAMPAIGN_CHAPTERS));
 // complete-books-and-bibliography D7: no provisional text; D5: every cited source
 // has a bibliography row that matches its paragraph in SOURCES.md.

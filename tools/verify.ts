@@ -20,6 +20,8 @@ const openspec = process.env.VERIFY_OPENSPEC_BIN ?? 'openspec';
 
 const steps: Step[] = [
   { name: 'check', command: 'pnpm check' },
+  // make-campaign-playable D4: the published build has a map for every chapter.
+  { name: 'published content', command: 'pnpm check:content --published' },
   { name: 'build', command: 'pnpm build' },
   { name: 'bundle budget', command: 'pnpm check:bundle' },
   { name: 'determinism', command: 'pnpm check:determinism' },

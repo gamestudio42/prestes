@@ -1,13 +1,15 @@
 /**
  * The campaign book's chapter registry (polish-menu-desk, design D12-D14).
  * Imported from docs/campaign/book and docs/campaign/missions; the docs are the
- * authoring source. No chapter is playable until its mission exists.
+ * authoring source. A chapter is playable when an authored campaign map holds
+ * its id as the mission (make-campaign-playable D4).
  */
 import { COMPENDIUM, COMPENDIUM_TEXT } from '../compendium';
 import { FIGURES, type ContentLabel, type HistoricalFigure } from '../figures';
 import type { Locale } from '../locales';
 import { quoteWords, type Quote } from '../quotes';
 import { isSourceKey } from '../sources';
+import { authoredMapIndex, type AuthoredMapEntry } from '@prestes/shared';
 import { CHAPTER_TEXT_EN } from './text/en';
 import { CHAPTER_TEXT_PT_BR } from './text/pt-BR';
 
@@ -30,9 +32,6 @@ export interface CampaignChapter {
   image?: ChapterImage;
   /** Compendium entries the chapter links to. */
   links: readonly string[];
-  playable: boolean;
-  /** Mission id, required once the chapter is playable. */
-  missionId?: string;
 }
 
 export const CAMPAIGN_CHAPTERS: readonly CampaignChapter[] = [
@@ -53,7 +52,6 @@ export const CAMPAIGN_CHAPTERS: readonly CampaignChapter[] = [
       'tenentismo',
       'mauser-7mm',
     ],
-    playable: false,
   },
   {
     id: 'anel-de-ferro',
@@ -72,7 +70,6 @@ export const CAMPAIGN_CHAPTERS: readonly CampaignChapter[] = [
       'sao-luiz-gonzaga',
       'mauser-7mm',
     ],
-    playable: false,
   },
   {
     id: 'a-divisao',
@@ -84,7 +81,6 @@ export const CAMPAIGN_CHAPTERS: readonly CampaignChapter[] = [
     sourceRefs: ['macaulay-1974', 'castro-2016', 'blanc-2024', 'tavora-1928'],
     image: { entryId: 'porto-mendes', slot: 'hero-photo' },
     links: ['miguel-costa', 'luis-carlos-prestes', 'foz-do-iguacu', 'porto-mendes', 'mauser-7mm'],
-    playable: false,
   },
   {
     id: 'frente-do-parana',
@@ -96,7 +92,6 @@ export const CAMPAIGN_CHAPTERS: readonly CampaignChapter[] = [
     sourceRefs: ['macaulay-1974', 'castro-2022', 'blanc-2024'],
     image: { entryId: 'map-fazenda', slot: 'hero-photo' },
     links: ['isidoro-dias-lopes', 'sao-paulo-1924', 'positivismo-militar', 'map-fazenda', 'mauser-7mm'],
-    playable: false,
   },
   {
     id: 'ponte-de-verdinho',
@@ -108,7 +103,6 @@ export const CAMPAIGN_CHAPTERS: readonly CampaignChapter[] = [
     sourceRefs: ['macaulay-1974', 'blanc-2024', 'teles-2008'],
     image: { entryId: 'map-serra-rio', slot: 'verdinho-today' },
     links: ['luis-carlos-prestes', 'map-serra-rio', 'mauser-7mm'],
-    playable: false,
   },
   {
     id: 'serra-nova',
@@ -128,7 +122,6 @@ export const CAMPAIGN_CHAPTERS: readonly CampaignChapter[] = [
       'coluna-no-grande-sertao',
       'mauser-7mm',
     ],
-    playable: false,
   },
   {
     id: 'pantanal',
@@ -140,7 +133,6 @@ export const CAMPAIGN_CHAPTERS: readonly CampaignChapter[] = [
     sourceRefs: ['macaulay-1974', 'blanc-2024', 'anita-1991'],
     image: { entryId: 'luis-carlos-prestes', slot: 'column-photo' },
     links: ['luis-carlos-prestes', 'pantanal', 'mauser-7mm'],
-    playable: false,
   },
   {
     id: 'la-gaiba',
@@ -151,7 +143,6 @@ export const CAMPAIGN_CHAPTERS: readonly CampaignChapter[] = [
     sourceRefs: ['macaulay-1974', 'anita-1991', 'blanc-2024', 'lima-1931'],
     image: { entryId: 'exile-1927', slot: 'hero-photo' },
     links: ['luis-carlos-prestes', 'la-gaiba', 'lourenco-moreira-lima'],
-    playable: false,
   },
 ];
 
@@ -199,7 +190,8 @@ const words = (page: ChapterPage) =>
 
 /**
  * Chapter validation: commander, sources, links, image, text in every locale,
- * page budget, and no playable chapter without a mission.
+ * page budget. The maps that make chapters playable are checked by
+ * `validateChapterMaps`.
  */
 export function validateChapters(
   chapters: readonly CampaignChapter[] = CAMPAIGN_CHAPTERS,
@@ -254,9 +246,6 @@ export function validateChapters(
         }
       }
     }
-    if (chapter.playable && !chapter.missionId) {
-      errors.push(`playable chapter without mission: ${chapter.id}`);
-    }
     for (const locale of Object.keys(text) as Locale[]) {
       const long = text[locale][chapter.id];
       if (!long) {
@@ -284,6 +273,52 @@ export function validateChapters(
     const counts = locales.map((locale) => text[locale][chapter.id]?.pages.length ?? 0);
     if (new Set(counts).size > 1)
       errors.push(`chapter ${chapter.id} page counts differ between locales`);
+  }
+  return errors;
+}
+
+/**
+ * make-campaign-playable D4: the authored campaign map holding a chapter's
+ * mission (the chapter's own id), or undefined. With two maps on one mission
+ * (an error of `validateChapterMaps`), the first in the index.
+ */
+export function chapterMapId(
+  chapterId: string,
+  index: readonly AuthoredMapEntry[] = authoredMapIndex(),
+): string | undefined {
+  return index.find((entry) => entry.use === 'campaign' && entry.mission === chapterId)?.id;
+}
+
+/** A chapter is playable when a campaign map holds its mission. */
+export function isChapterPlayable(
+  chapterId: string,
+  index: readonly AuthoredMapEntry[] = authoredMapIndex(),
+): boolean {
+  return chapterMapId(chapterId, index) !== undefined;
+}
+
+/**
+ * make-campaign-playable D4: no mission is held by two campaign maps; in the
+ * published build (`published`), every chapter has a map.
+ */
+export function validateChapterMaps(
+  options: { published?: boolean } = {},
+  chapters: readonly CampaignChapter[] = CAMPAIGN_CHAPTERS,
+  index: readonly AuthoredMapEntry[] = authoredMapIndex(),
+): string[] {
+  const errors: string[] = [];
+  const holders = new Map<string, string[]>();
+  for (const entry of index) {
+    if (entry.use !== 'campaign' || !entry.mission) continue;
+    holders.set(entry.mission, [...(holders.get(entry.mission) ?? []), entry.id]);
+  }
+  for (const [mission, maps] of holders) {
+    if (maps.length > 1) errors.push(`mission ${mission} is held by more than one map: ${maps.join(', ')}`);
+  }
+  if (options.published) {
+    for (const chapter of chapters) {
+      if (!holders.has(chapter.id)) errors.push(`chapter without map: ${chapter.id}`);
+    }
   }
   return errors;
 }

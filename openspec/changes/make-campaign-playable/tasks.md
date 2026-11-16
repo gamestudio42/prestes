@@ -1,6 +1,6 @@
 ## 0. Before starting
 
-- [ ] 0.1 Read this change's proposal, design and specs.
+- [x] 0.1 Read this change's proposal, design and specs.
   - Confirm `add-difficulty-levels` has committed its edits to `App.tsx`, `packages/shared/src/protocol.ts`, the simulation and the locales before touching those files. Section 5 waits until that change is archived.
   - Keep the game muted (`prestes.audio.v1`) in the preview pane.
   - Edit no map content: maps are the owner's hand work.
@@ -9,14 +9,14 @@
 
 ## 1. Content and progress model
 
-- [ ] 1.1 Derived playable (D4).
+- [x] 1.1 Derived playable (D4).
   - Add `chapterMapId` and `isChapterPlayable` in `packages/content` from `authoredMapIndex()`.
   - Remove `playable` and `missionId` from `CampaignChapter`.
   - `tools/check-content.ts`: fail on two maps holding one mission; with `--published`, fail on a chapter without a map. `pnpm verify` runs the `--published` check.
   - Verify with unit tests: all eight chapters are playable with today's maps; an index fixture without La Gaiba makes only chapter 8 not playable; a duplicate mission fails and names both maps; `--published` fails and names a chapter without a map.
-- [ ] 1.2 The progress model in `apps/game/src/campaign/progress.ts` (D2): `emptyProgress`, `parseProgress`, `recordResult`, `isOpen`, `nextChapter`, `isCompleted`, and the best-result order.
+- [x] 1.2 The progress model in `apps/game/src/campaign/progress.ts` (D2): `emptyProgress`, `parseProgress`, `recordResult`, `isOpen`, `nextChapter`, `isCompleted`, and the best-result order.
   - Verify with unit tests: the prologue is open on an empty record; a victory opens the next chapter; a defeat, a draw and a commander's fall do not; a later defeat keeps a chapter won and its next open; a broken, foreign or wrong-version record parses to empty; the best result prefers victory, then fewer losses, then a shorter time.
-- [ ] 1.3 The storage adapter `apps/game/src/campaign/storage.ts`: `prestes.campaign.v1`, try/catch, in-memory fallback, and `clearProgress`.
+- [x] 1.3 The storage adapter `apps/game/src/campaign/storage.ts`: `prestes.campaign.v1`, try/catch, in-memory fallback, and `clearProgress`.
   - Verify with unit tests: a stub `localStorage` that throws on read and write leaves the campaign playable in memory, and a write followed by a read gives the same record.
 
 ## 2. Playing a chapter
