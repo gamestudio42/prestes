@@ -94,6 +94,28 @@ that unblocks the most.
 | `complete-books-and-bibliography` | 25/27 | 2.5 |
 | `add-field-manual` | 0/11 | 4 |
 
+## Notes of 2026-11-16: branches unified
+
+At the owner's request ("unifique todos os branches"), merged into
+`plan-art-factions-sound`: `claude/brave-satoshi-1c42a4` (HUD icons and
+right-click cursors), `claude/upbeat-roentgen-13ddec` (`add-withdrawal-exits`)
+and `claude/sweet-chebyshev-0853ff` (`add-artillery-bombardment`). The
+content warning was committed first.
+
+- Conflicts kept both sides. Events have the commander-down, exited and
+  bombardment entries. The icon sheet keeps the branch's redrawn building
+  icons, and `pnpm icons --add` added the economical fire icon. On a
+  withdrawal map the commander's fall still decides first.
+- Goldens: only the withdrawal golden was re-recorded, as `7add6e16`. Every
+  map golden is unchanged.
+- Budgets raised at the owner's word ("suba os limites"): index JS 1,000,000 B
+  (950,542 B used), sim worker 280,000 B (251,016 B used), editor JS
+  140,000 B (122,652 B used).
+- Gate: every step passes, with two wall-clock tests that failed only under
+  the gate's load. Unit tests: 1365 of 1366; the order-preview timing test
+  passes alone. E2e: 168 passed, 9 skipped, and one failure: the strategic
+  frame budget of `performance.spec`, whose five tests pass alone.
+
 ## Notes of 2026-11-16: books gate
 
 - **`complete-books-and-bibliography` 7.1 done.** Strict validate of the
