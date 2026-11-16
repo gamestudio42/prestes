@@ -22,6 +22,7 @@ const steps: Step[] = [
   { name: 'check', command: 'pnpm check' },
   // make-campaign-playable D4: the published build has a map for every chapter.
   { name: 'published content', command: 'pnpm check:content --published' },
+  { name: 'audio check', command: 'pnpm check:audio' },
   { name: 'build', command: 'pnpm build' },
   { name: 'bundle budget', command: 'pnpm check:bundle' },
   // prepare-online-release D6: nothing unpublishable in the build, and its sizes in budget.

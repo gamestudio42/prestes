@@ -21,6 +21,7 @@
     "coverage": "vitest run --coverage",
     "check:locales": "tsx tools/check-locales.ts",
     "check:content": "tsx tools/check-content.ts",
+    "check:audio": "tsx tools/voice-script.ts",
     "check": "pnpm typecheck && pnpm lint && pnpm test && pnpm check:locales && pnpm check:content && pnpm check:maps",
     "check:bundle": "tsx tools/check-bundle.ts",
     "check:release": "tsx tools/check-release.ts",

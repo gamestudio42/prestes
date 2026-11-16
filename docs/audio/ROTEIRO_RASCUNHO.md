@@ -1,9 +1,12 @@
 # Roteiro de gravação — rascunho
 
-Rascunho para revisão do dono, antes do catálogo `VOICE_LINES`
-(`ambient-sound-and-voices` 5.1). Quando o catálogo existir, o roteiro
-oficial passa a ser gerado em `docs/audio/VOICE_SCRIPT.md` e este arquivo
-sai.
+Rascunho revisado pelo dono, de onde saiu o catálogo `VOICE_LINES`
+(`packages/content/src/voice-lines.ts`, 2026-11-16). O catálogo é agora a
+fonte: uma fala nova ou trocada entra nele (texto, legenda em inglês e, para
+xingamento, o momento), e `pnpm check:audio` gera o roteiro oficial em
+`docs/audio/VOICE_SCRIPT.md`, com o que está gravado e o que falta. Este
+arquivo fica como registro das fontes dos xingamentos e do que ainda espera
+fonte; `tools/voice-ai/` ainda lê dele para gerar as vozes.
 
 ## Como gravar
 
