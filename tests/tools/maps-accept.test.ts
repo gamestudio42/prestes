@@ -39,6 +39,11 @@ describe('make-campaign-playable 3.3: maps:accept', () => {
     expect(dry.steps.map((step) => step.args.join(' '))).toEqual(['tools/check-maps.ts --map serra-nova', 'tools/check-determinism.ts --map serra-nova']);
   });
 
+  it('a map without a preview (a campaign map) gets no preview step', () => {
+    const plan = acceptPlan(['serra-nova', '--reason', 'x'], IDS, ['campo-de-provas']) as AcceptPlan;
+    expect(plan.steps.map((step) => step.name)).toEqual(['map check', 'determinism goldens']);
+  });
+
   it('a failing map check stops before anything is written', () => {
     const plan = acceptPlan(['serra-nova', '--reason', 'x'], IDS) as AcceptPlan;
     const ran: string[] = [];

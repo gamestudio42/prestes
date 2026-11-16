@@ -2,14 +2,14 @@
  * make-campaign-playable D7: `pnpm maps:accept <map-id> --reason "<why>"`
  * accepts a deliberate edit to one authored map in one step: the map check
  * for that map, its determinism goldens re-recorded with the reason, and its
- * preview redrawn. It stops at the first failure; the map check runs before
+ * preview redrawn when it has one (campaign maps have none). It stops at the first failure; the map check runs before
  * anything is written. `--dry-run` checks the map and compares its goldens
  * without writing.
  */
 import { spawnSync } from 'node:child_process';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { authoredMapIds } from '../packages/shared/src';
+import { authoredMapIds, authoredMapIndex } from '../packages/shared/src';
 
 export interface AcceptPlan {
   map: string;
@@ -18,8 +18,8 @@ export interface AcceptPlan {
   steps: { name: string; args: string[] }[];
 }
 
-/** The steps for the arguments, or why they are refused. */
-export function acceptPlan(argv: readonly string[], ids: readonly string[]): AcceptPlan | { error: string } {
+/** The steps for the arguments, or why they are refused. `previewed`: the maps that have a preview. */
+export function acceptPlan(argv: readonly string[], ids: readonly string[], previewed: readonly string[] = ids): AcceptPlan | { error: string } {
   const dryRun = argv.includes('--dry-run');
   const reasonIndex = argv.indexOf('--reason');
   const reason = reasonIndex >= 0 ? argv[reasonIndex + 1]?.trim() : undefined;
@@ -35,7 +35,7 @@ export function acceptPlan(argv: readonly string[], ids: readonly string[]): Acc
     : [
         { name: 'map check', args: ['tools/check-maps.ts', '--map', map] },
         { name: 'determinism goldens', args: ['tools/check-determinism.ts', '--update', '--map', map, '--reason', reason!] },
-        { name: 'preview', args: ['tools/map-previews.ts', map] },
+        ...(previewed.includes(map) ? [{ name: 'preview', args: ['tools/map-previews.ts', map] }] : []),
       ];
   return { map, reason: reason ?? '', dryRun, steps };
 }
@@ -55,11 +55,13 @@ export function runAccept(plan: AcceptPlan, run: (args: string[]) => number, log
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  const plan = acceptPlan(process.argv.slice(2), authoredMapIds());
+  const previewed = authoredMapIndex().filter((entry) => entry.preview).map((entry) => entry.id);
+  const plan = acceptPlan(process.argv.slice(2), authoredMapIds(), previewed);
   if ('error' in plan) {
     console.error(plan.error);
     process.exit(1);
   }
-  const code = runAccept(plan, (args) => spawnSync('pnpm', ['exec', 'tsx', ...args], { stdio: 'inherit', shell: true }).status ?? 1);
+  // No shell: through one, a reason with spaces reached the tool as its first word.
+  const code = runAccept(plan, (args) => spawnSync(process.execPath, ['--import', 'tsx', ...args], { stdio: 'inherit' }).status ?? 1);
   process.exit(code);
 }
