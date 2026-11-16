@@ -218,9 +218,17 @@ content warning was committed first.
 - **Bundle watch:** the index JS is at 989,826 B of 1,000,000 (99.0%), up
   with the voice catalogue. The next feature that adds to it should first
   move the catalogue (or another large module) into a lazily loaded chunk.
-- Still open: the enemy's wordless shouts were never generated; the curses
-  waiting for a sourced page stay out (column 13, 20, 21; legalist 16-18;
-  cangaceiro 16). Hand check with headphones is the owner's (6.3).
+- **Wordless shouts, both sides** (the owner's word, 2026-11-16): a battle
+  cry when a section goes into an assault, a cry of pain when a man is hit
+  and stays up, a death cry when he falls; three takes each in the
+  soldier's and in the enemy's voice (18), generated like the rest
+  (`inimigo/dying-1` twice: the first had a gap). The enemy's only when
+  seen. Captions name the cry. Audio now 9.93 MB, voices 2.04 MB, 220 of
+  220 takes. Seen in a skirmish in the preview: pain, death cries and the
+  comrade's "man down" after them.
+- Still open: the curses waiting for a sourced page stay out (column 13,
+  20, 21; legalist 16-18; cangaceiro 16). Hand check with headphones is
+  the owner's (6.3).
 
 ## Notes of 2026-11-16: campaign gates
 

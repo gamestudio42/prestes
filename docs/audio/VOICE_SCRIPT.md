@@ -5,7 +5,7 @@ catálogo `VOICE_LINES` (`packages/content/src/voice-lines.ts`); não edite à
 mão. Cada tomada é `voice/<falante>/<id>-<n>`; ✓ gravada, · a gravar.
 Uma tomada que o dono grava em `audio-src/voice/` substitui a gerada.
 
-**202 de 202 tomadas gravadas.**
+**220 de 220 tomadas gravadas.**
 
 ## 1. Ordens — comandante
 

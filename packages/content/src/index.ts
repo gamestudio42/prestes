@@ -105,6 +105,7 @@ export {
   VOICE_ENEMY_CALLOUTS,
   VOICE_LINES,
   VOICE_ORDERS,
+  VOICE_SHOUTS,
   curseLines,
   validateVoiceLines,
   voiceFile,
@@ -116,6 +117,7 @@ export {
   type VoiceKind,
   type VoiceLine,
   type VoiceOrder,
+  type VoiceShout,
   type VoiceSpeaker,
   type VoiceTake,
 } from './voice-lines';

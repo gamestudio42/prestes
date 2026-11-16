@@ -1,4 +1,4 @@
-import type { CurseMoment, VoiceCallout, VoiceEnemyCallout, VoiceFaction } from '@prestes/content';
+import type { CurseMoment, VoiceCallout, VoiceEnemyCallout, VoiceFaction, VoiceShout } from '@prestes/content';
 import type { Frame, UnitSnapshot } from '@prestes/shared';
 
 /**
@@ -20,6 +20,7 @@ import type { Frame, UnitSnapshot } from '@prestes/shared';
 export type VoiceRequest =
   | { kind: 'callout'; key: VoiceCallout; section: number; x: number; y: number }
   | { kind: 'enemy'; key: VoiceEnemyCallout; section: number; x: number; y: number }
+  | { kind: 'shout'; key: VoiceShout; section: number; x: number; y: number; enemy: boolean }
   | { kind: 'curse'; faction: VoiceFaction; moment: CurseMoment; section: number; x: number; y: number; enemy: boolean };
 
 /** Ticks with no enemy seen before seeing one is "contact" again (10 ticks a second). */
@@ -82,6 +83,17 @@ export class VoiceWatch {
       else if (enemy(unit) && visible(unit)) out.push({ kind: 'enemy', key: key as VoiceEnemyCallout, section: sectionOf(unit), x: unit.x, y: unit.y });
     };
 
+    // Wordless shouts, from the man himself: one per section and kind a frame.
+    const cried = new Set<string>();
+    const cry = (unit: UnitSnapshot, key: VoiceShout) => {
+      const id = `${sectionOf(unit)}:${key}`;
+      if (cried.has(id)) return;
+      if (ours(unit)) out.push({ kind: 'shout', key, section: sectionOf(unit), x: unit.x, y: unit.y, enemy: false });
+      else if (enemy(unit) && visible(unit)) out.push({ kind: 'shout', key, section: sectionOf(unit), x: unit.x, y: unit.y, enemy: true });
+      else return;
+      cried.add(id);
+    };
+
     // Contact: our side sees an enemy after a while of seeing none.
     const seenEnemies = frame.units.filter((unit) => enemy(unit) && fit(unit) && visible(unit));
     if (seenEnemies.length === 0) {
@@ -103,6 +115,8 @@ export class VoiceWatch {
         }
         if (unit.state === 'pinned' && was.state !== 'pinned') say(unit, 'pinned');
         if (ours(unit) && unit.gunState === 'set' && was.gunState !== 'set') say(unit, 'gun-set');
+        // A section goes in with a cry.
+        if (unit.order === 'assault' && was.order !== 'assault') cry(unit, 'charge');
         if (enemy(unit) && unit.order !== was.order) {
           if (unit.order === 'advance' || unit.order === 'assault' || unit.order === 'flank') say(unit, 'advance');
           else if (unit.order === 'hold' || unit.order === 'defend') say(unit, 'hold');
@@ -129,6 +143,7 @@ export class VoiceWatch {
         case 'unit_incapacitated': {
           const down = units.get(event.unitId);
           if (!down) break;
+          cry(down, 'dying');
           // A comrade says it: the nearest fit man of his section.
           const comrade = nearest(frame.units.filter((unit) => fit(unit) && unit.id !== down.id && sectionOf(unit) === sectionOf(down)), down);
           if (comrade) say(comrade, 'man-down');
@@ -160,9 +175,13 @@ export class VoiceWatch {
           }
           break;
         }
-        case 'unit_hit':
-          engage(units.get(event.unitId), 'under-fire');
+        case 'unit_hit': {
+          const hit = units.get(event.unitId);
+          engage(hit, 'under-fire');
+          // A man hit and still up cries out.
+          if (hit && fit(hit) && event.hp > 0) cry(hit, 'pain');
           break;
+        }
         default:
           break;
       }

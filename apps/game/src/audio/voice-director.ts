@@ -153,7 +153,7 @@ export class VoiceDirector {
   /** A soldier's or the enemy's call-out. */
   callOut(request: CalloutRequest, now: number): boolean {
     const key = `${request.section}:${request.line.kind}:${request.line.key}`;
-    const kindKey = `${request.line.kind}:${request.line.key}`;
+    const kindKey = `${request.line.speaker}:${request.line.kind}:${request.line.key}`;
     if ((this.quiet.get(key) ?? Number.NEGATIVE_INFINITY) > now) return false;
     if ((this.quiet.get(kindKey) ?? Number.NEGATIVE_INFINITY) > now) return false;
     if (this.callout) return false;

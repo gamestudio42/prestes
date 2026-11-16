@@ -4,7 +4,7 @@ Cada fala: (falante, arquivo, texto, tom). Os nomes seguem o roteiro:
 comandante/<id>-<n>, soldado/<id>-ack-<n>, soldado/<id>-<n>,
 xingamento/<facção>/<nº>-<n>, inimigo/<id>-<n>.
 Ficam de fora os xingamentos cuja fonte diz "falta a página" ou
-"a confirmar" e os gritos sem palavras (4b).
+"a confirmar". Os gritos sem palavras são 2b (nossos) e 4b (inimigo).
 """
 import re
 from pathlib import Path
@@ -61,6 +61,10 @@ def load(path: Path) -> tuple[list[Line], list[str]]:
         for n, t in enumerate(_texts(texts), 1):
             lines.append(Line("soldado", f"{_id}-{n}", t, tone))
 
+    for _id, _what, tone, texts in _rows(sec.get("2b", "")):
+        for n, t in enumerate(_texts(texts), 1):
+            lines.append(Line("soldado", f"{_id}-{n}", t, tone))
+
     for key, faction in FACTIONS.items():
         for num, tone, texts, source in _rows(sec[key]):
             for n, t in enumerate(_texts(texts), 1):
@@ -74,7 +78,10 @@ def load(path: Path) -> tuple[list[Line], list[str]]:
         for n, t in enumerate(_texts(texts), 1):
             lines.append(Line("inimigo", f"{_id}-{n}", t, tone))
 
-    skipped.append("inimigo/shout-1..5 (gritos sem palavras)")
+    for _id, _sit, tone, texts in (r for r in _rows(sec.get("4b", "")) if len(r) == 4):
+        for n, t in enumerate(_texts(texts), 1):
+            lines.append(Line("inimigo", f"{_id}-{n}", t, tone))
+
     return lines, skipped
 
 

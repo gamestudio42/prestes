@@ -12,8 +12,12 @@
 
 export type VoiceFaction = 'column' | 'legalist' | 'cangaceiro';
 export type VoiceSpeaker = 'comandante' | 'soldado' | 'inimigo' | `xingamento/${VoiceFaction}`;
-/** An order line, its answer, our call-out, a curse, the enemy's call-out. */
-export type VoiceKind = 'order' | 'answer' | 'callout' | 'curse' | 'enemy';
+/** An order line, its answer, our call-out, a curse, the enemy's call-out, a wordless shout (either side). */
+export type VoiceKind = 'order' | 'answer' | 'callout' | 'curse' | 'enemy' | 'shout';
+
+/** Wordless shouts, in both sides' voices: a charge, a man hit, a man falling. */
+export const VOICE_SHOUTS = ['charge', 'pain', 'dying'] as const;
+export type VoiceShout = (typeof VOICE_SHOUTS)[number];
 
 /** The orders a commander speaks, by the board's controls. */
 export const VOICE_ORDERS = [
@@ -100,6 +104,9 @@ export const VOICE_LINES: readonly VoiceLine[] = [
   { speaker: 'soldado', kind: 'callout', key: 'gun-set', takes: [{ pt: 'Metralhadora pronta!', en: 'Machine gun ready!' }, { pt: 'Peça montada!', en: 'Gun set up!' }, { pt: 'Pronta pra atirar!', en: 'Ready to fire!' }] },
   { speaker: 'soldado', kind: 'callout', key: 'objective', takes: [{ pt: 'Posição tomada!', en: 'Position taken!' }, { pt: 'É nossa!', en: "It's ours!" }, { pt: 'Tomamos!', en: 'We took it!' }] },
   { speaker: 'soldado', kind: 'callout', key: 'falling-back', takes: [{ pt: 'Pra trás, pra trás!', en: 'Back, back!' }, { pt: 'Não segura mais, recua!', en: "Can't hold, fall back!" }, { pt: 'Vamos embora daqui!', en: "Let's get out of here!" }] },
+  { speaker: 'soldado', kind: 'shout', key: 'charge', takes: [{ pt: 'Êêêêê!', en: '(battle cry)' }, { pt: 'Eia, eia!', en: '(battle cry)' }, { pt: 'Aaaaah!', en: '(battle cry)' }] },
+  { speaker: 'soldado', kind: 'shout', key: 'pain', takes: [{ pt: 'Aai!', en: '(cry of pain)' }, { pt: 'Ugh!', en: '(cry of pain)' }, { pt: 'Ai, ai!', en: '(cry of pain)' }] },
+  { speaker: 'soldado', kind: 'shout', key: 'dying', takes: [{ pt: 'Aaaargh!', en: '(death cry)' }, { pt: 'Ahh!', en: '(death cry)' }, { pt: 'Uuh!', en: '(death cry)' }] },
   { speaker: 'xingamento/column', kind: 'curse', key: '01', moment: 'insult', takes: [{ pt: 'Filho da puta!', en: 'Son of a bitch!' }] },
   { speaker: 'xingamento/column', kind: 'curse', key: '02', moment: 'insult', takes: [{ pt: 'Vai pra puta que te pariu!', en: 'Go to hell, you bastard!' }] },
   { speaker: 'xingamento/column', kind: 'curse', key: '03', moment: 'insult', takes: [{ pt: 'Filho duma égua!', en: 'Son of a mare!' }] },
@@ -157,6 +164,9 @@ export const VOICE_LINES: readonly VoiceLine[] = [
   { speaker: 'inimigo', kind: 'enemy', key: 'machine-gun', takes: [{ pt: 'Cuidado, a metralhadora!', en: 'Watch out, the machine gun!' }, { pt: 'Sai da frente dessa máquina!', en: 'Get away from that gun!' }] },
   { speaker: 'inimigo', kind: 'enemy', key: 'falling-back', takes: [{ pt: 'Corre, corre!', en: 'Run, run!' }, { pt: 'Debanda, pessoal!', en: 'Scatter, lads!' }, { pt: 'Não dá, vamos embora!', en: "It's no good, let's go!" }] },
   { speaker: 'inimigo', kind: 'enemy', key: 'objective', takes: [{ pt: 'Tomamos! É nosso!', en: "We took it! It's ours!" }, { pt: 'Toca eles daqui!', en: 'Drive them out!' }] },
+  { speaker: 'inimigo', kind: 'shout', key: 'charge', takes: [{ pt: 'Uuuuh!', en: '(battle cry)' }, { pt: 'Êêêê!', en: '(battle cry)' }, { pt: 'Hááá!', en: '(battle cry)' }] },
+  { speaker: 'inimigo', kind: 'shout', key: 'pain', takes: [{ pt: 'Aaai!', en: '(cry of pain)' }, { pt: 'Uhn!', en: '(cry of pain)' }, { pt: 'Ai!', en: '(cry of pain)' }] },
+  { speaker: 'inimigo', kind: 'shout', key: 'dying', takes: [{ pt: 'Aaaagh!', en: '(death cry)' }, { pt: 'Ahh!', en: '(death cry)' }, { pt: 'Ugh!', en: '(death cry)' }] },
 ];
 
 /** The sound id of take `n` (from 1) of a line. */
@@ -164,9 +174,9 @@ export function voiceFile(line: Pick<VoiceLine, 'speaker' | 'kind' | 'key'>, n: 
   return `${line.speaker}/${line.key}${line.kind === 'answer' ? '-ack' : ''}-${n}`;
 }
 
-/** The line of a kind and key (and, for curses, a faction), if the script has it. */
-export function voiceLine(kind: VoiceKind, key: string): VoiceLine | undefined {
-  return VOICE_LINES.find((line) => line.kind === kind && line.key === key);
+/** The line of a kind and key, if the script has it; a shout also by its speaker. */
+export function voiceLine(kind: VoiceKind, key: string, speaker?: VoiceSpeaker): VoiceLine | undefined {
+  return VOICE_LINES.find((line) => line.kind === kind && line.key === key && (speaker === undefined || line.speaker === speaker));
 }
 
 /** A faction's curses; with a moment, only those of that moment. */
@@ -187,6 +197,11 @@ export function validateVoiceLines(lines: readonly VoiceLine[] = VOICE_LINES): s
   }
   for (const callout of VOICE_CALLOUTS) if (!find('callout', callout)) problems.push(`voice: call-out "${callout}" has no line`);
   for (const callout of VOICE_ENEMY_CALLOUTS) if (!find('enemy', callout)) problems.push(`voice: enemy call-out "${callout}" has no line`);
+  for (const shout of VOICE_SHOUTS) {
+    for (const speaker of ['soldado', 'inimigo'] as const) {
+      if (!lines.some((line) => line.kind === 'shout' && line.key === shout && line.speaker === speaker)) problems.push(`voice: shout "${shout}" has no ${speaker} line`);
+    }
+  }
   for (const faction of ['column', 'legalist', 'cangaceiro'] as const) {
     if (!lines.some((line) => line.kind === 'curse' && line.speaker === `xingamento/${faction}`)) problems.push(`voice: faction "${faction}" has no curses`);
   }

@@ -85,6 +85,19 @@ Arquivo: `soldado/<id>-1..3`.
 
 **24 tomadas.**
 
+### 2b. Gritos sem palavras dos nossos (3 tomadas)
+
+Sons sem fala, curtos, na voz do soldado. Arquivo: `soldado/<id>-1..3`.
+Legenda: só o tipo do grito.
+
+| id | Situação | Tom | Texto |
+|---|---|---|---|
+| charge | a seção parte para o assalto | grito de arranque, alto | "Êêêêê!" · "Eia, eia!" · "Aaaaah!" |
+| pain | um homem é atingido | dor, contido | "Aai!" · "Ugh!" · "Ai, ai!" |
+| dying | um homem cai | grito curto, desespero | "Aaaargh!" · "Ahh!" · "Uuh!" |
+
+**9 tomadas.**
+
 ## 3. Xingamentos por facção (1 tomada cada)
 
 Esporádicos, só em combate, entre um tiro e outro. O xingamento é da
@@ -215,8 +228,16 @@ Nunca dão vantagem que a vista não daria. Arquivo: `inimigo/<id>-<nº>`.
 
 ### 4b. Gritos sem palavras (inimigo)
 
-5 tomadas, `inimigo/shout-1..5`: urros curtos de carga ("êêê!", "eia!",
-"uuuh!"), um grito de dor contido, um "ô!" de chamada.
+Os mesmos três gritos dos nossos, na voz do inimigo, ouvidos só quando o
+nosso lado vê quem grita. Arquivo: `inimigo/<id>-1..3`.
+
+| id | Situação | Tom | Texto |
+|---|---|---|---|
+| charge | a seção dele parte para o assalto | grito de arranque, alto | "Uuuuh!" · "Êêêê!" · "Hááá!" |
+| pain | um dos deles é atingido | dor, contido | "Aaai!" · "Uhn!" · "Ai!" |
+| dying | um dos deles cai | grito curto, desespero | "Aaaagh!" · "Ahh!" · "Ugh!" |
+
+**9 tomadas.**
 
 ---
 
@@ -229,8 +250,9 @@ Nunca dão vantagem que a vista não daria. Arquivo: `inimigo/<id>-<nº>`.
 | Avisos dos nossos | 24 |
 | Xingamentos por facção | 56 |
 | Avisos do inimigo | 21 |
-| Gritos do inimigo | 5 |
-| **Total** | **214** |
+| Gritos sem palavras dos nossos | 9 |
+| Gritos sem palavras do inimigo | 9 |
+| **Total** | **227** |
 
 ## Pendências antes do catálogo
 

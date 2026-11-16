@@ -64,6 +64,13 @@ describe('the voice catalogue', () => {
     expect(pickCurse('legalist', 'miss', () => 0)?.moment).toBe('insult');
   });
 
+  it('has the wordless shouts in both voices', () => {
+    for (const shout of ['charge', 'pain', 'dying']) {
+      expect(voiceLine('shout', shout, 'soldado')?.takes.length).toBe(3);
+      expect(voiceLine('shout', shout, 'inimigo')?.takes.length).toBe(3);
+    }
+  });
+
   it('keeps each faction to its own curses', () => {
     for (const faction of ['column', 'legalist', 'cangaceiro'] as const) {
       expect(curseLines(faction).length).toBeGreaterThan(0);
@@ -274,6 +281,31 @@ describe('the call-out watch', () => {
     const hit: SimEvent = { type: 'shot', tick: 2, source: 1, target: 10, x: 0, y: 0, x2: 50, y2: 0, hit: true };
     const out = watch.frame(frame(2, units, [hit, { type: 'unit_routed', tick: 2, unitId: 10 }], [10]), 'column');
     expect(out.filter((r) => r.kind === 'curse').map((r) => r.kind === 'curse' && `${r.faction}:${r.moment}`)).toEqual(['column:flee', 'legalist:under-fire']);
+  });
+
+  it('a man hit cries out, a man falling gives a death cry, a section going in a battle cry', () => {
+    const watch = new VoiceWatch();
+    const units = [unit(1, 'column'), unit(2, 'column', { squadId: 2 }), unit(3, 'column', { squadId: 3 })];
+    watch.frame(frame(1, units), 'column');
+    const events: SimEvent[] = [
+      { type: 'unit_hit', tick: 2, unitId: 1, damage: 30, hp: 70 },
+      { type: 'unit_died', tick: 2, unitId: 2 },
+    ];
+    const next = [unit(1, 'column'), unit(2, 'column', { squadId: 2, alive: false }), unit(3, 'column', { squadId: 3, order: 'assault' })];
+    const shouts = watch.frame(frame(2, next, events), 'column').filter((r) => r.kind === 'shout');
+    expect(shouts.map((r) => r.kind === 'shout' && `${r.key}:${r.section}:${r.enemy}`)).toEqual(['charge:3:false', 'pain:1:false', 'dying:2:false']);
+  });
+
+  it("hears the enemy's shouts only when our side sees him", () => {
+    const watch = new VoiceWatch();
+    const units = [unit(1, 'column'), unit(10, 'legalist', { squadId: 2 }), unit(11, 'legalist', { squadId: 3 })];
+    watch.frame(frame(1, units, [], [10, 11]), 'column');
+    const events: SimEvent[] = [
+      { type: 'unit_hit', tick: 2, unitId: 10, damage: 30, hp: 70 },
+      { type: 'unit_hit', tick: 2, unitId: 11, damage: 30, hp: 70 },
+    ];
+    const shouts = watch.frame(frame(2, units, events, [10]), 'column').filter((r) => r.kind === 'shout');
+    expect(shouts).toEqual([{ kind: 'shout', key: 'pain', section: 1002, x: 50, y: 0, enemy: true }]);
   });
 
   it('says nothing in deployment', () => {

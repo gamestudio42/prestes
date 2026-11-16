@@ -194,6 +194,11 @@ export class VoiceController {
       if (line) this.director.curse({ line, section: request.section, placement, enemy: request.enemy }, now);
       return;
     }
+    if (request.kind === 'shout') {
+      const shout = voiceLine('shout', request.key, request.enemy ? 'inimigo' : 'soldado');
+      if (shout) this.director.callOut({ line: shout, section: request.section, placement, enemy: request.enemy }, now);
+      return;
+    }
     const line = voiceLine(request.kind, request.key);
     if (line) this.director.callOut({ line, section: request.section, placement, enemy: request.kind === 'enemy' }, now);
   }
