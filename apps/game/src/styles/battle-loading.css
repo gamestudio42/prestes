@@ -1,0 +1,89 @@
+/*
+ * prepare-online-release D3: the battle loading screen, a parchment sheet
+ * like the content warning's, over a dark scrim that hides the menu or the
+ * ended battle while the next battle's files arrive.
+ */
+.battle-loading,
+.asset-notice {
+  /* The book's tokens; the screen sits outside the start screen that defines them. */
+  --book-paper: #efe2c4;
+  --book-edge: #b29a6c;
+  --book-ink: #2a1f14;
+  --book-ink-soft: #5a4a30;
+  --book-accent: #8e3a2c;
+}
+
+.battle-loading {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(12, 8, 4, 0.9);
+}
+
+.battle-loading-sheet {
+  box-sizing: border-box;
+  width: min(560px, 100%);
+  padding: 28px 36px 20px;
+  border: 2px solid var(--book-ink);
+  background: var(--book-paper);
+  box-shadow: 6px 6px 0 rgba(8, 5, 2, 0.75);
+  clip-path: var(--px-corner);
+  color: var(--book-ink);
+}
+
+.battle-loading-line {
+  margin-top: 8px;
+  color: var(--book-ink-soft);
+}
+
+.battle-loading-bar {
+  height: 10px;
+  margin-top: 18px;
+  border: 2px solid var(--book-ink);
+  background: var(--book-edge);
+}
+
+.battle-loading-fill {
+  height: 100%;
+  background: var(--book-ink);
+  transition: width 0.2s linear;
+}
+
+.battle-loading-count {
+  margin: 8px 0 0;
+  font-size: 14px;
+  color: var(--book-ink-soft);
+  text-align: right;
+}
+
+@media (max-width: 640px) {
+  .battle-loading-sheet {
+    padding: 22px 18px 14px;
+  }
+}
+
+/* The clicked start control, before the screen or the battle shows. */
+.is-loading {
+  cursor: progress !important;
+  opacity: 0.7;
+}
+
+/* Some of the battle's files failed twice: the battle plays with stand-ins. */
+.asset-notice {
+  position: fixed;
+  bottom: 12px;
+  left: 50%;
+  z-index: 6;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  max-width: calc(100vw - 32px);
+  padding: 8px 12px;
+  transform: translateX(-50%);
+  border: 2px solid var(--book-ink);
+  background: var(--book-paper);
+  color: var(--book-ink);
+}

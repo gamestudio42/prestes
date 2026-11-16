@@ -140,19 +140,92 @@ export function withSwatches(base: THREE.BufferGeometry, swaps: Readonly<Record<
   return geometry;
 }
 
-export async function loadEnvironmentAsset(base = './models/'): Promise<EnvironmentAsset> {
-  // The loader is a separate chunk, fetched only when models are wanted.
-  const { GLTFLoader } = await import('three/examples/jsm/loaders/GLTFLoader.js');
-  const loader = new GLTFLoader();
-  const library = new ModelLibrary((url) => loader.loadAsync(url).then((gltf) => gltf.scene), base);
-  const [map] = await Promise.all([new THREE.TextureLoader().loadAsync(`${base}textures/environment.png`), library.include(FILES)]);
-  map.magFilter = THREE.NearestFilter;
-  map.minFilter = THREE.NearestFilter;
-  map.generateMipmaps = false;
-  map.colorSpace = THREE.SRGBColorSpace;
-  map.flipY = false;
-  map.needsUpdate = true;
+/** prepare-online-release D2: the base environment files every battle loads. */
+export const ENVIRONMENT_FILES: readonly string[] = FILES;
 
+interface SceneFile {
+  scene: THREE.Object3D;
+}
+
+/** One GLTF loader for the page; its module is a separate chunk, fetched when models are wanted. */
+let gltfLoader: Promise<{ loadAsync(url: string): Promise<SceneFile> }> | null = null;
+function gltf(): Promise<{ loadAsync(url: string): Promise<SceneFile> }> {
+  if (!gltfLoader) {
+    const pending = import('three/examples/jsm/loaders/GLTFLoader.js').then(({ GLTFLoader }) => new GLTFLoader());
+    pending.catch(() => {
+      if (gltfLoader === pending) gltfLoader = null;
+    });
+    gltfLoader = pending;
+  }
+  return gltfLoader;
+}
+
+/**
+ * prepare-online-release D2: the environment's files are fetched once per
+ * page and shared by every scene and the battle preload, so a battle that
+ * was preloaded draws its models at once and a second battle fetches none.
+ */
+interface SharedEnvironment {
+  library: ModelLibrary;
+  atlas: Promise<THREE.Texture> | null;
+  asset: Promise<EnvironmentAsset> | null;
+}
+const shared = new Map<string, SharedEnvironment>();
+
+function sharedEnvironment(base: string): SharedEnvironment {
+  let found = shared.get(base);
+  if (!found) {
+    found = {
+      library: new ModelLibrary((url) => gltf().then((loader) => loader.loadAsync(url)).then((file) => file.scene), base),
+      atlas: null,
+      asset: null,
+    };
+    shared.set(base, found);
+  }
+  return found;
+}
+
+/** One environment model file, through the shared library (D2's preload). */
+export function loadEnvironmentFile(file: string, base = './models/'): Promise<void> {
+  return sharedEnvironment(base).library.include([file]);
+}
+
+/** The environment pixel atlas, loaded once; a failed load may be asked for again. */
+export function loadEnvironmentAtlas(base = './models/'): Promise<THREE.Texture> {
+  const environment = sharedEnvironment(base);
+  if (!environment.atlas) {
+    const pending = new THREE.TextureLoader().loadAsync(`${base}textures/environment.png`).then((map) => {
+      map.magFilter = THREE.NearestFilter;
+      map.minFilter = THREE.NearestFilter;
+      map.generateMipmaps = false;
+      map.colorSpace = THREE.SRGBColorSpace;
+      map.flipY = false;
+      map.needsUpdate = true;
+      return map;
+    });
+    pending.catch(() => {
+      if (environment.atlas === pending) environment.atlas = null;
+    });
+    environment.atlas = pending;
+  }
+  return environment.atlas;
+}
+
+export function loadEnvironmentAsset(base = './models/'): Promise<EnvironmentAsset> {
+  const environment = sharedEnvironment(base);
+  if (!environment.asset) {
+    const pending = Promise.all([loadEnvironmentAtlas(base), environment.library.include(FILES)]).then(([map]) =>
+      environmentAsset(environment.library, map),
+    );
+    pending.catch(() => {
+      if (environment.asset === pending) environment.asset = null;
+    });
+    environment.asset = pending;
+  }
+  return environment.asset;
+}
+
+function environmentAsset(library: ModelLibrary, map: THREE.Texture): EnvironmentAsset {
   const material = new THREE.MeshToonMaterial({ map, gradientMap: toonGradient() });
   // Double-sided: the buriti's fronds are open sheets (hand check 2026-11-09: they vanished from behind).
   const vertexMaterial = new THREE.MeshToonMaterial({ vertexColors: true, gradientMap: toonGradient(), side: THREE.DoubleSide });

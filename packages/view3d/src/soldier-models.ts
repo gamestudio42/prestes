@@ -29,7 +29,26 @@ function pixelTexture(texture: THREE.Texture): THREE.Texture {
   return texture;
 }
 
-export async function loadSoldierAsset(base = './models/'): Promise<SoldierAsset> {
+/**
+ * prepare-online-release D2: the soldier is fetched once per page and shared
+ * by every scene, the thumbnails and the battle preload; a failed load may be
+ * asked for again.
+ */
+const soldiers = new Map<string, Promise<SoldierAsset>>();
+export function loadSoldierAsset(base = './models/'): Promise<SoldierAsset> {
+  let pending = soldiers.get(base);
+  if (!pending) {
+    const loading = fetchSoldierAsset(base);
+    loading.catch(() => {
+      if (soldiers.get(base) === loading) soldiers.delete(base);
+    });
+    soldiers.set(base, loading);
+    pending = loading;
+  }
+  return pending;
+}
+
+async function fetchSoldierAsset(base: string): Promise<SoldierAsset> {
   // The loaders are a separate chunk, fetched only when models are wanted.
   const [{ GLTFLoader }, { clone }] = await Promise.all([
     import('three/examples/jsm/loaders/GLTFLoader.js'),

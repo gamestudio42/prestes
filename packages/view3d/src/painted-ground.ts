@@ -226,14 +226,8 @@ export class PaintedGround {
     this.group.name = 'painted-ground';
     this.updateHeights(height);
     if (atlasUrl) {
-      new THREE.TextureLoader()
-        .loadAsync(atlasUrl)
+      loadGroundAtlas(atlasUrl)
         .then((texture) => {
-          texture.magFilter = THREE.NearestFilter;
-          texture.minFilter = THREE.NearestFilter;
-          texture.generateMipmaps = false;
-          texture.flipY = false;
-          texture.colorSpace = THREE.SRGBColorSpace;
           this.uniforms.uAtlas!.value = texture;
         })
         .catch(() => {
@@ -310,4 +304,30 @@ export class PaintedGround {
     this.material.dispose();
     this.paint.dispose();
   }
+}
+
+/**
+ * prepare-online-release D2: the ground atlas, loaded once per page and
+ * shared by every painted ground and the battle preload; a failed load may
+ * be asked for again.
+ */
+const groundAtlases = new Map<string, Promise<THREE.Texture>>();
+export function loadGroundAtlas(url: string): Promise<THREE.Texture> {
+  let pending = groundAtlases.get(url);
+  if (!pending) {
+    const loading = new THREE.TextureLoader().loadAsync(url).then((texture) => {
+      texture.magFilter = THREE.NearestFilter;
+      texture.minFilter = THREE.NearestFilter;
+      texture.generateMipmaps = false;
+      texture.flipY = false;
+      texture.colorSpace = THREE.SRGBColorSpace;
+      return texture;
+    });
+    loading.catch(() => {
+      if (groundAtlases.get(url) === loading) groundAtlases.delete(url);
+    });
+    groundAtlases.set(url, loading);
+    pending = loading;
+  }
+  return pending;
 }

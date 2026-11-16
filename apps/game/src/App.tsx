@@ -3,6 +3,7 @@ import { Eye } from './ui/icons';
 import { CAMPAIGN_CHAPTERS, chapterText, translate, type Locale } from '@prestes/content';
 import {
   authoredMapIndex,
+  battleMap,
   compileMapDocument,
   DEFAULT_BATTLE_MAP,
   forgetAuthoredMap,
@@ -17,7 +18,9 @@ import {
   type LocalizedText,
 } from '@prestes/shared';
 import { loadPlaytest } from './editor/persistence';
-import type { CameraBand, SceneView } from '@prestes/view3d';
+import { battleAssets, preloadBattle, sharedBattleLoaders, type CameraBand, type SceneView } from '@prestes/view3d';
+import { BattleStarts, prepareBattle } from './client/battle-start';
+import { BattleLoading, type BattleLoadingState } from './ui/BattleLoading';
 import { DEFAULT_SPEED, GameClient } from './client/GameClient';
 import { FieldOverlays } from './ui/FieldOverlays';
 import { GameCanvas, type CursorHint } from './ui/GameCanvas';
@@ -111,6 +114,27 @@ export function App() {
     x: number;
     y: number;
   } | null>(null);
+
+  // prepare-online-release D3: a battle waits for its map and files; the screen shows after 300 ms.
+  const startsRef = useRef(new BattleStarts());
+  const [loading, setLoading] = useState<BattleLoadingState | null>(null);
+  const [loadingShown, setLoadingShown] = useState(false);
+  const loadingTimer = useRef<number | null>(null);
+  const busyControl = useRef<HTMLElement | null>(null);
+  const [assetNotice, setAssetNotice] = useState(false);
+  /** The clicked control says "loading" until the screen or the battle shows. */
+  const clearBusy = (): void => {
+    busyControl.current?.classList.remove('is-loading');
+    busyControl.current?.removeAttribute('aria-busy');
+    busyControl.current = null;
+  };
+  const endLoading = (): void => {
+    if (loadingTimer.current !== null) window.clearTimeout(loadingTimer.current);
+    loadingTimer.current = null;
+    clearBusy();
+    setLoading(null);
+    setLoadingShown(false);
+  };
 
   const clientRef = useRef<GameClient | null>(null);
   // refine-battle-controls: the battle scene, for the HUD's centring control.
@@ -356,6 +380,8 @@ export function App() {
 
   /** Leaves the battle for the main menu. */
   const handleBackToMenu = (): void => {
+    startsRef.current.cancel();
+    endLoading();
     setCampaign(null);
     setBookChapter(null);
     clientRef.current?.dispose();
@@ -418,17 +444,64 @@ export function App() {
     setProgress(emptyProgress());
   };
 
+  /**
+   * prepare-online-release D3: fetches the battle's map document and every
+   * file it draws, then opens it. A start overtaken by another, or by
+   * leaving to the menu, never opens.
+   */
   const startBattle = (map: BattleMapId, rosters?: BattleRosters, timeLimitTicks?: number, difficulty?: Difficulty): void => {
-    // An authored map not fetched yet: fetch it, then start (the document goes to the worker with the start).
-    if (playtestRef.current?.id !== map && !documentsRef.current.has(map) && authoredMapIndex().some((entry) => entry.id === map)) {
-      void loadAuthoredMap(map).then((document) => {
-        if (!document) return;
-        documentsRef.current.set(map, document);
-        startBattle(map, rosters, timeLimitTicks, difficulty);
-      });
-      return;
-    }
+    const starts = startsRef.current;
+    const token = starts.begin();
+    // Unlocked in the click itself: browsers allow sound only from a gesture.
     void audioRef.current?.unlock();
+    const chapterId = campaignRef.current;
+    clearBusy();
+    const control = document.activeElement;
+    if (control instanceof HTMLElement && control !== document.body) {
+      control.classList.add('is-loading');
+      control.setAttribute('aria-busy', 'true');
+      busyControl.current = control;
+    }
+    if (loadingTimer.current !== null) window.clearTimeout(loadingTimer.current);
+    setLoadingShown(false);
+    loadingTimer.current = window.setTimeout(() => {
+      if (!starts.isCurrent(token)) return;
+      clearBusy();
+      setLoadingShown(true);
+    }, 300);
+    void prepareBattle({
+      starts,
+      token,
+      // An authored map not fetched yet is fetched first; its document goes to the worker with the start.
+      loadMap: async () => {
+        if (playtestRef.current?.id === map || documentsRef.current.has(map) || !authoredMapIndex().some((entry) => entry.id === map)) return true;
+        const document = await loadAuthoredMap(map);
+        if (!document) return false;
+        documentsRef.current.set(map, document);
+        return true;
+      },
+      mapOf: () => {
+        try {
+          return battleMap(map);
+        } catch {
+          return null;
+        }
+      },
+      assets: battleAssets,
+      preload: preloadBattle,
+      loaders: sharedBattleLoaders(),
+      onProgress: (state) => setLoading({ chapterId, ...state }),
+    }).then((ready) => {
+      if (!starts.isCurrent(token)) return;
+      endLoading();
+      if (!ready) return;
+      setAssetNotice(ready.failed > 0);
+      openBattle(map, rosters, timeLimitTicks, difficulty);
+    });
+  };
+
+  /** Opens a battle whose map and files are in: the same client and start as before loading existed. */
+  const openBattle = (map: BattleMapId, rosters?: BattleRosters, timeLimitTicks?: number, difficulty?: Difficulty): void => {
     clientRef.current?.dispose();
     clientRef.current = null;
     setFrame(null);
@@ -520,6 +593,7 @@ export function App() {
           onSetupChange={changeSetup}
           onToggleAudio={handleToggleAudio}
         />
+        {loading && loadingShown ? <BattleLoading state={loading} locale={locale} /> : null}
       </div>
     );
   }
@@ -711,6 +785,15 @@ export function App() {
           {translate(locale, 'battle.end.backToEditor')}
         </button>
       ) : null}
+      {assetNotice ? (
+        <div className="asset-notice" role="status" data-testid="asset-notice">
+          <span>{translate(locale, 'loading.failed')}</span>
+          <button type="button" className="secondary" onClick={() => setAssetNotice(false)} data-testid="asset-notice-close">
+            {translate(locale, 'loading.dismiss')}
+          </button>
+        </div>
+      ) : null}
+      {loading && loadingShown ? <BattleLoading state={loading} locale={locale} /> : null}
     </div>
   );
 }

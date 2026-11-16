@@ -1311,8 +1311,7 @@ export class BattleMapLayer {
    * kinds' stones and walls (revise-buildings-and-stone 6.1).
    */
   modelFiles(): string[] {
-    const walls = (this.map.lines ?? []).filter((line) => line.kind === 'stone-wall').map((line) => (line.rock ? `dry-wall@${line.rock}` : 'dry-wall'));
-    return modelFilesOf([...this.map.props.map(propModelName), ...this.map.buildings.map((building) => building.model), ...walls]);
+    return mapModelFiles(this.map);
   }
 
   useModels(asset: EnvironmentAsset): void {
@@ -1333,4 +1332,14 @@ export class BattleMapLayer {
     for (const mesh of this.trees.children) if (stood.has(mesh.name)) mesh.visible = !strategic;
     this.impostors.visible = strategic;
   }
+}
+
+/**
+ * The model files a battle map's props, buildings and stone walls need (the
+ * biome tree and stone files among them); prepare-online-release D2 preloads
+ * the same list.
+ */
+export function mapModelFiles(map: BattleMap): string[] {
+  const walls = (map.lines ?? []).filter((line) => line.kind === 'stone-wall').map((line) => (line.rock ? `dry-wall@${line.rock}` : 'dry-wall'));
+  return modelFilesOf([...map.props.map(propModelName), ...map.buildings.map((building) => building.model), ...walls]);
 }

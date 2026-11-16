@@ -31,6 +31,7 @@ import { MarkerLayer } from './marker-layer';
 import { GarrisonLayer, type AssaultBarsState, type GarrisonBannerState } from './garrison-layer';
 import { ObjectiveLayer, type ObjectiveMark } from './objective-layer';
 import { loadEnvironmentAsset, type EnvironmentAsset } from './environment-models';
+import { GROUND_ATLAS_URL } from './battle-assets';
 import { PaintedGround, type GroundOverlay } from './painted-ground';
 import { terrainGradient, toon, toonGradient } from './materials';
 import { PALETTE } from './palette';
@@ -1035,7 +1036,7 @@ export class SceneView {
     const bounds = this.battleMap?.bounds;
     if (this.battleMap?.paint && bounds) {
       // add-map-editor: an authored map's painted ground.
-      this.paintedGround = new PaintedGround(bounds, this.battleMap.paint, groundHeightAt, './models/textures/ground-atlas.png');
+      this.paintedGround = new PaintedGround(bounds, this.battleMap.paint, groundHeightAt, GROUND_ATLAS_URL);
       this.terrainMesh = this.paintedGround.group;
       this.scene.add(this.paintedGround.group);
       this.aimSun(this.battleMap);

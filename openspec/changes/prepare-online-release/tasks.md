@@ -19,13 +19,13 @@
 
 ## 2. Battle loading
 
-- [ ] 2.1 `battleAssets(map)` in view3d (D2).
+- [x] 2.1 `battleAssets(map)` in view3d (D2).
   - Verify with unit tests on fixtures: a cerrado map lists `trees-cerrado` and not the other biomes; an unpainted map has no ground atlas; the order is stable.
-- [ ] 2.2 `preloadBattle(list, onProgress)` through the shared caches, with one retry per file and `{ done, total, failed }`; `SceneView` takes the preloaded assets.
+- [x] 2.2 `preloadBattle(list, onProgress)` through the shared caches, with one retry per file and `{ done, total, failed }`; `SceneView` takes the preloaded assets.
   - Verify with unit tests using a fake loader: progress steps to the total, a file that fails once loads on the retry, a file that fails twice is counted as failed, and a second preload of the same list makes no request.
-- [ ] 2.3 `App.tsx` awaits the map and the preload before it creates the client (D3); a generation counter drops a start that was overtaken.
+- [x] 2.3 `App.tsx` awaits the map and the preload before it creates the client (D3); a generation counter drops a start that was overtaken.
   - Verify with a unit test of the start sequence (leave during loading, then start again: only the second battle starts), and the headless check that a cold and a warm start give the same hashes.
-- [ ] 2.4 `BattleLoading.tsx`: shown after 300 ms, with the name (chapter number, title and commander, or the map name), the bar with `data-done` and `data-total`, and one briefing or setting line, in EN and PT-BR. Mark the clicked button "loading" until it shows. Add the HUD notice for failed files.
+- [x] 2.4 `BattleLoading.tsx`: shown after 300 ms, with the name (chapter number, title and commander, or the map name), the bar with `data-done` and `data-total`, and one briefing or setting line, in EN and PT-BR. Mark the clicked button "loading" until it shows. Add the HUD notice for failed files.
   - Verify with an e2e that delays the GLB responses: the screen shows with rising progress, and the battle opens with no placeholder visible; a forced 404 on one GLB opens the battle with the notice.
 
 ## 3. Versioned public files
