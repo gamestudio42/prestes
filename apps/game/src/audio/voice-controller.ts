@@ -4,6 +4,7 @@ import { hear, type ListeningPoint } from './listening';
 import type { AudioEngine } from './mixer';
 import { audioSettings } from './settings-store';
 import { SoundBank } from './sound-bank';
+import { ECHO_SECONDS, echoImpulse, voiceDistance } from './voice-distance';
 import { VoiceDirector, type VoiceCaption, type VoiceOutput, type VoicePlacement } from './voice-director';
 import { commandOrder, commandUnits } from './voice-orders';
 import { VoiceWatch, type VoiceRequest } from './voice-watch';
@@ -38,6 +39,19 @@ export const voiceCaptions = {
 };
 
 class WebVoiceOutput implements VoiceOutput {
+  private room: { context: BaseAudioContext; node: ConvolverNode } | null = null;
+
+  /** One echo for every voice, made with the context. */
+  private echo(context: BaseAudioContext, bus: AudioNode): ConvolverNode {
+    if (this.room?.context !== context) {
+      const node = context.createConvolver();
+      node.buffer = echoImpulse(context);
+      node.connect(bus);
+      this.room = { context, node };
+    }
+    return this.room.node;
+  }
+
   constructor(
     private readonly engine: AudioEngine,
     private readonly bank: SoundBank,
@@ -48,20 +62,41 @@ class WebVoiceOutput implements VoiceOutput {
     const mixer = this.engine.mixer;
     const buffer = this.bank.get(id);
     if (!context || !mixer || !buffer) return null;
+    // Heard across the field: filtered, with a share of open-air echo.
+    const distance = voiceDistance(priority, placement.gain);
+    const bus = mixer.input('voices');
     const source = context.createBufferSource();
+    const highpass = context.createBiquadFilter();
+    const lowpass = context.createBiquadFilter();
     const gain = context.createGain();
     const panner = context.createStereoPanner();
+    const dry = context.createGain();
+    const wet = context.createGain();
     source.buffer = buffer;
+    highpass.type = 'highpass';
+    highpass.frequency.value = distance.highpass;
+    lowpass.type = 'lowpass';
+    lowpass.frequency.value = distance.lowpass;
     gain.gain.value = placement.gain;
     panner.pan.value = placement.pan;
-    source.connect(gain);
+    dry.gain.value = distance.dry;
+    wet.gain.value = distance.wet;
+    source.connect(highpass);
+    highpass.connect(lowpass);
+    lowpass.connect(gain);
     gain.connect(panner);
-    panner.connect(mixer.input('voices'));
+    panner.connect(dry);
+    dry.connect(bus);
+    panner.connect(wet);
+    wet.connect(this.echo(context, bus));
     const end = priority ? mixer.beginPriority() : null;
     source.onended = () => {
       end?.();
       source.disconnect();
       panner.disconnect();
+      // The echo's tail rings on after the voice; its send is let go after it.
+      setTimeout(() => wet.disconnect(), ECHO_SECONDS * 1000);
+      dry.disconnect();
     };
     source.start();
     return buffer.duration;

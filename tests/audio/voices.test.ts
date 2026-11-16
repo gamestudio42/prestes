@@ -256,3 +256,16 @@ describe('captions by language', () => {
     expect(captionsOn(parseAudioSettings({ captions: false }), 'en')).toBe(false);
   });
 });
+
+describe('voices heard from a distance', () => {
+  it('filters orders at a fixed middle distance, and far call-outs more', async () => {
+    const { ORDER_DISTANCE, voiceDistance } = await import('../../apps/game/src/audio/voice-distance');
+    expect(voiceDistance(true, 1)).toEqual(ORDER_DISTANCE);
+    const near = voiceDistance(false, 1);
+    const far = voiceDistance(false, 0.05);
+    expect(far.lowpass).toBeLessThan(near.lowpass);
+    expect(far.wet).toBeGreaterThan(near.wet);
+    expect(near.lowpass).toBeLessThan(5000);
+    expect(near.wet).toBeGreaterThan(0);
+  });
+});
