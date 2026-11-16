@@ -26,6 +26,7 @@
     "check:determinism": "tsx tools/check-determinism.ts",
     "check:difficulty": "tsx tools/check-difficulty.ts",
     "maps:previews": "tsx tools/map-previews.ts",
+    "maps:accept": "tsx tools/maps-accept.ts",
     "thumbs": "tsx tools/section-thumbs.ts",
     "verify": "tsx tools/verify.ts",
     "verify:quick": "tsx tools/verify.ts --quick",

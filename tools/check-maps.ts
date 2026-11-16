@@ -75,7 +75,8 @@ export function writeIndex(dir = AUTHORED_DIR, previews = PREVIEW_DIR): boolean 
   return true;
 }
 
-export function checkAuthoredMaps(dir = AUTHORED_DIR): string[] {
+/** make-campaign-playable D7: `only` checks one map in full (ids and missions are still checked across all). */
+export function checkAuthoredMaps(dir = AUTHORED_DIR, only?: string): string[] {
   const errors: string[] = [];
   const ids = new Set<string>();
   const missions = new Map<string, string>();
@@ -97,6 +98,7 @@ export function checkAuthoredMaps(dir = AUTHORED_DIR): string[] {
       if (other) errors.push(`${file}: mission ${document.mission} already has the map ${other}`);
       else missions.set(document.mission, document.id);
     }
+    if (only !== undefined && document.id !== only) continue;
     // add-historical-commander 1.3: the commander is the chapter's, registered and playable.
     for (const error of validateMapCommander(document, CAMPAIGN_CHAPTERS)) errors.push(`${file}: ${error}`);
     for (const problem of validateEditableMap(fromMapDocument(document))) {
@@ -119,11 +121,18 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
   if (process.argv.includes('--write-index')) {
     console.log(rewritten ? 'Authored map index rewritten.' : 'Authored map index up to date.');
   } else {
-    const errors = checkAuthoredMaps();
+    // make-campaign-playable D7: `--map <id>` checks one map (maps:accept).
+    const mapIndex = process.argv.indexOf('--map');
+    const only = mapIndex >= 0 ? process.argv[mapIndex + 1] : undefined;
+    if (mapIndex >= 0 && (!only || !authoredFiles().includes(`${only}.map.json`))) {
+      console.error(`unknown authored map: ${only ?? '(none)'}`);
+      process.exit(1);
+    }
+    const errors = checkAuthoredMaps(AUTHORED_DIR, only);
     if (errors.length > 0) {
       for (const error of errors) console.error(error);
       process.exit(1);
     }
-    console.log(`Map check passed: ${authoredFiles().length} authored maps${rewritten ? ' (index rewritten)' : ''}.`);
+    console.log(only ? `Map check passed: ${only}.` : `Map check passed: ${authoredFiles().length} authored maps${rewritten ? ' (index rewritten)' : ''}.`);
   }
 }

@@ -48,17 +48,17 @@
   - Verify: an e2e on the dev server opens chapter 6's link and finds Serra Nova loaded in the editor; a unit test of the autosave choice; the built bundle contains no "Edit this map" string (`pnpm build`, then a grep test in `tools/check-bundle.ts`).
 - [x] 3.2 "Save to project", then play.
   - Verify with an e2e on the dev server: move one prop on a copy of a campaign map in a temporary fixture, save to the project, play the chapter, and see the change in the battle's map document. Restore the fixture afterwards. A real campaign map is never left edited.
-- [ ] 3.3 `pnpm maps:accept <id> --reason` (D7).
+- [x] 3.3 `pnpm maps:accept <id> --reason` (D7).
   - Add the id filter to `check-maps.ts`, and `--map` to `check-determinism.ts --update`, which rewrites only that map's entries and keeps the others and the base hash.
   - `map-previews.ts <id>`; `tools/maps-accept.ts`; the `package.json` script.
   - Verify with unit tests of the golden merge (other maps untouched), and that a missing reason, an unknown id or a failing map check exits non-zero with nothing written. A dry run on an unchanged map gives the same hashes.
-- [ ] 3.4 Document the owner's loop: open from the book, edit, "Save to project", `pnpm maps:accept`, play.
+- [x] 3.4 Document the owner's loop: open from the book, edit, "Save to project", `pnpm maps:accept`, play.
   - Add it in PT-BR to `docs/maps/GUIA_MAPAS_CAMPANHA.md`.
   - Verify: the guide has the section, and `pnpm check` passes.
 
 ## 4. Docs
 
-- [ ] 4.1 `docs/campaign/progression.md`: mark what is now implemented (unlock by victory, kept results, debrief, restart) and what stays deferred (soldiers carried between chapters, save/load).
+- [x] 4.1 `docs/campaign/progression.md`: mark what is now implemented (unlock by victory, kept results, debrief, restart) and what stays deferred (soldiers carried between chapters, save/load).
   - Verify: the doc's status line and the carry table say "not in this change" for carried soldiers.
 
 ## 5. Difficulty (after `add-difficulty-levels` is archived)

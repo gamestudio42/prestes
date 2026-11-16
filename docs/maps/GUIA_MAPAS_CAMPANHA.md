@@ -32,6 +32,34 @@ mecânicas que ainda não existem.
 O croqui não substitui o editor. A distância real, a altura e a cobertura só
 aparecem nas vistas **Vista de cima**, **Relevo**, **Curvas** e **Cobertura**.
 
+## Ajustar um mapa da campanha a partir do jogo
+
+Desde o `make-campaign-playable`, cada capítulo é jogado do seu briefing, no
+mapa que tem a sua missão. Para ajustar um mapa depois de jogá-lo:
+
+1. Rode o jogo no servidor de desenvolvimento (`pnpm dev`). Abra o livro da
+   campanha no capítulo e vá ao briefing.
+2. Clique em **Editar este mapa**. O editor abre o mapa do projeto
+   (`editor.html?map=<id>`). Se o navegador guardar mudanças não salvas desse
+   mapa, diferentes do projeto, o editor pergunta qual cópia abrir; as duas
+   ficam guardadas até você escolher. Num capítulo ainda sem mapa, o link abre
+   **Novo** com a vaga da missão escolhida.
+3. Edite e rode **Verificar mapa**.
+4. **Salvar no projeto**. O arquivo em `packages/shared/src/maps/authored/` é
+   reescrito. O servidor recarrega a aba do jogo: uma batalha aberta nela se
+   perde, e a próxima partida do capítulo já usa o mapa salvo, sem mudar
+   código.
+5. Aceite a edição: `pnpm maps:accept <id> --reason "<por quê>"`. Ele verifica
+   só esse mapa, regrava os goldens de determinismo desse mapa com o motivo
+   (os outros mapas ficam como estão) e redesenha a miniatura. Para antes de
+   escrever qualquer coisa se o mapa tiver erro, se o id não existir ou se
+   faltar o motivo. `pnpm maps:accept <id> --dry-run` só confere, sem gravar.
+6. Jogue o capítulo de novo pelo livro. Quando estiver bom, commite o
+   `.map.json`, o `index.ts`, a miniatura e o `tools/determinism-golden.json`.
+
+O link **Editar este mapa** existe só no servidor de desenvolvimento; o jogo
+publicado não o tem.
+
 ## O que o editor já faz
 
 ### Tamanhos e desdobramento

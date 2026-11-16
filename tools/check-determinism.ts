@@ -3,6 +3,7 @@ import { fileURLToPath } from 'node:url';
 
 import { authoredMapIds, DEFAULT_BATTLE_MAP, loadAuthoredMap, type BattleMapId, type SectionTypeId } from '@prestes/shared';
 import { SimulationEngine } from '@prestes/simulation';
+import { mergeMapGolden } from './golden-merge';
 
 interface Golden {
   seed: number;
@@ -76,6 +77,58 @@ function reasonArg(): string | undefined {
   const index = process.argv.indexOf('--reason');
   return index >= 0 ? process.argv[index + 1] : undefined;
 }
+// make-campaign-playable D7: `--map <id>` checks (or with --update re-records) one authored map's
+// goldens; the other maps' entries and the base hash are kept.
+const mapIndex = process.argv.indexOf('--map');
+if (mapIndex >= 0) {
+  const map = process.argv[mapIndex + 1];
+  if (!map || !authoredMapIds().includes(map)) {
+    console.error(`FAIL unknown authored map: ${map ?? '(none)'}`);
+    process.exit(1);
+  }
+  const reason = reasonArg();
+  const golden = readGolden();
+  if (update && (!reason || !golden)) {
+    console.error(!golden ? `FAIL no golden at ${GOLDEN_PATH} to merge into` : 'FAIL --update --map needs --reason "<why>"');
+    process.exit(1);
+  }
+  await loadAuthoredMap(map);
+  if (map !== DEFAULT_BATTLE_MAP) await loadAuthoredMap(DEFAULT_BATTLE_MAP);
+  const battle = runBattle(map);
+  if (battle !== runBattle(map)) {
+    console.error(`FAIL nondeterminism: two 3v3 runs on ${map} produced different hashes; nothing written`);
+    process.exit(1);
+  }
+  if (battle !== runBattle(map, true)) {
+    console.error(`FAIL deployment: the 3v3 on ${map} through an empty deployment phase differs from the battle without one; nothing written`);
+    process.exit(1);
+  }
+  let mixedHash: string | undefined;
+  if (map === DEFAULT_BATTLE_MAP) {
+    mixedHash = runMixedBattle(map);
+    if (mixedHash !== runMixedBattle(map)) {
+      console.error(`FAIL nondeterminism: two mixed-roster 3v3 runs on ${map} produced different hashes; nothing written`);
+      process.exit(1);
+    }
+  }
+  console.log(`3v3 on ${map}, ${BATTLE_TICKS} ticks: ${battle}${mixedHash ? ` (mixed roster ${mixedHash})` : ''}`);
+  if (update) {
+    const merged = mergeMapGolden(golden!, map, { battle, ...(mixedHash ? { mixed: mixedHash } : {}) }, reason!);
+    writeFileSync(GOLDEN_PATH, `${JSON.stringify(merged, null, 2)}\n`);
+    console.log(`golden updated for ${map}: ${golden!.battleMaps?.[map] ?? '(none)'} -> ${battle}`);
+    process.exit(0);
+  }
+  const expected = golden?.battleMaps?.[map];
+  const expectedMixed = mixedHash === undefined ? undefined : golden?.mixedRosters?.[map];
+  if (expected !== battle || expectedMixed !== mixedHash) {
+    console.error(`FAIL 3v3 golden ${expected === undefined ? 'missing' : 'mismatch'} on ${map}: expected ${expected}, actual ${battle}`);
+    console.error(`If the map edit is intended, run pnpm maps:accept ${map} --reason "<why>"`);
+    process.exit(1);
+  }
+  console.log(`determinism ok: ${map} matches its golden`);
+  process.exit(0);
+}
+
 const first = runScenario();
 const second = runScenario();
 console.log(`seed ${SEED}, ${TICKS} ticks: run 1 ${first}, run 2 ${second}`);
