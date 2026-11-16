@@ -21,21 +21,21 @@
 
 ## 2. Playing a chapter
 
-- [ ] 2.1 The campaign start in `App.tsx` (D1).
+- [x] 2.1 The campaign start in `App.tsx` (D1).
   - Add `campaignChapter` state and `startCampaignChapter(id)`, which calls `startBattle(map, { column: DEFAULT_COLUMN_ROSTER })`.
   - In development, refetch the map through its loader, bypassing the catalog cache (D6).
   - Remove `handlePlayMap`.
   - Verify with a unit test of the start arguments, and a headless test: Copacabana started this way twice with one seed gives the same hash, and its column equals the map's `columnForce`.
-- [ ] 2.2 Record the result on the first ended frame (D3), guarded by a ref and cleared by "Play again". Leaving before the end records nothing.
+- [x] 2.2 Record the result on the first ended frame (D3), guarded by a ref and cleared by "Play again". Leaving before the end records nothing.
   - Verify with unit tests of the result builder (outcome, `decidedBy`, ticks after deployment, column losses), and an e2e that ends a fixture battle and reads the stored record.
-- [ ] 2.3 The book (D5).
+- [x] 2.3 The book (D5).
   - "Play chapter" on open chapters; "Win chapter N first" on locked ones.
   - Seals in the contents (won, open, locked, with text); "Restart campaign" with an inline confirm; the campaign marked completed after chapter 8.
   - `initialChapter` reopens the book at a briefing.
   - Remove "Play the map" and the disabled "Play"; replace "being prepared" with a line on how chapters open.
   - Add all strings in EN and PT-BR.
   - Verify: `pnpm check:locales` passes, and an e2e covers chapter 2 locked and then opened, and restart with confirm and with cancel.
-- [ ] 2.4 The campaign actions on the end panel (D5).
+- [x] 2.4 The campaign actions on the end panel (D5).
   - "Next chapter" (victory with a next chapter), "Play again" and "Back to the book".
   - The chapter's number and title; the closing line after chapter 8, as a draft labelled `dramatized` in EN and PT-BR, for the owner's reading in 6.3.
   - Verify with an e2e that wins the prologue through a fixture (the playtest's event firing or a stubbed outcome frame): it sees "Next chapter", which starts chapter 2. A defeat shows only "Play again" and "Back to the book", and "Back to the book" opens chapter 2's briefing.

@@ -917,6 +917,32 @@
   font-size: 13px;
 }
 
+/* make-campaign-playable D5: each chapter's seal in the contents, in words as well as a mark. */
+.desk-chapter-seal {
+  font-size: 12px;
+  font-variant: small-caps;
+  letter-spacing: 0.04em;
+  color: var(--book-ink-soft);
+}
+
+.desk-chapter-seal.won {
+  color: var(--book-ink);
+  font-weight: 600;
+}
+
+.desk-chapter-seal.locked {
+  opacity: 0.7;
+}
+
+.desk-campaign-progress {
+  margin-top: 10px;
+  font-size: 13px;
+}
+
+.desk-restart-confirm {
+  margin: 0;
+}
+
 .desk-contents-row:hover,
 .desk-contents-row:focus-visible,
 .desk-index-entry:hover,

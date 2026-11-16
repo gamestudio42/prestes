@@ -487,6 +487,23 @@
   color: #a78e69;
 }
 
+/* make-campaign-playable D5: the chapter over the result, and the closing line after the last. */
+.battle-end-chapter {
+  margin: 0 0 6px;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  opacity: 0.8;
+}
+
+.battle-end-closing {
+  margin: 4px 0 0;
+  padding: 8px 10px;
+  border-left: 2px solid #8a6a3a;
+  font-style: italic;
+  line-height: 1.5;
+}
+
 .battle-end-actions {
   display: flex;
   flex-wrap: wrap;

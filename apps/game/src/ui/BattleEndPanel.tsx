@@ -2,6 +2,16 @@ import { translate, type Locale, type MessageKey } from '@prestes/content';
 import type { Frame, LocalizedText, UnitSnapshot } from '@prestes/shared';
 import { Restart } from './icons';
 
+/** make-campaign-playable D5: the chapter a campaign battle played, and what comes next. */
+export interface CampaignEnd {
+  number: number;
+  title: string;
+  /** The chapter a victory opens (absent after a defeat, a draw or the last chapter). */
+  next?: { id: string; number: number; title: string };
+  /** The last chapter was won: the campaign closes. */
+  completed: boolean;
+}
+
 export interface BattleEndPanelProps {
   locale: Locale;
   frame: Frame;
@@ -11,6 +21,10 @@ export interface BattleEndPanelProps {
   onBackToEditor?: () => void;
   /** The map's epilogue (a mission's legend and record), under the result. */
   epilogue?: LocalizedText;
+  /** make-campaign-playable: a campaign battle's chapter; its actions replace Restart / Menu. */
+  campaign?: CampaignEnd;
+  onNextChapter?: (chapterId: string) => void;
+  onBackToBook?: () => void;
 }
 
 function formatTicks(ticks: number): string {
@@ -34,7 +48,7 @@ function losses(units: readonly UnitSnapshot[], faction: 'column' | 'legalist'):
 }
 
 /** The 3 vs 3 battle's end (battle-feel-3v3): result, time, losses, and with objectives how it was decided. */
-export function BattleEndPanel({ locale, frame, onRestart, onMenu, onBackToEditor, epilogue }: BattleEndPanelProps) {
+export function BattleEndPanel({ locale, frame, onRestart, onMenu, onBackToEditor, epilogue, campaign, onNextChapter, onBackToBook }: BattleEndPanelProps) {
   const t = (key: MessageKey, values?: Readonly<Record<string, string | number>>) =>
     translate(locale, key, values);
   const end = frame.events.find((event) => event.type === 'outcome');
@@ -66,9 +80,15 @@ export function BattleEndPanel({ locale, frame, onRestart, onMenu, onBackToEdito
       : frame.outcome === 'draw'
         ? 'battle.end.drawText'
         : 'battle.end.defeatText';
+  const chapterName = (number: number) => (number === 1 ? t('campaign.prologue') : t('campaign.chapter', { number }));
   return (
     <div className="overlay" data-testid="battle-end">
       <section className="codex battle-end" role="dialog" aria-labelledby="battle-end-title">
+        {campaign ? (
+          <p className="battle-end-chapter" data-testid="battle-end-chapter">
+            {chapterName(campaign.number)}: {campaign.title}
+          </p>
+        ) : null}
         <div className="tutorial-graduation">
           <strong id="battle-end-title" data-testid="battle-end-result">
             {t(resultKey)}
@@ -155,14 +175,42 @@ export function BattleEndPanel({ locale, frame, onRestart, onMenu, onBackToEdito
             </p>
           </div>
         ) : null}
+        {campaign?.completed ? (
+          <p className="battle-end-closing" data-testid="battle-end-closing">
+            {t('campaign.closing')} <span className="desk-chip">{t('book.label.dramatized')}</span>
+          </p>
+        ) : null}
         <div className="battle-end-actions">
-          <button type="button" className="primary" onClick={onRestart} data-testid="battle-end-restart" autoFocus>
+          {campaign?.next && onNextChapter ? (
+            <button
+              type="button"
+              className="primary"
+              onClick={() => onNextChapter(campaign.next!.id)}
+              data-testid="battle-end-next-chapter"
+              autoFocus
+            >
+              {t('battle.end.nextChapter')}: {chapterName(campaign.next.number)}
+            </button>
+          ) : null}
+          <button
+            type="button"
+            className={campaign?.next ? undefined : 'primary'}
+            onClick={onRestart}
+            data-testid="battle-end-restart"
+            autoFocus={!campaign?.next}
+          >
             <Restart aria-hidden="true" size={15} />
-            {t('battle.end.restart')}
+            {t(campaign ? 'battle.end.playAgain' : 'battle.end.restart')}
           </button>
-          <button type="button" onClick={onMenu} data-testid="battle-end-menu">
-            {t('battle.end.menu')}
-          </button>
+          {campaign && onBackToBook ? (
+            <button type="button" onClick={onBackToBook} data-testid="battle-end-back-to-book">
+              {t('battle.end.backToBook')}
+            </button>
+          ) : (
+            <button type="button" onClick={onMenu} data-testid="battle-end-menu">
+              {t('battle.end.menu')}
+            </button>
+          )}
           {onBackToEditor ? (
             <button type="button" onClick={onBackToEditor} data-testid="battle-end-editor">
               {t('battle.end.backToEditor')}

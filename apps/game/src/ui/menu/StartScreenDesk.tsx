@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { loadSkirmishMaps, type BattleMap } from '@prestes/shared';
 import type { Locale } from '@prestes/content';
+import type { CampaignProgress } from '../../campaign/progress';
 import { useGramophone } from '../../hooks/useGramophone';
 import campTable from '../../assets/menu/camp-table.png';
 import { MenuDesk } from './MenuDesk';
@@ -18,8 +19,11 @@ export interface StartScreenDeskProps {
   audioMuted: boolean;
   onLocaleChange: (locale: Locale) => void;
   onStartBattle3v3: () => void;
-  /** author-game-maps 5.3: plays a campaign chapter's map. */
-  onPlayMap: (map: string) => void;
+  /** make-campaign-playable: the kept progress, the chapter the book reopens at, and its actions. */
+  campaignProgress: CampaignProgress;
+  campaignChapter: string | null;
+  onPlayChapter: (chapterId: string) => void;
+  onRestartCampaign: () => void;
   /** pre-battle-roster 5.1: the skirmish setup the desk's map opens. */
   setup: Setup;
   onSetupChange: (setup: Setup) => void;
@@ -35,7 +39,10 @@ export function StartScreenDesk({
   audioMuted,
   onLocaleChange,
   onStartBattle3v3,
-  onPlayMap,
+  campaignProgress,
+  campaignChapter,
+  onPlayChapter,
+  onRestartCampaign,
   setup,
   onSetupChange,
   onToggleAudio,
@@ -85,7 +92,10 @@ export function StartScreenDesk({
           setSetupOpen(true);
         }}
         onToggleAudio={onToggleAudio}
-        onPlayMap={onPlayMap}
+        campaignProgress={campaignProgress}
+        campaignChapter={campaignChapter}
+        onPlayChapter={onPlayChapter}
+        onRestartCampaign={onRestartCampaign}
         gramophone={gramophone}
       />
       {setupOpen && maps.length > 0 ? (

@@ -72,6 +72,16 @@ export async function loadAuthoredMap(id: BattleMapId): Promise<MapDocument | nu
 }
 
 /**
+ * make-campaign-playable D6: forgets a fetched authored map in this thread, so
+ * the next `loadAuthoredMap` reads it again (the dev server serves the map the
+ * editor just saved to the project).
+ */
+export function forgetAuthoredMap(id: BattleMapId): void {
+  AUTHORED.delete(id);
+  MAPS.delete(id);
+}
+
+/**
  * Registers a compiled map for this thread under its id (the editor's
  * playtest): it wins over a map of the same id until it is unregistered.
  */

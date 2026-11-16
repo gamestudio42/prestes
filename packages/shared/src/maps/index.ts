@@ -48,6 +48,7 @@ export {
 export {
   authoredMapIds,
   authoredMapIndex,
+  forgetAuthoredMap,
   loadAuthoredMap,
   battleMap,
   battleMaps,

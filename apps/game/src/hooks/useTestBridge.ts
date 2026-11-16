@@ -1,5 +1,5 @@
 import { useEffect, type Dispatch, type MutableRefObject, type SetStateAction } from 'react';
-import type { Command, Frame } from '@prestes/shared';
+import type { Command, DecidedBy, Frame } from '@prestes/shared';
 import type { GameClient } from '../client/GameClient';
 
 type PrestesBridge = {
@@ -8,6 +8,8 @@ type PrestesBridge = {
   frame: () => Frame | null;
   /** remove-sandbox-panel D1: let a test select and order the legalists too (fog view off while on). */
   bothSides: (on: boolean) => void;
+  /** make-campaign-playable 2.4: pauses and hands the app an ended frame (the simulation is untouched). */
+  endBattle: (outcome: 'victory' | 'defeat' | 'draw', decidedBy?: DecidedBy) => void;
 };
 
 /** Dev-only `window.__prestes` bridge used by the Playwright suite. */
@@ -29,6 +31,11 @@ export function useTestBridge(
       },
       frame: () => clientRef.current?.currentFrame() ?? null,
       bothSides: (on) => setControlBothSides(on),
+      endBattle: (outcome, decidedBy) => {
+        setSpeed(0);
+        clientRef.current?.setSpeed(0);
+        clientRef.current?.stubOutcome(outcome, decidedBy);
+      },
     };
     const host = window as unknown as { __prestes?: PrestesBridge };
     host.__prestes = bridge;

@@ -5,6 +5,7 @@ import {
   FIGURES,
   chapterText,
   compendiumText,
+  isChapterPlayable,
   compendiumTitleKey,
   sourceShort,
   translate,
@@ -16,7 +17,7 @@ import { DESK_ART, deskArtData, deskArtStyle } from './deskArt';
 import { BookEndOrnament, BookFrame, creditLine, InlinePlate, PlateImage, QuoteFooter, useBookPosition } from './BookFrame';
 import { campaignBook, folio, sourceAnchor, type BookPage, type TextItem } from './bookPages';
 import { PixelPhoto } from '../PixelPhoto';
-import { authoredMapIndex } from '@prestes/shared';
+import { chapterState, isCompleted, previousChapter, type CampaignProgress, type ChapterState } from '../../campaign/progress';
 import coverImage from '../../assets/menu/coluna-prestes.webp';
 
 export interface CampaignBookProps {
@@ -25,9 +26,18 @@ export interface CampaignBookProps {
   onStartSkirmish: () => void;
   /** Opens the compendium book at an entry. */
   onOpenEntry: (entryId: string) => void;
-  /** author-game-maps 5.3: plays the map saved for a chapter's mission. */
-  onPlayMap: (mapId: string) => void;
+  /** make-campaign-playable: the kept progress (which chapters are won, open or locked). */
+  progress: CampaignProgress;
+  /** Opens the book at this chapter's briefing ("Back to the book"). */
+  initialChapter?: string;
+  /** Plays a chapter from its briefing. */
+  onPlayChapter: (chapterId: string) => void;
+  /** Forgets every result, once the player confirmed. */
+  onRestartCampaign: () => void;
 }
+
+/** The seal printed beside a chapter in the contents, with its words (never colour alone). */
+const SEAL: Record<ChapterState, string> = { won: '✓', open: '○', locked: '·' };
 
 const CHAPTER = new Map(CAMPAIGN_CHAPTERS.map((chapter) => [chapter.id, chapter]));
 const ENTRY = new Map(COMPENDIUM.map((entry) => [entry.id, entry]));
@@ -36,18 +46,18 @@ const FIGURE = new Map(FIGURES.map((figure) => [figure.id, figure]));
 /**
  * The campaign book: a title spread and a contents spread, then each chapter
  * as an opening spread (plate and the chapter's facts on the left, the prose
- * beginning on the right), its prose, and a briefing spread. No chapter is
- * playable yet; the skirmish action brings the map fan forward instead.
+ * beginning on the right), its prose, and a briefing spread. A chapter with
+ * a map is played from its briefing once the chapter before it is won
+ * (make-campaign-playable).
  */
-export function CampaignBook({ locale, open, onStartSkirmish, onOpenEntry, onPlayMap }: CampaignBookProps) {
-  // author-game-maps 5.3: the map saved for each mission, from the index (nothing is loaded here).
-  const missionMap = new Map(authoredMapIndex().filter((entry) => entry.use === 'campaign' && entry.mission).map((entry) => [entry.mission!, entry.id]));
+export function CampaignBook({ locale, open, onStartSkirmish, onOpenEntry, progress, initialChapter, onPlayChapter, onRestartCampaign }: CampaignBookProps) {
+  const [confirmRestart, setConfirmRestart] = useState(false);
   const t = (key: MessageKey, values?: Readonly<Record<string, string | number>>) =>
     translate(locale, key, values);
   // Images whose file is absent (awaiting permission, D3a).
   const [pending, setPending] = useState<ReadonlySet<string>>(() => new Set());
   const book = useMemo(() => campaignBook(locale), [locale]);
-  const { spread, turn, goTo, jump } = useBookPosition(book);
+  const { spread, turn, goTo, jump } = useBookPosition(book, briefingPosition(book, initialChapter));
 
   if (!open) {
     return (
@@ -128,8 +138,9 @@ export function CampaignBook({ locale, open, onStartSkirmish, onOpenEntry, onPla
     return null;
   };
 
+  const stateOf = (chapter: CampaignChapter) => chapterState(progress, chapter.id);
   const contentsRow = (chapter: CampaignChapter) => (
-    <li key={chapter.id}>
+    <li key={chapter.id} data-state={stateOf(chapter)}>
       <button
         type="button"
         className="desk-chapter-row"
@@ -144,6 +155,9 @@ export function CampaignBook({ locale, open, onStartSkirmish, onOpenEntry, onPla
         <span className="desk-chapter-row-title">{chapterText(chapter.id, locale)?.title}</span>
         <span className="desk-chapter-row-meta">
           {dateOf(chapter)} · {commander(chapter)}
+        </span>
+        <span className={`desk-chapter-seal ${stateOf(chapter)}`} data-testid={`campaign-seal-${chapter.id}`} data-state={stateOf(chapter)}>
+          <span aria-hidden="true">{SEAL[stateOf(chapter)]}</span> {t(`campaign.state.${stateOf(chapter)}` as MessageKey)}
         </span>
       </button>
     </li>
@@ -167,8 +181,8 @@ export function CampaignBook({ locale, open, onStartSkirmish, onOpenEntry, onPla
           <div className="desk-campaign-body">
             <h2 className="desk-book-heading">{t('menu.campaign.heading')}</h2>
             <p className="desk-text">{t('menu.campaign.text')}</p>
-            <p className="desk-text" data-testid="campaign-preparing">
-              {t('menu.campaign.preparing')}
+            <p className="desk-text" data-testid="campaign-how-open">
+              {t('menu.campaign.howChaptersOpen')}
             </p>
             <p className="desk-text desk-text-soft">{t('start.footer')}</p>
             <div className="desk-book-actions">{skirmish('start-button')}</div>
@@ -184,6 +198,38 @@ export function CampaignBook({ locale, open, onStartSkirmish, onOpenEntry, onPla
             <ol className="desk-chapter-list" data-testid={`campaign-contents-${page.part}`}>
               {half.map(contentsRow)}
             </ol>
+            {page.part === 1 ? (
+              <div className="desk-campaign-progress">
+                {isCompleted(progress) ? (
+                  <p className="desk-text desk-text-soft" data-testid="campaign-completed">
+                    {t('campaign.completed')}
+                  </p>
+                ) : null}
+                {confirmRestart ? (
+                  <p className="desk-restart-confirm" role="group" data-testid="campaign-restart-confirm">
+                    <span>{t('campaign.restartConfirm')}</span>{' '}
+                    <button
+                      type="button"
+                      className="desk-link"
+                      data-testid="campaign-restart-yes"
+                      onClick={() => {
+                        setConfirmRestart(false);
+                        onRestartCampaign();
+                      }}
+                    >
+                      {t('campaign.restartYes')}
+                    </button>{' '}
+                    <button type="button" className="desk-link" data-testid="campaign-restart-no" onClick={() => setConfirmRestart(false)}>
+                      {t('campaign.restartNo')}
+                    </button>
+                  </p>
+                ) : (
+                  <button type="button" className="desk-link" data-testid="campaign-restart" onClick={() => setConfirmRestart(true)}>
+                    {t('campaign.restart')}
+                  </button>
+                )}
+              </div>
+            ) : null}
           </div>
         );
       }
@@ -268,19 +314,17 @@ export function CampaignBook({ locale, open, onStartSkirmish, onOpenEntry, onPla
               ))}
             </ul>
             <div className="desk-book-actions">
-              {missionMap.has(chapter.id) ? (
-                <button type="button" className="desk-entry primary" onClick={() => onPlayMap(missionMap.get(chapter.id)!)} data-testid={`chapter-play-map-${chapter.id}`}>
-                  {t('campaign.playMap')}
-                </button>
+              {isChapterPlayable(chapter.id) ? (
+                stateOf(chapter) === 'locked' ? (
+                  <p className="desk-text desk-text-soft" data-testid={`chapter-locked-${chapter.id}`}>
+                    {t('campaign.winFirst', { chapter: chapterName(CHAPTER.get(previousChapter(chapter.id)!)!) })}
+                  </p>
+                ) : (
+                  <button type="button" className="desk-entry primary" onClick={() => onPlayChapter(chapter.id)} data-testid={`chapter-play-${chapter.id}`}>
+                    {t('campaign.playChapter')}
+                  </button>
+                )
               ) : null}
-              <button
-                type="button"
-                className="desk-entry desk-entry-disabled"
-                disabled
-                data-testid={`chapter-play-${chapter.id}`}
-              >
-                {t('campaign.play')}
-              </button>
               {skirmish(`chapter-skirmish-${chapter.id}`)}
             </div>
             <p className="desk-sources">
@@ -326,4 +370,12 @@ export function CampaignBook({ locale, open, onStartSkirmish, onOpenEntry, onPla
       />
     </div>
   );
+}
+
+/** make-campaign-playable D5: the book's position at a chapter's briefing spread (the title page without one). */
+function briefingPosition(book: ReturnType<typeof campaignBook>, chapterId: string | undefined): { anchor: string; offset: number } | undefined {
+  if (!chapterId || book.anchors[chapterId] === undefined) return undefined;
+  const page = book.pages.findIndex((candidate) => candidate.kind === 'briefing' && candidate.chapterId === chapterId);
+  if (page < 0) return { anchor: chapterId, offset: 0 };
+  return { anchor: chapterId, offset: Math.floor(page / 2) - book.anchors[chapterId]! };
 }

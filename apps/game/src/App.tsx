@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { Eye } from './ui/icons';
-import { translate, type Locale } from '@prestes/content';
+import { CAMPAIGN_CHAPTERS, chapterText, translate, type Locale } from '@prestes/content';
 import {
   authoredMapIndex,
   compileMapDocument,
   DEFAULT_BATTLE_MAP,
+  forgetAuthoredMap,
   loadAuthoredMap,
   registerBattleMap,
   TRAINING_AMMUNITION,
@@ -24,7 +25,11 @@ import type { MapLayers } from './ui/hud/TopBar';
 import { Compass } from './ui/hud/Compass';
 import { StartScreenDesk } from './ui/menu/StartScreenDesk';
 import { battleRosters, loadSetup, saveSetup, type SkirmishSetup } from './ui/menu/setupState';
-import { BattleEndPanel } from './ui/BattleEndPanel';
+import { BattleEndPanel, type CampaignEnd } from './ui/BattleEndPanel';
+import { campaignStart } from './campaign/start';
+import { campaignResult } from './campaign/result';
+import { campaignStore } from './campaign/storage';
+import { emptyProgress, nextChapter, recordResult, type CampaignProgress } from './campaign/progress';
 import { EventCardPanel } from './ui/EventCardPanel';
 import { PlaytestEventsPanel } from './ui/PlaytestEventsPanel';
 import { closeEventCard, NO_EVENT_CARDS, openEventCards, type EventCardState } from './client/event-cards';
@@ -56,6 +61,18 @@ export function App() {
     setBattleMapId(next.map);
   };
   const [frame, setFrame] = useState<Frame | null>(null);
+  // make-campaign-playable D1-D3: the chapter the battle plays (held in the app,
+  // never sent to the worker), the kept progress, and the chapter the book reopens at.
+  const [campaignChapter, setCampaignChapter] = useState<string | null>(null);
+  const campaignRef = useRef<string | null>(null);
+  const recordedRef = useRef(false);
+  const [progress, setProgress] = useState<CampaignProgress>(() => campaignStore().load());
+  const [bookChapter, setBookChapter] = useState<string | null>(null);
+  const setCampaign = (chapterId: string | null): void => {
+    campaignRef.current = chapterId;
+    recordedRef.current = false;
+    setCampaignChapter(chapterId);
+  };
   const [band, setBand] = useState<CameraBand>('tactical');
   const [cameraRequest, setCameraRequest] = useState<{ band: CameraBand; nonce: number } | null>(
     null,
@@ -280,6 +297,18 @@ export function App() {
         }
       },
       onFrame: (next) => {
+        // make-campaign-playable D3: a campaign battle's result is kept on its first ended frame, once.
+        const chapter = campaignRef.current;
+        if (chapter && !recordedRef.current && next.outcome !== 'playing') {
+          recordedRef.current = true;
+          const result = campaignResult(next);
+          if (result) {
+            const store = campaignStore();
+            const updated = recordResult(store.load(), chapter, result);
+            store.save(updated);
+            setProgress(updated);
+          }
+        }
         setFrame(next);
         if (!selectionInitialized.current) {
           selectionInitialized.current = true;
@@ -306,6 +335,8 @@ export function App() {
 
   /** Leaves the battle for the main menu. */
   const handleBackToMenu = (): void => {
+    setCampaign(null);
+    setBookChapter(null);
     clientRef.current?.dispose();
     clientRef.current = null;
     setFrame(null);
@@ -324,18 +355,45 @@ export function App() {
   };
 
   // The setup's forces go with its map; the editor's playtest map fields the default.
-  const handleStartBattle3v3 = (): void =>
+  const handleStartBattle3v3 = (): void => {
+    setCampaign(null);
     startBattle(
       battleMapId,
       battleMapId === setup.map ? battleRosters(setup) : undefined,
       battleMapId === setup.map ? setup.timeLimit : undefined,
       battleMapId === setup.map ? setup.difficulty : undefined,
     );
+  };
 
-  // author-game-maps 5.3: a campaign chapter's map plays the 3 vs 3 with the default forces.
-  const handlePlayMap = (map: BattleMapId): void => {
-    setBattleMapId(map);
-    startBattle(map);
+  /**
+   * make-campaign-playable D1: plays a chapter on its authored map, with the
+   * map's own forces, commander, events and epilogue, and no roster screen.
+   */
+  const startCampaignChapter = (chapterId: string): void => {
+    const start = campaignStart(chapterId);
+    if (!start) return;
+    setCampaign(chapterId);
+    setBookChapter(null);
+    setBattleMapId(start.map);
+    // D6: on the dev server the map is read again, so a map saved from the editor plays at once.
+    if (import.meta.env.DEV) {
+      forgetAuthoredMap(start.map);
+      documentsRef.current.delete(start.map);
+    }
+    startBattle(start.map, start.rosters);
+  };
+
+  /** "Back to the book": the menu, with the campaign book open at the chapter's briefing. */
+  const handleBackToBook = (): void => {
+    const chapter = campaignChapter;
+    handleBackToMenu();
+    setBookChapter(chapter);
+  };
+
+  /** "Restart campaign", once the player confirmed it in the book. */
+  const handleRestartCampaign = (): void => {
+    campaignStore().clear();
+    setProgress(emptyProgress());
   };
 
   const startBattle = (map: BattleMapId, rosters?: BattleRosters, timeLimitTicks?: number, difficulty?: Difficulty): void => {
@@ -381,6 +439,7 @@ export function App() {
         return;
       }
       playtestRef.current = document;
+      setCampaign(null);
       setPlaytest(true);
       setBattleMapId(document.id);
       startBattle(document.id);
@@ -431,7 +490,10 @@ export function App() {
           onLocaleChange={handleLocaleChange}
           audioMuted={audioMuted}
           onStartBattle3v3={handleStartBattle3v3}
-          onPlayMap={handlePlayMap}
+          campaignProgress={progress}
+          campaignChapter={bookChapter}
+          onPlayChapter={startCampaignChapter}
+          onRestartCampaign={handleRestartCampaign}
           setup={setup}
           onSetupChange={changeSetup}
           onToggleAudio={handleToggleAudio}
@@ -443,6 +505,21 @@ export function App() {
   if (!client) {
     return null;
   }
+
+  // make-campaign-playable D5: the end panel's campaign actions.
+  const campaignEnd = ((): CampaignEnd | undefined => {
+    const chapter = CAMPAIGN_CHAPTERS.find((candidate) => candidate.id === campaignChapter);
+    if (!chapter) return undefined;
+    const won = frame?.outcome === 'victory';
+    const nextId = nextChapter(chapter.id);
+    const next = won && nextId ? CAMPAIGN_CHAPTERS.find((candidate) => candidate.id === nextId) : undefined;
+    return {
+      number: chapter.number,
+      title: chapterText(chapter.id, locale)?.title ?? '',
+      ...(next ? { next: { id: next.id, number: next.number, title: chapterText(next.id, locale)?.title ?? '' } } : {}),
+      completed: won && nextId === undefined,
+    };
+  })();
 
   // The map's epilogue (a mission's legend and record) for the end panel.
   const battleEpilogue = (playtestRef.current?.id === battleMapId ? playtestRef.current : documentsRef.current.get(battleMapId))?.epilogue;
@@ -593,8 +670,11 @@ export function App() {
         <BattleEndPanel
           locale={locale}
           frame={frame}
-          onRestart={handleStartBattle3v3}
+          onRestart={campaignChapter ? () => startCampaignChapter(campaignChapter) : handleStartBattle3v3}
           onMenu={handleBackToMenu}
+          {...(campaignEnd
+            ? { campaign: campaignEnd, onNextChapter: startCampaignChapter, onBackToBook: handleBackToBook }
+            : {})}
           {...(playtest ? { onBackToEditor: handleBackToEditor } : {})}
           {...(battleEpilogue ? { epilogue: battleEpilogue } : {})}
         />

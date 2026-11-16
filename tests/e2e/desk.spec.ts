@@ -43,17 +43,17 @@ test('shows the seven desk objects and the four maps', async ({ page }) => {
 
 test('opens the campaign and the compendium at the same time and closes one', async ({ page }) => {
   await page.getByTestId('menu-mark-campaign').click();
-  await expect(page.getByTestId('campaign-preparing')).toBeVisible();
+  await expect(page.getByTestId('campaign-how-open')).toBeVisible();
 
   // The open campaign fills the screen, so reach the compendium by keyboard.
   await page.locator('[data-desk-object="compendium"] .desk-object-handle').focus();
   await page.keyboard.press('Enter');
   await expect(page.getByTestId('codex')).toBeVisible();
-  await expect(page.getByTestId('campaign-preparing')).toBeVisible();
+  await expect(page.getByTestId('campaign-how-open')).toBeVisible();
 
   await page.locator('[data-desk-object="compendium"] .desk-object-close').click();
   await expect(page.getByTestId('codex')).toHaveCount(0);
-  await expect(page.getByTestId('campaign-preparing')).toBeVisible();
+  await expect(page.getByTestId('campaign-how-open')).toBeVisible();
 });
 
 test('turns a compendium page', async ({ page }) => {
@@ -323,9 +323,9 @@ test('moves and opens the focused object with the keyboard', async ({ page }) =>
   expect(after!.x).toBeGreaterThan(before!.x);
 
   await page.keyboard.press('Enter');
-  await expect(page.getByTestId('campaign-preparing')).toBeVisible();
+  await expect(page.getByTestId('campaign-how-open')).toBeVisible();
   await page.keyboard.press('Escape');
-  await expect(page.getByTestId('campaign-preparing')).toHaveCount(0);
+  await expect(page.getByTestId('campaign-how-open')).toHaveCount(0);
 });
 
 test('the desk gramophone opens into its record rack', async ({ page }) => {

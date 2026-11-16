@@ -4,6 +4,7 @@ import {
   type BattleMapId,
   type BattleRosters,
   type Command,
+  type DecidedBy,
   type Difficulty,
   type Frame,
   type InterpolatedFrame,
@@ -67,6 +68,8 @@ export class GameClient {
   private readonly timeLimitTicks?: number;
   private readonly playtest?: boolean;
   private readonly difficulty?: Difficulty;
+  /** make-campaign-playable 2.4: an end handed over by the developer bridge; later frames are dropped. */
+  private stubbed = false;
   private bounding?: boolean;
   private timer: number | null = null;
   /** Half ticks owed: the interval runs every 100 ms, the speed is per 200 ms. */
@@ -96,6 +99,8 @@ export class GameClient {
     this.worker.onmessage = (event: MessageEvent<WorkerResponse>) => {
       const message = event.data;
       if (message.type === 'ready' || message.type === 'frame') {
+        // A stubbed end (developer bridge) holds: frames still in flight do not undo it.
+        if (this.stubbed) return;
         const now = performance.now();
         if (this.frameAt > 0) {
           const gap = Math.min(400, Math.max(30, now - this.frameAt));
@@ -174,6 +179,19 @@ export class GameClient {
   /** The simulation's latest frame, unfiltered (developer bridge). */
   currentFrame(): Frame | null {
     return this.mirror.current;
+  }
+
+  /**
+   * make-campaign-playable 2.4 (developer bridge, e2e only): hands the app the
+   * latest frame as if the battle had ended so. The simulation is untouched;
+   * the caller pauses the battle first so no later frame replaces it.
+   */
+  stubOutcome(outcome: Exclude<Frame['outcome'], 'playing'>, decidedBy?: DecidedBy): void {
+    const frame = this.mirror.current;
+    if (!frame) return;
+    const ended: Frame = { ...this.fog.apply(frame), outcome, events: [{ type: 'outcome', tick: frame.tick, outcome, ...(decidedBy ? { decidedBy } : {}) }] };
+    this.stubbed = true;
+    this.onFrame?.(ended);
   }
 
   /** fog-of-war: the player sees only what his side sees, unless turned off (control of both sides). */

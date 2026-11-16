@@ -4,6 +4,7 @@ import { translate, type Locale, type MessageKey } from '@prestes/content';
 import type { GramophoneState } from '../../audio/Gramophone';
 import type { GramophoneTrack } from '../../audio/gramophone-tracks';
 import { CampaignBook } from './CampaignBook';
+import type { CampaignProgress } from '../../campaign/progress';
 import { CompendiumBook, type CompendiumTarget } from './CompendiumBook';
 import { DeskObject } from './DeskObject';
 import { GramophoneDesk } from './GramophoneDesk';
@@ -43,8 +44,11 @@ export interface MenuDeskProps {
   battleMap: BattleMapId;
   /** pre-battle-roster 5.1: the desk's map opens the skirmish setup screen. */
   onOpenSetup: (map: BattleMapId) => void;
-  /** author-game-maps 5.3: plays a campaign chapter's map. */
-  onPlayMap: (map: BattleMapId) => void;
+  /** make-campaign-playable: the kept progress, the chapter the book opens at (open on the desk), and its actions. */
+  campaignProgress: CampaignProgress;
+  campaignChapter: string | null;
+  onPlayChapter: (chapterId: string) => void;
+  onRestartCampaign: () => void;
   /** author-game-maps 5.2: the skirmish maps on the desk. */
   maps: readonly BattleMap[];
   onSelectMap: (map: BattleMapId) => void;
@@ -72,7 +76,10 @@ export function MenuDesk({
   onLocaleChange,
   battleMap,
   onOpenSetup,
-  onPlayMap,
+  campaignProgress,
+  campaignChapter,
+  onPlayChapter,
+  onRestartCampaign,
   maps,
   onSelectMap,
   onToggleAudio,
@@ -83,9 +90,10 @@ export function MenuDesk({
   const [layout, setLayout] = useState<DeskLayout>(() => loadDesk(storage()));
   const [sizes, setSizes] = useState<Partial<Record<DeskObjectId, DeskSize>>>({});
   // Open objects in the order they were opened or touched; the last is in front.
-  const [openOrder, setOpenOrder] = useState<readonly DeskObjectId[]>([]);
+  // "Back to the book" returns with the campaign book open at the chapter.
+  const [openOrder, setOpenOrder] = useState<readonly DeskObjectId[]>(() => (campaignChapter ? ['campaign'] : []));
   const open = useMemo(() => new Set(openOrder), [openOrder]);
-  const [front, setFront] = useState<DeskObjectId | null>(null);
+  const [front, setFront] = useState<DeskObjectId | null>(() => (campaignChapter ? 'campaign' : null));
   const [compendiumTarget, setCompendiumTarget] = useState<CompendiumTarget | null>(null);
   // camp-tent-menu: the objects are drawn at the camp table's scale, so they
   // keep the sizes of the owner's layout at any view size.
@@ -257,7 +265,10 @@ export function MenuDesk({
           open={open.has('campaign')}
           onStartSkirmish={openMaps}
           onOpenEntry={openEntry}
-          onPlayMap={onPlayMap}
+          progress={campaignProgress}
+          {...(campaignChapter ? { initialChapter: campaignChapter } : {})}
+          onPlayChapter={onPlayChapter}
+          onRestartCampaign={onRestartCampaign}
         />
       </DeskObject>
 
