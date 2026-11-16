@@ -12,6 +12,20 @@ type Bridge = { frame: () => { units: unknown[] } | null; mapDocument: () => Doc
 const AUTHORED = resolve(process.cwd(), 'packages/shared/src/maps/authored');
 const FILES = ['serra-nova.map.json', 'index.ts'].map((name) => resolve(AUTHORED, name));
 
+/** Writes the backup back until the file holds it again (a watched file can be locked for a moment). */
+function restore(file: string, bytes: Buffer): void {
+  for (let attempt = 0; attempt < 50; attempt += 1) {
+    try {
+      writeFileSync(file, bytes);
+      if (readFileSync(file).equals(bytes)) return;
+    } catch {
+      // Locked: wait and try again.
+    }
+    Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 100);
+  }
+  throw new Error(`could not restore ${file}; run git checkout -- ${file}`);
+}
+
 async function playChapter6(page: Page): Promise<Doc> {
   await expect(page.getByTestId('menu-desk')).toBeVisible();
   if ((await page.getByTestId('book-ribbon-contents').count()) === 0) await page.getByTestId('menu-mark-campaign').click();
@@ -67,6 +81,7 @@ test('a campaign map saved to the project plays at the next start of its chapter
     expect(object.x).toBeCloseTo(moved.x + 3, 5);
     expect(object.y).toBe(moved.y);
   } finally {
-    FILES.forEach((file, index) => writeFileSync(file, backups[index]!));
+    // The dev server watches these files; on Windows a write can hit a moment's lock, so retry.
+    FILES.forEach((file, index) => restore(file, backups[index]!));
   }
 });
