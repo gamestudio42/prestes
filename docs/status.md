@@ -226,9 +226,19 @@ content warning was committed first.
   seen. Captions name the cry. Audio now 9.93 MB, voices 2.04 MB, 220 of
   220 takes. Seen in a skirmish in the preview: pain, death cries and the
   comrade's "man down" after them.
-- Still open: the curses waiting for a sourced page stay out (column 13,
-  20, 21; legalist 16-18; cangaceiro 16). Hand check with headphones is
-  the owner's (6.3).
+- **Curse sources found** (2026-11-16) in the project's books, and the four
+  lines generated: legalist 16 "Revoltosos de merda!" (blanc-2024 p. viii:
+  "revoltosos", the commonest name for the rebels then); legalist 17
+  "Bandidos!" (macaulay-1974 p. 208, loyal troops call the prisoners
+  "bandits"; blanc-2024 p. 56, both sides called the other bandido and
+  jagunço); legalist 18 "Maragatos de uma figa!" (macaulay-1974 p. 11, the
+  name "derisively applied" to the gaúcho insurgents); cangaceiro 16 "Lá
+  vem os revoltoso!" (blanc-2024 p. viii; rosa-1956). 224 of 224 takes.
+- Still open: column 13 ("castelhano" as an insult), 20 ("pica-paus" for
+  the legalists) and 21 ("peludo" for recruits) are in none of Macaulay,
+  Blanc or the Portuguese book's text layer; they stay out until a
+  registered source gives a page. Hand check with headphones is the
+  owner's (6.3).
 
 ## Notes of 2026-11-16: campaign gates
 

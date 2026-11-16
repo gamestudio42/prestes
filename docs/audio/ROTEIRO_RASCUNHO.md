@@ -176,11 +176,11 @@ geral. Se a facção não tem xingamento daquele momento, sai um insulto.
 | 13 | frustrado | "Merda, não acaba essa gente!" | geral |
 | 14 | raiva, dentes cerrados | "Filho duma égua!" | regional (provisórios gaúchos) |
 | 15 | espantado | "Bah, de onde saiu essa gente?" | regional (provisórios gaúchos) |
-| 16 | desprezo | "Revoltosos de merda!" | falta a página |
-| 17 | raiva | "Bandidos!" | falta a página |
-| 18 | desprezo | "Maragatos de uma figa!" | provisórios gaúchos — falta a página |
+| 16 | desprezo | "Revoltosos de merda!" | blanc-2024 p. viii ("revoltosos", o nome mais usado na época para os rebeldes) |
+| 17 | raiva | "Bandidos!" | macaulay-1974 p. 208 (a tropa legal chama os presos de "bandits"); blanc-2024 p. 56 (os dois lados se chamavam de bandido e jagunço) |
+| 18 | desprezo | "Maragatos de uma figa!" | macaulay-1974 p. 11 (maragato, nome dado por desprezo aos rebeldes gaúchos) |
 
-**18 tomadas**; 16 a 18 esperam fonte.
+**18 tomadas**; fontes de 16 a 18 achadas em 2026-11-16.
 
 ### 3c. Cangaceiros (`cangaceiro`) — jagunços dos batalhões patrióticos
 
@@ -201,9 +201,9 @@ geral. Se a facção não tem xingamento daquele momento, sai um insulto.
 | 13 | escárnio | "Corre, cabra mole!" | regional (nordeste) |
 | 14 | ganancioso | "Atira, que o coronel paga!" | macaulay-1974 p. 189 (pagos e armados pelo governo) |
 | 15 | raiva | "Peste dos inferno!" | regional (nordeste) |
-| 16 | desprezo | "Lá vem os revoltoso!" | falta a página |
+| 16 | desprezo | "Lá vem os revoltoso!" | blanc-2024 p. viii; rosa-1956 (Riobaldo chama a Coluna de "os revoltosos") |
 
-**16 tomadas**; 16 espera fonte.
+**16 tomadas**; fonte do 16 achada em 2026-11-16.
 
 ## 4. Inimigo (1 tomada cada, voz do inimigo)
 

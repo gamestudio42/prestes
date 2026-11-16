@@ -5,7 +5,7 @@ catálogo `VOICE_LINES` (`packages/content/src/voice-lines.ts`); não edite à
 mão. Cada tomada é `voice/<falante>/<id>-<n>`; ✓ gravada, · a gravar.
 Uma tomada que o dono grava em `audio-src/voice/` substitui a gerada.
 
-**220 de 220 tomadas gravadas.**
+**224 de 224 tomadas gravadas.**
 
 ## 1. Ordens — comandante
 
@@ -197,6 +197,9 @@ Uma tomada que o dono grava em `audio-src/voice/` substitui a gerada.
 | 13 | under-fire | `xingamento/legalist/13-1` | Merda, não acaba essa gente! | Shit, there's no end to them! | ✓ |
 | 14 | insult | `xingamento/legalist/14-1` | Filho duma égua! | Son of a mare! | ✓ |
 | 15 | under-fire | `xingamento/legalist/15-1` | Bah, de onde saiu essa gente? | Bah, where did these men come from? | ✓ |
+| 16 | insult | `xingamento/legalist/16-1` | Revoltosos de merda! | Damn rebels! | ✓ |
+| 17 | insult | `xingamento/legalist/17-1` | Bandidos! | Bandits! | ✓ |
+| 18 | insult | `xingamento/legalist/18-1` | Maragatos de uma figa! | Damned maragatos! | ✓ |
 
 ## 4c. Xingamentos — cangaceiros
 
@@ -217,6 +220,7 @@ Uma tomada que o dono grava em `audio-src/voice/` substitui a gerada.
 | 13 | flee | `xingamento/cangaceiro/13-1` | Corre, cabra mole! | Run, soft man! | ✓ |
 | 14 | fire | `xingamento/cangaceiro/14-1` | Atira, que o coronel paga! | Shoot, the colonel pays! | ✓ |
 | 15 | insult | `xingamento/cangaceiro/15-1` | Peste dos inferno! | Plague from hell! | ✓ |
+| 16 | insult | `xingamento/cangaceiro/16-1` | Lá vem os revoltoso! | Here come the rebels! | ✓ |
 
 ## 5. Avisos do inimigo
 
