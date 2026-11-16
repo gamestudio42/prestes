@@ -28,7 +28,7 @@ describe('the audio check', () => {
 
   it('fails over the budget', () => {
     expect(audioReport({ lines, files, sizes, budget: { totalMaxBytes: 6000, voiceMaxBytes: 1500 }, register }).problems).toEqual([
-      'audio set is 7000 bytes, over the budget of 6000',
+      'audio set is 7000 bytes, over the budget of 6000; largest: water/water-sea.mp3 5000, voice/comandante/hold-1.mp3 1000, voice/xingamento/column/05-1.mp3 1000',
       'voice files are 2000 bytes, over the budget of 1500',
     ]);
   });

@@ -145,17 +145,16 @@ geral. Se a facção não tem xingamento daquele momento, sai um insulto.
 | 10 | frustrado | "Merda de espingarda!" | geral |
 | 11 | espantado | "Barbaridade, que tiroteio!" | regional (gaúcho) |
 | 12 | irritado | "Bah, mas que porcaria!" | regional (gaúcho) |
-| 13 | provocando, alto | "Vem, castelhano de merda!" | a confirmar (gaúcho: "castelhano" como ofensa a quem vem de fora) |
 | 14 | raiva | "Vai pros quinto dos inferno, desgraçado!" | regional (caipira paulista) |
 | 15 | raiva | "Mardito seja!" | regional (caipira paulista) |
 | 16 | desprezo | "Chimangos!" · "Lá vêm os chimangos!" | macaulay-1974 p. 48 |
 | 17 | zombando | "Corre, provisório!" | macaulay-1974 pp. 48, 55 |
 | 18 | explosivo | "Raios e coriscos!" | geral |
 | 19 | ódio | "Canalhas!" | geral |
-| 20 | desprezo | "Lá vêm os pica-paus!" | apelido dos legalistas — falta a página |
-| 21 | escárnio | "Corre, peludo!" | apelido dos recrutas — falta a página |
 
-**22 tomadas** (16 tem duas); 13, 20 e 21 esperam conferência.
+**19 tomadas** (16 tem duas). Os antigos 13 ("castelhano"), 20 ("pica-paus") e 21
+("peludo") saíram por decisão do dono em 2026-11-16: nenhum livro do projeto
+os traz.
 
 ### 3b. Legalistas (`legalist`) — Exército, Força Pública, provisórios
 
@@ -248,11 +247,11 @@ nosso lado vê quem grita. Arquivo: `inimigo/<id>-1..3`.
 | Ordens e respostas | 84 |
 | Controle de fogo | 24 |
 | Avisos dos nossos | 24 |
-| Xingamentos por facção | 56 |
+| Xingamentos por facção | 53 |
 | Avisos do inimigo | 21 |
 | Gritos sem palavras dos nossos | 9 |
 | Gritos sem palavras do inimigo | 9 |
-| **Total** | **227** |
+| **Total** | **224** |
 
 ## Pendências antes do catálogo
 

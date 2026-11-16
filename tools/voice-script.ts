@@ -73,7 +73,12 @@ export function audioReport(input: {
     totalBytes += bytes;
     if (path.startsWith('voice/')) voiceBytes += bytes;
   }
-  if (totalBytes > input.budget.totalMaxBytes) problems.push(`audio set is ${totalBytes} bytes, over the budget of ${input.budget.totalMaxBytes}`);
+  const largest = Object.entries(input.sizes)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 3)
+    .map(([path, bytes]) => `${path} ${bytes}`)
+    .join(', ');
+  if (totalBytes > input.budget.totalMaxBytes) problems.push(`audio set is ${totalBytes} bytes, over the budget of ${input.budget.totalMaxBytes}; largest: ${largest}`);
   if (voiceBytes > input.budget.voiceMaxBytes) problems.push(`voice files are ${voiceBytes} bytes, over the budget of ${input.budget.voiceMaxBytes}`);
   for (const [id, path] of Object.entries(input.files)) {
     if (!registered(input.register, id, `public/audio/${path}`)) problems.push(`audio file not in docs/assets.md: ${path} (${id})`);

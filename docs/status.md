@@ -38,9 +38,8 @@ that unblocks the most.
    (2.3); 6.2 stays open until then.
 2. ~~**Books gate**~~ (`complete-books-and-bibliography` 7.1): done
    2026-11-16, every step passing (see the notes of 2026-11-16).
-3. ~~**Voices code**~~ (`ambient-sound-and-voices` 5.1-5.5, 5.2, 6.1,
-   6.2): done 2026-11-16 (see the notes "voices in the game"). Left: the
-   owner's headphone check (6.3).
+3. ~~**Voices code**~~ (`ambient-sound-and-voices`): done and archived
+   2026-11-16 (see the notes "voices in the game").
 
 ### 2. Waiting on the owner
 
@@ -234,11 +233,15 @@ content warning was committed first.
   jagunço); legalist 18 "Maragatos de uma figa!" (macaulay-1974 p. 11, the
   name "derisively applied" to the gaúcho insurgents); cangaceiro 16 "Lá
   vem os revoltoso!" (blanc-2024 p. viii; rosa-1956). 224 of 224 takes.
-- Still open: column 13 ("castelhano" as an insult), 20 ("pica-paus" for
-  the legalists) and 21 ("peludo" for recruits) are in none of Macaulay,
-  Blanc or the Portuguese book's text layer; they stay out until a
-  registered source gives a page. Hand check with headphones is the
-  owner's (6.3).
+- Column 13 ("castelhano"), 20 ("pica-paus") and 21 ("peludo") are in
+  none of the project's books and were dropped at the owner's word.
+- **Closed** at the owner's word ("deixe esses de fora e feche"):
+  `ambient-sound-and-voices` archived as
+  `openspec/changes/archive/2026-11-16-ambient-sound-and-voices`; its
+  specs synced (the new `soundscape` capability, and `audio`'s three
+  channels). The delta was first brought in line with what was built: the
+  shouts, curses by moment, the voices heard from a distance, and an
+  unrecorded order line shown as a caption.
 
 ## Notes of 2026-11-16: campaign gates
 

@@ -1,10 +1,12 @@
+# soundscape Specification
+
 ## Purpose
 
 What a battle sounds like beyond gunfire: the air of the place, its water,
 troops moving over the ground, and the voices of the commander and the
 soldiers.
 
-## ADDED Requirements
+## Requirements
 
 ### Requirement: Sound belongs to what is near
 
@@ -114,7 +116,10 @@ The commander's order line and the section's answer SHALL NOT be attenuated
 or panned by distance, wherever the camera is, and while either plays the
 effects and ambience SHALL be lowered so the line is clear, returning to
 their level within one second after it ends. Every other voice SHALL follow
-the nearness rule.
+the nearness rule. Every voice SHALL sound as heard across a field, not at
+a microphone (filtered, with an open-air echo): the order line and answer
+at one fixed middle distance, every other voice more distant the farther
+its speaker is.
 
 #### Scenario: An order to a far section
 - **WHEN** the player orders a section that is off screen, 300 m from the listening point
@@ -128,8 +133,10 @@ the nearness rule.
 
 Soldiers of the player's side SHALL call out, from where they are: first
 contact with the enemy, a man down, out of ammunition, reloading, pinned,
-the machine gun set, an objective taken, and falling back. A call-out SHALL
-follow the nearness rule, SHALL NOT repeat for the same section and kind
+the machine gun set, an objective taken, and falling back; and they SHALL
+shout without words: a battle cry when their section goes into an assault,
+a cry of pain when a man is hit and stays up, a death cry when he falls. A
+call-out or shout SHALL follow the nearness rule, SHALL NOT repeat for the same section and kind
 within a quiet time (at least 8 s), and SHALL give way to an order line.
 
 #### Scenario: A man down nearby
@@ -153,7 +160,10 @@ curses heard at once across the field. A curse SHALL follow the nearness
 rule and SHALL give way to an order line and to any other call-out. Curses
 MAY be strong (obscenities and regional insults of the period, by the
 speaker's side) but SHALL NOT be a slur, and a curse that names a side
-SHALL be spoken only by the side that used it. When the player has turned
+SHALL be spoken only by the side that used it. The curse SHALL fit the
+moment when the speaker's faction has one for it (his shot hit, he
+missed, he is fired on, the other side runs), and otherwise be a general
+insult. When the player has turned
 curses off, no curse SHALL play, from either side.
 
 #### Scenario: Sporadic, not constant
@@ -227,7 +237,8 @@ Every voice line SHALL be an entry of a catalog with an id, its speaker
 belongs to, its takes and their file names. The project SHALL keep a
 recording script generated from the catalog that lists every take still to
 record. A line or take with no recording SHALL be skipped in silence,
-without an error, and a check SHALL report the catalog's lines without a
+without an error (an order line or answer still shows its caption, when
+captions are on), and a check SHALL report the catalog's lines without a
 recording and the audio files no line uses. The speech SHALL be original
 script and SHALL reproduce no book text.
 
@@ -237,7 +248,7 @@ source in the catalog.
 
 #### Scenario: An unrecorded line
 - **WHEN** the player gives an order whose commander line has no recording yet
-- **THEN** nothing is spoken for it, the game goes on and no error is logged for the player
+- **THEN** no sound plays for it, its caption shows alone if captions are on, the game goes on and no error is logged for the player
 
 #### Scenario: The script follows the catalog
 - **WHEN** a line is added to the catalog and the script is generated
