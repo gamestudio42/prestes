@@ -99,8 +99,16 @@ Result = { outcome, decidedBy?, ticks, columnLost, level? }
 - **Best result.** "Best" is ordered by victory first, then fewer column
   losses, then a shorter time.
 - **Open chapters.** `isOpen(n)` is true when `n === 1` or chapter `n − 1`
-  is `won`. It is computed, never stored, so a record can never hold an
-  open chapter whose previous chapter is not won.
+  has been passed. It is computed, never stored, so a record can never
+  hold an open chapter whose previous chapter has not been passed.
+  - *Amended 2026-11-16 (the owner: "o 1 é derrota mesmo").* A chapter is
+    passed when it is won. The prologue is also passed once it has been
+    played to an end (`plays > 0`), whatever the outcome.
+    `passesChapter(id, outcome)` gives the same answer for one battle, so
+    the debrief offers "Next chapter".
+  - `chapterState` gains `played`, for a prologue played to an end but
+    not won. A one-entry set of chapters that pass on any end keeps the
+    exception in data, not scattered `if`s.
 - *Alternative:* IndexedDB like the editor. Rejected: the record is small
   and synchronous reads keep the book's first render simple.
 

@@ -8,6 +8,7 @@ import {
   isOpen,
   nextChapter,
   parseProgress,
+  passesChapter,
   previousChapter,
   recordResult,
   type CampaignResult,
@@ -34,15 +35,32 @@ describe('make-campaign-playable 1.2: the progress model', () => {
   });
 
   it('a defeat, a draw and a commander falling do not', () => {
+    // The prologue opens chapter 2 on any end (4.3), so this is checked from chapter 2.
+    const opened = recordResult(emptyProgress(), prologue, victory);
     for (const result of [
       defeat,
       { outcome: 'draw', decidedBy: 'draw', ticks: 9000, columnLost: 3 },
       { outcome: 'defeat', decidedBy: 'commander', ticks: 800, columnLost: 1 },
     ] satisfies CampaignResult[]) {
-      const progress = recordResult(emptyProgress(), prologue, result);
-      expect(isOpen(progress, second), result.decidedBy).toBe(false);
-      expect(progress.chapters[prologue]).toMatchObject({ won: false, plays: 1, last: result });
+      const progress = recordResult(opened, second, result);
+      expect(isOpen(progress, third), result.decidedBy).toBe(false);
+      expect(chapterState(progress, second)).toBe('open');
+      expect(progress.chapters[second]).toMatchObject({ won: false, plays: 1, last: result });
+      expect(passesChapter(second, result.outcome)).toBe(false);
     }
+  });
+
+  it('4.3: any end of the prologue opens chapter 2, shown as played, not won', () => {
+    for (const result of [defeat, { outcome: 'draw', decidedBy: 'draw', ticks: 9000, columnLost: 3 }] satisfies CampaignResult[]) {
+      const progress = recordResult(emptyProgress(), prologue, result);
+      expect(isOpen(progress, second), result.outcome).toBe(true);
+      expect(chapterState(progress, prologue)).toBe('played');
+      expect(progress.chapters[prologue]).toMatchObject({ won: false, plays: 1 });
+      expect(isOpen(progress, third)).toBe(false);
+      expect(passesChapter(prologue, result.outcome)).toBe(true);
+    }
+    expect(passesChapter(prologue, 'playing')).toBe(false);
+    expect(chapterState(recordResult(emptyProgress(), prologue, victory), prologue)).toBe('won');
   });
 
   it('a later defeat keeps a chapter won and its next open', () => {

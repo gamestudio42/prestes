@@ -63,9 +63,11 @@
 
 - [x] 4.2 The figure does not flank on his own (found in 6.2: an idle commander walked about 90 m into the fight on Ponte de Verdinho and Serra Nova). `seekFlank` skips the figure. The determinism goldens do not move (no figure flanks in their first 1000 ticks).
   - Verify: a unit test where the figure and an ordinary officer stand in the same idle flanking situation; only the officer flanks.
-## 5. Difficulty (after `add-difficulty-levels` is archived)
+- [x] 4.3 The prologue exception (the owner, 2026-11-16: "o 1 é derrota mesmo"). Any end of the prologue opens chapter 2; a played, unwon prologue shows as "played"; the locked chapter 2 says "play the prologue to its end"; the debrief offers "Next chapter" after any end of the prologue. Verify with unit tests in `tests/campaign/progress.test.ts` (prologue defeat and draw open chapter 2 and show "played"; a defeat in chapter 2 still does not open chapter 3), and with `pnpm check:locales`.
 
-- [ ] 5.1 The briefing's level picker (reusing the skirmish's component and stored choice); the level sent on the campaign start; `Result.level` recorded and shown in the debrief.
+## 5. Difficulty (after `add-difficulty-levels` is committed)
+
+- [x] 5.1 The briefing's level picker (reusing the skirmish's component and stored choice); the level sent on the campaign start; `Result.level` recorded and shown in the debrief.
   - Verify with an e2e: História set on chapter 3 starts at História, and the stored result says História. A unit test: a victory at História opens the next chapter.
 
 ## 6. Gates

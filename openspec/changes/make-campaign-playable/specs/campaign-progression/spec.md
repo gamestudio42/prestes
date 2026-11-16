@@ -60,26 +60,46 @@ PT-BR and EN.
 
 The prologue SHALL always be open.
 
-Chapter *n* (2 to 8) SHALL be open only after chapter *n − 1* has ended at
+Chapter *n* (3 to 8) SHALL be open only after chapter *n − 1* has ended at
 least once in **victory**. Any victory counts, whatever decided it: objectives,
 all objectives held, the enemy broken or annihilated, or a withdrawal where
 the map has one. A defeat (including the commander's fall on a map where that
 is a defeat), a draw or a battle left before its end SHALL NOT open the next
 chapter.
 
-A locked chapter SHALL stay readable: its prose, plate and links. Its briefing
-SHALL show, in place of the play action, which chapter must be won to open it.
+The prologue is the one exception. The Forte de Copacabana rising was a
+defeat (Macaulay 1974, ch. I, pp. 26–29), so chapter 2 SHALL open once the
+prologue has been **played to its end** with any outcome: victory, defeat or
+draw. A prologue left before its end SHALL NOT open chapter 2.
+
+A locked chapter SHALL stay readable: its prose, plate and links. In place of
+the play action, its briefing SHALL say what opens it: winning the chapter
+before it, or, for chapter 2, playing the prologue to its end.
 
 An opened chapter SHALL stay open whatever later results are, and a won
 chapter SHALL stay replayable.
 
-The book's contents SHALL mark each chapter as won, open or locked, in PT-BR
-and EN. (Owner's decision, 2026-11-15: "precisa vencer".)
+The book's contents SHALL mark each chapter in PT-BR and EN as won, open or
+locked. A prologue that has been played to its end but not won SHALL show as
+played, never as won.
+
+(Owner's decisions: 2026-11-15, "precisa vencer"; 2026-11-16, the prologue is
+the exception: "o 1 é derrota mesmo".)
 
 #### Scenario: Winning opens the next chapter
 
 - **WHEN** the player wins the prologue for the first time
 - **THEN** chapter 2 (O Anel de Ferro) becomes open, and the contents mark the prologue won and chapter 2 open
+
+#### Scenario: Losing the prologue opens chapter 2
+
+- **WHEN** the prologue ends in defeat, the eighteen broken on the avenue
+- **THEN** chapter 2 becomes open, and the contents mark the prologue played, not won
+
+#### Scenario: Leaving the prologue opens nothing
+
+- **WHEN** the player leaves the prologue before its end
+- **THEN** chapter 2 stays locked, and its briefing says the prologue must be played to its end
 
 #### Scenario: A defeat does not open it
 
@@ -151,8 +171,8 @@ does for every battle:
 
 It SHALL also show the chapter's number and title, and SHALL offer:
 
-- "Próximo capítulo" / "Next chapter", only after a victory and only when a
-  next chapter exists;
+- "Próximo capítulo" / "Next chapter", only when the battle opened the next
+  chapter (a victory, or any end of the prologue) and a next chapter exists;
 - "Jogar de novo" / "Play again", which restarts the same chapter from its
   deployment;
 - "Voltar ao livro" / "Back to the book", which opens the campaign book at
@@ -169,6 +189,11 @@ campaign as completed. The closing line is the project's own words, labelled
 
 - **WHEN** the player wins chapter 5
 - **THEN** the panel shows the epilogue and offers "Next chapter", "Play again" and "Back to the book", and "Next chapter" starts chapter 6
+
+#### Scenario: The prologue lost still leads on
+
+- **WHEN** the prologue ends in defeat
+- **THEN** the panel shows the epilogue and offers "Next chapter", which starts chapter 2
 
 #### Scenario: Defeat offers no next chapter
 

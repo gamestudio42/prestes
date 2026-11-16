@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
-import type { BattleMap, BattleMapId } from '@prestes/shared';
+import type { BattleMap, BattleMapId, Difficulty } from '@prestes/shared';
 import { translate, type Locale, type MessageKey } from '@prestes/content';
 import type { GramophoneState } from '../../audio/Gramophone';
 import type { GramophoneTrack } from '../../audio/gramophone-tracks';
@@ -49,6 +49,9 @@ export interface MenuDeskProps {
   campaignChapter: string | null;
   onPlayChapter: (chapterId: string) => void;
   onRestartCampaign: () => void;
+  /** make-campaign-playable 5.1: the level a chapter starts at (the skirmish setup's stored choice). */
+  difficulty: Difficulty;
+  onDifficultyChange: (difficulty: Difficulty) => void;
   /** author-game-maps 5.2: the skirmish maps on the desk. */
   maps: readonly BattleMap[];
   onSelectMap: (map: BattleMapId) => void;
@@ -80,6 +83,8 @@ export function MenuDesk({
   campaignChapter,
   onPlayChapter,
   onRestartCampaign,
+  difficulty,
+  onDifficultyChange,
   maps,
   onSelectMap,
   onToggleAudio,
@@ -269,6 +274,8 @@ export function MenuDesk({
           {...(campaignChapter ? { initialChapter: campaignChapter } : {})}
           onPlayChapter={onPlayChapter}
           onRestartCampaign={onRestartCampaign}
+          difficulty={difficulty}
+          onDifficultyChange={onDifficultyChange}
         />
       </DeskObject>
 

@@ -29,7 +29,7 @@ import { BattleEndPanel, type CampaignEnd } from './ui/BattleEndPanel';
 import { campaignStart } from './campaign/start';
 import { campaignResult } from './campaign/result';
 import { campaignStore } from './campaign/storage';
-import { emptyProgress, nextChapter, recordResult, type CampaignProgress } from './campaign/progress';
+import { emptyProgress, nextChapter, passesChapter, recordResult, type CampaignProgress } from './campaign/progress';
 import { EventCardPanel } from './ui/EventCardPanel';
 import { PlaytestEventsPanel } from './ui/PlaytestEventsPanel';
 import { closeEventCard, NO_EVENT_CARDS, openEventCards, type EventCardState } from './client/event-cards';
@@ -382,7 +382,8 @@ export function App() {
       forgetAuthoredMap(start.map);
       documentsRef.current.delete(start.map);
     }
-    startBattle(start.map, start.rosters);
+    // 5.1: the chapter starts at the level last chosen, in the skirmish setup or on a briefing.
+    startBattle(start.map, start.rosters, undefined, setup.difficulty);
   };
 
   /** "Back to the book": the menu, with the campaign book open at the chapter's briefing. */
@@ -514,7 +515,9 @@ export function App() {
     if (!chapter) return undefined;
     const won = frame?.outcome === 'victory';
     const nextId = nextChapter(chapter.id);
-    const next = won && nextId ? CAMPAIGN_CHAPTERS.find((candidate) => candidate.id === nextId) : undefined;
+    // D2 amended: a victory, or any end of the prologue, leads on.
+    const passed = frame ? passesChapter(chapter.id, frame.outcome) : false;
+    const next = passed && nextId ? CAMPAIGN_CHAPTERS.find((candidate) => candidate.id === nextId) : undefined;
     return {
       number: chapter.number,
       title: chapterText(chapter.id, locale)?.title ?? '',

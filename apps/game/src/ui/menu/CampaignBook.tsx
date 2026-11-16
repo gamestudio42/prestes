@@ -14,12 +14,13 @@ import {
   type Locale,
   type MessageKey,
 } from '@prestes/content';
+import { DIFFICULTIES, type Difficulty } from '@prestes/shared';
 import { DESK_ART, deskArtData, deskArtStyle } from './deskArt';
 import { BookEndOrnament, BookFrame, creditLine, InlinePlate, PlateImage, QuoteFooter, useBookPosition } from './BookFrame';
 import { campaignBook, folio, sourceAnchor, type BookPage, type TextItem } from './bookPages';
 import { PixelPhoto } from '../PixelPhoto';
 import { EDIT_MAP_LABEL, editMapHref } from '../../campaign/dev-edit';
-import { chapterState, isCompleted, previousChapter, type CampaignProgress, type ChapterState } from '../../campaign/progress';
+import { chapterState, isCompleted, needsVictory, previousChapter, type CampaignProgress, type ChapterState } from '../../campaign/progress';
 import coverImage from '../../assets/menu/coluna-prestes.webp';
 
 export interface CampaignBookProps {
@@ -36,10 +37,13 @@ export interface CampaignBookProps {
   onPlayChapter: (chapterId: string) => void;
   /** Forgets every result, once the player confirmed. */
   onRestartCampaign: () => void;
+  /** make-campaign-playable 5.1: the level the chapter starts at, chosen on its briefing. */
+  difficulty: Difficulty;
+  onDifficultyChange: (difficulty: Difficulty) => void;
 }
 
 /** The seal printed beside a chapter in the contents, with its words (never colour alone). */
-const SEAL: Record<ChapterState, string> = { won: '✓', open: '○', locked: '·' };
+const SEAL: Record<ChapterState, string> = { won: '✓', played: '◐', open: '○', locked: '·' };
 
 const CHAPTER = new Map(CAMPAIGN_CHAPTERS.map((chapter) => [chapter.id, chapter]));
 const ENTRY = new Map(COMPENDIUM.map((entry) => [entry.id, entry]));
@@ -52,7 +56,7 @@ const FIGURE = new Map(FIGURES.map((figure) => [figure.id, figure]));
  * a map is played from its briefing once the chapter before it is won
  * (make-campaign-playable).
  */
-export function CampaignBook({ locale, open, onStartSkirmish, onOpenEntry, progress, initialChapter, onPlayChapter, onRestartCampaign }: CampaignBookProps) {
+export function CampaignBook({ locale, open, onStartSkirmish, onOpenEntry, progress, initialChapter, onPlayChapter, onRestartCampaign, difficulty, onDifficultyChange }: CampaignBookProps) {
   const [confirmRestart, setConfirmRestart] = useState(false);
   const t = (key: MessageKey, values?: Readonly<Record<string, string | number>>) =>
     translate(locale, key, values);
@@ -319,12 +323,34 @@ export function CampaignBook({ locale, open, onStartSkirmish, onOpenEntry, progr
               {isChapterPlayable(chapter.id) ? (
                 stateOf(chapter) === 'locked' ? (
                   <p className="desk-text desk-text-soft" data-testid={`chapter-locked-${chapter.id}`}>
-                    {t('campaign.winFirst', { chapter: chapterName(CHAPTER.get(previousChapter(chapter.id)!)!) })}
+                    {t(needsVictory(previousChapter(chapter.id)!) ? 'campaign.winFirst' : 'campaign.playFirst', {
+                      chapter: chapterName(CHAPTER.get(previousChapter(chapter.id)!)!),
+                    })}
                   </p>
                 ) : (
-                  <button type="button" className="desk-entry primary" onClick={() => onPlayChapter(chapter.id)} data-testid={`chapter-play-${chapter.id}`}>
-                    {t('campaign.playChapter')}
-                  </button>
+                  <>
+                    <div className="desk-chapter-level" data-testid={`chapter-level-${chapter.id}`} data-value={difficulty}>
+                      <span className="desk-text-heading">{t('setup.difficulty')}</span>
+                      <div className="desk-level-buttons" role="radiogroup" aria-label={t('setup.difficulty')}>
+                        {DIFFICULTIES.map((level) => (
+                          <button
+                            key={level}
+                            type="button"
+                            className={difficulty === level ? 'desk-level active' : 'desk-level'}
+                            aria-pressed={difficulty === level}
+                            onClick={() => onDifficultyChange(level)}
+                            data-testid={`chapter-difficulty-${level}`}
+                          >
+                            {t(`difficulty.${level}.name` as MessageKey)}
+                          </button>
+                        ))}
+                      </div>
+                      <p className="desk-text desk-text-soft">{t(`difficulty.${difficulty}.description` as MessageKey)}</p>
+                    </div>
+                    <button type="button" className="desk-entry primary" onClick={() => onPlayChapter(chapter.id)} data-testid={`chapter-play-${chapter.id}`}>
+                      {t('campaign.playChapter')}
+                    </button>
+                  </>
                 )
               ) : null}
               {skirmish(`chapter-skirmish-${chapter.id}`)}

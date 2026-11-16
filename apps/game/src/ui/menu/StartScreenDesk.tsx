@@ -96,6 +96,8 @@ export function StartScreenDesk({
         campaignChapter={campaignChapter}
         onPlayChapter={onPlayChapter}
         onRestartCampaign={onRestartCampaign}
+        difficulty={setup.difficulty}
+        onDifficultyChange={(difficulty) => onSetupChange({ ...setup, difficulty })}
         gramophone={gramophone}
       />
       {setupOpen && maps.length > 0 ? (

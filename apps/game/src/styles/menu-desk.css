@@ -2026,3 +2026,32 @@
     translate: none;
   }
 }
+
+/* make-campaign-playable 5.1: the level a chapter starts at, on its briefing. */
+.desk-chapter-level {
+  margin: 6px 0 10px;
+}
+
+.desk-level-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 4px 0;
+}
+
+.desk-level {
+  font: inherit;
+  font-size: 13px;
+  padding: 3px 10px;
+  border: 1px solid var(--book-ink-soft);
+  border-radius: 3px;
+  background: transparent;
+  color: var(--book-ink);
+  cursor: pointer;
+}
+
+.desk-level.active {
+  background: var(--book-ink);
+  color: var(--book-paper, #efe4c8);
+  font-weight: 600;
+}

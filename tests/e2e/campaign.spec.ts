@@ -5,7 +5,7 @@ import { expect, test, type Page } from '@playwright/test';
 
 type Bridge = {
   endBattle: (outcome: 'victory' | 'defeat' | 'draw', decidedBy?: string) => void;
-  frame: () => { units: unknown[] } | null;
+  frame: () => { units: unknown[]; difficulty?: string } | null;
 };
 
 /** A fresh campaign, muted, in English; the record is cleared once, not on every reload. */
@@ -68,7 +68,7 @@ test('the prologue is played from the book; a victory opens chapter 2 and is kep
   await expect(page.getByTestId('campaign-seal-anel-de-ferro')).toContainText('locked');
 
   await openBriefing(page, 'anel-de-ferro');
-  await expect(page.getByTestId('chapter-locked-anel-de-ferro')).toHaveText('Win Prologue first to open this chapter.');
+  await expect(page.getByTestId('chapter-locked-anel-de-ferro')).toHaveText('Play Prologue to its end first to open this chapter.');
   await expect(page.getByTestId('chapter-play-anel-de-ferro')).toHaveCount(0);
 
   await openBriefing(page, 'prologue-18-do-forte');
@@ -119,7 +119,8 @@ test('Play again replays the chapter and records it again', async ({ page }) => 
   await page.getByTestId('chapter-play-prologue-18-do-forte').click();
   await waitForBattle(page);
   await endBattle(page, 'draw', 'draw');
-  await expect(page.getByTestId('battle-end-next-chapter')).toHaveCount(0);
+  // 4.3: any end of the prologue leads on, a draw included.
+  await expect(page.getByTestId('battle-end-next-chapter')).toBeVisible();
   await page.getByTestId('battle-end-restart').click();
   await waitForBattle(page);
   await expect(page.getByTestId('battle-end')).toHaveCount(0);
@@ -173,4 +174,42 @@ test('a broken record opens a fresh campaign without an error', async ({ page })
   await expect(page.getByTestId('campaign-seal-prologue-18-do-forte')).toHaveAttribute('data-state', 'open');
   await expect(page.getByTestId('campaign-seal-anel-de-ferro')).toHaveAttribute('data-state', 'locked');
   expect(errors).toEqual([]);
+});
+
+test('4.3: a lost prologue still opens chapter 2 and shows as played', async ({ page }) => {
+  test.setTimeout(120_000);
+  await openDesk(page);
+  await page.getByTestId('menu-mark-campaign').click();
+  await openBriefing(page, 'prologue-18-do-forte');
+  await page.getByTestId('chapter-play-prologue-18-do-forte').click();
+  await waitForBattle(page);
+
+  await endBattle(page, 'defeat', 'broken');
+  await expect(page.getByTestId('battle-end-result')).toHaveText('Defeat');
+  await expect(page.getByTestId('battle-end-next-chapter')).toContainText('Chapter 2');
+  expect((await stored(page)).chapters['prologue-18-do-forte']).toMatchObject({ won: false, plays: 1, last: { outcome: 'defeat' } });
+
+  await page.getByTestId('battle-end-back-to-book').click();
+  await page.getByTestId('book-ribbon-contents').click();
+  await expect(page.getByTestId('campaign-seal-prologue-18-do-forte')).toHaveAttribute('data-state', 'played');
+  await expect(page.getByTestId('campaign-seal-prologue-18-do-forte')).toContainText('played');
+  await expect(page.getByTestId('campaign-seal-anel-de-ferro')).toHaveAttribute('data-state', 'open');
+  await expect(page.getByTestId('campaign-seal-a-divisao')).toHaveAttribute('data-state', 'locked');
+});
+
+test('5.1: the level chosen on a briefing starts the chapter and is recorded', async ({ page }) => {
+  test.setTimeout(120_000);
+  await openDesk(page);
+  await page.getByTestId('menu-mark-campaign').click();
+  await openBriefing(page, 'prologue-18-do-forte');
+  await expect(page.getByTestId('chapter-level-prologue-18-do-forte')).toHaveAttribute('data-value', 'soldado');
+  await page.getByTestId('chapter-difficulty-historia').click();
+  await expect(page.getByTestId('chapter-level-prologue-18-do-forte')).toHaveAttribute('data-value', 'historia');
+  await page.getByTestId('chapter-play-prologue-18-do-forte').click();
+  await waitForBattle(page);
+  expect(await page.evaluate(() => (window as unknown as { __prestes: Bridge }).__prestes.frame()?.difficulty)).toBe('historia');
+
+  await endBattle(page, 'victory', 'objectives');
+  await expect(page.getByTestId('battle-end-result')).toHaveText('Victory');
+  expect((await stored(page)).chapters['prologue-18-do-forte']).toMatchObject({ won: true, last: { level: 'historia' } });
 });

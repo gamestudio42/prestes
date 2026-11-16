@@ -123,11 +123,35 @@ export function isWon(progress: CampaignProgress, chapterId: string): boolean {
   return progress.chapters[chapterId]?.won === true;
 }
 
-/** The prologue is always open; a later chapter once the one before it is won. */
+/**
+ * Chapters that open the next one on any end, not only a victory: the
+ * prologue, a defeat in history (the owner, 2026-11-16: "o 1 é derrota mesmo").
+ */
+const PASS_ON_ANY_END: ReadonlySet<string> = new Set([ORDER[0]!]);
+
+/** Whether a battle of `chapterId` ending in `outcome` opens the next chapter. */
+export function passesChapter(chapterId: string, outcome: Outcome): boolean {
+  if (outcome === 'playing') return false;
+  return outcome === 'victory' || PASS_ON_ANY_END.has(chapterId);
+}
+
+/** Won, or (the prologue) played to an end at least once. */
+export function hasPassed(progress: CampaignProgress, chapterId: string): boolean {
+  const chapter = progress.chapters[chapterId];
+  if (!chapter) return false;
+  return chapter.won || (PASS_ON_ANY_END.has(chapterId) && chapter.plays > 0);
+}
+
+/** Whether the chapter before `chapterId` has to be won (false: played to its end is enough). */
+export function needsVictory(chapterId: string): boolean {
+  return !PASS_ON_ANY_END.has(chapterId);
+}
+
+/** The prologue is always open; a later chapter once the one before it is passed. */
 export function isOpen(progress: CampaignProgress, chapterId: string): boolean {
   const index = ORDER.indexOf(chapterId);
   if (index < 0) return false;
-  return index === 0 || isWon(progress, ORDER[index - 1]!);
+  return index === 0 || hasPassed(progress, ORDER[index - 1]!);
 }
 
 /** The chapter after `chapterId` in book order, or undefined after the last. */
@@ -136,7 +160,7 @@ export function nextChapter(chapterId: string): string | undefined {
   return index < 0 ? undefined : ORDER[index + 1];
 }
 
-/** The chapter that has to be won before `chapterId` opens (undefined for the prologue). */
+/** The chapter that has to be passed before `chapterId` opens (undefined for the prologue). */
 export function previousChapter(chapterId: string): string | undefined {
   const index = ORDER.indexOf(chapterId);
   return index > 0 ? ORDER[index - 1] : undefined;
@@ -147,9 +171,11 @@ export function isCompleted(progress: CampaignProgress): boolean {
   return isWon(progress, ORDER[ORDER.length - 1]!);
 }
 
-export type ChapterState = 'won' | 'open' | 'locked';
+/** `played`: a chapter that passes on any end (the prologue) played to an end but not won. */
+export type ChapterState = 'won' | 'played' | 'open' | 'locked';
 
 export function chapterState(progress: CampaignProgress, chapterId: string): ChapterState {
   if (isWon(progress, chapterId)) return 'won';
+  if (hasPassed(progress, chapterId)) return 'played';
   return isOpen(progress, chapterId) ? 'open' : 'locked';
 }
