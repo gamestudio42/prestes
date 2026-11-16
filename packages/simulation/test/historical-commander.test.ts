@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { authoredMapIndex, compileMapDocument, createEditableMap, loadAuthoredMap, toMapDocument, type BattleEvent, type BattleMap, type EventAction, type MapCommander, type Roster, type SimEvent } from '@prestes/shared';
+import { authoredMapIndex, compileMapDocument, createEditableMap, loadAuthoredMap, toMapDocument, type BattleEvent, type BattleMap, type EventAction, type MapCommander, type CoverPoint, type Roster, type SimEvent } from '@prestes/shared';
 import { SimulationEngine } from '../src/engine';
 import { updateOutcome } from '../src/systems/combat';
+import { seekFlank } from '../src/systems/orders';
 import { applyCommandRadius, COMMAND_RALLY_CAP, SELF_RALLY_CAP, selfRally, updateOfficerLoss } from '../src/systems/morale';
 import { createScriptedState, updateBattleEvents } from '../src/systems/battle-events';
 import type { SimContext } from '../src/systems/context';
@@ -58,6 +59,37 @@ describe('historical commander: the figure on the field (2.1)', () => {
 
   it('only the field map moves the hash', () => {
     expect(engineOn(field(PRESTES)).hashState()).not.toBe(engineOn(field()).hashState());
+  });
+});
+
+describe('historical commander: the figure does not flank by himself (make-campaign-playable 4.2)', () => {
+  /** The figure idle, an ally of another section pinning the same enemy, who crouches behind a sandbag. */
+  function idleFlankingSituation() {
+    const engine = engineOn(field(PRESTES));
+    const figure = figureOf(engine);
+    const ally = engine.units.find((unit) => unit.faction === 'column' && unit.kind === 'infantry' && unit.squadId !== figure.squadId)!;
+    const enemy = engine.units.find((unit) => unit.faction === 'legalist')!;
+    clearAround(engine, [figure, ally, enemy]);
+    Object.assign(figure, { x: 0, y: 0, targetId: enemy.id, currentOrder: null, path: [], holdPosition: false, flankCooldown: 0, suppress: false });
+    Object.assign(ally, { x: 6, y: 0, targetId: enemy.id, currentOrder: null, path: [] });
+    Object.assign(enemy, { x: 0, y: -60, stance: 'crouched' });
+    const sandbag: CoverPoint = {
+      id: 900, kind: 'sandbag', x: 0, y: -58, halfWidth: 6, halfDepth: 0.4, height: 0.9, radius: 3.5, quality: 0.3, blocksMovement: false, blocksSight: false,
+    };
+    engine.covers.push(sandbag);
+    return { engine, figure };
+  }
+
+  it('the figure stays where he was put, while an ordinary officer in his place flanks', () => {
+    const asFigure = idleFlankingSituation();
+    seekFlank(asFigure.engine);
+    expect(asFigure.figure.currentOrder).toBeNull();
+    expect(asFigure.figure.path).toHaveLength(0);
+
+    const asOfficer = idleFlankingSituation();
+    delete asOfficer.figure.figure;
+    seekFlank(asOfficer.engine);
+    expect(asOfficer.figure.currentOrder).toBe('flank');
   });
 });
 

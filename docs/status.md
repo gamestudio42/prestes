@@ -31,8 +31,9 @@ that unblocks the most.
 1. **Campaign gates** (`make-campaign-playable` 6.2; 6.1 done
    2026-11-16): every chapter starts from the book and reaches its
    debrief, but scripted plans lose six of the eight chapters (see the
-   notes of 2026-11-16). Why the commander falls early is found (same
-   notes); the two fixes wait on the owner's word.
+   notes of 2026-11-16). The commander no longer flanks on their own
+   (4.2). Whether chapters 1-3 and 5-7 can be won is for the owner's play
+   (2.3); 6.2 stays open until then.
 2. **Books gate** (`complete-books-and-bibliography` 7.1): `pnpm check`,
    `pnpm verify` and strict validate.
 3. **Voices code** (`ambient-sound-and-voices` 5.1-5.5, 6.1: line catalog,
@@ -87,7 +88,7 @@ that unblocks the most.
 
 | Change | Tasks | Queue items |
 | --- | --- | --- |
-| `make-campaign-playable` | 14/17 | 1.1, 2.2, 2.3 |
+| `make-campaign-playable` | 15/18 | 1.1, 2.2, 2.3 |
 | `ambient-sound-and-voices` | 11/20 | 1.3, 2.4 |
 | `add-difficulty-levels` | 17/20 | 2.2, 2.4, 3 |
 | `complete-books-and-bibliography` | 24/27 | 1.2, 2.5 |
@@ -156,13 +157,14 @@ that unblocks the most.
      place the player chose breaks that counter. The spec says the figure
      keeps every officer rule "with no bonus of his own", so changing this
      is a spec change and the owner's call.
-  2. **The commander starts on the enemy's first target** (maps 2 and 3).
-     On `sao-luiz-ramada` and `porto-mendes` the Comando slot of the
-     deployment sits on the column's own objective. The enemy goes for that
-     objective first and reaches it at 5-8 min. With the commander's section
-     on Hold there, the commander falls at 6.0 min (chapter 2, 4 men down)
-     and 8.0 min (chapter 3, 4 men down). With the whole column on Hold, the
-     commander falls at 5.4 min and 8.7 min.
+  2. **The line gives way around the commander** (maps 2 and 3). The
+     enemy comes in by the roads beside the column's deployment zone and
+     reaches it at 5-8 min. With the commander's section on Hold there, the
+     commander falls at 6.0 min (chapter 2, 4 men down) and 8.0 min
+     (chapter 3, 4 men down); with the whole column on Hold, at 5.4 and 8.7
+     min. Correction to the first reading: on map 2 the commander's start
+     is 44 m from the column's objective, and on map 3 about 175 m, so it
+     is not "on" it.
 - Whole column on Hold, with a real Hold order (seed 1922):
   - Prologue: defeat, broken, 9.8 min.
   - 2: defeat, commander, 5.4 min.
@@ -173,13 +175,30 @@ that unblocks the most.
   - 7: defeat on objectives at the 20-minute limit, 1 man lost. Holding
     alone cannot win it.
   - 8: victory.
-- Proposed, not applied:
-  - (a) The figure does not flank on their own. This is a spec change to
-    `historical-commander`, and the campaign determinism goldens move.
-  - (b) On maps 2 and 3, move the Comando deployment slot back from the
-    column's objective.
-
-  Then replay with the same plans.
+- **Applied, on the owner's word ("apply both"):**
+  - (a) The figure does not flank on their own (`make-campaign-playable`
+    4.2). The `historical-commander` spec delta lives in the change.
+    `seekFlank` skips the figure, with a unit test. No determinism golden
+    moves.
+  - (b) **Dropped: it could not work.** Since `author-game-maps` 8.1 the
+    section starts are worked out from the deployment area
+    ([document.ts](../packages/shared/src/maps/document.ts),
+    `sectionStartsFromArea`). The `sections` written in a map file are
+    never read, so moving the Comando slot there changed nothing (the
+    replay matched to the decimal). The edits were reverted. A player's
+    version, sending the commander's section to the zone's corner farthest
+    from the enemy and holding the rest, only buys time: chapter 2 is lost
+    at 7.6 min (commander, 19/21 down), chapter 3 at 9.2 min (commander,
+    12/23 down). There the commander falls because the line gives way, so
+    on maps 2 and 3 the question is the whole fight against a passive
+    defence. An active plan can only be judged in play.
+- Replay with (a) in (seed 1922): the same results as above for every plan
+  that gives orders. An order already stopped the flanking, so (a) only
+  helps a player who leaves the commander without one.
+- Found while accepting the maps: `pnpm maps:accept` passed the reason
+  through a shell, so a reason with spaces kept only its first word, and it
+  drew a preview for campaign maps, which have none. Both fixed, with a
+  test.
 
 ## Notes of 2026-11-15
 

@@ -438,6 +438,9 @@ export function seekFlank(ctx: SimContext): void {
       unit.incapacitated ||
       unit.reserveMode ||
       unit.recon ||
+      // make-campaign-playable 4.2: the figure stays where the player put
+      // him; on a defeat map his walking into the fight lost the battle.
+      unit.figure ||
       unit.state === 'panicked' ||
       unit.suppress ||
       unit.holdPosition ||
