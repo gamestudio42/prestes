@@ -413,17 +413,66 @@ select {
 .cursor-hint {
   position: fixed;
   z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 8px 2px 2px;
+  pointer-events: none;
+  color: var(--px-parchment, #efe2c4);
+  font-family: var(--px-font, monospace);
+  font-size: 12px;
+  line-height: 1;
+  white-space: nowrap;
+  background: rgba(18, 13, 8, 0.92);
+  border: 2px solid var(--cursor-accent, var(--px-gold-dim, #a8873f));
+  border-radius: 0;
+  transform: translate(16px, 16px);
+  box-shadow: var(--px-shadow);
+}
+
+/* hud-icons-and-cursors: the icon on a plate in the action's colour, the name beside it. */
+.cursor-hint-icon {
   display: grid;
   place-items: center;
-  width: 30px;
-  height: 30px;
-  pointer-events: none;
-  color: #f0e6c4;
-  background: rgba(12, 15, 11, 0.88);
-  border: 1px solid #c9b978;
-  border-radius: 0;
-  transform: translate(12px, 12px);
-  box-shadow: var(--px-shadow);
+  width: 36px;
+  height: 36px;
+  color: var(--cursor-accent, var(--px-gold, #e0b85a));
+  background: rgba(239, 226, 196, 0.08);
+}
+
+.cursor-hint.flip {
+  transform: translate(calc(-100% - 12px), 16px);
+}
+
+.cursor-hint.move,
+.cursor-hint.run,
+.cursor-hint.ford {
+  --cursor-accent: #d9c48a;
+}
+
+.cursor-hint.cover {
+  --cursor-accent: #9fb86a;
+}
+
+.cursor-hint.enter {
+  --cursor-accent: #e0b85a;
+}
+
+.cursor-hint.rescue {
+  --cursor-accent: #e8e0cf;
+}
+
+.cursor-hint.attack,
+.cursor-hint.assault {
+  --cursor-accent: #e07a5f;
+}
+
+.cursor-hint.assault-far {
+  --cursor-accent: #8a7350;
+}
+
+.cursor-hint.assault-far .cursor-hint-label {
+  color: var(--px-parchment-dim, #c9b68f);
 }
 
 .slot-count {
@@ -440,12 +489,7 @@ select {
   background: rgba(12, 15, 11, 0.88);
   border: 1px solid #c9b978;
   border-radius: 0;
-  transform: translate(46px, 16px);
-}
-
-.cursor-hint.target {
-  color: #e0b0a2;
-  border-color: #d06a52;
+  transform: translate(16px, 62px);
 }
 
 .order-button.small {

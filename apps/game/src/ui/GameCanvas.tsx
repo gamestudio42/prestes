@@ -6,13 +6,16 @@ import { type CommanderBalloon,
   type TrainingMarker,
   type SlotBadge,
 } from '@prestes/view3d';
-import { coverAgainst, dragSpacing, type PreviewPlan, type ProtectionClass, type SlotMarker, type Vec2 } from '@prestes/shared';
+import { activeMapRuntime, dragSpacing, type PreviewPlan, type ProtectionClass, type SlotMarker, type Vec2 } from '@prestes/shared';
 import { translate, type Locale } from '@prestes/content';
 import type { GameClient } from '../client/GameClient';
 import { loadGraphicsSettings } from '../storage';
 import type { AudioListener } from '../audio/ShotAudio';
+import { cursorHint, type CursorHint, type QuickDecision, type QuickHit } from '../hooks/quickAction';
 
 export type SelectionMode = 'all' | 'troops';
+
+export type { CursorHint };
 
 export interface GameCanvasProps {
   client: GameClient;
@@ -56,13 +59,18 @@ export interface GameCanvasProps {
   onPrimaryGround: (point: Vec2, facing?: Vec2, queue?: boolean) => void;
   onQuickUnit: (unitId: number, queue?: boolean) => void;
   onQuickGround: (point: Vec2, facing?: Vec2, queue?: boolean) => void;
+  /** hud-icons-and-cursors: a right-click on a building (enter or assault); false falls back to a move. */
+  onQuickBuilding?: (buildingId: number, point: Vec2, queue?: boolean) => boolean;
+  /** hud-icons-and-cursors: what a right-click would do on a hit, for the cursor. */
+  quickAction?: (hit: QuickHit) => QuickDecision | null;
   onPrimaryLine: (from: Vec2, to: Vec2) => void;
   onQuickLine: (from: Vec2, to: Vec2) => void;
   onPreviewLine: (line: { from: Vec2; to: Vec2 } | null) => void;
   onPreviewFacing: (drag: { from: Vec2; to: Vec2 } | null) => void;
   onPreviewGround: (point: Vec2 | null) => void;
   onPreviewUnit: (unitId: number | null) => void;
-  onHover: (hint: 'cover' | 'target' | 'rescue' | null, x: number, y: number) => void;
+  /** The right-click action under the pointer (or the armed order's target), shown beside it. */
+  onHover: (hint: CursorHint | null, x: number, y: number) => void;
 }
 
 interface DragState {
@@ -111,6 +119,8 @@ export function GameCanvas({
   onPrimaryGround,
   onQuickUnit,
   onQuickGround,
+  onQuickBuilding,
+  quickAction,
   onPrimaryLine,
   onQuickLine,
   onSceneReady,
@@ -334,6 +344,10 @@ export function GameCanvas({
     onPreviewUnit(null);
   };
 
+  /** hud-icons-and-cursors: the building under the pointer on the battle map, if any. */
+  const pickBuildingAt = (scene: SceneView, x: number, y: number): { id: number; point: Vec2 } | null =>
+    scene.pickBuilding(x, y, activeMapRuntime()?.map.buildings ?? []);
+
   // With an order armed, an able soldier of our own under the cursor is not a
   // pick: the click goes to the ground (cover he stands in, for example).
   // Wounded friendlies stay pickable for Rescue.
@@ -397,17 +411,17 @@ export function GameCanvas({
 
     const frame = client.currentFrame();
     const unitId = orderPick(scene, x, y);
+    const hint = cursorHint;
     if (unitId !== null && frame) {
       const unit = frame.units.find((entry) => entry.id === unitId);
-      if (unit && unit.alive && unit.faction !== 'column') {
-        onPreviewUnit(unitId);
-        onHover('target', event.clientX, event.clientY);
-        return;
-      }
-      // A wounded comrade: right-click starts the casualty drill.
-      if (unit && unit.alive && unit.incapacitated && unit.faction === 'column') {
-        onPreviewUnit(null);
-        onHover('rescue', event.clientX, event.clientY);
+      if (unit && unit.alive) {
+        const enemy = unit.faction !== 'column';
+        onPreviewUnit(enemy ? unitId : null);
+        // An armed order takes its target; otherwise the right-click's action shows.
+        const shown = pendingAction || aimPending
+          ? enemy ? 'attack' : unit.incapacitated ? 'rescue' : null
+          : hint(quickAction?.({ kind: 'unit', faction: unit.faction, incapacitated: unit.incapacitated, garrison: unit.garrison }));
+        onHover(shown, event.clientX, event.clientY);
         return;
       }
       onPreviewUnit(null);
@@ -417,23 +431,17 @@ export function GameCanvas({
     onPreviewUnit(null);
     const point = scene.screenToGround(x, y);
     onPreviewGround(point);
-    if (!point || !frame) {
-      onPreviewUnit(null);
+    if (!frame || pendingAction || aimPending) {
       onHover(null, event.clientX, event.clientY);
       return;
     }
-    const enemy = frame.units.find(
-      (unit) => unit.alive && !unit.routed && unit.faction === 'legalist',
-    );
-    if (
-      enemy &&
-      coverAgainst(point.x, point.y, enemy.x, enemy.y, 'prone', frame.covers) >= 0.2
-    ) {
-      onHover('cover', event.clientX, event.clientY);
-    } else {
-      onPreviewUnit(null);
-      onHover(null, event.clientX, event.clientY);
-    }
+    const building = pickBuildingAt(scene, x, y);
+    const hit: QuickHit | null = building
+      ? { kind: 'building', buildingId: building.id, point: point ?? building.point }
+      : point
+        ? { kind: 'ground', point }
+        : null;
+    onHover(hit ? hint(quickAction?.(hit)) : null, event.clientX, event.clientY);
   };
 
   const handlePointerUp = (event: PointerEvent<HTMLDivElement>): void => {
@@ -455,7 +463,11 @@ export function GameCanvas({
           onQuickGround(from, dragFacing(from, to));
         }
       } else if (to) {
-        onQuickGround(to, undefined, activeRightDrag.shift);
+        // The same building pick as the cursor's: what it showed is what is sent.
+        const building = pickBuildingAt(scene, activeRightDrag.x, activeRightDrag.y);
+        if (!building || !onQuickBuilding?.(building.id, to, activeRightDrag.shift)) {
+          onQuickGround(to, undefined, activeRightDrag.shift);
+        }
       }
       onPreviewLine(null);
       clearFacing();

@@ -44,7 +44,7 @@ const ProneIcon = ICONS['stance-prone'];
 const HoldFireIcon = ICONS['hold-fire'];
 const ContactIcon = ICONS['fire-contact'];
 const EconomyIcon = ICONS['fire-economy'];
-const FreeFireIcon = Crosshair;
+const FreeFireIcon = ICONS['fire-free'];
 
 const FIRE_CONTROLS: ReadonlyArray<{
   mode: FireControl;
