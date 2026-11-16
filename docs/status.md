@@ -28,10 +28,11 @@ that unblocks the most.
 
 ### 1. Claude, nothing to wait for
 
-1. **Campaign gates** (`make-campaign-playable` 6.1, 6.2): a green
-   `pnpm verify`, then a muted playthrough of the eight chapters from the
-   book, with each chapter's result and how it was decided recorded here. A
-   chapter that cannot be won goes to the owner (a map edit by hand, not code).
+1. **Campaign gates** (`make-campaign-playable` 6.2; 6.1 done
+   2026-11-16): every chapter starts from the book and reaches its
+   debrief, but scripted plans lose six of the eight chapters (see the
+   notes of 2026-11-16). Next: find why the commander falls so early on
+   chapters 2-7 and decide, with the owner, whether the maps change.
 2. **Books gate** (`complete-books-and-bibliography` 7.1): `pnpm check`,
    `pnpm verify` and strict validate.
 3. **Voices code** (`ambient-sound-and-voices` 5.1-5.5, 6.1: line catalog,
@@ -86,11 +87,59 @@ that unblocks the most.
 
 | Change | Tasks | Queue items |
 | --- | --- | --- |
-| `make-campaign-playable` | 13/17 | 1.1, 2.2, 2.3 |
+| `make-campaign-playable` | 14/17 | 1.1, 2.2, 2.3 |
 | `ambient-sound-and-voices` | 11/20 | 1.3, 2.4 |
 | `add-difficulty-levels` | 17/20 | 2.2, 2.4, 3 |
 | `complete-books-and-bibliography` | 24/27 | 1.2, 2.5 |
 | `add-field-manual` | 0/11 | 4 |
+
+## Notes of 2026-11-16: campaign gates
+
+- **6.1 done.** `pnpm verify` passed every step: check, published content,
+  build, bundle (index JS 914,162 B of 940,000, 97.3%), determinism,
+  difficulty, tick budget, OpenSpec, e2e (166 passed, 9 skipped, 15.2 min).
+  `openspec validate make-campaign-playable --type change --strict` passes.
+- **6.2, the book flow: all eight chapters pass.** In the preview, muted,
+  each chapter was started from its briefing's play button. Each opened on
+  its own map in deployment with its map's forces, and reached its debrief
+  with the chapter line. "Next chapter" appeared on 1-7. On 8 it was the
+  closing line instead. The battles were ended with the test bridge, so
+  this checks the flow, not who wins.
+- **6.2, who wins: not settled.** Each chapter was played headless, seed
+  1922, as the book starts it, with three scripted plans:
+  - hold: the column stays where it deployed;
+  - advance: each section marches on an objective the column does not
+    hold, the most valuable first;
+  - commander back: like advance, but the commander's section stays where
+    it deployed.
+
+  A script is not a player, so a loss here does not mean the chapter
+  cannot be won. Results (outcome, how it was decided, column losses):
+
+  | Chapter | Map | Commander's fall | Hold | Advance | Commander back |
+  | --- | --- | --- | --- | --- | --- |
+  | Prologue | `copacabana` | continue | defeat, annihilation, 17/18 | defeat, broken, 14/18 | defeat, annihilation, 17/18 |
+  | 2 | `sao-luiz-ramada` | defeat | defeat, commander, 19/21 | defeat, broken, 20/21 | defeat, commander, 3/21 (4.8 min) |
+  | 3 | `porto-mendes` | defeat | defeat, commander, 16/23 | defeat, commander, 14/23 | defeat, commander, 5/23 (7.8 min) |
+  | 4 | `catanduvas` | continue | defeat, annihilation, 23/23 | **victory**, all objectives, 2/23 | **victory**, all objectives, 2/23 |
+  | 5 | `ponte-de-verdinho` | defeat | defeat, commander, 12/20 | defeat, commander, 15/20 | defeat, annihilation, 19/20 |
+  | 6 | `serra-nova` | defeat | defeat, commander, 3/21 | defeat, commander, 11/21 | defeat, broken, 17/21 |
+  | 7 | `pantanal` | defeat | defeat, commander, 13/18 | defeat, commander, 11/18 | defeat, objectives, 14/18 (20 min) |
+  | 8 | `la-gaiba` | continue | **victory**, all objectives, 0/13 | **victory** | **victory** |
+
+- What it points to, for the owner's play (2.3):
+  - On the five maps where the commander's fall loses the battle (2, 3, 5,
+    6, 7), the commander falls early even when kept back: chapter 2 is
+    lost at 4.8 min with 3 men down, chapter 3 at 7.8 min with 5. This is
+    the most likely blocker. It is not yet known whether the commander
+    stands within enemy reach at deployment, or the enemy's fire seeks the
+    commander out.
+  - The prologue (18 men, reinforcements against them at 5 and 10 min) was
+    a defeat in history. The campaign asks for a victory to open chapter
+    2.
+  - Chapter 8 has no enemy (`noEnemy`). It is the epilogue: four story
+    cards while the column holds its objective for two minutes. That is by
+    design.
 
 ## Notes of 2026-11-15
 

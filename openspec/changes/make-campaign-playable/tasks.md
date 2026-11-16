@@ -68,7 +68,7 @@
 
 ## 6. Gates
 
-- [ ] 6.1 Run `pnpm verify` (check including `check:content --published`, build, budgets, determinism, OpenSpec, e2e) and `openspec validate make-campaign-playable --type change --strict`.
+- [x] 6.1 Run `pnpm verify` (check including `check:content --published`, build, budgets, determinism, OpenSpec, e2e) and `openspec validate make-campaign-playable --type change --strict`.
   - Verify: all pass, and the result and the index JS size are noted in `docs/status.md`.
 - [ ] 6.2 A muted playthrough of every chapter in order in the preview pane, from the book, with the debrief after each.
   - Record each chapter's result and how it was decided in `docs/status.md`.
