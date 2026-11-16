@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { translate, type Locale, type MessageKey } from '@prestes/content';
 import { loadGraphicsSettings, saveGraphicsSettings } from '../../storage';
+import { audioSettings, useAudioSettings } from '../../audio/settings-store';
 import { AudioChannels } from '../AudioChannels';
-import { Languages, PostEffect, SoundOff, SoundOn } from '../icons';
+import { Check, Close, Languages, PostEffect, SoundOff, SoundOn } from '../icons';
 import { DESK_ART, deskArtData, deskArtStyle } from './deskArt';
 
 export interface OptionsCompassProps {
@@ -29,6 +30,8 @@ export function OptionsCompass({
   const t = (key: MessageKey, values?: Readonly<Record<string, string | number>>) =>
     translate(locale, key, values);
   // refine-map-editor D4: smooth edges, applied when the next battle view is made.
+  // ambient-sound-and-voices D11: the soldiers' swearing, kept for the voice director.
+  const { curses } = useAudioSettings();
   const [smoothEdges, setSmoothEdges] = useState(() => loadGraphicsSettings().smoothEdges);
   const toggleSmoothEdges = (): void => {
     const next = !smoothEdges;
@@ -78,6 +81,22 @@ export function OptionsCompass({
         </button>
         {/* ambient-sound-and-voices 2.1: the three channel volumes. */}
         <AudioChannels t={t} className="desk-audio-channels" rowClassName="desk-options-row desk-audio-row" />
+        <button
+          type="button"
+          className="desk-options-row"
+          onClick={() => audioSettings.setCurses(!curses)}
+          aria-pressed={curses}
+          aria-describedby="curses-note"
+          data-testid="audio-curses"
+        >
+          <span className="desk-options-icon">
+            {curses ? <Check aria-hidden="true" size={18} /> : <Close aria-hidden="true" size={18} />}
+          </span>
+          <span>{curses ? t('options.curses.on') : t('options.curses.off')}</span>
+        </button>
+        <p id="curses-note" className="desk-options-note">
+          {t('options.curses.note')}
+        </p>
         <button
           type="button"
           className="desk-options-row"

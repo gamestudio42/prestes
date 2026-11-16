@@ -10,6 +10,12 @@ export default defineConfig({
     baseURL: 'http://127.0.0.1:4317',
     headless: true,
     viewport: { width: 1440, height: 900 },
+    // ambient-sound-and-voices D11: the content warning was already answered,
+    // so every spec opens on the desk; content-warning.spec.ts clears this.
+    storageState: {
+      cookies: [],
+      origins: [{ origin: 'http://127.0.0.1:4317', localStorage: [{ name: 'prestes.contentWarning.v1', value: '{"version":1}' }] }],
+    },
     // Render on the GPU (ANGLE over Direct3D 11): headless Chromium otherwise
     // draws the skinned soldiers in software, on the CPU. Without a usable GPU
     // Chromium falls back to software by itself.

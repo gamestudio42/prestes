@@ -68,9 +68,12 @@ and a line that leans on a period expression notes its source. No line is
 taken from a book. The owner's recordings are original work; every ambient
 recording that is not his is CC0 or public domain, or synthesized, and is
 registered in `docs/assets.md` with its source and licence before it
-ships. The wounded and the dying are voiced with restraint. Curses stay at
-the strength of the period ("com mil diabos", "filho da mãe", "cambada");
-no modern obscenity and no slur, even one the period used (the police
+ships. The wounded and the dying are voiced with restraint. Curses were
+first kept at the strength of the period ("com mil diabos", "filho da
+mãe"); on 2026-11-15 the owner asked for heavier, regional ones tied to
+the speaker's side ("filho da puta", "filho de uma rapariga", "corno"),
+with a content warning on the first opening and a setting to turn curses
+off (design D11). Still no slur, even one the period used (the police
 nickname "macacos" is left out because it reads as a racial slur today).
 A curse that names a side ("chimangos", "revoltosos") is a period
 expression and records its source like any other. The enemy's speech

@@ -5,6 +5,33 @@ const AUDIO_STORAGE_KEY = 'prestes.audio.v1';
 const ROUTES_STORAGE_KEY = 'prestes.routes.v1';
 const GRAMOPHONE_STORAGE_KEY = 'prestes.gramophone.v1';
 const GRAPHICS_STORAGE_KEY = 'prestes.graphics.v1';
+const CONTENT_WARNING_STORAGE_KEY = 'prestes.contentWarning.v1';
+
+/**
+ * ambient-sound-and-voices D11: the content warning is shown on the first
+ * opening, and again only when its text changes in substance (raise this
+ * number then). Storage that cannot be read shows it every time.
+ */
+export const CONTENT_WARNING_VERSION = 1;
+
+export function contentWarningAcknowledged(): boolean {
+  try {
+    const raw = window.localStorage.getItem(CONTENT_WARNING_STORAGE_KEY);
+    if (!raw) return false;
+    const parsed = JSON.parse(raw) as { version?: unknown };
+    return typeof parsed.version === 'number' && parsed.version >= CONTENT_WARNING_VERSION;
+  } catch {
+    return false;
+  }
+}
+
+export function saveContentWarningAcknowledged(): void {
+  try {
+    window.localStorage.setItem(CONTENT_WARNING_STORAGE_KEY, JSON.stringify({ version: CONTENT_WARNING_VERSION }));
+  } catch {
+    // Storage can be unavailable; the warning shows again next time.
+  }
+}
 
 /** refine-map-editor D4: graphics options; smooth edges (MSAA) default on. */
 export interface GraphicsSettings {
@@ -61,9 +88,14 @@ export interface AudioSettings {
   effects: number;
   ambience: number;
   voices: number;
+  /**
+   * ambient-sound-and-voices D11: whether soldiers swear under fire (the
+   * curse lines). Kept for the voice director, which skips curses when off.
+   */
+  curses: boolean;
 }
 
-export const AUDIO_DEFAULTS: AudioSettings = { muted: false, effects: 1, ambience: 0.8, voices: 1 };
+export const AUDIO_DEFAULTS: AudioSettings = { muted: false, effects: 1, ambience: 0.8, voices: 1, curses: true };
 /** The one volume stored before the channels; it was the shots' gain, 0.35 by default. */
 const OLD_SHOT_VOLUME = 0.35;
 
@@ -79,6 +111,7 @@ export function parseAudioSettings(stored: unknown): AudioSettings {
     effects: unit(value.effects) ?? (old === null ? AUDIO_DEFAULTS.effects : Math.min(1, old / OLD_SHOT_VOLUME)),
     ambience: unit(value.ambience) ?? AUDIO_DEFAULTS.ambience,
     voices: unit(value.voices) ?? AUDIO_DEFAULTS.voices,
+    curses: value.curses !== false,
   };
 }
 

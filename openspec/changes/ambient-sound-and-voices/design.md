@@ -123,6 +123,21 @@ file. Firefox and Safari were not measured (only Chromium is installed for
 the tests); a browser that ignores the header would loop with a short gap,
 which the hand check (6.3) would hear.
 
+Decided 2026-11-15, by the owner after listening tests: the voice lines are
+generated from his own recording instead of recorded take by take.
+`tools/voice-ai/generate.py` runs Chatterbox Multilingual (MIT, local GPU)
+with a reference cut from `audio-src/voice-ref/clovis-comandante.wav` (his
+shouted commands; gitignored). `soldado` is that voice one semitone up and
+`inimigo` one and a half down. Per line: high emotion by the script's tone,
+the text sent without commas (a comma became a pause), four candidates, the
+one nearest the expected length with no gap kept; then 12% faster (ffmpeg
+`atempo`), a light band (150-5500 Hz, soft saturation) and hiss at -36 dB
+that follows the voice and fades after it. It writes WAV into
+`audio-src/voice/`, the input of `prepare:audio`, and never overwrites a file
+already there, so a take the owner records himself always wins. A synthetic
+reference voice was tried first and had no emotion; the emotion comes from
+the recording.
+
 **D9. Loading.** Audio is fetched after the battle starts, in priority
 order: order lines and answers for the board, then the map's water and
 beds, then footsteps, then call-outs. Each sound plays when decoded.
@@ -131,6 +146,27 @@ beds, then footsteps, then call-outs. Each sound plays when decoded.
 record are synthesized where that reads well (wind, running water as
 filtered noise), or taken from CC0 or public-domain field recordings,
 registered before they ship. Each source is the owner's choice at task 3.1.
+
+**D11. Content warning and the curses setting.** Decided 2026-11-15, when
+the owner asked for heavier, regional curses by side. The start screen
+opens under a parchment sheet (`ContentWarning.tsx`, styled like the
+options screen) that says the game is a real war and that the soldiers
+swear with strong period language, with three examples, and that these
+lines portray the time and place, not the authors' views. Two ways on:
+"Continue" and "Continue without swearing", which turns curses off.
+It shows on the first opening only, not every time: a warning repeated on
+every launch is soon clicked through unread, and the choice it offers stays
+in the options. The answer is kept as `prestes.contentWarning.v1 =
+{ version }` and the warning shows again only when `CONTENT_WARNING_VERSION`
+is raised, which is done when its text changes in substance (a new kind of
+content, not a reworded sentence). Storage that cannot be read shows it once
+per session. The curses setting is `curses` in `prestes.audio.v1` (default
+on; an older stored setting reads as on), with a toggle in the options
+compass under the channel volumes. The voice director (5.3) does not exist
+yet: until it does, the setting is only stored, and the director reads it
+and drops every curse line, of both sides, when it is off. The e2e config
+seeds an answered warning so that every other spec opens on the desk;
+`content-warning.spec.ts` starts without it.
 
 ## Risks / Trade-offs
 

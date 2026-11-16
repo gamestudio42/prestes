@@ -11,6 +11,7 @@
 ## 2. Settings
 
 - [x] 2.1 Three channel volumes and the mute in the HUD overflow and the options compass, stored with migration from `prestes.audio.v1`; labels in EN and PT-BR; verify with unit tests of the migration and an e2e of "voices without ambience"
+- [x] 2.2 The content warning on the first opening (EN and PT-BR) with "continue without swearing", and the curses setting in the options compass, stored in `prestes.audio.v1` (design D11); verify with unit tests of the stored answer and the setting, and `tests/e2e/content-warning.spec.ts`
 
 ## 3. Ambience and water
 
@@ -27,7 +28,7 @@
 
 - [ ] 5.1 `VOICE_LINES` in `packages/content`: the commander's line and the section's answer for every order of the board (three takes each), the eight call-outs, the curses, and the enemy's call-outs, curses and wordless shouts (draft text in `docs/audio/ROTEIRO_RASCUNHO.md`; side-specific curses only with a sourced page); Portuguese text reviewed by the owner; captions in EN and PT-BR; decide from the snapshot how "out of ammunition", "reloading" and "gun set" are detected; verify with `pnpm check:content` (every order has both lines) and `pnpm check:locales`
 - [ ] 5.2 `tools/voice-script.ts` writes `docs/audio/VOICE_SCRIPT.md` and the file manifest; the audio check lists lines without a recording and files without a line, and enforces the size budget and the asset register; verify with unit tests on fixtures (missing, orphan, over budget, unregistered)
-- [ ] 5.3 The voice director: priority, no-repeat, quiet time, rapid-order replacement, no acknowledgement for a refused order; verify with unit tests, one per scenario of the order and call-out requirements
+- [ ] 5.3 The voice director: priority, no-repeat, quiet time, rapid-order replacement, no acknowledgement for a refused order, no curse when the curses setting is off (D11); verify with unit tests, one per scenario of the order and call-out requirements
 - [ ] 5.4 Order lines and answers play unattenuated with ducking; call-outs positioned at the speaker; curses only under fire, by chance, with their quiet time and cap; enemy lines and shouts only when seen; verify with unit tests of the gains and an e2e with placeholder beeps standing in for recordings
 - [ ] 5.5 Captions with their setting and defaults by language; verify with an e2e in EN (shown) and PT-BR (hidden, then turned on)
 - [ ] 5.6 The owner records the lines from the script; the tool prepares them; `docs/assets.md` lists them; verify: the audio check reports full coverage of the order lines and answers, or lists what is still to record

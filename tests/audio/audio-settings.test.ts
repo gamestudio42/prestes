@@ -18,7 +18,7 @@ class MemoryStorage {
 
 describe('parseAudioSettings', () => {
   it('reads an older muted setting as muted, effects at full, the rest at defaults', () => {
-    expect(parseAudioSettings({ muted: true, volume: 0.35 })).toEqual({ muted: true, effects: 1, ambience: AUDIO_DEFAULTS.ambience, voices: AUDIO_DEFAULTS.voices });
+    expect(parseAudioSettings({ muted: true, volume: 0.35 })).toEqual({ muted: true, effects: 1, ambience: AUDIO_DEFAULTS.ambience, voices: AUDIO_DEFAULTS.voices, curses: true });
   });
 
   it('reads an older volume as the effects volume', () => {
@@ -28,7 +28,13 @@ describe('parseAudioSettings', () => {
   });
 
   it('reads the three channels when they are stored, ignoring the old volume', () => {
-    expect(parseAudioSettings({ muted: false, volume: 0.35, effects: 0.2, ambience: 0, voices: 0.9 })).toEqual({ muted: false, effects: 0.2, ambience: 0, voices: 0.9 });
+    expect(parseAudioSettings({ muted: false, volume: 0.35, effects: 0.2, ambience: 0, voices: 0.9 })).toEqual({ muted: false, effects: 0.2, ambience: 0, voices: 0.9, curses: true });
+  });
+
+  it('keeps the curses on unless they were turned off (D11)', () => {
+    expect(parseAudioSettings({ muted: true, volume: 0.35 }).curses).toBe(true);
+    expect(parseAudioSettings({ curses: 'no' }).curses).toBe(true);
+    expect(parseAudioSettings({ curses: false }).curses).toBe(false);
   });
 
   it('falls back to the defaults for nothing or nonsense, and clamps', () => {
@@ -65,6 +71,13 @@ describe('the settings store', () => {
     audioSettings.reset();
     expect(audioSettings.get()).toEqual({ ...AUDIO_DEFAULTS, ambience: 0, muted: true });
     expect(JSON.parse(storage.getItem('prestes.audio.v1')!)).toEqual({ ...AUDIO_DEFAULTS, ambience: 0, muted: true });
+  });
+
+  it('saves the curses choice beside the volumes (D11)', () => {
+    audioSettings.setChannel('voices', 0.5);
+    audioSettings.setCurses(false);
+    audioSettings.reset();
+    expect(audioSettings.get()).toEqual({ ...AUDIO_DEFAULTS, voices: 0.5, curses: false });
   });
 });
 

@@ -33,6 +33,10 @@ export const audioSettings = {
   setChannel(bus: Bus, volume: number): void {
     set({ ...settings(), [bus]: Math.max(0, Math.min(1, volume)) });
   },
+  /** ambient-sound-and-voices D11: soldiers' curses on or off. */
+  setCurses(on: boolean): void {
+    set({ ...settings(), curses: on });
+  },
   /** Tests: forget the cached settings so the next read is from storage. */
   reset(): void {
     current = null;

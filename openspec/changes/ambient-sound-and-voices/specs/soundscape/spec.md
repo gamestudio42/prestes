@@ -151,9 +151,10 @@ is: only while his section is firing or under fire, by chance, and not
 again for that section within a quiet time (at least 20 s), with a cap on
 curses heard at once across the field. A curse SHALL follow the nearness
 rule and SHALL give way to an order line and to any other call-out. Curses
-SHALL keep to the strength of the period, with no modern obscenity and no
-slur, and a curse that names a side SHALL be spoken only by the side that
-used it.
+MAY be strong (obscenities and regional insults of the period, by the
+speaker's side) but SHALL NOT be a slur, and a curse that names a side
+SHALL be spoken only by the side that used it. When the player has turned
+curses off, no curse SHALL play, from either side.
 
 #### Scenario: Sporadic, not constant
 - **WHEN** a section fires for a full minute near the listening point
@@ -166,6 +167,34 @@ used it.
 #### Scenario: A side's word
 - **WHEN** a curse names the government's men as "chimangos"
 - **THEN** only a soldier of the column speaks it
+
+#### Scenario: Curses turned off
+- **WHEN** the player has turned curses off and a section fires for a full minute near the listening point
+- **THEN** no curse is heard, and the call-outs still play
+
+### Requirement: Content warning
+
+On the first opening, before the start screen can be used, the game SHALL
+show a content warning, in the player's language from the PT-BR and EN
+catalogs: the game is about a real war, with combat, the wounded and the
+dead, and the soldiers swear under fire with strong language of the period
+(with examples). The warning SHALL offer to continue as is or to continue
+without curses, which turns the curses setting off. The answer SHALL
+persist locally and the warning SHALL NOT show again until its text
+changes in substance. The curses setting SHALL also be in the options,
+beside the channel volumes, on by default.
+
+#### Scenario: First opening
+- **WHEN** a player opens the game for the first time
+- **THEN** the content warning shows over the start screen, in their language
+
+#### Scenario: Already answered
+- **WHEN** a player who answered the warning opens the game again
+- **THEN** the start screen opens without the warning
+
+#### Scenario: Continue without curses
+- **WHEN** the player chooses to continue without curses
+- **THEN** the curses setting is off, in the options too, and survives a reload
 
 ### Requirement: The enemy is heard when seen
 

@@ -3,13 +3,19 @@ import { loadSkirmishMaps, type BattleMap } from '@prestes/shared';
 import type { Locale } from '@prestes/content';
 import type { CampaignProgress } from '../../campaign/progress';
 import { useGramophone } from '../../hooks/useGramophone';
+import { audioSettings } from '../../audio/settings-store';
+import { contentWarningAcknowledged, saveContentWarningAcknowledged } from '../../storage';
 import campTable from '../../assets/menu/camp-table.png';
+import { ContentWarning } from './ContentWarning';
 import { MenuDesk } from './MenuDesk';
 // The setup screen opens on demand: its own chunk keeps the start screen's bundle within budget.
 const SkirmishSetup = lazy(() =>
   import('./SkirmishSetup').then((module) => ({ default: module.SkirmishSetup })),
 );
 import { withMap, type SkirmishSetup as Setup } from './setupState';
+
+/** D11: once answered, the warning stays closed this session even when storage is unavailable. */
+let warningAnsweredThisSession = false;
 
 /** The camp table's art size (tools/menu/camp_pieces.py); CSS covers the view with it. */
 const CAMP_TABLE = { width: 887, height: 442 } as const;
@@ -48,6 +54,14 @@ export function StartScreenDesk({
   onToggleAudio,
 }: StartScreenDeskProps) {
   const [setupOpen, setSetupOpen] = useState(false);
+  // ambient-sound-and-voices D11: the content warning before the desk can be used.
+  const [warningOpen, setWarningOpen] = useState(() => !warningAnsweredThisSession && !contentWarningAcknowledged());
+  const answerWarning = (curses: boolean): void => {
+    if (!curses) audioSettings.setCurses(false);
+    saveContentWarningAcknowledged();
+    warningAnsweredThisSession = true;
+    setWarningOpen(false);
+  };
   const gramophone = useGramophone({ muted: audioMuted, onEnableSound: onToggleAudio });
   // author-game-maps 5.2: the authored skirmish maps; the test map only on the dev server.
   const [maps, setMaps] = useState<readonly BattleMap[]>([]);
@@ -112,6 +126,7 @@ export function StartScreenDesk({
           />
         </Suspense>
       ) : null}
+      {warningOpen ? <ContentWarning locale={locale} onContinue={answerWarning} /> : null}
     </main>
   );
 }

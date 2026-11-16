@@ -1,0 +1,42 @@
+/*
+ * ambient-sound-and-voices D11: the content warning on the first opening. A
+ * parchment sheet like the options screen, over a dark scrim that keeps the
+ * camp table out of reach until the player goes on.
+ */
+.content-warning {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  overflow-y: auto;
+  background: rgba(12, 8, 4, 0.82);
+}
+
+.content-warning-sheet {
+  width: min(600px, 100%);
+  padding: 32px 40px 18px;
+  border: 2px solid var(--book-ink);
+  background: var(--book-paper);
+  box-shadow: 6px 6px 0 rgba(8, 5, 2, 0.75);
+  clip-path: var(--px-corner);
+  color: var(--book-ink);
+}
+
+.content-warning-choice {
+  margin-top: 6px;
+  color: var(--book-ink-soft);
+}
+
+.content-warning-actions {
+  margin: 14px 0 6px;
+  padding-top: 8px;
+  border-top: 2px dashed var(--book-edge);
+}
+
+@media (max-width: 640px) {
+  .content-warning-sheet {
+    padding: 24px 20px 12px;
+  }
+}
