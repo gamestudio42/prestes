@@ -82,34 +82,97 @@ Arquivo: `soldado/<id>-1..3`.
 
 **24 tomadas.**
 
-## 3. Xingamentos dos nossos no tiroteio (1 tomada cada)
+## 3. Xingamentos por facção (1 tomada cada)
 
-Esporádicos, só em combate, resmungados entre um tiro e outro.
-Arquivo: `soldado/curse-<nº>-1`.
+Esporádicos, só em combate, entre um tiro e outro. O xingamento é da
+**facção** de quem fala (`Faction` do jogo: `column`, `legalist`,
+`cangaceiro`), não do lado do jogador: um legalista xinga como legalista
+seja ele o nosso ou o inimigo. Arquivo: `xingamento/<facção>/<nº>-<n>`.
+Voz: Coluna na voz do soldado, legalistas na do inimigo, cangaceiros numa
+terceira (entre as duas). Linguagem pesada: o jogo avisa na abertura.
 
-| nº | Tom | Texto | Lado / fonte |
+Fonte: "geral" é palavrão comum no português do Brasil; "regional" é fala
+da região de quem a facção recrutava (sem termo de época, sem página);
+"a confirmar" é um sentido regional que ainda não foi conferido em
+dicionário; "falta a página" é termo de época que precisa de fonte. Os dois
+últimos não são gerados. Insultos de raça ou de orientação sexual ficam
+fora por decisão de projeto.
+
+### 3a. Coluna (`column`) — gaúchos e paulistas
+
+| nº | Tom | Texto | Fonte |
 |---|---|---|---|
-| 01 | raiva, dentes cerrados | "Com mil diabos!" | qualquer |
-| 02 | irritado | "Diacho!" | qualquer |
-| 03 | explosivo | "Raios os partam!" | qualquer |
-| 04 | cansado | "Arre, que não acaba!" | qualquer |
-| 05 | assustado | "Valha-me Deus!" | qualquer |
-| 06 | espantado | "Cruz-credo, essa passou raspando!" | qualquer |
-| 07 | frustrado | "Peste! Errei o desgraçado." | qualquer |
-| 08 | ofegante | "Esse sol do diabo…" | qualquer |
-| 09 | desdém | "Cambada!" | qualquer |
-| 10 | raiva | "Corja de cachorros!" | qualquer |
-| 11 | provocando, alto | "Vem, cabra safado!" | qualquer |
-| 12 | escárnio | "Atira direito, sem-vergonha!" | qualquer |
-| 13 | ódio | "Canalhas!" | qualquer |
-| 14 | ao mirar | "Toma, filho da mãe!" | qualquer |
-| 15 | ameaça baixa | "Espera que tu vai ver, desgraçado." | qualquer |
-| 16 | desprezo | "Chimangos!" · "Lá vêm os chimangos!" | Coluna — macaulay-1974 p. 48 |
-| 17 | zombando | "Corre, provisório!" | Coluna — macaulay-1974 pp. 48, 55 |
-| 18 | desprezo | "Revoltosos de uma figa!" | Legalistas — falta a página |
-| 19 | raiva | "Bandidos!" | Legalistas — falta a página |
+| 01 | raiva | "Filho da puta!" | geral |
+| 02 | explosivo | "Vai pra puta que te pariu!" | geral |
+| 03 | raiva, dentes cerrados | "Filho duma égua!" | geral |
+| 04 | desprezo | "Corno manso!" | geral |
+| 05 | ao mirar | "Toma, chifrudo!" | geral |
+| 06 | escárnio, alto | "Corre, cagão!" | geral |
+| 07 | raiva | "Cachorro do governo!" | geral |
+| 08 | desprezo | "Pau-mandado de coronel!" | geral |
+| 09 | frustrado | "Porra, errei o desgraçado!" | geral |
+| 10 | frustrado | "Merda de espingarda!" | geral |
+| 11 | espantado | "Barbaridade, que tiroteio!" | regional (gaúcho) |
+| 12 | irritado | "Bah, mas que porcaria!" | regional (gaúcho) |
+| 13 | provocando, alto | "Vem, castelhano de merda!" | a confirmar (gaúcho: "castelhano" como ofensa a quem vem de fora) |
+| 14 | raiva | "Vai pros quinto dos inferno, desgraçado!" | regional (caipira paulista) |
+| 15 | raiva | "Mardito seja!" | regional (caipira paulista) |
+| 16 | desprezo | "Chimangos!" · "Lá vêm os chimangos!" | macaulay-1974 p. 48 |
+| 17 | zombando | "Corre, provisório!" | macaulay-1974 pp. 48, 55 |
+| 18 | explosivo | "Raios e coriscos!" | geral |
+| 19 | ódio | "Canalhas!" | geral |
+| 20 | desprezo | "Lá vêm os pica-paus!" | apelido dos legalistas — falta a página |
+| 21 | escárnio | "Corre, peludo!" | apelido dos recrutas — falta a página |
 
-**20 tomadas** (16 tem duas).
+**22 tomadas** (16 tem duas); 13, 20 e 21 esperam conferência.
+
+### 3b. Legalistas (`legalist`) — Exército, Força Pública, provisórios
+
+| nº | Tom | Texto | Fonte |
+|---|---|---|---|
+| 01 | raiva | "Filho da puta!" | geral |
+| 02 | ódio | "Bando de filhos da puta!" | geral |
+| 03 | ao mirar | "Toma, corno!" | geral |
+| 04 | explosivo | "Puta que pariu, de onde vem esse tiro?" | geral |
+| 05 | desprezo | "Vagabundos!" | geral |
+| 06 | provocando, alto | "Rende, cachorro!" | geral |
+| 07 | ameaça | "Hoje tu morre, desgraçado!" | geral |
+| 08 | desprezo | "Bando de ladrão de cavalo!" | geral |
+| 09 | escárnio | "Foge não, covarde!" | geral |
+| 10 | raiva | "Cabra safado!" | geral |
+| 11 | ameaça | "Daqui vocês não saem!" | geral |
+| 12 | escárnio, alto | "Cadê o tal do Prestes?" | contra a Coluna |
+| 13 | frustrado | "Merda, não acaba essa gente!" | geral |
+| 14 | raiva, dentes cerrados | "Filho duma égua!" | regional (provisórios gaúchos) |
+| 15 | espantado | "Bah, de onde saiu essa gente?" | regional (provisórios gaúchos) |
+| 16 | desprezo | "Revoltosos de merda!" | falta a página |
+| 17 | raiva | "Bandidos!" | falta a página |
+| 18 | desprezo | "Maragatos de uma figa!" | provisórios gaúchos — falta a página |
+
+**18 tomadas**; 16 a 18 esperam fonte.
+
+### 3c. Cangaceiros (`cangaceiro`) — jagunços dos batalhões patrióticos
+
+| nº | Tom | Texto | Fonte |
+|---|---|---|---|
+| 01 | raiva | "Fi duma rapariga!" | regional (nordeste: rapariga = prostituta) |
+| 02 | ódio | "Filho de uma rapariga!" | regional (nordeste) |
+| 03 | raiva | "Fela da puta!" | regional (nordeste) |
+| 04 | desprezo | "Corno véio!" | regional (nordeste) |
+| 05 | raiva | "Cabra da peste!" | regional (nordeste) |
+| 06 | provocando, alto | "Arreda, cabra frouxo!" | regional (nordeste) |
+| 07 | espantado | "Oxente, de onde vem esse tiro?" | regional (nordeste) |
+| 08 | espantado | "Vôte, que tiroteio!" | regional (nordeste) |
+| 09 | frustrado | "Eita porra, errei!" | regional (nordeste) |
+| 10 | ameaça baixa | "Vou sangrar tu, desgraçado." | regional (sertão: sangrar = matar a faca) |
+| 11 | ameaça | "Vou te furar, fi do cão!" | regional (nordeste: o cão = o diabo) |
+| 12 | desprezo | "Mizerave!" | regional (nordeste) |
+| 13 | escárnio | "Corre, cabra mole!" | regional (nordeste) |
+| 14 | ganancioso | "Atira, que o coronel paga!" | macaulay-1974 p. 189 (pagos e armados pelo governo) |
+| 15 | raiva | "Peste dos inferno!" | regional (nordeste) |
+| 16 | desprezo | "Lá vem os revoltoso!" | falta a página |
+
+**16 tomadas**; 16 espera fonte.
 
 ## 4. Inimigo (1 tomada cada, voz do inimigo)
 
@@ -132,24 +195,7 @@ Nunca dão vantagem que a vista não daria. Arquivo: `inimigo/<id>-<nº>`.
 
 **21 tomadas.**
 
-### 4b. Xingamentos do inimigo
-
-| nº | Tom | Texto | Quem / fonte |
-|---|---|---|---|
-| 01 | provocando | "Vem, revoltoso!" | contra a Coluna — falta a página |
-| 02 | desprezo | "Bando de bandidos!" | contra a Coluna — falta a página |
-| 03 | escárnio, alto | "Cadê o tal do Prestes?" | contra a Coluna |
-| 04 | ganancioso | "Atira, que o coronel paga!" | jagunços dos batalhões patrióticos — macaulay-1974 p. 189 (pagos e armados pelo governo) |
-| 05 | raiva | "Cachorros!" | qualquer |
-| 06 | ameaça | "Daqui vocês não saem!" | qualquer |
-| 07 | escárnio | "Corre, frouxo!" | qualquer |
-| 08 | raiva | "Com mil diabos, de onde vem esse tiro?" | qualquer |
-| 09 | desafio | "Aparece, covarde!" | qualquer |
-| 10 | contra legalistas | "Morra o governo!" | inimigo da Coluna quando o jogador é legalista — falta a página |
-
-**10 tomadas.**
-
-### 4c. Gritos sem palavras (inimigo)
+### 4b. Gritos sem palavras (inimigo)
 
 5 tomadas, `inimigo/shout-1..5`: urros curtos de carga ("êêê!", "eia!",
 "uuuh!"), um grito de dor contido, um "ô!" de chamada.
@@ -161,19 +207,19 @@ Nunca dão vantagem que a vista não daria. Arquivo: `inimigo/<id>-<nº>`.
 | Bloco | Tomadas |
 |---|---|
 | Ordens e respostas | 84 |
+| Controle de fogo | 24 |
 | Avisos dos nossos | 24 |
-| Xingamentos dos nossos | 20 |
+| Xingamentos por facção | 56 |
 | Avisos do inimigo | 21 |
-| Xingamentos do inimigo | 10 |
 | Gritos do inimigo | 5 |
-| **Total** | **164** |
+| **Total** | **214** |
 
 ## Pendências antes do catálogo
 
 - O plano `ambient-sound-and-voices` hoje diz que o inimigo só grita sem
   palavras e lista a fala inteligível do inimigo como fora do escopo; a
-  fala do inimigo (4a, 4b) pede atualizar proposal, design e o requisito
-  "Soldiers call out what happens", e os xingamentos (3, 4b) pedem um novo
+  fala do inimigo (4a) pede atualizar proposal, design e o requisito
+  "Soldiers call out what happens", e os xingamentos (3) pedem um novo
   tipo de aviso com quiet time próprio (~25 s) e chance de tocar.
 - Fontes das frases marcadas "falta a página".
 - "Sim, senhor" para a Coluna, ou um tratamento mais camarada.

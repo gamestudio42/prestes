@@ -114,6 +114,12 @@ levels it, loops a bed or trims a one-shot, and writes the mono MP3. Played by
 | `crawl-dry`, `crawl-wet` | `apps/game/public/audio/footsteps/crawl-dry.mp3`, `apps/game/public/audio/footsteps/crawl-wet.mp3` | elonen, Freesound [478381](https://freesound.org/people/elonen/sounds/478381/) | CC0-1.0 | A soldier in Second World War gear crawling in the grass of a pine forest (`crawl-wet` has the mud steps of 548384 mixed under it); footstep loops (4.1): a section is these steps laid over themselves six times out of step, a run with no recording of its own the walk played faster (`tools/cut-audio-sources.ts`) |
 | `rattle` | `apps/game/public/audio/footsteps/rattle.mp3` | craigsmith, Freesound [480672](https://freesound.org/people/craigsmith/sounds/480672/) | CC0-1.0 | Men moving forward with equipment: a group running, equipment rattling; footstep loops (4.1): a section is these steps laid over themselves six times out of step, a run with no recording of its own the walk played faster (`tools/cut-audio-sources.ts`) |
 
+## Voice lines (ambient-sound-and-voices)
+
+| Asset | Path | Author / source | Licence | Notes |
+| ----- | ---- | --------------- | ------- | ----- |
+| Voice lines (`comandante`, `soldado`, `inimigo`) | `apps/game/public/audio/voice/<speaker>/<line>.mp3` (from `audio-src/voice/`) | AI speech generated from the project owner's own voice: Chatterbox Multilingual (Resemble AI, MIT) run locally by `tools/voice-ai/generate.py`, with the owner's recording `audio-src/voice-ref/clovis-comandante.wav` (kept out of git) as the only voice reference | Owner's own voice, given for the game (2026-11-15); generated speech, no third-party voice | Texts from `docs/audio/ROTEIRO_RASCUNHO.md`; lines whose source still says "falta a página" are not generated. Every file is AI-generated and carries Chatterbox's inaudible Perth watermark. A take the owner records himself replaces the generated one |
+
 ## Menu gramophone recordings
 
 The 17 recordings below are public domain; Discografia Brasileira marks each

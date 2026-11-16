@@ -1,0 +1,4 @@
+# Instale o torch com CUDA antes, pelo índice do PyTorch:
+#   pip install torch==2.6.0 torchaudio==2.6.0 --index-url https://download.pytorch.org/whl/cu124
+chatterbox-tts
+soundfile

@@ -119,9 +119,15 @@ describe('soundFiles and the client list', () => {
       mkdirSync(join(dir, 'voice', 'commander'), { recursive: true });
       writeFileSync(join(dir, 'beds', 'bed-town.mp3'), '');
       writeFileSync(join(dir, 'voice', 'commander', 'avancar-1.mp3'), '');
+      mkdirSync(join(dir, 'voice', 'inimigo'), { recursive: true });
+      writeFileSync(join(dir, 'voice', 'inimigo', 'avancar-1.mp3'), '');
       writeFileSync(join(dir, 'beds', 'notes.txt'), '');
       const files = soundFiles(dir);
-      expect(files).toEqual({ 'avancar-1': 'voice/commander/avancar-1.mp3', 'bed-town': 'beds/bed-town.mp3' });
+      expect(files).toEqual({
+        'commander/avancar-1': 'voice/commander/avancar-1.mp3',
+        'inimigo/avancar-1': 'voice/inimigo/avancar-1.mp3',
+        'bed-town': 'beds/bed-town.mp3',
+      });
       const module = soundFilesModule(files);
       expect(module).toContain("  'bed-town': 'beds/bed-town.mp3',");
       expect(soundFilesModule({})).toContain('= {};');

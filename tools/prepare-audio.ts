@@ -158,17 +158,23 @@ export function prepareAudio(source: string, output: string, ffmpeg = findBinary
   return written;
 }
 
-/** Every prepared sound under `output`, by id (its file name without `.mp3`). */
+/**
+ * Every prepared sound under `output`, by id: its file name without `.mp3`,
+ * except a voice line, whose id keeps its folders under `voice/`
+ * (`soldado/man-down-1`, `xingamento/column/1-1`), since speakers share
+ * line names (D7).
+ */
 export function soundFiles(output: string): Record<string, string> {
   const files: Record<string, string> = {};
   for (const group of Object.keys(GROUPS)) {
+    const root = join(output, group);
     const walk = (dir: string): void => {
       if (!existsSync(dir)) return;
       for (const name of readdirSync(dir).sort()) {
         const path = join(dir, name);
         if (statSync(path).isDirectory()) walk(path);
         else if (name.endsWith('.mp3')) {
-          const id = name.slice(0, -4);
+          const id = group === 'voice' ? relative(root, path).replaceAll('\\', '/').slice(0, -4) : name.slice(0, -4);
           if (files[id]) throw new Error(`two sounds named ${id}: ${files[id]} and ${relative(output, path)}`);
           files[id] = relative(output, path).replaceAll('\\', '/');
         }
