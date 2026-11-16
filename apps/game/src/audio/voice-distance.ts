@@ -4,7 +4,8 @@
  * longe"). Every take loses the chest of a close voice (a high-pass), the
  * air of its highs (a low-pass) and gains a share of open-air echo; a
  * call-out heard thin, so far off, loses more highs and gains more echo.
- * Order lines and answers sit at a fixed, middle distance. Pure numbers here;
+ * Order lines and answers sit at a fixed, middle distance. Pushed farther
+ * on 2026-11-16 at the owner's word ("mais longe ainda"). Pure numbers here;
  * the voice output builds the nodes.
  */
 
@@ -20,14 +21,14 @@ export interface VoiceDistance {
 }
 
 /** Orders and answers: a few dozen metres off, over the noise of the fight. */
-export const ORDER_DISTANCE: VoiceDistance = { lowpass: 4200, highpass: 220, dry: 0.8, wet: 0.28 };
+export const ORDER_DISTANCE: VoiceDistance = { lowpass: 2900, highpass: 300, dry: 0.62, wet: 0.45 };
 /** A call-out at the listening point… */
-const NEAR: VoiceDistance = { lowpass: 3600, highpass: 240, dry: 0.78, wet: 0.32 };
+const NEAR: VoiceDistance = { lowpass: 2500, highpass: 320, dry: 0.58, wet: 0.5 };
 /** …and one at the edge of hearing. */
-const FAR: VoiceDistance = { lowpass: 1700, highpass: 320, dry: 0.55, wet: 0.6 };
+const FAR: VoiceDistance = { lowpass: 1200, highpass: 400, dry: 0.38, wet: 0.8 };
 
 /** Length of the open-air echo (s). */
-export const ECHO_SECONDS = 1.1;
+export const ECHO_SECONDS = 1.4;
 
 const mix = (a: number, b: number, t: number) => a + (b - a) * t;
 
