@@ -50,6 +50,10 @@ export function App() {
   const localeRef = useRef(locale);
   localeRef.current = locale;
   const [started, setStarted] = useState(false);
+  // prepare-online-release D1: a battle opened straight away (the editor's playtest) also ends the splash.
+  useEffect(() => {
+    if (started) void window.__prestesReady?.();
+  }, [started]);
   // retire-bootcamp: old saved bootcamp progress is cleared once.
   useEffect(() => clearBootcampProgress(), []);
   // pre-battle-roster 5.1: the skirmish setup (map, force, enemy), saved locally.

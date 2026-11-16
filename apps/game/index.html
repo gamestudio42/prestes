@@ -5,8 +5,118 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#1b1f1a" />
     <title>Prestes</title>
+    <!-- prepare-online-release D1: the opening splash, drawn before any script chunk. -->
+    <style>
+      html, body { margin: 0; background: #1a100a; }
+      #splash {
+        position: fixed; inset: 0; z-index: 1000; box-sizing: border-box;
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        gap: 12px; padding: 24px 16px; text-align: center; overflow-wrap: anywhere;
+        background: radial-gradient(ellipse at 50% 40%, #3a2416 0%, #1a100a 70%);
+        color: #e8dcc0; font-family: Georgia, 'Times New Roman', serif;
+        transition: opacity 0.4s ease;
+      }
+      #splash.splash-done { opacity: 0; pointer-events: none; }
+      #splash h1 { margin: 0; font-size: clamp(40px, 12vw, 72px); letter-spacing: 0.08em; font-weight: normal; }
+      #splash .splash-subtitle { margin: 0; font-size: 18px; color: #c9b48a; }
+      #splash .splash-period { margin: 12px 0 0; max-width: 32em; font-style: italic; font-size: 16px; line-height: 1.5; }
+      #splash .splash-label { display: inline-block; margin-left: 6px; font-style: normal; font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; color: #a8946c; }
+      #splash .splash-loading { margin: 16px 0 0; font-size: 14px; color: #c9b48a; }
+      #splash .splash-loading::after { content: ''; display: block; width: 120px; height: 2px; margin: 8px auto 0; background: linear-gradient(90deg, transparent, #c9b48a, transparent); animation: splash-sweep 1.6s ease-in-out infinite; }
+      #splash .splash-unsupported { display: none; box-sizing: border-box; max-width: 32em; margin-top: 16px; padding: 16px; border: 1px solid #8a6a3a; background: rgba(0, 0, 0, 0.3); }
+      #splash .splash-unsupported h2 { margin: 0 0 8px; font-size: 20px; font-weight: normal; }
+      #splash .splash-unsupported p { margin: 4px 0; font-size: 15px; line-height: 1.4; }
+      #splash.splash-unsupported-shown .splash-unsupported { display: block; }
+      #splash.splash-unsupported-shown .splash-loading { display: none; }
+      @keyframes splash-sweep { 0%, 100% { opacity: 0.2; } 50% { opacity: 1; } }
+      @media (prefers-reduced-motion: reduce) { #splash { transition: none; } #splash .splash-loading::after { animation: none; } }
+    </style>
   </head>
   <body>
+    <div id="splash" data-testid="splash" role="status" aria-live="polite">
+      <h1 data-text="splash.title">Prestes</h1>
+      <p class="splash-subtitle" data-text="splash.subtitle"></p>
+      <p class="splash-period"><span data-text="splash.period"></span><span class="splash-label" data-text="splash.dramatized"></span></p>
+      <p class="splash-loading" data-text="splash.loading"></p>
+      <div class="splash-unsupported" data-testid="splash-unsupported">
+        <h2 data-text="splash.unsupported.heading"></h2>
+        <p data-missing="webgl2" data-text="splash.unsupported.webgl2" hidden></p>
+        <p data-missing="workers" data-text="splash.unsupported.workers" hidden></p>
+        <p data-text="splash.unsupported.advice"></p>
+      </div>
+    </div>
+    <!-- The splash's text in both languages; a unit test keeps it equal to the locales' splash.* keys. -->
+    <script id="splash-text" type="application/json">
+{
+  "en": {
+    "splash.title": "Prestes",
+    "splash.subtitle": "The Prestes Column, 1922–1927",
+    "splash.period": "Through the backlands of Brazil, a column of rebels marches on.",
+    "splash.dramatized": "Dramatized",
+    "splash.loading": "Loading the camp…",
+    "splash.unsupported.heading": "This browser cannot run the game",
+    "splash.unsupported.webgl2": "It lacks WebGL 2, which draws the battlefield.",
+    "splash.unsupported.workers": "It lacks module workers, which run the battle.",
+    "splash.unsupported.advice": "Open the game in a current desktop browser: Chrome, Edge, Firefox or Safari."
+  },
+  "pt-BR": {
+    "splash.title": "Prestes",
+    "splash.subtitle": "A Coluna Prestes, 1922–1927",
+    "splash.period": "Pelos sertões do Brasil, uma coluna de rebeldes segue em marcha.",
+    "splash.dramatized": "Dramatizado",
+    "splash.loading": "Carregando o acampamento…",
+    "splash.unsupported.heading": "Este navegador não roda o jogo",
+    "splash.unsupported.webgl2": "Falta o WebGL 2, que desenha o campo de batalha.",
+    "splash.unsupported.workers": "Faltam os workers de módulo, que rodam a batalha.",
+    "splash.unsupported.advice": "Abra o jogo num navegador de computador atual: Chrome, Edge, Firefox ou Safari."
+  }
+}
+    </script>
+    <script>
+      // prepare-online-release D1 and D4: the splash's language, its text, and the browser check.
+      (function () {
+        var stored = null;
+        try { stored = window.localStorage.getItem('prestes.locale'); } catch (error) { /* storage unavailable */ }
+        var locale = stored === 'en' || stored === 'pt-BR' ? stored
+          : String(navigator.language || '').toLowerCase().indexOf('pt') === 0 ? 'pt-BR' : 'en';
+        var text = JSON.parse(document.getElementById('splash-text').textContent)[locale];
+        var splash = document.getElementById('splash');
+        document.documentElement.lang = locale;
+        var nodes = splash.querySelectorAll('[data-text]');
+        for (var i = 0; i < nodes.length; i += 1) nodes[i].textContent = text[nodes[i].getAttribute('data-text')];
+
+        var missing = [];
+        try {
+          if (!document.createElement('canvas').getContext('webgl2')) missing.push('webgl2');
+        } catch (error) { missing.push('webgl2'); }
+        var moduleWorkers = false;
+        try {
+          // The options' type is read only by a browser that knows module workers.
+          var probe = new Worker('blob://', { get type() { moduleWorkers = true; return 'module'; } });
+          probe.terminate();
+        } catch (error) { /* the probe URL is meant to fail */ }
+        if (!moduleWorkers) missing.push('workers');
+        if (missing.length > 0) {
+          window.__prestesUnsupported = missing;
+          splash.classList.add('splash-unsupported-shown');
+          for (var j = 0; j < missing.length; j += 1) {
+            splash.querySelector('[data-missing="' + missing[j] + '"]').hidden = false;
+          }
+        }
+
+        // The desk calls this once it is drawn; the splash fades, then leaves the page.
+        var done = null;
+        window.__prestesReady = function () {
+          if (done) return done;
+          done = new Promise(function (resolve) {
+            if (window.__prestesUnsupported) return resolve();
+            splash.classList.add('splash-done');
+            window.setTimeout(function () { splash.remove(); resolve(); }, 420);
+          });
+          return done;
+        };
+      })();
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

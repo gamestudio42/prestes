@@ -14,6 +14,20 @@ const SkirmishSetup = lazy(() =>
 );
 import { withMap, type SkirmishSetup as Setup } from './setupState';
 
+/** prepare-online-release D1: the opening splash has left the page (once per page load). */
+let splashLeft = false;
+
+/**
+ * Waits for the camp table's art and the webfont, then fades the splash out.
+ * A slow decode never holds the desk for long: two seconds at most.
+ */
+async function deskDrawn(): Promise<void> {
+  const art = document.querySelector<HTMLImageElement>('[data-testid="camp-scene"]');
+  const decoded = Promise.all([art?.decode().catch(() => undefined), document.fonts?.ready]);
+  await Promise.race([decoded, new Promise((resolve) => window.setTimeout(resolve, 2000))]);
+  await window.__prestesReady?.();
+}
+
 /** D11: once answered, the warning stays closed this session even when storage is unavailable. */
 let warningAnsweredThisSession = false;
 
@@ -62,6 +76,19 @@ export function StartScreenDesk({
     warningAnsweredThisSession = true;
     setWarningOpen(false);
   };
+  // prepare-online-release D1: the splash leaves once the camp table is drawn; the warning comes after it.
+  const [splashGone, setSplashGone] = useState(() => splashLeft);
+  useEffect(() => {
+    if (splashLeft) return;
+    let live = true;
+    void deskDrawn().then(() => {
+      splashLeft = true;
+      if (live) setSplashGone(true);
+    });
+    return () => {
+      live = false;
+    };
+  }, []);
   const gramophone = useGramophone({ muted: audioMuted, onEnableSound: onToggleAudio });
   // author-game-maps 5.2: the authored skirmish maps; the test map only on the dev server.
   const [maps, setMaps] = useState<readonly BattleMap[]>([]);
@@ -126,7 +153,7 @@ export function StartScreenDesk({
           />
         </Suspense>
       ) : null}
-      {warningOpen ? <ContentWarning locale={locale} onContinue={answerWarning} /> : null}
+      {warningOpen && splashGone ? <ContentWarning locale={locale} onContinue={answerWarning} /> : null}
     </main>
   );
 }

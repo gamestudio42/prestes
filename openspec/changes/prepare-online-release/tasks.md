@@ -1,6 +1,6 @@
 ## 0. Before starting
 
-- [ ] 0.1 Read the proposal, design and specs.
+- [x] 0.1 Read the proposal, design and specs.
   - Mute the game (`prestes.audio.v1`) in the preview pane.
   - Commit with explicit paths.
   - No remote, push or deploy in sections 1-5.
@@ -8,13 +8,13 @@
 
 ## 1. Opening splash and browser check
 
-- [ ] 1.1 The inline splash in `apps/game/index.html` (D1): markup, inline style, language choice and the two-entry text table. Add `splash.*` strings to both locales; the period line is labelled `dramatized`.
+- [x] 1.1 The inline splash in `apps/game/index.html` (D1): markup, inline style, language choice and the two-entry text table. Add `splash.*` strings to both locales; the period line is labelled `dramatized`.
   - Verify with a unit test that reads `index.html` and compares the inline table with the locales, and with `pnpm check:locales`.
-- [ ] 1.2 `window.__prestesReady()`, called by the desk once mounted and its art decoded; fade, then hide. The content warning opens after it.
+- [x] 1.2 `window.__prestesReady()`, called by the desk once mounted and its art decoded; fade, then hide. The content warning opens after it.
   - Verify with an e2e: the splash is gone and the content warning shows on a first visit; a returning visit goes straight to the desk.
-- [ ] 1.3 The capability check (D4) and the unsupported message; `main.tsx` does not mount when the check fails.
+- [x] 1.3 The capability check (D4) and the unsupported message; `main.tsx` does not mount when the check fails.
   - Verify with an e2e that stubs `getContext('webgl2')` to return null: the message names WebGL 2 in EN and in PT-BR, and the console has no error.
-- [ ] 1.4 The splash at 360 px wide.
+- [x] 1.4 The splash at 360 px wide.
   - Verify with an e2e at the mobile preset: no horizontal scroll.
 
 ## 2. Battle loading

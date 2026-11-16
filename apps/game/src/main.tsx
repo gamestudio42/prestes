@@ -10,10 +10,13 @@ if (!root) {
   throw new Error('root element not found');
 }
 
-createRoot(root).render(
-  <StrictMode>
-    <App />
-  </StrictMode>,
-);
+// prepare-online-release D4: a browser that cannot run the game keeps the splash's message.
+if (!window.__prestesUnsupported) {
+  createRoot(root).render(
+    <StrictMode>
+      <App />
+    </StrictMode>,
+  );
+}
 
 
