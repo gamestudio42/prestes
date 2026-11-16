@@ -19,9 +19,12 @@ import { voiceFile, type VoiceKind, type VoiceLine, type VoiceTake } from '@pres
  * - A curse plays by chance, while its section is engaged, with a longer
  *   quiet time per section and a cap over all sections; none when the curses
  *   setting is off.
- * - No take twice in a row; a take that is not loaded is skipped silently.
+ * - No take twice in a row. A call-out not loaded is skipped silently; an
+ *   order line or answer not recorded shows its caption alone.
  */
 
+/** How long an order line or answer with no recording shows its caption alone (ms). */
+export const CAPTION_ONLY_MS = 1400;
 /** Gap between the order line's end and the answer (ms). */
 export const ANSWER_GAP_MS = 250;
 /** Quiet time of a call-out per section and kind (ms). */
@@ -234,7 +237,16 @@ export class VoiceDirector {
     const index = choices[Math.min(choices.length - 1, Math.floor(this.random() * choices.length))]!;
     const file = voiceFile(line, index + 1);
     const length = this.output.play(file, speech.placement, speech.priority);
-    if (length === null) return null;
+    if (length === null) {
+      // add-difficulty-levels 5.2: an order or answer not yet recorded (or not
+      // yet loaded) is captioned alone; a call-out is skipped silently.
+      if (!speech.priority) return null;
+      this.lastTake.set(id, index);
+      this.playingUntil = now + CAPTION_ONLY_MS;
+      this.playingPriority = true;
+      this.onCaption({ kind: line.kind, take: line.takes[index]!, enemy: false });
+      return CAPTION_ONLY_MS / 1000;
+    }
     this.lastTake.set(id, index);
     this.spoken.push(file);
     this.playingUntil = now + length * 1000;

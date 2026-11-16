@@ -30,8 +30,10 @@
 
 ## 5. Fire control voices
 
-- [ ] 5.1 Draft lines of design D4 added to `docs/audio/ROTEIRO_RASCUNHO.md` (a "Controle de fogo" section, 24 takes) for the owner's review, and to the voice line catalog when it exists, with PT-BR and EN captions, including the owner's line "Só atirem quando virem o branco dos olhos deles!"; verify: the owner approves the lines; `pnpm check:locales` passes on the captions
-- [ ] 5.2 Voice director plays the fire control line and answer on `fire_control` under the order rules (one line for several sections, newer replaces unstarted, nothing on refusal, caption only when unrecorded); placeholder: until the owner records the takes, captions only — this does not count as the voices being in; verify with unit tests "Fire control is spoken", "Several sections, one line" and "Not yet recorded" (blocked on ambient-sound-and-voices 5.3–5.5 if not yet done)
+- [x] 5.1 Draft lines of design D4 added to `docs/audio/ROTEIRO_RASCUNHO.md` (a "Controle de fogo" section, 24 takes) for the owner's review, and to the voice line catalog when it exists, with PT-BR and EN captions, including the owner's line "Só atirem quando virem o branco dos olhos deles!"; verify: the owner approves the lines; `pnpm check:locales` passes on the captions
+  - Done 2026-11-16: section 1b of the script (24 takes, the owner's line first in Econômico); the takes were generated from his voice and are in `VOICE_LINES` (`fire-free`, `fire-economy`, `fire-contact`, `fire-hold`) with EN captions; the owner heard them in battle and kept them. `pnpm check:locales` and `pnpm check:content` pass.
+- [x] 5.2 Voice director plays the fire control line and answer on `fire_control` under the order rules (one line for several sections, newer replaces unstarted, nothing on refusal, caption only when unrecorded); placeholder: until the owner records the takes, captions only — this does not count as the voices being in; verify with unit tests "Fire control is spoken", "Several sections, one line" and "Not yet recorded" (blocked on ambient-sound-and-voices 5.3–5.5 if not yet done)
+  - Done 2026-11-16 with the voice director (ambient-sound-and-voices 5.3-5.5): `fire_control` maps to `fire-<mode>`; the takes are recorded, so they play; an order line or answer without a take shows its caption alone. Unit tests in `tests/audio/voices.test.ts`: "Fire control is spoken", "Several sections, one line", "Not yet recorded".
 
 ## 6. Verify
 

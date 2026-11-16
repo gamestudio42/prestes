@@ -4,8 +4,9 @@ import type { Command, Frame, SimEvent, UnitSnapshot } from '../../packages/shar
 import { SOUND_FILES } from '../../apps/game/src/audio/sound-files';
 import { captionsOn } from '../../apps/game/src/audio/settings-store';
 import { parseAudioSettings } from '../../apps/game/src/storage';
-import { ANSWER_GAP_MS, CALLOUT_KIND_GAP_MS, CALLOUT_QUIET_MS, RARE_CALLOUTS, CURSE_CAP_MS, CURSE_QUIET_MS, VoiceDirector, type VoiceCaption, type VoiceOutput } from '../../apps/game/src/audio/voice-director';
-import { pickCurse } from '../../apps/game/src/audio/voice-controller';
+import { ANSWER_GAP_MS, CAPTION_ONLY_MS, CALLOUT_KIND_GAP_MS, CALLOUT_QUIET_MS, RARE_CALLOUTS, CURSE_CAP_MS, CURSE_QUIET_MS, VoiceDirector, type VoiceCaption, type VoiceOutput } from '../../apps/game/src/audio/voice-director';
+import { VoiceController, pickCurse } from '../../apps/game/src/audio/voice-controller';
+import type { AudioEngine } from '../../apps/game/src/audio/mixer';
 import { commandOrder } from '../../apps/game/src/audio/voice-orders';
 import { VoiceWatch } from '../../apps/game/src/audio/voice-watch';
 
@@ -130,12 +131,48 @@ describe('the voice director', () => {
     for (let i = 1; i < lines.length; i += 1) expect(lines[i]).not.toBe(lines[i - 1]);
   });
 
-  it('skips a missing take silently and still answers', () => {
-    const { output, voice, order } = director();
+  it('Not yet recorded: an order line without its take is captioned alone, then answered', () => {
+    const { output, voice, captions, order } = director();
     output.missing.add('comandante/move-1');
     order(1, 'move');
     voice.accepted(1, 0);
+    expect(output.played).toEqual([]);
+    expect(captions[0]).toEqual({ kind: 'order', take: line('order', 'move').takes[0], enemy: false });
+    voice.update(CAPTION_ONLY_MS + ANSWER_GAP_MS);
     expect(output.played.map((p) => p.id)).toEqual(['soldado/move-ack-1']);
+  });
+
+  it('skips a call-out without its take silently', () => {
+    const { output, voice, captions } = director();
+    output.missing.add('soldado/pinned-1');
+    voice.callOut({ line: line('callout', 'pinned'), section: 1, placement: near }, 0);
+    expect(output.played).toEqual([]);
+    expect(captions).toEqual([]);
+  });
+
+  it('Fire control is spoken: the line and its answer, under the order rules', () => {
+    const { output, voice } = director();
+    voice.order(1, line('order', 'fire-economy'), line('answer', 'fire-economy'));
+    voice.accepted(1, 0);
+    voice.update(1000 + ANSWER_GAP_MS);
+    expect(output.played.map((p) => p.id)).toEqual(['comandante/fire-economy-1', 'soldado/fire-economy-ack-1']);
+    expect(commandOrder({ type: 'fire_control', unitIds: [1, 2], mode: 'hold' })).toBe('fire-hold');
+  });
+
+  it('Several sections, one line: one command to three sections is spoken once and answered once', () => {
+    const fake = { context: null, mixer: null } as unknown as AudioEngine;
+    const controller = new VoiceController(fake, () => 0);
+    const said: number[] = [];
+    const order = controller.director.order.bind(controller.director);
+    controller.director.order = (seq, spoken, answer) => {
+      said.push(seq);
+      order(seq, spoken, answer);
+    };
+    const units = [1, 2, 3].map((squadId) => unit(squadId * 10, 'column', { squadId }));
+    controller.onFrame(frame(1, units), 0);
+    controller.command({ type: 'fire_control', unitIds: units.map((u) => u.id), mode: 'economy' }, 1);
+    expect(said).toEqual([1]);
+    controller.dispose();
   });
 
   it('places a call-out, keeps its quiet time, and lets orders go first', () => {
