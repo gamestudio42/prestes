@@ -35,6 +35,8 @@ async function openBriefing(page: Page, chapterId: string) {
 }
 
 async function waitForBattle(page: Page) {
+  // prepare-online-release D3: the ended battle stays on view while the next one loads.
+  await expect(page.getByTestId('battle-end')).toHaveCount(0, { timeout: 30_000 });
   await expect(page.getByTestId('hud')).toBeVisible();
   // A campaign start fetches its map first, so the previous battle's client
   // (frozen on its stubbed end) can still answer for a moment: wait for a

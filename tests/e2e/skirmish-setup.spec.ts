@@ -154,7 +154,7 @@ for (const [locale, refusal] of [
     await openSetup(page);
     const thumb = page.getByTestId('roster-thumb-metralhadora');
     await expect(thumb).toBeVisible();
-    await expect(thumb).toHaveAttribute('src', /assets\/sections\/metralhadora\.png$/);
+    await expect(thumb).toHaveAttribute('src', /assets\/sections\/metralhadora\.png\?v=[\w-]+$/);
     // The picture loaded (a missing file has no natural size).
     await expect.poll(() => thumb.evaluate((img: HTMLImageElement) => img.naturalWidth)).toBe(96);
     const gun = page.getByTestId('roster-add-metralhadora');
@@ -165,7 +165,7 @@ for (const [locale, refusal] of [
     // The full default roster refuses another type and says why.
     await expect(page.getByTestId('roster-refusal-esquadra-4')).toContainText(refusal);
     // Roster rows carry the type's picture.
-    await expect(page.getByTestId('roster-row-0').locator('img.roster-row-thumb')).toHaveAttribute('src', /assets\/sections\/.+\.png$/);
+    await expect(page.getByTestId('roster-row-0').locator('img.roster-row-thumb')).toHaveAttribute('src', /assets\/sections\/[a-z0-9-]+\.png\?v=[\w-]+$/);
     // Arrow keys still walk the cards.
     await page.getByTestId('roster-add-comando').focus();
     await page.keyboard.press('ArrowDown');

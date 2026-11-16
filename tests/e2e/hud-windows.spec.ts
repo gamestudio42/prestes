@@ -167,7 +167,7 @@ test('the troop panel header and figures: picture, order, counts, leader, wound 
   await page.evaluate(() => window.localStorage.removeItem('prestes.hud.docks.v1'));
   await page.reload();
   await start(page);
-  await expect(page.getByTestId('troop-thumb')).toHaveAttribute('src', /assets\/sections\/[a-z0-9-]+\.png$/);
+  await expect(page.getByTestId('troop-thumb')).toHaveAttribute('src', /assets\/sections\/[a-z0-9-]+\.png\?v=[\w-]+$/);
   await expect(page.getByTestId('troop-order')).toBeVisible();
   const counts = page.getByTestId('troop-counts');
   const fitBefore = Number(await counts.getAttribute('data-fit'));

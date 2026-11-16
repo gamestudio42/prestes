@@ -44,7 +44,7 @@
 
 - [x] 5.1 Write `docs/RELEASE.md` (PT-BR) with the steps and commands of D8, the check that `main` has no commits of its own, the Pages setting, the checks after deploy, and the AGPL and asset-register reminders.
   - Verify: the doc lists every step of the "Owner-gated release path" requirement.
-- [ ] 5.2 Run `pnpm verify`, including `check:release` and the slow-network e2e, and `openspec validate prepare-online-release --type change --strict`.
+- [x] 5.2 Run `pnpm verify`, including `check:release` and the slow-network e2e, and `openspec validate prepare-online-release --type change --strict`.
   - Verify: all pass, noted in `docs/status.md`.
 - [ ] 5.3 Hand check by the owner: open the built preview with the browser's network throttling, and watch the splash, the desk, a skirmish's loading screen and a chapter's loading screen.
   - Findings go in `docs/status.md`.

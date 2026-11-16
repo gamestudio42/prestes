@@ -6,6 +6,8 @@ export default defineConfig({
   // One worker: two at once made timing-sensitive tests fail for a ~20% gain.
   workers: 1,
   expect: { timeout: 10_000 },
+  // Baselines are shared by the projects: no project name in their file names.
+  snapshotPathTemplate: '{testDir}/{testFilePath}-snapshots/{arg}{-snapshotSuffix}{ext}',
   use: {
     baseURL: 'http://127.0.0.1:4317',
     headless: true,

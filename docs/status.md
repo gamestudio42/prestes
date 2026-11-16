@@ -120,6 +120,16 @@ that unblocks the most.
 - **Warm start.** A second battle in the same page opens with no loading
   screen. Its state hash after 40 ticks equals the cold start's
   (`tests/e2e/battle-loading.spec.ts`).
+- **The gate (`pnpm verify`).** Every step passed except e2e, which had 13
+  failures:
+  - 8 visual baselines that the new Playwright projects renamed; the old
+    naming is pinned now;
+  - 4 tests pinning image URLs that now carry `?v=`;
+  - 1 campaign test that took a frame from the ended battle while the next
+    chapter loaded.
+
+  After the fixes, those six specs pass (78 tests). The full gate has not
+  been rerun from the start.
 
 ## Notes of 2026-11-16: branches unified
 

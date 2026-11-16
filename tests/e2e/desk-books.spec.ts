@@ -114,7 +114,7 @@ test('the Miguel Costa entry shows his portrait, credit, label and confidence', 
   await page.getByTestId('codex-entry-miguel-costa').click();
   await expect(page.getByTestId('codex-page')).toHaveAttribute('data-entry', 'miguel-costa');
   const image = page.getByTestId('book-plate-image');
-  await expect(image).toHaveAttribute('src', /miguel-costa\/portrait\.png$/);
+  await expect(image).toHaveAttribute('src', /miguel-costa\/portrait\.png\?v=[\w-]+$/);
   await expect.poll(() => image.evaluate((node: HTMLImageElement) => node.naturalWidth)).toBeGreaterThan(0);
   await expect(page.getByTestId('book-plate-credit')).toContainText('Public domain');
   const right = page.getByTestId('book-page-right');
