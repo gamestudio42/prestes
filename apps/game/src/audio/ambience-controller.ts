@@ -5,7 +5,7 @@ import { zoomOf } from './listening';
 import type { AudioEngine } from './mixer';
 import { SoundBank } from './sound-bank';
 import type { AudioListener } from './ShotAudio';
-import { FootstepPlayer, footSurface, footstepGroups } from './footsteps';
+import { FootstepPlayer, GaitClock, footSurface, footstepGroups } from './footsteps';
 import { WadingPlayer, wadingGroups } from './wading';
 import { WATER_REACH, WaterPlayer } from './water-player';
 import { WebAmbientOutput } from './web-ambient-output';
@@ -28,6 +28,7 @@ export class AmbienceController {
   private readonly water: WaterPlayer;
   private readonly wading: WadingPlayer;
   private readonly footsteps: FootstepPlayer;
+  private readonly gait = new GaitClock();
   private listener: AudioListener | null = null;
   private heardAt = 0;
   private readonly timer: ReturnType<typeof setInterval>;
@@ -68,7 +69,9 @@ export class AmbienceController {
     this.water.update(nearestWater(map, listener.x, listener.y, WATER_REACH), point);
     // A ford is the shallow water men walk in (`waterAt` 1; deep water is 2).
     this.wading.update(listener.frame ? wadingGroups(listener.frame, listener.faction, (x, y) => waterAt(x, y) === 1) : [], point);
-    this.footsteps.update(listener.frame ? footstepGroups(listener.frame, listener.faction, (x, y) => footSurface(terrainSurfaceAt(x, y), vegetationAt(x, y))) : [], point);
+    // The steps keep the men's cadence at the game's speed, and stop while it is paused.
+    const rate = this.gait.update(listener.frame?.tick, performance.now() / 1000);
+    this.footsteps.update(listener.frame ? footstepGroups(listener.frame, listener.faction, (x, y) => footSurface(terrainSurfaceAt(x, y), vegetationAt(x, y))) : [], point, rate);
   }
 
   dispose(): void {

@@ -11,6 +11,14 @@ import {
   shotLoudness,
   shotRate,
   synthesizeReport,
+  synthesizeWhizz,
+  whizzHeard,
+  WHIZZ_AFTER,
+  WHIZZ_GAP_MS,
+  WHIZZ_LEVEL,
+  WHIZZ_MAN_GAP_MS,
+  WHIZZ_MAN_GAP_PRESSED_MS,
+  WHIZZ_PROFILES,
   type GunshotOutput,
   type ShotSound,
 } from '../../apps/game/src/audio/ShotAudio';
@@ -232,5 +240,121 @@ describe('automatic fire (machine-gun-fire-feedback 4.1, 4.2)', () => {
     expect(Array.from(automatic.slice(0, 2000))).not.toEqual(Array.from(gun.slice(0, 2000)));
     // Short enough to follow one round every tick.
     expect(gun.length / 44100).toBeLessThanOrEqual(0.2);
+  });
+});
+
+describe('rounds passing the player own men (2026-11-15)', () => {
+  class WhizzOutput extends FakeOutput {
+    whizzes: Array<{ volume: number; variant: number; delay: number; pan: number }> = [];
+    playWhizz(volume: number, variant: number, delay: number, _rate = 1, pan = 0): void {
+      this.whizzes.push({ volume, variant, delay, pan });
+    }
+  }
+  // 1-9: the player's men; 50+: the enemy.
+  const factionOf = (id: number) => (id >= 50 ? 'legalist' : id >= 0 ? 'column' : undefined);
+  type Shot = Extract<SimEvent, { type: 'shot' }>;
+  const miss = (tick: number, source: number, target: number, x2 = 5, y2 = 5): Shot => ({
+    type: 'shot',
+    tick,
+    source,
+    target,
+    x: 60,
+    y: 0,
+    x2,
+    y2,
+    hit: false,
+  });
+  const setup = async (state: 'steady' | 'pinned' = 'steady') => {
+    let clock = 0;
+    const output = new WhizzOutput();
+    const audio = new ShotAudio(output, { maxVoices: 64, now: () => clock });
+    await audio.unlock();
+    const units = Array.from({ length: 9 }, (_, index) => ({ id: index + 1, suppressed: false, state }));
+    audio.setListener({
+      x: 0,
+      y: 0,
+      span: 80,
+      faction: 'column',
+      factionOf,
+      frame: { units, seen: [], fog: null } as never,
+    });
+    return { output, audio, advance: (ms: number) => (clock += ms) };
+  };
+
+  it('a miss at one of ours on screen is heard at his place, after the report', async () => {
+    const { output, audio, advance } = await setup('pinned');
+    audio.handleEvent(miss(1, 50, 1, 20, 0));
+    expect(output.whizzes).toHaveLength(1);
+    expect(output.whizzes[0]!.delay).toBeCloseTo(WHIZZ_AFTER);
+    expect(output.whizzes[0]!.volume).toBeCloseTo(0.35 * WHIZZ_LEVEL);
+    advance(1000);
+    // An unseen enemy's round (no shooter named) passes as well.
+    audio.handleEvent(miss(20, -1, 2));
+    expect(output.whizzes).toHaveLength(2);
+  });
+
+  it('only for misses at our men, from the enemy, on screen', async () => {
+    const { output, audio, advance } = await setup('pinned');
+    const events: SimEvent[] = [
+      { ...miss(1, 50, 1), hit: true },
+      miss(2, 1, 50),
+      miss(3, 2, 1),
+      miss(4, 50, 1, 300, 0),
+      { ...miss(5, 50, -1), area: true },
+    ];
+    for (const event of events) {
+      audio.handleEvent(event);
+      advance(1000);
+    }
+    expect(output.whizzes).toHaveLength(0);
+    expect(output.plays).toBe(events.length);
+  });
+
+  it('a machine gun on a pinned section is a few cracks, not a hiss', async () => {
+    const { output, audio, advance } = await setup('pinned');
+    // Two seconds of a gun at ten rounds a second, spread over nine men.
+    for (let tick = 0; tick < 20; tick += 1) {
+      audio.handleEvent({ ...miss(tick, 50, 1 + (tick % 9)), burstStart: tick % 10 === 0 });
+      advance(100);
+    }
+    expect(output.whizzes.length).toBeGreaterThan(4);
+    expect(output.whizzes.length).toBeLessThanOrEqual(2000 / WHIZZ_GAP_MS);
+  });
+
+  it('a steady man hears fewer than a pinned one, and never two too close', async () => {
+    const count = async (state: 'steady' | 'pinned') => {
+      const { output, audio, advance } = await setup(state);
+      for (let tick = 0; tick < 200; tick += 1) {
+        audio.handleEvent(miss(tick, 50 + (tick % 3), 1));
+        advance(100);
+      }
+      return output.whizzes.length;
+    };
+    const steady = await count('steady');
+    const pinned = await count('pinned');
+    expect(steady).toBeGreaterThan(0);
+    expect(steady).toBeLessThan(pinned);
+    expect(steady).toBeLessThanOrEqual((200 * 100) / WHIZZ_MAN_GAP_MS + 1);
+    expect(pinned).toBeLessThanOrEqual((200 * 100) / WHIZZ_MAN_GAP_PRESSED_MS + 1);
+  });
+
+  it('is heard only on screen', () => {
+    const listener = { x: 0, y: 0, span: 80, faction: 'column', factionOf };
+    expect(whizzHeard(listener, 40, 0)).toBe(true);
+    expect(whizzHeard(listener, 60, 0)).toBe(false);
+    expect(whizzHeard(null, 0, 0)).toBe(false);
+  });
+
+  it('synthesizes each whizz the same on every run, within range, and apart', () => {
+    const made = WHIZZ_PROFILES.map((profile) => synthesizeWhizz(32000, profile));
+    for (const [index, samples] of made.entries()) {
+      expect(samples).toEqual(synthesizeWhizz(32000, WHIZZ_PROFILES[index]!));
+      expect(samples.length).toBe(Math.floor(32000 * WHIZZ_PROFILES[index]!.seconds));
+      const peak = samples.reduce((max, value) => Math.max(max, Math.abs(value)), 0);
+      expect(peak).toBeGreaterThan(0.5);
+      expect(peak).toBeLessThanOrEqual(0.95);
+      expect(samples[0]).toBe(0);
+    }
+    expect(made[0]).not.toEqual(made[1]);
   });
 });

@@ -19,7 +19,40 @@ export interface GunshotOutput {
   play(volume: number, rate?: number, sound?: ShotSound, delay?: number, pan?: number): void;
   /** The rifle's bolt worked `delay` seconds later (outputs that have it). */
   playBolt?(volume: number, delay: number, rate?: number, pan?: number): void;
+  /** A round passing close by: whizz `variant` of {@link WHIZZ_PROFILES} (outputs that have it). */
+  playWhizz?(volume: number, variant: number, delay: number, rate?: number, pan?: number): void;
   dispose(): void;
+}
+
+/**
+ * The owner (2026-11-15): the player's men under fire hear the rounds go
+ * past. Only the player's own (the enemy's would double every volley), only
+ * misses aimed at one of them, only on screen, and thinned so a machine gun
+ * is a few cracks overhead rather than a hiss.
+ */
+export const WHIZZ_LEVEL = 0.75;
+/** A whizz lasts about this long (ms); it holds a voice for that time. */
+export const WHIZZ_MS = 320;
+/** Whizzes heard at once. */
+export const WHIZZ_VOICES = 2;
+/** At least this long between any two whizzes (ms). */
+export const WHIZZ_GAP_MS = 140;
+/** At least this long between two whizzes at the same man (ms), and while he is pinned or keeps his head down. */
+export const WHIZZ_MAN_GAP_MS = 500;
+export const WHIZZ_MAN_GAP_PRESSED_MS = 220;
+/** Share of the misses at a steady man that are heard; every one at a pressed man. */
+export const WHIZZ_CHANCE = 0.6;
+/** The whizz follows the report a moment, as the round arrives (s). */
+export const WHIZZ_AFTER = 0.03;
+
+/**
+ * Whether a round landing at (x, y) is heard going past: inside the view, the
+ * same reach where shots are heard at full loudness. Without a listener, no.
+ */
+export function whizzHeard(listener: AudioListener | null, x: number, y: number): boolean {
+  if (!listener) return false;
+  const reach = listener.span * 0.6;
+  return (x - listener.x) ** 2 + (y - listener.y) ** 2 <= reach * reach;
 }
 
 /** The bolt follows a shot like in the recording, 1.3 s later; louder than
@@ -86,8 +119,8 @@ export interface AudioListener {
   factionOf: (unitId: number) => string | undefined;
   /** Weapon of a unit by id (the shooter's), for the sound of his fire. */
   weaponOf?: (unitId: number) => WeaponId | undefined;
-  /** The frame on screen, for the sounds of the men themselves (wading, 3.4). */
-  frame?: Pick<Frame, 'units' | 'seen' | 'fog'>;
+  /** The frame on screen, for the sounds of the men themselves (wading, 3.4); its tick paces their footsteps. */
+  frame?: Pick<Frame, 'units' | 'seen' | 'fog'> & { tick?: number };
 }
 
 /**
@@ -126,6 +159,9 @@ export class ShotAudio {
   private clockTick: number | null = null;
   private clockAt = 0;
   private tickSeconds = TICK_SECONDS;
+  /** Scheduled whizzes (ms, wall clock), and each man's last one. */
+  private whizzes: number[] = [];
+  private readonly whizzAt = new Map<number, number>();
   private listener: AudioListener | null = null;
   private ready = false;
   private failed = false;
@@ -175,6 +211,7 @@ export class ShotAudio {
     const rate = shotRate(key);
     const loudness = shotLoudness(this.listener, event.x, event.y);
     const pan = shotPan(this.listener, event.x, event.y);
+    this.whizz(event, key, delay, rate);
     if (sound !== 'rifle') {
       // Every round of a burst is heard, spaced as it was fired; a burst
       // holds one voice of the automatic budget, so rifles still sound.
@@ -217,6 +254,37 @@ export class ShotAudio {
     this.clockTick = tick;
     this.clockAt = now;
     return 0;
+  }
+
+  /**
+   * A miss at one of the player's men, on screen, is heard passing him: at
+   * his place, thinned by the gaps and voices above. Every round of a burst
+   * may be the one heard; a pressed man hears them closer together.
+   */
+  private whizz(event: Extract<SimEvent, { type: 'shot' }>, key: string, delay: number, rate: number): void {
+    const listener = this.listener;
+    if (!listener || !this.output.playWhizz || event.hit || event.target < 0) return;
+    if (listener.factionOf(event.target) !== listener.faction) return;
+    if (listener.factionOf(event.source) === listener.faction) return;
+    if (!whizzHeard(listener, event.x2, event.y2)) return;
+    const man = listener.frame?.units.find((unit) => unit.id === event.target);
+    const pressed = man !== undefined && (man.suppressed || man.state !== 'steady');
+    // A second hash of the key, apart from the pitch's, picks and thins.
+    const roll = (shotRate(`${key}:whizz`) - 0.94) / 0.12;
+    if (!pressed && roll >= WHIZZ_CHANCE) return;
+    const now = this.now();
+    const at = now + (delay + WHIZZ_AFTER) * 1000;
+    this.whizzes = this.whizzes.filter((start) => start + WHIZZ_MS > now);
+    if (this.whizzes.filter((start) => Math.abs(start - at) < WHIZZ_MS).length >= WHIZZ_VOICES) return;
+    if (this.whizzes.some((start) => Math.abs(start - at) < WHIZZ_GAP_MS)) return;
+    const last = this.whizzAt.get(event.target);
+    if (last !== undefined && Math.abs(at - last) < (pressed ? WHIZZ_MAN_GAP_PRESSED_MS : WHIZZ_MAN_GAP_MS)) return;
+    this.whizzes.push(at);
+    this.whizzAt.set(event.target, at);
+    if (this.whizzAt.size > MAX_SEEN) this.whizzAt.clear();
+    const variant = Math.floor(roll * WHIZZ_PROFILES.length) % WHIZZ_PROFILES.length;
+    const pan = shotPan(listener, event.x2, event.y2);
+    this.output.playWhizz(this.volume * WHIZZ_LEVEL, variant, delay + WHIZZ_AFTER, 2 - rate, pan);
   }
 
   /** Whether a shooter's round has an automatic voice: his burst's, or a free one. */
@@ -302,7 +370,24 @@ abstract class EffectsOutput {
     if (context && mixer) playBuffer(context, mixer.input('effects'), buffer, volume, rate, delay, pan);
   }
 
+  private whizzBuffers: AudioBuffer[] | null = null;
+
+  /** A round passing: the synthesized whizzes, made on first use. */
+  playWhizz(volume: number, variant: number, delay: number, rate = 1, pan = 0): void {
+    const context = this.engine.context;
+    if (!context) return;
+    this.whizzBuffers ??= WHIZZ_PROFILES.map((profile) => {
+      const samples = synthesizeWhizz(context.sampleRate, profile);
+      const made = context.createBuffer(1, samples.length, context.sampleRate);
+      made.getChannelData(0).set(samples);
+      return made;
+    });
+    const buffer = this.whizzBuffers[variant % this.whizzBuffers.length];
+    if (buffer) this.playOnEffects(buffer, volume, rate, delay, pan);
+  }
+
   protected releaseEngine(): void {
+    this.whizzBuffers = null;
     if (this.ownsEngine) this.engine.dispose();
   }
 }
@@ -502,4 +587,78 @@ function synthesizeGunshot(context: AudioContext): AudioBuffer {
     data[index] = Math.max(-0.95, Math.min(0.95, (filter * 0.8 + crack + thump) * decay));
   }
   return buffer;
+}
+
+/** The shape of a synthesized whizz: a round going past the man. */
+export interface WhizzProfile {
+  seconds: number;
+  /** The moment the round is closest (s): loudest, and its pitch drops. */
+  passAt: number;
+  /** Centre of the hiss before and after the pass (Hz): the Doppler drop. */
+  from: number;
+  to: number;
+  /** How fast it swells before the pass and dies after it (s). */
+  attack: number;
+  release: number;
+  /** Damping of the band (lower rings more, a purer whine). */
+  damping: number;
+  /** Level of a tone under the hiss, the "zing". */
+  whine: number;
+  /** Level of the supersonic snap at the pass (0: none, a slower round). */
+  snap: number;
+  seed: number;
+}
+
+/** Four rounds, so a fusillade does not repeat: two snaps, a whine, a short zip. */
+export const WHIZZ_PROFILES: readonly WhizzProfile[] = [
+  { seconds: 0.34, passAt: 0.12, from: 5200, to: 1500, attack: 0.05, release: 0.07, damping: 0.3, whine: 0.25, snap: 0.9, seed: 1931 },
+  { seconds: 0.3, passAt: 0.1, from: 4200, to: 1800, attack: 0.04, release: 0.06, damping: 0.4, whine: 0, snap: 0.7, seed: 1932 },
+  { seconds: 0.38, passAt: 0.15, from: 3600, to: 1100, attack: 0.07, release: 0.09, damping: 0.22, whine: 0.45, snap: 0, seed: 1933 },
+  { seconds: 0.28, passAt: 0.09, from: 6000, to: 2200, attack: 0.035, release: 0.05, damping: 0.35, whine: 0.15, snap: 0.5, seed: 1934 },
+];
+
+/**
+ * A whizz as samples, from a fixed-seed noise like the reports: noise through
+ * a band whose centre falls from `from` to `to` as the round passes, swelling
+ * up to the pass and dying after it, with a faint tone and, for a fast round,
+ * a sharp snap at the pass. Levelled to a 0.9 peak.
+ */
+export function synthesizeWhizz(sampleRate: number, profile: WhizzProfile): Float32Array {
+  const length = Math.floor(sampleRate * profile.seconds);
+  const data = new Float32Array(length);
+  const snaps = new Float32Array(length);
+  let state = profile.seed >>> 0;
+  const noise = (): number => {
+    state = (Math.imul(state, 1664525) + 1013904223) >>> 0;
+    return (state / 4294967296) * 2 - 1;
+  };
+  let low = 0;
+  let band = 0;
+  let phase = 0;
+  let peak = 0;
+  const snapHalf = 0.0025;
+  for (let index = 0; index < length; index += 1) {
+    const time = index / sampleRate;
+    const centre = profile.to + (profile.from - profile.to) / (1 + Math.exp((time - profile.passAt) * 45));
+    const f = Math.min(0.99, 2 * Math.sin((Math.PI * centre) / sampleRate));
+    low += f * band;
+    const high = noise() - low - profile.damping * band;
+    band += f * high;
+    const before = (profile.passAt - time) / profile.attack;
+    const envelope = time < profile.passAt ? Math.exp(-before * before) : Math.exp(-(time - profile.passAt) / profile.release);
+    phase += (Math.PI * 2 * centre * 0.35) / sampleRate;
+    const tone = Math.sin(phase) * profile.whine;
+    const fromSnap = time - (profile.passAt - snapHalf);
+    snaps[index] = fromSnap >= 0 && fromSnap < snapHalf * 2 ? profile.snap * (1 - fromSnap / snapHalf) : 0;
+    const value = (band * 0.5 + tone) * envelope;
+    data[index] = value;
+    peak = Math.max(peak, Math.abs(value));
+  }
+  // The hiss is levelled to 0.75; the snap rides on top of it.
+  const scale = peak > 0 ? 0.75 / peak : 0;
+  for (let index = 0; index < length; index += 1) {
+    const edge = Math.min(1, index / 24, (length - index) / 64);
+    data[index] = Math.max(-0.95, Math.min(0.95, (data[index]! * scale + snaps[index]!) * edge));
+  }
+  return data;
 }

@@ -67,6 +67,18 @@ variant. Per-footstep one-shots tied to the walk clip were considered:
 truer for one man, but a 3v3 has sixty-six feet, and the cap would cut
 most of them.
 
+*Amended 2026-11-15 (the owner: the steps "repeat, stop, then repeat
+fast" on every ground).* The looped takes are uneven, clusters of hits
+and second-long gaps, and the section loops are one take layered six
+times, so a loop could not keep a march. Footsteps are still by group,
+but each group is now a few pairs of feet (up to four, so the cap is per
+group, not per foot) whose steps are cut from one man's take on that
+ground and scheduled on the audio clock at the gait's cadence (walk
+0.55 s, run 0.34 s, crawl 0.85 s), with jitter in time, pitch and level.
+A stream that falls behind the clock starts afresh rather than catching
+up; the cadence follows the game's speed read from the frames' ticks, up
+to 1.5×, and stops while paused. The rattle stays a loop over running.
+
 **D5. Water as looped beds per kind, positioned at the nearest stretch.**
 Wide river, narrow stream (by the river's width against a threshold in
 shared data), ford and pond. One emitter per kind, moved to the nearest
