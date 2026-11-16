@@ -37,6 +37,8 @@
 
 ## 6. Loading and gates
 
-- [ ] 6.1 On-demand loading in priority order; a battle starts without waiting; verify with an e2e that throttles the audio requests and starts a battle, and `pnpm check:bundle` unchanged for the JS chunks
-- [ ] 6.2 `pnpm verify` and `openspec validate ambient-sound-and-voices --type change --strict`; verify: all pass, the audio set's size in `docs/status.md`, determinism goldens unchanged
+- [x] 6.1 On-demand loading in priority order; a battle starts without waiting; verify with an e2e that throttles the audio requests and starts a battle, and `pnpm check:bundle` unchanged for the JS chunks
+  - Done 2026-11-16. Audio was already fetched on demand; the voices now ask for the order lines and answers at the battle's first frame and the rest 4 s later (`LATER_VOICES_MS`), behind the beds and water. `tests/e2e/audio-loading.spec.ts` delays every audio file by 3 s: the battle opens and starts at once, order lines are asked for before call-outs, and an order is spoken once they arrive. `pnpm check:bundle` passes; the index JS grew with the voice catalogue to 989,826 B of 1,000,000 (99.0%).
+- [x] 6.2 `pnpm verify` and `openspec validate ambient-sound-and-voices --type change --strict`; verify: all pass, the audio set's size in `docs/status.md`, determinism goldens unchanged
+  - Done 2026-11-16. `pnpm verify` passed every step (check, published content, audio check, build, bundle, release check, determinism with goldens unchanged, difficulty, tick budget, OpenSpec, e2e 183 passed and 9 skipped in 15.6 min); `openspec validate ambient-sound-and-voices --type change --strict` passes. The audio set's size is in `docs/status.md`.
 - [ ] 6.3 Hand check by the owner with headphones: the river and the stream, a march over three surfaces, orders to a far section under fire, the call-outs; findings in `docs/status.md`

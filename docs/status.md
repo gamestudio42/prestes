@@ -17,8 +17,10 @@ the troop panel. Maps are made in the in-game editor (`editor.html`), with
 scripted battle events. The campaign's eight chapters can be played in
 order from the campaign book, each opened by winning the one before it;
 progress is kept in the browser. The battle has ambient beds, water,
-footsteps and passing rounds; voices are not in yet. There is no save/load
-of a battle.
+footsteps and passing rounds, and voices: the commander's orders and the
+section's answers, the soldiers' call-outs, curses by moment and the enemy's
+lines when seen, heard from a distance, with captions (on in English). There
+is no save/load of a battle.
 
 ## Queue (2026-11-15)
 
@@ -36,14 +38,15 @@ that unblocks the most.
    (2.3); 6.2 stays open until then.
 2. ~~**Books gate**~~ (`complete-books-and-bibliography` 7.1): done
    2026-11-16, every step passing (see the notes of 2026-11-16).
-3. **Voices code** (`ambient-sound-and-voices` 5.1-5.5, 6.1: line catalog,
-   script tool, voice director, playback, captions, on-demand loading).
-   Under way in the session "Geração de falas por IA"; no other session
-   touches the audio files while it runs.
+3. ~~**Voices code**~~ (`ambient-sound-and-voices` 5.1-5.5, 5.2, 6.1,
+   6.2): done 2026-11-16 (see the notes "voices in the game"). Left: the
+   owner's headphone check (6.3).
 
 ### 2. Waiting on the owner
 
-1. **Three finished branches to merge or drop.** Each was done in its own
+1. ~~**Three finished branches to merge or drop.**~~ All three are
+   merged into this branch (checked 2026-11-16 with `git branch --merged`).
+   Was: **Three finished branches to merge or drop.** Each was done in its own
    session on 2026-11-15 and is not on this branch. Suggested order, smallest
    first, with `pnpm verify` after each:
    - `claude/brave-satoshi-1c42a4` (1 commit): cursor badges on right-click,
@@ -192,6 +195,32 @@ content warning was committed first.
   for a frame other than the one it last accepted. The same race was on
   "Next chapter" then defeat. Since the fix: 44 of 45 runs of the campaign
   specs passed. The one failure, in the first round, was not captured.
+
+## Notes of 2026-11-16: voices in the game
+
+- **The voice director is in** (`ambient-sound-and-voices` 5.1-5.5, 5.2,
+  6.1, 6.2; `add-difficulty-levels` 5.1-5.2). `VOICE_LINES` holds the 202
+  generated takes with EN captions. The client numbers its commands as the
+  simulation does, so a refused order is silent; a newer order replaces an
+  unspoken one; call-outs are read from frame differences and placed by the
+  nearness rule; curses come by chance to an engaged section, from the
+  group that fits the moment (hit, miss, under fire, a rout, any) at the
+  owner's word; "reloading" waits 60 s per section and 30 s over all; enemy
+  lines only when seen. Every voice is filtered and given an open-air echo,
+  pushed farther twice at the owner's word, who kept the second ("ficou
+  bom"). Captions: on in EN, off in PT-BR, a switch in the options, shown
+  even when muted.
+- **Audio check** (`pnpm check:audio`, in verify): 202 of 202 takes,
+  9.82 MB of audio in all (budget 16 MB), 1.93 MB of voices (budget 5 MB),
+  every file in `docs/assets.md`. `docs/audio/VOICE_SCRIPT.md` is generated.
+- **`pnpm verify` passed every step**: e2e 183 passed, 9 skipped, 15.6 min;
+  determinism goldens unchanged; first visit 3.40 MB of 3.50, build 40.67 MB.
+- **Bundle watch:** the index JS is at 989,826 B of 1,000,000 (99.0%), up
+  with the voice catalogue. The next feature that adds to it should first
+  move the catalogue (or another large module) into a lazily loaded chunk.
+- Still open: the enemy's wordless shouts were never generated; the curses
+  waiting for a sourced page stay out (column 13, 20, 21; legalist 16-18;
+  cangaceiro 16). Hand check with headphones is the owner's (6.3).
 
 ## Notes of 2026-11-16: campaign gates
 
