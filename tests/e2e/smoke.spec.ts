@@ -25,7 +25,7 @@ test('boots, selects a section, gives orders, fights and toggles the post', asyn
   // troop-thumbnails-and-panel 3.5: each section card shows its type's picture.
   await expect(page.getByTestId('portrait-placeholder')).toHaveCount(0);
   await expect(page.locator('[data-testid^="section-thumb-"]')).toHaveCount(3);
-  await expect(page.locator('[data-testid^="section-thumb-"]').first()).toHaveAttribute('src', /assets\/sections\/[a-z0-9-]+\.png$/);
+  await expect(page.locator('[data-testid^="section-thumb-"]').first()).toHaveAttribute('src', /assets\/sections\/[a-z0-9-]+\.png\?v=[\w-]+$/);
   await expect(page.getByTestId('weapon-value')).toContainText('Fuzil Mauser 7 mm');
   await expect(page.getByTestId('weapon-card')).toContainText(/\d+\/\d+/);
   // troop-thumbnails-and-panel 3.3: the state and cover are the troop panel's gauges.

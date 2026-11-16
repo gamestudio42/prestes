@@ -1,3 +1,4 @@
+import { publicUrl } from '@prestes/shared';
 import { Fragment, lazy, Suspense, useEffect, useMemo, useRef, useState, useSyncExternalStore, type CSSProperties, type ReactNode } from 'react';
 import {
   BIOME_MIX,
@@ -735,7 +736,7 @@ function swatchStyle(index: number, color: number): CSSProperties {
   const row = Math.floor(index / GROUND_ATLAS.columns);
   return {
     backgroundColor: `#${color.toString(16).padStart(6, '0')}`,
-    backgroundImage: 'url(./models/textures/ground-atlas.png)',
+    backgroundImage: `url(${publicUrl('./models/textures/ground-atlas.png')})`,
     backgroundSize: `${GROUND_ATLAS.columns * 100}% ${GROUND_ATLAS.rows * 100}%`,
     backgroundPosition: `${(column / (GROUND_ATLAS.columns - 1)) * 100}% ${(row / (GROUND_ATLAS.rows - 1)) * 100}%`,
   };

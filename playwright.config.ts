@@ -1,4 +1,4 @@
-﻿import { defineConfig } from '@playwright/test';
+import { defineConfig } from '@playwright/test';
 
 export default defineConfig({
   testDir: './tests/e2e',
@@ -21,12 +21,33 @@ export default defineConfig({
     // Chromium falls back to software by itself.
     launchOptions: { args: ['--use-angle=d3d11', '--enable-gpu', '--ignore-gpu-blocklist'] },
   },
-  webServer: {
-    command: 'pnpm --filter @prestes/game dev:test',
-    url: 'http://127.0.0.1:4317',
-    reuseExistingServer: !process.env.CI,
-    timeout: 120_000,
-  },
+  // prepare-online-release D7: the slow-network test runs on the built game, as published.
+  projects: [
+    { name: 'dev', testIgnore: /slow-network\.spec\.ts/ },
+    {
+      name: 'release',
+      testMatch: /slow-network\.spec\.ts/,
+      use: {
+        baseURL: 'http://127.0.0.1:4318',
+        storageState: { cookies: [], origins: [] },
+      },
+    },
+  ],
+  webServer: [
+    {
+      command: 'pnpm --filter @prestes/game dev:test',
+      url: 'http://127.0.0.1:4317',
+      reuseExistingServer: !process.env.CI,
+      timeout: 120_000,
+    },
+    {
+      // Serves apps/game/dist: run `pnpm build` first (pnpm verify builds before the e2e step).
+      command: 'pnpm --filter @prestes/game preview:release',
+      url: 'http://127.0.0.1:4318',
+      reuseExistingServer: !process.env.CI,
+      timeout: 120_000,
+    },
+  ],
 });
 
 

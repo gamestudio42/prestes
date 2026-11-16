@@ -24,6 +24,8 @@ const steps: Step[] = [
   { name: 'published content', command: 'pnpm check:content --published' },
   { name: 'build', command: 'pnpm build' },
   { name: 'bundle budget', command: 'pnpm check:bundle' },
+  // prepare-online-release D6: nothing unpublishable in the build, and its sizes in budget.
+  { name: 'release check', command: 'pnpm check:release' },
   { name: 'determinism', command: 'pnpm check:determinism' },
   // add-difficulty-levels 4.2: 60 headless battles in parallel, a few minutes.
   { name: 'difficulty', command: 'pnpm check:difficulty', slow: true },

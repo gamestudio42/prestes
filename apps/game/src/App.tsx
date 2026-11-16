@@ -119,6 +119,7 @@ export function App() {
   const startsRef = useRef(new BattleStarts());
   const [loading, setLoading] = useState<BattleLoadingState | null>(null);
   const [loadingShown, setLoadingShown] = useState(false);
+  const loadingShownRef = useRef(false);
   const loadingTimer = useRef<number | null>(null);
   const busyControl = useRef<HTMLElement | null>(null);
   const [assetNotice, setAssetNotice] = useState(false);
@@ -133,6 +134,7 @@ export function App() {
     loadingTimer.current = null;
     clearBusy();
     setLoading(null);
+    loadingShownRef.current = false;
     setLoadingShown(false);
   };
 
@@ -467,6 +469,7 @@ export function App() {
     loadingTimer.current = window.setTimeout(() => {
       if (!starts.isCurrent(token)) return;
       clearBusy();
+      loadingShownRef.current = true;
       setLoadingShown(true);
     }, 300);
     void prepareBattle({
@@ -491,13 +494,16 @@ export function App() {
       preload: preloadBattle,
       loaders: sharedBattleLoaders(),
       onProgress: (state) => setLoading({ chapterId, ...state }),
-    }).then((ready) => {
-      if (!starts.isCurrent(token)) return;
-      endLoading();
-      if (!ready) return;
-      setAssetNotice(ready.failed > 0);
-      openBattle(map, rosters, timeLimitTicks, difficulty);
-    });
+    })
+      // A screen on view shows its full bar for a moment before the battle replaces it.
+      .then((ready) => (loadingShownRef.current ? new Promise<typeof ready>((resolve) => window.setTimeout(() => resolve(ready), 250)) : ready))
+      .then((ready) => {
+        if (!starts.isCurrent(token)) return;
+        endLoading();
+        if (!ready) return;
+        setAssetNotice(ready.failed > 0);
+        openBattle(map, rosters, timeLimitTicks, difficulty);
+      });
   };
 
   /** Opens a battle whose map and files are in: the same client and start as before loading existed. */

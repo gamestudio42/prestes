@@ -30,14 +30,14 @@
 
 ## 3. Versioned public files
 
-- [ ] 3.1 `__BUILD_ID__` in `vite.config.ts`, and `publicUrl()` in `packages/shared`; models, textures, sounds, gramophone tracks, the menu video and map previews go through it (D5).
-  - Verify with a unit test of the helper, the source guard test (no bare `./models/`, `./audio/`, `./music/`, `./video/` literal outside the helper), and an e2e on the built preview showing that every request under `models/` carries `?v=`.
+- [x] 3.1 `__BUILD_ID__` in `vite.config.ts`, and `publicUrl()` in `packages/shared`; models, textures, sounds, gramophone tracks, map previews, thumbnails and compendium images go through it (D5).
+  - Verify with a unit test of the helper, the source guard test (no bare `./models/`, `./audio/`, `./music/`, `./video/` literal outside the helper), and the slow-network e2e on the built preview showing that every public-file request carries `?v=`.
 
 ## 4. Release check and slow network
 
-- [ ] 4.1 `tools/check-release.ts`, `tools/release-budget.json`, the `check:release` script, and the step in `tools/verify.ts` after the build; Vite's manifest is turned on (D6).
+- [x] 4.1 `tools/check-release.ts`, `tools/release-budget.json`, the `check:release` script, and the step in `tools/verify.ts` after the build; Vite's manifest is turned on (D6).
   - Verify with unit tests on fixture builds: a pending image, a `compendium-pending` path, a `.map` file, the edit link's string, and a size over the limit each fail with the file named; a clean fixture passes. Then run `pnpm build && pnpm check:release` and note both sizes in `docs/status.md`.
-- [ ] 4.2 `tests/e2e/slow-network.spec.ts` on the built preview with CDP throttling (D7).
+- [x] 4.2 `tests/e2e/slow-network.spec.ts` on the built preview with CDP throttling (D7).
   - Verify: it passes, and it records the cold-load times of the desk and of one campaign chapter in `docs/status.md`.
 
 ## 5. Docs and gate

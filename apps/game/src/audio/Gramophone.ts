@@ -1,3 +1,4 @@
+import { publicUrl } from '@prestes/shared';
 import {
   clampTrackIndex,
   GRAMOPHONE_TRACKS,
@@ -237,7 +238,7 @@ export class Gramophone {
   }
 
   private srcFor(track: GramophoneTrack): string {
-    return `${this.baseUrl}music/${track.file}`;
+    return publicUrl(`${this.baseUrl}music/${track.file}`);
   }
 
   private emit(): void {

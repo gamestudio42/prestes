@@ -1,3 +1,4 @@
+import { publicUrl } from '@prestes/shared';
 import { useEffect, useRef, useState } from 'react';
 import { mapText } from './SkirmishMaps';
 import { ARMIES, DIFFICULTIES, ENEMY_ARMY_IDS, rosterArmies, rosterMen, SECTION_TYPES, TIME_LIMITS, type BattleMap, type BattleMapId, type Roster } from '@prestes/shared';
@@ -32,7 +33,7 @@ export function SkirmishSetup({ locale, setup, maps, onChange, onStart, onBack }
   const ready = setupReady(setup);
   const [missing, setMissing] = useState<ReadonlySet<string>>(() => new Set());
   const titleRef = useRef<HTMLHeadingElement>(null);
-  const preview = (id: BattleMapId) => `${import.meta.env.BASE_URL}maps/${id}.png`;
+  const preview = (id: BattleMapId) => publicUrl(`${import.meta.env.BASE_URL}maps/${id}.png`);
 
   useEffect(() => {
     titleRef.current?.focus();

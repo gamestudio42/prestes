@@ -1,3 +1,4 @@
+import { publicUrl } from '@prestes/shared';
 import type { CSSProperties } from 'react';
 import type { BattleMap, BattleMapId } from '@prestes/shared';
 import { translate, type Locale, type MessageKey } from '@prestes/content';
@@ -22,7 +23,7 @@ export function mapText(map: BattleMap, field: 'name' | 'description', locale: L
 }
 
 /** The thumbnail the editor saves for a map (author-game-maps), or its rendered preview. */
-export const mapThumbnail = (id: BattleMapId) => `${import.meta.env.BASE_URL}maps/${id}.png`;
+export const mapThumbnail = (id: BattleMapId) => publicUrl(`${import.meta.env.BASE_URL}maps/${id}.png`);
 
 /** How many sheets under the top one are spread out; deeper ones lie square under the last. */
 const PILE_SPREAD = 4;

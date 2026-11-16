@@ -136,13 +136,22 @@ URLs.**
 - **The helper.** `publicUrl(path)` lives in `packages/shared`, typed
   through a declared global. It returns `path + '?v=' + __BUILD_ID__`.
 - **Who uses it.**
-  - `./models/`, the textures, `sound-files.ts`, the gramophone tracks,
-    the menu video and the map previews all go through it;
-  - view3d takes a base URL already, so the app passes versioned bases;
+  - the gunshot and sound-bank fetches, the gramophone tracks, the map
+    previews, the section thumbnails and the compendium images all go
+    through it;
+  - three.js loads (models and textures, through GLTFLoader and
+    TextureLoader) go through it by one URL modifier on three's default
+    loading manager, `versionPublicUrls()`, set in both pages' `main.tsx`.
+    A base URL with a query would break the loaders' `base + file`
+    joins, so the modifier is used instead of versioned bases;
   - files under `assets/` that Vite hashes are left as they are.
-- **The guard.** A lint-like unit test searches the source for the
-  literals `'./models/'`, `'./audio/'`, `'./music/'` and `'./video/'`
-  outside the helper, and fails when one appears.
+  - The menu video is no longer in the build. It was unused since the camp
+    desk, and was removed at the owner's word on 2026-11-16.
+- **The guard.** A unit test fails when a source file names a public-folder
+  path (`models/`, `audio/`, `music/`, `video/`, `maps/`,
+  `assets/sections/`, `assets/compendium/`) without calling `publicUrl`.
+  view3d is covered by the modifier instead. The slow-network e2e checks
+  that every such request on the built game carries `?v=`.
 
 **D6. `tools/check-release.ts` reads the build and the registers.**
 

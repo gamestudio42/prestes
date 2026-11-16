@@ -1,4 +1,5 @@
 ﻿import { getWeapon, type Frame, type SimEvent, type WeaponId } from '@prestes/shared';
+import { publicUrl } from '@prestes/shared';
 import { panAt } from './listening';
 import { AudioEngine } from './mixer';
 import { burstLoudness, burstSound, shellSamples, WHISTLE_CUTOFF, whistleOffset, type ShellSound } from './artillery-audio';
@@ -501,7 +502,7 @@ export class RecordedGunshotOutput extends EffectsOutput implements GunshotOutpu
 
   private async load(file: string): Promise<AudioBuffer | null> {
     try {
-      const response = await fetch(`${this.base}${file}`);
+      const response = await fetch(publicUrl(`${this.base}${file}`));
       if (!response.ok) return null;
       return await this.context!.decodeAudioData(await response.arrayBuffer());
     } catch {

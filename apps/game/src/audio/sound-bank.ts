@@ -1,3 +1,4 @@
+import { publicUrl } from '@prestes/shared';
 import { SOUND_FILES } from './sound-files';
 
 /**
@@ -37,7 +38,7 @@ export class SoundBank {
     this.pending.add(id);
     void (async () => {
       try {
-        const response = await fetch(`${this.base}${path}`);
+        const response = await fetch(publicUrl(`${this.base}${path}`));
         if (!response.ok) throw new Error(String(response.status));
         this.buffers.set(id, await context.decodeAudioData(await response.arrayBuffer()));
       } catch {

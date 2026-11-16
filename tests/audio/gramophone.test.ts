@@ -77,7 +77,7 @@ describe('Gramophone', () => {
     await tick();
 
     expect(gramophone.track.title).toBe('Argentina');
-    expect(output.plays.at(-1)).toEqual({ src: './music/argentina.mp3', fade: 3 });
+    expect(output.plays.at(-1)).toEqual({ src: './music/argentina.mp3?v=dev', fade: 3 });
   });
 
   it('starts on Plangente with the long first fade', async () => {
@@ -87,7 +87,7 @@ describe('Gramophone', () => {
     expect(gramophone.track.title).toBe('Plangente');
     await gramophone.play();
 
-    expect(output.plays).toEqual([{ src: './music/plangente.mp3', fade: 3 }]);
+    expect(output.plays).toEqual([{ src: './music/plangente.mp3?v=dev', fade: 3 }]);
     expect(gramophone.getState()).toMatchObject({
       trackIndex: 0,
       playing: true,
@@ -118,7 +118,7 @@ describe('Gramophone', () => {
 
     expect(gramophone.getState().trackIndex).toBe(1);
     expect(gramophone.getState().playing).toBe(true);
-    expect(output.plays).toEqual([{ src: './music/escovado.mp3', fade: 3 }]);
+    expect(output.plays).toEqual([{ src: './music/escovado.mp3?v=dev', fade: 3 }]);
   });
 
   it('wraps next and previous and loads the new source while paused', async () => {
@@ -130,13 +130,13 @@ describe('Gramophone', () => {
     gramophone.previous();
     expect(gramophone.getState().trackIndex).toBe(16);
     expect(gramophone.track.title).toBe('Tenho um Segredo');
-    expect(output.loads.at(-1)).toBe('./music/tenho-um-segredo.mp3');
+    expect(output.loads.at(-1)).toBe('./music/tenho-um-segredo.mp3?v=dev');
     expect(gramophone.getState().playing).toBe(false);
 
     gramophone.next();
     expect(gramophone.getState().trackIndex).toBe(0);
     expect(gramophone.getState().changeNonce).toBe(2);
-    expect(output.loads.at(-1)).toBe('./music/plangente.mp3');
+    expect(output.loads.at(-1)).toBe('./music/plangente.mp3?v=dev');
   });
 
   it('starts the next track while playing', async () => {
@@ -149,7 +149,7 @@ describe('Gramophone', () => {
 
     expect(gramophone.getState().trackIndex).toBe(1);
     expect(gramophone.getState().changeNonce).toBe(1);
-    expect(output.plays.at(-1)).toEqual({ src: './music/escovado.mp3', fade: 0.35 });
+    expect(output.plays.at(-1)).toEqual({ src: './music/escovado.mp3?v=dev', fade: 0.35 });
     expect(gramophone.getState().playing).toBe(true);
   });
 
@@ -162,7 +162,7 @@ describe('Gramophone', () => {
     await tick();
 
     expect(gramophone.getState().trackIndex).toBe(1);
-    expect(output.plays.at(-1)).toEqual({ src: './music/escovado.mp3', fade: 0.35 });
+    expect(output.plays.at(-1)).toEqual({ src: './music/escovado.mp3?v=dev', fade: 0.35 });
     expect(gramophone.getState().playing).toBe(true);
   });
 
@@ -177,8 +177,8 @@ describe('Gramophone', () => {
 
     expect(gramophone.getState().trackIndex).toBe(0);
     expect(gramophone.getState().changeNonce).toBe(0);
-    expect(output.loads.at(-1)).toBe('./music/plangente.mp3');
-    expect(output.plays.at(-1)).toEqual({ src: './music/plangente.mp3', fade: 0.35 });
+    expect(output.loads.at(-1)).toBe('./music/plangente.mp3?v=dev');
+    expect(output.plays.at(-1)).toEqual({ src: './music/plangente.mp3?v=dev', fade: 0.35 });
 
     output.currentTime = 1;
     gramophone.previous();

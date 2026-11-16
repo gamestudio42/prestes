@@ -43,6 +43,7 @@ export type {
 } from './protocol';
 export { shotShown, DEFAULT_TIME_LIMIT, TIME_LIMITS } from './protocol';
 export { ClientMirror, type InterpolatedFrame } from './mirror';
+export { BUILD_ID, publicUrl } from './public-url';
 
 export {
   BATTLE_COVERS,

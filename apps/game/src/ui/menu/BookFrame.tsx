@@ -1,3 +1,4 @@
+import { publicUrl } from '@prestes/shared';
 import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { BIBLIOGRAPHY, COMPENDIUM, COMPENDIUM_IMAGE_REGISTER, compendiumText, PENDING_IMAGE_DIR, translate, type SourceKey, type ImageLicence, type Locale, type MessageKey } from '@prestes/content';
 import { folio, locate, resolve, type Book, type BookPosition } from './bookPages';
@@ -169,7 +170,7 @@ export function publicImage(path: string): string {
   const served = path.startsWith(PENDING_IMAGE_DIR)
     ? `assets/compendium/${path.slice(PENDING_IMAGE_DIR.length)}`
     : path.replace(/^apps\/game\/public\//, '');
-  return `${import.meta.env.BASE_URL}${served}`;
+  return publicUrl(`${import.meta.env.BASE_URL}${served}`);
 }
 
 const LICENCE = new Map(COMPENDIUM_IMAGE_REGISTER.map((image) => [image.path, image.licence]));

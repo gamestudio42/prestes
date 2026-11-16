@@ -1,0 +1,5 @@
+{
+  "dist": "apps/game/dist",
+  "firstVisitMaxBytes": 3500000,
+  "totalMaxBytes": 60000000
+}

@@ -1,9 +1,13 @@
 ﻿import { StrictMode } from 'react';
+import { versionPublicUrls } from '@prestes/view3d';
 import { createRoot } from 'react-dom/client';
 import '@fontsource/pixelify-sans/400.css';
 import '@fontsource/pixelify-sans/600.css';
 import { App } from './App';
 import './styles/index.css';
+
+// prepare-online-release D5: models and textures are fetched with the build's version.
+versionPublicUrls();
 
 const root = document.getElementById('root');
 if (!root) {

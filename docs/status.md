@@ -94,6 +94,33 @@ that unblocks the most.
 | `complete-books-and-bibliography` | 25/27 | 2.5 |
 | `add-field-manual` | 0/11 | 4 |
 
+## Notes of 2026-11-16: online release preparation
+
+`prepare-online-release`, sections 1-4. Measured on the build of 2026-11-16.
+
+- **Release check** (`pnpm check:release`):
+  - first visit: 3.37 MB of a 3.5 MB limit;
+  - total build: 40.3 MB of a 60 MB limit.
+- **What the first visit counts.** The entry JS is 1.78 MB: the main chunk,
+  three.js and React. The images in the main chunk add 1.33 MB, mostly the
+  HUD art (`ground-left`, `summary`, `bottom-strip`) and the camp table.
+  - The count is conservative: a browser downloads the HUD art only when the
+    battle draws it.
+  - Moving the HUD art out of the main chunk is the first lever if the limit
+    gets tight.
+- **The old menu video is gone.** `public/video/menu-book.mp4` showed the
+  marching soldiers. It had been unused since the camp desk, and the owner
+  said to delete it (6.5 MB).
+- **Slow-network e2e** (`tests/e2e/slow-network.spec.ts`, built preview,
+  1.5 MB/s, 150 ms, no cache). Times count from the first byte:
+  - skirmish: desk in the page at 0.7 s, loading screen at 2.6 s,
+    deployment at 7.9 s, with 12 entries;
+  - chapter 1: deployment at 11.5 s, with 14 entries, including paging
+    through the book to the briefing.
+- **Warm start.** A second battle in the same page opens with no loading
+  screen. Its state hash after 40 ticks equals the cold start's
+  (`tests/e2e/battle-loading.spec.ts`).
+
 ## Notes of 2026-11-16: branches unified
 
 At the owner's request ("unifique todos os branches"), merged into
