@@ -4,32 +4,113 @@ History before 2026-11-06 (the bootcamp era, the redesign plan, the
 per-change notes and the verification log) is in
 [`status-history.md`](status-history.md).
 
-## Where the game is (2026-11-14)
+## Where the game is (2026-11-15)
 
 A skirmish game on authored maps. A battle opens in a deployment phase, is
 fought for capture-and-hold objectives against an enemy commander under fog
 of war, and ends by objective value or by breaking the other side. Sections
 are built from a roster of three armies' types and period weapons; they take
 cover by slots, enter and assault buildings and trench lines, queue orders,
-walk or run. The battle HUD is the docked wood-and-leather one, with a
-figure per soldier in the troop panel. Maps are made in the in-game editor
-(`editor.html`), now with scripted battle events (reinforcements, enemy
-posture, narrative cards), and chosen by slot from the desk menu. The battle
-has ambient beds, water and footsteps; voices are not in yet. The campaign's
-eight chapters are written in the campaign book, none playable; there is no
-save/load.
+walk or run. A skirmish is fought at one of three difficulty levels. The
+battle HUD is the docked wood-and-leather one, with a figure per soldier in
+the troop panel. Maps are made in the in-game editor (`editor.html`), with
+scripted battle events. The campaign's eight chapters can be played in
+order from the campaign book, each opened by winning the one before it;
+progress is kept in the browser. The battle has ambient beds, water,
+footsteps and passing rounds; voices are not in yet. There is no save/load
+of a battle.
 
-## Plan (2026-11-14)
+## Queue (2026-11-15)
 
-| Change | State | What is left |
+One list, in order. Each item says who acts. Work the first open item of
+section 1; items in section 2 wait on the owner and are listed in the order
+that unblocks the most.
+
+### 1. Claude, nothing to wait for
+
+1. **Campaign gates** (`make-campaign-playable` 6.1, 6.2): a green
+   `pnpm verify`, then a muted playthrough of the eight chapters from the
+   book, with each chapter's result and how it was decided recorded here. A
+   chapter that cannot be won goes to the owner (a map edit by hand, not code).
+2. **Books gate** (`complete-books-and-bibliography` 7.1): `pnpm check`,
+   `pnpm verify` and strict validate.
+3. **Voices code** (`ambient-sound-and-voices` 5.1-5.5, 6.1: line catalog,
+   script tool, voice director, playback, captions, on-demand loading).
+   Under way in the session "Geração de falas por IA"; no other session
+   touches the audio files while it runs.
+
+### 2. Waiting on the owner
+
+1. **Three finished branches to merge or drop.** Each was done in its own
+   session on 2026-11-15 and is not on this branch. Suggested order, smallest
+   first, with `pnpm verify` after each:
+   - `claude/brave-satoshi-1c42a4` (1 commit): cursor badges on right-click,
+     enter/assault by default on buildings.
+   - `claude/upbeat-roentgen-13ddec` (4 commits): a withdrawal victory,
+     sections leaving by a map exit.
+   - `claude/sweet-chebyshev-0853ff` (7 commits): artillery bombardment as a
+     battle event.
+2. **Play each difficulty level** (`add-difficulty-levels` 6.3): História
+   forgiving, Soldado fair, Oficial hard with ammunition to spare. Then
+   Claude archives the change and adds the level to the campaign briefing
+   (`make-campaign-playable` 5.1).
+3. **Play the campaign** (`make-campaign-playable` 6.3): from the prologue,
+   reading the debriefs and the closing line after chapter 8 (a draft) in
+   both languages; edit one map through "Editar este mapa" and accept it
+   with `pnpm maps:accept`.
+4. **Approve the lines, then record** (`docs/audio/ROTEIRO_RASCUNHO.md`):
+   the order lines and the fire control lines (`add-difficulty-levels` 5.1),
+   then the recording (`ambient-sound-and-voices` 5.6) and the headphone
+   check (6.3).
+5. **Books** (`complete-books-and-bibliography` 4.4, 7.2): send the image
+   permission requests in `docs/rights/permission-requests/` (Claude does
+   not send them); read both books in the game in both languages.
+6. **`referencias para hud/`** (33 MB of reference images): keep out of git,
+   add, or move elsewhere.
+
+### 3. Blocked on another item
+
+- Fire control voice playback (`add-difficulty-levels` 5.2) waits on the
+  voice director (1.3).
+- The level in the campaign (`make-campaign-playable` 5.1) waits on 2.2.
+
+### 4. Later, by the owner's word
+
+- `add-field-manual` (0/11): on hold since 2026-11-11 ("not yet").
+- Delete the leftover training-ground code (`training-ground.ts`,
+  `training-layer.ts`, the `training_phase` and `despawn_role` commands).
+- Not proposed: save/load of a battle (talked over on 2026-11-13); soldiers
+  carried between chapters (each chapter self-contained, 2026-11-15).
+
+### Open changes at a glance
+
+| Change | Tasks | Queue items |
 | --- | --- | --- |
-| `ambient-sound-and-voices` | 10/19 | beds, water, wading and footsteps are in (1-4); the voices (5.1-5.6: lines, script tool, voice director, playback, captions, the owner's recording), on-demand loading (6.1), verify (6.2) and the owner's headphone check (6.3). Next: the owner reviews `docs/audio/ROTEIRO_RASCUNHO.md` |
-| `add-difficulty-levels` | 17/20, committed 2026-11-15 | three levels (História, Soldado, Oficial) on the skirmish setup, an economical fire setting, the level on the end panel, a caption per fire control setting. Tuned on the casualty exchange (the owner chose it over the win rate, which was mostly chance over 20 battles): História 0.71, Soldado 0.97, Oficial 1.38, checked by `pnpm check:difficulty` in `pnpm verify`. Left: the owner's review of the fire control lines in `docs/audio/ROTEIRO_RASCUNHO.md` (5.1), their playback (5.2, waits on the voice director of `ambient-sound-and-voices`), and the owner playing each level (6.3) |
-| `make-campaign-playable` | 14/17, applied 2026-11-15 | in: chapters played from the briefing on their map, unlock by victory, progress in `prestes.campaign.v1`, debrief actions, restart, the dev-only "Editar este mapa" link and `pnpm maps:accept`. `pnpm verify` 2026-11-15: every step passed but e2e (161 passed, 3 failed, all three since fixed: the campaign save-and-play spec (its restore now retries a locked file), `editor.spec.ts` 8.3 (flaky since before today, 3 of 6 runs failed: whole-pixel mouse positions move the area 19-21 m; it now checks the sections follow the area's real move) and `area-fire.spec.ts` (failing since its own commit a5603eb: at y -20 no "?" falls within reach; it now tries march lines -80, -40, -60 with men fit to fire); index JS 910,070 B of 940,000). Saving a map to the project reloads the game tab on the dev server, so a battle open there is lost (design D6 assumed it was kept). Left: 5.1 (difficulty, waits for `add-difficulty-levels` to be archived), 6.1 (a green verify), 6.2 (a muted playthrough of the eight chapters) and the owner's check 6.3, including the closing line's text |
-| `enrich-texts-from-sources` | 12/15, committed 2026-11-14 | `pnpm verify` and strict validate (5.1), the owner's reading in the game in both languages (5.2); `superoitocine-2012` stays "not consulted" on purpose (5.3) |
-| `add-field-manual` | 0/11, on hold (the owner, 2026-11-11: not yet) | a Manual part in the book "A Coluna Prestes", twelve text pages |
-| campaign maps | the owner's hand work | each campaign map drawn in the editor, guided by `docs/maps/GUIA_MAPAS_CAMPANHA.md`; battle events by `docs/maps/EVENTOS_DE_BATALHA.md`; missions follow the maps |
-| not yet proposed | ideas | save/load of a battle (talked over on 2026-11-13, no proposal in the tree), a playable campaign with progression |
+| `make-campaign-playable` | 13/17 | 1.1, 2.2, 2.3 |
+| `ambient-sound-and-voices` | 11/20 | 1.3, 2.4 |
+| `add-difficulty-levels` | 17/20 | 2.2, 2.4, 3 |
+| `complete-books-and-bibliography` | 24/27 | 1.2, 2.5 |
+| `add-field-manual` | 0/11 | 4 |
+
+## Notes of 2026-11-15
+
+- Committed by topic: the difficulty levels, the passing rounds and the
+  footsteps' cadence (left uncommitted by their sessions), then
+  `make-campaign-playable` 1-4. Regenerating `icons.txt` had dropped the
+  `order-area-fire` icon; it is back and now lives in `icon_grids.py`.
+- Campaign `pnpm verify`: every step passed but e2e (161 passed, 3 failed,
+  all three since fixed: the campaign save-and-play spec, whose restore now
+  retries a locked file; `editor.spec.ts` 8.3, flaky before today because
+  whole-pixel mouse positions move the area 19-21 m; `area-fire.spec.ts`,
+  failing since its own commit a5603eb, now trying march lines -80, -40,
+  -60). Index JS 910,070 B of 940,000.
+- Saving a map to the project reloads the game tab on the dev server, so a
+  battle open there is lost (`make-campaign-playable` D6 assumed it was
+  kept); the next play of the chapter uses the saved map.
+- Since 2026-11-15 Claude draws the campaign maps (the owner's word); the
+  eight are in the tree and the owner adjusts them by hand in the editor.
+
+## Earlier notes
 
 Done since the plan of 2026-11-11, all archived: `faction-armies`,
 `soldier-animation-and-textures`, `troop-thumbnails-and-panel`,
