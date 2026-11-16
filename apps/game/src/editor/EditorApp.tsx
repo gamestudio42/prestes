@@ -993,6 +993,7 @@ function SelectionPanel({ store, viewport, t }: { store: EditorStore; viewport: 
   const line = first.kind === 'line' && selection.length === 1 ? store.map.lines.find((item) => item.id === first.id) : undefined;
   const trench = first.kind === 'trench' && selection.length === 1 ? store.map.trenches.find((item) => item.id === first.id) : undefined;
   const river = first.kind === 'river' && selection.length === 1 ? store.map.rivers.find((item) => item.id === first.id) : undefined;
+  const pond = first.kind === 'pond' && selection.length === 1 ? store.map.ponds.find((item) => item.id === first.id) : undefined;
   const objective = first.kind === 'objective' && selection.length === 1 ? (store.map.objectives ?? []).find((item) => item.id === first.id) : undefined;
   // add-map-objectives 1.3: edits one objective in place (undoable like every vector edit).
   const editObjective = (patch: (target: Objective) => Objective): void =>
@@ -1100,6 +1101,24 @@ function SelectionPanel({ store, viewport, t }: { store: EditorStore; viewport: 
           <p>{t(`editor.road.${road.type}`)}</p>
           <NumberField label={t('editor.prop.width')} value={road.width} min={1.5} max={12} step={0.5} onChange={(width) => store.editVector((draft) => { const target = draft.roads.find((item) => item.id === road.id); if (target) target.width = width; })} />
         </>
+      ) : null}
+      {pond ? (
+        <label className="editor-check">
+          <input
+            type="checkbox"
+            checked={pond.sea === true}
+            data-testid="prop-pond-sea"
+            onChange={(event) =>
+              store.editVector((draft) => {
+                const target = draft.ponds.find((item) => item.id === pond.id);
+                if (!target) return;
+                if (event.target.checked) target.sea = true;
+                else delete target.sea;
+              })
+            }
+          />
+          {t('editor.prop.sea')}
+        </label>
       ) : null}
       {river ? (
         <>

@@ -10,9 +10,9 @@ import type { BattleMap, WaterArea } from './types';
  */
 
 /** How a stretch of water sounds. */
-export type WaterSoundKind = 'river' | 'stream' | 'ford' | 'pond';
+export type WaterSoundKind = 'river' | 'stream' | 'ford' | 'pond' | 'sea';
 
-export const WATER_SOUND_KINDS: readonly WaterSoundKind[] = ['river', 'stream', 'ford', 'pond'];
+export const WATER_SOUND_KINDS: readonly WaterSoundKind[] = ['river', 'stream', 'ford', 'pond', 'sea'];
 
 /** A river this wide or narrower is a stream (the editor's rivers run 3 to 60 m). */
 export const STREAM_MAX_WIDTH = 8;
@@ -31,8 +31,12 @@ export interface NearWater {
   distance: number;
 }
 
-/** The sound kind of one water area: a ford sounds shallow wherever it is; deep water by its shape and width. */
+/**
+ * The sound kind of one water area: the sea and its surf sound of waves; a
+ * ford sounds shallow wherever it is; deep water by its shape and width.
+ */
 export function waterSoundKind(area: WaterArea): WaterSoundKind {
+  if (area.sea) return 'sea';
   if (area.kind === 'ford') return 'ford';
   if (area.strip) return area.strip.width <= STREAM_MAX_WIDTH ? 'stream' : 'river';
   return 'pond';

@@ -98,6 +98,8 @@ export interface DocPond {
   id: number;
   kind: 'deep' | 'ford';
   polygon: Vec2[];
+  /** The sea (deep) or its surf (ford): it sounds of waves, not of a pond or a stream. Absent = inland water. */
+  sea?: boolean;
 }
 
 export interface DocBridge {
@@ -509,7 +511,7 @@ export function parseMapDocument(value: unknown): ParseResult {
   const roads = doc.roads as unknown[];
   if (!roads.every((road) => isObject(road) && isNumber(road.id) && isNumber(road.width) && isPoints(road.points, 2) && isObject(road.ditches) && ROAD_TYPES.some((info) => info.type === road.type))) return fail('roads');
   if (!(doc.rivers as unknown[]).every((river) => isObject(river) && isNumber(river.id) && isNumber(river.width) && isPoints(river.points, 2) && Array.isArray(river.kinds))) return fail('rivers');
-  if (!(doc.ponds as unknown[]).every((pond) => isObject(pond) && isNumber(pond.id) && (pond.kind === 'deep' || pond.kind === 'ford') && isPoints(pond.polygon, 3))) return fail('ponds');
+  if (!(doc.ponds as unknown[]).every((pond) => isObject(pond) && isNumber(pond.id) && (pond.kind === 'deep' || pond.kind === 'ford') && isPoints(pond.polygon, 3) && (pond.sea === undefined || typeof pond.sea === 'boolean'))) return fail('ponds');
   if (!(doc.bridges as unknown[]).every((bridge) => isObject(bridge) && ['id', 'x', 'y', 'rotation', 'halfWidth', 'halfDepth', 'deckHeight'].every((key) => isNumber(bridge[key])))) return fail('bridges');
   if (!(doc.ferries as unknown[]).every((ferry) => isObject(ferry) && isNumber(ferry.id) && isPoint(ferry.landingA) && isPoint(ferry.landingB))) return fail('ferries');
   if (!(doc.lines as unknown[]).every((line) => isObject(line) && isNumber(line.id) && isNumber(line.height) && isPoints(line.points, 2) && isString(line.kind) && (line.variant === undefined || isString(line.variant)))) return fail('lines');
@@ -842,7 +844,7 @@ export function compileMapDocument(source: EditableMap | MapDocument): BattleMap
     forNodesIn(field, polygonBox(pond.polygon), (index, x, y) => {
       if (pointInPolygon(x, y, pond.polygon)) field.heights[index] = Math.min(field.heights[index]!, bed);
     });
-    water.push({ kind: pond.kind, polygon: pond.polygon });
+    water.push({ kind: pond.kind, polygon: pond.polygon, ...(pond.sea ? { sea: true } : {}) });
   }
 
   // Surfaces and the view's paint, from the painted materials.

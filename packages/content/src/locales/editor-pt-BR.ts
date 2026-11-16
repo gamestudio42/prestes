@@ -292,6 +292,7 @@ export const editorPtBR: Record<keyof typeof editorEn, string> = {
   'editor.prop.ditchRight': 'Vala à direita',
   'editor.prop.roadType': 'Tipo de estrada',
   'editor.prop.waterKind': 'Água',
+  'editor.prop.sea': 'Mar (som de ondas)',
   'editor.prop.deep': 'Funda',
   'editor.prop.ford': 'Vau',
   'editor.prop.lineKind': 'Tipo',

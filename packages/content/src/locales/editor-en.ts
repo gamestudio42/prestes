@@ -290,6 +290,7 @@ export const editorEn = {
   'editor.prop.ditchRight': 'Ditch right',
   'editor.prop.roadType': 'Road type',
   'editor.prop.waterKind': 'Water',
+  'editor.prop.sea': 'Sea (sounds of waves)',
   'editor.prop.deep': 'Deep',
   'editor.prop.ford': 'Ford',
   'editor.prop.lineKind': 'Kind',

@@ -229,6 +229,7 @@ export const SOUND_FILES: Readonly<Record<string, string>> = {
   'water-ford': 'water/water-ford.mp3',
   'water-pond': 'water/water-pond.mp3',
   'water-river': 'water/water-river.mp3',
+  'water-sea': 'water/water-sea.mp3',
   'water-stream': 'water/water-stream.mp3',
   'crawl-dry': 'footsteps/crawl-dry.mp3',
   'crawl-wet': 'footsteps/crawl-wet.mp3',

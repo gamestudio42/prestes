@@ -83,6 +83,7 @@ export const CUTS: readonly Cut[] = [
   { id: 'water-stream', group: 'water', freesound: 560276, start: 50, end: 90 },
   { id: 'water-ford', group: 'water', freesound: 442478, start: 60, end: 100 },
   { id: 'water-pond', group: 'water', freesound: 376813, start: 15, end: 55 },
+  { id: 'water-sea', group: 'water', freesound: 827367, start: 60, end: 100 },
   { id: 'wading', group: 'water', freesound: 342932, start: 0.5, end: 26 },
   { id: 'steps-road-one', group: 'footsteps', freesound: 556002, source: 'steps-road', start: 0.3, end: 12.3 },
   { id: 'steps-road-many', group: 'footsteps', freesound: 556002, source: 'steps-road', start: 0.3, end: 12.3, layers: 6 },

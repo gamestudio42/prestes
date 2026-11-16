@@ -12,7 +12,7 @@ import { ZOOM_RANGE, gainAt, panAt, zoomOf, type ListeningPoint } from './listen
  */
 
 /** How far each kind is heard at the nearest zoom (m): a wide river carries, a pond barely. */
-export const WATER_RANGE: Readonly<Record<WaterSoundKind, number>> = { river: 70, stream: 35, ford: 45, pond: 25 };
+export const WATER_RANGE: Readonly<Record<WaterSoundKind, number>> = { river: 70, stream: 35, ford: 45, pond: 25, sea: 110 };
 export const WATER_LEVEL = 0.8;
 
 /** The loop of a kind (files `water/<id>.mp3`). */

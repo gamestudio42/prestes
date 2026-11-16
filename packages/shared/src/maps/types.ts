@@ -66,6 +66,8 @@ export interface WaterArea {
   strip?: Strip;
   /** A ford's two ends, on each bank: paths over the river are routed through them. */
   ends?: readonly [Vec2, Vec2];
+  /** The sea or its surf (presentation only: the water sounds); the simulation reads `kind`. */
+  sea?: true;
 }
 
 /** A bridge deck: walkable over deep water. */

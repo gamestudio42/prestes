@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { STREAM_MAX_WIDTH, nearestWater, waterSoundKind, type BattleMap, type WaterArea } from '../../packages/shared/src';
+import { STREAM_MAX_WIDTH, compileMapDocument, nearestWater, waterSoundKind, type BattleMap, type MapDocument, type WaterArea } from '../../packages/shared/src';
+import copacabana from '../../packages/shared/src/maps/authored/copacabana.map.json';
 import type { AmbientOutput, LoopHandle } from '../../apps/game/src/audio/ambient-player';
 import type { ListeningPoint } from '../../apps/game/src/audio/listening';
 import { WATER_RANGE, WATER_REACH, WaterPlayer, waterId } from '../../apps/game/src/audio/water-player';
@@ -23,6 +24,22 @@ const map = {
 } as Pick<BattleMap, 'water'>;
 
 describe('waterSoundKind', () => {
+  it('sounds the sea and its surf as waves, whatever their kind', () => {
+    const sea = { kind: 'deep', polygon: [{ x: 0, y: 0 }, { x: 9, y: 0 }, { x: 9, y: 9 }], sea: true } as WaterArea;
+    expect(waterSoundKind(sea)).toBe('sea');
+    expect(waterSoundKind({ ...sea, kind: 'ford' })).toBe('sea');
+  });
+
+  it("Copacabana's beach hears the sea, not a pond or a stream", () => {
+    const compiled = compileMapDocument(copacabana as unknown as MapDocument);
+    const shore = compiled.water.filter((area) => area.sea);
+    expect(shore).toHaveLength(2);
+    const edge = shore[0]!.polygon![0]!;
+    const kinds = nearestWater(compiled, edge.x, edge.y, 60).map((water) => water.kind);
+    expect(kinds).toContain('sea');
+    expect(kinds.filter((kind) => kind === 'pond' || kind === 'ford' || kind === 'stream')).toEqual([]);
+  });
+
   it('tells a river from a stream by width, a ford by its kind, a pond by its shape', () => {
     expect(waterSoundKind(strip('deep', STREAM_MAX_WIDTH + 1, [{ x: 0, y: 0 }, { x: 1, y: 0 }]))).toBe('river');
     expect(waterSoundKind(strip('deep', STREAM_MAX_WIDTH, [{ x: 0, y: 0 }, { x: 1, y: 0 }]))).toBe('stream');
