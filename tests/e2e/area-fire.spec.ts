@@ -9,7 +9,7 @@ interface Bridge {
     frame: () => {
       tick: number;
       events: Array<{ type: string; side?: string; x?: number; y?: number; radius?: number; area?: boolean; source?: number }>;
-      units: Array<{ id: number; faction: string; squadId: number; alive: boolean; x: number; y: number; areaFire?: { x: number; y: number; radius: number } }>;
+      units: Array<{ id: number; faction: string; squadId: number; alive: boolean; state?: string; x: number; y: number; areaFire?: { x: number; y: number; radius: number } }>;
       seen?: { column: number[] };
       phase?: string;
     } | null;
@@ -44,37 +44,48 @@ async function startBattle(page: Page): Promise<void> {
 }
 
 test('Area fire: armed on the board, laid on a "?" and fired into', async ({ page }) => {
-  test.setTimeout(360_000);
-  await startBattle(page);
+  test.setTimeout(600_000);
   // The three sections walk up until an unseen enemy fires within a section's
-  // rifle reach and leaves a "?" (out of reach the men hold their fire).
-  await page.evaluate(() => {
-    const bridge = (window as unknown as Bridge).__prestes!;
-    for (const [squad, x] of [[1, -40], [2, 0], [3, 40]] as const) {
-      const ids = bridge.frame()!.units.filter((unit) => unit.faction === 'column' && unit.squadId === squad && unit.alive).map((unit) => unit.id);
-      bridge.command({ type: 'move', unitIds: ids, to: { x, y: -20 } });
-    }
-  });
-  const found = await page.evaluate(async () => {
-    const bridge = (window as unknown as Bridge).__prestes!;
-    for (let index = 0; index < 4000; index += 1) {
-      bridge.step(1);
-      await new Promise((resolve) => setTimeout(resolve, 10));
-      const frame = bridge.frame();
-      if (!frame) return null;
-      for (const event of frame.events) {
-        if (event.type !== 'unseen_fire' || event.side !== 'legalist') continue;
-        for (const squad of [1, 2, 3]) {
-          const inReach = frame.units.filter(
-            (unit) =>
-              unit.faction === 'column' && unit.squadId === squad && unit.alive && Math.hypot(event.x! - unit.x, event.y! - unit.y) < 105,
-          );
-          if (inReach.length >= 2) return { squad, marker: { x: event.x!, y: event.y!, radius: event.radius! } };
+  // rifle reach and leaves a "?" (out of reach the men hold their fire). The
+  // battle is deterministic from its first tick, but whether a "?" falls in
+  // reach depends on where the sections stop, so a few march lines are tried,
+  // each in a fresh battle (2026-11-15: at y -20 none fell within reach; at
+  // -60 one did, but the section was pinned and panicked, and such men hold fire).
+  type Found = { squad: number; marker: { x: number; y: number; radius: number } } | null;
+  let found: Found = null;
+  for (const line of [-80, -40, -60]) {
+    await startBattle(page);
+    found = await page.evaluate(async (y): Promise<Found> => {
+      const bridge = (window as unknown as Bridge).__prestes!;
+      for (const [squad, x] of [[1, -40], [2, 0], [3, 40]] as const) {
+        const ids = bridge.frame()!.units.filter((unit) => unit.faction === 'column' && unit.squadId === squad && unit.alive).map((unit) => unit.id);
+        bridge.command({ type: 'move', unitIds: ids, to: { x, y } });
+      }
+      for (let index = 0; index < 4000; index += 1) {
+        bridge.step(1);
+        await new Promise((resolve) => setTimeout(resolve, 10));
+        const frame = bridge.frame();
+        if (!frame) return null;
+        for (const event of frame.events) {
+          if (event.type !== 'unseen_fire' || event.side !== 'legalist') continue;
+          for (const squad of [1, 2, 3]) {
+            const inReach = frame.units.filter(
+              (unit) =>
+                unit.faction === 'column' &&
+                unit.squadId === squad &&
+                unit.alive &&
+                unit.state !== 'pinned' &&
+                unit.state !== 'panicked' &&
+                Math.hypot(event.x! - unit.x, event.y! - unit.y) < 105,
+            );
+            if (inReach.length >= 2) return { squad, marker: { x: event.x!, y: event.y!, radius: event.radius! } };
+          }
         }
       }
-    }
-    return null;
-  });
+      return null;
+    }, line);
+    if (found) break;
+  }
   expect(found).not.toBeNull();
   const { squad, marker } = found!;
   await page.getByTestId(`squad-${squad}`).click();

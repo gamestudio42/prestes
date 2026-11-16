@@ -600,12 +600,18 @@ test('erase trees: the trees under the brush go, and undo brings them back', asy
 
 test('the section starts follow the deployment area (author-game-maps 8.3)', async ({ page }) => {
   await openEditor(page);
-  const before = (await state(page)).sections.column;
+  const start = await state(page);
+  const before = start.sections.column;
   await tool(page, 'deployment');
   // Grabbing where a section point used to be now grabs the area itself.
   await dragGround(page, before[1]!, { x: before[1]!.x, y: before[1]!.y - 20 });
-  const after = (await state(page)).sections.column;
-  expect(after).toEqual(before.map((p) => ({ x: p.x, y: p.y - 20 })));
+  const end = await state(page);
+  // The mouse lands on whole pixels, so a 20 m drag moves the area 19 to 21 m
+  // after the 1 m snap; the section starts move exactly as far as the area did.
+  const dy = end.areas.column[0]!.y - start.areas.column[0]!.y;
+  expect(Math.abs(dy + 20)).toBeLessThanOrEqual(1);
+  expect(end.areas.column).toEqual(start.areas.column.map((p) => ({ x: p.x, y: p.y + dy })));
+  expect(end.sections.column).toEqual(before.map((p) => ({ x: p.x, y: p.y + dy })));
   expect((await state(page)).selection).toEqual([{ kind: 'area', side: 'column' }]);
 });
 
