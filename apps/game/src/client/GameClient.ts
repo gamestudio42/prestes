@@ -43,6 +43,8 @@ export interface GameClientOptions {
   difficulty?: Difficulty;
   onFrame?: (frame: Frame) => void;
   onEvent?: (event: SimEvent) => void;
+  /** ambient-sound-and-voices 5.4: every command sent, with the sequence number the simulation gives it. */
+  onCommand?: (command: Command, seq: number) => void;
 }
 
 /**
@@ -70,6 +72,15 @@ export class GameClient {
   private readonly difficulty?: Difficulty;
   /** make-campaign-playable 2.4: an end handed over by the developer bridge; later frames are dropped. */
   private stubbed = false;
+  /**
+   * ambient-sound-and-voices 5.4: the simulation numbers each battle's
+   * commands from 1, in the order sent. `answered` holds, for every message
+   * still to be answered by a frame, the last command sent before it; so a
+   * frame tells which commands it has run (a refusal arrives in that frame).
+   */
+  private commandSeq = 0;
+  private answered: number[] = [];
+  private readonly onCommand?: (command: Command, seq: number) => void;
   private bounding?: boolean;
   private timer: number | null = null;
   /** Half ticks owed: the interval runs every 100 ms, the speed is per 200 ms. */
@@ -82,6 +93,7 @@ export class GameClient {
   constructor(options: GameClientOptions) {
     this.onFrame = options.onFrame;
     this.onEvent = options.onEvent;
+    this.onCommand = options.onCommand;
     this.seed = options.seed;
     this.sandbox = options.sandbox;
     this.training = options.training;
@@ -107,6 +119,8 @@ export class GameClient {
           this.frameGap += (gap - this.frameGap) * 0.2;
         }
         this.frameAt = now;
+        if (message.type === 'frame') this.ranCommands = this.answered.shift() ?? this.commandSeq;
+        else this.ranCommands = 0;
         this.mirror.apply(message.frame);
         const view = this.fog.apply(message.frame);
         for (const simEvent of view.events) {
@@ -133,6 +147,7 @@ export class GameClient {
         const ticks = Math.floor(this.owed / 2);
         if (ticks > 0) {
           this.owed -= ticks * 2;
+          this.answered.push(this.commandSeq);
           this.send({ type: 'step', ticks });
         }
       }
@@ -151,6 +166,9 @@ export class GameClient {
   }
 
   reset(): void {
+    // A new engine numbers its commands from 1 again.
+    this.commandSeq = 0;
+    this.answered = [];
     this.mirror.apply({
       tick: 0,
       units: [],
@@ -164,6 +182,7 @@ export class GameClient {
   }
 
   step(ticks = 1): void {
+    this.answered.push(this.commandSeq);
     this.send({ type: 'step', ticks });
   }
 
@@ -172,9 +191,19 @@ export class GameClient {
     this.sendCommand({ type: 'set_bounding', enabled });
   }
 
-  sendCommand(command: Command): void {
+  sendCommand(command: Command): number {
+    // add-deployment-phase D1: in deployment a command is answered by one frame of its own.
+    const answeredNow = this.mirror.current?.phase === 'deployment';
+    this.commandSeq += 1;
+    const seq = this.commandSeq;
     this.send({ type: 'command', command });
+    if (answeredNow) this.answered.push(seq);
+    this.onCommand?.(command, seq);
+    return seq;
   }
+
+  /** The last command the latest frame has run (ambient-sound-and-voices 5.4). */
+  ranCommands = 0;
 
   /** The simulation's latest frame, unfiltered (developer bridge). */
   currentFrame(): Frame | null {

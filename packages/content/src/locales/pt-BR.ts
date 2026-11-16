@@ -58,6 +58,12 @@ export const ptBR: Record<MessageKey, string> = {
   'options.curses.on': 'Palavrões nas vozes: ligados',
   'options.curses.off': 'Palavrões nas vozes: desligados',
   'options.curses.note': 'Os xingamentos que os soldados gritam sob fogo. Ordens e avisos não mudam.',
+  'options.captions.on': 'Legendas das vozes: ligadas',
+  'options.captions.off': 'Legendas das vozes: desligadas',
+  'options.captions.note': 'Mostram o que os soldados falam, enquanto falam.',
+  'voice.speaker.commander': 'Comandante:',
+  'voice.speaker.soldier': 'Soldado:',
+  'voice.speaker.enemy': 'Inimigo:',
   // prepare-online-release D1: the opening splash (index.html keeps the same text).
   'splash.title': 'Prestes',
   'splash.subtitle': 'A Coluna Prestes, 1922–1927',

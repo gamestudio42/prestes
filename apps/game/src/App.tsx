@@ -20,6 +20,7 @@ import {
 import { loadPlaytest } from './editor/persistence';
 import { battleAssets, preloadBattle, sharedBattleLoaders, type CameraBand, type SceneView } from '@prestes/view3d';
 import { BattleStarts, prepareBattle } from './client/battle-start';
+import { VoiceCaption } from './ui/VoiceCaption';
 import { BattleLoading, type BattleLoadingState } from './ui/BattleLoading';
 import { DEFAULT_SPEED, GameClient } from './client/GameClient';
 import { FieldOverlays } from './ui/FieldOverlays';
@@ -210,7 +211,7 @@ export function App() {
   const selectionInitialized = useRef(false);
   const selectedCountRef = useRef(0);
 
-  const { audioRef, audioMuted, handleToggleAudio, handleAudioView } = useAudio();
+  const { audioRef, voiceRef, audioMuted, handleToggleAudio, handleAudioView } = useAudio();
   // machine-gun-fire-feedback 4.2: a burst's rounds keep their spacing at the game speed.
   useEffect(() => audioRef.current?.setSpeed(speed), [audioRef, speed]);
   // remove-sandbox-panel D1: both-sides control, set only by tests through the bridge.
@@ -320,8 +321,10 @@ export function App() {
         : documentsRef.current.has(map)
           ? { mapDocument: documentsRef.current.get(map)! }
           : {}),
+      onCommand: (command, seq) => voiceRef.current?.command(command, seq),
       onEvent: (event) => {
         audioRef.current?.handleEvent(event);
+        voiceRef.current?.event(event);
         // add-deployment-phase 3.1: a refused deployment order says why, for a few seconds.
         if (event.type === 'command_rejected' && isDeploymentRefusal(event.reason)) showDeploymentRefusal(event.reason);
         else if (event.type === 'command_rejected') showOrderNotice(event.reason);
@@ -344,6 +347,7 @@ export function App() {
         }
       },
       onFrame: (next) => {
+        voiceRef.current?.onFrame(next, client.ranCommands);
         // make-campaign-playable D3: a campaign battle's result is kept on its first ended frame, once.
         const chapter = campaignRef.current;
         if (chapter && !recordedRef.current && next.outcome !== 'playing') {
@@ -377,6 +381,7 @@ export function App() {
     client.setSpeed(DEFAULT_SPEED);
     client.start();
     clientRef.current = client;
+    voiceRef.current?.newBattle();
     return client;
   };
 
@@ -599,7 +604,7 @@ export function App() {
           onSetupChange={changeSetup}
           onToggleAudio={handleToggleAudio}
         />
-        {loading && loadingShown ? <BattleLoading state={loading} locale={locale} /> : null}
+      {loading && loadingShown ? <BattleLoading state={loading} locale={locale} /> : null}
       </div>
     );
   }
@@ -799,6 +804,7 @@ export function App() {
           </button>
         </div>
       ) : null}
+      {frame && !hudHidden ? <VoiceCaption locale={locale} /> : null}
       {loading && loadingShown ? <BattleLoading state={loading} locale={locale} /> : null}
     </div>
   );

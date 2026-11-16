@@ -37,11 +37,20 @@ export const audioSettings = {
   setCurses(on: boolean): void {
     set({ ...settings(), curses: on });
   },
+  /** ambient-sound-and-voices 5.5: the voices' captions on or off. */
+  setCaptions(on: boolean): void {
+    set({ ...settings(), captions: on });
+  },
   /** Tests: forget the cached settings so the next read is from storage. */
   reset(): void {
     current = null;
   },
 };
+
+/** Whether the captions show: the player's choice, else on in English and off in Portuguese. */
+export function captionsOn(value: AudioSettings, locale: string): boolean {
+  return value.captions ?? locale === 'en';
+}
 
 export function useAudioSettings(): AudioSettings {
   return useSyncExternalStore(audioSettings.subscribe, audioSettings.get, audioSettings.get);

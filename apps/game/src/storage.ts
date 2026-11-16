@@ -93,6 +93,11 @@ export interface AudioSettings {
    * curse lines). Kept for the voice director, which skips curses when off.
    */
   curses: boolean;
+  /**
+   * ambient-sound-and-voices 5.5: captions of the voices. Absent: by the
+   * language (on in English, off in Portuguese, the language spoken).
+   */
+  captions?: boolean;
 }
 
 export const AUDIO_DEFAULTS: AudioSettings = { muted: false, effects: 1, ambience: 0.8, voices: 1, curses: true };
@@ -112,6 +117,7 @@ export function parseAudioSettings(stored: unknown): AudioSettings {
     ambience: unit(value.ambience) ?? AUDIO_DEFAULTS.ambience,
     voices: unit(value.voices) ?? AUDIO_DEFAULTS.voices,
     curses: value.curses !== false,
+    ...(typeof value.captions === 'boolean' ? { captions: value.captions } : {}),
   };
 }
 

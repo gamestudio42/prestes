@@ -57,6 +57,12 @@ export const en = {
   'options.curses.on': 'Swearing in the voices: on',
   'options.curses.off': 'Swearing in the voices: off',
   'options.curses.note': 'The insults soldiers shout under fire. Orders and call-outs are not affected.',
+  'options.captions.on': 'Voice captions: on',
+  'options.captions.off': 'Voice captions: off',
+  'options.captions.note': 'The soldiers speak Portuguese; captions show what they say.',
+  'voice.speaker.commander': 'Commander:',
+  'voice.speaker.soldier': 'Soldier:',
+  'voice.speaker.enemy': 'Enemy:',
   // prepare-online-release D1: the opening splash (index.html keeps the same text).
   'splash.title': 'Prestes',
   'splash.subtitle': 'The Prestes Column, 1922–1927',

@@ -28,6 +28,7 @@ import {
   validateBibliography,
   validateProvisionalText,
   validateQuotes,
+  validateVoiceLines,
   validateSourceRights,
   type MissionMetadata,
 } from '@prestes/content';
@@ -58,6 +59,7 @@ for (const key of SOURCE_KEYS) {
   }
 }
 errors.push(...validateSourceRights(parseSourceRightsTable(sourcesText)));
+errors.push(...validateVoiceLines());
 
 errors.push(...validateFigures(FIGURES, SOURCE_KEYS));
 

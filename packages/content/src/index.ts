@@ -99,3 +99,21 @@ export {
 
 // complete-books-and-bibliography D7: no provisional text in the books.
 export { PROVISIONAL_PHRASES, provisionalPhrase, validateProvisionalText } from './provisional';
+export {
+  VOICE_CALLOUTS,
+  VOICE_ENEMY_CALLOUTS,
+  VOICE_LINES,
+  VOICE_ORDERS,
+  curseLines,
+  validateVoiceLines,
+  voiceFile,
+  voiceLine,
+  type VoiceCallout,
+  type VoiceEnemyCallout,
+  type VoiceFaction,
+  type VoiceKind,
+  type VoiceLine,
+  type VoiceOrder,
+  type VoiceSpeaker,
+  type VoiceTake,
+} from './voice-lines';

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { translate, type Locale, type MessageKey } from '@prestes/content';
 import { loadGraphicsSettings, saveGraphicsSettings } from '../../storage';
-import { audioSettings, useAudioSettings } from '../../audio/settings-store';
+import { audioSettings, captionsOn, useAudioSettings } from '../../audio/settings-store';
 import { AudioChannels } from '../AudioChannels';
 import { Check, Close, Languages, PostEffect, SoundOff, SoundOn } from '../icons';
 import { DESK_ART, deskArtData, deskArtStyle } from './deskArt';
@@ -31,7 +31,10 @@ export function OptionsCompass({
     translate(locale, key, values);
   // refine-map-editor D4: smooth edges, applied when the next battle view is made.
   // ambient-sound-and-voices D11: the soldiers' swearing, kept for the voice director.
-  const { curses } = useAudioSettings();
+  const audio = useAudioSettings();
+  const { curses } = audio;
+  // ambient-sound-and-voices 5.5: the voices' captions, by default on in English.
+  const captions = captionsOn(audio, locale);
   const [smoothEdges, setSmoothEdges] = useState(() => loadGraphicsSettings().smoothEdges);
   const toggleSmoothEdges = (): void => {
     const next = !smoothEdges;
@@ -96,6 +99,22 @@ export function OptionsCompass({
         </button>
         <p id="curses-note" className="desk-options-note">
           {t('options.curses.note')}
+        </p>
+        <button
+          type="button"
+          className="desk-options-row"
+          onClick={() => audioSettings.setCaptions(!captions)}
+          aria-pressed={captions}
+          aria-describedby="captions-note"
+          data-testid="audio-captions"
+        >
+          <span className="desk-options-icon">
+            {captions ? <Check aria-hidden="true" size={18} /> : <Close aria-hidden="true" size={18} />}
+          </span>
+          <span>{captions ? t('options.captions.on') : t('options.captions.off')}</span>
+        </button>
+        <p id="captions-note" className="desk-options-note">
+          {t('options.captions.note')}
         </p>
         <button
           type="button"
