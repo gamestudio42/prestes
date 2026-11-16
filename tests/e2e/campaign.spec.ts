@@ -36,9 +36,20 @@ async function openBriefing(page: Page, chapterId: string) {
 
 async function waitForBattle(page: Page) {
   await expect(page.getByTestId('hud')).toBeVisible();
+  // A campaign start fetches its map first, so the previous battle's client
+  // (frozen on its stubbed end) can still answer for a moment: wait for a
+  // frame other than the one the last wait accepted.
   await expect
-    .poll(() => page.evaluate(() => (window as unknown as { __prestes?: Bridge }).__prestes?.frame()?.units.length ?? 0))
-    .toBeGreaterThan(0);
+    .poll(() =>
+      page.evaluate(() => {
+        const host = window as unknown as { __prestes?: Bridge; __e2eBattleFrame?: unknown };
+        const frame = host.__prestes?.frame();
+        if (!frame || frame.units.length === 0 || frame === host.__e2eBattleFrame) return false;
+        host.__e2eBattleFrame = frame;
+        return true;
+      }),
+    )
+    .toBe(true);
 }
 
 const endBattle = (page: Page, outcome: 'victory' | 'defeat' | 'draw', decidedBy: string) =>

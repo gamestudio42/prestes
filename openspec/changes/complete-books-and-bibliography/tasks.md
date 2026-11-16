@@ -46,6 +46,6 @@
 
 ## 7. Gates
 
-- [ ] 7.1 `pnpm check` (including `check:locales` and `check:content`), `pnpm verify` and `openspec validate complete-books-and-bibliography --type change --strict`. Verify: all pass, and the result is noted in `docs/status.md`
+- [x] 7.1 `pnpm check` (including `check:locales` and `check:content`), `pnpm verify` and `openspec validate complete-books-and-bibliography --type change --strict`. Verify: all pass, and the result is noted in `docs/status.md`
 - [ ] 7.2 The owner reads both books in the game in both languages: every chapter, the nine entries from `enrich-texts-from-sources`, the new notes, the bibliography and the plates. Verify: findings are recorded in `docs/status.md` and fixed or logged
 - [x] 7.3 Placeholder kept on purpose: every quotation the owner left pending in 1.1 stays out of the game and is listed in `docs/status.md` with what would close it. No task claims its content — Done: no quotation was left pending; the standing checks are listed in `approval-list.md` C and `docs/status.md`.

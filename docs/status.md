@@ -34,8 +34,8 @@ that unblocks the most.
    notes of 2026-11-16). The commander no longer flanks on their own
    (4.2). Whether chapters 1-3 and 5-7 can be won is for the owner's play
    (2.3); 6.2 stays open until then.
-2. **Books gate** (`complete-books-and-bibliography` 7.1): `pnpm check`,
-   `pnpm verify` and strict validate.
+2. ~~**Books gate**~~ (`complete-books-and-bibliography` 7.1): done
+   2026-11-16, every step passing (see the notes of 2026-11-16).
 3. **Voices code** (`ambient-sound-and-voices` 5.1-5.5, 6.1: line catalog,
    script tool, voice director, playback, captions, on-demand loading).
    Under way in the session "Geração de falas por IA"; no other session
@@ -91,8 +91,48 @@ that unblocks the most.
 | `make-campaign-playable` | 15/18 | 1.1, 2.2, 2.3 |
 | `ambient-sound-and-voices` | 11/20 | 1.3, 2.4 |
 | `add-difficulty-levels` | 17/20 | 2.2, 2.4, 3 |
-| `complete-books-and-bibliography` | 24/27 | 1.2, 2.5 |
+| `complete-books-and-bibliography` | 25/27 | 2.5 |
 | `add-field-manual` | 0/11 | 4 |
+
+## Notes of 2026-11-16: books gate
+
+- **`complete-books-and-bibliography` 7.1 done.** Strict validate of the
+  change passes. Every `pnpm verify` step passes:
+  - check: 182 test files, 1287 tests, locales, content, maps;
+  - published content;
+  - build;
+  - bundle: index JS 925,748 B of 940,000 (98.5%);
+  - determinism;
+  - difficulty: Soldado 0.97, Oficial 1.38, both within their bands;
+  - tick budget: about 1.6 ms a tick of 4.5;
+  - OpenSpec: 31 of 31;
+  - e2e: 165 passed, 9 skipped, 1 failure since fixed.
+- **Caveat: four runs to get there, and the last was step by step.**
+  - Run 1: the laptop was on battery and held back. The order preview
+    timing test failed (2.16 ms of 2) and `battle-feel` timed out.
+  - Run 2: cut off when the laptop shut down at 10:39. The difficulty
+    step's battle process was killed (exit 0x40010004).
+  - Run 3: on mains power, while the machine was still busy after the
+    restart. The same two tests failed (3.15 ms; a timeout).
+  - Run 4: all 1287 tests passed, but vitest reported one internal error,
+    "Timeout calling onTaskUpdate", a worker not reporting back in time.
+    That fails `check` and stops `verify`.
+
+  The remaining steps were then run one by one, all passing. Two things
+  follow:
+  - The preview timing test and `battle-feel` are near their limits
+    whenever the machine is loaded. The timing project runs alongside the
+    unit tests. Alone, the timing test passes every time.
+  - `verify` on this laptop wants mains power and a quiet machine.
+- **E2e fix:** `campaign.spec.ts` "Play again replays the chapter" failed
+  once. In a campaign, `startBattle` fetches the chapter's map first (in
+  dev the start forgets the cached map so saved edits are used). Until
+  that fetch ends, the previous battle's client, frozen on its stubbed
+  end, still answers the bridge. So `waitForBattle` passed at once, and
+  the stubbed victory went to the old client. `waitForBattle` now waits
+  for a frame other than the one it last accepted. The same race was on
+  "Next chapter" then defeat. Since the fix: 44 of 45 runs of the campaign
+  specs passed. The one failure, in the first round, was not captured.
 
 ## Notes of 2026-11-16: campaign gates
 
