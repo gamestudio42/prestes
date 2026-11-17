@@ -23,7 +23,7 @@ import {
   type FogExtras,
   type MapLight } from '@prestes/shared';
 import { CameraRig, STRATEGIC_TILT, TACTICAL_SPAN, shakeStrength, type CameraBand } from './camera-rig';
-import { CharacterLayer } from './character-layer';
+import { CharacterLayer, type CharacterCamera } from './character-layer';
 import { CoverLayer } from './cover-layer';
 import { CoverMapLayer } from './cover-map-layer';
 import { EffectsLayer } from './effects-layer';
@@ -150,6 +150,8 @@ export class SceneView {
   private balloon: { element: HTMLDivElement; officerId: number } | null = null;
   private readonly keys = new Set<string>();
   private readonly raycaster = new THREE.Raycaster();
+  private readonly frustum = new THREE.Frustum();
+  private readonly frustumMatrix = new THREE.Matrix4();
   private readonly groundPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
   private lastEventTick = -1;
   private lastFrame: Frame | InterpolatedFrame | null = null;
@@ -580,11 +582,20 @@ export class SceneView {
       place(this.callout.troop, x, y);
     }
   }
+  /** improve-soldier-models 2.1, 3.4: the camera's focus and frustum for the soldiers. */
+  private characterCamera(): CharacterCamera {
+    const camera = this.rig.camera;
+    camera.updateMatrixWorld();
+    this.frustumMatrix.multiplyMatrices(camera.projectionMatrix, camera.matrixWorldInverse);
+    this.frustum.setFromProjectionMatrix(this.frustumMatrix);
+    return { focus: { x: this.rig.focusX, y: this.rig.focusY }, frustum: this.frustum };
+  }
+
   update(frame: Frame | InterpolatedFrame): void {
     this.lastFrame = frame;
     this.mapLayer?.update(frame.ferries);
     this.covers.update(frame.covers);
-    this.characters.update(frame, this.rig.span, { x: this.rig.focusX, y: this.rig.focusY });
+    this.characters.update(frame, this.rig.span, this.characterCamera());
     // fog-of-war: the fogged frame carries the ghosts and the "?" markers.
     const fogged = frame as (Frame | InterpolatedFrame) & FogExtras;
     this.characters.updateGhosts(fogged.ghosts ?? [], this.rig.span);
@@ -1119,7 +1130,7 @@ export class SceneView {
     }
 
     if (this.lastFrame) {
-      this.characters.update(this.lastFrame, this.rig.span);
+      this.characters.update(this.lastFrame, this.rig.span, this.characterCamera());
       this.paths.update(selectedOrders(this.lastFrame.orders, this.selectedUnits), this.rig.span);
     }
     const camera = this.rig.camera;

@@ -62,13 +62,25 @@ export function loadSoldierAsset(base = './models/'): Promise<SoldierAsset> {
   return pending;
 }
 
+/**
+ * improve-soldier-models 6.1 (D7): starts fetching the soldier when a
+ * briefing or the skirmish setup opens, so it is in flight before the
+ * battle; the battle's preload then finds it cached. A failure is left for
+ * the preload to retry.
+ */
+export function prefetchSoldier(base = './models/'): void {
+  loadSoldierAsset(base).catch(() => undefined);
+}
+
 async function fetchSoldierAsset(base: string): Promise<SoldierAsset> {
   // The loaders are a separate chunk, fetched only when models are wanted.
-  const [{ GLTFLoader }, { clone }] = await Promise.all([
+  const [{ GLTFLoader }, { clone }, { MeshoptDecoder }] = await Promise.all([
     import('three/examples/jsm/loaders/GLTFLoader.js'),
     import('three/examples/jsm/utils/SkeletonUtils.js'),
+    import('three/examples/jsm/libs/meshopt_decoder.module.js'),
   ]);
-  const gltf = await new GLTFLoader().loadAsync(`${base}soldier.glb`);
+  // improve-soldier-models 1.2: the soldier is meshopt-compressed (pnpm models).
+  const gltf = await new GLTFLoader().setMeshoptDecoder(MeshoptDecoder).loadAsync(`${base}soldier.glb`);
   const textureLoader = new THREE.TextureLoader();
   const materials: Record<string, THREE.Material> = {};
   const gradientMap = toonGradient();
@@ -116,6 +128,9 @@ export class SoldierInstance {
   private isFar = false;
   private pistol = false;
   private timeScale = 1;
+  /** 2.1-2.2: seconds not yet given to the mixer, and the half-rate beat. */
+  private pending = 0;
+  private beat = false;
 
   /** `gear`: the pieces he carries (`soldierGear`); the rest stay hidden. */
   constructor(asset: SoldierAsset, outfit: SoldierOutfit, variant = 0, gear: ReadonlySet<GearPiece> = new Set()) {
@@ -247,6 +262,24 @@ export class SoldierInstance {
 
   update(seconds: number): void {
     this.mixer.update(seconds);
+  }
+
+  /**
+   * improve-soldier-models 2.1-2.2: off screen the mixer is not advanced and
+   * the time is kept; drawn far, it is advanced every other frame. The kept
+   * time is given in one update, so a man who lay down unseen is drawn lying.
+   * Returns whether the mixer was advanced.
+   */
+  advance(seconds: number, onScreen: boolean, halfRate = false): boolean {
+    this.pending += seconds;
+    if (!onScreen) return false;
+    if (halfRate) {
+      this.beat = !this.beat;
+      if (!this.beat) return false;
+    }
+    this.mixer.update(this.pending);
+    this.pending = 0;
+    return true;
   }
 
   dispose(): void {

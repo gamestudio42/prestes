@@ -9,5 +9,10 @@
     { "name": "index CSS", "prefix": "index-", "extension": ".css", "maxBytes": 140000 },
     { "name": "editor JS", "prefix": "editor-", "extension": ".js", "maxBytes": 140000 },
     { "name": "editor CSS", "prefix": "editor-", "extension": ".css", "maxBytes": 20000 }
+  ],
+  "modelsDir": "apps/game/dist/models",
+  "models": [
+    { "name": "soldier model", "file": "soldier.glb", "maxBytes": 1500000 },
+    { "name": "soldier textures", "subdir": "textures", "prefix": "soldier-", "extension": ".png", "maxBytes": 250000 }
   ]
 }

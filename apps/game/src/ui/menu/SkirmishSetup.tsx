@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { prefetchSoldier } from '@prestes/view3d';
 import { mapText, mapThumbnail } from './SkirmishMaps';
 import { ARMIES, DIFFICULTIES, ENEMY_ARMY_IDS, rosterArmies, rosterMen, SECTION_TYPES, TIME_LIMITS, type BattleMap, type Roster } from '@prestes/shared';
 import { translate, type Locale, type MessageKey } from '@prestes/content';
@@ -36,6 +37,8 @@ export function SkirmishSetup({ locale, setup, maps, onChange, onStart, onBack }
 
   useEffect(() => {
     titleRef.current?.focus();
+    // improve-soldier-models 6.1: the soldier is on its way before Start.
+    prefetchSoldier();
   }, []);
   useEffect(() => {
     const onKey = (event: globalThis.KeyboardEvent) => {

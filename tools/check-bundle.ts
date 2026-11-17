@@ -1,6 +1,7 @@
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { checkModelLimits, type ModelLimit } from './model-budget';
 
 interface BudgetGroup {
   name: string;
@@ -12,6 +13,8 @@ interface BudgetGroup {
 interface Budget {
   assetsDir: string;
   groups: BudgetGroup[];
+  modelsDir: string;
+  models: ModelLimit[];
 }
 
 const root = fileURLToPath(new URL('..', import.meta.url));
@@ -42,6 +45,11 @@ for (const group of budget.groups) {
   );
   failed ||= over;
 }
+
+// improve-soldier-models 1.1: the models fetched before a battle.
+const models = checkModelLimits(join(root, budget.modelsDir), budget.models);
+for (const line of models.lines) (line.startsWith('FAIL') ? console.error : console.log)(line);
+failed ||= models.failed;
 
 // make-campaign-playable D6: the campaign book's "Edit this map" link is for the dev server only.
 const DEV_ONLY = ['Edit this map', 'Editar este mapa', 'editor.html?map='];

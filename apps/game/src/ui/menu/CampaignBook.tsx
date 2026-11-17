@@ -1,4 +1,5 @@
-import { useMemo, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { prefetchSoldier } from '@prestes/view3d';
 import {
   CAMPAIGN_CHAPTERS,
   COMPENDIUM,
@@ -64,6 +65,11 @@ export function CampaignBook({ locale, open, onStartSkirmish, onOpenEntry, progr
   const [pending, setPending] = useState<ReadonlySet<string>>(() => new Set());
   const book = useMemo(() => campaignBook(locale), [locale]);
   const { spread, turn, goTo, jump } = useBookPosition(book, briefingPosition(book, initialChapter));
+  // improve-soldier-models 6.1: a briefing open on the desk starts the soldier's download.
+  const briefingOpen = open && [book.pages[spread * 2], book.pages[spread * 2 + 1]].some((page) => page?.kind === 'briefing');
+  useEffect(() => {
+    if (briefingOpen) prefetchSoldier();
+  }, [briefingOpen]);
 
   if (!open) {
     return (

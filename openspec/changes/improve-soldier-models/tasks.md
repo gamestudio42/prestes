@@ -14,30 +14,37 @@
 
 ## 1. Lighter files and a model budget (current soldier)
 
-- [ ] 1.1 Add `models` limits to `tools/bundle-budget.json` (`soldier.glb` ≤ 1,500,000 bytes, `soldier-*.png` group) and measure them in `tools/check-bundle.ts`; verify: `pnpm build && pnpm check:bundle` prints the model lines, and a test fixture over the limit makes it exit non-zero and name the model
-- [ ] 1.2 Add `resample`, `quantize` and `meshopt` for the soldier in `tools/prepare-models.ts`, and register `MeshoptDecoder` on the `GLTFLoader` in the lazy loaders chunk; verify: `pnpm models` shrinks `soldier.glb`, the `model-loaders` chunk stays within 120 KB in `pnpm check:bundle`, and the soldier clip, gait and death tests pass
-- [ ] 1.3 Key-pose test: load the source and compressed soldier and compare hand and foot bone positions at each clip's key frames within 1 cm; verify: the test passes, and fails when quantization is forced to 8 bits in a fixture
+- [x] 1.1 Add `models` limits to `tools/bundle-budget.json` (`soldier.glb` ≤ 1,500,000 bytes, `soldier-*.png` group) and measure them in `tools/check-bundle.ts`; verify: `pnpm build && pnpm check:bundle` prints the model lines, and a test fixture over the limit makes it exit non-zero and name the model
+  - Apply note (2026-11-16): `tools/model-budget.ts` checks `modelsDir`/`models` in `bundle-budget.json`; `pnpm check:bundle` prints `soldier model: 492,900 B / 1,500,000 B` and `soldier textures: 161,907 B / 250,000 B`; `tests/tools/model-budget.test.ts` fails a fixture over the limit and names it.
+- [x] 1.2 Add `resample`, `quantize` and `meshopt` for the soldier in `tools/prepare-models.ts`, and register `MeshoptDecoder` on the `GLTFLoader` in the lazy loaders chunk; verify: `pnpm models` shrinks `soldier.glb`, the `model-loaders` chunk stays within 120 KB in `pnpm check:bundle`, and the soldier clip, gait and death tests pass
+  - Apply note (2026-11-16): `resample` saved almost nothing (the IK keys every frame), meshopt `high` took `soldier.glb` from 818,928 to 492,900 bytes (gzip 128 KB to 73 KB); `meshoptimizer` and `@gltf-transform/extensions` added as dev dependencies at the versions already in the lock. `model-loaders` is 71,183 B of 120,000 with the decoder. The death-clip test now reads the glb through the decoder (`test/soldier-glb.ts`).
+- [x] 1.3 Key-pose test: load the source and compressed soldier and compare hand and foot bone positions at each clip's key frames within 1 cm; verify: the test passes, and fails when quantization is forced to 8 bits in a fixture
+  - Apply note (2026-11-16): `soldier-key-poses.test.ts`: worst drift 0.97 mm over 1,142 keys (hands, feet, muzzle); a copy with rotations cut to 8 bits fails it.
 
 ## 2. Animation cost follows view
 
-- [ ] 2.1 In `character-layer.ts`, skip `mixer.update` for soldiers outside the camera frustum and accumulate their time; catch up with one update when they return to view; verify: a unit test shows no mixer advance off screen, and a soldier who went prone while hidden is drawn prone on return
-- [ ] 2.2 Advance far-band soldiers every other frame with the accumulated time; verify: a unit test counts updates at the strategic band, the determinism golden still matches (`pnpm check:determinism`), and `performance.spec.ts` passes
+- [x] 2.1 In `character-layer.ts`, skip `mixer.update` for soldiers outside the camera frustum and accumulate their time; catch up with one update when they return to view; verify: a unit test shows no mixer advance off screen, and a soldier who went prone while hidden is drawn prone on return
+  - Apply note (2026-11-16): `SoldierInstance.advance` keeps the time while the soldier's sphere is outside the camera frustum and gives it in one update on return; `soldier-dress.test.ts` checks no advance off screen and a man who went prone unseen drawn prone. Found on the way: the per-frame call in `scene-view.ts` passed no focus, so the far mesh fell back to near every drawn frame; both calls now pass the camera.
+- [x] 2.2 Advance far-band soldiers every other frame with the accumulated time; verify: a unit test counts updates at the strategic band, the determinism golden still matches (`pnpm check:determinism`), and `performance.spec.ts` passes
+  - Apply note (2026-11-16): with D2 rewritten (the strategic band draws markers and no mixers), the half rate applies to soldiers drawn with the far mesh; a unit test counts five updates in ten frames with the time of both. `pnpm check:determinism` matches.
 
 ## 3. New mesh, far mesh and weighted joints
 
 - [x] 3.1 Rebuild the body in `target_soldier.py` at 1,500–3,000 triangles with joint loops weighted across two bones at elbows, knees, hips and neck. Re-target every existing clip to the new rig unchanged; verify: `pnpm art soldier` exports, every clip is present by name (existing missing-clip test), and the contact sheet shows no gaps at the knee, hip or elbow in the crouch, kneel and prone clips
-  - Apply note (2026-11-16): near body 1,646 triangles; the build prints the count. `joints-2026-11-16.png` shows no gap in crouch, kneel, prone, crouched aim or crawl; the crouch-walk head check still passes (1.42 m).
+  - Apply note (2026-11-16): near soldier 1,646 triangles dressed in full (body 1,262); the build prints the count. `joints-2026-11-16.png` shows no gap in crouch, kneel, prone, crouched aim or crawl; the crouch-walk head check still passes (1.42 m).
 - [x] 3.2 Gear as bone-parented meshes: brimmed slouch hat and kepi, puttees, cartridge belts, haversack, blanket roll, canteen and neckerchief, with outfit rules per army from `docs/history/FORCES.md`, and any unsourced detail listed as a placeholder in `docs/assets.md`; verify: the contact sheet shows each army told apart with colour removed
   - Apply note (2026-11-16): the gear pieces are bone-parented meshes (blanket roll, canteen, haversack, neckerchief, *bornais*, cartridge belts); the belt, pouches, bandoliers, puttees and shoulder boards are part of the body. `dress-grey-2026-11-16.png`: the sets are told apart by hat and kit; the column and the jagunços are the closest pair. Placeholders listed under "Uniform sets" in `docs/assets.md`.
-- [ ] 3.3 Emit the far mesh `<mesh>.far` (≤ 600 triangles, same skeleton) and add a near and far triangle check to the art build next to the tree budgets; verify: the build fails on a fixture over either limit, and the contact sheet shows the far mesh per army
-  - Apply note (2026-11-16): the far body (264 triangles) and far hats are emitted as `SoldierFar` / `<hat>Far` (the glTF loader drops dots in names) and `check_triangles` in `target_soldier.py` fails the build over 1,500-3,000 near or 600 far; the failing fixture is not written yet.
+- [x] 3.3 Emit the far mesh `<mesh>.far` (≤ 600 triangles, same skeleton) and add a near and far triangle check to the art build next to the tree budgets; verify: the build fails on a fixture over either limit, and the contact sheet shows the far mesh per army
+  - Apply note (2026-11-16): the far body (204 triangles, 264 with its hat) and far hats are emitted as `SoldierFar` / `<hat>Far` (the glTF loader drops dots in names) and `check_triangles` in `target_soldier.py` fails the Blender build over 1,500-3,000 near or 600 far.
+  - Apply note (2026-11-16): `tools/soldier-budgets.ts` counts as the Blender build does (body 1,262 + heaviest hat + all gear = 1,646 near; far body 204 + far hat = 264) and `pnpm models` fails outside the budgets; `tests/tools/soldier-budgets.test.ts` has the failing fixtures.
 - [x] 3.4 In the view, draw the far mesh beyond a distance from the camera focus at the tactical band (the strategic band keeps its instanced markers), as a visibility swap on the same rig; verify: a unit test swaps meshes and checks that the clip, variant, gear and wound patch are kept, and a preview shows no pose jump
   - Apply note (2026-11-16): `SoldierInstance.setFar` swaps the body and hat and hides the gear past `FAR_MESH_DISTANCE` (28 m) from the camera focus at the tactical band; `soldier-dress.test.ts` checks that the clip, variant and wound are kept. Preview check under 7.1.
 
 ## 4. Uniform variants and gear by id
 
-- [ ] 4.1 Raise `UNIFORM_VARIANTS` to 6 and draw the extra pixel textures (128×128, nearest filter) for all six outfits; verify: the texture loader finds 36 files, `check:bundle` keeps the PNG group within its limit, and the contact sheet shows every variant
-  - Apply note (2026-11-16): six variants for the eight outfits: 48 files, 5.1 KB on average. The PNG group limit waits on 1.1.
+- [x] 4.1 Raise `UNIFORM_VARIANTS` to 6 and draw the extra pixel textures (128×128, nearest filter) for all six outfits; verify: the texture loader finds 36 files, `check:bundle` keeps the PNG group within its limit, and the contact sheet shows every variant
+  - Apply note (2026-11-16): six variants for the eight outfits: 48 files, 5.1 KB on average.
+  - Apply note (2026-11-16): the PNG group limit is in place (161,907 of 250,000 bytes).
 - [x] 4.4 Dress of the period (owner, 2026-11-16): legalists in khaki with the kepi instead of olive; the column's variants in worn khaki and civilian jackets; uniform sets of their own for cangaceiros (half-moon leather hat, leather leggings, sandals, cartridge belts, coloured bags and neckerchief) and jagunços (round leather hat, leather jacket, leggings), chosen by section type; sources in `docs/history/FORCES.md`; verify: a unit test maps each section type to its outfit, and the contact sheet shows the five sets told apart with colour removed
   - Apply note (2026-11-16): khaki legalists; column variants with civilian jackets; `cangaceiro-troop` and `jagunco-troop` chosen by the section type's `uniform`. `soldier-dress.test.ts` and `section-thumbnails.test.ts` map the section types; `dress-2026-11-16.png` and `dress-grey-2026-11-16.png`.
 - [x] 4.2 Choose gear per soldier from a hash of the id under the outfit rules (`soldier-clips.ts`); verify: a unit test shows that the same id gives the same kit, that an eleven-man section shows at least four variants and three gear combinations, and that a legalist never wears column-only gear
@@ -54,7 +61,8 @@
 
 ## 6. Prefetch before the battle
 
-- [ ] 6.1 Call `loadSoldierAsset()` when a chapter briefing or the skirmish setup opens. The loading screen counts an already-resolved soldier at once; verify: an e2e test sees the `soldier.glb` request start before start is pressed, and a second battle in the same page makes no new request
+- [x] 6.1 Call `loadSoldierAsset()` when a chapter briefing or the skirmish setup opens. The loading screen counts an already-resolved soldier at once; verify: an e2e test sees the `soldier.glb` request start before start is pressed, and a second battle in the same page makes no new request
+  - Apply note (2026-11-16): `prefetchSoldier()` runs when the skirmish setup opens and when a briefing spread is open in the campaign book; `tests/e2e/soldier-prefetch.spec.ts` sees one `soldier.glb` request before Start, none for a second battle, and one from a briefing.
 
 ## 7. Review and gates
 

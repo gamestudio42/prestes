@@ -38,4 +38,5 @@ export { groundAtlasPixels } from './ground-atlas';
 export { sunFromLight, type SunLook } from './map-light';
 export { compassAngle } from './compass';
 export { versionPublicUrls } from './versioned-urls';
+export { prefetchSoldier } from './soldier-models';
 export { battleAssets, preloadBattle, sharedBattleLoaders, type BattleAsset, type BattleAssetLoaders, type PreloadProgress } from './battle-assets';

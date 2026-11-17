@@ -109,6 +109,15 @@ interface CharacterView {
 
 /** How far the rescuer kneels to the side of the man he treats (model metres). */
 const TREAT_OFFSET = 0.6;
+/** improve-soldier-models 2.1: the sphere round a soldier for the frustum test (model metres, times the unit scale). */
+const SOLDIER_MIDDLE = 0.9;
+const SOLDIER_RADIUS = 1.6;
+
+/** What the layer needs of the camera (improve-soldier-models 2.1, 3.4). */
+export interface CharacterCamera {
+  focus: { x: number; y: number };
+  frustum?: THREE.Frustum;
+}
 /** improve-soldier-models 3.4: metres from the camera focus past which a soldier is drawn far. */
 export const FAR_MESH_DISTANCE = 28;
 /** Halted and aiming, a body still this far from its target angle is turning (radians). */
@@ -272,6 +281,7 @@ export class CharacterLayer {
   private windowHeightsFor = -1;
   private asset: SoldierAsset | null = null;
   private lastUpdate = performance.now();
+  private readonly bounds = new THREE.Sphere();
   private lastEventTick = -1;
   private readonly flatQuaternion = new THREE.Quaternion().setFromEuler(
     new THREE.Euler(-Math.PI / 2, 0, 0),
@@ -359,11 +369,13 @@ export class CharacterLayer {
   }
 
   /**
-   * `focus`: the ground point the camera looks at; at the tactical band a
-   * soldier farther than FAR_MESH_DISTANCE from it is drawn with the far mesh
-   * (improve-soldier-models 3.4).
+   * `camera`: the ground point the camera looks at (at the tactical band a
+   * soldier farther than FAR_MESH_DISTANCE from it is drawn with the far
+   * mesh, improve-soldier-models 3.4) and its frustum (a soldier outside it
+   * is not animated until he comes back into view, 2.1).
    */
-  update(frame: Frame | InterpolatedFrame, span: number, focus?: { x: number; y: number }): void {
+  update(frame: Frame | InterpolatedFrame, span: number, camera?: CharacterCamera): void {
+    const focus = camera?.focus;
     const now = performance.now();
     const seconds = Math.min(0.1, Math.max(0, (now - this.lastUpdate) / 1000));
     this.lastUpdate = now;
@@ -627,11 +639,13 @@ export class CharacterLayer {
         const authored = CLIP_SPEED[clip];
         view.soldier.setPistol(weaponLook(unit.weaponId) === 'pistol');
         view.soldier.setFar(focus !== undefined && Math.hypot(unit.x - focus.x, unit.y - focus.y) > FAR_MESH_DISTANCE);
+        this.bounds.center.set(unit.x, marks.root.position.y + SOLDIER_MIDDLE * scale, unit.y);
+        this.bounds.radius = SOLDIER_RADIUS * scale;
         view.soldier.play(clip, authored ? walkTimeScale(view.speed, authored) : 1);
         // The rescuer kneels beside the man he treats, not on him.
         view.soldier.root.position.x = clip === 'kneel-treat' ? TREAT_OFFSET : 0;
         view.soldier.setWound(view.woundSide ?? null);
-        view.soldier.update(seconds);
+        view.soldier.advance(seconds, !camera?.frustum || camera.frustum.intersectsSphere(this.bounds), view.soldier.drawnFar);
         view.weapons?.apply(unit.weaponId, unit.gunSet === true, unit.alive && !unit.incapacitated && !unit.routed, view.soldier.holdsPistol);
         marks.ring.visible = unit.alive && !unit.routed && !unit.incapacitated;
         marks.shadow.rotation.set(-Math.PI / 2, 0, 0);

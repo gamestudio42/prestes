@@ -89,6 +89,37 @@ describe('soldier model (3.4, 4.4, 1.4)', () => {
     expect(shown(man)).toEqual(['GearCanteen', 'Slouch', 'Soldier', 'chest']);
   });
 
+  it('off screen his clip is not advanced; back in view he is drawn as he is now (2.1)', () => {
+    const scene = asset();
+    // Going prone, a held clip: it ends lying and stays there.
+    const lying = new THREE.AnimationClip('raise-prone', 1, [new THREE.VectorKeyframeTrack('Soldier.position', [0, 1], [0, 0, 0, 0, -1, 0])]);
+    scene.clips.set('raise-prone', lying);
+    const man = new SoldierInstance(scene, 'coluna-troop');
+    const body = man.root.getObjectByName('Soldier')!;
+    man.play('raise-prone');
+    let advanced = 0;
+    for (let frame = 0; frame < 30; frame += 1) if (man.advance(0.05, false)) advanced += 1;
+    expect(advanced).toBe(0);
+    expect(body.position.y).toBe(0);
+    // One catch-up with the 1.5 s kept: the held clip ends lying down.
+    expect(man.advance(0.05, true)).toBe(true);
+    expect(body.position.y).toBeCloseTo(-1);
+  });
+
+  it('drawn far, he is advanced every other frame with the time of both (2.2)', () => {
+    const scene = asset();
+    scene.clips.set('walk', new THREE.AnimationClip('walk', 10, [new THREE.NumberKeyframeTrack('Soldier.position[x]', [0, 10], [0, 10])]));
+    const man = new SoldierInstance(scene, 'coluna-troop');
+    const body = man.root.getObjectByName('Soldier')!;
+    man.play('walk');
+    const advanced = Array.from({ length: 10 }, () => man.advance(0.1, true, true)).filter(Boolean).length;
+    expect(advanced).toBe(5);
+    // The tenth frame was a skipped beat: its 0.1 s waits for the next.
+    expect(body.position.x).toBeCloseTo(0.9);
+    man.advance(0.1, true, true);
+    expect(body.position.x).toBeCloseTo(1.1);
+  });
+
   it('with a revolver he plays the pistol variant where there is one, and holds it only then', () => {
     const man = new SoldierInstance(asset(['aim-stand', 'aim-stand-pistol', 'prone']), 'coluna-officer');
     man.setPistol(true);
