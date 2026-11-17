@@ -685,7 +685,6 @@ export const ptBR: Record<MessageKey, string> = {
   'hud.revealed': 'Revelado',
   'start.mapPreview': 'Prévia de {name}',
   'setup.open': 'Preparar a escaramuça em {name}',
-  'setup.prepare': 'Preparar',
   'setup.noMaps': 'Nenhum mapa ainda — abra o editor',
   'setup.subtitle': 'Escolha o campo, a sua tropa e o inimigo.',
   'setup.yourForce': 'Sua tropa',

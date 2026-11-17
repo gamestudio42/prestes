@@ -77,16 +77,21 @@ export function SlotSelect(props: {
 /** The Open dialog: the campaign missions (filled or empty), then the skirmish maps, then the test maps. */
 export function OpenDialog(props: {
   maps: readonly AuthoredMapEntry[] | null;
+  /** player-skirmish-maps 1.6: the maps kept in this browser. */
+  own: readonly AuthoredMapEntry[] | null;
   locale: Locale;
   t: T;
   onOpen: (id: string) => void;
+  onOpenOwn: (id: string) => void;
   onClose: () => void;
 }): ReactNode {
-  const { maps, locale, t } = props;
-  const row = (entry: AuthoredMapEntry, label: string) => (
-    <li key={entry.id} data-testid={`open-map-${entry.id}`}>
+  const { maps, own, locale, t } = props;
+  // The project's maps are listed only where there are some (the dev server).
+  const project = maps === null || maps.length > 0;
+  const row = (entry: AuthoredMapEntry, label: string, open = props.onOpen, prefix = 'open') => (
+    <li key={entry.id} data-testid={`${prefix}-map-${entry.id}`}>
       <span>{label}</span>
-      <button type="button" data-testid={`open-${entry.id}`} onClick={() => props.onOpen(entry.id)}>
+      <button type="button" data-testid={`${prefix}-${entry.id}`} onClick={() => open(entry.id)}>
         {t('editor.open.open')}
       </button>
     </li>
@@ -103,8 +108,12 @@ export function OpenDialog(props: {
       >
         <h2>{t('editor.open.title')}</h2>
         <p className="editor-hint">{t('editor.open.discardWarn')}</p>
-        {maps === null ? <p className="editor-hint">{t('editor.open.loading')}</p> : null}
-        {maps !== null && maps.length === 0 ? <p className="editor-hint" data-testid="open-unavailable">{t('editor.open.unavailable')}</p> : null}
+        <h3>{t('editor.open.own')}</h3>
+        <ul className="editor-open-list" data-testid="open-own">
+          {own === null ? <li className="editor-open-empty">{t('editor.open.loading')}</li> : own.length === 0 ? <li className="editor-open-empty">{t('editor.open.ownNone')}</li> : own.map((entry) => row(entry, mapName(entry, locale), props.onOpenOwn, 'open-own'))}
+        </ul>
+        {project ? (
+          <>
         <h3>{t('editor.slot.campaign')}</h3>
         <ul className="editor-open-list" data-testid="open-campaign">
           {CAMPAIGN_CHAPTERS.map((chapter) => {
@@ -129,6 +138,8 @@ export function OpenDialog(props: {
             <ul className="editor-open-list" data-testid="open-test">
               {of('test').map((entry) => row(entry, mapName(entry, locale)))}
             </ul>
+          </>
+        ) : null}
           </>
         ) : null}
         <div className="editor-row">

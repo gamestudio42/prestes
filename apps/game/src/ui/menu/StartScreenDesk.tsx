@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useState } from 'react';
 import { loadSkirmishMaps, type BattleMap } from '@prestes/shared';
 import type { Locale } from '@prestes/content';
 import type { CampaignProgress } from '../../campaign/progress';
@@ -8,6 +8,7 @@ import { contentWarningAcknowledged, saveContentWarningAcknowledged } from '../.
 import campTable from '../../assets/menu/camp-table.png';
 import { ContentWarning } from './ContentWarning';
 import { MenuDesk } from './MenuDesk';
+import { loadPlayerMaps } from './playerMaps';
 // The setup screen opens on demand: its own chunk keeps the start screen's bundle within budget.
 const SkirmishSetup = lazy(() =>
   import('./SkirmishSetup').then((module) => ({ default: module.SkirmishSetup })),
@@ -91,11 +92,16 @@ export function StartScreenDesk({
   }, []);
   const gramophone = useGramophone({ muted: audioMuted, onEnableSound: onToggleAudio });
   // author-game-maps 5.2: the authored skirmish maps; the test map only on the dev server.
+  // player-skirmish-maps: and the player's own, from the editor's keeping; both arrive together.
   const [maps, setMaps] = useState<readonly BattleMap[]>([]);
+  const [playerMaps, setPlayerMaps] = useState<readonly BattleMap[]>([]);
+  const allMaps = useMemo(() => [...maps, ...playerMaps], [maps, playerMaps]);
   useEffect(() => {
     let live = true;
-    void loadSkirmishMaps({ includeTest: import.meta.env.DEV }).then((loaded) => {
-      if (live) setMaps(loaded);
+    void Promise.all([loadSkirmishMaps({ includeTest: import.meta.env.DEV }), loadPlayerMaps()]).then(([loaded, own]) => {
+      if (!live) return;
+      setMaps(loaded);
+      setPlayerMaps(own);
     });
     return () => {
       live = false;
@@ -103,8 +109,8 @@ export function StartScreenDesk({
   }, []);
   // A remembered map that is no longer on the desk gives way to the first one.
   useEffect(() => {
-    if (maps.length > 0 && !maps.some((map) => map.id === setup.map)) onSetupChange(withMap(setup, maps[0]!.id));
-  }, [maps, setup, onSetupChange]);
+    if (maps.length > 0 && !allMaps.some((map) => map.id === setup.map)) onSetupChange(withMap(setup, maps[0]!.id));
+  }, [maps, allMaps, setup, onSetupChange]);
   const selectMap = (map: string): void => {
     if (map !== setup.map) onSetupChange(withMap(setup, map));
   };
@@ -126,7 +132,7 @@ export function StartScreenDesk({
         audioMuted={audioMuted}
         onLocaleChange={onLocaleChange}
         battleMap={setup.map}
-        maps={maps}
+        maps={allMaps}
         onSelectMap={selectMap}
         onOpenSetup={(map) => {
           selectMap(map);
@@ -146,7 +152,7 @@ export function StartScreenDesk({
           <SkirmishSetup
             locale={locale}
             setup={setup}
-            maps={maps}
+            maps={allMaps}
             onChange={onSetupChange}
             onStart={onStartBattle3v3}
             onBack={() => setSetupOpen(false)}

@@ -2,7 +2,7 @@ import { publicUrl } from '@prestes/shared';
 import type { CSSProperties } from 'react';
 import type { BattleMap, BattleMapId } from '@prestes/shared';
 import { translate, type Locale, type MessageKey } from '@prestes/content';
-import { Troop as Users } from '../icons';
+import { playerPrint } from './playerMaps';
 import { DESK_ART, MAP_SHEET_WINDOW, deskArtData, deskArtStyle } from './deskArt';
 
 export interface SkirmishMapsProps {
@@ -19,11 +19,13 @@ export interface SkirmishMapsProps {
 /** A map's name or description: an authored map carries its own text, a hand-written one a message key. */
 export function mapText(map: BattleMap, field: 'name' | 'description', locale: Locale): string {
   const own = map.text?.[field][locale] || map.text?.[field].en;
+  // A map with its own text (an authored or player map) never falls back to a message key.
+  if (map.text) return own || (field === 'name' ? map.id : '');
   return own || translate(locale, (field === 'name' ? map.nameKey : map.descriptionKey) as MessageKey);
 }
 
 /** The thumbnail the editor saves for a map (author-game-maps), or its rendered preview. */
-export const mapThumbnail = (id: BattleMapId) => publicUrl(`${import.meta.env.BASE_URL}maps/${id}.png`);
+export const mapThumbnail = (id: BattleMapId) => playerPrint(id) ?? publicUrl(`${import.meta.env.BASE_URL}maps/${id}.png`);
 
 /** How many sheets under the top one are spread out; deeper ones lie square under the last. */
 const PILE_SPREAD = 4;
@@ -49,10 +51,10 @@ export function pileLie(id: string, depth: number): { x: number; y: number; turn
 /**
  * camp-tent-menu: the skirmish maps are a pile of cards on the camp table,
  * one card per map, any number of them. The chosen map lies on top, square,
- * with its print, its name and the stamp that opens the setup screen; the
+ * with its print and its name, and choosing it opens the setup screen; the
  * others lie loose underneath, each turned a little so its edge shows.
- * Choosing a card underneath brings it to the top; choosing the top card, or
- * its stamp, opens the setup screen. With no map yet the pile is one blank
+ * Choosing a card underneath brings it to the top; choosing the top card
+ * opens the setup screen. With no map yet the pile is one blank
  * card.
  */
 export function SkirmishMaps({ locale, maps, battleMap, onOpenSetup, onSelect }: SkirmishMapsProps) {
@@ -107,10 +109,6 @@ export function SkirmishMaps({ locale, maps, battleMap, onOpenSetup, onSelect }:
                 {active ? (
                   <div className="desk-map-legend">
                     <p className="desk-map-title">{name}</p>
-                    <button type="button" className="desk-stamp" onClick={() => onOpenSetup(map.id)} data-testid="open-skirmish-stamp">
-                      <Users aria-hidden="true" size={16} />
-                      {t('setup.prepare')}
-                    </button>
                   </div>
                 ) : null}
               </div>
@@ -122,3 +120,4 @@ export function SkirmishMaps({ locale, maps, battleMap, onOpenSetup, onSelect }:
     </div>
   );
 }
+

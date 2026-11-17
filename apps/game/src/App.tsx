@@ -29,6 +29,7 @@ import { Hud } from './ui/Hud';
 import type { MapLayers } from './ui/hud/TopBar';
 import { Compass } from './ui/hud/Compass';
 import { StartScreenDesk } from './ui/menu/StartScreenDesk';
+import { playerMapDocument } from './ui/menu/playerMaps';
 import { battleRosters, loadSetup, saveSetup, type SkirmishSetup } from './ui/menu/setupState';
 import { BattleEndPanel, type CampaignEnd } from './ui/BattleEndPanel';
 import { campaignStart } from './campaign/start';
@@ -482,6 +483,9 @@ export function App() {
       token,
       // An authored map not fetched yet is fetched first; its document goes to the worker with the start.
       loadMap: async () => {
+        // player-skirmish-maps 1.5: a map the player made goes to the worker with its document.
+        const own = playerMapDocument(map);
+        if (own && !documentsRef.current.has(map)) documentsRef.current.set(map, own);
         if (playtestRef.current?.id === map || documentsRef.current.has(map) || !authoredMapIndex().some((entry) => entry.id === map)) return true;
         const document = await loadAuthoredMap(map);
         if (!document) return false;

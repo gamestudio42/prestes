@@ -684,7 +684,6 @@ export const en = {
   'hud.revealed': 'Revealed',
   'start.mapPreview': 'Preview of {name}',
   'setup.open': 'Prepare the skirmish on {name}',
-  'setup.prepare': 'Prepare',
   'setup.noMaps': 'No maps yet — open the editor',
   'setup.subtitle': 'Choose the field, your force and the enemy.',
   'setup.yourForce': 'Your force',

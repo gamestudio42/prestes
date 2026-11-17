@@ -2055,3 +2055,12 @@
   color: var(--book-paper, #efe4c8);
   font-weight: 600;
 }
+
+/* The whole top card opens the setup (the owner, 2026-11-16: no "Prepare" stamp on it). */
+.desk-map-pile .desk-map-sheet.active .desk-map-select {
+  bottom: 0;
+}
+
+.desk-map-pile .desk-map-legend {
+  pointer-events: none;
+}

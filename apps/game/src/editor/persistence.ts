@@ -54,6 +54,33 @@ async function get(key: string): Promise<unknown> {
   });
 }
 
+/**
+ * player-skirmish-maps D1: every map the browser keeps, parsed, without the
+ * last-open and playtest keys; a record that does not parse is left out.
+ */
+export async function listStored(): Promise<MapDocument[]> {
+  const db = await open();
+  if (!db) return [];
+  const records = await new Promise<{ keys: IDBValidKey[]; values: unknown[] }>((resolve) => {
+    try {
+      const store = db.transaction(STORE, 'readonly').objectStore(STORE);
+      const keys = store.getAllKeys();
+      const values = store.getAll();
+      values.onsuccess = () => resolve({ keys: keys.result ?? [], values: values.result ?? [] });
+      values.onerror = () => resolve({ keys: [], values: [] });
+    } catch {
+      resolve({ keys: [], values: [] });
+    }
+  });
+  const maps: MapDocument[] = [];
+  records.keys.forEach((key, index) => {
+    if (key === LAST_KEY || key === PLAYTEST_KEY) return;
+    const result = parseMapDocument(records.values[index]);
+    if (result.ok && result.document.id === key) maps.push(result.document);
+  });
+  return maps;
+}
+
 export async function autosave(document: MapDocument): Promise<boolean> {
   const saved = await put(document.id, document);
   if (saved) await put(LAST_KEY, document.id);

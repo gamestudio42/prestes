@@ -74,7 +74,7 @@ import {
 import { renameExit } from './exits';
 import { LOCALES, translate, type Locale, type MessageKey } from '@prestes/content';
 import { loadLocale, saveLocale } from '../storage';
-import { autosave, exportDocument, listProjectMaps, loadLast, loadProjectMap, loadStored, readDocumentFile, saveThumbnail, saveToProject, storePlaytest } from './persistence';
+import { autosave, exportDocument, listProjectMaps, listStored, loadLast, loadProjectMap, loadStored, readDocumentFile, saveThumbnail, saveToProject, storePlaytest } from './persistence';
 import { openChoice, openRequest } from './open-map';
 import { missionLabel, OpenDialog, slotOf, SlotSelect, type Slot } from './MapSlots';
 import { EditorStore, objectiveCircle, replaceCommand, type SelectionItem, type ToolId, type ToolSettings } from './store';
@@ -272,10 +272,16 @@ export function EditorApp(): ReactNode {
   const editorCamera = useMemo(() => () => viewport.current?.view.camera, []);
   // author-game-maps 4.1, 4.2: the project's maps, fetched when a dialog that shows slots opens.
   const [projectMaps, setProjectMaps] = useState<AuthoredMapEntry[] | null>(null);
+  // player-skirmish-maps 1.6: the maps this browser keeps, for Open.
+  const [ownMaps, setOwnMaps] = useState<AuthoredMapEntry[] | null>(null);
   const openDialog = (next: 'new' | 'properties' | 'open'): void => {
     setProjectMaps(null);
     setDialog(next);
     void listProjectMaps().then(setProjectMaps);
+    if (next === 'open') {
+      setOwnMaps(null);
+      void listStored().then((maps) => setOwnMaps(maps.map(({ id, use, size, name, description }) => ({ id, use, size, name, description, preview: false }))));
+    }
   };
   const [ready, setReady] = useState(false);
   const tRef = useRef(t);
@@ -456,6 +462,15 @@ export function EditorApp(): ReactNode {
     await autosave(document);
     await storePlaytest(document);
     window.location.href = './index.html?playtest=1';
+  };
+
+  const onOpenOwnMap = async (id: string): Promise<void> => {
+    const document = await loadStored(id);
+    if (!document) return;
+    store.load(fromMapDocument(document));
+    viewport.current?.frameMap();
+    store.setMessage(null);
+    setDialog(null);
   };
 
   const onOpenProjectMap = async (id: string): Promise<void> => {
@@ -673,7 +688,7 @@ export function EditorApp(): ReactNode {
         </div>
       ) : null}
       {dialog === 'open' ? (
-        <OpenDialog maps={projectMaps} locale={locale} t={t} onOpen={(id) => void onOpenProjectMap(id)} onClose={() => setDialog(null)} />
+        <OpenDialog maps={projectMaps} own={ownMaps} locale={locale} t={t} onOpen={(id) => void onOpenProjectMap(id)} onOpenOwn={(id) => void onOpenOwnMap(id)} onClose={() => setDialog(null)} />
       ) : null}
       {dialog === 'new' || dialog === 'properties' ? (
         <MapDialog
@@ -1596,6 +1611,15 @@ const lightClock = (time: number): string => `${String(Math.floor(time)).padStar
 /** The eight-point compass direction of a bearing. */
 const compassPoint = (bearing: number): string => ['n', 'ne', 'e', 'se', 's', 'sw', 'w', 'nw'][Math.round((((bearing % 360) + 360) % 360) / 45) % 8]!;
 
+/**
+ * player-skirmish-maps: a new map's id, from the date and time, so a second
+ * map does not overwrite the first in the browser's keeping.
+ */
+export function freshMapId(now = new Date()): string {
+  const two = (n: number) => String(n).padStart(2, '0');
+  return `mapa-${now.getFullYear()}${two(now.getMonth() + 1)}${two(now.getDate())}-${two(now.getHours())}${two(now.getMinutes())}`;
+}
+
 function MapDialog(props: {
   mode: 'new' | 'properties';
   map: EditableMap;
@@ -1610,7 +1634,7 @@ function MapDialog(props: {
   onApply: (map: EditableMap) => void;
 }): ReactNode {
   const { mode, map, t } = props;
-  const [id, setId] = useState(mode === 'new' ? 'novo-mapa' : map.id);
+  const [id, setId] = useState(mode === 'new' ? freshMapId() : map.id);
   const [size, setSize] = useState<MapSize>(mode === 'new' ? 'medium' : map.size);
   const [nameEn, setNameEn] = useState(mode === 'new' ? '' : map.name.en);
   const [namePt, setNamePt] = useState(mode === 'new' ? '' : map.name['pt-BR']);
