@@ -286,6 +286,9 @@ measures the script as much as the map. `campaign-length.test.ts` holds the
 first-shot band. The battle's length is reported by the tool for the
 owner's review in play.
 
+**The owner's choice, 2026-11-17:** the decided-by-720-s band stays a report
+figure, not a test. The first-shot band is the test.
+
 ## Risks / Trade-offs
 
 - **Cost of 132 soldiers.** Vision and target scans grow with the square of
