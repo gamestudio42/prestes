@@ -128,6 +128,8 @@ test('skirmish roster builder matches the baseline', async ({ page }) => {
   await page.goto('/');
   await page.getByTestId('open-skirmish').click();
   await expect(page.getByTestId('skirmish-setup')).toBeVisible();
+  // scale-forces-by-map-size: the baseline shows the small map's 33-man limit.
+  await page.getByTestId('map-option-paiolzinho').click();
   await expect
     .poll(() => page.getByTestId('roster-thumb-metralhadora').evaluate((node: HTMLImageElement) => node.naturalWidth))
     .toBeGreaterThan(0);

@@ -89,9 +89,11 @@
 
 ## 6. Wrap-up
 
-- [ ] 6.1 Update the main docs that state 33 men: `docs/status.md` and the field manual text, if it names the limit.
+- [x] 6.1 Update the main docs that state 33 men: `docs/status.md` and the field manual text, if it names the limit.
   - Verify: `rg "33 (men|homens)"` finds only small-map statements.
+  - Done 2026-11-17: the only hit is the size table in `docs/status.md`; the field manual does not name the limit.
 - [ ] 6.2 `pnpm check`, `pnpm test:e2e` and `openspec validate scale-forces-by-map-size` pass.
+  - 2026-11-17: `openspec validate --strict` passes. `pnpm check` passes except two things from other sessions: lint on the untracked `packages/view3d/test/_slide.test.ts`, and the section-thumbnail hash, which reads the uncommitted `soldier.glb`. Full e2e: 189 passed and 4 failed. The roster-builder baseline now picks Paiolzinho, a small map. Still failing from other work: the re-rendered thumbnails (92c95f9) on the roster and desk baselines, and the tactical-span frame budget (29 ms with the new soldier model). Garrison passed on a rerun.
 - [ ] 6.3 Hand check by the owner, muted:
   - a skirmish on a medium map with a twelve-section roster;
   - the São Luiz / Ramada chapter, played through;
