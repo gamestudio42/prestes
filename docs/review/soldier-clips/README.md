@@ -33,6 +33,7 @@ soldier`, from the game's tactical angle (one shot from the side).
 | `dress-grey-2026-11-16.png` | the same sets with colour removed: told apart by hat and kit (the column and the jagunços are the closest pair) | 3.2, 4.4 |
 | `joints-2026-11-16.png` | crouch, kneel, prone, crouched aim and crawl, front and side: the weighted knee, hip and elbow rings | 3.1 |
 | `nearfar-2026-11-16.png` | the near mesh with its gear beside the far mesh (264 triangles) | 3.2, 3.4 |
+| `weight-2026-11-17.png` | from the side: walk, run and crouch-walk through a step (hips over the planted foot, rising at the pass), the raise settling, the front death buckling and landing, the prone death staying low | 5.1-5.3 |
 
 Known rough points: the holster barely shows at this angle; the revolver
 man's left arm hangs straight, with no clip of its own for the free hand.

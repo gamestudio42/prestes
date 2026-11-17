@@ -38,6 +38,27 @@ STEP_BACK = 27
 # Slung rifle offset from its shoulder pivot (see `slung`).
 SLING_OUT = -0.16
 SLING_BACK = 0.12
+# improve-soldier-models 5.1: weight in the gaits. The feet are planted on
+# the ground at every key (they hung 10 cm up at the walk's contact and 17 cm
+# at the run's); at contact the leading foot rolls on its heel, which lets the
+# ankle sit CONTACT_ROLL above its standing height. At the run's flight the
+# lowest foot leaves the ground by RUN_FLIGHT. At the passing pose the hips
+# shift over the planted foot (SWAY metres) and tilt down on the swinging
+# side (HIP_TILT degrees); the chest and head follow OVERLAP frames late.
+CONTACT_ROLL = 0.04
+# The run lands on a flexed foot under a long reach: more roll, a low flight
+# (about 9 cm of rise and fall at the hips).
+RUN_ROLL = 0.08
+RUN_FLIGHT = 0.03
+SWAY = 0.03
+HIP_TILT = 3
+# The planted leg at the walk's passing pose (degrees).
+PASS_THIGH = 3
+PASS_SHIN = -8
+OVERLAP = 2
+# Standing heights of the contact points (metres): the ankle, the knee pad.
+ANKLE_Z = 0.06
+KNEE_Z = 0.05
 # Prone: how far the chest rises on the elbows, and the upper arms' angle.
 PRONE_RISE = 18
 PRONE_ELBOW = 128
@@ -285,6 +306,38 @@ class Poser:
     def side(self, name: str, degrees: float) -> None:
         self.rig.pose.bones[name].rotation_euler.y = math.radians(degrees)
 
+    def tilt(self, name: str, degrees: float) -> None:
+        """An upright bone (hips, chest) tips sideways: positive lowers his left."""
+        self.rig.pose.bones[name].rotation_euler.z = math.radians(degrees)
+
+    def plant(self, allowance: float = 0.0, lift: float = 0.0) -> None:
+        """5.1: moves the body up or down so the lowest foot (or a kneeling
+        knee) stands on the ground: the ankle at its standing height plus
+        `allowance`, the knee at its pad; `lift` raises him off it (the run's
+        flight). Evaluated with the clips set aside, as for the grips."""
+        data = self.rig.animation_data
+        action = data.action if data else None
+        tracks = [(track, track.mute) for track in data.nla_tracks] if data else []
+        if data:
+            data.action = None
+        for track, _ in tracks:
+            track.mute = True
+        try:
+            bpy.context.view_layer.update()
+            world = self.rig.matrix_world
+            gaps = []
+            for side in ("L", "R"):
+                shin = self.rig.pose.bones[f"shin.{side}"]
+                gaps.append((world @ shin.tail).z - (ANKLE_Z + allowance))
+                gaps.append((world @ shin.head).z - KNEE_Z)
+            root = self.rig.pose.bones["root"]
+            root.location.z -= min(gaps) - lift
+        finally:
+            for track, mute in tracks:
+                track.mute = mute
+            if data:
+                data.action = action
+
     def root(self, pitch=0.0, roll=0.0, x=0.0, y=0.0, z=0.0) -> None:
         bone = self.rig.pose.bones["root"]
         bone.rotation_euler = (math.radians(pitch), math.radians(roll), 0)
@@ -298,7 +351,44 @@ class Poser:
             bone.keyframe_insert("location", frame=frame)
 
 
-def clip(rig, poser: Poser, name: str, frames: list, loop: bool = True, period: int | None = None) -> None:
+def action_fcurves(action) -> list:
+    """Every F-curve of an action. Blender 5 keeps them in the layers'
+    channel bags; `action.fcurves` is gone, and the build's old
+    `getattr(action, "fcurves", [])` found none, so the keys meant to be
+    linear were left as Bezier and every pose eased to a stop."""
+    legacy = getattr(action, "fcurves", None)
+    if legacy is not None:
+        return list(legacy)
+    return [curve for layer in action.layers for strip in layer.strips for bag in strip.channelbags for curve in bag.fcurves]
+
+
+def linear(action) -> None:
+    for fcurve in action_fcurves(action):
+        for point in fcurve.keyframe_points:
+            point.interpolation = "LINEAR"
+
+
+def delay(action, bones: tuple, frames: int, start: int, period: int) -> None:
+    """5.1 overlap: the given bones' keys move `frames` later in a looping
+    clip of `period` frames from `start`, wrapping round the loop, so they
+    follow the hips instead of moving with them."""
+    for fcurve in action_fcurves(action):
+        if not any(f'bones["{bone}"]' in fcurve.data_path for bone in bones):
+            continue
+        points = sorted((point.co.x, point.co.y) for point in fcurve.keyframe_points if point.co.x < start + period - 0.5)
+        shifted = sorted((start + (frame - start + frames) % period, value) for frame, value in points)
+        # The value at the loop's start, between the last key (a loop back) and the first.
+        (f_last, v_last), (f_first, v_first) = shifted[-1], shifted[0]
+        gap = f_first + period - f_last
+        at_start = v_last + (v_first - v_last) * ((start + period - f_last) / gap) if gap > 0 else v_first
+        keys = [(start, at_start)] + [key for key in shifted if key[0] > start + 0.5] + [(start + period, at_start)]
+        fcurve.keyframe_points.clear()
+        for frame, value in keys:
+            fcurve.keyframe_points.insert(frame, value, options={"FAST"})
+        fcurve.update()
+
+
+def clip(rig, poser: Poser, name: str, frames: list, loop: bool = True, period: int | None = None, overlap: int = 0) -> None:
     """`frames`: list of (frame, pose function). The last pose repeats the first
     for loops."""
     action = bpy.data.actions.new(name)
@@ -311,13 +401,16 @@ def clip(rig, poser: Poser, name: str, frames: list, loop: bool = True, period: 
         poser.clear()
         pose(poser)
         poser.key(frame)
+    end = frames[-1][0]
     if loop:
         poser.clear()
         frames[0][1](poser)
-        poser.key(frames[0][0] + period if period else frames[-1][0] + (frames[1][0] - frames[0][0] if len(frames) > 1 else 12))
-    for fcurve in getattr(action, "fcurves", []):
-        for point in fcurve.keyframe_points:
-            point.interpolation = "LINEAR"
+        end = frames[0][0] + period if period else frames[-1][0] + (frames[1][0] - frames[0][0] if len(frames) > 1 else 12)
+        poser.key(end)
+    linear(action)
+    if overlap:
+        delay(action, ("chest", "head"), overlap, frames[0][0], end - frames[0][0])
+        linear(action)
     bake_grips(rig, poser)
     track = rig.animation_data.nla_tracks.new()
     track.name = name
@@ -337,7 +430,8 @@ def bake_grips(rig, poser: Poser) -> None:
     for (start, held_a), (end, held_b) in zip(keyed, keyed[1:]):
         a, b = dict(held_a), dict(held_b)
         sides = sorted(a.keys() & b.keys())
-        for frame in range(start + 1, end) if sides else ():
+        # The keys too: a delayed chest (5.1) has moved the shoulders and the rifle there.
+        for frame in range(start, end + 1) if sides else ():
             rig.animation_data.action = action
             bpy.context.scene.frame_set(frame)
             # A hand that moves along the rifle between keys slides with it.
@@ -349,9 +443,7 @@ def bake_grips(rig, poser: Poser) -> None:
                     bone = rig.pose.bones[name]
                     bone.keyframe_insert("rotation_euler", frame=frame)
                     bone.keyframe_insert("location", frame=frame)
-    for fcurve in getattr(action, "fcurves", []):
-        for point in fcurve.keyframe_points:
-            point.interpolation = "LINEAR"
+    linear(action)
     for track, mute in tracks:
         track.mute = mute
     poser.grips = {}
@@ -427,15 +519,20 @@ def walk_a(p: Poser, arms=None) -> None:
     p.swing("shin.R", -8)
     if arms is None:
         p.swing("upper_arm.L", -20)
-    p.root(z=0.0)
+    p.plant(CONTACT_ROLL)
 
 
 def walk_pass(p: Poser, arms=None) -> None:
+    """Passing: the left foot planted under the body, the right swinging
+    through; the hips over the left foot, dropping on the right."""
     (arms or slung)(p)
-    p.swing("thigh.L", 2 * STRIDE)
+    # The planted foot halfway along its stance (under the hips, a little
+    # behind), the knee soft, so it slides back evenly.
+    p.swing("thigh.L", PASS_THIGH)
+    p.swing("shin.L", PASS_SHIN)
     p.swing("thigh.R", -2 * STRIDE)
     p.swing("shin.R", -30 * STRIDE)
-    p.root(z=0.03)
+    passing(p, "L")
 
 
 def walk_b(p: Poser, arms=None) -> None:
@@ -446,15 +543,30 @@ def walk_b(p: Poser, arms=None) -> None:
     p.swing("shin.L", -8)
     if arms is None:
         p.swing("upper_arm.L", 20)
-    p.root(z=0.0)
+    p.plant(CONTACT_ROLL)
 
 
 def walk_pass_b(p: Poser, arms=None) -> None:
     (arms or slung)(p)
-    p.swing("thigh.R", 2 * STRIDE)
+    # The planted foot halfway along its stance (under the hips, a little
+    # behind), the knee soft, so it slides back evenly.
+    p.swing("thigh.R", PASS_THIGH)
+    p.swing("shin.R", PASS_SHIN)
     p.swing("thigh.L", -2 * STRIDE)
     p.swing("shin.L", -30 * STRIDE)
-    p.root(z=0.03)
+    passing(p, "R")
+
+
+def passing(p: Poser, planted: str) -> None:
+    """5.1: the weight over the planted foot: the hips shift over it and
+    drop on the swinging side, the chest leans back against the tilt so the
+    head stays level; then the feet go down on the ground."""
+    toward = 1 if planted == "L" else -1
+    root = p.rig.pose.bones["root"]
+    root.location.x = toward * SWAY
+    p.tilt("hips", -toward * HIP_TILT)
+    p.tilt("chest", toward * HIP_TILT)
+    p.plant()
 
 
 def port(p: Poser) -> None:
@@ -472,7 +584,8 @@ def run_reach(p: Poser, lead: str, trail: str) -> None:
     p.swing(f"shin.{lead}", -14)
     p.swing(f"thigh.{trail}", -34)
     p.swing(f"shin.{trail}", -38)
-    p.root(z=-0.02)
+    p.root(x=(1 if lead == "L" else -1) * SWAY)
+    p.plant(RUN_ROLL)
 
 
 def run_float(p: Poser, lead: str, trail: str) -> None:
@@ -482,27 +595,35 @@ def run_float(p: Poser, lead: str, trail: str) -> None:
     p.swing(f"shin.{lead}", -30)
     p.swing(f"thigh.{trail}", 20)
     p.swing(f"shin.{trail}", -95)
-    p.root(z=0.07)
+    p.plant(lift=RUN_FLIGHT)
 
 
-def crouch(p: Poser, aim: bool = False) -> None:
+def crouch(p: Poser, aim: bool = False, settle: float = 0.0) -> None:
+    """Kneeling on the right knee; 5.2: the weight forward on the left
+    foot, the hips over it, the knee and the foot on the ground."""
     p.root(z=-0.34)
-    p.swing("thigh.L", 75)
-    p.swing("shin.L", -95)
-    p.swing("thigh.R", 20)
+    p.swing("thigh.L", 78)
+    p.swing("shin.L", -98)
+    p.swing("thigh.R", 22)
     p.swing("shin.R", -110)
     p.swing("chest", 14)
     if aim:
-        aim_arms(p, lean=14)
+        aim_arms(p, lean=14, settle=settle)
     else:
         ready(p)
+        # The chest stays forward over the loaded knee; the rifle levelled for it.
+        p.swing("chest", 14)
+        p.swing("rifle", 92 - 8)
+    p.plant()
 
 
-def aim_arms(p: Poser, recoil: float = 0.0, lean: float = 0.0) -> None:
+def aim_arms(p: Poser, recoil: float = 0.0, lean: float = 0.0, settle: float = 0.0) -> None:
     """Rifle forward at the right shoulder, angled a little across the body;
-    the right hand at the grip, the left under the forend."""
+    the right hand at the grip, the left under the forend. 5.2: `settle`
+    carries the rifle past the aim (1: the muzzle 3 degrees high, the body
+    leaning 2 more) on its way into it."""
     # Level whatever the chest lean (`lean` degrees forward).
-    p.swing("rifle", 90 - recoil * 6 - lean)
+    p.swing("rifle", 90 - recoil * 6 - lean - settle * 3)
     p.side("rifle", AIM_YAW - BLADE)
     p.shift("rifle", up=AIM_RISE)
     p.side("chest", BLADE)
@@ -513,14 +634,14 @@ def aim_arms(p: Poser, recoil: float = 0.0, lean: float = 0.0) -> None:
     p.swing("forearm.L", 10)
     p.side("upper_arm.L", LEFT_REACH)
     # Keep the lean the stance gave the body (the rifle is levelled for it).
-    p.swing("chest", lean - recoil * 3)
+    p.swing("chest", lean - recoil * 3 + settle * 2)
     p.swing("head", 6)
     p.hold("R", "L")
     if p.pistol:
         pistol_arms(p, aim=True, recoil=recoil)
 
 
-def prone(p: Poser, aim: bool = True) -> None:
+def prone(p: Poser, aim: bool = True, settle: float = 0.0) -> None:
     """Prone firing position: chest raised on the elbows, head up behind the
     sights, elbows on the ground ahead of the shoulders, legs apart."""
     p.root(pitch=-90, y=-0.95, z=0.13)
@@ -531,7 +652,7 @@ def prone(p: Poser, aim: bool = True) -> None:
         p.swing(f"thigh.{side}", -4)
         p.swing(f"shin.{side}", -8)
     # Level with the ground: the chest is raised by PRONE_RISE.
-    p.swing("rifle", PRONE_RISE)
+    p.swing("rifle", PRONE_RISE - settle * 3)
     p.side("rifle", AIM_YAW - PRONE_BLADE)
     p.side("chest", PRONE_BLADE)
     p.side("head", -PRONE_BLADE)
@@ -801,6 +922,24 @@ def fall_spin(p: Poser, t: float) -> None:
     p.root(roll=40 * t, x=-0.3 * t, z=-0.35 * t)
 
 
+def buckle(p: Poser, amount: float) -> None:
+    """5.3: the knees give under him before he tips: both thighs forward,
+    the shins folded back, the body sinking straight down."""
+    for side in ("L", "R"):
+        p.swing(f"thigh.{side}", 30 * amount)
+        p.swing(f"shin.{side}", -60 * amount)
+    bone = p.rig.pose.bones["root"]
+    bone.location.z -= 0.22 * amount
+
+
+def landed(pose, bounce: float):
+    """5.3: the body hits the ground and gives back a little before it lies still."""
+    def at(p: Poser) -> None:
+        pose(p)
+        p.rig.pose.bones["root"].location.z += bounce
+    return at
+
+
 def crouch_slump(p: Poser, t: float) -> None:
     """Killed crouching: the rifle drops and he folds forward over his knees."""
     crouch(p)
@@ -808,7 +947,8 @@ def crouch_slump(p: Poser, t: float) -> None:
     p.swing("head", 20 * t)
     p.swing("rifle", 92 + 30 * t)
     p.swing("upper_arm.R", 35 - 20 * t)
-    p.root(pitch=-25 * t, y=-0.15 * t, z=-0.34 - 0.1 * t)
+    z = p.rig.pose.bones["root"].location.z
+    p.root(pitch=-25 * t, y=-0.15 * t, z=z - 0.1 * t)
     if t > 0:
         p.release("R", "L")
 
@@ -843,6 +983,7 @@ def crouch_step(p: Poser, lead: str, trail: str) -> None:
     p.swing(f"shin.{lead}", -85)
     p.swing(f"thigh.{trail}", 10)
     p.swing(f"shin.{trail}", -105)
+    p.plant(CONTACT_ROLL)
 
 
 def crouch_pass(p: Poser, lead: str, trail: str) -> None:
@@ -852,10 +993,13 @@ def crouch_pass(p: Poser, lead: str, trail: str) -> None:
     p.swing("head", -16)
     p.swing("rifle", 92 - 18)
     p.root(z=CROUCH_Z + 0.02)
-    p.swing(f"thigh.{lead}", 45)
+    # The planted foot halfway between its two contacts, so it slides evenly.
+    p.swing(f"thigh.{lead}", 50)
     p.swing(f"shin.{lead}", -95)
     p.swing(f"thigh.{trail}", 55)
     p.swing(f"shin.{trail}", -120)
+    p.root(x=(1 if lead == "L" else -1) * SWAY)
+    p.plant()
 
 
 def lowered_prone(p: Poser) -> None:
@@ -867,21 +1011,45 @@ def lowered_prone(p: Poser) -> None:
     p.hold("L", at="L-near")
 
 
-def stance_pose(stance: str, aim: bool):
-    """The held pose of a stance, at the ready or in the aim."""
+def stance_pose(stance: str, aim: bool, settle: float = 0.0):
+    """The held pose of a stance, at the ready or in the aim; `settle` (in
+    the aim) carries the rifle past it, 5.2."""
     if stance == "stand":
-        return aim_arms if aim else ready
+        return (lambda p: aim_arms(p, settle=settle)) if aim else ready
     if stance == "crouch":
-        return lambda p: crouch(p, aim=aim)
-    return (lambda p: prone(p)) if aim else lowered_prone
+        return lambda p: crouch(p, aim=aim, settle=settle)
+    return (lambda p: prone(p, settle=settle)) if aim else lowered_prone
+
+
+def settle_keys(stance: str) -> list:
+    """5.2: raising into the aim: up past it, a little under, then still,
+    at rest by frame 12 (half a second)."""
+    return [(1, stance_pose(stance, False)), (7, stance_pose(stance, True, 1)), (10, stance_pose(stance, True, -0.4)), (12, stance_pose(stance, True))]
+
+
+def lower_keys(stance: str) -> list:
+    """5.2: lowering out of the aim, the rifle dipping past the ready and
+    coming back, still by frame 12."""
+    def past(p: Poser) -> None:
+        stance_pose(stance, False)(p)
+        bone = p.rig.pose.bones["rifle"]
+        bone.rotation_euler.x += p.sign["rifle"] * math.radians(4)
+    return [(1, stance_pose(stance, True)), (8, past), (12, stance_pose(stance, False))]
+
+
+def nudge(p: Poser, y: float = 0.0, z: float = 0.0) -> None:
+    """Moves the body from where it stands (planted), instead of resetting it."""
+    root = p.rig.pose.bones["root"]
+    root.location.y += y
+    root.location.z += z
 
 
 def recoil_pose(stance: str):
     """The shot: the rifle kicks up and the shoulder is pushed back."""
     if stance == "stand":
-        return lambda p: (aim_arms(p, 1.6), p.root(y=-0.03))
+        return lambda p: (aim_arms(p, 1.6), nudge(p, y=-0.03))
     if stance == "crouch":
-        return lambda p: (crouch(p, aim=True), aim_arms(p, 1.6, lean=14), p.root(y=-0.03, z=-0.34))
+        return lambda p: (crouch(p, aim=True), aim_arms(p, 1.6, lean=14), nudge(p, y=-0.03))
     return lambda p: (prone(p), p.swing("rifle", PRONE_RISE - 8), p.swing("chest", -PRONE_RISE + 4), p.swing("head", -36))
 
 
@@ -936,7 +1104,7 @@ def turn_step(stance: str, phase: int):
             p.root(z=0.02 * lift)
         else:
             p.spread(f"thigh.{leg}", 14 * lift)
-            p.root(z=-0.34 + 0.03 * lift)
+            nudge(p, z=0.03 * lift)
     return pose
 
 
@@ -992,13 +1160,13 @@ def foot_gap(rig, poser: Poser, pose) -> float:
     return abs(left.y - right.y)
 
 
-def gait_clip(rig, poser: Poser, name: str, keys: list, contacts: list, gaits: dict, clip_name: str | None = None) -> None:
+def gait_clip(rig, poser: Poser, name: str, keys: list, contacts: list, gaits: dict, clip_name: str | None = None, overlap: int = OVERLAP) -> None:
     """`keys`: (fraction of the cycle, pose); `contacts`: the contact poses,
     one per step. The cycle lasts as long as the summed steps take at the
     clip's speed, rounded to whole frames."""
     stride = sum(foot_gap(rig, poser, pose) for pose in contacts)
     period = max(8, round(stride / GAIT_SPEED[name] * FPS))
-    clip(rig, poser, clip_name or name, [(1 + round(at * period), pose) for at, pose in keys], period=period)
+    clip(rig, poser, clip_name or name, [(1 + round(at * period), pose) for at, pose in keys], period=period, overlap=overlap)
     gaits[name] = {"strideMetres": round(stride, 4), "cycleFrames": period, "fps": FPS, "speed": GAIT_SPEED[name]}
 
 
@@ -1041,8 +1209,8 @@ def pistol_clips(rig, poser: Poser, quarter) -> None:
     clip(rig, poser, name("aim-crouch"), [(1, lambda p: crouch(p, aim=True)), (24, lambda p: crouch(p, aim=True))], loop=False)
     clip(rig, poser, name("fire-crouch"), [(1, lambda p: crouch(p, aim=True)), (3, recoil_pose("crouch")), (10, lambda p: crouch(p, aim=True))], loop=False)
     for stance in ("stand", "crouch"):
-        clip(rig, poser, name(f"raise-{stance}"), [(1, stance_pose(stance, False)), (8, stance_pose(stance, True))], loop=False)
-        clip(rig, poser, name(f"lower-{stance}"), [(1, stance_pose(stance, True)), (10, stance_pose(stance, False))], loop=False)
+        clip(rig, poser, name(f"raise-{stance}"), settle_keys(stance), loop=False)
+        clip(rig, poser, name(f"lower-{stance}"), lower_keys(stance), loop=False)
         clip(rig, poser, name(f"aim-turn-{stance}"), [(1, turn_step(stance, 0)), (5, turn_step(stance, 1)), (9, turn_step(stance, 2)), (13, turn_step(stance, 3))])
     poser.pistol = False
 
@@ -1081,7 +1249,7 @@ def build():
         lambda p: crouch_step(p, "L", "R"), lambda p: crouch_pass(p, "L", "R"), lambda p: crouch_step(p, "R", "L"), lambda p: crouch_pass(p, "R", "L"),
     ), [lambda p: crouch_step(p, "L", "R"), lambda p: crouch_step(p, "R", "L")], gaits)
     clip(rig, poser, "prone", [(1, lambda p: prone(p)), (24, lambda p: prone(p))], loop=False)
-    clip(rig, poser, "crawl", [(1, lambda p: crawl(p, 1)), (16, lambda p: crawl(p, -1))])
+    clip(rig, poser, "crawl", [(1, lambda p: crawl(p, 1)), (16, lambda p: crawl(p, -1))], overlap=OVERLAP)
     clip(rig, poser, "aim-stand", [(1, lambda p: aim_arms(p)), (24, lambda p: aim_arms(p))], loop=False)
     clip(rig, poser, "fire-stand", [(1, lambda p: aim_arms(p)), (3, recoil_pose("stand")), (10, lambda p: aim_arms(p))], loop=False)
     clip(rig, poser, "aim-crouch", [(1, lambda p: crouch(p, aim=True)), (24, lambda p: crouch(p, aim=True))], loop=False)
@@ -1124,22 +1292,29 @@ def build():
     clip(rig, poser, "corpse-face", [(1, corpse_face), (24, corpse_face)], loop=False)
     clip(rig, poser, "corpse-side", [(1, corpse_side), (24, corpse_side)], loop=False)
     clip(rig, poser, "corpse-sprawl", [(1, corpse_sprawl), (24, corpse_sprawl)], loop=False)
+    # 5.3: each standing death buckles at the knees before it tips, falls
+    # faster as it goes (shorter steps between the later keys), lands with a
+    # small give and lies still in its corpse pose.
     clip(rig, poser, "death-stand-front", [
-        (1, lambda p: hit(p, 0)), (4, lambda p: hit(p, 1)), (10, lambda p: fall_back(p, 1)), (18, corpse),
+        (1, lambda p: hit(p, 0)), (4, lambda p: hit(p, 1)), (8, lambda p: (fall_back(p, 0.3), buckle(p, 0.8))),
+        (12, lambda p: fall_back(p, 1)), (15, landed(corpse, 0.04)), (19, corpse),
     ], loop=False)
     clip(rig, poser, "death-stand-back", [
-        (1, slung), (4, lambda p: fall_forward(p, 0.4)), (10, lambda p: fall_forward(p, 1)), (17, corpse_face),
+        (1, slung), (4, lambda p: (fall_forward(p, 0.25), buckle(p, 0.6))), (9, lambda p: (fall_forward(p, 0.7), buckle(p, 0.5))),
+        (12, lambda p: fall_forward(p, 1)), (15, landed(corpse_face, 0.04)), (18, corpse_face),
     ], loop=False)
     clip(rig, poser, "death-stand-flank", [
-        (1, lambda p: hit(p, 0)), (4, lambda p: hit(p, 1)), (11, lambda p: fall_spin(p, 1)), (19, corpse_side),
+        (1, lambda p: hit(p, 0)), (4, lambda p: hit(p, 1)), (8, lambda p: (fall_spin(p, 0.3), buckle(p, 0.7))),
+        (12, lambda p: fall_spin(p, 1)), (15, landed(corpse_side, 0.04)), (19, corpse_side),
     ], loop=False)
     clip(rig, poser, "death-crouch", [
-        (1, lambda p: crouch_slump(p, 0)), (6, lambda p: crouch_slump(p, 1)), (14, corpse_face),
+        (1, lambda p: crouch_slump(p, 0)), (5, lambda p: crouch_slump(p, 0.4)), (9, lambda p: crouch_slump(p, 1)),
+        (12, landed(corpse_face, 0.03)), (15, corpse_face),
     ], loop=False)
     # Raise into the aim, lower out of it, reload and turn, per stance (1.3).
     for stance in ("stand", "crouch", "prone"):
-        clip(rig, poser, f"raise-{stance}", [(1, stance_pose(stance, False)), (8, stance_pose(stance, True))], loop=False)
-        clip(rig, poser, f"lower-{stance}", [(1, stance_pose(stance, True)), (10, stance_pose(stance, False))], loop=False)
+        clip(rig, poser, f"raise-{stance}", settle_keys(stance), loop=False)
+        clip(rig, poser, f"lower-{stance}", lower_keys(stance), loop=False)
         clip(rig, poser, f"reload-{stance}", [
             (1, stance_pose(stance, False)),
             (6, reload_pose(stance, 0)),
@@ -1150,8 +1325,10 @@ def build():
         ], loop=False)
     for stance in ("stand", "crouch"):
         clip(rig, poser, f"aim-turn-{stance}", [(1, turn_step(stance, 0)), (5, turn_step(stance, 1)), (9, turn_step(stance, 2)), (13, turn_step(stance, 3))])
+    # Prone: the head and chest drop under their weight, slow then quick; he
+    # never rises above his prone height (no landing give).
     clip(rig, poser, "death-prone", [
-        (1, lambda p: prone_go_limp(p, 0)), (6, lambda p: prone_go_limp(p, 0.6)), (14, corpse_sprawl),
+        (1, lambda p: prone_go_limp(p, 0)), (5, lambda p: prone_go_limp(p, 0.3)), (9, lambda p: prone_go_limp(p, 0.8)), (14, corpse_sprawl),
     ], loop=False)
 
     pistol_clips(rig, poser, quarter)
