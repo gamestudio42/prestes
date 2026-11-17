@@ -2056,11 +2056,13 @@
   font-weight: 600;
 }
 
-/* The whole top card opens the setup (the owner, 2026-11-16: no "Prepare" stamp on it). */
+/*
+ * The top card opens the setup from its print only (the owner, 2026-11-16: no
+ * "Prepare" stamp); its paper frame and legend stay the pile's drag surface.
+ */
 .desk-map-pile .desk-map-sheet.active .desk-map-select {
-  bottom: 0;
-}
-
-.desk-map-pile .desk-map-legend {
-  pointer-events: none;
+  top: calc(100% * var(--win-y0) / var(--art-h));
+  right: calc(100% - 100% * var(--win-x1) / var(--art-w));
+  bottom: calc(100% - 100% * var(--win-y1) / var(--art-h));
+  left: calc(100% * var(--win-x0) / var(--art-w));
 }

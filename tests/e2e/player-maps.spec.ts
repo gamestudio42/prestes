@@ -54,3 +54,19 @@ test("the editor's Open lists the kept maps", async ({ page }) => {
   await page.getByTestId(`open-own-${ID}`).click();
   await expect.poll(() => page.evaluate(() => (window as unknown as Bridge).__prestesEditor!.state().id)).toBe(ID);
 });
+
+test('the pile is dragged by its paper and legend; only the print opens the setup', async ({ page }) => {
+  await page.goto('/');
+  const pile = page.getByTestId('menu-mark-skirmish');
+  const before = await pile.boundingBox();
+  const title = await page.locator('.desk-map-sheet.active .desk-map-title').boundingBox();
+  await page.mouse.move(title!.x + 10, title!.y + title!.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(title!.x + 90, title!.y + 60, { steps: 8 });
+  await page.mouse.up();
+  const after = await pile.boundingBox();
+  expect(after!.x).toBeGreaterThan(before!.x + 40);
+  await expect(page.getByTestId('start-battle-3v3')).toHaveCount(0);
+  await page.getByTestId('open-skirmish').click();
+  await expect(page.getByTestId('start-battle-3v3')).toBeVisible();
+});
