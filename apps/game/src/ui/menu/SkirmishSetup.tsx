@@ -5,7 +5,7 @@ import { ARMIES, DIFFICULTIES, ENEMY_ARMY_IDS, rosterArmies, rosterMen, SECTION_
 import { translate, type Locale, type MessageKey } from '@prestes/content';
 import { Troop as Users } from '../icons';
 import { moveFocus, RosterBuilder } from './RosterBuilder';
-import { builtEnemy, DEFAULT_ARMY, setupReady, withMap, type EnemyChoice, type SkirmishSetup as Setup } from './setupState';
+import { builtEnemy, DEFAULT_ARMY, mapSize, setupReady, withMap, type EnemyChoice, type SkirmishSetup as Setup } from './setupState';
 
 export interface SkirmishSetupProps {
   locale: Locale;
@@ -218,6 +218,7 @@ export function SkirmishSetup({ locale, setup, maps, onChange, onStart, onBack }
             roster={setup.roster}
             army={DEFAULT_ARMY}
             onChange={(roster) => onChange({ ...setup, roster })}
+            size={mapSize(setup.map)}
             testPrefix="roster"
             label={t('setup.yourForce')}
           />
@@ -293,6 +294,7 @@ export function SkirmishSetup({ locale, setup, maps, onChange, onStart, onBack }
                 roster={setup.enemy.roster}
                 army={setup.enemy.army}
                 onChange={(roster) => setup.enemy.kind === 'built' && setEnemy({ ...setup.enemy, roster })}
+                size={mapSize(setup.map)}
                 testPrefix="enemy-roster"
                 label={t('setup.enemy')}
               />
