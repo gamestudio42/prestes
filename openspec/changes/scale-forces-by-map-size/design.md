@@ -228,6 +228,64 @@ their own. Many defeats come from the commander falling (`commander`),
 which the scripted player does not protect; the bands judge time, not who
 wins.
 
+### After the campaign forces change
+
+*Measured 2026-11-17*, same tool and seeds, with the forces of Decision 5:
+
+| map | seed | first shot (s) | time (s) | outcome | decided by | casualties c/l | shots/tick | bunching | bands |
+|---|---|---|---|---|---|---|---|---|---|
+| catanduvas | 1922 | 49.3 | 584.1 | defeat | annihilation | 49/11 | 5 | 0.17 | ok |
+| catanduvas | 42 | 49.2 | 536.7 | defeat | annihilation | 49/34 | 4 | 0.2 | ok |
+| catanduvas | 7 | 50 | 900 | victory | objectives | 36/35 | 5 | 0.2 | victory at 900 s |
+| pantanal | 1922 | 45.6 | 900 | defeat | objectives | 19/24 | 3 | 0.17 | defeat at 900 s |
+| pantanal | 42 | 45.9 | 900 | defeat | objectives | 20/22 | 4 | 0.17 | defeat at 900 s |
+| pantanal | 7 | 45.7 | 900 | defeat | objectives | 17/25 | 4 | 0.17 | defeat at 900 s |
+| porto-mendes | 1922 | 45.7 | 468.2 | defeat | commander | 22/5 | 4 | 0.17 | ok |
+| porto-mendes | 42 | 45.6 | 545.3 | defeat | commander | 23/3 | 3 | 0.17 | ok |
+| porto-mendes | 7 | 46.5 | 513.6 | defeat | commander | 23/19 | 4 | 0.17 | ok |
+| sao-luiz-ramada | 1922 | 60.9 | 900 | defeat | objectives | 14/42 | 5 | 0.17 | defeat at 900 s |
+| sao-luiz-ramada | 42 | 60.8 | 900 | draw | draw | 34/39 | 5 | 0.16 | draw at 900 s |
+| sao-luiz-ramada | 7 | 61.6 | 900 | victory | objectives | 16/41 | 3 | 0.21 | victory at 900 s |
+| serra-nova | 1922 | 49.4 | 597.9 | defeat | commander | 15/10 | 4 | 0.12 | ok |
+| serra-nova | 42 | 47.9 | 860.2 | defeat | commander | 30/39 | 4 | 0.12 | defeat at 860.2 s |
+| serra-nova | 7 | 47.7 | 632.3 | defeat | commander | 12/24 | 5 | 0.12 | ok |
+
+What was changed, map by map:
+- **Column forces:** 43 to 50 men (were 18 to 23).
+- **Enemy presets:** 40 to 53 men (were 19 to 30). The arrivals the
+  first plan said would move into the start force were trimmed instead,
+  where the battle ran long.
+- **Catanduvas:** arrivals at 180, 360 and 540 s (were 240, 480, 720).
+- **Porto Mendes:** the south-east wood's column, which passes the
+  canoes, comes first at 45 s; the others at 180 and 540 s.
+- **São Luiz / Ramada:**
+  - the government enters São Luiz at 60 s;
+  - half of the east column comes by a new north-east picada at 150 s,
+    heading for the ford, with the trail extended to that edge;
+  - the ring tightens at 480 s as a change of posture only (its two
+    sections were dropped).
+  - A north-east objective was tried and dropped: the column could not
+    hold all objectives with it.
+- **Serra Nova:** the jagunços come by the west road at 45 s, for the
+  supply train; the others at 240, 420 and 540 s.
+- **Pantanal:** a new south patrol on the column's heels at 45 s; the
+  crossing patrol at 360 s.
+
+The first shot now falls at 45 to 62 s on every map and seed, against 49 s
+to 11 minutes before. The decided-by-720-s band holds on 7 of 15 runs:
+- **Porto Mendes:** 3 of 3.
+- **Catanduvas:** 2 of 3.
+- **Serra Nova:** 2 of 3.
+- **Pantanal and São Luiz:** 0 of 3. These are marches, and the scripted
+  player only holds and counterattacks, so it never reaches the northern
+  objectives; their battles end on the 900 s limit by objective value.
+
+The scripted player also loses most chapters, often to the commander's fall,
+as it did before this change (status notes of 2026-11-16). So this figure
+measures the script as much as the map. `campaign-length.test.ts` holds the
+first-shot band. The battle's length is reported by the tool for the
+owner's review in play.
+
 ## Risks / Trade-offs
 
 - **Cost of 132 soldiers.** Vision and target scans grow with the square of

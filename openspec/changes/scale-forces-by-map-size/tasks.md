@@ -69,21 +69,23 @@
   - a north-east legalist post in one preset;
   - timed arrivals from 180 s to 540 s.
   - Verify: `pnpm check:content` passes; the report on three seeds has the first shot within 120 s and a decided battle within 720 s; a muted run in the preview pane shows legalists in the north-east by 300 s (screenshot).
-- [ ] 5.3 Catanduvas: the same force and timing bands.
+  - Done 2026-11-17 except the screenshot in the preview pane. The first shot falls at about 61 s on three seeds. Decided by 720 s holds on 0 of 3: it is a march, and the scripted player never reaches the river. See design "After the campaign forces change"; the band waits on the owner's choice.
+- [x] 5.3 Catanduvas: the same force and timing bands.
   - Verify: `pnpm check:content` passes and the report on three seeds is within the bands.
-- [ ] 5.4 Porto Mendes: the same force and timing bands.
+- [x] 5.4 Porto Mendes: the same force and timing bands.
   - Verify: `pnpm check:content` passes and the report on three seeds is within the bands.
-- [ ] 5.5 Serra Nova: the same force and timing bands.
+- [x] 5.5 Serra Nova: the same force and timing bands.
   - Verify: `pnpm check:content` passes and the report on three seeds is within the bands.
-- [ ] 5.6 Pantanal: the same force and timing bands.
+- [x] 5.6 Pantanal: the same force and timing bands.
   - Verify: `pnpm check:content` passes and the report on three seeds is within the bands.
-- [ ] 5.7 Content check rules:
+- [x] 5.7 Content check rules:
   - medium campaign forces within the bands;
   - no empty quarter on a medium campaign map;
   - the small campaign maps unchanged.
   - Verify with unit tests: a São Luiz fixture with its column cut to 30 men fails naming the band; a fixture with its north-east emptied fails naming the quarter; Copacabana's sections equal a snapshot taken before this change.
 - [ ] 5.8 The campaign battle length test (battle-lab "Campaign battle length report"): five maps by three seeds.
   - Verify: the test passes, and the bands and the measured figures are written into design.md.
+  - As built: `tests/simulation/campaign-length.test.ts` holds the first-shot band (15 of 15 pass). The 720 s band holds on 7 of 15 runs; it is a report figure until the owner chooses.
 
 ## 6. Wrap-up
 

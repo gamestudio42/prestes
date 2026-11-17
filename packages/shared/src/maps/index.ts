@@ -85,3 +85,4 @@ export { sameCovers } from './cover-index';
 export * from './validate-document';
 export { checkWithdrawal, columnSectionCount, type WithdrawalProblem, type WithdrawalProblemCode } from './validate-withdrawal';
 export { polygonMiddle } from './validate-events';
+export { validateCampaignForces, CAMPAIGN_COLUMN_MEN, CAMPAIGN_ENEMY_MEN, FIRST_ARRIVAL_BY_SECONDS, LAST_ARRIVAL_BY_SECONDS } from './validate-campaign-forces';

@@ -16549,7 +16549,10 @@
    "comando",
    "veteranos-gauchos",
    "esquadra-5",
-   "esquadra-4"
+   "esquadra-4",
+   "veteranos-gauchos",
+   "fuzileiros",
+   "irregulares"
   ]
  },
  "commander": {
@@ -16563,6 +16566,9 @@
     "chefe-capangas",
     "jaguncos",
     "jaguncos-mauser",
+    "jaguncos",
+    "jaguncos",
+    "jaguncos-mauser",
     "jaguncos"
    ]
   },
@@ -16571,7 +16577,9 @@
     "comando-companhia",
     "jaguncos-mauser",
     "jaguncos",
-    "infantaria-exercito"
+    "infantaria-exercito",
+    "infantaria-exercito",
+    "jaguncos"
    ]
   }
  ],
@@ -16657,21 +16665,21 @@
    "label": "Os jagunços pelo sul",
    "trigger": {
     "kind": "time",
-    "seconds": 150
+    "seconds": 45
    },
    "delay": 0,
    "actions": [
     {
      "kind": "troops",
      "side": "legalist",
-     "entry": 1,
+     "entry": 4,
      "sections": [
       "jaguncos",
       "jaguncos-mauser"
      ],
      "order": {
       "kind": "objective",
-      "objective": 1
+      "objective": 4
      }
     }
    ]
@@ -16681,7 +16689,7 @@
    "label": "Os federais pelo leste",
    "trigger": {
     "kind": "time",
-    "seconds": 360
+    "seconds": 240
    },
    "delay": 0,
    "actions": [
@@ -16752,7 +16760,7 @@
    "label": "Cerco pelo oeste",
    "trigger": {
     "kind": "time",
-    "seconds": 600
+    "seconds": 420
    },
    "delay": 0,
    "actions": [
@@ -16784,7 +16792,7 @@
    "label": "A estrada de Taiobeiras",
    "trigger": {
     "kind": "time",
-    "seconds": 780
+    "seconds": 540
    },
    "delay": 0,
    "actions": [

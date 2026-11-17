@@ -71,6 +71,14 @@ that unblocks the most.
    not send them); read both books in the game in both languages.
 6. **`referencias para hud/`** (33 MB of reference images): keep out of git,
    add, or move elsewhere.
+7. **Play the bigger forces** (`scale-forces-by-map-size` 6.3): a skirmish
+   on a medium map with a twelve-section company (the troop cards scroll),
+   and the São Luiz / Ramada chapter through. The limits now grow with the
+   map (small 33 men / 6 sections, medium 66 / 12, large 100 / 16); the
+   five medium campaign maps start with 40 to 55 men a side and the first
+   shot falls within a minute (it was 4 to 11 minutes). Say whether the
+   maps still feel empty and the battles long; the bands are in the
+   change's design.
 
 ### 3. Blocked on another item
 

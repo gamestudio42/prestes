@@ -142,6 +142,10 @@
     {
      "x": 128,
      "y": -126
+    },
+    {
+     "x": 126,
+     "y": -200
     }
    ]
   },
@@ -16459,8 +16463,12 @@
   "sections": [
    "comando",
    "veteranos-gauchos",
+   "veteranos-gauchos",
    "esquadra-5",
-   "esquadra-4"
+   "esquadra-5",
+   "esquadra-4",
+   "fuzileiros",
+   "irregulares"
   ]
  },
  "commander": {
@@ -16473,14 +16481,19 @@
    "sections": [
     "comando-companhia",
     "brigada-militar",
-    "provisorios"
+    "provisorios",
+    "provisorios",
+    "infantaria-exercito"
    ]
   },
   {
    "sections": [
     "comando-companhia",
     "infantaria-exercito",
-    "metralhadora-legalista"
+    "metralhadora-legalista",
+    "brigada-militar",
+    "fuzil-metralhador-legalista",
+    "provisorios"
    ]
   }
  ],
@@ -16546,6 +16559,19 @@
      "y": -96
     }
    ]
+  },
+  {
+   "id": 5,
+   "name": "Picada do nordeste",
+   "kind": "entry",
+   "point": {
+    "x": 126,
+    "y": -194
+   },
+   "facing": {
+    "x": 0,
+    "y": 1
+   }
   }
  ],
  "events": [
@@ -16576,7 +16602,7 @@
    "label": "O governo entra em São Luiz",
    "trigger": {
     "kind": "time",
-    "seconds": 240
+    "seconds": 60
    },
    "delay": 0,
    "actions": [
@@ -16645,17 +16671,17 @@
   },
   {
    "id": 5,
-   "label": "Coluna do leste (sem Ramada)",
+   "label": "Coluna do nordeste",
    "trigger": {
     "kind": "time",
-    "seconds": 420
+    "seconds": 150
    },
    "delay": 0,
    "actions": [
     {
      "kind": "troops",
      "side": "legalist",
-     "entry": 2,
+     "entry": 5,
      "sections": [
       "infantaria-exercito",
       "brigada-militar"
@@ -16731,22 +16757,10 @@
    "label": "O anel aperta",
    "trigger": {
     "kind": "time",
-    "seconds": 660
+    "seconds": 480
    },
    "delay": 0,
    "actions": [
-    {
-     "kind": "troops",
-     "side": "legalist",
-     "entry": 3,
-     "sections": [
-      "infantaria-exercito",
-      "infantaria-exercito"
-     ],
-     "order": {
-      "kind": "commander"
-     }
-    },
     {
      "kind": "posture",
      "posture": "offensive",

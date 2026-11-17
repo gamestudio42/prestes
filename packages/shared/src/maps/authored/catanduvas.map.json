@@ -15423,7 +15423,11 @@
    "comando",
    "fuzileiros",
    "esquadra-4",
-   "metralhadora"
+   "metralhadora",
+   "fuzileiros",
+   "esquadra-5",
+   "esquadra-5",
+   "irregulares"
   ]
  },
  "commander": {
@@ -15437,7 +15441,8 @@
     "comando-companhia",
     "infantaria-exercito",
     "infantaria-exercito",
-    "metralhadora-legalista"
+    "metralhadora-legalista",
+    "brigada-militar"
    ]
   },
   {
@@ -15445,6 +15450,8 @@
     "comando-companhia",
     "brigada-militar",
     "infantaria-exercito",
+    "fuzil-metralhador-legalista",
+    "provisorios",
     "fuzil-metralhador-legalista"
    ]
   }
@@ -15518,7 +15525,7 @@
    "label": "Pela mata do flanco",
    "trigger": {
     "kind": "time",
-    "seconds": 240
+    "seconds": 180
    },
    "delay": 0,
    "actions": [
@@ -15566,7 +15573,7 @@
    "label": "Pelo cafezal",
    "trigger": {
     "kind": "time",
-    "seconds": 480
+    "seconds": 360
    },
    "delay": 0,
    "actions": [
@@ -15613,7 +15620,7 @@
    "label": "O assalto geral",
    "trigger": {
     "kind": "time",
-    "seconds": 720
+    "seconds": 540
    },
    "delay": 0,
    "actions": [

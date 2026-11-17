@@ -17854,7 +17854,11 @@
    "comando",
    "fuzileiros",
    "esquadra-5",
-   "fuzil-metralhador"
+   "fuzil-metralhador",
+   "fuzileiros",
+   "esquadra-4",
+   "irregulares",
+   "esquadra-5"
   ]
  },
  "commander": {
@@ -17867,14 +17871,20 @@
    "sections": [
     "comando-companhia",
     "infantaria-exercito",
-    "brigada-militar"
+    "brigada-militar",
+    "provisorios",
+    "metralhadora-legalista",
+    "fuzil-metralhador-legalista"
    ]
   },
   {
    "sections": [
     "comando-companhia",
     "infantaria-exercito",
-    "metralhadora-legalista"
+    "metralhadora-legalista",
+    "infantaria-exercito",
+    "provisorios",
+    "fuzil-metralhador-legalista"
    ]
   }
  ],
@@ -17994,7 +18004,7 @@
    "label": "Perseguição pela estrada do leste",
    "trigger": {
     "kind": "time",
-    "seconds": 200
+    "seconds": 180
    },
    "delay": 0,
    "actions": [
@@ -18018,7 +18028,7 @@
    "label": "Pela mata do sudeste",
    "trigger": {
     "kind": "time",
-    "seconds": 420
+    "seconds": 45
    },
    "delay": 0,
    "actions": [
@@ -18101,7 +18111,7 @@
    "label": "Ofensiva sobre a barranca",
    "trigger": {
     "kind": "time",
-    "seconds": 720
+    "seconds": 540
    },
    "delay": 0,
    "actions": [

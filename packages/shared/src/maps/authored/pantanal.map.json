@@ -7361,7 +7361,11 @@
    "comando",
    "esquadra-5",
    "esquadra-5",
-   "esquadra-4"
+   "esquadra-4",
+   "fuzileiros",
+   "irregulares",
+   "esquadra-4",
+   "irregulares"
   ]
  },
  "commander": {
@@ -7374,14 +7378,19 @@
    "sections": [
     "comando-companhia",
     "infantaria-exercito",
-    "provisorios"
+    "provisorios",
+    "provisorios",
+    "infantaria-exercito"
    ]
   },
   {
    "sections": [
     "comando-companhia",
     "provisorios",
-    "provisorios"
+    "provisorios",
+    "provisorios",
+    "infantaria-exercito",
+    "fuzil-metralhador-legalista"
    ]
   }
  ],
@@ -7434,6 +7443,19 @@
      "y": -124
     }
    ]
+  },
+  {
+   "id": 4,
+   "name": "Patrulha do sul",
+   "kind": "entry",
+   "point": {
+    "x": -40,
+    "y": 194
+   },
+   "facing": {
+    "x": 0,
+    "y": -1
+   }
   }
  ],
  "events": [
@@ -7511,7 +7533,7 @@
    "label": "Patrulha na travessia",
    "trigger": {
     "kind": "time",
-    "seconds": 480
+    "seconds": 360
    },
    "delay": 0,
    "actions": [
@@ -7585,6 +7607,29 @@
      "text": {
       "pt-BR": "A coluna se alonga no alagado. Os feridos e os animais de carga ficam para trás, e cada patrulha que aparece pega alguém.\n\n— Fechem a coluna. Uma coluna espichada é uma coluna morta.\n\n(Fala dramatizada.)",
       "en": "The column strings out across the marsh. The wounded and the pack animals fall behind, and every patrol that shows up takes someone.\n\n\"Close up the column. A column strung out is a dead column.\"\n\n(Dramatized line.)"
+     }
+    }
+   ]
+  },
+  {
+   "id": 7,
+   "label": "Patrulha no rastro",
+   "trigger": {
+    "kind": "time",
+    "seconds": 45
+   },
+   "delay": 0,
+   "actions": [
+    {
+     "kind": "troops",
+     "side": "legalist",
+     "entry": 4,
+     "sections": [
+      "provisorios"
+     ],
+     "order": {
+      "kind": "objective",
+      "objective": 1
      }
     }
    ]

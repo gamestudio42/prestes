@@ -1,7 +1,7 @@
 import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { basename, dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { compileMapDocument, fromMapDocument, parseMapDocumentText, setActiveMap, validateEditableMap, validateMapRosters, validatePositions, type AuthoredMapEntry } from '../packages/shared/src';
+import { compileMapDocument, fromMapDocument, parseMapDocumentText, setActiveMap, validateCampaignForces, validateEditableMap, validateMapRosters, validatePositions, type AuthoredMapEntry } from '../packages/shared/src';
 import { CAMPAIGN_CHAPTERS, validateMapCommander } from '../packages/content/src';
 
 /**
@@ -106,6 +106,8 @@ export function checkAuthoredMaps(dir = AUTHORED_DIR, only?: string): string[] {
       // Warnings (masked vegetation, a cover gap) are shown and do not fail the check.
       else console.warn(`warning ${file}: ${problem.code} ${JSON.stringify(problem.params)}`);
     }
+    // scale-forces-by-map-size 5.7: a medium campaign map fills its field and its enemy comes early.
+    for (const error of validateCampaignForces(fromMapDocument(document))) errors.push(`${file}: ${error}`);
     // author-game-maps: every position's entrance on open ground and reachable (a door against a fence).
     const compiled = compileMapDocument(document);
     setActiveMap(compiled);
