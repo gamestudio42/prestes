@@ -60,7 +60,7 @@
 
 ## 5. Campaign maps
 
-- [ ] 5.1 Record the battle report's baseline: add `firstShotSeconds` to `tools/battle-report.ts` and run the five medium campaign maps on seeds 1922, 7 and 42 with today's forces.
+- [x] 5.1 Record the battle report's baseline (the report already had `firstShot`, in seconds; `tools/campaign-length.ts` runs the maps) and run the five medium campaign maps on seeds 1922, 7 and 42 with today's forces.
   - Verify: the table of first shot, battle time, outcome and casualties is written into design.md.
 - [ ] 5.2 São Luiz / Ramada (D5):
   - column force of 40–55 men under Prestes;

@@ -196,6 +196,38 @@ size to the roster checks.
   encirclement of São Luiz the reference is `macaulay-1974`, through the
   chapter's existing source list. No new claims enter the compendium.
 
+### Baseline before the campaign forces change
+
+*Measured 2026-11-16* with `tools/campaign-length.ts` (the battle report on
+each medium campaign map with its own forces, commander and events, the
+enemy deployed as in the game; the scripted player holds, then
+counterattacks):
+
+| map | seed | first shot (s) | time (s) | outcome | decided by | casualties c/l | shots/tick | bunching | bands |
+|---|---|---|---|---|---|---|---|---|---|
+| catanduvas | 1922 | 49.4 | 583 | defeat | annihilation | 23/14 | 4 | 0.2 | ok |
+| catanduvas | 7 | 50.1 | 477.9 | defeat | annihilation | 23/10 | 4 | 0.1 | ok |
+| catanduvas | 42 | 49.3 | 511.1 | defeat | annihilation | 23/8 | 3 | 0.16 | ok |
+| porto-mendes | 1922 | 419.3 | 544.5 | defeat | commander | 18/9 | 4 | 0.25 | first shot 419.3 s |
+| porto-mendes | 7 | 420 | 505.2 | defeat | commander | 17/3 | 4 | 0.25 | first shot 420 s |
+| porto-mendes | 42 | 419.2 | 509.7 | defeat | commander | 16/4 | 5 | 0.25 | first shot 419.2 s |
+| sao-luiz-ramada | 1922 | 240.9 | 900 | victory | objectives | 7/19 | 4 | 0.36 | first shot 240.9 s, victory at 900 s |
+| sao-luiz-ramada | 7 | 241.6 | 900 | victory | objectives | 7/16 | 3 | 0.38 | first shot 241.6 s, victory at 900 s |
+| sao-luiz-ramada | 42 | 240.8 | 338 | defeat | commander | 9/14 | 3 | 0.21 | first shot 240.8 s |
+| serra-nova | 1922 | 426.9 | 742.3 | defeat | commander | 13/6 | 5 | 0.12 | first shot 426.9 s, defeat at 742.3 s |
+| serra-nova | 7 | 427 | 725.6 | defeat | commander | 11/7 | 4 | 0.17 | first shot 427 s, defeat at 725.6 s |
+| serra-nova | 42 | 427 | 734.9 | defeat | commander | 16/9 | 4 | 0.18 | first shot 427 s, defeat at 734.9 s |
+| pantanal | 1922 | 669.7 | 900 | defeat | objectives | 11/9 | 3 | 0.24 | first shot 669.7 s, defeat at 900 s |
+| pantanal | 7 | 670.4 | 900 | defeat | objectives | 12/11 | 3 | 0.24 | first shot 670.4 s, defeat at 900 s |
+| pantanal | 42 | 669.6 | 900 | defeat | objectives | 15/7 | 4 | 0.24 | first shot 669.6 s, defeat at 900 s |
+
+Only Catanduvas meets the first-shot band. Porto Mendes, Serra Nova and
+Pantanal see no shot until the first timed arrival (7 to 11 minutes), and
+São Luiz until its 240 s arrival: the two starting forces never meet on
+their own. Many defeats come from the commander falling (`commander`),
+which the scripted player does not protect; the bands judge time, not who
+wins.
+
 ## Risks / Trade-offs
 
 - **Cost of 132 soldiers.** Vision and target scans grow with the square of
