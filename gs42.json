@@ -1,0 +1,14 @@
+{
+  "title": "Prestes",
+  "tagline": {
+    "en": "Command the Coluna Prestes across Brazil, 1922–1927.",
+    "pt": "Comande a Coluna Prestes pelo Brasil, 1922–1927.",
+    "es": "Dirige la Columna Prestes a través de Brasil, 1922–1927.",
+    "fr": "Menez la Colonne Prestes à travers le Brésil, 1922–1927.",
+    "de": "Führe die Coluna Prestes quer durch Brasilien, 1922–1927."
+  },
+  "cover": "docs/screenshots/cover.jpg",
+  "genre": "real-time-tactics",
+  "tech": ["TypeScript", "Three.js", "React", "Web Worker"],
+  "order": 6
+}
