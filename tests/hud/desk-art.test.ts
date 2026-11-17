@@ -44,8 +44,9 @@ describe('menu desk sprites', () => {
       '--art-ratio': 1,
       '--art-trim': 0,
     });
-    // polish-menu-desk 3.1 to 3.5: every closed sprite touches its bottom row.
-    for (const art of Object.values(DESK_ART) as DeskArt[]) expect(art.trim ?? 0).toBe(0);
+    // polish-menu-desk 3.1 to 3.5: every closed sprite touches its bottom row;
+    // only the binoculars' strap hangs below the body, under their label (2026-11-16).
+    for (const [key, art] of Object.entries(DESK_ART) as [string, DeskArt][]) expect(art.trim ?? 0, key).toBe(key === 'binoculars' ? 14 : 0);
     expect(deskArtStyle({ src: '', width: 10, height: 10, scale: 3 })).toMatchObject({ '--art-ratio': 3 / 2 });
   });
 });
