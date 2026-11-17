@@ -416,7 +416,7 @@ export type BattleUnitSeed = (typeof DEFAULT_UNITS)[number] & {
  * With rosters, each side's sections stand in its six slots in roster order
  * (`deployRoster`), each man with his section's weapon; the Comando's officer
  * is an `officer`, and a type's speed factor scales his speed. Unit ids run
- * from 1, column then legalist; squads are 1-6 and 11-16.
+ * from 1, column then legalist; squads are 1-6 and 11-16, then 101+ and 151+ (sectionSquadId).
  */
 export function battleUnits(map: BattleMap, rosters?: BattleRosters): BattleUnitSeed[] {
   const units: BattleUnitSeed[] = [];

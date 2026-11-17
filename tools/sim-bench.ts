@@ -106,6 +106,21 @@ const BATTLE_TICKS = 3000;
     }
   };
   line('battle3v3-garrisoned-heavy', timed(heavy, garrisoned), TEST_MAP_BUDGET_MS);
+  // scale-forces-by-map-size 4.1: two companies, twelve sections a side within
+  // the medium limits (65 and 64 men), on the test map (medium). Vision and
+  // target scans grow with the square of the men, so they keep their own budget.
+  const LARGE_FORCE_BUDGET_MS = 8;
+  const COMPANY = ['comando', 'metralhadora', 'metralhadora', 'esquadra-5', 'fuzil-metralhador', 'fuzileiros', 'fuzileiros', 'irregulares', 'esquadra-4', 'esquadra-5', 'esquadra-4', 'irregulares'] as const;
+  const COMPANY_LEGALIST = [
+    'comando-companhia', 'metralhadora-legalista', 'metralhadora-legalista',
+    'fuzil-metralhador-legalista', 'fuzil-metralhador-legalista', 'fuzil-metralhador-legalista', 'fuzil-metralhador-legalista',
+    'provisorios', 'provisorios', 'provisorios', 'provisorios', 'provisorios',
+  ] as const;
+  line(
+    'battle-two-companies',
+    timed(() => new SimulationEngine({ seed: 1922, scenario: 'battle3v3', sandbox: true, battleMap: map, rosters: { column: { sections: [...COMPANY] }, legalist: { sections: [...COMPANY_LEGALIST] } } })),
+    LARGE_FORCE_BUDGET_MS,
+  );
   if (budgetOnly && over.length > 0) {
     console.error(`FAIL over the tick budget: ${over.join(', ')}`);
     process.exitCode = 1;

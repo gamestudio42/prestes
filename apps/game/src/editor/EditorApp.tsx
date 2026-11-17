@@ -69,7 +69,7 @@ import {
   CAMP_SIDES,
   SIDED_CAMP,
   type RockKind,
-  ROSTER_MAX_SECTIONS,
+  FORCE_LIMITS,
 } from '@prestes/shared';
 import { renameExit } from './exits';
 import { LOCALES, translate, type Locale, type MessageKey } from '@prestes/content';
@@ -1821,7 +1821,7 @@ function MapDialog(props: {
           </label>
           <p className="editor-hint">{t('editor.north.hint')}</p>
         </fieldset>
-        <ColumnForce force={columnForce} onChange={setColumnForce} t={t} />
+        <ColumnForce force={columnForce} onChange={setColumnForce} t={t} size={size} />
         {offersCommander(slot.use as MapUse) ? <CommanderField commander={commander} mission={slot.use === 'campaign' ? slot.mission : undefined} onChange={setCommander} t={t} /> : null}
         <fieldset className="editor-enemy" data-testid="map-no-enemy">
           <legend>{t('editor.noEnemy.title')}</legend>
@@ -1837,7 +1837,7 @@ function MapDialog(props: {
             <p className="editor-hint">{t('editor.withdrawal.hint')}</p>
             <label>
               {t('editor.withdrawal.sections')}
-              <input type="number" data-testid="map-withdrawal-sections" min={1} max={ROSTER_MAX_SECTIONS} step={1} value={required} onChange={(event) => setRequired(Number(event.target.value) || 1)} />
+              <input type="number" data-testid="map-withdrawal-sections" min={1} max={FORCE_LIMITS[size].sections} step={1} value={required} onChange={(event) => setRequired(Number(event.target.value) || 1)} />
             </label>
             <label>
               <input type="checkbox" data-testid="map-withdrawal-command" checked={requireCommand} onChange={(event) => setRequireCommand(event.target.checked)} />
@@ -1845,7 +1845,7 @@ function MapDialog(props: {
             </label>
           </fieldset>
         ) : null}
-        {noEnemy ? null : <EnemyForces presets={enemyForces} onChange={setEnemyForces} t={t} />}
+        {noEnemy ? null : <EnemyForces presets={enemyForces} onChange={setEnemyForces} t={t} size={size} />}
         <fieldset className="editor-enemy" data-testid="map-epilogue">
           <legend>{t('editor.epilogue.title')}</legend>
           <p className="editor-hint">{t('editor.epilogue.hint')}</p>

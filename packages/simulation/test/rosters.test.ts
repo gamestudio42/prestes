@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { battleMap, isWalkable, setActiveMap, type BattleRosters, type PortLike, type SectionTypeId, type WorkerResponse } from '@prestes/shared';
+import { battleMap, createEditableMap, isWalkable, setActiveMap, toMapDocument, type BattleRosters, type PortLike, type SectionTypeId, type WorkerResponse } from '@prestes/shared';
 import { SimulationEngine } from '../src/engine';
 import { createSimulationHost } from '../src/worker-host';
 import { openField } from './open-field';
@@ -103,12 +103,32 @@ describe('rostered 3v3 (pre-battle-roster 3.1-3.4)', () => {
         new SimulationEngine({ seed, sandbox, training, opposition, bounding, scenario, battleMap, rosters }),
       port,
     );
-    host.handle({ type: 'start', seed: 1, scenario: 'battle3v3', battleMap: TEST_MAP, rosters: { column: { sections: ['metralhadora', 'metralhadora'] } } });
+    // The test map is medium: two machine guns are allowed there, three are not (scale-forces-by-map-size).
+    host.handle({ type: 'start', seed: 1, scenario: 'battle3v3', battleMap: TEST_MAP, rosters: { column: { sections: ['metralhadora', 'metralhadora', 'metralhadora'] } } });
     expect(posted).toEqual([{ type: 'error', message: 'roster_invalid' }]);
     host.handle({ type: 'start', seed: 1, scenario: 'battle3v3', battleMap: TEST_MAP, rosters: { column: { sections: six } } });
     const ready = posted[1];
     expect(ready?.type).toBe('ready');
     if (ready?.type === 'ready') expect(ready.frame.units.filter((unit) => unit.faction === 'column')).toHaveLength(25);
+  });
+
+  // scale-forces-by-map-size 1.2: the host judges a roster by its map's size.
+  it('the host refuses 44 men on a small map and takes them on a medium one', () => {
+    const four: SectionTypeId[] = ['fuzileiros', 'fuzileiros', 'fuzileiros', 'fuzileiros'];
+    const start = (battleMapId: string, mapDocument?: ReturnType<typeof toMapDocument>) => {
+      const posted: WorkerResponse[] = [];
+      const port: PortLike = { postMessage: (message) => posted.push(message as WorkerResponse) };
+      const host = createSimulationHost(
+        (seed, sandbox, training, opposition, bounding, scenario, battleMap, rosters) =>
+          new SimulationEngine({ seed, sandbox, training, opposition, bounding, scenario, battleMap, rosters }),
+        port,
+      );
+      host.handle({ type: 'start', seed: 1, scenario: 'battle3v3', battleMap: battleMapId as never, ...(mapDocument ? { mapDocument } : {}), rosters: { column: { sections: four } } });
+      return posted[0];
+    };
+    const small = createEditableMap({ id: 'pequeno', size: 'small', name: { en: 'S', 'pt-BR': 'P' } });
+    expect(start('pequeno', toMapDocument(small))).toEqual({ type: 'error', message: 'roster_invalid' });
+    expect(start(TEST_MAP)?.type).toBe('ready');
   });
 
   it('gun crew is slower and irregulars faster', () => {

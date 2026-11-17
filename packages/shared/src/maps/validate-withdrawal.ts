@@ -1,6 +1,6 @@
 import type { Vec2 } from '../protocol';
 import { findPath } from '../pathfinding';
-import { SECTION_TYPES, isSectionTypeId, ROSTER_MAX_SECTIONS } from '../sections';
+import { FORCE_LIMITS, SECTION_TYPES, isSectionTypeId } from '../sections';
 import { isPointBlockedByCovers } from '../world';
 import type { EditableMap } from './document';
 import { polygonsOverlap } from './deployment-areas';
@@ -30,10 +30,10 @@ export interface WithdrawalProblem {
   target?: { kind: 'exit' | 'map-properties'; id: number | string };
 }
 
-/** The sections the column fields at the start: the map's fixed force, else the largest roster. */
-export function columnSectionCount(map: Pick<EditableMap, 'columnForce'>): number {
+/** The sections the column fields at the start: the map's fixed force, else the largest roster its size allows. */
+export function columnSectionCount(map: Pick<EditableMap, 'columnForce' | 'size'>): number {
   const fixed = map.columnForce?.sections.length ?? 0;
-  return fixed > 0 ? fixed : ROSTER_MAX_SECTIONS;
+  return fixed > 0 ? fixed : FORCE_LIMITS[map.size].sections;
 }
 
 function centre(points: readonly Vec2[]): Vec2 {

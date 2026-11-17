@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest';
-import { planOrderPreview, type PreviewRequest } from '../../packages/shared/src';
+import { beforeAll, describe, expect, it } from 'vitest';
+import { DEFAULT_BATTLE_MAP, loadAuthoredMap, planOrderPreview, type Frame, type PreviewRequest } from '../../packages/shared/src';
 import { SimulationEngine } from '../../packages/simulation/src/engine';
 import { TEST_MAP } from '../../packages/shared/test/fixtures/test-map';
 
@@ -10,6 +10,8 @@ import { TEST_MAP } from '../../packages/shared/test/fixtures/test-map';
 const BUDGET_MS = 2;
 /** route-around-wire: a move preview past a wire fence with a gap, on the 400 m test map. */
 const FENCE_BUDGET_MS = 6;
+/** scale-forces-by-map-size 4.2: twelve sections, four times the men of three, on the test map. */
+const TWELVE_BUDGET_MS = 8;
 /** CI machines vary; the guard keeps the test meaningful without flaking. */
 const GUARD = Number(process.env.PRESTES_PREVIEW_GUARD ?? 1);
 
@@ -66,6 +68,32 @@ describe('order preview cost', () => {
       (index) => ({ x: centre.x - 5 + index, y: fenceY - 20 }),
     );
     expect(ms).toBeLessThan(FENCE_BUDGET_MS * GUARD);
+  });
+
+  // scale-forces-by-map-size 4.2: a medium map's company, twelve sections selected.
+  describe('with twelve sections', () => {
+    const TWELVE = ['comando', 'metralhadora', 'metralhadora', 'esquadra-5', 'fuzil-metralhador', 'fuzileiros', 'fuzileiros', 'irregulares', 'esquadra-4', 'esquadra-5', 'esquadra-4', 'irregulares'] as const;
+    let big: Frame;
+    let men: number[];
+    let target: number;
+    beforeAll(async () => {
+      await loadAuthoredMap(DEFAULT_BATTLE_MAP);
+      const company = new SimulationEngine({ seed: 1922, scenario: 'battle3v3', sandbox: true, battleMap: DEFAULT_BATTLE_MAP, rosters: { column: { sections: [...TWELVE] } } });
+      big = company.runTicks(5);
+      men = big.units.filter((unit) => unit.faction === 'column').map((unit) => unit.id);
+      target = big.units.find((unit) => unit.faction === 'legalist')!.id;
+    });
+    for (const order of ['attack', 'move'] as const) {
+      it(`${order} takes under ${TWELVE_BUDGET_MS} ms`, () => {
+        expect(men).toHaveLength(65);
+        const ms = time(
+          { frame: big, unitIds: men, order, to: { x: 0, y: 40 }, targetId: order === 'attack' ? target : undefined, fast: order === 'move' },
+          TWELVE_BUDGET_MS,
+          (index) => ({ x: -10 + index, y: 40 }),
+        );
+        expect(ms).toBeLessThan(TWELVE_BUDGET_MS * GUARD);
+      });
+    }
   });
 
   it('draws a straight approach guide per soldier for a targeted order', () => {

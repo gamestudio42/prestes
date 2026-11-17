@@ -93,6 +93,32 @@ describe('roster rules', () => {
     expect(canAdd(roster('metralhadora-legalista'), 'metralhadora-legalista')).toEqual({ code: 'limit', values: { type: 'machine-gun', max: 1 } });
   });
 
+  // scale-forces-by-map-size 1.1: the limits grow with the map.
+  it('44 men are refused on a small map and accepted on a medium one', () => {
+    const four = roster('fuzileiros', 'fuzileiros', 'fuzileiros', 'fuzileiros');
+    expect(validateRoster(four).refusals).toEqual([{ code: 'over-men', values: { men: 44, max: 33 } }]);
+    expect(validateRoster(four, 'coluna', 'small').ok).toBe(false);
+    expect(validateRoster(four, 'coluna', 'medium')).toEqual({ ok: true, men: 44, sections: 4, refusals: [] });
+    expect(canAdd(roster('fuzileiros', 'fuzileiros', 'esquadra-4', 'esquadra-4'), 'fuzileiros', 'coluna', 'medium')).toBeNull();
+  });
+
+  it('a medium map takes two machine guns and twelve sections, a large one sixteen', () => {
+    expect(canAdd(roster('metralhadora'), 'metralhadora', 'coluna', 'medium')).toBeNull();
+    expect(canAdd(roster('metralhadora', 'metralhadora'), 'metralhadora', 'coluna', 'medium')).toEqual({ code: 'limit', values: { type: 'machine-gun', max: 2 } });
+    expect(canAdd(roster('metralhadora', 'metralhadora'), 'metralhadora', 'coluna', 'large')).toBeNull();
+    const twelve = roster(...Array.from({ length: 12 }, () => 'esquadra-4' as const));
+    expect(validateRoster(twelve, 'coluna', 'medium').ok).toBe(true);
+    expect(canAdd(twelve, 'esquadra-4', 'coluna', 'medium')).toEqual({ code: 'over-sections', values: { sections: 13, max: 12 } });
+    expect(canAdd(twelve, 'esquadra-4', 'coluna', 'large')).toBeNull();
+    expect(canAdd(roster('fuzil-metralhador', 'fuzil-metralhador', 'fuzil-metralhador'), 'esquadra-5', 'coluna', 'medium')).toBeNull();
+  });
+
+  it('one command section on every size', () => {
+    for (const size of ['small', 'medium', 'large'] as const) {
+      expect(canAdd(roster('comando'), 'comando', 'coluna', size)).toEqual({ code: 'limit', values: { type: 'command', max: 1 } });
+    }
+  });
+
   it('the patriotic automatic rifles count toward the limit of two', () => {
     expect(SECTION_TYPES['jaguncos-mauser'].men.filter((man) => man.weapon === 'fuzil-automatico-7mm')).toHaveLength(1);
     expect(canAdd(roster('jaguncos-mauser', 'jaguncos-mauser'), 'jaguncos-mauser', 'patriotico')).toEqual({ code: 'limit', values: { type: 'automatic-rifle', max: 2 } });

@@ -9,6 +9,7 @@ import {
   hasBattleMap,
   isArmyId,
   isDifficulty,
+  sizeOfBounds,
   migrateRoster,
   TIME_LIMITS,
   validateRoster,
@@ -16,6 +17,7 @@ import {
   type BattleMapId,
   type BattleRosters,
   type Difficulty,
+  type MapSize,
   type Roster,
   type RosterRefusal,
 } from '@prestes/shared';
@@ -58,16 +60,23 @@ export function defaultSetup(): SkirmishSetup {
 /** The column's default force. */
 export const DEFAULT_ARMY: ArmyId = 'coluna';
 
+/** scale-forces-by-map-size: the size whose force limits a roster on `map` obeys. */
+export function mapSize(map: BattleMapId): MapSize {
+  return sizeOfBounds(findBattleMap(map).bounds);
+}
+
 /**
  * A stored roster of `army`, its ids read through the successor table
- * (faction-armies D6). Null when it is not a roster or breaks the rules.
+ * (faction-armies D6). Null when it is not a roster or breaks the rules of
+ * the largest map size; a roster over its own map's limits is kept and the
+ * screen says so (scale-forces-by-map-size).
  */
 function readRoster(value: unknown, army: ArmyId): { roster: Roster; changed: boolean } | null {
   if (!value || typeof value !== 'object') return null;
   const sections = (value as { sections?: unknown }).sections;
   if (!Array.isArray(sections) || !sections.every((id) => typeof id === 'string')) return null;
   const { roster, changed } = migrateRoster(sections as string[], army);
-  return validateRoster(roster, army).ok ? { roster, changed } : null;
+  return validateRoster(roster, army, 'large').ok ? { roster, changed } : null;
 }
 
 /** The saved setup, or the default for anything missing or refused. */
@@ -142,10 +151,11 @@ export function battleRosters(setup: SkirmishSetup): BattleRosters {
 
 /** Whether "Combater" may start this setup. */
 export function setupReady(setup: SkirmishSetup): boolean {
-  if (!validateRoster(setup.roster, DEFAULT_ARMY).ok) return false;
+  const size = mapSize(setup.map);
+  if (!validateRoster(setup.roster, DEFAULT_ARMY, size).ok) return false;
   const legalist = enemyRoster(setup);
   const army = setup.enemy.kind === 'built' ? setup.enemy.army : undefined;
-  return setup.enemy.kind === 'drawn' || (legalist !== undefined && validateRoster(legalist, army).ok);
+  return setup.enemy.kind === 'drawn' || (legalist !== undefined && validateRoster(legalist, army, size).ok);
 }
 
 /** A built enemy of `army`: its default roster, three rifle sections. */
@@ -171,6 +181,10 @@ export function refusalMessage(refusal: RosterRefusal): { key: MessageKey; value
     case 'foreign':
       return { key: 'setup.refuse.foreign', values: {} };
     case 'limit':
+      // scale-forces-by-map-size: a medium map takes two machine guns ("no máximo 2 metralhadoras").
+      if (refusal.values.type === 'machine-gun' && refusal.values.max > 1) {
+        return { key: 'setup.refuse.limit.machine-gun.many', values: { max: refusal.values.max } };
+      }
       return { key: `setup.refuse.limit.${refusal.values.type}` as MessageKey, values: { max: refusal.values.max } };
   }
 }

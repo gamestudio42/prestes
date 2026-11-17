@@ -2,13 +2,13 @@ import type { KeyboardEvent } from 'react';
 import {
   canAdd,
   defaultRoster,
-  ROSTER_MAX_MEN,
-  ROSTER_MAX_SECTIONS,
+  FORCE_LIMITS,
   SECTION_TYPE_IDS,
   SECTION_TYPES,
   validateRoster,
   WEAPONS,
   type ArmyId,
+  type MapSize,
   type Roster,
   type SectionTypeId,
   type WeaponId,
@@ -30,6 +30,8 @@ export interface RosterBuilderProps {
   testPrefix: string;
   /** The column the builder sits in, for its accessible names. */
   label: string;
+  /** scale-forces-by-map-size: the size of the map the roster is for; its limits apply (small by default). */
+  size?: MapSize;
 }
 
 /** Each weapon a section carries, with how many, in catalog order. */
@@ -70,12 +72,15 @@ export function moveFocus(event: KeyboardEvent<HTMLElement>): void {
  * with its counters, the reason a type is refused, order and remove, and the
  * default roster. The enemy's "Montar" uses the same builder (5.6).
  */
-export function RosterBuilder({ locale, roster, army, onChange, testPrefix, label }: RosterBuilderProps) {
+export function RosterBuilder({ locale, roster, army, onChange, testPrefix, label, size = 'small' }: RosterBuilderProps) {
   const t = (key: MessageKey, values?: Readonly<Record<string, string | number>>) => translate(locale, key, values);
-  const check = validateRoster(roster, army);
+  const check = validateRoster(roster, army, size);
+  const limits = FORCE_LIMITS[size];
+  // A roster kept from a larger map breaks this one's limits: say which, and the start waits until it fits.
+  const over = check.refusals.find((refusal) => refusal.code !== 'empty');
   const types = SECTION_TYPE_IDS.filter((type) => SECTION_TYPES[type].army === army);
   const add = (type: SectionTypeId) => {
-    if (canAdd(roster, type, army)) return;
+    if (canAdd(roster, type, army, size)) return;
     onChange({ sections: [...roster.sections, type] });
   };
   const remove = (index: number) => onChange({ sections: roster.sections.filter((_, at) => at !== index) });
@@ -92,7 +97,7 @@ export function RosterBuilder({ locale, roster, army, onChange, testPrefix, labe
       <ul className="roster-types" aria-label={t('setup.types', { side: label })} onKeyDown={moveFocus}>
         {types.map((type) => {
           const section = SECTION_TYPES[type];
-          const refusal = canAdd(roster, type, army);
+          const refusal = canAdd(roster, type, army, size);
           const reason = refusal ? refusalMessage(refusal) : null;
           const name = t(section.nameKey as MessageKey);
           return (
@@ -141,8 +146,16 @@ export function RosterBuilder({ locale, roster, army, onChange, testPrefix, labe
 
       <div className="roster-list">
         <p className="roster-counters" data-testid={`${testPrefix}-counters`}>
-          {t('setup.counters', { men: check.men, maxMen: ROSTER_MAX_MEN, sections: check.sections, maxSections: ROSTER_MAX_SECTIONS })}
+          {t('setup.counters', { men: check.men, maxMen: limits.men, sections: check.sections, maxSections: limits.sections })}
         </p>
+        {over ? (
+          <p className="roster-over" role="alert" data-testid={`${testPrefix}-over`}>
+            {(() => {
+              const reason = refusalMessage(over);
+              return t('setup.overMap', { reason: t(reason.key, reason.values) });
+            })()}
+          </p>
+        ) : null}
         {roster.sections.length === 0 ? (
           <p className="roster-empty">{t('setup.refuse.empty')}</p>
         ) : (

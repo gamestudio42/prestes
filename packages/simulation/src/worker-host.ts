@@ -1,4 +1,4 @@
-import { compileMapDocument, registerBattleMap, validateRoster, type BattleMapId, type BattleRosters, type Difficulty, type PortLike, type WorkerRequest } from '@prestes/shared';
+import { battleMap, compileMapDocument, DEFAULT_BATTLE_MAP, registerBattleMap, sizeOfBounds, validateRoster, type BattleMapId, type BattleRosters, type Difficulty, type PortLike, type WorkerRequest } from '@prestes/shared';
 import type { SimulationEngine } from './engine';
 
 const GAME_FRAME = { hash: false } as const;
@@ -41,9 +41,11 @@ export function createSimulationHost(
             return;
           }
         }
-        // pre-battle-roster 3.1: a roster the rules refuse never reaches the engine.
+        // pre-battle-roster 3.1: a roster the rules refuse never reaches the engine,
+        // judged by the limits of its map's size (scale-forces-by-map-size).
         const rosters = message.rosters;
-        if (rosters && [rosters.column, rosters.legalist].some((roster) => roster && !validateRoster(roster).ok)) {
+        const size = rosters ? sizeOfBounds(battleMap(message.battleMap ?? DEFAULT_BATTLE_MAP).bounds) : 'small';
+        if (rosters && [rosters.column, rosters.legalist].some((roster) => roster && !validateRoster(roster, undefined, size).ok)) {
           port.postMessage({ type: 'error', message: 'roster_invalid' });
           return;
         }

@@ -1,5 +1,6 @@
 import type { ArmyId, FightingValues, UniformSetId } from './armies';
 import type { WeaponId } from './weapons';
+import type { MapSize } from './maps/sizes';
 
 /**
  * pre-battle-roster 2.1, faction-armies 2.2: the section types a force is
@@ -74,7 +75,7 @@ const gunCrew = (): SectionMan[] => [{ role: 'gunner', weapon: 'metralhadora-7mm
 const rifleTeam = (): SectionMan[] => [{ role: 'gunner', weapon: 'fuzil-automatico-7mm' }, ...repeat({ role: 'loader', weapon: 'mauser-7mm' }, 2)];
 const keys = (id: SectionTypeId) => ({ nameKey: `section.${id}.name`, descriptionKey: `section.${id}.description` });
 
-/** At most this many of a group in a roster, whatever the army. */
+/** At most this many of a group in a roster on a small map, whatever the army (FORCE_LIMITS for every size). */
 export const LIMIT_GROUPS: Readonly<Record<SectionLimitGroup, number>> = { command: 1, 'machine-gun': 1, 'automatic-rifle': 2 };
 
 export const SECTION_TYPES: Readonly<Record<SectionTypeId, SectionType>> = {
@@ -228,8 +229,28 @@ export interface Roster {
   sections: SectionTypeId[];
 }
 
-export const ROSTER_MAX_MEN = 33;
-export const ROSTER_MAX_SECTIONS = 6;
+/**
+ * scale-forces-by-map-size D1, D2: what a roster may hold at the start of a
+ * battle on a map of each size. One table for the setup screen, the editor,
+ * the map check and the worker. Sections that arrive by event do not count.
+ */
+export interface ForceLimits {
+  men: number;
+  sections: number;
+  groups: Readonly<Record<SectionLimitGroup, number>>;
+}
+
+export const FORCE_LIMITS: Readonly<Record<MapSize, ForceLimits>> = {
+  small: { men: 33, sections: 6, groups: LIMIT_GROUPS },
+  medium: { men: 66, sections: 12, groups: { command: 1, 'machine-gun': 2, 'automatic-rifle': 4 } },
+  large: { men: 100, sections: 16, groups: { command: 1, 'machine-gun': 3, 'automatic-rifle': 6 } },
+};
+
+/** The small map's limits, the ones every roster had before the limits grew with the map. */
+export const ROSTER_MAX_MEN = FORCE_LIMITS.small.men;
+export const ROSTER_MAX_SECTIONS = FORCE_LIMITS.small.sections;
+/** The most sections any map size allows. */
+export const ROSTER_MAX_SECTIONS_ANY_SIZE = Math.max(...Object.values(FORCE_LIMITS).map((limits) => limits.sections));
 
 export type RosterRefusal =
   | { code: 'over-men'; values: { men: number; max: number } }
@@ -275,7 +296,8 @@ export function rosterArmies(roster: Roster): ArmyId[] {
  * The roster rules. With `army`, a roster built for that army also refuses a
  * section of another army (faction-armies, "Sections by army").
  */
-export function validateRoster(roster: Roster, army?: ArmyId): RosterCheck {
+export function validateRoster(roster: Roster, army?: ArmyId, size: MapSize = 'small'): RosterCheck {
+  const limits = FORCE_LIMITS[size];
   const refusals: RosterRefusal[] = [];
   const men = rosterMen(roster);
   const sections = roster.sections.length;
@@ -286,15 +308,15 @@ export function validateRoster(roster: Roster, army?: ArmyId): RosterCheck {
       if (type && type.army !== army) refusals.push({ code: 'foreign', values: { type: id, army: type.army } });
     }
   }
-  if (sections > ROSTER_MAX_SECTIONS) refusals.push({ code: 'over-sections', values: { sections, max: ROSTER_MAX_SECTIONS } });
-  if (men > ROSTER_MAX_MEN) refusals.push({ code: 'over-men', values: { men, max: ROSTER_MAX_MEN } });
+  if (sections > limits.sections) refusals.push({ code: 'over-sections', values: { sections, max: limits.sections } });
+  if (men > limits.men) refusals.push({ code: 'over-men', values: { men, max: limits.men } });
   for (const id of SECTION_TYPE_IDS) {
     const limit = SECTION_TYPES[id].limit;
     if (limit !== undefined && roster.sections.filter((s) => s === id).length > limit) {
       refusals.push({ code: 'limit', values: { type: id, max: limit } });
     }
   }
-  for (const [group, max] of Object.entries(LIMIT_GROUPS) as [SectionLimitGroup, number][]) {
+  for (const [group, max] of Object.entries(limits.groups) as [SectionLimitGroup, number][]) {
     const count = roster.sections.filter((s) => SECTION_TYPES[s]?.limitGroup === group).length;
     if (count > max) refusals.push({ code: 'limit', values: { type: group, max } });
   }
@@ -302,8 +324,8 @@ export function validateRoster(roster: Roster, army?: ArmyId): RosterCheck {
 }
 
 /** The first reason adding a section of `type` would be refused, or null when it fits. */
-export function canAdd(roster: Roster, type: SectionTypeId, army?: ArmyId): RosterRefusal | null {
-  const check = validateRoster({ sections: [...roster.sections, type] }, army);
+export function canAdd(roster: Roster, type: SectionTypeId, army?: ArmyId, size: MapSize = 'small'): RosterRefusal | null {
+  const check = validateRoster({ sections: [...roster.sections, type] }, army, size);
   // Another army's section, then a type's own limit, say more than the budget ("só uma metralhadora").
   return (
     check.refusals.find((refusal) => refusal.code === 'foreign') ??

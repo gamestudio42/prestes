@@ -21,3 +21,13 @@ export function boundsForSize(size: MapSize): { minX: number; minY: number; maxX
 export function sizeOfSide(side: number): MapSize | null {
   return MAP_SIZES.find((size) => MAP_SIZE_METRES[size] === side) ?? null;
 }
+
+/**
+ * scale-forces-by-map-size: the size a map's bounds hold, the smallest size
+ * at least as wide as the map's longer side (a hand-written map need not be
+ * square). Its force limits are that size's.
+ */
+export function sizeOfBounds(bounds: { minX: number; minY: number; maxX: number; maxY: number }): MapSize {
+  const side = Math.max(bounds.maxX - bounds.minX, bounds.maxY - bounds.minY);
+  return MAP_SIZES.find((size) => MAP_SIZE_METRES[size] >= side - 0.5) ?? 'large';
+}

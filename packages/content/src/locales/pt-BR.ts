@@ -722,6 +722,8 @@ export const ptBR: Record<MessageKey, string> = {
   'setup.refuse.empty': 'Nenhuma seção ainda',
   'setup.refuse.limit.command': 'só um comando',
   'setup.refuse.limit.machine-gun': 'só uma metralhadora',
+  'setup.refuse.limit.machine-gun.many': 'no máximo {max} metralhadoras',
+  'setup.overMap': 'Esta tropa não cabe neste mapa: {reason}. Tire seções para combater.',
   'setup.refuse.limit.cangaceiros': 'só uma seção de cangaceiros',
   'setup.enemyArmy': 'Exército',
   'setup.migrated': 'Sua tropa salva é de antes dos exércitos: as seções agora têm seus novos nomes, e um tipo sem sucessor virou seção de fuzileiros.',

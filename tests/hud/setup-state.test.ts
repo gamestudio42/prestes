@@ -12,6 +12,8 @@ beforeAll(async () => {
   registerBattleMap(TEST_MAP);
 });
 afterAll(() => unregisterBattleMap(FIELD));
+/** The test field cut to a small map's 240 m. */
+const SMALL = { ...TEST_MAP, id: 'test-small' as typeof TEST_MAP.id, bounds: { minX: -120, minY: -120, maxX: 120, maxY: 120 } };
 
 describe('skirmish setup state', () => {
   it('falls back to the default for missing or broken saved data', () => {
@@ -19,8 +21,25 @@ describe('skirmish setup state', () => {
     expect(parseSetup('not json')).toEqual(defaultSetup());
     // An unknown id is replaced by the army's rifle section and the screen says so (faction-armies 4.3).
     expect(parseSetup(JSON.stringify({ map: 'atlantis', roster: { sections: ['lanceiros'] } }))).toEqual({ ...defaultSetup(), roster: { sections: ['fuzileiros'] }, migrated: true });
-    // A refused roster (two machine guns) is not offered again.
-    expect(parseSetup(JSON.stringify({ map: PROVING, roster: { sections: ['metralhadora', 'metralhadora'] } })).roster).toEqual(defaultSetup().roster);
+    // A roster no map size takes (two command sections) is not offered again.
+    expect(parseSetup(JSON.stringify({ map: PROVING, roster: { sections: ['comando', 'comando'] } })).roster).toEqual(defaultSetup().roster);
+  });
+
+  // scale-forces-by-map-size 3.1: a roster is judged by its map's size.
+  it('a roster over a small map is kept and waits; a medium map starts it', () => {
+    registerBattleMap(SMALL);
+    try {
+      const four = { sections: ['fuzileiros', 'fuzileiros', 'fuzileiros', 'fuzileiros'] as const };
+      const medium = parseSetup(JSON.stringify({ map: PROVING, roster: four }));
+      expect(medium.roster).toEqual(four);
+      expect(setupReady(medium)).toBe(true);
+      const small = withMap(medium, SMALL.id);
+      expect(small.roster).toEqual(four);
+      expect(setupReady(small)).toBe(false);
+      expect(parseSetup(JSON.stringify({ map: SMALL.id, roster: four })).roster).toEqual(four);
+    } finally {
+      unregisterBattleMap(SMALL.id);
+    }
   });
 
   it('keeps a valid saved setup', () => {

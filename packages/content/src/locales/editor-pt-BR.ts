@@ -685,6 +685,7 @@ export const editorPtBR: Record<keyof typeof editorEn, string> = {
   'editor.problem.source-note-missing': 'O mapa não tem nota de fonte.',
   'editor.problem.mission-missing': 'O mapa de campanha não tem missão: escolha a vaga dele.',
   'editor.problem.column-force-invalid': 'A força fixa da coluna quebra as regras de tropa ou tem seção de outro exército.',
+  'editor.problem.enemy-preset-invalid': 'O preset inimigo {number} quebra as regras de tropa deste tamanho de mapa.',
   'editor.problem.commander-not-campaign': 'Só um mapa de campanha pode ter comandante histórico.',
   'editor.problem.commander-no-comando': 'Um comandante no campo precisa de uma seção Comando na força fixa da coluna.',
   'editor.problem.section-count': 'O lado {side} tem {count} seções; precisa de 3.',

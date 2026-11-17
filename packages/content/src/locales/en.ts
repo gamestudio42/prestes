@@ -721,6 +721,8 @@ export const en = {
   'setup.refuse.empty': 'No section yet',
   'setup.refuse.limit.command': 'only one command',
   'setup.refuse.limit.machine-gun': 'only one machine gun',
+  'setup.refuse.limit.machine-gun.many': 'at most {max} machine guns',
+  'setup.overMap': 'This force does not fit this map: {reason}. Remove sections to fight.',
   'setup.refuse.limit.cangaceiros': 'only one section of cangaceiros',
   'setup.enemyArmy': 'Army',
   'setup.migrated': 'Your saved force was made before the armies: its sections now carry their new names, and any type with no successor became a rifle section.',

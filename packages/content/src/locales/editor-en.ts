@@ -683,6 +683,7 @@ export const editorEn = {
   'editor.problem.source-note-missing': 'The map has no source note.',
   'editor.problem.mission-missing': 'The campaign map has no mission: choose its slot.',
   'editor.problem.column-force-invalid': "The column's fixed force breaks the roster rules or holds another army's section.",
+  'editor.problem.enemy-preset-invalid': 'Enemy preset {number} breaks the roster rules of this map size.',
   'editor.problem.commander-not-campaign': 'Only a campaign map can have a historical commander.',
   'editor.problem.commander-no-comando': "A commander on the field needs a Comando section in the column's fixed force.",
   'editor.problem.section-count': 'The {side} side has {count} sections; it needs 3.',

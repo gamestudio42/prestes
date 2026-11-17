@@ -28,6 +28,7 @@ export type ProblemCode =
   | 'source-note-missing'
   | 'mission-missing'
   | 'column-force-invalid'
+  | 'enemy-preset-invalid'
   | 'commander-not-campaign'
   | 'commander-no-comando'
   | 'section-count'
@@ -145,7 +146,11 @@ export function validateEditableMap(map: EditableMap): MapProblem[] {
   // author-game-maps D1: a campaign map belongs to one mission.
   if (map.use === 'campaign' && !map.mission) add({ code: 'mission-missing', severity: 'error', params: {} });
   // The column's fixed force keeps the roster rules, the column's army only.
-  if (map.columnForce && !validateRoster(map.columnForce, 'coluna').ok) add({ code: 'column-force-invalid', severity: 'error', params: {} });
+  if (map.columnForce && !validateRoster(map.columnForce, 'coluna', map.size).ok) add({ code: 'column-force-invalid', severity: 'error', params: {} });
+  // scale-forces-by-map-size: each enemy preset keeps the limits of the map's size (a map made smaller may break them).
+  (map.enemyForces ?? []).forEach((preset, index) => {
+    if (preset.sections.length > 0 && !validateRoster(preset, undefined, map.size).ok) add({ code: 'enemy-preset-invalid', severity: 'error', params: { number: index + 1 } });
+  });
   // add-historical-commander 1.2: a commander only on campaign maps; on the field he is a Comando's officer.
   if (map.commander && map.use !== 'campaign') add({ code: 'commander-not-campaign', severity: 'error', params: { map: map.id } });
   else if (map.commander?.presence === 'field' && !map.columnForce?.sections.includes(FIGURE_SECTION)) {

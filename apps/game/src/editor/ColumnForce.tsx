@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from 'react';
-import { canAdd, defaultRoster, ROSTER_MAX_MEN, ROSTER_MAX_SECTIONS, SECTION_TYPE_IDS, SECTION_TYPES, validateRoster, type Roster, type SectionTypeId } from '@prestes/shared';
+import { canAdd, defaultRoster, FORCE_LIMITS, SECTION_TYPE_IDS, SECTION_TYPES, validateRoster, type MapSize, type Roster, type SectionTypeId } from '@prestes/shared';
 import { refusalMessage } from '../ui/menu/setupState';
 
 type T = (key: string, values?: Readonly<Record<string, string | number>>) => string;
@@ -10,10 +10,10 @@ type T = (key: string, values?: Readonly<Record<string, string | number>>) => st
  * the player builds. Off by default; the same roster rules as the skirmish
  * builder, the column's sections only.
  */
-export function ColumnForce({ force, onChange, t }: { force: Roster | undefined; onChange: (force: Roster | undefined) => void; t: T }): ReactNode {
+export function ColumnForce({ force, onChange, t, size = 'small' }: { force: Roster | undefined; onChange: (force: Roster | undefined) => void; t: T; size?: MapSize }): ReactNode {
   const [adding, setAdding] = useState<SectionTypeId>('fuzileiros');
-  const check = force ? validateRoster(force, 'coluna') : null;
-  const refusal = force ? canAdd(force, adding) : null;
+  const check = force ? validateRoster(force, 'coluna', size) : null;
+  const refusal = force ? canAdd(force, adding, 'coluna', size) : null;
   const reason = refusal ? refusalMessage(refusal) : null;
   return (
     <fieldset className="editor-enemy" data-testid="column-force">
@@ -32,8 +32,19 @@ export function ColumnForce({ force, onChange, t }: { force: Roster | undefined;
         <div className="editor-enemy-preset">
           <div className="editor-row">
             <span data-testid="column-force-counters">
-              {t('setup.counters', { men: check.men, maxMen: ROSTER_MAX_MEN, sections: check.sections, maxSections: ROSTER_MAX_SECTIONS })}
+              {t('setup.counters', { men: check.men, maxMen: FORCE_LIMITS[size].men, sections: check.sections, maxSections: FORCE_LIMITS[size].sections })}
             </span>
+            {(() => {
+              // scale-forces-by-map-size: a force kept from a larger map size says what it breaks.
+              const over = check.refusals.find((refused) => refused.code !== 'empty');
+              if (!over) return null;
+              const why = refusalMessage(over);
+              return (
+                <span className="roster-over" role="alert" data-testid="column-force-over">
+                  {t('setup.overMap', { reason: t(why.key, why.values) })}
+                </span>
+              );
+            })()}
           </div>
           <ol className="editor-enemy-sections">
             {force.sections.map((type, at) => (
