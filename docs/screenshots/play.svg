@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="280" height="56" role="img" aria-label="Play Prestes">
+  <rect width="280" height="56" rx="10" fill="#c8873a"/>
+  <polygon points="22,18 22,38 38,28" fill="#1c140d"/>
+  <text x="52" y="36" fill="#1c140d" font-family="Segoe UI, system-ui, sans-serif" font-size="20" font-weight="700">Play in the browser</text>
+</svg>
