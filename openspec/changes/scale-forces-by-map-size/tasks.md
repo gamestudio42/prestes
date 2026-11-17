@@ -36,19 +36,19 @@
 
 ## 3. Setup screen and editor
 
-- [ ] 3.1 The setup screen counts against the chosen map. Changing to a smaller map keeps the roster, shows the limit it breaks and disables "Combater". A saved roster is judged against its saved map.
+- [x] 3.1 The setup screen counts against the chosen map. Changing to a smaller map keeps the roster, shows the limit it breaks and disables "Combater". A saved roster is judged against its saved map.
   - Verify with e2e in `tests/e2e/skirmish-setup.spec.ts`:
     - the existing small-map tests still read 29/33 and 33/33;
     - on a medium map 41 men read "Homens 41/66" in PT-BR and "Men 41/66" in EN;
     - 50 men moved to a small map show the refusal and a disabled start button, which is enabled again after removing sections.
-- [ ] 3.2 The map properties dialog counts presets against the edited map's size, and a resize reports presets and the column force that no longer fit.
+- [x] 3.2 The map properties dialog counts presets against the edited map's size, and a resize reports presets and the column force that no longer fit.
   - Verify with e2e in `tests/e2e/editor.spec.ts`:
     - the small-map 33-men refusal still holds;
     - five rifle sections on a medium map read 55 of 66;
     - resizing that map to small reports the preset and fails the map check.
-- [ ] 3.3 Section cards: twelve fit at 1280 x 720, and more scroll inside the panel.
-  - Verify with an e2e that starts a twelve-section roster on `campo-de-provas` and finds twelve visible cards with no scroll offset.
-  - Add a screenshot of the panel to the change folder.
+- [x] 3.3 Section cards: past what the Troops window holds, the cards keep their size and scroll inside it (the owner's choice, 2026-11-17, instead of twelve fitting without scroll).
+  - Verify with an e2e that starts a twelve-section roster on `campo-de-provas` at 1280 x 720: the window stays inside the screen and keeps its size, the last card is out of view until the wheel scrolls the window, and every card is attached.
+  - The panel scrolled to its end is in `twelve-cards.png` in the change folder.
 
 ## 4. Cost of big forces
 

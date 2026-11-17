@@ -59,7 +59,8 @@ export function SquadCards({
 
   return (
     <div className="squad-cluster">
-      <div className="squad-stack">
+      {/* scale-forces-by-map-size 3.3: a company's twelve cards scroll inside the Troops window (the owner, 2026-11-17). */}
+      <div className="squad-stack" data-testid="squad-stack">
         {squadIds.map((squadId) => {
           const units = frame?.units.filter((unit) => unit.squadId === squadId) ?? [];
           // A rostered troop is named by its section type ("Comando", "Esquadra de 5").
@@ -107,7 +108,7 @@ export function SquadCards({
                   data-testid={`section-thumb-${squadId}`}
                 />
                 <span className="section-copy">
-                  <strong data-testid={`squad-name-${squadId}`}>{t(nameKey)}</strong>
+                  <strong data-testid={`squad-name-${squadId}`} title={t(nameKey)}>{t(nameKey)}</strong>
                   {leadsSection ? (
                     <small className="section-commander" data-testid={`squad-commander-${squadId}`} title={t(commander.roleKey)}>
                       {commander.name}

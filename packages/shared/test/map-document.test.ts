@@ -191,6 +191,19 @@ describe('map document', () => {
     expect(parseMapDocument({ ...toMapDocument(map), noEnemy: 'yes' })).toMatchObject({ ok: false, detail: 'noEnemy' });
   });
 
+  it('scale-forces-by-map-size: presets and the fixed force are judged by the map size', () => {
+    const map = createEditableMap({ id: 'companhia', size: 'medium', name: { en: 'X', 'pt-BR': 'X' } });
+    const codes = () => validateEditableMap(map).map((problem) => problem.code);
+    map.enemyForces = [{ sections: ['infantaria-exercito', 'infantaria-exercito', 'infantaria-exercito', 'infantaria-exercito', 'infantaria-exercito'] }];
+    map.columnForce = { sections: ['fuzileiros', 'fuzileiros', 'fuzileiros', 'fuzileiros'] };
+    expect(codes()).not.toContain('enemy-preset-invalid');
+    expect(codes()).not.toContain('column-force-invalid');
+    const small = resizeEditableMap(map, 'small').map;
+    const problems = validateEditableMap(small);
+    expect(problems.find((problem) => problem.code === 'enemy-preset-invalid')?.params).toEqual({ number: 1 });
+    expect(problems.map((problem) => problem.code)).toContain('column-force-invalid');
+  });
+
   it('add-historical-commander 1.1: a commander survives a save and reaches the battle map without the figure', () => {
     const map = createEditableMap({ id: 'verdinho', size: 'small', use: 'campaign', name: { en: 'X', 'pt-BR': 'X' } });
     expect(compileMapDocument(toMapDocument(map)).commander).toBeUndefined();

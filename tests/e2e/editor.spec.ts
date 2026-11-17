@@ -151,7 +151,8 @@ test('a new medium map is 400 m across, and shrinking a large one warns about ob
 // author-game-maps: the map's enemy presets, under the roster rules.
 test('enemy forces: a preset is built under the roster rules, reaches the compiled map, and undo removes it', async ({ page }) => {
   await openEditor(page);
-  await newMap(page, 'teste-inimigo', 'medium');
+  // A small map: three rifle sections fill its 33 men (scale-forces-by-map-size).
+  await newMap(page, 'teste-inimigo', 'small');
   expect((await state(page)).enemyForces).toEqual([]);
   await page.getByTestId('editor-properties').click();
   await expect(page.getByTestId('enemy-forces')).toBeVisible();
@@ -170,6 +171,22 @@ test('enemy forces: a preset is built under the roster rules, reaches the compil
   await page.getByTestId('editor-undo').click();
   await settle(page);
   expect((await state(page)).enemyForces).toEqual([]);
+});
+
+// scale-forces-by-map-size 3.2: a medium map's preset holds 66 men; shrinking the map reports it.
+test('enemy forces: a medium map takes five rifle sections, and a resize to small reports the preset', async ({ page }) => {
+  await openEditor(page);
+  await newMap(page, 'teste-companhia', 'medium');
+  await page.getByTestId('editor-properties').click();
+  await page.getByTestId('enemy-preset-add').click();
+  await page.getByTestId('enemy-preset-0-type').selectOption('infantaria-exercito');
+  await page.getByTestId('enemy-preset-0-add').click();
+  await page.getByTestId('enemy-preset-0-add').click();
+  await expect(page.getByTestId('enemy-preset-0-counters')).toContainText('55/66');
+  await expect(page.getByTestId('enemy-preset-0-over')).toHaveCount(0);
+  await page.getByTestId('map-size').selectOption('small');
+  await expect(page.getByTestId('enemy-preset-0-counters')).toContainText('55/33');
+  await expect(page.getByTestId('enemy-preset-0-over')).toContainText('33');
 });
 
 // faction-armies 4.2: a preset may mix the two enemy armies, and it survives an export and import.

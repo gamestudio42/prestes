@@ -16,6 +16,9 @@ async function openSetup(page: Page): Promise<void> {
   await expect(page.getByTestId('skirmish-setup')).toBeVisible();
 }
 
+/** scale-forces-by-map-size: Paiolzinho is a small map (33 men, 6 sections); the test map is medium (66, 12). */
+const SMALL_MAP = 'paiolzinho';
+
 async function clearRoster(page: Page): Promise<void> {
   while ((await page.getByTestId('roster-remove-0').count()) > 0) await page.getByTestId('roster-remove-0').click();
 }
@@ -31,9 +34,9 @@ test('back to the desk', async ({ page }) => {
   await expect(page.getByTestId('hud')).toHaveCount(0);
 });
 
-test('builds a six-section force on the test map and fights with it', async ({ page }) => {
+test('builds a six-section force on a small map and fights with it', async ({ page }) => {
   await openSetup(page);
-  await page.getByTestId('map-option-campo-de-provas').click();
+  await page.getByTestId(`map-option-${SMALL_MAP}`).click();
   await clearRoster(page);
   for (const type of ['comando', 'esquadra-5', 'esquadra-5', 'irregulares', 'irregulares', 'irregulares']) {
     await page.getByTestId(`roster-add-${type}`).click();
@@ -54,6 +57,7 @@ test('builds a six-section force on the test map and fights with it', async ({ p
 
 test('budget refuses an addition', async ({ page }) => {
   await openSetup(page);
+  await page.getByTestId(`map-option-${SMALL_MAP}`).click();
   await expect(page.getByTestId('roster-counters')).toContainText('33/33');
   await expect(page.getByTestId('roster-refusal-esquadra-4')).toContainText('33');
   await page.getByTestId('roster-add-esquadra-4').click({ force: true });
@@ -62,6 +66,73 @@ test('budget refuses an addition', async ({ page }) => {
   await page.getByTestId('roster-add-esquadra-4').click();
   await expect(page.getByTestId('roster-row-2')).toBeVisible();
   await expect(page.getByTestId('roster-counters')).toContainText('26/33');
+});
+
+// scale-forces-by-map-size 3.1: the counters and the start follow the chosen map's size.
+for (const [locale, men] of [
+  ['pt-BR', 'Homens 41/66'],
+  ['en', 'Men 41/66'],
+] as const) {
+  test(`a medium map holds more (${locale})`, async ({ page }) => {
+    await page.addInitScript((value) => window.localStorage.setItem('prestes.locale', value), locale);
+    await openSetup(page);
+    await page.getByTestId('map-option-campo-de-provas').click();
+    await clearRoster(page);
+    for (const type of ['fuzileiros', 'fuzileiros', 'esquadra-4', 'esquadra-4', 'fuzileiros']) await page.getByTestId(`roster-add-${type}`).click();
+    await expect(page.getByTestId('roster-counters')).toContainText(men);
+    await expect(page.getByTestId('roster-counters')).toContainText('5/12');
+    // A second machine gun is taken on a medium map, a third refused.
+    await page.getByTestId('roster-add-metralhadora').click();
+    await page.getByTestId('roster-add-metralhadora').click();
+    await expect(page.getByTestId('roster-row-6')).toBeVisible();
+    await expect(page.getByTestId('roster-refusal-metralhadora')).toContainText(/2/);
+    await expect(page.getByTestId('roster-over')).toHaveCount(0);
+    await expect(page.getByTestId('start-battle-3v3')).toBeEnabled();
+  });
+}
+
+test('changing to a smaller map keeps the force and waits until it fits', async ({ page }) => {
+  await openSetup(page);
+  await page.getByTestId('map-option-campo-de-provas').click();
+  await clearRoster(page);
+  for (const type of ['fuzileiros', 'fuzileiros', 'fuzileiros', 'fuzileiros', 'esquadra-4']) await page.getByTestId(`roster-add-${type}`).click();
+  await page.getByTestId(`map-option-${SMALL_MAP}`).click();
+  await expect(page.getByTestId('roster-row-4')).toBeVisible();
+  await expect(page.getByTestId('roster-over')).toContainText('33');
+  await expect(page.getByTestId('start-battle-3v3')).toBeDisabled();
+  // Two rifle sections out: 26 men fit, and the battle may start.
+  await page.getByTestId('roster-remove-0').click();
+  await page.getByTestId('roster-remove-0').click();
+  await expect(page.getByTestId('roster-over')).toHaveCount(0);
+  await expect(page.getByTestId('start-battle-3v3')).toBeEnabled();
+});
+
+test('a twelve-section company fights on the test map, its cards scroll in the Troops window', async ({ page }, testInfo) => {
+  await page.setViewportSize({ width: 1280, height: 720 });
+  await openSetup(page);
+  await page.getByTestId('map-option-campo-de-provas').click();
+  await clearRoster(page);
+  for (const type of ['comando', 'metralhadora', 'metralhadora', 'esquadra-5', 'fuzil-metralhador', 'fuzileiros', 'fuzileiros', 'irregulares', 'esquadra-4', 'esquadra-5', 'esquadra-4', 'irregulares']) {
+    await page.getByTestId(`roster-add-${type}`).click();
+  }
+  await expect(page.getByTestId('roster-counters')).toContainText('65/66');
+  await page.getByTestId('start-battle-3v3').click();
+  await expect(page.getByTestId('hud')).toBeVisible();
+  await expect.poll(async () => (await units(page)).filter((unit) => unit.faction === 'column').length).toBe(65);
+  // The owner's choice (2026-11-17): the cards keep their size and scroll inside the window.
+  const troops = page.locator("[data-window='troops']");
+  const body = troops.locator('.docked-panel-body');
+  const box = await troops.boundingBox();
+  expect(box!.y + box!.height).toBeLessThanOrEqual(720);
+  expect(await body.evaluate((element) => element.scrollHeight > element.clientHeight)).toBe(true);
+  await expect(page.getByTestId('squad-106')).not.toBeInViewport({ ratio: 1 });
+  await page.getByTestId('squad-1').hover();
+  await page.mouse.wheel(0, 2000);
+  await expect(page.getByTestId('squad-106')).toBeInViewport({ ratio: 0.95 });
+  // Every card is there to scroll to, and the window did not grow over the map.
+  for (const squad of [1, 2, 3, 4, 5, 6, 101, 102, 103, 104, 105, 106]) await expect(page.getByTestId(`squad-${squad}`)).toBeAttached();
+  expect((await troops.boundingBox())!.height).toBe(box!.height);
+  await troops.screenshot({ path: testInfo.outputPath('twelve-cards.png') });
 });
 
 test('roster remembered', async ({ page }) => {
@@ -96,6 +167,7 @@ test('enemy chosen: the test map with force C', async ({ page }) => {
 
 test('enemy built: a second machine gun is refused', async ({ page }) => {
   await openSetup(page);
+  await page.getByTestId(`map-option-${SMALL_MAP}`).click();
   await page.getByTestId('enemy-built').check();
   await expect(page.getByTestId('enemy-roster-builder')).toBeVisible();
   await page.getByTestId('enemy-roster-remove-0').click();
@@ -152,6 +224,7 @@ for (const [locale, refusal] of [
   test(`type cards with thumbnails and weapon icons (${locale})`, async ({ page }) => {
     await page.addInitScript((value) => window.localStorage.setItem('prestes.locale', value), locale);
     await openSetup(page);
+    await page.getByTestId(`map-option-${SMALL_MAP}`).click();
     const thumb = page.getByTestId('roster-thumb-metralhadora');
     await expect(thumb).toBeVisible();
     await expect(thumb).toHaveAttribute('src', /assets\/sections\/metralhadora\.png\?v=[\w-]+$/);

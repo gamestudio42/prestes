@@ -6,10 +6,10 @@ The panel SHALL show a card for each player section with the section type's
 thumbnail, section name, alive count and compact health, ammunition and
 morale bars. The thumbnail SHALL be the one the roster builder shows for
 that section type and SHALL carry the type's localized name as its text
-alternative. Twelve section cards SHALL be visible at 1280 x 720 without
-scrolling and without covering the map beyond the panel's own area; more
-cards (sixteen on a large map, or sections that arrived by event) SHALL
-scroll inside the panel.
+alternative. When the cards do not fit the panel (a medium map's twelve
+sections, a large map's sixteen, or sections that arrived by event), they
+SHALL keep their size and scroll inside the panel, which SHALL not grow over
+the map beyond its own area (the owner's choice, 2026-11-17).
 
 #### Scenario: Section card status
 
@@ -26,12 +26,7 @@ scroll inside the panel.
 - **WHEN** the asset register is inspected
 - **THEN** the section thumbnails are listed as built from the soldier kit, and no section portrait is listed as a placeholder
 
-#### Scenario: Twelve cards fit
+#### Scenario: Twelve cards scroll
 
-- **WHEN** a battle starts with twelve player sections at 1280 x 720 in PT-BR
-- **THEN** all twelve cards are visible without scrolling
-
-#### Scenario: More cards scroll
-
-- **WHEN** two sections arrive by event to a force of twelve
-- **THEN** the panel scrolls to show all fourteen and the map outside the panel stays uncovered
+- **WHEN** a battle starts with twelve player sections at 1280 x 720
+- **THEN** the cards keep their size, the last ones are reached by scrolling inside the panel, and the panel keeps its size
