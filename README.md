@@ -1,4 +1,19 @@
-# Prestes
+<h1 align="center">Prestes</h1>
+
+<p align="center"><strong>One column against a whole country. Every order costs a march.</strong></p>
+
+<p align="center">
+  <a href="https://gamestudio42.github.io/prestes/"><img src="https://img.shields.io/badge/Play_in_browser-c8873a?style=for-the-badge&labelColor=1c140d&color=c8873a" alt="Play Prestes"></a>
+  <a href="https://github.com/gamestudio42/prestes/actions/workflows/pages.yml"><img src="https://img.shields.io/github/actions/workflow/status/gamestudio42/prestes/pages.yml?branch=main&style=for-the-badge&labelColor=1c140d&label=Pages" alt="GitHub Pages deployment status"></a>
+  <a href="https://github.com/gamestudio42/prestes/stargazers"><img src="https://img.shields.io/github/stars/gamestudio42/prestes?style=for-the-badge&labelColor=1c140d&color=a8452c" alt="GitHub stars"></a>
+  <a href="https://github.com/gamestudio42"><img src="https://img.shields.io/badge/Game_Studio_42-1c140d?style=for-the-badge&labelColor=1c140d&color=6fb6db" alt="Game Studio 42"></a>
+</p>
+
+<p align="center">
+  <a href="https://gamestudio42.github.io/prestes/"><img src="docs/screenshots/cover.jpg" width="800" alt="The Prestes main menu: a campaign desk with maps, books, a gramophone and a compass, a rebel camp behind it"></a>
+</p>
+
+<p align="center"><strong><a href="https://gamestudio42.github.io/prestes/">Play in the browser</a></strong> — no installation needed.</p>
 
 A historical tactical RTS about Luís Carlos Prestes and the Coluna Prestes
 (1922–1927), for the browser, in 3D low-poly. The campaign is multi-perspective:
