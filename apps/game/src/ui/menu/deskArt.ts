@@ -23,9 +23,10 @@ export interface DeskArt {
    */
   scale?: number;
   /**
-   * Empty art rows under the lowest opaque pixel. The label is pulled up by
-   * them so every label sits the same distance below its art. Every current
-   * sprite touches its bottom row, so none sets it.
+   * Art rows under the object's body that the label does not keep clear of:
+   * empty rows, or a part that hangs below it (the binoculars' strap). The
+   * label is pulled up by them so every label sits the same distance below
+   * its object.
    */
   trim?: number;
 }
@@ -57,7 +58,8 @@ export const DESK_ART = {
   // add-map-editor: drawn in code by tools/build-desk-theodolite.ts.
   theodolite: { src: theodolite, width: 64, height: 80 },
   // camp-tent-menu: the field glasses that open the map editor.
-  binoculars: { src: binoculars, width: 149, height: 87 },
+  // The strap hangs 14 rows below the glasses; the label lies over it (the owner, 2026-11-16).
+  binoculars: { src: binoculars, width: 149, height: 87, trim: 14 },
 } as const satisfies Record<string, DeskArt>;
 
 /** The map sheet's window in art pixels (x0, y0, x1, y1): the print lies under it. */
@@ -88,5 +90,6 @@ export function deskArtData(art: DeskArt) {
     'data-art-w': art.width,
     'data-art-h': art.height,
     'data-art-scale': art.scale ?? DESK_SCALE,
+    'data-art-trim': art.trim ?? 0,
   };
 }

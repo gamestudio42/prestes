@@ -382,7 +382,11 @@ async function labelGap(page: Page, id: string): Promise<number> {
     return -1;
   }, shot.toString('base64'));
   const label = (await object.locator('.desk-object-label').boundingBox())!;
-  return Math.round(label.y - (clip.y + lowest + 1));
+  // Rows under the body that the label may lie over (deskArt `trim`: the binoculars' strap).
+  const art = object.locator('[data-art-trim]').first();
+  const trimRows = Number((await art.getAttribute('data-art-trim')) ?? 0);
+  const trim = trimRows > 0 ? (trimRows * (await art.locator('img').first().boundingBox())!.height) / Number(await art.getAttribute('data-art-h')) : 0;
+  return Math.round(label.y - (clip.y + lowest + 1 - trim));
 }
 
 test('every closed object keeps the same gap between its art and its label', async ({ page }) => {
