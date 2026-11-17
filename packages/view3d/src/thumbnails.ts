@@ -2,10 +2,10 @@ import * as THREE from 'three';
 import { propPreview } from './battle-map-layer';
 import { loadEnvironmentAsset, type EnvironmentAsset } from './environment-models';
 import { PALETTE } from './palette';
-import { ARMIES, modelFilesOf, SECTION_TYPES, type SectionMan, type SectionRole, type SectionTypeId, type WeaponId } from '@prestes/shared';
-import { UNIFORM_VARIANTS, type SoldierClip, type SoldierOutfit } from './soldier-clips';
+import { modelFilesOf, SECTION_TYPES, type SectionMan, type SectionRole, type SectionTypeId, type WeaponId } from '@prestes/shared';
+import { soldierGear, soldierOutfit, UNIFORM_VARIANTS, type SoldierClip, type SoldierOutfit } from './soldier-clips';
 import { loadSoldierAsset, SoldierInstance, type SoldierAsset } from './soldier-models';
-import { weaponLook, WeaponProps } from './weapon-placeholders';
+import { weaponLook, WeaponProps } from './weapon-props';
 
 /**
  * refine-map-editor 5.1: small pictures of props (the trees tool's species
@@ -66,6 +66,8 @@ export interface SectionFigure {
   weapon: WeaponId;
   outfit: SoldierOutfit;
   variant: number;
+  /** The id his kit is drawn from (`soldierGear`). */
+  gear: number;
   /** Metres in the picture's ground plane; the men face -z, toward the camera. */
   x: number;
   z: number;
@@ -87,7 +89,6 @@ const GUN_SPOTS: ReadonlyArray<readonly [number, number]> = [
 
 export function sectionComposition(typeId: SectionTypeId): SectionFigure[] {
   const type = SECTION_TYPES[typeId];
-  const uniform = ARMIES[type.army].uniform;
   const gunner = type.men.find((man) => weaponLook(man.weapon) === 'gun');
   let chosen: SectionMan[];
   if (gunner) {
@@ -103,9 +104,10 @@ export function sectionComposition(typeId: SectionTypeId): SectionFigure[] {
   return chosen.map((man, at) => ({
     role: man.role,
     weapon: man.weapon,
-    outfit: `${uniform}-${man.role === 'officer' ? 'officer' : 'troop'}`,
-    // A fixed spread of the three uniform variants, the same on every run.
+    outfit: soldierOutfit({ kind: man.role === 'officer' ? 'officer' : 'infantry', faction: 'column', army: type.army, sectionType: typeId }),
+    // A fixed spread of the uniform variants and kits, the same on every run.
     variant: at % UNIFORM_VARIANTS,
+    gear: at,
     x: spots[at]![0],
     z: spots[at]![1],
     clip: gunner ? 'crouch-idle' : 'idle-ready',
@@ -117,11 +119,11 @@ export function buildSectionScene(typeId: SectionTypeId, asset: SoldierAsset): T
   const group = new THREE.Group();
   group.name = `section:${typeId}`;
   for (const figure of sectionComposition(typeId)) {
-    const soldier = new SoldierInstance(asset, figure.outfit, figure.variant);
+    const soldier = new SoldierInstance(asset, figure.outfit, figure.variant, soldierGear(figure.gear, figure.outfit));
+    soldier.setPistol(weaponLook(figure.weapon) === 'pistol');
     soldier.play(figure.clip);
     soldier.update(0.4);
-    // After the mixer: the clips would otherwise reset the rifle bone.
-    new WeaponProps(soldier.root).apply(figure.weapon, true, true);
+    new WeaponProps(soldier.root).apply(figure.weapon, true, true, soldier.holdsPistol);
     soldier.root.position.set(figure.x, 0, figure.z);
     soldier.root.name = `man:${figure.role}:${figure.weapon}`;
     // Not disposed: stopping the mixer would put him back in the bind pose.

@@ -12,8 +12,12 @@ export type ArmyId = 'coluna' | 'legalista' | 'patriotico';
 
 export type ArmySide = 'column' | 'legalist';
 
-/** The uniform set the view draws for an army (soldier-animation-and-textures draws them). */
-export type UniformSetId = 'coluna' | 'legalista' | 'patriotico';
+/**
+ * The uniform set the view draws for an army (soldier-animation-and-textures
+ * draws them); a section type may wear its own (improve-soldier-models 4.4:
+ * the cangaceiros and the jagunços, FORCES.md "Dress of the forces").
+ */
+export type UniformSetId = 'coluna' | 'legalista' | 'patriotico' | 'cangaceiro' | 'jagunco';
 
 /**
  * Numbers the simulation already has, set by army and adjusted by section

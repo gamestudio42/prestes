@@ -15,13 +15,20 @@ import os
 import bpy
 from mathutils import Matrix, Vector
 
-from common import MeshBuilder, reset, save_and_export
+import soldier_parts as parts
+from common import reset, save_and_export
+from soldier_parts import RIFLE_X, RIFLE_Y, RIFLE_Z
 
 FPS = 24
 # Rifle yaw across the body and the left arm's reach toward it (degrees).
 AIM_YAW = -10
 READY_YAW = -14
 LEFT_REACH = -40
+# In the aim the body turns side-on to the target (left shoulder forward, the
+# head and rifle turned back to the front) and the butt comes up to the cheek.
+BLADE = 22
+AIM_RISE = 0.1
+PRONE_BLADE = 14
 # Walk leg swings: the passing pose is scaled by STRIDE; the contact pose
 # reaches STEP_FRONT and STEP_BACK degrees (1.4: about 0.75 m a step, two
 # steps a second at the walk).
@@ -29,7 +36,7 @@ STRIDE = 1.25
 STEP_FRONT = 30
 STEP_BACK = 27
 # Slung rifle offset from its shoulder pivot (see `slung`).
-SLING_OUT = -0.06
+SLING_OUT = -0.16
 SLING_BACK = 0.12
 # Prone: how far the chest rises on the elbows, and the upper arms' angle.
 PRONE_RISE = 18
@@ -49,50 +56,33 @@ BONES = {
     "shin.L": ((0.1, 0, 0.52), (0.1, 0, 0.06), "thigh.L"),
     "thigh.R": ((-0.1, 0, 0.92), (-0.1, 0, 0.52), "hips"),
     "shin.R": ((-0.1, 0, 0.52), (-0.1, 0, 0.06), "thigh.R"),
-    "rifle": ((-0.27, -0.07, 1.36), (-0.27, -0.07, 1.56), "chest"),
+    "rifle": ((RIFLE_X, RIFLE_Y, RIFLE_Z), (RIFLE_X, RIFLE_Y, RIFLE_Z + 0.2), "chest"),
 }
 
 
-def body_mesh() -> bpy.types.Object:
-    b = MeshBuilder("soldier", "soldier-coluna-troop-0")
-    for side, x in (("L", 0.1), ("R", -0.1)):
-        b.box((x, 0.03, 0.05), (0.12, 0.26, 0.1), "boots", group=f"shin.{side}")
-        b.box((x, 0, 0.31), (0.11, 0.12, 0.42), "puttees", group=f"shin.{side}")
-        b.box((x, 0, 0.72), (0.15, 0.17, 0.42), "trousers", group=f"thigh.{side}", front="trousers-front")
-    b.box((0, 0, 0.96), (0.36, 0.21, 0.14), "trousers", group="hips")
-    b.box((0, 0, 1.2), (0.38, 0.23, 0.44), "tunic", group="chest", front="tunic-front", back="tunic-back")
-    b.box((0, 0.005, 1.0), (0.4, 0.25, 0.06), "leather", group="hips", front="belt-front")
-    # Bandolier across the chest, from the left shoulder to the right hip.
-    sash = Matrix.Translation((0, 0.12, 1.22)) @ Matrix.Rotation(math.radians(38), 4, "Y")
-    b.box((0, 0, 0), (0.07, 0.03, 0.56), "leather", group="chest", matrix=sash)
-    b.box((0, 0.01, 1.43), (0.24, 0.21, 0.06), "scarf", group="chest")
-    b.box((0, 0.01, 1.57), (0.19, 0.21, 0.22), "skin", group="head", front="face")
-    for side, x in (("L", 0.24), ("R", -0.24)):
-        b.box((x, 0, 1.27), (0.1, 0.11, 0.3), "tunic", group=f"upper_arm.{side}")
-        b.box((x, 0, 1.0), (0.09, 0.1, 0.26), "tunic", group=f"forearm.{side}")
-        b.box((x, 0.01, 0.84), (0.08, 0.09, 0.08), "skin", group=f"forearm.{side}")
-    # The Mauser along the rifle bone: butt at the shoulder, muzzle up.
-    x, y = -0.27, -0.07
-    b.box((x, y, 1.62), (0.05, 0.09, 0.52), "rifle.wood", group="rifle")
-    b.box((x, y + 0.01, 1.96), (0.035, 0.05, 0.16), "rifle.metal", group="rifle")
-    b.box((x, y + 0.01, 2.2), (0.03, 0.04, 0.34), "rifle.metal", group="rifle")
-    b.box((x + 0.03, y + 0.02, 1.95), (0.04, 0.02, 0.02), "rifle.metal", group="rifle")
-    return b.to_object("Soldier")
+def mesh(name: str, build) -> bpy.types.Object:
+    b = parts.builder()
+    build(b)
+    return b.to_object(name)
 
 
-def kepi() -> bpy.types.Object:
-    b = MeshBuilder("soldier", "soldier-coluna-troop-0")
-    b.box((0, 0.0, 1.73), (0.2, 0.22, 0.1), "hat", group="head", front="hat-front", top="hat-top")
-    b.box((0, 0.13, 1.685), (0.2, 0.08, 0.02), "leather", group="head")
-    return b.to_object("Kepi")
+def check_triangles(objects: dict) -> None:
+    """3.3: the near body with its heaviest hat and all its kit holds 1,500 to
+    3,000 triangles; the far body with its heaviest far hat at most 600."""
+    count = parts.triangles
+    hats = [count(objects[name]) for name in parts.HATS]
+    far_hats = [count(objects[f"{name}Far"]) for name in parts.HATS]
+    near = count(objects["Soldier"]) + max(hats) + sum(count(objects[name]) for name in parts.GEAR)
+    far = count(objects["SoldierFar"]) + max(far_hats)
+    print(f"triangles: near {near}, far {far}, weapons " + ", ".join(f"{n} {count(objects[n])}" for n in parts.WEAPONS))
+    if not NEAR_TRIANGLES[0] <= near <= NEAR_TRIANGLES[1]:
+        raise RuntimeError(f"near soldier has {near} triangles, outside {NEAR_TRIANGLES}")
+    if far > FAR_TRIANGLES:
+        raise RuntimeError(f"far soldier has {far} triangles, over {FAR_TRIANGLES}")
 
 
-def slouch() -> bpy.types.Object:
-    b = MeshBuilder("soldier", "soldier-coluna-troop-0")
-    b.box((0, 0, 1.69), (0.38, 0.38, 0.03), "hat", group="head")
-    b.box((0, 0, 1.75), (0.2, 0.2, 0.1), "hat", group="head", top="hat-top")
-    b.box((0, 0, 1.715), (0.21, 0.21, 0.02), "scarf", group="head")
-    return b.to_object("Slouch")
+NEAR_TRIANGLES = (1500, 3000)
+FAR_TRIANGLES = 600
 
 
 def armature() -> bpy.types.Object:
@@ -115,6 +105,73 @@ def armature() -> bpy.types.Object:
     return rig
 
 
+# Where each hand holds the rifle, in the rifle's rest frame (armature rest
+# coordinates; the rifle stands muzzle up and its underside is +Y): the right
+# hand at the wrist of the stock behind the trigger, the left under the
+# forend. The forearm's tail is the wrist; the hand box hangs just past it.
+GRIP_REST = {
+    # The right hand round the wrist of the stock, the left under the forend
+    # just ahead of the receiver, and the right on the bolt while reloading.
+    "R": Vector((RIFLE_X, RIFLE_Y + 0.03, RIFLE_Z + 0.32)),
+    "L": Vector((RIFLE_X, RIFLE_Y + 0.05, RIFLE_Z + 0.64)),
+    "bolt": Vector((RIFLE_X - 0.09, RIFLE_Y, RIFLE_Z + 0.51)),
+    # Prone with the rifle down off the cheek the left hand slides back
+    # to the front of the magazine.
+    "L-near": Vector((RIFLE_X, RIFLE_Y + 0.06, RIFLE_Z + 0.5)),
+}
+# How far a solved hand may sit from its grip point; the build fails past it.
+GRIP_TOLERANCE = 0.02
+# How far a shoulder may come forward to reach a grip (metres).
+SHOULDER_REACH = 0.12
+
+
+def _turn_bone(rig, name: str, target: Vector) -> None:
+    """Rotates a posed bone about its head so its tail points at `target`
+    (armature space), keeping the Euler channels continuous with the pose."""
+    bone = rig.pose.bones[name]
+    before = bone.rotation_euler.copy()
+    head, tail = bone.head.copy(), bone.tail.copy()
+    turn = (tail - head).rotation_difference(target - head).to_matrix().to_4x4()
+    bone.matrix = Matrix.Translation(head) @ turn @ Matrix.Translation(-head) @ bone.matrix
+    bpy.context.view_layer.update()
+    after = bone.rotation_euler.copy()
+    after.make_compatible(before)
+    bone.rotation_euler = after
+    bpy.context.view_layer.update()
+
+
+def solve_arm(rig, side: str, target: Vector) -> None:
+    """Two-bone IK for one arm: the wrist on `target` (armature space), the
+    elbow in the plane the posed elbow already bends in."""
+    upper, fore = rig.pose.bones[f"upper_arm.{side}"], rig.pose.bones[f"forearm.{side}"]
+    a, b = upper.length, fore.length
+    shoulder, pole = upper.head.copy(), upper.tail.copy()
+    reach = target - shoulder
+    short = reach.length - (a + b - 0.005)
+    if short > 0:
+        # Out of reach (the left hand on the forend, across the body): the
+        # shoulder comes forward toward the rifle, as a rifleman's does.
+        if short > SHOULDER_REACH:
+            raise RuntimeError(f"{side} hand is {short * 100:.1f} cm past reach, over {SHOULDER_REACH * 100:.0f} cm")
+        move = reach.normalized() * short
+        upper.matrix = Matrix.Translation(move) @ upper.matrix
+        bpy.context.view_layer.update()
+        shoulder, pole = upper.head.copy(), upper.tail.copy()
+        reach = target - shoulder
+    d = min(max(reach.length, abs(a - b) + 1e-3), a + b - 1e-3)
+    u = reach.normalized()
+    v = (pole - shoulder) - u * (pole - shoulder).dot(u)
+    if v.length < 1e-4:
+        # Elbow straight along the reach: bend it down and out.
+        v = Vector((0, 0, -1)) - u * u.z
+    v.normalize()
+    cos_a = (a * a + d * d - b * b) / (2 * a * d)
+    sin_a = math.sqrt(max(0.0, 1 - cos_a * cos_a))
+    elbow = shoulder + (u * cos_a + v * sin_a) * a
+    _turn_bone(rig, upper.name, elbow)
+    _turn_bone(rig, fore.name, shoulder + u * d)
+
+
 def skin(obj: bpy.types.Object, rig: bpy.types.Object) -> None:
     obj.parent = rig
     modifier = obj.modifiers.new("Rig", "ARMATURE")
@@ -127,6 +184,12 @@ class Poser:
 
     def __init__(self, rig: bpy.types.Object) -> None:
         self.rig = rig
+        self.grips: dict[str, str] = {}
+        # (frame, hands held) of each key of the clip being built.
+        self.keyed: list[tuple[int, frozenset]] = []
+        self.clip_name = ""
+        # improve-soldier-models 1.4: building the revolver's variants of the clips.
+        self.pistol = False
         self.sign: dict[str, float] = {}
         for name in ("thigh.L", "thigh.R", "shin.L", "shin.R", "upper_arm.L", "upper_arm.R",
                      "forearm.L", "forearm.R", "chest", "head", "hips", "rifle"):
@@ -156,6 +219,53 @@ class Poser:
         for bone in self.rig.pose.bones:
             bone.rotation_euler = (0, 0, 0)
             bone.location = (0, 0, 0)
+        self.grips: dict[str, str] = {}
+
+    def hold(self, *sides: str, at: str | None = None) -> None:
+        """The hands on `sides` grip the rifle: when the pose is keyed, each
+        arm is solved (two-bone IK) so the hand sits on its grip point, the
+        elbow kept on the side the pose bent it to. Without this the arms
+        were posed by angle alone and the rifle floated between the hands."""
+        for side in sides:
+            self.grips[side] = at or side
+
+    def release(self, *sides: str) -> None:
+        for side in sides:
+            self.grips.pop(side, None)
+
+    def solve_grips(self) -> None:
+        if not self.grips:
+            return
+        # Evaluating the scene would play the action being keyed and the
+        # clips already on the NLA over the pose: set them aside meanwhile.
+        data = self.rig.animation_data
+        action = data.action if data else None
+        tracks = [(track, track.mute) for track in data.nla_tracks] if data else []
+        if data:
+            data.action = None
+        for track, _ in tracks:
+            track.mute = True
+        try:
+            self._solve_grips()
+        finally:
+            for track, mute in tracks:
+                track.mute = mute
+            if data:
+                data.action = action
+
+    def _solve_grips(self) -> None:
+        bpy.context.view_layer.update()
+        rifle = self.rig.pose.bones["rifle"]
+        to_posed = rifle.matrix @ self.rig.data.bones["rifle"].matrix_local.inverted()
+        for side, point in sorted(self.grips.items()):
+            target = to_posed @ (GRIP_REST[point] if isinstance(point, str) else point)
+            try:
+                solve_arm(self.rig, side, target)
+            except RuntimeError as error:
+                raise RuntimeError(f"{self.clip_name}: {error}") from None
+            gap = (self.rig.pose.bones[f"forearm.{side}"].tail - target).length
+            if gap > GRIP_TOLERANCE:
+                raise RuntimeError(f"{self.clip_name}: {side} hand cannot reach its grip, {gap * 100:.1f} cm off")
 
     def swing(self, name: str, degrees: float) -> None:
         """Positive: the bone's tail moves forward (+Y)."""
@@ -181,6 +291,8 @@ class Poser:
         bone.location = (x, y, z)
 
     def key(self, frame: int) -> None:
+        self.solve_grips()
+        self.keyed.append((frame, frozenset(self.grips.items())))
         for bone in self.rig.pose.bones:
             bone.keyframe_insert("rotation_euler", frame=frame)
             bone.keyframe_insert("location", frame=frame)
@@ -193,6 +305,8 @@ def clip(rig, poser: Poser, name: str, frames: list, loop: bool = True, period: 
     action.use_fake_user = True
     rig.animation_data_create()
     rig.animation_data.action = action
+    poser.keyed = []
+    poser.clip_name = name
     for frame, pose in frames:
         poser.clear()
         pose(poser)
@@ -204,10 +318,43 @@ def clip(rig, poser: Poser, name: str, frames: list, loop: bool = True, period: 
     for fcurve in getattr(action, "fcurves", []):
         for point in fcurve.keyframe_points:
             point.interpolation = "LINEAR"
+    bake_grips(rig, poser)
     track = rig.animation_data.nla_tracks.new()
     track.name = name
     track.strips.new(name, int(frames[0][0]), action)
     rig.animation_data.action = None
+
+
+def bake_grips(rig, poser: Poser) -> None:
+    """Between two keys that both hold the rifle in a hand, the arm's angles
+    interpolated alone would let the hand drift off the rifle (by 40 cm in a
+    raise): every frame in between is solved again and keyed on that arm."""
+    keyed = sorted(poser.keyed)
+    tracks = [(track, track.mute) for track in rig.animation_data.nla_tracks]
+    for track, _ in tracks:
+        track.mute = True
+    action = rig.animation_data.action
+    for (start, held_a), (end, held_b) in zip(keyed, keyed[1:]):
+        a, b = dict(held_a), dict(held_b)
+        sides = sorted(a.keys() & b.keys())
+        for frame in range(start + 1, end) if sides else ():
+            rig.animation_data.action = action
+            bpy.context.scene.frame_set(frame)
+            # A hand that moves along the rifle between keys slides with it.
+            t = (frame - start) / (end - start)
+            poser.grips = {side: GRIP_REST[a[side]].lerp(GRIP_REST[b[side]], t) for side in sides}
+            poser.solve_grips()
+            for side in sides:
+                for name in (f"upper_arm.{side}", f"forearm.{side}"):
+                    bone = rig.pose.bones[name]
+                    bone.keyframe_insert("rotation_euler", frame=frame)
+                    bone.keyframe_insert("location", frame=frame)
+    for fcurve in getattr(action, "fcurves", []):
+        for point in fcurve.keyframe_points:
+            point.interpolation = "LINEAR"
+    for track, mute in tracks:
+        track.mute = mute
+    poser.grips = {}
 
 
 # ----------------------------------------------------------------- poses
@@ -227,13 +374,39 @@ def ready(p: Poser) -> None:
     p.swing("chest", 6)
     # Muzzle only a little below level (the chest leans 6 degrees).
     p.swing("rifle", 92)
-    p.side("rifle", READY_YAW)
+    p.side("rifle", READY_YAW - BLADE)
+    p.side("chest", BLADE)
     p.swing("upper_arm.R", 35)
     p.swing("forearm.R", 45)
     p.swing("upper_arm.L", 60)
     p.swing("forearm.L", 30)
     p.side("upper_arm.L", LEFT_REACH)
     p.swing("head", -4)
+    p.side("head", -BLADE)
+    p.hold("R", "L")
+    if p.pistol:
+        pistol_arms(p, aim=False)
+
+
+def pistol_arms(p: Poser, aim: bool, recoil: float = 0.0) -> None:
+    """The revolver's arms: the right arm out with the gun (straight at the
+    target in the aim, forward and low at the ready), the left arm free; the
+    body square to the front. The revolver rides the right forearm."""
+    p.release("R", "L")
+    p.side("chest", 0)
+    p.side("head", 0)
+    p.side("upper_arm.L", 0)
+    if aim:
+        p.swing("upper_arm.R", 84 + recoil * 8)
+        p.swing("forearm.R", 4 + recoil * 6)
+        p.spread("upper_arm.R", -6)
+        p.swing("head", 4)
+    else:
+        p.swing("upper_arm.R", 28)
+        p.swing("forearm.R", 38)
+    p.swing("upper_arm.L", 8)
+    p.swing("forearm.L", 18)
+    p.spread("upper_arm.L", 6)
 
 
 def stand(p: Poser) -> None:
@@ -330,14 +503,21 @@ def aim_arms(p: Poser, recoil: float = 0.0, lean: float = 0.0) -> None:
     the right hand at the grip, the left under the forend."""
     # Level whatever the chest lean (`lean` degrees forward).
     p.swing("rifle", 90 - recoil * 6 - lean)
-    p.side("rifle", AIM_YAW)
+    p.side("rifle", AIM_YAW - BLADE)
+    p.shift("rifle", up=AIM_RISE)
+    p.side("chest", BLADE)
+    p.side("head", -BLADE)
     p.swing("upper_arm.R", 75)
     p.swing("forearm.R", 35)
     p.swing("upper_arm.L", 85)
     p.swing("forearm.L", 10)
     p.side("upper_arm.L", LEFT_REACH)
-    p.swing("chest", -recoil * 3)
+    # Keep the lean the stance gave the body (the rifle is levelled for it).
+    p.swing("chest", lean - recoil * 3)
     p.swing("head", 6)
+    p.hold("R", "L")
+    if p.pistol:
+        pistol_arms(p, aim=True, recoil=recoil)
 
 
 def prone(p: Poser, aim: bool = True) -> None:
@@ -352,12 +532,15 @@ def prone(p: Poser, aim: bool = True) -> None:
         p.swing(f"shin.{side}", -8)
     # Level with the ground: the chest is raised by PRONE_RISE.
     p.swing("rifle", PRONE_RISE)
-    p.side("rifle", AIM_YAW)
+    p.side("rifle", AIM_YAW - PRONE_BLADE)
+    p.side("chest", PRONE_BLADE)
+    p.side("head", -PRONE_BLADE)
     p.swing("upper_arm.R", PRONE_ELBOW)
     p.swing("forearm.R", 55)
     p.swing("upper_arm.L", PRONE_ELBOW + 8)
     p.swing("forearm.L", 40)
     p.side("upper_arm.L", LEFT_REACH)
+    p.hold("R", "L")
 
 
 def crawl(p: Poser, side: float) -> None:
@@ -626,6 +809,8 @@ def crouch_slump(p: Poser, t: float) -> None:
     p.swing("rifle", 92 + 30 * t)
     p.swing("upper_arm.R", 35 - 20 * t)
     p.root(pitch=-25 * t, y=-0.15 * t, z=-0.34 - 0.1 * t)
+    if t > 0:
+        p.release("R", "L")
 
 
 def prone_go_limp(p: Poser, t: float) -> None:
@@ -635,6 +820,8 @@ def prone_go_limp(p: Poser, t: float) -> None:
     p.swing("chest", -PRONE_RISE * (1 - t))
     p.swing("head", -42 + 32 * t)
     p.swing("rifle", PRONE_RISE * (1 - t))
+    if t > 0:
+        p.release("R", "L")
 
 
 # ------------------------------------------------- crouch, aim and reload
@@ -677,6 +864,7 @@ def lowered_prone(p: Poser) -> None:
     p.swing("rifle", PRONE_RISE - 25)
     p.swing("upper_arm.R", PRONE_ELBOW - 15)
     p.swing("head", -30)
+    p.hold("L", at="L-near")
 
 
 def stance_pose(stance: str, aim: bool):
@@ -707,12 +895,18 @@ def reload_pose(stance: str, phase: int):
             p.swing("rifle", PRONE_RISE - 30)
             p.side("rifle", AIM_YAW - 15)
             p.swing("head", -20)
+            p.hold("L", at="L-near")
         else:
             p.swing("rifle", 60 if stance == "stand" else 55)
             p.side("rifle", READY_YAW - 10)
             p.swing("head", 12)
         bolt = 50 if phase in (0, 1, 2) else 35
         p.swing("forearm.R", bolt + (15 if phase == 0 else 0))
+        # The right hand works the bolt; the left keeps the forend except
+        # while it fetches and presses in the clip.
+        p.hold("R", at="bolt")
+        if phase in (1, 2):
+            p.release("L")
         if phase == 1:
             # The left hand drops to the pouch on the belt.
             if stance == "prone":
@@ -798,13 +992,13 @@ def foot_gap(rig, poser: Poser, pose) -> float:
     return abs(left.y - right.y)
 
 
-def gait_clip(rig, poser: Poser, name: str, keys: list, contacts: list, gaits: dict) -> None:
+def gait_clip(rig, poser: Poser, name: str, keys: list, contacts: list, gaits: dict, clip_name: str | None = None) -> None:
     """`keys`: (fraction of the cycle, pose); `contacts`: the contact poses,
     one per step. The cycle lasts as long as the summed steps take at the
     clip's speed, rounded to whole frames."""
     stride = sum(foot_gap(rig, poser, pose) for pose in contacts)
     period = max(8, round(stride / GAIT_SPEED[name] * FPS))
-    clip(rig, poser, name, [(1 + round(at * period), pose) for at, pose in keys], period=period)
+    clip(rig, poser, clip_name or name, [(1 + round(at * period), pose) for at, pose in keys], period=period)
     gaits[name] = {"strideMetres": round(stride, 4), "cycleFrames": period, "fps": FPS, "speed": GAIT_SPEED[name]}
 
 
@@ -817,12 +1011,56 @@ def write_gaits(gaits: dict) -> None:
     print(f"gaits: {gaits}")
 
 
+# improve-soldier-models 1.4: the clips a man with a revolver plays in his
+# own way, `<clip>-pistol`; the view plays them when they exist, and holsters
+# the revolver for every other clip.
+PISTOL_CLIPS = (
+    "idle-ready", "walk-ready", "run", "crouch-idle", "crouch-walk", "aim-stand", "fire-stand",
+    "aim-crouch", "fire-crouch", "raise-stand", "lower-stand", "raise-crouch", "lower-crouch",
+    "aim-turn-stand", "aim-turn-crouch",
+)
+
+
+def pistol_clips(rig, poser: Poser, quarter) -> None:
+    poser.pistol = True
+    gaits: dict = {}
+    name = lambda clip_name: f"{clip_name}-pistol"
+    clip(rig, poser, name("idle-ready"), [(1, ready), (24, lambda p: (ready(p), p.swing("head", 2))), (48, ready)], loop=False)
+    gait_clip(rig, poser, "walk-ready", quarter(
+        lambda p: walk_a(p, ready), lambda p: walk_pass(p, ready), lambda p: walk_b(p, ready), lambda p: walk_pass_b(p, ready),
+    ), [lambda p: walk_a(p, ready), lambda p: walk_b(p, ready)], gaits, clip_name=name("walk-ready"))
+    gait_clip(rig, poser, "run", quarter(
+        lambda p: run_reach(p, "L", "R"), lambda p: run_float(p, "L", "R"), lambda p: run_reach(p, "R", "L"), lambda p: run_float(p, "R", "L"),
+    ), [lambda p: run_reach(p, "L", "R"), lambda p: run_reach(p, "R", "L")], gaits, clip_name=name("run"))
+    clip(rig, poser, name("crouch-idle"), [(1, lambda p: crouch(p)), (24, lambda p: crouch(p))], loop=False)
+    gait_clip(rig, poser, "crouch-walk", quarter(
+        lambda p: crouch_step(p, "L", "R"), lambda p: crouch_pass(p, "L", "R"), lambda p: crouch_step(p, "R", "L"), lambda p: crouch_pass(p, "R", "L"),
+    ), [lambda p: crouch_step(p, "L", "R"), lambda p: crouch_step(p, "R", "L")], gaits, clip_name=name("crouch-walk"))
+    clip(rig, poser, name("aim-stand"), [(1, lambda p: aim_arms(p)), (24, lambda p: aim_arms(p))], loop=False)
+    clip(rig, poser, name("fire-stand"), [(1, lambda p: aim_arms(p)), (3, recoil_pose("stand")), (10, lambda p: aim_arms(p))], loop=False)
+    clip(rig, poser, name("aim-crouch"), [(1, lambda p: crouch(p, aim=True)), (24, lambda p: crouch(p, aim=True))], loop=False)
+    clip(rig, poser, name("fire-crouch"), [(1, lambda p: crouch(p, aim=True)), (3, recoil_pose("crouch")), (10, lambda p: crouch(p, aim=True))], loop=False)
+    for stance in ("stand", "crouch"):
+        clip(rig, poser, name(f"raise-{stance}"), [(1, stance_pose(stance, False)), (8, stance_pose(stance, True))], loop=False)
+        clip(rig, poser, name(f"lower-{stance}"), [(1, stance_pose(stance, True)), (10, stance_pose(stance, False))], loop=False)
+        clip(rig, poser, name(f"aim-turn-{stance}"), [(1, turn_step(stance, 0)), (5, turn_step(stance, 1)), (9, turn_step(stance, 2)), (13, turn_step(stance, 3))])
+    poser.pistol = False
+
+
 def build():
     reset()
     bpy.context.scene.render.fps = FPS
     rig = armature()
-    for obj in (body_mesh(), kepi(), slouch()):
+    objects = {"Soldier": mesh("Soldier", parts.near_body), "SoldierFar": mesh("SoldierFar", parts.far_body)}
+    for name, hat in parts.HATS.items():
+        objects[name] = mesh(name, hat)
+        objects[f"{name}Far"] = mesh(f"{name}Far", lambda b, hat=hat: hat(b, far=True))
+    for table in (parts.GEAR, parts.WEAPONS):
+        for name, build_part in table.items():
+            objects[name] = mesh(name, build_part)
+    for obj in objects.values():
         skin(obj, rig)
+    check_triangles(objects)
     poser = Poser(rig)
 
     clip(rig, poser, "idle", [(1, stand), (24, stand_breathe), (48, stand)], loop=False)
@@ -916,6 +1154,7 @@ def build():
         (1, lambda p: prone_go_limp(p, 0)), (6, lambda p: prone_go_limp(p, 0.6)), (14, corpse_sprawl),
     ], loop=False)
 
+    pistol_clips(rig, poser, quarter)
     check_crouch_walk(rig)
     write_gaits(gaits)
     poser.clear()

@@ -2,7 +2,7 @@
 
 Draws three small atlases in the sepia palette and writes their region index:
 
-  soldier-<outfit>-<n>.png  128 x 128  same layout per outfit (<army uniform>-troop and -officer), three variants
+  soldier-<outfit>-<n>.png  128 x 128  same layout per outfit (<army uniform>-troop and -officer), six variants
   environment.png  128 x 128 16 x 16 swatches: plaster, tile, timber, stone...
   effects.png      64 x 16   8 x 8 sprite frames: muzzle, smoke, dust, splinter
   regions.json     swatch name -> [x, y, w, h] in pixels, per atlas
@@ -78,6 +78,12 @@ def cloth(base, dark, seam_every=4):
 
 CREAM = (214, 200, 166)
 CREAM_DARK = (176, 160, 124)
+ARMY_KHAKI = (132, 116, 74)
+ARMY_KHAKI_DARK = (100, 88, 56)
+LEATHER = (128, 88, 52)
+LEATHER_DARK = (94, 62, 36)
+BRIM = (120, 102, 72)
+BRIM_DARK = (92, 76, 52)
 
 # soldier-animation-and-textures 3.2: a uniform set per army (the army's
 # `uniform` in packages/shared/src/armies.ts), for the rank and file and for
@@ -91,12 +97,13 @@ OUTFITS = {
     # Its officers: a better-kept tunic, the scarf, dark boots (placeholder).
     "coluna-officer": dict(tunic=(SAND, KHAKI), trousers=(MID, BROWN), hat=(KHAKI_DARK, BROWN),
                            scarf=(RED, RED_DARK), puttees=(INK, DARK)),
-    # Federal army and state militias: olive uniform and kepi (placeholder:
-    # the uniforms of 1924-1927 are an open question in FORCES.md).
-    "legalista-troop": dict(tunic=(OLIVE, OLIVE_DARK), trousers=(OLIVE_DARK, DARK), hat=(OLIVE_DARK, DARK),
-                            scarf=(OLIVE, OLIVE_DARK), puttees=(OLIVE_DARK, DARK)),
-    # Legalist officers: the same olive, gold buttons and badge, dark boots.
-    "legalista-officer": dict(tunic=(OLIVE, OLIVE_DARK), trousers=(OLIVE_DARK, DARK), hat=(OLIVE_DARK, DARK),
+    # Federal army and the militias in its pattern: khaki and the kepi
+    # (FORCES.md "Dress of the forces": khaki in the 1924 photographs, olive
+    # only from 1933). The kepi's shape is a placeholder.
+    "legalista-troop": dict(tunic=(ARMY_KHAKI, ARMY_KHAKI_DARK), trousers=(ARMY_KHAKI_DARK, BROWN), hat=(ARMY_KHAKI_DARK, BROWN),
+                            scarf=(ARMY_KHAKI, ARMY_KHAKI_DARK), puttees=(ARMY_KHAKI_DARK, BROWN)),
+    # Legalist officers: the same khaki, gold buttons and badge, dark boots.
+    "legalista-officer": dict(tunic=(ARMY_KHAKI, ARMY_KHAKI_DARK), trousers=(ARMY_KHAKI_DARK, BROWN), hat=(ARMY_KHAKI_DARK, BROWN),
                               scarf=(GOLD, TAN), puttees=(INK, DARK)),
     # Patriotic battalions: the allied chiefs' jagunços in their own clothes
     # (Macaulay p. 189; Franklin's own men had federal uniforms). Pale cotton,
@@ -106,7 +113,25 @@ OUTFITS = {
     # Their chiefs: a dark civilian jacket and the leather hat (placeholder).
     "patriotico-officer": dict(tunic=(DARK, INK), trousers=(BROWN, DARK), hat=(BROWN, DARK),
                                scarf=(CREAM, CREAM_DARK), puttees=(INK, DARK), boots=(DARK, INK)),
+    # Cangaceiros (FORCES.md "Dress of the forces"): the leather half-moon hat
+    # with its star, leather leggings and sandals, a coloured neckerchief.
+    # The brown cloth of the jacket and trousers is a placeholder.
+    "cangaceiro-troop": dict(tunic=(BRIM, BRIM_DARK), trousers=(BRIM_DARK, BROWN), hat=(LEATHER, LEATHER_DARK),
+                             scarf=(RED, (40, 96, 60)), puttees=(LEATHER, LEATHER_DARK), boots=(LEATHER_DARK, DARK)),
+    # Jagunços: the sertão's leather, a placeholder (no source on their dress).
+    "jagunco-troop": dict(tunic=(LEATHER, LEATHER_DARK), trousers=(CREAM_DARK, MID), hat=(LEATHER, LEATHER_DARK),
+                          scarf=(TAN, MID), puttees=(LEATHER, LEATHER_DARK), boots=(LEATHER_DARK, DARK)),
 }
+
+# 4.4: the column's men in worn khaki and in civilian jackets, by variant.
+COLUMN_TUNICS = (
+    None,
+    ((104, 80, 56), (78, 58, 40)),
+    ((172, 156, 112), (138, 124, 88)),
+    ((112, 112, 104), (84, 84, 78)),
+    None,
+    ((186, 172, 140), (150, 136, 106)),
+)
 
 
 SOLDIER_SIZE = 128
@@ -241,14 +266,33 @@ OUTFIT_DETAIL = {
     "legalista-officer": dict(button=GOLD, band=RED_DARK, badge=GOLD, moustache=True, buckle=GOLD),
     "patriotico-troop": dict(button=CREAM_DARK, band=DARK, badge=None, moustache=True, buckle=METAL),
     "patriotico-officer": dict(button=METAL_LIGHT, band=INK, badge=None, moustache=True, buckle=METAL_LIGHT),
+    "cangaceiro-troop": dict(button=METAL_LIGHT, band=LEATHER_DARK, badge=PAPER, moustache=False, buckle=METAL_LIGHT),
+    "jagunco-troop": dict(button=LEATHER_DARK, band=LEATHER_DARK, badge=None, moustache=True, buckle=METAL),
 }
 
 
-# 3.3: three variants per uniform set, chosen in the view by soldier id: the
-# cloth a shade darker or lighter (washed, worn), a fresh weave, and the
-# moustache on some faces and not others.
-UNIFORM_VARIANTS = 3
-VARIANT_SHADE = (0, -12, 10)
+# 3.3: variants per uniform set, chosen in the view by soldier id: the cloth
+# a shade darker or lighter (washed, worn), a fresh weave, the moustache on
+# some faces and not others, and (improve-soldier-models 4.1) six of them
+# with four skin tones: the column and the armies it fought were men of every
+# colour (Blanc 2024), not one face repeated.
+UNIFORM_VARIANTS = 6
+VARIANT_SHADE = (0, -12, 10, -6, 6, -16)
+SKIN_TONES = (
+    ((196, 146, 108), (160, 112, 80)),
+    ((150, 102, 70), (118, 78, 52)),
+    ((214, 170, 132), (182, 138, 102)),
+    ((104, 70, 48), (78, 52, 36)),
+)
+VARIANT_SKIN = (0, 1, 2, 3, 1, 3)
+VARIANT_MOUSTACHE_FLIP = (False, True, False, False, True, True)
+CANVAS = (176, 160, 118)
+CANVAS_DARK = (138, 124, 88)
+BLANKET = (92, 84, 72)
+BLANKET_DARK = (66, 60, 52)
+BRASS = (190, 150, 70)
+GUN = (52, 54, 52)
+GUN_LIGHT = (92, 94, 88)
 
 
 def soldier_atlas(outfit: str, variant: int = 0) -> Atlas:
@@ -258,9 +302,12 @@ def soldier_atlas(outfit: str, variant: int = 0) -> Atlas:
     by = VARIANT_SHADE[variant]
     colours = {key: tuple(shade(c, by) for c in pair) if key in ("tunic", "trousers", "hat") else pair
                for key, pair in OUTFITS[outfit].items()}
+    if outfit == "coluna-troop" and COLUMN_TUNICS[variant]:
+        colours["tunic"] = COLUMN_TUNICS[variant]
     detail = dict(OUTFIT_DETAIL[outfit])
-    if variant == 1:
+    if VARIANT_MOUSTACHE_FLIP[variant]:
         detail["moustache"] = not detail["moustache"]
+    skin, skin_dark = SKIN_TONES[VARIANT_SKIN[variant]]
     tunic, tunic_dark = colours["tunic"]
     trousers, trousers_dark = colours["trousers"]
     hat, hat_dark = colours["hat"]
@@ -280,8 +327,8 @@ def soldier_atlas(outfit: str, variant: int = 0) -> Atlas:
     atlas.swatch("puttees", n, n, n, n, puttee_wrap(*colours["puttees"]))
     # Row 3: skin, kit and rifle.
     y = 3 * n
-    atlas.swatch("skin", 0, y, n, n, noise(SKIN, SKIN_DARK, 0.1))
-    atlas.swatch("face", n, y, n, n, face(SKIN, SKIN_DARK, INK, detail["moustache"]))
+    atlas.swatch("skin", 0, y, n, n, noise(skin, skin_dark, 0.1))
+    atlas.swatch("face", n, y, n, n, face(skin, skin_dark, INK, detail["moustache"]))
     boots, boots_dark = colours.get("boots", (DARK, INK))
     atlas.swatch("boots", 2 * n, y, n, n, layered(boots, boots_dark, wear(dust, 0.0, 4, dust)))
     atlas.swatch("leather", 3 * n, y, n, n, lambda i, j, rng: GOLD if (i % 5 == 2 and j % 6 == 2) else (shade(BROWN, 12) if rng.random() < 0.08 else BROWN))
@@ -289,6 +336,18 @@ def soldier_atlas(outfit: str, variant: int = 0) -> Atlas:
     atlas.swatch("rifle.wood", 5 * n, y, n, n, lambda i, j, rng: WOOD_DARK if j % 5 == 0 else WOOD)
     atlas.swatch("rifle.metal", 6 * n, y, n, n, noise(METAL, METAL_LIGHT, 0.15))
     atlas.swatch("blood", 7 * n, y, n, n, noise(RED_DARK, (80, 28, 22), 0.3))
+    # Row 4 (improve-soldier-models): kit and the other weapons.
+    y = 4 * n
+    atlas.swatch("canvas", 0, y, n, n, layered(CANVAS, CANVAS_DARK, folds(CANVAS_DARK, (5, 11)), wear(dust, 0.05)))
+    atlas.swatch("blanket", n, y, n, n, lambda i, j, rng: BLANKET_DARK if j % 4 == 0 or rng.random() < 0.1 else BLANKET)
+    atlas.swatch("canteen", 2 * n, y, n, n, lambda i, j, rng: DARK if j in (0, 15) else (shade(OLIVE_DARK, 8) if rng.random() < 0.12 else OLIVE_DARK))
+    atlas.swatch("brass", 3 * n, y, n, n, noise(BRASS, shade(BRASS, -30), 0.2))
+    atlas.swatch("gun.dark", 4 * n, y, n, n, noise(GUN, GUN_LIGHT, 0.12))
+    atlas.swatch("hair", 5 * n, y, n, n, noise(INK, DARK, 0.3))
+    # The cangaceiro's bornal: pale cloth worked in coloured thread.
+    stitch = (RED, (40, 96, 60), (52, 70, 130), GOLD)
+    atlas.swatch("bornal", 6 * n, y, n, n, lambda i, j, rng: stitch[(i // 4 + j // 4) % 4] if (i + j) % 4 == 0 or (i - j) % 4 == 0 else CREAM)
+    atlas.swatch("leather.dark", 7 * n, y, n, n, noise(LEATHER_DARK, DARK, 0.15))
     return atlas
 
 

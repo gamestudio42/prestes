@@ -1,4 +1,4 @@
-import type { ArmyId, FightingValues } from './armies';
+import type { ArmyId, FightingValues, UniformSetId } from './armies';
 import type { WeaponId } from './weapons';
 
 /**
@@ -62,6 +62,8 @@ export interface SectionType {
   limit?: number;
   /** A limit counted together with other types. */
   limitGroup?: SectionLimitGroup;
+  /** The uniform set when the type is dressed apart from its army (improve-soldier-models 4.4). */
+  uniform?: UniformSetId;
 }
 
 const rifleman: SectionMan = { role: 'rifleman', weapon: 'mauser-7mm' };
@@ -157,6 +159,7 @@ export const SECTION_TYPES: Readonly<Record<SectionTypeId, SectionType>> = {
     id: 'jaguncos',
     army: 'patriotico',
     ...keys('jaguncos'),
+    uniform: 'jagunco',
     men: [{ ...winchester, sidearm: 'revolver' }, ...repeat(winchester, 5)],
     speedFactor: 1.1,
     ammunitionFactor: 0.85,
@@ -166,6 +169,7 @@ export const SECTION_TYPES: Readonly<Record<SectionTypeId, SectionType>> = {
     id: 'jaguncos-mauser',
     army: 'patriotico',
     ...keys('jaguncos-mauser'),
+    uniform: 'jagunco',
     // The owner, 2026-11-11: federal arms issued to the battalions include an automatic rifle (a game organization).
     men: [...repeat({ role: 'irregular', weapon: 'mauser-7mm' }, 5), { role: 'gunner', weapon: 'fuzil-automatico-7mm' }],
     limitGroup: 'automatic-rifle',
@@ -184,6 +188,7 @@ export const SECTION_TYPES: Readonly<Record<SectionTypeId, SectionType>> = {
     id: 'cangaceiros',
     army: 'patriotico',
     ...keys('cangaceiros'),
+    uniform: 'cangaceiro',
     men: repeat({ role: 'irregular', weapon: 'mauser-7mm', sidearm: 'revolver' }, 6),
     speedFactor: 1.15,
     limit: 1,

@@ -584,7 +584,7 @@ export class SceneView {
     this.lastFrame = frame;
     this.mapLayer?.update(frame.ferries);
     this.covers.update(frame.covers);
-    this.characters.update(frame, this.rig.span);
+    this.characters.update(frame, this.rig.span, { x: this.rig.focusX, y: this.rig.focusY });
     // fog-of-war: the fogged frame carries the ghosts and the "?" markers.
     const fogged = frame as (Frame | InterpolatedFrame) & FogExtras;
     this.characters.updateGhosts(fogged.ghosts ?? [], this.rig.span);

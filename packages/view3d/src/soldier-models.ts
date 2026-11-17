@@ -1,12 +1,26 @@
 import * as THREE from 'three';
-import { clipFade, HELD_CLIPS, missingClips, SOLDIER_OUTFITS, UNIFORM_VARIANTS, wearsKepi, type SoldierClip, type WoundSide, type SoldierOutfit } from './soldier-clips';
+import {
+  clipFade,
+  GEAR_PIECES,
+  headgear,
+  HELD_CLIPS,
+  missingClips,
+  SOLDIER_OUTFITS,
+  UNIFORM_VARIANTS,
+  type GearPiece,
+  type Headgear,
+  type SoldierClip,
+  type WoundSide,
+  type SoldierOutfit,
+} from './soldier-clips';
 import { toonGradient } from './materials';
 
 /**
  * The Blender-built soldier (art-src/blender/target_soldier.py), loaded once
  * and cloned per unit. Each clone has its own animation mixer; the outfits
- * share the geometry and differ by texture, the column wearing the slouch
- * hat and the others the kepi.
+ * share the geometry and differ by texture, hat and gear
+ * (improve-soldier-models 4.x). Each body and hat has a far mesh on the same
+ * skeleton (`<mesh>Far`), so the swap is a visibility change (3.4).
  */
 export interface SoldierAsset {
   scene: THREE.Group;
@@ -82,6 +96,13 @@ const BLOOD_OFFSET = 0.195;
 const BLOOD_GEOMETRY = new THREE.BoxGeometry(0.02, 0.15, 0.13);
 const BLOOD_MATERIAL = new THREE.MeshBasicMaterial({ color: 0x6e2820 });
 
+/** The mesh of each hat in `soldier.glb`. */
+const HAT_MESH: Readonly<Record<Headgear, string>> = { slouch: 'Slouch', kepi: 'Kepi', leather: 'LeatherHat', halfmoon: 'Halfmoon' };
+const gearMesh = (piece: GearPiece): string => `Gear${piece[0]!.toUpperCase()}${piece.slice(1)}`;
+
+/** The suffix of the clips a man with a revolver plays in his own way (1.4). */
+export const PISTOL_SUFFIX = '-pistol';
+
 /** One soldier: a skinned clone, its mixer and the clip it is playing. */
 export class SoldierInstance {
   readonly root: THREE.Object3D;
@@ -90,21 +111,36 @@ export class SoldierInstance {
   private current: SoldierClip | null = null;
   /** 3.4: the blood on the side of his wound, made when first needed. */
   private blood: THREE.Mesh | null = null;
+  private readonly near: THREE.Object3D[] = [];
+  private readonly far: THREE.Object3D[] = [];
+  private isFar = false;
+  private pistol = false;
+  private timeScale = 1;
 
-  constructor(asset: SoldierAsset, outfit: SoldierOutfit, variant = 0) {
+  /** `gear`: the pieces he carries (`soldierGear`); the rest stay hidden. */
+  constructor(asset: SoldierAsset, outfit: SoldierOutfit, variant = 0, gear: ReadonlySet<GearPiece> = new Set()) {
     this.root = asset.clone(asset.scene);
     this.root.traverse((child) => {
       const mesh = child as THREE.SkinnedMesh;
       if (!mesh.isMesh) return;
       mesh.material = asset.materials[`${outfit}-${variant}`]!;
       mesh.frustumCulled = false;
-      if (mesh.name.startsWith('Kepi')) mesh.visible = wearsKepi(outfit);
-      if (mesh.name.startsWith('Slouch')) mesh.visible = !wearsKepi(outfit);
     });
+    const hat = HAT_MESH[headgear(outfit)];
+    const near = new Set(['Soldier', hat, ...[...gear].map(gearMesh)]);
+    const far = new Set(['SoldierFar', `${hat}Far`]);
+    const optional = ['Soldier', 'SoldierFar', ...Object.values(HAT_MESH).flatMap((name) => [name, `${name}Far`]), ...GEAR_PIECES.map(gearMesh)];
+    for (const name of optional) {
+      const object = this.root.getObjectByName(name);
+      if (!object) continue;
+      object.visible = near.has(name);
+      if (near.has(name)) this.near.push(object);
+      if (far.has(name)) this.far.push(object);
+    }
     this.mixer = new THREE.AnimationMixer(this.root);
     for (const [name, clip] of asset.clips) {
       const action = this.mixer.clipAction(clip);
-      if (HELD_CLIPS.has(name as SoldierClip)) {
+      if (HELD_CLIPS.has(name.replace(PISTOL_SUFFIX, '') as SoldierClip)) {
         action.setLoop(THREE.LoopOnce, 1);
         action.clampWhenFinished = true;
       }
@@ -112,12 +148,48 @@ export class SoldierInstance {
     }
   }
 
+  /** 3.4: the far body and hat (fewer triangles) or the near ones and the gear. */
+  setFar(far: boolean): void {
+    if (far === this.isFar) return;
+    this.isFar = far;
+    for (const object of this.near) object.visible = !far;
+    for (const object of this.far) object.visible = far;
+  }
+
+  get drawnFar(): boolean {
+    return this.isFar;
+  }
+
+  /**
+   * 1.4: a man with a revolver plays `<clip>-pistol` where the model has one
+   * (the arm out with the gun, the left hand free).
+   */
+  setPistol(pistol: boolean): void {
+    if (pistol === this.pistol) return;
+    this.pistol = pistol;
+    const clip = this.current;
+    if (clip) {
+      this.current = null;
+      this.play(clip, this.timeScale);
+    }
+  }
+
+  /** The revolver is in his hand: his clip has a revolver variant. */
+  get holdsPistol(): boolean {
+    return this.pistol && this.current !== null && this.actions.has(this.current + PISTOL_SUFFIX);
+  }
+
+  private action(clip: SoldierClip): THREE.AnimationAction | undefined {
+    return (this.pistol ? this.actions.get(clip + PISTOL_SUFFIX) : undefined) ?? this.actions.get(clip);
+  }
+
   play(clip: SoldierClip, timeScale = 1): void {
-    const next = this.actions.get(clip);
+    const next = this.action(clip);
     if (!next) return;
     next.timeScale = timeScale;
+    this.timeScale = timeScale;
     if (clip === this.current) return;
-    const previous = this.current ? this.actions.get(this.current) : undefined;
+    const previous = this.current ? this.action(this.current) : undefined;
     // soldier-animation 2.3: a fixed short cross-fade; a death cuts in at once.
     const fade = clipFade(clip);
     if (fade === 0) {
@@ -158,7 +230,7 @@ export class SoldierInstance {
 
   /** The clip of a fire burst restarts on each shot. */
   retrigger(clip: SoldierClip): void {
-    const action = this.actions.get(clip);
+    const action = this.action(clip);
     if (action && this.current === clip) action.reset().play();
   }
 

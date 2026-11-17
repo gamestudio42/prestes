@@ -1,4 +1,4 @@
-import { ARMIES, CLIP_GAIT_SPEED, type UniformSetId, type UnitSnapshot } from '@prestes/shared';
+import { ARMIES, CLIP_GAIT_SPEED, SECTION_TYPES, type UniformSetId, type UnitSnapshot } from '@prestes/shared';
 
 /** Clip names exported by art-src/blender/target_soldier.py. */
 export type SoldierClip =
@@ -68,7 +68,11 @@ export function missingClips(names: Iterable<string>): SoldierClip[] {
   return SOLDIER_CLIPS.filter((clip) => !have.has(clip));
 }
 
-/** 3.2: a uniform set per army, for the rank and file and for officers. */
+/**
+ * 3.2: a uniform set per army, for the rank and file and for officers;
+ * improve-soldier-models 4.4: the cangaceiros and the jagunços have sets of
+ * their own, rank and file only.
+ */
 export type SoldierOutfit = `${UniformSetId}-${'troop' | 'officer'}`;
 export const SOLDIER_OUTFITS: readonly SoldierOutfit[] = [
   'coluna-troop',
@@ -77,6 +81,8 @@ export const SOLDIER_OUTFITS: readonly SoldierOutfit[] = [
   'legalista-officer',
   'patriotico-troop',
   'patriotico-officer',
+  'cangaceiro-troop',
+  'jagunco-troop',
 ];
 
 /** Clips that hold their last pose instead of looping. */
@@ -328,9 +334,13 @@ export function aimTransition(current: SoldierClip | null, since: number, wanted
  * 3.2: the uniform of his army (from his section type, or his side when he has
  * none), the officer's set for an officer.
  */
-export function soldierOutfit(unit: Pick<UnitSnapshot, 'kind' | 'faction'> & Partial<Pick<UnitSnapshot, 'army'>>): SoldierOutfit {
+export function soldierOutfit(
+  unit: Pick<UnitSnapshot, 'kind' | 'faction'> & Partial<Pick<UnitSnapshot, 'army' | 'sectionType'>>,
+): SoldierOutfit {
   const army = unit.army ?? (unit.faction === 'column' ? 'coluna' : 'legalista');
-  return `${ARMIES[army].uniform}-${unit.kind === 'officer' ? 'officer' : 'troop'}`;
+  const uniform = (unit.sectionType && SECTION_TYPES[unit.sectionType]?.uniform) || ARMIES[army].uniform;
+  const officer: SoldierOutfit = `${uniform}-officer`;
+  return unit.kind === 'officer' && SOLDIER_OUTFITS.includes(officer) ? officer : `${uniform}-troop`;
 }
 
 /** 3.4: the side of the body a wound is on: +1 his right, -1 his left. */
@@ -346,8 +356,8 @@ export function woundSide(id: number, facingX: number, facingY: number, dx?: num
   return dx * -facingY + dy * facingX >= 0 ? 1 : -1;
 }
 
-/** 3.3: each uniform set comes in this many variants. */
-export const UNIFORM_VARIANTS = 3;
+/** 3.3: each uniform set comes in this many variants (improve-soldier-models 4.1: six). */
+export const UNIFORM_VARIANTS = 6;
 
 /** 3.3: the variant of his uniform, by his id alone. */
 export function uniformVariant(id: number): number {
@@ -356,7 +366,47 @@ export function uniformVariant(id: number): number {
 
 /** Which hat an outfit wears: the kepi for the legalist army, else the brimmed hat. */
 export function wearsKepi(outfit: SoldierOutfit): boolean {
-  return outfit.startsWith('legalista-');
+  return headgear(outfit) === 'kepi';
+}
+
+/**
+ * improve-soldier-models 4.4: the headgear of each set (FORCES.md "Dress of
+ * the forces"): the column's slouch hat, the army's kepi, the sertão's round
+ * leather hat and the cangaceiro's half-moon, its brim turned up front and back.
+ */
+export type Headgear = 'slouch' | 'kepi' | 'leather' | 'halfmoon';
+export function headgear(outfit: SoldierOutfit): Headgear {
+  if (outfit.startsWith('legalista-')) return 'kepi';
+  if (outfit.startsWith('cangaceiro-')) return 'halfmoon';
+  if (outfit.startsWith('jagunco-') || outfit.startsWith('patriotico-')) return 'leather';
+  return 'slouch';
+}
+
+/** improve-soldier-models 4.2: the kit a soldier may carry, each piece its own mesh. */
+export const GEAR_PIECES = ['blanket', 'canteen', 'haversack', 'neckerchief', 'bornais', 'cartridges'] as const;
+export type GearPiece = (typeof GEAR_PIECES)[number];
+
+/** The share of the men of a set who carry each piece (absent: never). */
+const GEAR_ODDS: Readonly<Partial<Record<SoldierOutfit, Partial<Record<GearPiece, number>>>>> = {
+  'coluna-troop': { neckerchief: 0.75, blanket: 0.5, canteen: 0.5, haversack: 0.4 },
+  'coluna-officer': { neckerchief: 1, canteen: 0.5 },
+  'legalista-troop': { blanket: 0.7, canteen: 0.9, haversack: 0.8 },
+  'legalista-officer': { canteen: 0.6 },
+  'patriotico-troop': { canteen: 0.4, haversack: 0.5, neckerchief: 0.3 },
+  'patriotico-officer': { canteen: 0.3, neckerchief: 0.5 },
+  'cangaceiro-troop': { bornais: 1, cartridges: 1, neckerchief: 1, canteen: 0.6 },
+  'jagunco-troop': { canteen: 0.4, haversack: 0.5, neckerchief: 0.4, cartridges: 0.6 },
+};
+
+/** The pieces he carries, from his id and his set alone (presentation only). */
+export function soldierGear(id: number, outfit: SoldierOutfit): Set<GearPiece> {
+  const odds = GEAR_ODDS[outfit] ?? {};
+  const kit = new Set<GearPiece>();
+  for (const piece of GEAR_PIECES) {
+    const share = odds[piece] ?? 0;
+    if (share >= 1 || (share > 0 && (fnv1a(`gear:${piece}:${id}`) % 1000) / 1000 < share)) kit.add(piece);
+  }
+  return kit;
 }
 
 /**

@@ -10,6 +10,7 @@ import {
   deathClip,
   deathVariant,
   shotSide,
+  soldierGear,
   soldierOutfit,
   uniformVariant,
   woundSide,
@@ -20,7 +21,7 @@ import {
   type SoldierClip,
 } from './soldier-clips';
 import { SoldierInstance, loadSoldierAsset, type SoldierAsset } from './soldier-models';
-import { WeaponProps } from './weapon-placeholders';
+import { WeaponProps, weaponLook } from './weapon-props';
 import {
   activeMapGeneration,
   activeMapRuntime,
@@ -72,7 +73,7 @@ interface CharacterView {
   marks: UnitMarks;
   /** The Blender-built soldier, once the model has loaded. */
   soldier?: SoldierInstance;
-  /** pre-battle-roster 5.4: the weapon placeholders on that soldier. */
+  /** improve-soldier-models 1.4: the weapon models on that soldier. */
   weapons?: WeaponProps;
   /** Until when (performance.now ms) the soldier shows its firing pose. */
   fireUntil: number;
@@ -108,6 +109,8 @@ interface CharacterView {
 
 /** How far the rescuer kneels to the side of the man he treats (model metres). */
 const TREAT_OFFSET = 0.6;
+/** improve-soldier-models 3.4: metres from the camera focus past which a soldier is drawn far. */
+export const FAR_MESH_DISTANCE = 28;
 /** Halted and aiming, a body still this far from its target angle is turning (radians). */
 const TURNING_ANGLE = 0.15;
 
@@ -331,12 +334,12 @@ export class CharacterLayer {
   }
 
   /** The modelled soldier's clip and the actions weighing on it (dev checks). */
-  clipState(unitId: number): { playing: string | null; active: Array<{ clip: string; weight: number }> } | null {
+  clipState(unitId: number): { playing: string | null; active: Array<{ clip: string; weight: number }>; far: boolean } | null {
     const soldier = this.views.get(unitId)?.soldier;
-    return soldier ? { playing: soldier.playing, active: soldier.activeClips() } : null;
+    return soldier ? { playing: soldier.playing, active: soldier.activeClips(), far: soldier.drawnFar } : null;
   }
 
-  /** pre-battle-roster 5.4: the weapon a soldier model shows and its visible placeholders (dev checks). */
+  /** improve-soldier-models 1.4: the weapon a soldier model shows and its visible weapon meshes (dev checks). */
   weaponState(unitId: number): { look: string; shown: string[] } | null {
     return this.views.get(unitId)?.weapons?.state() ?? null;
   }
@@ -355,7 +358,12 @@ export class CharacterLayer {
       });
   }
 
-  update(frame: Frame | InterpolatedFrame, span: number): void {
+  /**
+   * `focus`: the ground point the camera looks at; at the tactical band a
+   * soldier farther than FAR_MESH_DISTANCE from it is drawn with the far mesh
+   * (improve-soldier-models 3.4).
+   */
+  update(frame: Frame | InterpolatedFrame, span: number, focus?: { x: number; y: number }): void {
     const now = performance.now();
     const seconds = Math.min(0.1, Math.max(0, (now - this.lastUpdate) / 1000));
     this.lastUpdate = now;
@@ -581,7 +589,8 @@ export class CharacterLayer {
       }
 
       if (this.asset && !view.soldier && unit.kind !== 'dummy') {
-        view.soldier = new SoldierInstance(this.asset, soldierOutfit(unit), uniformVariant(unit.id));
+        const outfit = soldierOutfit(unit);
+        view.soldier = new SoldierInstance(this.asset, outfit, uniformVariant(unit.id), soldierGear(unit.id, outfit));
         view.weapons = new WeaponProps(view.soldier.root);
         marks.root.add(view.soldier.root);
       }
@@ -616,12 +625,14 @@ export class CharacterLayer {
           view.clipSince = now;
         }
         const authored = CLIP_SPEED[clip];
+        view.soldier.setPistol(weaponLook(unit.weaponId) === 'pistol');
+        view.soldier.setFar(focus !== undefined && Math.hypot(unit.x - focus.x, unit.y - focus.y) > FAR_MESH_DISTANCE);
         view.soldier.play(clip, authored ? walkTimeScale(view.speed, authored) : 1);
         // The rescuer kneels beside the man he treats, not on him.
         view.soldier.root.position.x = clip === 'kneel-treat' ? TREAT_OFFSET : 0;
         view.soldier.setWound(view.woundSide ?? null);
         view.soldier.update(seconds);
-        view.weapons?.apply(unit.weaponId, unit.gunSet === true, unit.alive && !unit.incapacitated && !unit.routed);
+        view.weapons?.apply(unit.weaponId, unit.gunSet === true, unit.alive && !unit.incapacitated && !unit.routed, view.soldier.holdsPistol);
         marks.ring.visible = unit.alive && !unit.routed && !unit.incapacitated;
         marks.shadow.rotation.set(-Math.PI / 2, 0, 0);
         if (marks.ring.visible) {

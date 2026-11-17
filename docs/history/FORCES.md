@@ -89,10 +89,29 @@ Logged in `docs/campaign/open-questions.md`:
   Brigada Militar (the São Paulo force above all), the provisionals
   ("provisórios", "corpos provisórios") and the federal light infantry
   ("caçadores"). Macaulay gives them in English.
-- Uniforms of the federal army and of each state militia in 1924–1927.
+- Uniforms of each state militia other than São Paulo's in 1924–1927 (the army's khaki and the São Paulo militia's blue are under "Dress of the forces").
 - How a platoon or section of federal infantry or of a state militia was
   made up. Macaulay gives units and totals, not small-unit tables.
 - The strength and make-up of a typical Patriotic Battalion.
+
+## Dress of the forces
+
+Asked by the owner on 2026-11-16 (for the soldier art). Macaulay does not
+describe uniforms; these come from other sources and carry their own
+confidence.
+
+| Force | Dress | Source | Confidence |
+| --- | --- | --- | --- |
+| Federal army, 1920s | **Khaki** field uniform (the army chose khaki for the field in 1903 by one account); told apart in 1924 photographs by khaki. Olive drab (*verde-oliva*) brim tunics and trousers came with the 1933 uniform plan, after the march | Wikipedia, "Urban combat in the São Paulo Revolt of 1924", citing Parreira 2019, p. 28; Wikipedia, "Military Police (Brazil)", Uniforms (no source given); Decreto nº 22.817, 12 June 1933 | medium |
+| São Paulo state militia (Força Pública), 1924 | **Dark blue or white** in 1924 photographs | Wikipedia, "Urban combat in the São Paulo Revolt of 1924", citing Parreira 2019, p. 28 | medium |
+| Other state militias | Military police later copied the army's khaki; the date for each state is not known | Wikipedia, "Military Police (Brazil)" (no source given) | low |
+| Cangaceiros | A large leather hat "broken" front and back (Xavier de Oliveira's 1920 description), decorated with stars and coins; leather leggings against thorns; leather sandals (*alpercatas*) over socks; cartridge belts; shoulder bags (*bornais*) that carried most of the colour; coloured neckerchiefs (*jabiracas*). Gold, mirrors and embroidered gloves are documented mostly from 1929 into the 1930s | Revista Pesquisa FAPESP 176 (2010), review of F. Pernambucano de Mello, *Estrela de couro*; Folha de Pernambuco, 12 April 2022, on the book's 4th edition | medium |
+| Jagunços (a patron's part-time gunmen) | No source on their dress in 1926. The game dresses them as sertão cowhands in leather (leather hat, *gibão* jacket, leggings), the dress of the region's working men | Representative, a placeholder in `docs/assets.md` | low |
+
+For the game: legalist regulars wear khaki and the kepi (no olive); the
+column's men wear worn khaki and civilian jackets with the red scarf; the
+cangaceiros keep the half-moon hat and their colours without the gold of
+the 1930s.
 
 ## Lampião and the Patriotic Battalion
 
