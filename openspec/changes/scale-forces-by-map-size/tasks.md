@@ -62,14 +62,14 @@
 
 - [x] 5.1 Record the battle report's baseline (the report already had `firstShot`, in seconds; `tools/campaign-length.ts` runs the maps) and run the five medium campaign maps on seeds 1922, 7 and 42 with today's forces.
   - Verify: the table of first shot, battle time, outcome and casualties is written into design.md.
-- [ ] 5.2 São Luiz / Ramada (D5):
+- [x] 5.2 São Luiz / Ramada (D5):
   - column force of 40–55 men under Prestes;
   - presets of 40–60;
   - a north-east entry point, with the earlier arrival routed through it;
   - a north-east legalist post in one preset;
   - timed arrivals from 180 s to 540 s.
   - Verify: `pnpm check:content` passes; the report on three seeds has the first shot within 120 s and a decided battle within 720 s; a muted run in the preview pane shows legalists in the north-east by 300 s (screenshot).
-  - Done 2026-11-17 except the screenshot in the preview pane. The first shot falls at about 61 s on three seeds. Decided by 720 s holds on 0 of 3: it is a march, and the scripted player never reaches the river. See design "After the campaign forces change"; the owner chose on 2026-11-17 to keep that band as a report figure. Only the preview-pane screenshot is left.
+  - Done 2026-11-17 except the screenshot in the preview pane. The first shot falls at about 61 s on three seeds. Decided by 720 s holds on 0 of 3: it is a march, and the scripted player never reaches the river. See design "After the campaign forces change"; the owner chose on 2026-11-17 to keep that band as a report figure. Screenshot taken 2026-11-17, muted, with the fog view off: `sao-luiz-north-east-278s.png` (strategic) and `-tactical.png`. The north-east arrival's 22 legalists are in the north-east from 151 s. With no orders given, Prestes falls at 281 s; the owner's hand check (6.3) shows whether a played chapter holds longer.
 - [x] 5.3 Catanduvas: the same force and timing bands.
   - Verify: `pnpm check:content` passes and the report on three seeds is within the bands.
 - [x] 5.4 Porto Mendes: the same force and timing bands.
