@@ -1,0 +1,49 @@
+{
+  "name": "@prestes/desktop",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Prestes desktop shell (Electron) for the Linux snap",
+  "author": "Marcel Savegnago",
+  "license": "AGPL-3.0-or-later",
+  "homepage": "https://github.com/gamestudio42/prestes",
+  "type": "module",
+  "main": "dist/main.js",
+  "scripts": {
+    "build": "pnpm --filter @prestes/game build && tsc -p tsconfig.json && node scripts/copy-game.mjs",
+    "start": "pnpm build && electron .",
+    "smoke": "pnpm build && electron . --smoke",
+    "dist:dir": "pnpm build && electron-builder --linux dir --publish never"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.5",
+    "electron": "^45.0.0",
+    "electron-builder": "^26.18.0",
+    "typescript": "~5.9.3"
+  },
+  "build": {
+    "appId": "io.github.prestes.Prestes",
+    "productName": "Prestes",
+    "directories": {
+      "output": "release",
+      "buildResources": "build"
+    },
+    "files": [
+      "dist/**",
+      "game/**",
+      "preload.cjs",
+      "package.json"
+    ],
+    "asar": true,
+    "linux": {
+      "target": [
+        "dir"
+      ],
+      "category": "Game",
+      "icon": "build/icon.png",
+      "synopsis": "Historical real-time tactics of the Prestes Column, 1922-1927",
+      "description": "Command sections of the Coluna Prestes on hand-drawn battlefields.",
+      "executableName": "prestes"
+    },
+    "executableName": "prestes"
+  }
+}

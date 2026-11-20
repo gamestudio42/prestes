@@ -11,6 +11,8 @@ export default tseslint.config(
       '**/coverage/**',
       '**/playwright-report/**',
       '**/test-results/**',
+      'apps/desktop/game/**',
+      'apps/desktop/release/**',
       'livros/**',
       '.gs42/**',
       '.agents/**',
@@ -22,6 +24,14 @@ export default tseslint.config(
       '.claude/**',
       'openspec/**',
     ],
+  },
+  {
+    files: ['apps/desktop/preload.cjs'],
+    languageOptions: { sourceType: 'commonjs', globals: { require: 'readonly' } },
+  },
+  {
+    files: ['apps/desktop/scripts/**/*.mjs'],
+    languageOptions: { globals: { console: 'readonly' } },
   },
   js.configs.recommended,
   ...tseslint.configs.recommended,

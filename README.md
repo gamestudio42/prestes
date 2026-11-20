@@ -134,6 +134,15 @@ sections and press **Combater**.
 | Hide the HUD             | H                                               |
 | Start the battle         | Enter, in the deployment phase                  |
 
+## Linux (Snap)
+
+```sh
+sudo snap install prestes
+```
+
+The snap runs the same game offline. The Snap Store Builds tab builds `main` and
+releases it to the edge channel.
+
 ## Develop
 
 Requires Node.js 22+ and pnpm 10.

@@ -12,6 +12,7 @@
   "scripts": {
     "dev": "pnpm --filter @prestes/game dev",
     "build": "pnpm --filter @prestes/game build",
+    "desktop": "pnpm --filter @prestes/desktop start",
     "preview": "pnpm --filter @prestes/game preview",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "eslint .",
@@ -50,6 +51,7 @@
   },
   "pnpm": {
     "onlyBuiltDependencies": [
+      "electron",
       "esbuild"
     ]
   },

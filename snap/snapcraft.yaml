@@ -1,0 +1,67 @@
+# Prestes as a snap, built from source: installs the workspace, runs
+# `pnpm --filter @prestes/desktop dist:dir` and packs release/linux-unpacked. The Snap Store's
+# Builds tab builds and releases it to edge on every push to main; .github/workflows/snap.yml
+# builds the same file and smoke-tests it.
+#
+# The store banner is not part of the snap. snap/gui is only the desktop entry and the icon,
+# which snapcraft copies to meta/gui. Upload snap/store/banner.jpg in the listing media and
+# keep the name banner.jpg: 3840×1280, 3:1, under the 2 MB limit.
+name: prestes
+title: Prestes
+base: core22
+adopt-info: prestes
+icon: snap/gui/icon.png
+summary: Historical real-time tactics of the Prestes Column, 1922-1927
+description: |
+  Command sections of the Coluna Prestes on hand-drawn battlefields.
+  Prestes is a historical real-time tactics game about Luís Carlos Prestes
+  and the column's march through Brazil from 1922 to 1927. Build sections
+  from period rosters, deploy them, and take the objectives under fog of
+  war. Eight campaign chapters and skirmish. Interface in Portuguese and
+  English.
+license: AGPL-3.0-or-later
+website: https://gamestudio42.github.io/prestes/
+source-code: https://github.com/gamestudio42/prestes
+issues: https://github.com/gamestudio42/prestes/issues
+contact: talkgamestudio42@gmail.com
+grade: stable
+confinement: strict
+compression: lzo
+
+architectures:
+  - build-on: amd64
+
+apps:
+  prestes:
+    # Chromium's own sandbox cannot run inside strict confinement; the snap sandbox replaces it.
+    command: app/prestes --no-sandbox
+    desktop: meta/gui/prestes.desktop
+    extensions: [gnome]
+    plugs:
+      - browser-support
+      - opengl
+      - audio-playback
+    environment:
+      TMPDIR: $XDG_RUNTIME_DIR
+
+parts:
+  prestes:
+    plugin: nil
+    source: .
+    build-snaps:
+      - node/22/stable
+    stage-packages:
+      - libnspr4
+      - libnss3
+      - libxss1
+    override-pull: |
+      craftctl default
+      craftctl set version="$(sed -n 's/^  "version": "\(.*\)",$/\1/p' apps/desktop/package.json)"
+    override-build: |
+      # The node snap is read-only: install the pinned pnpm next to the build.
+      npm install --prefix "$CRAFT_PART_BUILD/.tools" "$(sed -n 's/^  "packageManager": "\(.*\)",$/\1/p' package.json)"
+      export PATH="$CRAFT_PART_BUILD/.tools/node_modules/.bin:$PATH"
+      pnpm install --frozen-lockfile
+      pnpm --filter @prestes/desktop dist:dir
+      mkdir -p "$CRAFT_PART_INSTALL/app"
+      cp -a apps/desktop/release/linux-unpacked/. "$CRAFT_PART_INSTALL/app/"
