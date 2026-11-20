@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Prestes
+Comment=Historical real-time tactics of the Prestes Column, 1922-1927
+Exec=prestes
+Icon=${SNAP}/meta/gui/icon.png
+Categories=Game;StrategyGame;
+StartupWMClass=Prestes
+Terminal=false
